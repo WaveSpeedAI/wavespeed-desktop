@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, ipcMain, dialog } from 'electron'
+import { app, BrowserWindow, shell, ipcMain, dialog, Menu, clipboard } from 'electron'
 import { join } from 'path'
 import { existsSync, readFileSync, writeFileSync, mkdirSync, createWriteStream } from 'fs'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
@@ -106,6 +106,62 @@ function createWindow(): void {
     // Also allow F12
     if (input.key === 'F12') {
       mainWindow.webContents.toggleDevTools()
+    }
+  })
+
+  // Enable right-click context menu
+  mainWindow.webContents.on('context-menu', (_, params) => {
+    const menuItems: Electron.MenuItemConstructorOptions[] = []
+
+    // Add text editing options when in editable field
+    if (params.isEditable) {
+      menuItems.push(
+        { label: 'Cut', role: 'cut', enabled: params.editFlags.canCut },
+        { label: 'Copy', role: 'copy', enabled: params.editFlags.canCopy },
+        { label: 'Paste', role: 'paste', enabled: params.editFlags.canPaste },
+        { type: 'separator' },
+        { label: 'Select All', role: 'selectAll' }
+      )
+    } else if (params.selectionText) {
+      // Add copy option when text is selected
+      menuItems.push(
+        { label: 'Copy', role: 'copy' }
+      )
+    }
+
+    // Add link options
+    if (params.linkURL) {
+      if (menuItems.length > 0) menuItems.push({ type: 'separator' })
+      menuItems.push(
+        {
+          label: 'Open Link in Browser',
+          click: () => shell.openExternal(params.linkURL)
+        },
+        {
+          label: 'Copy Link',
+          click: () => clipboard.writeText(params.linkURL)
+        }
+      )
+    }
+
+    // Add image options
+    if (params.mediaType === 'image') {
+      if (menuItems.length > 0) menuItems.push({ type: 'separator' })
+      menuItems.push(
+        {
+          label: 'Copy Image',
+          click: () => mainWindow.webContents.copyImageAt(params.x, params.y)
+        },
+        {
+          label: 'Open Image in Browser',
+          click: () => shell.openExternal(params.srcURL)
+        }
+      )
+    }
+
+    if (menuItems.length > 0) {
+      const menu = Menu.buildFromTemplate(menuItems)
+      menu.popup()
     }
   })
 }

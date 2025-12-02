@@ -120,8 +120,12 @@ export function FormField({ field, value, onChange, disabled = false, error }: F
       case 'select':
         return (
           <Select
-            value={String(value || field.default || '')}
-            onValueChange={onChange}
+            value={value !== undefined && value !== null ? String(value) : (field.default !== undefined ? String(field.default) : '')}
+            onValueChange={(v) => {
+              // Try to preserve the original type (number if it was a number)
+              const originalOption = field.options?.find(opt => String(opt) === v)
+              onChange(originalOption !== undefined ? originalOption : v)
+            }}
             disabled={disabled}
           >
             <SelectTrigger id={field.name}>
@@ -129,8 +133,8 @@ export function FormField({ field, value, onChange, disabled = false, error }: F
             </SelectTrigger>
             <SelectContent>
               {field.options?.map((option) => (
-                <SelectItem key={option} value={option}>
-                  {option}
+                <SelectItem key={String(option)} value={String(option)}>
+                  {String(option)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -142,8 +146,9 @@ export function FormField({ field, value, onChange, disabled = false, error }: F
           <SizeSelector
             value={(value as string) || field.default as string || '1024*1024'}
             onChange={(v) => onChange(v)}
-            options={field.options}
             disabled={disabled}
+            min={field.min}
+            max={field.max}
           />
         )
 

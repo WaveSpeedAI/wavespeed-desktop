@@ -149,7 +149,7 @@ export function ModelsPage() {
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-base truncate">
+                        <CardTitle className="text-base break-words">
                           {model.name}
                         </CardTitle>
                         <p className="text-xs text-muted-foreground truncate mt-1">

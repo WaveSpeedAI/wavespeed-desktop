@@ -9,7 +9,7 @@ export interface FormFieldConfig {
   min?: number
   max?: number
   step?: number
-  options?: string[]
+  options?: (string | number)[]
   description?: string
   accept?: string
   maxFiles?: number
@@ -146,21 +146,22 @@ function propertyToField(
     return null
   }
 
-  // Handle size field specially
-  if (name.toLowerCase() === 'size') {
-    return {
-      ...baseField,
-      type: 'size',
-      options: prop.enum,  // Pass enum options if available
-    }
-  }
-
-  // Handle enum type
+  // Handle enum type (including size with enum)
   if (prop.enum && prop.enum.length > 0) {
     return {
       ...baseField,
       type: 'select',
       options: prop.enum,
+    }
+  }
+
+  // Handle size field without enum - use custom size selector with min/max
+  if (name.toLowerCase() === 'size') {
+    return {
+      ...baseField,
+      type: 'size',
+      min: prop.minimum,
+      max: prop.maximum,
     }
   }
 

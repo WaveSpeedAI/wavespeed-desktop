@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 
 interface SizeSelectorProps {
   value: string
   onChange: (value: string) => void
-  options?: string[]  // enum options like ["1280*720", "720*1280"]
   disabled?: boolean
+  min?: number  // minimum dimension value from schema
+  max?: number  // maximum dimension value from schema
 }
 
 // Common size presets
@@ -22,7 +22,7 @@ const PRESETS = [
   { label: '2:3', width: 768, height: 1152 },
 ]
 
-export function SizeSelector({ value, onChange, options, disabled }: SizeSelectorProps) {
+export function SizeSelector({ value, onChange, disabled, min = 256, max = 1536 }: SizeSelectorProps) {
   const [width, setWidth] = useState(1024)
   const [height, setHeight] = useState(1024)
 
@@ -63,10 +63,10 @@ export function SizeSelector({ value, onChange, options, disabled }: SizeSelecto
     onChange(`${height}*${width}`)
   }
 
-  // If options are provided (enum), filter presets to only show matching ones
-  const availablePresets = options
-    ? PRESETS.filter(p => options.includes(`${p.width}*${p.height}`))
-    : PRESETS
+  // Filter presets to only show ones within min/max range
+  const availablePresets = PRESETS.filter(p =>
+    p.width >= min && p.width <= max && p.height >= min && p.height <= max
+  )
 
   const isCurrentPreset = (w: number, h: number) => width === w && height === h
 
@@ -96,11 +96,11 @@ export function SizeSelector({ value, onChange, options, disabled }: SizeSelecto
           <Input
             type="number"
             value={width}
-            onChange={(e) => handleWidthChange(parseInt(e.target.value, 10) || 512)}
-            min={256}
-            max={2048}
+            onChange={(e) => handleWidthChange(parseInt(e.target.value, 10) || min)}
+            min={min}
+            max={max}
             step={64}
-            disabled={disabled || !!options}
+            disabled={disabled}
             className="h-9"
           />
         </div>
@@ -137,11 +137,11 @@ export function SizeSelector({ value, onChange, options, disabled }: SizeSelecto
           <Input
             type="number"
             value={height}
-            onChange={(e) => handleHeightChange(parseInt(e.target.value, 10) || 512)}
-            min={256}
-            max={2048}
+            onChange={(e) => handleHeightChange(parseInt(e.target.value, 10) || min)}
+            min={min}
+            max={max}
             step={64}
-            disabled={disabled || !!options}
+            disabled={disabled}
             className="h-9"
           />
         </div>

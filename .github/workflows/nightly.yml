@@ -1,0 +1,127 @@
+name: Nightly Build
+
+on:
+  schedule:
+    # Run at 2:00 AM UTC every day
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      should_build: ${{ steps.check.outputs.should_build }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check for changes in last 24 hours
+        id: check
+        run: |
+          LATEST_COMMIT=$(git log -1 --format=%ct)
+          YESTERDAY=$(date -d '24 hours ago' +%s)
+          if [ "$LATEST_COMMIT" -gt "$YESTERDAY" ]; then
+            echo "should_build=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_build=false" >> $GITHUB_OUTPUT
+          fi
+
+  build:
+    needs: check-changes
+    if: needs.check-changes.outputs.should_build == 'true' || github.event_name == 'workflow_dispatch'
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+          - os: windows-latest
+            platform: win
+          - os: macos-latest
+            platform: mac
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Build for ${{ matrix.platform }}
+        run: npm run build:${{ matrix.platform }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wavespeed-desktop-nightly-${{ matrix.platform }}
+          path: |
+            dist/*.exe
+            dist/*.dmg
+            dist/*.zip
+            dist/*.AppImage
+            dist/*.deb
+          if-no-files-found: ignore
+          retention-days: 7
+
+  create-nightly-release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Get current date
+        id: date
+        run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+
+      - name: Delete existing nightly release
+        uses: dev-drprasad/delete-tag-and-release@v1.0
+        with:
+          tag_name: nightly
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          delete_release: true
+        continue-on-error: true
+
+      - name: Create Nightly Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: nightly
+          name: Nightly Build (${{ steps.date.outputs.date }})
+          body: |
+            ## Nightly Build
+
+            Automated nightly build from `main` branch.
+
+            **Build Date:** ${{ steps.date.outputs.date }}
+            **Commit:** ${{ github.sha }}
+
+            > This is a pre-release build and may be unstable.
+
+            ### Downloads
+            - **Windows:** `.exe` (installer) or `.zip`
+            - **macOS:** `.dmg` or `.zip`
+            - **Linux:** `.AppImage` or `.deb`
+          files: artifacts/**/*
+          prerelease: true
+          draft: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

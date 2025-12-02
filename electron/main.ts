@@ -77,12 +77,35 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
+  // Error handling for renderer
+  mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
+    console.error('Failed to load:', errorCode, errorDescription, validatedURL)
+  })
+
+  mainWindow.webContents.on('render-process-gone', (event, details) => {
+    console.error('Render process gone:', details)
+  })
+
   // Load the app
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    const indexPath = join(__dirname, '../renderer/index.html')
+    console.log('Loading renderer from:', indexPath)
+    console.log('File exists:', existsSync(indexPath))
+    mainWindow.loadFile(indexPath)
   }
+
+  // Open DevTools with keyboard shortcut (Cmd+Opt+I on Mac, Ctrl+Shift+I on Windows/Linux)
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if ((input.meta || input.control) && input.shift && input.key.toLowerCase() === 'i') {
+      mainWindow.webContents.toggleDevTools()
+    }
+    // Also allow F12
+    if (input.key === 'F12') {
+      mainWindow.webContents.toggleDevTools()
+    }
+  })
 }
 
 // IPC Handlers

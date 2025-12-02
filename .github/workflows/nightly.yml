@@ -84,6 +84,8 @@ jobs:
 
   create-nightly-release:
     needs: build
+    # Run if build succeeded (handles skipped check-changes job)
+    if: always() && needs.build.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: write

@@ -57,9 +57,9 @@ jobs:
 
   release:
     needs: build
+    # Only create release on tags and if all builds succeeded
+    if: startsWith(github.ref, 'refs/tags/v') && needs.build.result == 'success'
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-
     permissions:
       contents: write
 

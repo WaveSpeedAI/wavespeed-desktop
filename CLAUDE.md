@@ -120,3 +120,4 @@ For development, a test API key is available in the plan file.
 - History is limited to last 24 hours
 - File uploads return a URL that's used as the input parameter
 - Model schemas use OpenAPI format with `x-order-properties` for field ordering
+- macOS builds are unsigned; users must run `xattr -cr "/Applications/WaveSpeed Desktop.app"` before first launch

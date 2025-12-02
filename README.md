@@ -24,7 +24,11 @@ Download the latest release for your platform from the [Releases](https://github
 #### macOS
 1. Download `WaveSpeed Desktop-*-mac-arm64.dmg` (Apple Silicon) or `WaveSpeed Desktop-*-mac-x64.dmg` (Intel)
 2. Open the `.dmg` file and drag the app to Applications
-3. On first launch, right-click the app and select "Open" to bypass Gatekeeper
+3. Since the app is not signed, run this command to bypass Gatekeeper:
+   ```bash
+   xattr -cr "/Applications/WaveSpeed Desktop.app"
+   ```
+4. Launch the app from Applications
 
 #### Linux
 1. Download `WaveSpeed Desktop-*-linux-x64.AppImage` or `.deb`

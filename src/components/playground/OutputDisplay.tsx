@@ -17,21 +17,18 @@ export function OutputDisplay({ prediction, outputs, error, isLoading }: OutputD
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
 
   const handleDownload = async (url: string, index: number) => {
-    try {
-      const response = await fetch(url)
-      const blob = await response.blob()
-      const blobUrl = URL.createObjectURL(blob)
+    const extension = getExtensionFromUrl(url) || 'png'
+    const filename = `output-${index + 1}.${extension}`
 
-      const extension = getExtensionFromUrl(url) || 'png'
-      const link = document.createElement('a')
-      link.href = blobUrl
-      link.download = `output-${index + 1}.${extension}`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      URL.revokeObjectURL(blobUrl)
-    } catch (err) {
-      console.error('Download failed:', err)
+    // Use Electron API if available
+    if (window.electronAPI?.downloadFile) {
+      const result = await window.electronAPI.downloadFile(url, filename)
+      if (!result.success && !result.canceled) {
+        console.error('Download failed:', result.error)
+      }
+    } else {
+      // Browser: just open in new tab
+      window.open(url, '_blank')
     }
   }
 

@@ -1,7 +1,9 @@
-import { app, BrowserWindow, shell, ipcMain } from 'electron'
+import { app, BrowserWindow, shell, ipcMain, dialog } from 'electron'
 import { join } from 'path'
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
+import { existsSync, readFileSync, writeFileSync, mkdirSync, createWriteStream } from 'fs'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import https from 'https'
+import http from 'http'
 
 // Linux-specific flags
 if (process.platform === 'linux') {
@@ -136,6 +138,63 @@ ipcMain.handle('set-settings', (_, newSettings: Partial<Settings>) => {
 ipcMain.handle('clear-all-data', () => {
   saveSettings(defaultSettings)
   return true
+})
+
+// Download file handler
+ipcMain.handle('download-file', async (_, url: string, defaultFilename: string) => {
+  const mainWindow = BrowserWindow.getFocusedWindow()
+  if (!mainWindow) return { success: false, error: 'No focused window' }
+
+  // Get file extension from URL or default filename
+  const extension = defaultFilename.split('.').pop() || 'png'
+
+  // Show save dialog
+  const result = await dialog.showSaveDialog(mainWindow, {
+    defaultPath: defaultFilename,
+    filters: [
+      { name: 'All Files', extensions: ['*'] },
+      { name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp'] },
+      { name: 'Videos', extensions: ['mp4', 'webm', 'mov'] }
+    ]
+  })
+
+  if (result.canceled || !result.filePath) {
+    return { success: false, canceled: true }
+  }
+
+  // Download the file
+  return new Promise((resolve) => {
+    const protocol = url.startsWith('https') ? https : http
+    const file = createWriteStream(result.filePath!)
+
+    protocol.get(url, (response) => {
+      // Handle redirects
+      if (response.statusCode === 301 || response.statusCode === 302) {
+        const redirectUrl = response.headers.location
+        if (redirectUrl) {
+          const redirectProtocol = redirectUrl.startsWith('https') ? https : http
+          redirectProtocol.get(redirectUrl, (redirectResponse) => {
+            redirectResponse.pipe(file)
+            file.on('finish', () => {
+              file.close()
+              resolve({ success: true, filePath: result.filePath })
+            })
+          }).on('error', (err) => {
+            resolve({ success: false, error: err.message })
+          })
+          return
+        }
+      }
+
+      response.pipe(file)
+      file.on('finish', () => {
+        file.close()
+        resolve({ success: true, filePath: result.filePath })
+      })
+    }).on('error', (err) => {
+      resolve({ success: false, error: err.message })
+    })
+  })
 })
 
 // App lifecycle

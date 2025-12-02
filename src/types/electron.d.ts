@@ -1,3 +1,10 @@
+export interface DownloadResult {
+  success: boolean
+  filePath?: string
+  error?: string
+  canceled?: boolean
+}
+
 export interface ElectronAPI {
   getApiKey: () => Promise<string>
   setApiKey: (apiKey: string) => Promise<boolean>
@@ -8,6 +15,7 @@ export interface ElectronAPI {
   }>
   setSettings: (settings: Record<string, unknown>) => Promise<boolean>
   clearAllData: () => Promise<boolean>
+  downloadFile: (url: string, defaultFilename: string) => Promise<DownloadResult>
 }
 
 declare global {

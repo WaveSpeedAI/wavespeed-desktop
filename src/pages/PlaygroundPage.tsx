@@ -1,19 +1,32 @@
-import { useEffect, useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { usePlaygroundStore } from '@/stores/playgroundStore'
 import { useModelsStore } from '@/stores/modelsStore'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
+import { useTemplateStore } from '@/stores/templateStore'
 import { DynamicForm } from '@/components/playground/DynamicForm'
 import { OutputDisplay } from '@/components/playground/OutputDisplay'
 import { ModelSelector } from '@/components/playground/ModelSelector'
 import { ApiKeyRequired } from '@/components/shared/ApiKeyRequired'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import { Play, RotateCcw, Loader2, DollarSign, Plus, X, BookOpen } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import { Play, RotateCcw, Loader2, DollarSign, Plus, X, BookOpen, Save } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { toast } from '@/hooks/useToast'
 
 export function PlaygroundPage() {
   const { modelId } = useParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
   const { models } = useModelsStore()
   const { isLoading: isLoadingApiKey, apiKey } = useApiKeyStore()
@@ -31,8 +44,56 @@ export function PlaygroundPage() {
     resetForm,
     runPrediction,
   } = usePlaygroundStore()
+  const { templates, loadTemplates, saveTemplate, isLoaded: templatesLoaded } = useTemplateStore()
 
   const activeTab = getActiveTab()
+  const templateLoadedRef = useRef<string | null>(null)
+
+  // Template dialog states
+  const [showSaveTemplateDialog, setShowSaveTemplateDialog] = useState(false)
+  const [newTemplateName, setNewTemplateName] = useState('')
+
+  // Load templates on mount
+  useEffect(() => {
+    if (!templatesLoaded) {
+      loadTemplates()
+    }
+  }, [templatesLoaded, loadTemplates])
+
+  // Load template from URL query param
+  useEffect(() => {
+    const templateId = searchParams.get('template')
+    if (templateId && templatesLoaded && activeTab && templateLoadedRef.current !== templateId) {
+      const template = templates.find(t => t.id === templateId)
+      if (template) {
+        setFormValues(template.values)
+        templateLoadedRef.current = templateId
+        toast({
+          title: 'Template loaded',
+          description: `Loaded "${template.name}"`,
+        })
+        // Clear the query param after loading
+        setSearchParams({}, { replace: true })
+      }
+    }
+  }, [searchParams, templates, templatesLoaded, activeTab, setFormValues, setSearchParams])
+
+  const handleSaveTemplate = () => {
+    if (!activeTab?.selectedModel || !newTemplateName.trim()) return
+
+    saveTemplate(
+      newTemplateName.trim(),
+      activeTab.selectedModel.model_id,
+      activeTab.selectedModel.name,
+      activeTab.formValues
+    )
+    setNewTemplateName('')
+    setShowSaveTemplateDialog(false)
+    toast({
+      title: 'Template saved',
+      description: `Saved as "${newTemplateName.trim()}"`,
+    })
+  }
 
   // Create initial tab if none exist
   useEffect(() => {
@@ -243,8 +304,17 @@ export function PlaygroundPage() {
                   variant="outline"
                   onClick={handleReset}
                   disabled={activeTab.isRunning}
+                  title="Reset form"
                 >
                   <RotateCcw className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowSaveTemplateDialog(true)}
+                  disabled={!activeTab.selectedModel || activeTab.isRunning}
+                  title="Save as template"
+                >
+                  <Save className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -291,6 +361,51 @@ export function PlaygroundPage() {
           </div>
         </div>
       )}
+
+      {/* Save Template Dialog */}
+      <Dialog open={showSaveTemplateDialog} onOpenChange={setShowSaveTemplateDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Save Template</DialogTitle>
+            <DialogDescription>
+              Save your current configuration for {activeTab?.selectedModel?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="templateName">Template Name</Label>
+              <Input
+                id="templateName"
+                value={newTemplateName}
+                onChange={(e) => setNewTemplateName(e.target.value)}
+                placeholder="My template"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && newTemplateName.trim()) {
+                    handleSaveTemplate()
+                  }
+                }}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setNewTemplateName('')
+                setShowSaveTemplateDialog(false)
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveTemplate}
+              disabled={!newTemplateName.trim()}
+            >
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

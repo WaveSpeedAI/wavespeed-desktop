@@ -10,6 +10,7 @@ import {
 import {
   LayoutGrid,
   PlayCircle,
+  FolderOpen,
   History,
   Settings,
   Zap,
@@ -27,6 +28,11 @@ const navItems = [
     title: 'Playground',
     href: '/playground',
     icon: PlayCircle
+  },
+  {
+    title: 'Templates',
+    href: '/templates',
+    icon: FolderOpen
   },
   {
     title: 'History',

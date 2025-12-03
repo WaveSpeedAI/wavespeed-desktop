@@ -1,15 +1,24 @@
 import { useState } from 'react'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
+import { useThemeStore, type Theme } from '@/stores/themeStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { toast } from '@/hooks/useToast'
-import { Eye, EyeOff, Check, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Check, Loader2, Monitor, Moon, Sun } from 'lucide-react'
 
 export function SettingsPage() {
   const { apiKey, setApiKey, isValidated, isValidating: storeIsValidating, validateApiKey } = useApiKeyStore()
+  const { theme, setTheme } = useThemeStore()
   const [inputKey, setInputKey] = useState(apiKey)
   const [showKey, setShowKey] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -136,6 +145,48 @@ export function SettingsPage() {
             <Button variant="outline" onClick={handleClear} disabled={!apiKey}>
               Clear
             </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Appearance</CardTitle>
+          <CardDescription>
+            Customize the look of the application
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="theme">Theme</Label>
+            <Select value={theme} onValueChange={(value) => setTheme(value as Theme)}>
+              <SelectTrigger id="theme" className="w-[200px]">
+                <SelectValue placeholder="Select theme" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="auto">
+                  <div className="flex items-center gap-2">
+                    <Monitor className="h-4 w-4" />
+                    <span>Auto (System)</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="light">
+                  <div className="flex items-center gap-2">
+                    <Sun className="h-4 w-4" />
+                    <span>Light</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="dark">
+                  <div className="flex items-center gap-2">
+                    <Moon className="h-4 w-4" />
+                    <span>Dark</span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Choose how the application looks. Auto will follow your system preference.
+            </p>
           </div>
         </CardContent>
       </Card>

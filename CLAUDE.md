@@ -46,9 +46,12 @@ wavespeed-desktop/
 - **`src/stores/apiKeyStore.ts`**: API key persistence and validation (electron-store + localStorage fallback)
 - **`src/stores/modelsStore.ts`**: Model list caching, filtering, and sorting (supports sort_order/popularity)
 - **`src/stores/playgroundStore.ts`**: Multi-tab playground state management
+- **`src/stores/templateStore.ts`**: Template CRUD operations with localStorage persistence
+- **`src/stores/themeStore.ts`**: Theme management (auto/dark/light) with system preference detection
 - **`src/components/playground/DynamicForm.tsx`**: Generates forms from model schemas
 - **`src/components/playground/ModelSelector.tsx`**: Searchable model dropdown with fuzzy search
 - **`src/components/playground/OutputDisplay.tsx`**: Displays prediction results (images, videos, text)
+- **`src/pages/TemplatesPage.tsx`**: Template management (browse, search, use, rename, delete)
 - **`src/pages/HistoryPage.tsx`**: Prediction history with detail dialog
 - **`src/lib/schemaToForm.ts`**: Converts API schema to form field configurations
 
@@ -147,3 +150,7 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - Documentation URLs follow the pattern: `https://wavespeed.ai/docs/docs-api/{owner}/{model-name}` where slashes after the owner become dashes
 - The playground supports multiple tabs, each with its own model and form state
 - IPC handlers in `electron/main.ts` include: `get-api-key`, `set-api-key`, `download-file`, `open-external`
+- Templates are stored in localStorage with key `wavespeed_templates`, grouped by model
+- Theme preference is stored in localStorage with key `wavespeed_theme` (auto/dark/light)
+- Theme "auto" follows system preference and listens for system theme changes
+- Templates can be loaded in playground via URL query param: `/playground/{modelId}?template={templateId}`

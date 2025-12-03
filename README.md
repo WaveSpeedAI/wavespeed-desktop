@@ -7,10 +7,12 @@ A cross-platform desktop application for running AI models from [WaveSpeedAI](ht
 - **Model Browser**: Browse and search available AI models with fuzzy search, sortable by popularity, name, price, or type
 - **Multi-Tab Playground**: Run predictions with multiple models simultaneously in separate tabs
 - **Dynamic Forms**: Auto-generated forms from model schemas with validation
+- **Templates**: Save and reuse playground configurations as templates for quick access
 - **LoRA Support**: Full support for LoRAs including high-noise and low-noise LoRAs for Wan 2.2 models
 - **History**: View your recent predictions (last 24 hours) with detailed view, download, and copy prediction ID
 - **File Upload**: Support for image, video, and audio file inputs with drag & drop
 - **View Documentation**: Quick access to model documentation from the playground
+- **Theme Support**: Auto (system), dark, and light theme options
 - **Cross-Platform**: Available for Windows, macOS, and Linux
 
 ## Installation

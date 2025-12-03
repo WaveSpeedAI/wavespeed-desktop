@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef, useMemo, memo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useModelsStore, type SortBy } from '@/stores/modelsStore'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
@@ -14,9 +15,62 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Search, PlayCircle, Loader2, RefreshCw, ArrowUp, ArrowDown, ExternalLink, Star } from 'lucide-react'
+import { Search, PlayCircle, Loader2, RefreshCw, ArrowUp, ArrowDown, ExternalLink, Star, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { usePlaygroundStore } from '@/stores/playgroundStore'
+
+// Separate component to prevent parent re-renders during typing
+const SearchInput = memo(function SearchInput({
+  value,
+  onChange,
+  onClear
+}: {
+  value: string
+  onChange: (value: string) => void
+  onClear: () => void
+}) {
+  const [localValue, setLocalValue] = useState(value)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      onChange(localValue)
+    }, 300)
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [localValue, onChange])
+
+  // Sync when external value changes (e.g., clear button from parent)
+  useEffect(() => {
+    setLocalValue(value)
+  }, [value])
+
+  return (
+    <div className="relative flex-1 max-w-md">
+      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <Input
+        placeholder="Search models..."
+        value={localValue}
+        onChange={(e) => setLocalValue(e.target.value)}
+        className={cn("pl-10", localValue && "pr-10")}
+      />
+      {localValue && (
+        <button
+          onClick={() => {
+            setLocalValue('')
+            onClear()
+          }}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          title="Clear search"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      )}
+    </div>
+  )
+})
 
 export function ModelsPage() {
   const navigate = useNavigate()
@@ -40,7 +94,8 @@ export function ModelsPage() {
   const { isLoading: isLoadingApiKey, isValidated, apiKey } = useApiKeyStore()
   const { createTab } = usePlaygroundStore()
 
-  const filteredModels = getFilteredModels()
+  // Memoize filtered models to prevent unnecessary recalculations
+  const filteredModels = useMemo(() => getFilteredModels(), [models, searchQuery, sortBy, sortOrder, showFavoritesOnly])
 
   const handleOpenPlayground = (modelId: string) => {
     navigate(`/playground/${encodeURIComponent(modelId)}`)
@@ -106,15 +161,11 @@ export function ModelsPage() {
 
         {/* Search and Sort */}
         <div className="flex items-center gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search models..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
+          <SearchInput
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onClear={() => setSearchQuery('')}
+          />
 
           {/* Favorites Filter */}
           <Button

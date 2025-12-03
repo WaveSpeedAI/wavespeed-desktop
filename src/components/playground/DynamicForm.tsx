@@ -26,7 +26,8 @@ export function DynamicForm({
   // Extract schema from model
   const fields = useMemo<FormFieldConfig[]>(() => {
     // The API returns schema in api_schema.api_schemas[0].request_schema
-    const apiSchemas = model.api_schema?.api_schemas as Array<{
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const apiSchemas = (model.api_schema as any)?.api_schemas as Array<{
       type: string
       request_schema?: {
         properties?: Record<string, unknown>

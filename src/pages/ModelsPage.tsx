@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Search, PlayCircle, Loader2, RefreshCw, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
+import { Search, PlayCircle, Loader2, RefreshCw, ArrowUp, ArrowDown } from 'lucide-react'
 
 export function ModelsPage() {
   const navigate = useNavigate()

@@ -26,7 +26,7 @@ export interface SchemaProperty {
   }>
   // Extended UI hints
   step?: number
-  'x-ui-component'?: 'slider' | 'uploader'
+  'x-ui-component'?: 'slider' | 'uploader' | 'loras' | 'select'
   'x-accept'?: string
   'x-placeholder'?: string
   nullable?: boolean

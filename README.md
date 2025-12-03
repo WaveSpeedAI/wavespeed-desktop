@@ -4,8 +4,9 @@ A cross-platform desktop application for running AI models from [WaveSpeedAI](ht
 
 ## Features
 
-- **Model Browser**: Browse and search available AI models
+- **Model Browser**: Browse and search available AI models with fuzzy search
 - **Playground**: Run predictions with any model using a dynamic form interface
+- **LoRA Support**: Full support for LoRAs including high-noise and low-noise LoRAs for Wan 2.2 models
 - **History**: View your recent predictions (last 24 hours)
 - **File Upload**: Support for image, video, and audio file inputs
 - **Cross-Platform**: Available for Windows, macOS, and Linux

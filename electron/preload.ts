@@ -30,6 +30,6 @@ if (process.contextIsolated) {
     console.error(error)
   }
 } else {
-  // @ts-expect-error - fallback for non-isolated context
+  // @ts-ignore - fallback for non-isolated context
   window.electronAPI = electronAPI
 }

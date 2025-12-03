@@ -1,0 +1,142 @@
+import { useState, useRef, useEffect, useMemo } from 'react'
+import { ChevronDown, Search, Check } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { fuzzySearch } from '@/lib/fuzzySearch'
+import type { Model } from '@/types/model'
+
+interface ModelSelectorProps {
+  models: Model[]
+  value: string | undefined
+  onChange: (modelId: string) => void
+  disabled?: boolean
+}
+
+export function ModelSelector({ models, value, onChange, disabled }: ModelSelectorProps) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const containerRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
+
+  const selectedModel = models.find(m => m.model_id === value)
+
+  // Filter models using fuzzy search
+  const filteredModels = useMemo(() => {
+    if (!search.trim()) return models
+    const results = fuzzySearch(models, search, (model) => [
+      model.name,
+      model.model_id,
+      model.description || ''
+    ])
+    return results.map(r => r.item)
+  }, [models, search])
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false)
+        setSearch('')
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  // Focus input when opening
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [isOpen])
+
+  // Handle keyboard navigation
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setIsOpen(false)
+      setSearch('')
+    } else if (e.key === 'Enter' && filteredModels.length > 0) {
+      onChange(filteredModels[0].model_id)
+      setIsOpen(false)
+      setSearch('')
+    }
+  }
+
+  const handleSelect = (modelId: string) => {
+    onChange(modelId)
+    setIsOpen(false)
+    setSearch('')
+  }
+
+  return (
+    <div ref={containerRef} className="relative">
+      {/* Trigger button */}
+      <button
+        type="button"
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        disabled={disabled}
+        className={cn(
+          "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
+          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+          "disabled:cursor-not-allowed disabled:opacity-50",
+          isOpen && "ring-2 ring-ring ring-offset-2"
+        )}
+      >
+        <span className={cn(!selectedModel && "text-muted-foreground")}>
+          {selectedModel?.name || "Select a model"}
+        </span>
+        <ChevronDown className={cn("h-4 w-4 opacity-50 transition-transform", isOpen && "rotate-180")} />
+      </button>
+
+      {/* Dropdown */}
+      {isOpen && (
+        <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md animate-in fade-in-0 zoom-in-95">
+          {/* Search input */}
+          <div className="flex items-center border-b px-3">
+            <Search className="h-4 w-4 shrink-0 opacity-50" />
+            <input
+              ref={inputRef}
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Search models..."
+              className="flex h-10 w-full bg-transparent py-3 px-2 text-sm outline-none placeholder:text-muted-foreground"
+            />
+          </div>
+
+          {/* Model list */}
+          <div ref={listRef} className="max-h-60 overflow-auto p-1">
+            {filteredModels.length === 0 ? (
+              <div className="py-6 text-center text-sm text-muted-foreground">
+                No models found
+              </div>
+            ) : (
+              filteredModels.map((model) => (
+                <button
+                  key={model.model_id}
+                  type="button"
+                  onClick={() => handleSelect(model.model_id)}
+                  className={cn(
+                    "relative flex w-full cursor-pointer select-none items-center rounded-sm py-2 px-2 text-sm outline-none",
+                    "hover:bg-accent hover:text-accent-foreground",
+                    "focus:bg-accent focus:text-accent-foreground",
+                    model.model_id === value && "bg-accent"
+                  )}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      model.model_id === value ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  <span className="truncate">{model.name}</span>
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

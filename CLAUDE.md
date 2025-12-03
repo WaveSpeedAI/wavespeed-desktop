@@ -46,8 +46,9 @@ wavespeed-desktop/
 - **`src/stores/apiKeyStore.ts`**: API key persistence and validation
 - **`src/stores/modelsStore.ts`**: Model list caching and filtering
 - **`src/components/playground/DynamicForm.tsx`**: Generates forms from model schemas
+- **`src/components/playground/ModelSelector.tsx`**: Searchable model dropdown with fuzzy search
 - **`src/components/playground/OutputDisplay.tsx`**: Displays prediction results
-- **`src/lib/schemaUtils.ts`**: Utilities for parsing model API schemas
+- **`src/lib/schemaToForm.ts`**: Converts API schema to form field configurations
 
 ## WaveSpeedAI API
 
@@ -114,6 +115,18 @@ npm run build:all    # Build for all platforms
 
 For development, a test API key is available in the plan file.
 
+## Schema to Form Mapping
+
+The app converts API schema properties to form fields using `src/lib/schemaToForm.ts`:
+
+- `x-ui-component: "loras"` → LoRA selector (supports `loras`, `high_noise_loras`, `low_noise_loras`)
+- `x-ui-component: "slider"` → Slider with number input
+- `x-ui-component: "uploader"` → File upload
+- `x-ui-component: "select"` → Dropdown select
+- `type: "string"` with `enum` → Dropdown select
+- `type: "boolean"` → Toggle switch
+- Field names like `image`, `video`, `audio` → File upload (detected by pattern)
+
 ## Important Notes
 
 - The app stores the API key securely using electron-store
@@ -121,3 +134,4 @@ For development, a test API key is available in the plan file.
 - File uploads return a URL that's used as the input parameter
 - Model schemas use OpenAPI format with `x-order-properties` for field ordering
 - macOS builds are unsigned; users must run `xattr -cr "/Applications/WaveSpeed Desktop.app"` before first launch
+- LoRA fields are detected by `x-ui-component: "loras"` or field name matching `loras`

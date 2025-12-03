@@ -122,8 +122,8 @@ function propertyToField(
     }
   }
 
-  // Handle loras field specially
-  if (name.toLowerCase() === 'loras' && prop.type === 'array') {
+  // Handle loras fields (including high_noise_loras, low_noise_loras via x-ui-component)
+  if (prop['x-ui-component'] === 'loras' || (name.toLowerCase() === 'loras' && prop.type === 'array')) {
     return {
       ...baseField,
       type: 'loras',

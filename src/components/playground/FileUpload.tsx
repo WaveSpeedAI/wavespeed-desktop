@@ -15,12 +15,6 @@ interface FileUploadProps {
   placeholder?: string
 }
 
-interface UploadedFile {
-  url: string
-  name: string
-  type: string
-}
-
 export function FileUpload({
   accept,
   multiple = false,
@@ -31,7 +25,6 @@ export function FileUpload({
   placeholder
 }: FileUploadProps) {
   const [isUploading, setIsUploading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({})
   const [error, setError] = useState<string | null>(null)
 
   // Convert value to array for consistent handling
@@ -45,11 +38,8 @@ export function FileUpload({
 
     try {
       const uploadPromises = acceptedFiles.slice(0, maxFiles - urls.length).map(async (file) => {
-        setUploadProgress(prev => ({ ...prev, [file.name]: 0 }))
-
         try {
           const url = await apiClient.uploadFile(file)
-          setUploadProgress(prev => ({ ...prev, [file.name]: 100 }))
           return { url, name: file.name, type: file.type }
         } catch {
           throw new Error(`Failed to upload ${file.name}`)
@@ -68,7 +58,6 @@ export function FileUpload({
       setError(err instanceof Error ? err.message : 'Upload failed')
     } finally {
       setIsUploading(false)
-      setUploadProgress({})
     }
   }, [disabled, maxFiles, urls, multiple, onChange])
 
@@ -96,7 +85,7 @@ export function FileUpload({
     }
   }
 
-  const getFileIcon = (url: string) => {
+  const getFileIcon = () => {
     if (accept.includes('video')) return FileVideo
     if (accept.includes('audio')) return FileAudio
     if (accept.includes('zip') || accept.includes('application')) return FileArchive
@@ -112,7 +101,7 @@ export function FileUpload({
       {urls.length > 0 && (
         <div className="grid gap-2 grid-cols-2 sm:grid-cols-3">
           {urls.map((url, index) => {
-            const FileIcon = getFileIcon(url)
+            const FileIcon = getFileIcon()
             const isImage = accept.includes('image') && url.match(/\.(jpg|jpeg|png|gif|webp)$/i)
 
             return (

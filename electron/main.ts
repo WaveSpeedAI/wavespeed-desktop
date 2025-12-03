@@ -80,11 +80,11 @@ function createWindow(): void {
   })
 
   // Error handling for renderer
-  mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
+  mainWindow.webContents.on('did-fail-load', (_, errorCode, errorDescription, validatedURL) => {
     console.error('Failed to load:', errorCode, errorDescription, validatedURL)
   })
 
-  mainWindow.webContents.on('render-process-gone', (event, details) => {
+  mainWindow.webContents.on('render-process-gone', (_, details) => {
     console.error('Render process gone:', details)
   })
 
@@ -99,7 +99,7 @@ function createWindow(): void {
   }
 
   // Open DevTools with keyboard shortcut (Cmd+Opt+I on Mac, Ctrl+Shift+I on Windows/Linux)
-  mainWindow.webContents.on('before-input-event', (event, input) => {
+  mainWindow.webContents.on('before-input-event', (_, input) => {
     if ((input.meta || input.control) && input.shift && input.key.toLowerCase() === 'i') {
       mainWindow.webContents.toggleDevTools()
     }
@@ -200,9 +200,6 @@ ipcMain.handle('clear-all-data', () => {
 ipcMain.handle('download-file', async (_, url: string, defaultFilename: string) => {
   const mainWindow = BrowserWindow.getFocusedWindow()
   if (!mainWindow) return { success: false, error: 'No focused window' }
-
-  // Get file extension from URL or default filename
-  const extension = defaultFilename.split('.').pop() || 'png'
 
   // Show save dialog
   const result = await dialog.showSaveDialog(mainWindow, {

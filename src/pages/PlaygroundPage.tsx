@@ -5,15 +5,9 @@ import { useModelsStore } from '@/stores/modelsStore'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
 import { DynamicForm } from '@/components/playground/DynamicForm'
 import { OutputDisplay } from '@/components/playground/OutputDisplay'
+import { ModelSelector } from '@/components/playground/ModelSelector'
 import { ApiKeyRequired } from '@/components/shared/ApiKeyRequired'
 import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Play, RotateCcw, Loader2, DollarSign } from 'lucide-react'
 
 export function PlaygroundPage() {
@@ -88,22 +82,12 @@ export function PlaygroundPage() {
         {/* Model Selector */}
         <div className="p-4 border-b">
           <label className="text-sm font-medium mb-2 block">Model</label>
-          <Select
-            value={selectedModel?.model_id || ''}
-            onValueChange={handleModelChange}
+          <ModelSelector
+            models={models}
+            value={selectedModel?.model_id}
+            onChange={handleModelChange}
             disabled={isRunning}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select a model" />
-            </SelectTrigger>
-            <SelectContent>
-              {models.map((model) => (
-                <SelectItem key={model.model_id} value={model.model_id}>
-                  {model.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          />
         </div>
 
         {/* Parameters */}

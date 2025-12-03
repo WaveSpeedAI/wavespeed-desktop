@@ -38,6 +38,7 @@ export interface Model {
   description?: string
   type?: string
   base_price?: number
+  sort_order?: number
   api_schema?: {
     openapi?: string
     info?: Record<string, unknown>

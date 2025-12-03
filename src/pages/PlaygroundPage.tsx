@@ -8,7 +8,9 @@ import { OutputDisplay } from '@/components/playground/OutputDisplay'
 import { ModelSelector } from '@/components/playground/ModelSelector'
 import { ApiKeyRequired } from '@/components/shared/ApiKeyRequired'
 import { Button } from '@/components/ui/button'
-import { Play, RotateCcw, Loader2, DollarSign } from 'lucide-react'
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
+import { Play, RotateCcw, Loader2, DollarSign, Plus, X, BookOpen } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 export function PlaygroundPage() {
   const { modelId } = useParams()
@@ -16,13 +18,12 @@ export function PlaygroundPage() {
   const { models } = useModelsStore()
   const { isLoading: isLoadingApiKey, apiKey } = useApiKeyStore()
   const {
-    selectedModel,
-    formValues,
-    validationErrors,
-    isRunning,
-    currentPrediction,
-    error,
-    outputs,
+    tabs,
+    activeTabId,
+    createTab,
+    closeTab,
+    setActiveTab,
+    getActiveTab,
     setSelectedModel,
     setFormValue,
     setFormValues,
@@ -31,16 +32,31 @@ export function PlaygroundPage() {
     runPrediction,
   } = usePlaygroundStore()
 
-  // Set model from URL param
+  const activeTab = getActiveTab()
+
+  // Create initial tab if none exist
   useEffect(() => {
-    if (modelId && models.length > 0) {
+    if (tabs.length === 0 && models.length > 0) {
+      if (modelId) {
+        const decodedId = decodeURIComponent(modelId)
+        const model = models.find(m => m.model_id === decodedId)
+        createTab(model)
+      } else {
+        createTab()
+      }
+    }
+  }, [tabs.length, models, modelId, createTab])
+
+  // Set model from URL param when navigating
+  useEffect(() => {
+    if (modelId && models.length > 0 && activeTab) {
       const decodedId = decodeURIComponent(modelId)
       const model = models.find(m => m.model_id === decodedId)
-      if (model) {
+      if (model && activeTab.selectedModel?.model_id !== decodedId) {
         setSelectedModel(model)
       }
     }
-  }, [modelId, models, setSelectedModel])
+  }, [modelId, models, activeTab, setSelectedModel])
 
   const handleModelChange = (modelId: string) => {
     const model = models.find(m => m.model_id === modelId)
@@ -62,6 +78,44 @@ export function PlaygroundPage() {
     resetForm()
   }
 
+  const handleNewTab = () => {
+    createTab()
+    navigate('/playground')
+  }
+
+  const handleCloseTab = (e: React.MouseEvent, tabId: string) => {
+    e.stopPropagation()
+    closeTab(tabId)
+  }
+
+  const handleTabClick = (tabId: string) => {
+    setActiveTab(tabId)
+    const tab = tabs.find(t => t.id === tabId)
+    if (tab?.selectedModel) {
+      navigate(`/playground/${encodeURIComponent(tab.selectedModel.model_id)}`)
+    } else {
+      navigate('/playground')
+    }
+  }
+
+  const handleViewDocs = () => {
+    if (activeTab?.selectedModel) {
+      // Transform model_id to docs URL format
+      // e.g., "wavespeed-ai/z-image/turbo" -> "wavespeed-ai/z-image-turbo"
+      const modelId = activeTab.selectedModel.model_id
+      const parts = modelId.split('/')
+      const formattedId = parts.length > 1
+        ? `${parts[0]}/${parts.slice(1).join('-')}`
+        : modelId
+      const docsUrl = `https://wavespeed.ai/docs/docs-api/${formattedId}`
+      if (window.electronAPI?.openExternal) {
+        window.electronAPI.openExternal(docsUrl)
+      } else {
+        window.open(docsUrl, '_blank')
+      }
+    }
+  }
+
   // Show loading state while API key is being loaded from storage
   if (isLoadingApiKey) {
     return (
@@ -76,93 +130,167 @@ export function PlaygroundPage() {
   }
 
   return (
-    <div className="flex h-full">
-      {/* Left Panel - Configuration */}
-      <div className="w-96 flex flex-col border-r">
-        {/* Model Selector */}
-        <div className="p-4 border-b">
-          <label className="text-sm font-medium mb-2 block">Model</label>
-          <ModelSelector
-            models={models}
-            value={selectedModel?.model_id}
-            onChange={handleModelChange}
-            disabled={isRunning}
-          />
-        </div>
-
-        {/* Parameters */}
-        <div className="flex-1 overflow-hidden p-4">
-          {selectedModel ? (
-            <DynamicForm
-              model={selectedModel}
-              values={formValues}
-              validationErrors={validationErrors}
-              onChange={setFormValue}
-              onSetDefaults={handleSetDefaults}
-              onFieldsChange={setFormFields}
-              disabled={isRunning}
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full text-muted-foreground">
-              <p>Select a model to configure parameters</p>
-            </div>
-          )}
-        </div>
-
-        {/* Actions */}
-        <div className="p-4 border-t">
-          {selectedModel?.base_price !== undefined && (
-            <div className="flex items-center gap-1 text-sm text-muted-foreground mb-3">
-              <DollarSign className="h-4 w-4" />
-              <span>${selectedModel.base_price.toFixed(4)} per run</span>
-            </div>
-          )}
-          <div className="flex gap-2">
+    <div className="flex h-full flex-col">
+      {/* Tab Bar */}
+      <div className="border-b bg-muted/30">
+        <ScrollArea className="w-full">
+          <div className="flex items-center">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => handleTabClick(tab.id)}
+                className={cn(
+                  'group relative flex items-center gap-2 border-r px-4 py-2 text-sm transition-colors',
+                  'hover:bg-muted/50',
+                  tab.id === activeTabId
+                    ? 'bg-background border-b-2 border-b-primary'
+                    : 'text-muted-foreground'
+                )}
+              >
+                {tab.isRunning && (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                )}
+                <span className="max-w-[150px] truncate">
+                  {tab.selectedModel?.name || 'New Playground'}
+                </span>
+                <button
+                  onClick={(e) => handleCloseTab(e, tab.id)}
+                  className={cn(
+                    'ml-1 rounded p-0.5 opacity-0 transition-opacity hover:bg-muted',
+                    'group-hover:opacity-100',
+                    tab.id === activeTabId && 'opacity-100'
+                  )}
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </button>
+            ))}
             <Button
-              className="flex-1"
-              onClick={handleRun}
-              disabled={!selectedModel || isRunning}
+              variant="ghost"
+              size="sm"
+              onClick={handleNewTab}
+              className="h-8 px-3"
             >
-              {isRunning ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Running...
-                </>
-              ) : (
-                <>
-                  <Play className="mr-2 h-4 w-4" />
-                  Run
-                </>
-              )}
+              <Plus className="h-4 w-4" />
             </Button>
-            <Button
-              variant="outline"
-              onClick={handleReset}
-              disabled={isRunning}
-            >
-              <RotateCcw className="h-4 w-4" />
+          </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
+      </div>
+
+      {/* Playground Content */}
+      {activeTab ? (
+        <div className="flex flex-1 overflow-hidden">
+          {/* Left Panel - Configuration */}
+          <div className="w-96 flex flex-col border-r">
+            {/* Model Selector */}
+            <div className="p-4 border-b">
+              <label className="text-sm font-medium mb-2 block">Model</label>
+              <ModelSelector
+                models={models}
+                value={activeTab.selectedModel?.model_id}
+                onChange={handleModelChange}
+                disabled={activeTab.isRunning}
+              />
+            </div>
+
+            {/* Parameters */}
+            <div className="flex-1 overflow-hidden p-4">
+              {activeTab.selectedModel ? (
+                <DynamicForm
+                  model={activeTab.selectedModel}
+                  values={activeTab.formValues}
+                  validationErrors={activeTab.validationErrors}
+                  onChange={setFormValue}
+                  onSetDefaults={handleSetDefaults}
+                  onFieldsChange={setFormFields}
+                  disabled={activeTab.isRunning}
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  <p>Select a model to configure parameters</p>
+                </div>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="p-4 border-t">
+              {activeTab.selectedModel?.base_price !== undefined && (
+                <div className="flex items-center gap-1 text-sm text-muted-foreground mb-3">
+                  <DollarSign className="h-4 w-4" />
+                  <span>${activeTab.selectedModel.base_price.toFixed(4)} per run</span>
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Button
+                  className="flex-1"
+                  onClick={handleRun}
+                  disabled={!activeTab.selectedModel || activeTab.isRunning}
+                >
+                  {activeTab.isRunning ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Running...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="mr-2 h-4 w-4" />
+                      Run
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleReset}
+                  disabled={activeTab.isRunning}
+                >
+                  <RotateCcw className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Panel - Output */}
+          <div className="flex-1 flex flex-col">
+            <div className="p-4 border-b flex items-center justify-between">
+              <div>
+                <h2 className="font-semibold">Output</h2>
+                {activeTab.selectedModel && (
+                  <p className="text-sm text-muted-foreground">{activeTab.selectedModel.name}</p>
+                )}
+              </div>
+              {activeTab.selectedModel && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleViewDocs}
+                >
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  View Docs
+                </Button>
+              )}
+            </div>
+            <div className="flex-1 p-4 overflow-hidden">
+              <OutputDisplay
+                prediction={activeTab.currentPrediction}
+                outputs={activeTab.outputs}
+                error={activeTab.error}
+                isLoading={activeTab.isRunning}
+              />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="flex-1 flex items-center justify-center text-muted-foreground">
+          <div className="text-center">
+            <p className="mb-4">No playground tabs open</p>
+            <Button onClick={handleNewTab}>
+              <Plus className="mr-2 h-4 w-4" />
+              New Playground
             </Button>
           </div>
         </div>
-      </div>
-
-      {/* Right Panel - Output */}
-      <div className="flex-1 flex flex-col">
-        <div className="p-4 border-b">
-          <h2 className="font-semibold">Output</h2>
-          {selectedModel && (
-            <p className="text-sm text-muted-foreground">{selectedModel.name}</p>
-          )}
-        </div>
-        <div className="flex-1 p-4 overflow-hidden">
-          <OutputDisplay
-            prediction={currentPrediction}
-            outputs={outputs}
-            error={error}
-            isLoading={isRunning}
-          />
-        </div>
-      </div>
+      )}
     </div>
   )
 }

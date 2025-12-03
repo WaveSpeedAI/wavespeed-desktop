@@ -8,6 +8,12 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -22,7 +28,10 @@ import {
   Image,
   Video,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Download,
+  Copy,
+  Check
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -34,7 +43,24 @@ export function HistoryPage() {
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [selectedItem, setSelectedItem] = useState<HistoryItem | null>(null)
+  const [copiedId, setCopiedId] = useState(false)
   const pageSize = 20
+
+  const handleCopyId = async (id: string) => {
+    await navigator.clipboard.writeText(id)
+    setCopiedId(true)
+    setTimeout(() => setCopiedId(false), 2000)
+  }
+
+  const handleDownload = async (url: string) => {
+    const filename = url.split('/').pop() || 'output'
+    if (window.electronAPI?.downloadFile) {
+      await window.electronAPI.downloadFile(url, filename)
+    } else {
+      window.open(url, '_blank')
+    }
+  }
 
   const fetchHistory = async () => {
     if (!isValidated) return
@@ -179,7 +205,11 @@ export function HistoryPage() {
                 const hasPreview = item.outputs && item.outputs.length > 0
 
                 return (
-                  <Card key={item.id} className="overflow-hidden">
+                  <Card
+                    key={item.id}
+                    className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+                    onClick={() => setSelectedItem(item)}
+                  >
                     {/* Preview */}
                     <div className="aspect-video bg-muted relative">
                       {hasPreview && item.outputs![0].match(/\.(jpg|jpeg|png|gif|webp)/i) ? (
@@ -246,6 +276,100 @@ export function HistoryPage() {
           </div>
         </div>
       )}
+
+      {/* Detail Dialog */}
+      <Dialog open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Generation Details</DialogTitle>
+          </DialogHeader>
+          {selectedItem && (
+            <div className="flex-1 overflow-y-auto space-y-4">
+              {/* Preview */}
+              {selectedItem.outputs && selectedItem.outputs.length > 0 && (
+                <div className="space-y-2">
+                  {selectedItem.outputs.map((output, index) => (
+                    <div key={index} className="relative group">
+                      {output.match(/\.(jpg|jpeg|png|gif|webp)/i) ? (
+                        <img
+                          src={output}
+                          alt={`Output ${index + 1}`}
+                          className="w-full rounded-lg"
+                        />
+                      ) : output.match(/\.(mp4|webm|mov)/i) ? (
+                        <video
+                          src={output}
+                          controls
+                          className="w-full rounded-lg"
+                        />
+                      ) : (
+                        <a
+                          href={output}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline break-all"
+                        >
+                          {output}
+                        </a>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => handleDownload(output)}
+                      >
+                        <Download className="h-4 w-4 mr-1" />
+                        Download
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Details */}
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Model</p>
+                  <p className="font-medium">{selectedItem.model}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Status</p>
+                  <div>{getStatusBadge(selectedItem.status)}</div>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Created</p>
+                  <p className="font-medium">{formatDate(selectedItem.created_at)}</p>
+                </div>
+                {selectedItem.execution_time && (
+                  <div>
+                    <p className="text-muted-foreground">Execution Time</p>
+                    <p className="font-medium">{(selectedItem.execution_time / 1000).toFixed(2)}s</p>
+                  </div>
+                )}
+                <div className="col-span-2">
+                  <p className="text-muted-foreground">Prediction ID</p>
+                  <div className="flex items-center gap-2">
+                    <code className="text-xs bg-muted px-2 py-1 rounded flex-1 truncate">
+                      {selectedItem.id}
+                    </code>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleCopyId(selectedItem.id)}
+                    >
+                      {copiedId ? (
+                        <Check className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

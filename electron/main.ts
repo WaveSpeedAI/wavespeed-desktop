@@ -196,6 +196,11 @@ ipcMain.handle('clear-all-data', () => {
   return true
 })
 
+// Open external URL handler
+ipcMain.handle('open-external', async (_, url: string) => {
+  await shell.openExternal(url)
+})
+
 // Download file handler
 ipcMain.handle('download-file', async (_, url: string, defaultFilename: string) => {
   const mainWindow = BrowserWindow.getFocusedWindow()

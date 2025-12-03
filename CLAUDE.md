@@ -43,11 +43,13 @@ wavespeed-desktop/
 ## Key Files
 
 - **`src/api/client.ts`**: API client with all WaveSpeedAI endpoints
-- **`src/stores/apiKeyStore.ts`**: API key persistence and validation
-- **`src/stores/modelsStore.ts`**: Model list caching and filtering
+- **`src/stores/apiKeyStore.ts`**: API key persistence and validation (electron-store + localStorage fallback)
+- **`src/stores/modelsStore.ts`**: Model list caching, filtering, and sorting (supports sort_order/popularity)
+- **`src/stores/playgroundStore.ts`**: Multi-tab playground state management
 - **`src/components/playground/DynamicForm.tsx`**: Generates forms from model schemas
 - **`src/components/playground/ModelSelector.tsx`**: Searchable model dropdown with fuzzy search
-- **`src/components/playground/OutputDisplay.tsx`**: Displays prediction results
+- **`src/components/playground/OutputDisplay.tsx`**: Displays prediction results (images, videos, text)
+- **`src/pages/HistoryPage.tsx`**: Prediction history with detail dialog
 - **`src/lib/schemaToForm.ts`**: Converts API schema to form field configurations
 
 ## WaveSpeedAI API
@@ -103,6 +105,12 @@ npm run build:all    # Build for all platforms
 1. Build config is in `package.json` under `"build"` key
 2. GitHub Actions in `.github/workflows/`
 
+### Adding a new UI component (shadcn/ui pattern)
+1. Create component in `src/components/ui/` following the existing pattern
+2. Use `@radix-ui/*` primitives (already installed: dialog, select, dropdown-menu, etc.)
+3. Use `cn()` for className merging
+4. Export all sub-components
+
 ## Code Style
 
 - Use TypeScript strict mode
@@ -129,9 +137,13 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 
 ## Important Notes
 
-- The app stores the API key securely using electron-store
-- History is limited to last 24 hours
+- The app stores the API key securely using electron-store (with localStorage fallback for browser dev mode)
+- History is limited to last 24 hours with 20 items per page
 - File uploads return a URL that's used as the input parameter
 - Model schemas use OpenAPI format with `x-order-properties` for field ordering
 - macOS builds are unsigned; users must run `xattr -cr "/Applications/WaveSpeed Desktop.app"` before first launch
 - LoRA fields are detected by `x-ui-component: "loras"` or field name matching `loras`
+- Models are sorted by `sort_order` (popularity) by default, with higher values appearing first
+- Documentation URLs follow the pattern: `https://wavespeed.ai/docs/docs-api/{owner}/{model-name}` where slashes after the owner become dashes
+- The playground supports multiple tabs, each with its own model and form state
+- IPC handlers in `electron/main.ts` include: `get-api-key`, `set-api-key`, `download-file`, `open-external`

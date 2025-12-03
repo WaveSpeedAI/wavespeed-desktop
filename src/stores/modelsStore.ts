@@ -3,7 +3,7 @@ import { apiClient } from '@/api/client'
 import type { Model } from '@/types/model'
 import { fuzzySearch } from '@/lib/fuzzySearch'
 
-export type SortBy = 'name' | 'price' | 'type'
+export type SortBy = 'name' | 'price' | 'type' | 'sort_order'
 export type SortOrder = 'asc' | 'desc'
 
 interface ModelsState {
@@ -30,8 +30,8 @@ export const useModelsStore = create<ModelsState>((set, get) => ({
   error: null,
   searchQuery: '',
   selectedType: null,
-  sortBy: 'name',
-  sortOrder: 'asc',
+  sortBy: 'sort_order',
+  sortOrder: 'desc',
 
   fetchModels: async () => {
     set({ isLoading: true, error: null })
@@ -97,6 +97,9 @@ export const useModelsStore = create<ModelsState>((set, get) => ({
           break
         case 'type':
           comparison = (a.type || '').localeCompare(b.type || '')
+          break
+        case 'sort_order':
+          comparison = (a.sort_order ?? 0) - (b.sort_order ?? 0)
           break
       }
       return sortOrder === 'asc' ? comparison : -comparison

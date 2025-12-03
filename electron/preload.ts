@@ -20,7 +20,8 @@ const electronAPI = {
   setSettings: (settings: Partial<Settings>): Promise<boolean> => ipcRenderer.invoke('set-settings', settings),
   clearAllData: (): Promise<boolean> => ipcRenderer.invoke('clear-all-data'),
   downloadFile: (url: string, defaultFilename: string): Promise<DownloadResult> =>
-    ipcRenderer.invoke('download-file', url, defaultFilename)
+    ipcRenderer.invoke('download-file', url, defaultFilename),
+  openExternal: (url: string): Promise<void> => ipcRenderer.invoke('open-external', url)
 }
 
 if (process.contextIsolated) {

@@ -4,11 +4,13 @@ A cross-platform desktop application for running AI models from [WaveSpeedAI](ht
 
 ## Features
 
-- **Model Browser**: Browse and search available AI models with fuzzy search
-- **Playground**: Run predictions with any model using a dynamic form interface
+- **Model Browser**: Browse and search available AI models with fuzzy search, sortable by popularity, name, price, or type
+- **Multi-Tab Playground**: Run predictions with multiple models simultaneously in separate tabs
+- **Dynamic Forms**: Auto-generated forms from model schemas with validation
 - **LoRA Support**: Full support for LoRAs including high-noise and low-noise LoRAs for Wan 2.2 models
-- **History**: View your recent predictions (last 24 hours)
-- **File Upload**: Support for image, video, and audio file inputs
+- **History**: View your recent predictions (last 24 hours) with detailed view, download, and copy prediction ID
+- **File Upload**: Support for image, video, and audio file inputs with drag & drop
+- **View Documentation**: Quick access to model documentation from the playground
 - **Cross-Platform**: Available for Windows, macOS, and Linux
 
 ## Installation
@@ -80,22 +82,22 @@ npm run dev
 ```
 wavespeed-desktop/
 ├── electron/           # Electron main process
-│   ├── main.ts        # Main process entry
-│   └── preload.ts     # Preload script (IPC bridge)
+│   ├── main.ts         # Main process entry
+│   └── preload.ts      # Preload script (IPC bridge)
 ├── src/
-│   ├── api/           # API client
-│   ├── components/    # React components
-│   │   ├── layout/    # Layout components
-│   │   ├── playground/# Playground components
-│   │   ├── shared/    # Shared components
-│   │   └── ui/        # shadcn/ui components
-│   ├── hooks/         # Custom React hooks
-│   ├── lib/           # Utility functions
-│   ├── pages/         # Page components
-│   ├── stores/        # Zustand stores
-│   └── types/         # TypeScript types
-├── .github/workflows/ # GitHub Actions
-└── build/             # Build resources
+│   ├── api/            # API client
+│   ├── components/     # React components
+│   │   ├── layout/     # Layout components
+│   │   ├── playground/ # Playground components
+│   │   ├── shared/     # Shared components
+│   │   └── ui/         # shadcn/ui components
+│   ├── hooks/          # Custom React hooks
+│   ├── lib/            # Utility functions
+│   ├── pages/          # Page components
+│   ├── stores/         # Zustand stores
+│   └── types/          # TypeScript types
+├── .github/workflows/  # GitHub Actions
+└── build/              # Build resources
 ```
 
 ## Tech Stack

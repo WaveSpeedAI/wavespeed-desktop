@@ -1,6 +1,8 @@
 import { create } from 'zustand'
 import { apiClient } from '@/api/client'
 
+const API_KEY_STORAGE_KEY = 'wavespeed_api_key'
+
 interface ApiKeyState {
   apiKey: string
   isLoading: boolean
@@ -9,6 +11,26 @@ interface ApiKeyState {
   setApiKey: (apiKey: string) => Promise<void>
   loadApiKey: () => Promise<void>
   validateApiKey: () => Promise<boolean>
+}
+
+// Helper to save API key (electron-store or localStorage fallback)
+async function saveApiKey(apiKey: string): Promise<void> {
+  if (window.electronAPI) {
+    await window.electronAPI.setApiKey(apiKey)
+  } else {
+    // Fallback to localStorage for browser/dev mode
+    localStorage.setItem(API_KEY_STORAGE_KEY, apiKey)
+  }
+}
+
+// Helper to load API key (electron-store or localStorage fallback)
+async function loadStoredApiKey(): Promise<string | null> {
+  if (window.electronAPI) {
+    return await window.electronAPI.getApiKey()
+  } else {
+    // Fallback to localStorage for browser/dev mode
+    return localStorage.getItem(API_KEY_STORAGE_KEY)
+  }
 }
 
 export const useApiKeyStore = create<ApiKeyState>((set, get) => ({
@@ -21,10 +43,8 @@ export const useApiKeyStore = create<ApiKeyState>((set, get) => ({
     apiClient.setApiKey(apiKey)
     set({ apiKey, isValidated: false })
 
-    // Save to electron store
-    if (window.electronAPI) {
-      await window.electronAPI.setApiKey(apiKey)
-    }
+    // Save to storage
+    await saveApiKey(apiKey)
 
     // Validate the new key
     await get().validateApiKey()
@@ -33,13 +53,11 @@ export const useApiKeyStore = create<ApiKeyState>((set, get) => ({
   loadApiKey: async () => {
     set({ isLoading: true })
     try {
-      if (window.electronAPI) {
-        const storedKey = await window.electronAPI.getApiKey()
-        if (storedKey) {
-          apiClient.setApiKey(storedKey)
-          set({ apiKey: storedKey })
-          await get().validateApiKey()
-        }
+      const storedKey = await loadStoredApiKey()
+      if (storedKey) {
+        apiClient.setApiKey(storedKey)
+        set({ apiKey: storedKey })
+        await get().validateApiKey()
       }
     } catch (error) {
       console.error('Failed to load API key:', error)

@@ -14,7 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Search, PlayCircle, Loader2, RefreshCw, ArrowUp, ArrowDown } from 'lucide-react'
+import { Search, PlayCircle, Loader2, RefreshCw, ArrowUp, ArrowDown, ExternalLink } from 'lucide-react'
+import { usePlaygroundStore } from '@/stores/playgroundStore'
 
 export function ModelsPage() {
   const navigate = useNavigate()
@@ -28,13 +29,22 @@ export function ModelsPage() {
     sortBy,
     sortOrder,
     setSortBy,
-    toggleSortOrder
+    toggleSortOrder,
+    models
   } = useModelsStore()
   const { isLoading: isLoadingApiKey, isValidated, apiKey } = useApiKeyStore()
+  const { createTab } = usePlaygroundStore()
 
   const filteredModels = getFilteredModels()
 
   const handleOpenPlayground = (modelId: string) => {
+    navigate(`/playground/${encodeURIComponent(modelId)}`)
+  }
+
+  const handleOpenInNewTab = (e: React.MouseEvent, modelId: string) => {
+    e.stopPropagation()
+    const model = models.find(m => m.model_id === modelId)
+    createTab(model)
     navigate(`/playground/${encodeURIComponent(modelId)}`)
   }
 
@@ -100,10 +110,11 @@ export function ModelsPage() {
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Sort by:</span>
             <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortBy)}>
-              <SelectTrigger className="w-[120px]">
+              <SelectTrigger className="w-[130px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="sort_order">Popularity</SelectItem>
                 <SelectItem value="name">Name</SelectItem>
                 <SelectItem value="price">Price</SelectItem>
                 <SelectItem value="type">Type</SelectItem>
@@ -175,10 +186,20 @@ export function ModelsPage() {
                           ${model.base_price.toFixed(4)}/run
                         </span>
                       )}
-                      <Button size="sm" variant="ghost">
-                        <PlayCircle className="mr-1 h-4 w-4" />
-                        Try it
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button size="sm" variant="ghost">
+                          <PlayCircle className="mr-1 h-4 w-4" />
+                          Open
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={(e) => handleOpenInNewTab(e, model.model_id)}
+                          title="Open in new tab"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

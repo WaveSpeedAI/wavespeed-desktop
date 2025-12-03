@@ -14,7 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Search, PlayCircle, Loader2, RefreshCw, ArrowUp, ArrowDown, ExternalLink } from 'lucide-react'
+import { Search, PlayCircle, Loader2, RefreshCw, ArrowUp, ArrowDown, ExternalLink, Star } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { usePlaygroundStore } from '@/stores/playgroundStore'
 
 export function ModelsPage() {
@@ -30,7 +31,11 @@ export function ModelsPage() {
     sortOrder,
     setSortBy,
     toggleSortOrder,
-    models
+    models,
+    toggleFavorite,
+    isFavorite,
+    showFavoritesOnly,
+    setShowFavoritesOnly
   } = useModelsStore()
   const { isLoading: isLoadingApiKey, isValidated, apiKey } = useApiKeyStore()
   const { createTab } = usePlaygroundStore()
@@ -46,6 +51,11 @@ export function ModelsPage() {
     const model = models.find(m => m.model_id === modelId)
     createTab(model)
     navigate(`/playground/${encodeURIComponent(modelId)}`)
+  }
+
+  const handleToggleFavorite = (e: React.MouseEvent, modelId: string) => {
+    e.stopPropagation()
+    toggleFavorite(modelId)
   }
 
   // Show loading state while API key is being loaded from storage
@@ -105,6 +115,17 @@ export function ModelsPage() {
               className="pl-10"
             />
           </div>
+
+          {/* Favorites Filter */}
+          <Button
+            variant={showFavoritesOnly ? "default" : "outline"}
+            size="sm"
+            onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+            title={showFavoritesOnly ? "Show all models" : "Show favorites only"}
+          >
+            <Star className={cn("h-4 w-4 mr-2", showFavoritesOnly && "fill-current")} />
+            Favorites
+          </Button>
 
           {/* Sort Controls */}
           <div className="flex items-center gap-2">
@@ -187,6 +208,17 @@ export function ModelsPage() {
                         </span>
                       )}
                       <div className="flex gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={(e) => handleToggleFavorite(e, model.model_id)}
+                          title={isFavorite(model.model_id) ? "Remove from favorites" : "Add to favorites"}
+                        >
+                          <Star className={cn(
+                            "h-4 w-4",
+                            isFavorite(model.model_id) && "fill-yellow-400 text-yellow-400"
+                          )} />
+                        </Button>
                         <Button size="sm" variant="ghost">
                           <PlayCircle className="mr-1 h-4 w-4" />
                           Open

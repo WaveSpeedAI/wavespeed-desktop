@@ -6,6 +6,28 @@ import { fuzzySearch } from '@/lib/fuzzySearch'
 export type SortBy = 'name' | 'price' | 'type' | 'sort_order'
 export type SortOrder = 'asc' | 'desc'
 
+const FAVORITES_STORAGE_KEY = 'wavespeed_favorites'
+
+function loadFavorites(): Set<string> {
+  try {
+    const stored = localStorage.getItem(FAVORITES_STORAGE_KEY)
+    if (stored) {
+      return new Set(JSON.parse(stored))
+    }
+  } catch (e) {
+    console.error('Failed to load favorites:', e)
+  }
+  return new Set()
+}
+
+function saveFavorites(favorites: Set<string>) {
+  try {
+    localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify([...favorites]))
+  } catch (e) {
+    console.error('Failed to save favorites:', e)
+  }
+}
+
 interface ModelsState {
   models: Model[]
   isLoading: boolean
@@ -14,12 +36,17 @@ interface ModelsState {
   selectedType: string | null
   sortBy: SortBy
   sortOrder: SortOrder
+  favorites: Set<string>
+  showFavoritesOnly: boolean
   fetchModels: () => Promise<void>
   setSearchQuery: (query: string) => void
   setSelectedType: (type: string | null) => void
   setSortBy: (sortBy: SortBy) => void
   setSortOrder: (sortOrder: SortOrder) => void
   toggleSortOrder: () => void
+  toggleFavorite: (modelId: string) => void
+  isFavorite: (modelId: string) => boolean
+  setShowFavoritesOnly: (show: boolean) => void
   getFilteredModels: () => Model[]
   getModelById: (modelId: string) => Model | undefined
 }
@@ -32,6 +59,8 @@ export const useModelsStore = create<ModelsState>((set, get) => ({
   selectedType: null,
   sortBy: 'sort_order',
   sortOrder: 'desc',
+  favorites: loadFavorites(),
+  showFavoritesOnly: false,
 
   fetchModels: async () => {
     set({ isLoading: true, error: null })
@@ -66,13 +95,38 @@ export const useModelsStore = create<ModelsState>((set, get) => ({
     set((state) => ({ sortOrder: state.sortOrder === 'asc' ? 'desc' : 'asc' }))
   },
 
-  getFilteredModels: () => {
-    const { models, searchQuery, selectedType, sortBy, sortOrder } = get()
+  toggleFavorite: (modelId: string) => {
+    const { favorites } = get()
+    const newFavorites = new Set(favorites)
+    if (newFavorites.has(modelId)) {
+      newFavorites.delete(modelId)
+    } else {
+      newFavorites.add(modelId)
+    }
+    saveFavorites(newFavorites)
+    set({ favorites: newFavorites })
+  },
 
-    // First filter by type if selected
-    let filtered = selectedType
-      ? models.filter(m => m.type === selectedType)
+  isFavorite: (modelId: string) => {
+    return get().favorites.has(modelId)
+  },
+
+  setShowFavoritesOnly: (show: boolean) => {
+    set({ showFavoritesOnly: show })
+  },
+
+  getFilteredModels: () => {
+    const { models, searchQuery, selectedType, sortBy, sortOrder, favorites, showFavoritesOnly } = get()
+
+    // First filter by favorites if enabled
+    let filtered = showFavoritesOnly
+      ? models.filter(m => favorites.has(m.model_id))
       : [...models]
+
+    // Then filter by type if selected
+    if (selectedType) {
+      filtered = filtered.filter(m => m.type === selectedType)
+    }
 
     // Then apply fuzzy search
     if (searchQuery.trim()) {

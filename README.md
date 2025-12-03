@@ -5,6 +5,7 @@ A cross-platform desktop application for running AI models from [WaveSpeedAI](ht
 ## Features
 
 - **Model Browser**: Browse and search available AI models with fuzzy search, sortable by popularity, name, price, or type
+- **Favorites**: Star your favorite models for quick access with a dedicated filter
 - **Multi-Tab Playground**: Run predictions with multiple models simultaneously in separate tabs
 - **Dynamic Forms**: Auto-generated forms from model schemas with validation
 - **Templates**: Save and reuse playground configurations as templates for quick access

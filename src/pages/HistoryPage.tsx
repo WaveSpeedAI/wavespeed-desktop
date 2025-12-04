@@ -107,7 +107,8 @@ export function HistoryPage() {
   }
 
   const getPreviewIcon = (item: HistoryItem) => {
-    if (item.outputs?.[0]?.includes('video')) {
+    const firstOutput = item.outputs?.[0]
+    if (typeof firstOutput === 'string' && firstOutput.match(/\.(mp4|webm|mov)/i)) {
       return Video
     }
     return Image

@@ -145,7 +145,7 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - History is limited to last 24 hours with 20 items per page
 - File uploads return a URL that's used as the input parameter
 - Model schemas use OpenAPI format with `x-order-properties` for field ordering
-- macOS builds are unsigned; users must run `xattr -cr "/Applications/WaveSpeed Desktop.app"` before first launch
+- macOS builds are signed with Developer ID certificate for Gatekeeper compatibility
 - LoRA fields are detected by `x-ui-component: "loras"` or field name matching `loras`
 - Models are sorted by `sort_order` (popularity) by default, with higher values appearing first
 - Documentation URLs follow the pattern: `https://wavespeed.ai/docs/docs-api/{owner}/{model-name}` where slashes after the owner become dashes
@@ -155,3 +155,6 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - Theme preference is stored in localStorage with key `wavespeed_theme` (auto/dark/light)
 - Theme "auto" follows system preference and listens for system theme changes
 - Templates can be loaded in playground via URL query param: `/playground/{modelId}?template={templateId}`
+- Auto-update uses electron-updater with support for stable and nightly channels
+- Update settings stored in electron-store: `updateChannel` (stable/nightly) and `autoCheckUpdate` (boolean)
+- IPC handlers for updates: `check-for-updates`, `download-update`, `install-update`, `set-update-channel`

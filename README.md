@@ -16,6 +16,7 @@ A cross-platform desktop application for running AI models from [WaveSpeedAI](ht
 - **File Upload**: Support for image, video, and audio file inputs with drag & drop
 - **View Documentation**: Quick access to model documentation from the playground
 - **Theme Support**: Auto (system), dark, and light theme options
+- **Auto Updates**: Automatic update checking with stable and nightly channels
 - **Cross-Platform**: Available for Windows, macOS, and Linux
 
 ## Installation

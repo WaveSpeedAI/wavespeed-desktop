@@ -2,8 +2,11 @@ import { useState } from 'react'
 import type { PredictionResult } from '@/types/prediction'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Download, ExternalLink, Copy, Check, AlertTriangle } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+} from '@/components/ui/dialog'
+import { Download, ExternalLink, Copy, Check, AlertTriangle, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface OutputDisplayProps {
@@ -15,6 +18,7 @@ interface OutputDisplayProps {
 
 export function OutputDisplay({ prediction, outputs, error, isLoading }: OutputDisplayProps) {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
+  const [fullscreenMedia, setFullscreenMedia] = useState<{ url: string; type: 'image' | 'video' } | null>(null)
 
   const handleDownload = async (url: string, index: number) => {
     const extension = getExtensionFromUrl(url) || 'png'
@@ -106,95 +110,131 @@ export function OutputDisplay({ prediction, outputs, error, isLoading }: OutputD
   }
 
   return (
-    <ScrollArea className="h-full">
-      <div className="space-y-4 p-1">
-        {/* Timing info */}
-        {prediction?.timings?.inference && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>Generated in {(prediction.timings.inference / 1000).toFixed(2)}s</span>
-            {prediction.has_nsfw_contents?.some(Boolean) && (
-              <Badge variant="warning">NSFW detected</Badge>
-            )}
-          </div>
-        )}
+    <div className="h-full flex flex-col">
+      {/* Outputs - fill remaining space */}
+      <div className="flex-1 min-h-0 flex flex-col gap-4">
+        {outputs.map((output, index) => {
+          const isImage = isImageUrl(output)
+          const isVideo = isVideoUrl(output)
 
-        {/* Outputs */}
-        <div className="grid gap-4">
-          {outputs.map((output, index) => {
-            const isImage = isImageUrl(output)
-            const isVideo = isVideoUrl(output)
+          return (
+            <div
+              key={index}
+              className="relative group rounded-lg border overflow-hidden bg-muted/30 flex-1 min-h-0 flex items-center justify-center"
+            >
+              {isImage && (
+                <img
+                  src={output}
+                  alt={`Output ${index + 1}`}
+                  className="max-w-full max-h-full object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                  loading="lazy"
+                  onClick={() => setFullscreenMedia({ url: output, type: 'image' })}
+                />
+              )}
 
-            return (
-              <div
-                key={index}
-                className="relative group rounded-lg border overflow-hidden bg-muted/30"
-              >
-                {isImage && (
-                  <img
-                    src={output}
-                    alt={`Output ${index + 1}`}
-                    className="w-full h-auto"
-                    loading="lazy"
-                  />
-                )}
+              {isVideo && (
+                <video
+                  src={output}
+                  controls
+                  className="max-w-full max-h-full object-contain cursor-pointer"
+                  preload="metadata"
+                  onClick={(e) => {
+                    // Only open fullscreen if not clicking on controls
+                    if ((e.target as HTMLVideoElement).paused) {
+                      setFullscreenMedia({ url: output, type: 'video' })
+                    }
+                  }}
+                />
+              )}
 
-                {isVideo && (
-                  <video
-                    src={output}
-                    controls
-                    className="w-full h-auto"
-                    preload="metadata"
-                  />
-                )}
+              {!isImage && !isVideo && (
+                <div className="p-4">
+                  <p className="text-sm break-all">{output}</p>
+                </div>
+              )}
 
-                {!isImage && !isVideo && (
-                  <div className="p-4">
-                    <p className="text-sm break-all">{output}</p>
-                  </div>
-                )}
-
-                {/* Actions overlay */}
-                <div className={cn(
-                  "absolute top-2 right-2 flex gap-1 transition-opacity",
-                  "opacity-0 group-hover:opacity-100"
-                )}>
-                  <Button
-                    size="icon"
-                    variant="secondary"
-                    className="h-8 w-8"
-                    onClick={() => handleCopy(output, index)}
-                  >
-                    {copiedIndex === index ? (
-                      <Check className="h-4 w-4" />
-                    ) : (
-                      <Copy className="h-4 w-4" />
-                    )}
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="secondary"
-                    className="h-8 w-8"
-                    onClick={() => handleOpenExternal(output)}
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                  </Button>
-                  {(isImage || isVideo) && (
-                    <Button
-                      size="icon"
-                      variant="secondary"
-                      className="h-8 w-8"
-                      onClick={() => handleDownload(output, index)}
-                    >
-                      <Download className="h-4 w-4" />
-                    </Button>
+              {/* Timing overlay */}
+              {prediction?.timings?.inference && (
+                <div className="absolute bottom-2 left-2 flex items-center gap-1">
+                  <Badge variant="secondary" className="text-xs bg-black/60 text-white border-0">
+                    {(prediction.timings.inference / 1000).toFixed(2)}s
+                  </Badge>
+                  {prediction.has_nsfw_contents?.some(Boolean) && (
+                    <Badge variant="destructive" className="text-xs">NSFW</Badge>
                   )}
                 </div>
+              )}
+
+              {/* Actions overlay */}
+              <div className={cn(
+                "absolute top-2 right-2 flex gap-1 transition-opacity",
+                "opacity-0 group-hover:opacity-100"
+              )}>
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  className="h-8 w-8"
+                  onClick={() => handleCopy(output, index)}
+                >
+                  {copiedIndex === index ? (
+                    <Check className="h-4 w-4" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                </Button>
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  className="h-8 w-8"
+                  onClick={() => handleOpenExternal(output)}
+                >
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+                {(isImage || isVideo) && (
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    className="h-8 w-8"
+                    onClick={() => handleDownload(output, index)}
+                  >
+                    <Download className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
-            )
-          })}
-        </div>
+            </div>
+          )
+        })}
       </div>
-    </ScrollArea>
+
+      {/* Fullscreen Preview Dialog */}
+      <Dialog open={!!fullscreenMedia} onOpenChange={() => setFullscreenMedia(null)}>
+        <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 border-0 bg-black flex items-center justify-center">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-4 right-4 z-50 text-white hover:bg-white/20 h-10 w-10"
+            onClick={() => setFullscreenMedia(null)}
+          >
+            <X className="h-6 w-6" />
+          </Button>
+          {fullscreenMedia?.type === 'image' && (
+            <img
+              src={fullscreenMedia.url}
+              alt="Fullscreen preview"
+              className="max-w-full max-h-full object-contain"
+            />
+          )}
+          {fullscreenMedia?.type === 'video' && (
+            <video
+              src={fullscreenMedia.url}
+              controls
+              autoPlay
+              className="max-w-full max-h-full object-contain"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
   )
 }
 

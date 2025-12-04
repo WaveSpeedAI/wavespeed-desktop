@@ -59,7 +59,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     <div
       className={cn(
         "flex h-full flex-col border-r bg-background transition-all duration-300",
-        collapsed ? "w-16" : "w-64"
+        collapsed ? "w-16" : "w-48"
       )}
     >
       {/* Logo */}
@@ -102,7 +102,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                     )
                   }
                 >
-                  <item.icon style={{ width: 16, height: 16, flexShrink: 0 }} />
+                  <item.icon style={{ width: 20, height: 20, flexShrink: 0 }} />
                   {!collapsed && <span>{item.title}</span>}
                 </NavLink>
               </TooltipTrigger>
@@ -140,7 +140,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                     )
                   }
                 >
-                  <item.icon style={{ width: 16, height: 16, flexShrink: 0 }} />
+                  <item.icon style={{ width: 20, height: 20, flexShrink: 0 }} />
                   {!collapsed && <span>{item.title}</span>}
                 </NavLink>
               </TooltipTrigger>

@@ -322,11 +322,11 @@ export function PlaygroundPage() {
 
           {/* Right Panel - Output */}
           <div className="flex-1 flex flex-col">
-            <div className="p-4 border-b flex items-center justify-between">
-              <div>
+            <div className="px-4 py-2 border-b flex items-center justify-between">
+              <div className="flex items-center gap-2">
                 <h2 className="font-semibold">Output</h2>
                 {activeTab.selectedModel && (
-                  <p className="text-sm text-muted-foreground">{activeTab.selectedModel.name}</p>
+                  <span className="text-sm text-muted-foreground">· {activeTab.selectedModel.name}</span>
                 )}
               </div>
               {activeTab.selectedModel && (

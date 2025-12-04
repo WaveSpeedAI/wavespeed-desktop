@@ -213,7 +213,7 @@ export function HistoryPage() {
                   >
                     {/* Preview */}
                     <div className="aspect-video bg-muted relative">
-                      {hasPreview && item.outputs![0].match(/\.(jpg|jpeg|png|gif|webp)/i) ? (
+                      {hasPreview && typeof item.outputs![0] === 'string' && item.outputs![0].match(/\.(jpg|jpeg|png|gif|webp)/i) ? (
                         <img
                           src={item.outputs![0]}
                           alt="Preview"
@@ -289,41 +289,47 @@ export function HistoryPage() {
               {/* Preview */}
               {selectedItem.outputs && selectedItem.outputs.length > 0 && (
                 <div className="space-y-2">
-                  {selectedItem.outputs.map((output, index) => (
-                    <div key={index} className="relative group">
-                      {output.match(/\.(jpg|jpeg|png|gif|webp)/i) ? (
-                        <img
-                          src={output}
-                          alt={`Output ${index + 1}`}
-                          className="w-full rounded-lg"
-                        />
-                      ) : output.match(/\.(mp4|webm|mov)/i) ? (
-                        <video
-                          src={output}
-                          controls
-                          className="w-full rounded-lg"
-                        />
-                      ) : (
-                        <a
-                          href={output}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline break-all"
+                  {selectedItem.outputs.map((output, index) => {
+                    const outputStr = typeof output === 'string' ? output : String(output)
+                    const isImage = outputStr.match(/\.(jpg|jpeg|png|gif|webp)/i)
+                    const isVideo = outputStr.match(/\.(mp4|webm|mov)/i)
+
+                    return (
+                      <div key={index} className="relative group">
+                        {isImage ? (
+                          <img
+                            src={outputStr}
+                            alt={`Output ${index + 1}`}
+                            className="w-full rounded-lg"
+                          />
+                        ) : isVideo ? (
+                          <video
+                            src={outputStr}
+                            controls
+                            className="w-full rounded-lg"
+                          />
+                        ) : (
+                          <a
+                            href={outputStr}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline break-all"
+                          >
+                            {outputStr}
+                          </a>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => handleDownload(outputStr)}
                         >
-                          {output}
-                        </a>
-                      )}
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => handleDownload(output)}
-                      >
-                        <Download className="h-4 w-4 mr-1" />
-                        Download
-                      </Button>
-                    </div>
-                  ))}
+                          <Download className="h-4 w-4 mr-1" />
+                          Download
+                        </Button>
+                      </div>
+                    )
+                  })}
                 </div>
               )}
 

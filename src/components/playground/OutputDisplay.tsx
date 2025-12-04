@@ -208,7 +208,7 @@ export function OutputDisplay({ prediction, outputs, error, isLoading }: OutputD
 
       {/* Fullscreen Preview Dialog */}
       <Dialog open={!!fullscreenMedia} onOpenChange={() => setFullscreenMedia(null)}>
-        <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 border-0 bg-black flex items-center justify-center">
+        <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 border-0 bg-black flex items-center justify-center" hideCloseButton>
           <Button
             variant="ghost"
             size="icon"

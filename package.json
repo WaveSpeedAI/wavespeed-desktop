@@ -71,7 +71,7 @@
   "build": {
     "appId": "com.wavespeed.desktop",
     "productName": "WaveSpeed Desktop",
-    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "artifactName": "WaveSpeed-Desktop-${version}-${os}-${arch}.${ext}",
     "directories": {
       "buildResources": "build",
       "output": "dist"

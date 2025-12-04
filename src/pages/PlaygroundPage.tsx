@@ -21,7 +21,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Play, RotateCcw, Loader2, Plus, X, BookOpen, Save } from 'lucide-react'
+import { Play, RotateCcw, Loader2, Plus, X, BookOpen, Save, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/useToast'
 
@@ -204,17 +204,40 @@ export function PlaygroundPage() {
   const handleViewDocs = () => {
     if (activeTab?.selectedModel) {
       // Transform model_id to docs URL format
-      // e.g., "wavespeed-ai/z-image/turbo" -> "wavespeed-ai/z-image-turbo"
+      // wavespeed-ai models: "wavespeed-ai/z-image/turbo" -> "wavespeed-ai/z-image-turbo"
+      // other models: "kwaivgi/kling-v2.6-pro/image-to-video" -> "kwaivgi/kwaivgi-kling-v2.6-pro-image-to-video"
       const modelId = activeTab.selectedModel.model_id
       const parts = modelId.split('/')
-      const formattedId = parts.length > 1
-        ? `${parts[0]}/${parts.slice(1).join('-')}`
-        : modelId
+      let formattedId: string
+      if (parts.length > 1) {
+        const org = parts[0]
+        const rest = parts.slice(1).join('-')
+        if (org === 'wavespeed-ai') {
+          formattedId = `${org}/${rest}`
+        } else {
+          // Non-wavespeed-ai models: prefix rest with org name
+          formattedId = `${org}/${org}-${rest}`
+        }
+      } else {
+        formattedId = modelId
+      }
       const docsUrl = `https://wavespeed.ai/docs/docs-api/${formattedId}`
       if (window.electronAPI?.openExternal) {
         window.electronAPI.openExternal(docsUrl)
       } else {
         window.open(docsUrl, '_blank')
+      }
+    }
+  }
+
+  const handleViewWebPage = () => {
+    if (activeTab?.selectedModel) {
+      // Model webpage URL uses the model_id directly
+      const webUrl = `https://wavespeed.ai/models/${activeTab.selectedModel.model_id}`
+      if (window.electronAPI?.openExternal) {
+        window.electronAPI.openExternal(webUrl)
+      } else {
+        window.open(webUrl, '_blank')
       }
     }
   }
@@ -380,14 +403,24 @@ export function PlaygroundPage() {
                 )}
               </div>
               {activeTab.selectedModel && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleViewDocs}
-                >
-                  <BookOpen className="mr-2 h-4 w-4" />
-                  View Docs
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleViewWebPage}
+                  >
+                    <Globe className="mr-2 h-4 w-4" />
+                    WebPage
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleViewDocs}
+                  >
+                    <BookOpen className="mr-2 h-4 w-4" />
+                    Docs
+                  </Button>
+                </div>
               )}
             </div>
             <div className="flex-1 p-4 overflow-hidden">

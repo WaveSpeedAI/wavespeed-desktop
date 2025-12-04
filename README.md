@@ -2,6 +2,8 @@
 
 A cross-platform desktop application for running AI models from [WaveSpeedAI](https://wavespeed.ai).
 
+[![Playground Screenshot](https://i.postimg.cc/k5cZ418K/Screenshot-2025-12-04-at-11-28-41.png)](https://postimg.cc/7C5XtNKZ)
+
 ## Features
 
 - **Model Browser**: Browse and search available AI models with fuzzy search, sortable by popularity, name, price, or type

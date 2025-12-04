@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
 } from '@/components/ui/dialog'
 import { Download, ExternalLink, Copy, Check, AlertTriangle, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -222,6 +223,7 @@ export function OutputDisplay({ prediction, outputs, error, isLoading }: OutputD
       {/* Fullscreen Preview Dialog */}
       <Dialog open={!!fullscreenMedia} onOpenChange={() => setFullscreenMedia(null)}>
         <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 border-0 bg-black flex items-center justify-center" hideCloseButton>
+          <DialogTitle className="sr-only">Fullscreen Preview</DialogTitle>
           <Button
             variant="ghost"
             size="icon"

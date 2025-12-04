@@ -76,7 +76,7 @@ function createWindow(): void {
   })
 
   mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
+    mainWindow?.show()
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -106,11 +106,11 @@ function createWindow(): void {
   // Open DevTools with keyboard shortcut (Cmd+Opt+I on Mac, Ctrl+Shift+I on Windows/Linux)
   mainWindow.webContents.on('before-input-event', (_, input) => {
     if ((input.meta || input.control) && input.shift && input.key.toLowerCase() === 'i') {
-      mainWindow.webContents.toggleDevTools()
+      mainWindow?.webContents.toggleDevTools()
     }
     // Also allow F12
     if (input.key === 'F12') {
-      mainWindow.webContents.toggleDevTools()
+      mainWindow?.webContents.toggleDevTools()
     }
   })
 
@@ -155,7 +155,7 @@ function createWindow(): void {
       menuItems.push(
         {
           label: 'Copy Image',
-          click: () => mainWindow.webContents.copyImageAt(params.x, params.y)
+          click: () => mainWindow?.webContents.copyImageAt(params.x, params.y)
         },
         {
           label: 'Open Image in Browser',

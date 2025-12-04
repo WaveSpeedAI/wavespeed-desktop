@@ -3,6 +3,7 @@ import { apiClient } from '@/api/client'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
 import type { HistoryItem } from '@/types/prediction'
 import { ApiKeyRequired } from '@/components/shared/ApiKeyRequired'
+import { OutputDisplay } from '@/components/playground/OutputDisplay'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -29,7 +30,6 @@ import {
   Video,
   Clock,
   AlertCircle,
-  Download,
   Copy,
   Check
 } from 'lucide-react'
@@ -51,15 +51,6 @@ export function HistoryPage() {
     await navigator.clipboard.writeText(id)
     setCopiedId(true)
     setTimeout(() => setCopiedId(false), 2000)
-  }
-
-  const handleDownload = async (url: string) => {
-    const filename = url.split('/').pop() || 'output'
-    if (window.electronAPI?.downloadFile) {
-      await window.electronAPI.downloadFile(url, filename)
-    } else {
-      window.open(url, '_blank')
-    }
   }
 
   const fetchHistory = async () => {
@@ -283,63 +274,30 @@ export function HistoryPage() {
 
       {/* Detail Dialog */}
       <Dialog open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle>Generation Details</DialogTitle>
           </DialogHeader>
           {selectedItem && (
             <div className="flex-1 overflow-y-auto space-y-4">
-              {/* Preview */}
+              {/* Preview using OutputDisplay */}
               {selectedItem.outputs && selectedItem.outputs.length > 0 && (
-                <div className="space-y-2">
-                  {selectedItem.outputs.map((output, index) => {
-                    const isObject = typeof output === 'object' && output !== null
-                    const outputStr = isObject ? JSON.stringify(output, null, 2) : String(output)
-                    const isImage = !isObject && outputStr.match(/\.(jpg|jpeg|png|gif|webp)/i)
-                    const isVideo = !isObject && outputStr.match(/\.(mp4|webm|mov)/i)
-
-                    return (
-                      <div key={index} className="relative group">
-                        {isImage ? (
-                          <img
-                            src={outputStr}
-                            alt={`Output ${index + 1}`}
-                            className="w-full rounded-lg"
-                          />
-                        ) : isVideo ? (
-                          <video
-                            src={outputStr}
-                            controls
-                            className="w-full rounded-lg"
-                          />
-                        ) : isObject ? (
-                          <pre className="p-4 bg-muted rounded-lg text-sm font-mono overflow-auto max-h-64 whitespace-pre-wrap break-all">
-                            {outputStr}
-                          </pre>
-                        ) : (
-                          <a
-                            href={outputStr}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary hover:underline break-all"
-                          >
-                            {outputStr}
-                          </a>
-                        )}
-                        {(isImage || isVideo) && (
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => handleDownload(outputStr)}
-                          >
-                            <Download className="h-4 w-4 mr-1" />
-                            Download
-                          </Button>
-                        )}
-                      </div>
-                    )
-                  })}
+                <div className="h-[400px]">
+                  <OutputDisplay
+                    prediction={{
+                      id: selectedItem.id,
+                      model: selectedItem.model,
+                      status: selectedItem.status,
+                      outputs: selectedItem.outputs,
+                      has_nsfw_contents: selectedItem.has_nsfw_contents,
+                      timings: selectedItem.execution_time
+                        ? { inference: selectedItem.execution_time }
+                        : undefined
+                    }}
+                    outputs={selectedItem.outputs}
+                    error={null}
+                    isLoading={false}
+                  />
                 </div>
               )}
 

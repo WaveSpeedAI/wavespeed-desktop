@@ -61,6 +61,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Set nightly version
+        shell: bash
+        run: |
+          TIMESTAMP=$(date +'%Y%m%d%H%M')
+          VERSION=$(node -p "require('./package.json').version")
+          NIGHTLY_VERSION="${VERSION}-nightly.${TIMESTAMP}"
+          npm version $NIGHTLY_VERSION --no-git-tag-version
+          echo "Building nightly version: $NIGHTLY_VERSION"
+
       - name: Build application
         run: npm run build
 
@@ -82,7 +91,7 @@ jobs:
           fi
 
       - name: Build for ${{ matrix.platform }}
-        run: npm run build:${{ matrix.platform }} -- --channel nightly
+        run: npm run build:${{ matrix.platform }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # macOS signing
@@ -92,6 +101,14 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+
+      - name: Rename yml files for nightly channel
+        run: |
+          cd dist
+          for f in latest*.yml; do
+            [ -f "$f" ] && mv "$f" "nightly${f#latest}"
+          done
+        shell: bash
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

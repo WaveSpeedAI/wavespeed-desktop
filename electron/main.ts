@@ -279,10 +279,17 @@ function setupAutoUpdater() {
   const settings = loadSettings()
   const channel = settings.updateChannel || 'stable'
 
-  // For nightly, we use allowPrerelease and point to nightly tag
+  // Configure update channel
   if (channel === 'nightly') {
     autoUpdater.allowPrerelease = true
     autoUpdater.channel = 'nightly'
+    // Point to prerelease for nightly channel
+    autoUpdater.setFeedURL({
+      provider: 'github',
+      owner: 'WaveSpeedAI',
+      repo: 'wavespeed-desktop',
+      releaseType: 'prerelease'
+    })
   } else {
     autoUpdater.allowPrerelease = false
     autoUpdater.channel = 'latest'
@@ -361,9 +368,21 @@ ipcMain.handle('set-update-channel', (_, channel: 'stable' | 'nightly') => {
   if (channel === 'nightly') {
     autoUpdater.allowPrerelease = true
     autoUpdater.channel = 'nightly'
+    autoUpdater.setFeedURL({
+      provider: 'github',
+      owner: 'WaveSpeedAI',
+      repo: 'wavespeed-desktop',
+      releaseType: 'prerelease'
+    })
   } else {
     autoUpdater.allowPrerelease = false
     autoUpdater.channel = 'latest'
+    autoUpdater.setFeedURL({
+      provider: 'github',
+      owner: 'WaveSpeedAI',
+      repo: 'wavespeed-desktop',
+      releaseType: 'release'
+    })
   }
   return true
 })

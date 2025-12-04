@@ -36,6 +36,15 @@ function generateId(): string {
   return `tpl-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 }
 
+// Export format version for compatibility
+const EXPORT_VERSION = '1.0'
+
+export interface TemplateExport {
+  version: string
+  exportedAt: string
+  templates: Template[]
+}
+
 interface TemplateState {
   templates: Template[]
   isLoaded: boolean
@@ -45,6 +54,8 @@ interface TemplateState {
   updateTemplate: (id: string, updates: Partial<Pick<Template, 'name' | 'values'>>) => void
   deleteTemplate: (id: string) => void
   getTemplatesByModel: (modelId: string) => Template[]
+  exportTemplates: (templateIds?: string[]) => TemplateExport
+  importTemplates: (data: TemplateExport, mode: 'merge' | 'replace') => { imported: number; skipped: number }
 }
 
 export const useTemplateStore = create<TemplateState>((set, get) => ({
@@ -99,5 +110,65 @@ export const useTemplateStore = create<TemplateState>((set, get) => ({
 
   getTemplatesByModel: (modelId: string) => {
     return get().templates.filter(t => t.modelId === modelId)
+  },
+
+  exportTemplates: (templateIds?: string[]) => {
+    const { templates } = get()
+    const templatesToExport = templateIds
+      ? templates.filter(t => templateIds.includes(t.id))
+      : templates
+
+    return {
+      version: EXPORT_VERSION,
+      exportedAt: new Date().toISOString(),
+      templates: templatesToExport,
+    }
+  },
+
+  importTemplates: (data: TemplateExport, mode: 'merge' | 'replace') => {
+    const { templates: currentTemplates } = get()
+    let imported = 0
+    let skipped = 0
+
+    // Validate import data
+    if (!data.templates || !Array.isArray(data.templates)) {
+      throw new Error('Invalid import data: missing templates array')
+    }
+
+    if (mode === 'replace') {
+      // Replace all templates with imported ones
+      const newTemplates = data.templates.map(t => ({
+        ...t,
+        id: generateId(), // Generate new IDs to avoid conflicts
+      }))
+      saveTemplates(newTemplates)
+      set({ templates: newTemplates })
+      imported = newTemplates.length
+    } else {
+      // Merge: add new templates, skip duplicates by name+modelId
+      const existingKeys = new Set(
+        currentTemplates.map(t => `${t.modelId}:${t.name}`)
+      )
+      const newTemplates = [...currentTemplates]
+
+      for (const template of data.templates) {
+        const key = `${template.modelId}:${template.name}`
+        if (existingKeys.has(key)) {
+          skipped++
+        } else {
+          newTemplates.push({
+            ...template,
+            id: generateId(), // Generate new ID
+          })
+          existingKeys.add(key)
+          imported++
+        }
+      }
+
+      saveTemplates(newTemplates)
+      set({ templates: newTemplates })
+    }
+
+    return { imported, skipped }
   },
 }))

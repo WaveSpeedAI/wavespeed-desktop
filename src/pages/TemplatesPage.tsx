@@ -1,6 +1,6 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useTemplateStore, type Template } from '@/stores/templateStore'
+import { useTemplateStore, type Template, type TemplateExport } from '@/stores/templateStore'
 import { useModelsStore } from '@/stores/modelsStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,18 +17,20 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Label } from '@/components/ui/label'
 import { toast } from '@/hooks/useToast'
-import { Search, FolderOpen, Play, Trash2, Pencil, MoreVertical, Plus } from 'lucide-react'
+import { Search, FolderOpen, Play, Trash2, Pencil, MoreVertical, Plus, Download, Upload } from 'lucide-react'
 import { fuzzySearch } from '@/lib/fuzzySearch'
 
 export function TemplatesPage() {
   const navigate = useNavigate()
-  const { templates, loadTemplates, updateTemplate, deleteTemplate, isLoaded } = useTemplateStore()
+  const { templates, loadTemplates, updateTemplate, deleteTemplate, exportTemplates, importTemplates, isLoaded } = useTemplateStore()
   const { models } = useModelsStore()
   const [searchQuery, setSearchQuery] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Edit dialog state
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null)
@@ -37,12 +39,105 @@ export function TemplatesPage() {
   // Delete confirmation state
   const [deletingTemplate, setDeletingTemplate] = useState<Template | null>(null)
 
+  // Import dialog state
+  const [importData, setImportData] = useState<TemplateExport | null>(null)
+  const [importMode, setImportMode] = useState<'merge' | 'replace'>('merge')
+
   // Load templates on mount
   useEffect(() => {
     if (!isLoaded) {
       loadTemplates()
     }
   }, [isLoaded, loadTemplates])
+
+  // Export all templates
+  const handleExportAll = () => {
+    if (templates.length === 0) {
+      toast({
+        title: 'No templates to export',
+        description: 'Create some templates first',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    const data = exportTemplates()
+    downloadJson(data, 'wavespeed-templates.json')
+    toast({
+      title: 'Templates exported',
+      description: `Exported ${templates.length} template(s)`,
+    })
+  }
+
+  // Export single template
+  const handleExportSingle = (template: Template) => {
+    const data = exportTemplates([template.id])
+    const fileName = `${template.name.toLowerCase().replace(/\s+/g, '-')}.json`
+    downloadJson(data, fileName)
+    toast({
+      title: 'Template exported',
+      description: `Exported "${template.name}"`,
+    })
+  }
+
+  // Download JSON helper
+  const downloadJson = (data: TemplateExport, filename: string) => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  // Handle file selection for import
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      try {
+        const data = JSON.parse(event.target?.result as string) as TemplateExport
+        if (!data.templates || !Array.isArray(data.templates)) {
+          throw new Error('Invalid file format')
+        }
+        setImportData(data)
+      } catch {
+        toast({
+          title: 'Invalid file',
+          description: 'The selected file is not a valid templates export',
+          variant: 'destructive',
+        })
+      }
+    }
+    reader.readAsText(file)
+    // Reset input so same file can be selected again
+    e.target.value = ''
+  }
+
+  // Handle import confirmation
+  const handleImportConfirm = () => {
+    if (!importData) return
+
+    try {
+      const result = importTemplates(importData, importMode)
+      toast({
+        title: 'Templates imported',
+        description: `Imported ${result.imported} template(s)${result.skipped > 0 ? `, ${result.skipped} skipped (duplicates)` : ''}`,
+      })
+    } catch (err) {
+      toast({
+        title: 'Import failed',
+        description: err instanceof Error ? err.message : 'Unknown error',
+        variant: 'destructive',
+      })
+    }
+    setImportData(null)
+  }
 
   // Group templates by model
   const groupedTemplates = useMemo(() => {
@@ -135,10 +230,27 @@ export function TemplatesPage() {
             className="pl-10"
           />
         </div>
-        <Button onClick={handleCreateNew}>
-          <Plus className="mr-2 h-4 w-4" />
-          New Template
-        </Button>
+        <div className="flex items-center gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json"
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+          <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+            <Upload className="mr-2 h-4 w-4" />
+            Import
+          </Button>
+          <Button variant="outline" onClick={handleExportAll} disabled={templates.length === 0}>
+            <Download className="mr-2 h-4 w-4" />
+            Export All
+          </Button>
+          <Button onClick={handleCreateNew}>
+            <Plus className="mr-2 h-4 w-4" />
+            New Template
+          </Button>
+        </div>
       </div>
 
       {/* Templates List */}
@@ -212,6 +324,11 @@ export function TemplatesPage() {
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Rename
                               </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleExportSingle(template)}>
+                                <Download className="mr-2 h-4 w-4" />
+                                Export
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
                               <DropdownMenuItem
                                 onClick={() => setDeletingTemplate(template)}
                                 className="text-destructive focus:text-destructive"
@@ -283,6 +400,71 @@ export function TemplatesPage() {
             </Button>
             <Button variant="destructive" onClick={handleDeleteTemplate}>
               Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Import Dialog */}
+      <Dialog open={!!importData} onOpenChange={(open) => !open && setImportData(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Import Templates</DialogTitle>
+            <DialogDescription>
+              Found {importData?.templates.length || 0} template(s) to import.
+              {importData?.exportedAt && (
+                <span className="block mt-1 text-xs">
+                  Exported on {new Date(importData.exportedAt).toLocaleString()}
+                </span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-3">
+              <Label>Import Mode</Label>
+              <div className="space-y-2">
+                <label className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
+                  <input
+                    type="radio"
+                    name="importMode"
+                    value="merge"
+                    checked={importMode === 'merge'}
+                    onChange={() => setImportMode('merge')}
+                    className="mt-0.5"
+                  />
+                  <div>
+                    <div className="font-medium">Merge</div>
+                    <div className="text-sm text-muted-foreground">
+                      Add imported templates, skip duplicates (same name + model)
+                    </div>
+                  </div>
+                </label>
+                <label className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
+                  <input
+                    type="radio"
+                    name="importMode"
+                    value="replace"
+                    checked={importMode === 'replace'}
+                    onChange={() => setImportMode('replace')}
+                    className="mt-0.5"
+                  />
+                  <div>
+                    <div className="font-medium">Replace All</div>
+                    <div className="text-sm text-muted-foreground">
+                      Delete existing templates and replace with imported ones
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setImportData(null)}>
+              Cancel
+            </Button>
+            <Button onClick={handleImportConfirm}>
+              <Upload className="mr-2 h-4 w-4" />
+              Import
             </Button>
           </DialogFooter>
         </DialogContent>

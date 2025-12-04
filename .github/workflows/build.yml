@@ -77,7 +77,7 @@ jobs:
             dist/*.zip
             dist/*.AppImage
             dist/*.deb
-            dist/*.yml
+            dist/latest*.yml
             dist/*.blockmap
           if-no-files-found: ignore
 

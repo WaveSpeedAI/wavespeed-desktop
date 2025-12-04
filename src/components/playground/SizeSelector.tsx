@@ -11,54 +11,43 @@ interface SizeSelectorProps {
   max?: number  // maximum dimension value from schema
 }
 
-// Aspect ratios to support
-const ASPECT_RATIOS = [
-  { label: '1:1', ratio: 1 },
-  { label: '16:9', ratio: 16 / 9 },
-  { label: '9:16', ratio: 9 / 16 },
-  { label: '4:3', ratio: 4 / 3 },
-  { label: '3:4', ratio: 3 / 4 },
-  { label: '3:2', ratio: 3 / 2 },
-  { label: '2:3', ratio: 2 / 3 },
+// 1K presets (~1 megapixel total, similar to 1024×1024)
+const PRESETS_1K = [
+  { label: '1:1', width: 1024, height: 1024 },   // 1,048,576 px
+  { label: '16:9', width: 1280, height: 720 },   // 921,600 px (HD)
+  { label: '9:16', width: 720, height: 1280 },   // 921,600 px
+  { label: '4:3', width: 1152, height: 864 },    // 995,328 px
+  { label: '3:4', width: 864, height: 1152 },    // 995,328 px
+  { label: '3:2', width: 1216, height: 832 },    // 1,011,712 px
+  { label: '2:3', width: 832, height: 1216 },    // 1,011,712 px
+]
+
+// 2K presets (~4 megapixels total, similar to 2048×2048)
+const PRESETS_2K = [
+  { label: '1:1', width: 2048, height: 2048 },   // 4,194,304 px
+  { label: '16:9', width: 2560, height: 1440 },  // 3,686,400 px (QHD/2K)
+  { label: '9:16', width: 1440, height: 2560 },  // 3,686,400 px
+  { label: '4:3', width: 2304, height: 1728 },   // 3,981,312 px
+  { label: '3:4', width: 1728, height: 2304 },   // 3,981,312 px
+  { label: '3:2', width: 2432, height: 1664 },   // 4,046,848 px
+  { label: '2:3', width: 1664, height: 2432 },   // 4,046,848 px
 ]
 
 // Generate presets based on min/max range
+// For each aspect ratio, prefer 2K if it fits, otherwise use 1K
 function generatePresets(min: number, max: number) {
   const presets: { label: string; width: number; height: number }[] = []
 
-  // Determine base sizes to use based on min/max range
-  const baseSizes = [1024, 1536, 2048, 3072, 4096].filter(
-    size => size >= min && size <= max
-  )
+  for (let i = 0; i < PRESETS_1K.length; i++) {
+    const preset1k = PRESETS_1K[i]
+    const preset2k = PRESETS_2K[i]
 
-  // If no standard sizes fit, use the min as base
-  if (baseSizes.length === 0) {
-    baseSizes.push(min)
-  }
-
-  // Prefer 2048 (2K) as the primary base if available, otherwise use the largest fitting size
-  const primaryBase = baseSizes.includes(2048) ? 2048 : baseSizes[baseSizes.length - 1]
-
-  for (const ar of ASPECT_RATIOS) {
-    let width: number, height: number
-
-    if (ar.ratio >= 1) {
-      // Landscape or square: width is the larger dimension
-      width = primaryBase
-      height = Math.round(primaryBase / ar.ratio)
-    } else {
-      // Portrait: height is the larger dimension
-      height = primaryBase
-      width = Math.round(primaryBase * ar.ratio)
-    }
-
-    // Round to nearest 64 for better compatibility
-    width = Math.round(width / 64) * 64
-    height = Math.round(height / 64) * 64
-
-    // Only add if both dimensions are within range
-    if (width >= min && width <= max && height >= min && height <= max) {
-      presets.push({ label: ar.label, width, height })
+    // Try 2K first
+    if (preset2k.width >= min && preset2k.width <= max && preset2k.height >= min && preset2k.height <= max) {
+      presets.push(preset2k)
+    } else if (preset1k.width >= min && preset1k.width <= max && preset1k.height >= min && preset1k.height <= max) {
+      // Fall back to 1K
+      presets.push(preset1k)
     }
   }
 

@@ -4,6 +4,7 @@ import { usePlaygroundStore } from '@/stores/playgroundStore'
 import { useModelsStore } from '@/stores/modelsStore'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
 import { useTemplateStore } from '@/stores/templateStore'
+import { apiClient } from '@/api/client'
 import { DynamicForm } from '@/components/playground/DynamicForm'
 import { OutputDisplay } from '@/components/playground/OutputDisplay'
 import { ModelSelector } from '@/components/playground/ModelSelector'
@@ -20,7 +21,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Play, RotateCcw, Loader2, DollarSign, Plus, X, BookOpen, Save } from 'lucide-react'
+import { Play, RotateCcw, Loader2, Plus, X, BookOpen, Save } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/useToast'
 
@@ -53,12 +54,53 @@ export function PlaygroundPage() {
   const [showSaveTemplateDialog, setShowSaveTemplateDialog] = useState(false)
   const [newTemplateName, setNewTemplateName] = useState('')
 
+  // Dynamic pricing state
+  const [calculatedPrice, setCalculatedPrice] = useState<number | null>(null)
+  const [isPricingLoading, setIsPricingLoading] = useState(false)
+  const pricingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
   // Load templates on mount
   useEffect(() => {
     if (!templatesLoaded) {
       loadTemplates()
     }
   }, [templatesLoaded, loadTemplates])
+
+  // Calculate dynamic pricing with debounce
+  useEffect(() => {
+    if (!activeTab?.selectedModel || !apiKey) {
+      setCalculatedPrice(null)
+      return
+    }
+
+    // Clear previous timeout
+    if (pricingTimeoutRef.current) {
+      clearTimeout(pricingTimeoutRef.current)
+    }
+
+    // Debounce pricing calculation
+    pricingTimeoutRef.current = setTimeout(async () => {
+      setIsPricingLoading(true)
+      try {
+        const price = await apiClient.calculatePricing(
+          activeTab.selectedModel!.model_id,
+          activeTab.formValues
+        )
+        setCalculatedPrice(price)
+      } catch {
+        // Fall back to base price on error
+        setCalculatedPrice(null)
+      } finally {
+        setIsPricingLoading(false)
+      }
+    }, 500)
+
+    return () => {
+      if (pricingTimeoutRef.current) {
+        clearTimeout(pricingTimeoutRef.current)
+      }
+    }
+  }, [activeTab?.selectedModel, activeTab?.formValues, apiKey, tabs])
 
   // Load template from URL query param
   useEffect(() => {
@@ -197,11 +239,14 @@ export function PlaygroundPage() {
         <ScrollArea className="w-full">
           <div className="flex items-center">
             {tabs.map((tab) => (
-              <button
+              <div
                 key={tab.id}
                 onClick={() => handleTabClick(tab.id)}
+                role="tab"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && handleTabClick(tab.id)}
                 className={cn(
-                  'group relative flex items-center gap-2 border-r px-4 py-2 text-sm transition-colors',
+                  'group relative flex items-center gap-2 border-r px-4 py-2 text-sm transition-colors cursor-pointer',
                   'hover:bg-muted/50',
                   tab.id === activeTabId
                     ? 'bg-background border-b-2 border-b-primary'
@@ -224,7 +269,7 @@ export function PlaygroundPage() {
                 >
                   <X className="h-3 w-3" />
                 </button>
-              </button>
+              </div>
             ))}
             <Button
               variant="ghost"
@@ -276,15 +321,9 @@ export function PlaygroundPage() {
 
             {/* Actions */}
             <div className="p-4 border-t">
-              {activeTab.selectedModel?.base_price !== undefined && (
-                <div className="flex items-center gap-1 text-sm text-muted-foreground mb-3">
-                  <DollarSign className="h-4 w-4" />
-                  <span>${activeTab.selectedModel.base_price.toFixed(4)} per run</span>
-                </div>
-              )}
               <div className="flex gap-2">
                 <Button
-                  className="flex-1"
+                  className="flex-1 gradient-bg hover:opacity-90 transition-opacity glow-sm"
                   onClick={handleRun}
                   disabled={!activeTab.selectedModel || activeTab.isRunning}
                 >
@@ -297,6 +336,17 @@ export function PlaygroundPage() {
                     <>
                       <Play className="mr-2 h-4 w-4" />
                       Run
+                      {activeTab.selectedModel && (
+                        <span className="ml-2 text-xs opacity-80">
+                          {isPricingLoading ? (
+                            '...'
+                          ) : calculatedPrice != null ? (
+                            `$${calculatedPrice.toFixed(4)}`
+                          ) : activeTab.selectedModel.base_price != null ? (
+                            `$${activeTab.selectedModel.base_price.toFixed(4)}`
+                          ) : null}
+                        </span>
+                      )}
                     </>
                   )}
                 </Button>

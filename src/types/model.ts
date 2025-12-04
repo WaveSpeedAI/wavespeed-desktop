@@ -29,6 +29,7 @@ export interface SchemaProperty {
   'x-ui-component'?: 'slider' | 'uploader' | 'loras' | 'select'
   'x-accept'?: string
   'x-placeholder'?: string
+  'x-hidden'?: boolean
   nullable?: boolean
 }
 

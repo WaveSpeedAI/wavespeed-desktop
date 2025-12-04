@@ -3,7 +3,8 @@ import { useDropzone } from 'react-dropzone'
 import { apiClient } from '@/api/client'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Upload, X, Loader2, FileVideo, FileAudio, Image, FileArchive, File } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Upload, X, Loader2, FileVideo, FileAudio, Image, FileArchive, File, Link } from 'lucide-react'
 
 interface FileUploadProps {
   accept: string
@@ -26,9 +27,23 @@ export function FileUpload({
 }: FileUploadProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [urlInput, setUrlInput] = useState('')
 
   // Convert value to array for consistent handling
   const urls = Array.isArray(value) ? value : value ? [value] : []
+
+  const handleAddUrl = () => {
+    if (!urlInput.trim()) return
+
+    const newUrl = urlInput.trim()
+    if (multiple) {
+      onChange([...urls, newUrl])
+    } else {
+      onChange(newUrl)
+    }
+    setUrlInput('')
+    setShowUrlInput(false)
+  }
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (disabled) return
@@ -102,7 +117,8 @@ export function FileUpload({
         <div className="grid gap-2 grid-cols-2 sm:grid-cols-3">
           {urls.map((url, index) => {
             const FileIcon = getFileIcon()
-            const isImage = accept.includes('image') && url.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+            const isImage = accept.includes('image') && url.match(/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i)
+            const isVideo = accept.includes('video') && url.match(/\.(mp4|webm|mov|avi|mkv)(\?.*)?$/i)
 
             return (
               <div
@@ -114,6 +130,18 @@ export function FileUpload({
                     src={url}
                     alt={`Uploaded ${index + 1}`}
                     className="w-full h-full object-cover"
+                  />
+                ) : isVideo ? (
+                  <video
+                    src={url}
+                    className="w-full h-full object-cover"
+                    muted
+                    playsInline
+                    onMouseEnter={(e) => e.currentTarget.play()}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.pause()
+                      e.currentTarget.currentTime = 0
+                    }}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
@@ -137,34 +165,56 @@ export function FileUpload({
 
       {/* Upload zone */}
       {canAddMore && (
-        <div
-          {...getRootProps()}
-          className={cn(
-            'border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors',
-            isDragActive && 'border-primary bg-primary/5',
-            disabled && 'opacity-50 cursor-not-allowed',
-            !disabled && !isDragActive && 'hover:border-primary/50'
-          )}
-        >
-          <input {...getInputProps()} />
-          {isUploading ? (
-            <div className="flex flex-col items-center gap-2">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">Uploading...</p>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-2">
-              <Upload className="h-8 w-8 text-muted-foreground" />
-              <div className="text-sm">
-                <span className="font-medium text-primary">Click to upload</span>
-                <span className="text-muted-foreground"> or drag and drop</span>
+        <div className="space-y-2">
+          <div
+            {...getRootProps()}
+            className={cn(
+              'border-2 border-dashed rounded-lg px-4 py-3 cursor-pointer transition-colors',
+              isDragActive && 'border-primary bg-primary/5',
+              disabled && 'opacity-50 cursor-not-allowed',
+              !disabled && !isDragActive && 'hover:border-primary/50'
+            )}
+          >
+            <input {...getInputProps()} />
+            {isUploading ? (
+              <div className="flex items-center justify-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">Uploading...</p>
               </div>
-              <p className="text-xs text-muted-foreground">
-                {placeholder || `${accept.replace(/\*/g, '').replace('application/', '')} files`}
-                {multiple && ` (up to ${maxFiles})`}
-              </p>
-            </div>
-          )}
+            ) : (
+              <div className="flex items-center justify-center gap-2">
+                <Upload className="h-4 w-4 text-muted-foreground" />
+                <div className="text-sm">
+                  <span className="font-medium text-primary">Click to upload</span>
+                  <span className="text-muted-foreground"> or drag and drop</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* URL input */}
+          <div className="flex gap-2 overflow-hidden">
+            <Input
+              type="url"
+              placeholder="Or enter URL..."
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddUrl()}
+              disabled={disabled}
+              className="flex-1 h-9"
+            />
+            {urlInput.trim() && (
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleAddUrl}
+                disabled={disabled}
+                className="h-9"
+              >
+                Add
+              </Button>
+            )}
+          </div>
         </div>
       )}
 

@@ -58,7 +58,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   return (
     <div
       className={cn(
-        "flex h-full flex-col border-r bg-background transition-all duration-300",
+        "flex h-full flex-col border-r bg-card/50 backdrop-blur-sm transition-all duration-300",
         collapsed ? "w-16" : "w-48"
       )}
     >
@@ -70,9 +70,11 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
           collapsed ? "justify-center px-2" : "gap-2 px-6"
         )}
       >
-        <Zap className="h-6 w-6 text-primary" style={{ flexShrink: 0 }} />
+        <div className="gradient-bg rounded-lg p-1.5">
+          <Zap className="h-5 w-5 text-white" style={{ flexShrink: 0 }} />
+        </div>
         {!collapsed && (
-          <span className="text-lg font-semibold" style={{ whiteSpace: 'nowrap' }}>
+          <span className="text-lg font-bold gradient-text" style={{ whiteSpace: 'nowrap' }}>
             WaveSpeed
           </span>
         )}
@@ -86,23 +88,17 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
               <TooltipTrigger asChild>
                 <NavLink
                   to={item.href}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: collapsed ? 0 : '0.75rem'
-                  }}
                   className={({ isActive }) =>
                     cn(
-                      'rounded-lg text-sm font-medium transition-colors',
-                      collapsed ? 'justify-center p-2' : 'px-3 py-2',
+                      'flex items-center rounded-lg text-sm font-medium transition-colors duration-200',
+                      collapsed ? 'justify-center p-2' : 'px-3 py-2 gap-3',
                       isActive
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                        ? 'bg-primary text-white shadow-md'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
                     )
                   }
                 >
-                  <item.icon style={{ width: 20, height: 20, flexShrink: 0 }} />
+                  <item.icon className="h-5 w-5 shrink-0" />
                   {!collapsed && <span>{item.title}</span>}
                 </NavLink>
               </TooltipTrigger>
@@ -124,23 +120,17 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
               <TooltipTrigger asChild>
                 <NavLink
                   to={item.href}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: collapsed ? 0 : '0.75rem'
-                  }}
                   className={({ isActive }) =>
                     cn(
-                      'rounded-lg text-sm font-medium transition-colors',
-                      collapsed ? 'justify-center p-2' : 'px-3 py-2',
+                      'flex items-center rounded-lg text-sm font-medium transition-colors duration-200',
+                      collapsed ? 'justify-center p-2' : 'px-3 py-2 gap-3',
                       isActive
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                        ? 'bg-primary text-white shadow-md'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
                     )
                   }
                 >
-                  <item.icon style={{ width: 20, height: 20, flexShrink: 0 }} />
+                  <item.icon className="h-5 w-5 shrink-0" />
                   {!collapsed && <span>{item.title}</span>}
                 </NavLink>
               </TooltipTrigger>

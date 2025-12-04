@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect, useMemo } from 'react'
-import { ChevronDown, Search, Check } from 'lucide-react'
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
+import { ChevronDown, Search, Check, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { fuzzySearch } from '@/lib/fuzzySearch'
 import type { Model } from '@/types/model'
@@ -13,30 +13,44 @@ interface ModelSelectorProps {
 
 export function ModelSelector({ models, value, onChange, disabled }: ModelSelectorProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [search, setSearch] = useState('')
+  const [localSearch, setLocalSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const selectedModel = models.find(m => m.model_id === value)
 
-  // Filter models using fuzzy search
+  // Debounce search updates for smooth typing
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(localSearch)
+    }, 150) // Faster debounce for responsive feel
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [localSearch])
+
+  // Filter models using debounced search with fuzzy matching
   const filteredModels = useMemo(() => {
-    if (!search.trim()) return models
-    const results = fuzzySearch(models, search, (model) => [
+    if (!debouncedSearch.trim()) return models
+    const results = fuzzySearch(models, debouncedSearch, (model) => [
       model.name,
       model.model_id,
       model.description || ''
     ])
     return results.map(r => r.item)
-  }, [models, search])
+  }, [models, debouncedSearch])
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setIsOpen(false)
-        setSearch('')
+        setLocalSearch('')
+        setDebouncedSearch('')
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -51,22 +65,31 @@ export function ModelSelector({ models, value, onChange, disabled }: ModelSelect
   }, [isOpen])
 
   // Handle keyboard navigation
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
       setIsOpen(false)
-      setSearch('')
+      setLocalSearch('')
+      setDebouncedSearch('')
     } else if (e.key === 'Enter' && filteredModels.length > 0) {
       onChange(filteredModels[0].model_id)
       setIsOpen(false)
-      setSearch('')
+      setLocalSearch('')
+      setDebouncedSearch('')
     }
-  }
+  }, [filteredModels, onChange])
 
-  const handleSelect = (modelId: string) => {
+  const handleSelect = useCallback((modelId: string) => {
     onChange(modelId)
     setIsOpen(false)
-    setSearch('')
-  }
+    setLocalSearch('')
+    setDebouncedSearch('')
+  }, [onChange])
+
+  const handleClear = useCallback(() => {
+    setLocalSearch('')
+    setDebouncedSearch('')
+    inputRef.current?.focus()
+  }, [])
 
   return (
     <div ref={containerRef} className="relative">
@@ -97,12 +120,21 @@ export function ModelSelector({ models, value, onChange, disabled }: ModelSelect
             <input
               ref={inputRef}
               type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Search models..."
+              placeholder="Search models... (space=AND, ^prefix, !exclude)"
               className="flex h-10 w-full bg-transparent py-3 px-2 text-sm outline-none placeholder:text-muted-foreground"
             />
+            {localSearch && (
+              <button
+                onClick={handleClear}
+                className="text-muted-foreground hover:text-foreground"
+                title="Clear search"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
 
           {/* Model list */}

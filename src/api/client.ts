@@ -269,6 +269,48 @@ class WaveSpeedClient {
       throw createAPIError(error, 'Failed to upload file')
     }
   }
+
+  async optimizePrompt(input: Record<string, unknown>): Promise<string> {
+    try {
+      const result = await this.run(
+        'wavespeed-ai/prompt-optimizer',
+        { ...input, enable_sync_mode: true },
+        { enableSyncMode: true }
+      )
+
+      if (result.outputs && result.outputs.length > 0) {
+        return result.outputs[0]
+      }
+
+      throw new APIError('No optimized prompt returned')
+    } catch (error) {
+      throw createAPIError(error, 'Failed to optimize prompt')
+    }
+  }
+
+  async calculatePricing(modelId: string, inputs: Record<string, unknown>): Promise<number> {
+    try {
+      const response = await this.client.post<{
+        code: number
+        message: string
+        data: { unit_price: number }
+      }>('/api/v3/model/pricing', {
+        model_id: modelId,
+        inputs
+      })
+
+      if (response.data.code !== 200) {
+        throw new APIError(response.data.message || 'Failed to calculate pricing', {
+          code: response.data.code,
+          details: response.data
+        })
+      }
+
+      return response.data.data.unit_price
+    } catch (error) {
+      throw createAPIError(error, 'Failed to calculate pricing')
+    }
+  }
 }
 
 export const apiClient = new WaveSpeedClient()

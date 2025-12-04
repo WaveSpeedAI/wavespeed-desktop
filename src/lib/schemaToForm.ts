@@ -14,6 +14,7 @@ export interface FormFieldConfig {
   accept?: string
   maxFiles?: number
   placeholder?: string
+  hidden?: boolean  // x-hidden fields are optional and hidden by default
 }
 
 // Field names that indicate file inputs
@@ -86,9 +87,10 @@ function propertyToField(
   const baseField = {
     name,
     label: prop.title || formatLabel(name),
-    required,
+    required: prop['x-hidden'] ? false : required,  // x-hidden fields are never required
     default: prop.default,
     description: prop.description,
+    hidden: !!prop['x-hidden'],
   }
 
   // Handle x-ui-component: uploader (for zip files etc.)

@@ -15,7 +15,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Search, PlayCircle, Loader2, RefreshCw, ArrowUp, ArrowDown, ExternalLink, Star, X } from 'lucide-react'
+import { Search, PlayCircle, Loader2, RefreshCw, ArrowUp, ArrowDown, ExternalLink, Star, X, Info } from 'lucide-react'
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card'
 import { cn } from '@/lib/utils'
 import { usePlaygroundStore } from '@/stores/playgroundStore'
 
@@ -226,13 +231,14 @@ export function ModelsPage() {
               {filteredModels.map((model) => (
                 <Card
                   key={model.model_id}
-                  className="cursor-pointer transition-shadow hover:shadow-md"
+                  className="cursor-pointer transition-all hover:shadow-lg hover:-translate-y-0.5 overflow-hidden group flex flex-col"
                   onClick={() => handleOpenPlayground(model.model_id)}
                 >
-                  <CardHeader className="pb-3">
+                  <div className="card-accent" />
+                  <CardHeader className="pb-3 flex-none">
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
-                        <CardTitle className="text-base break-words">
+                        <CardTitle className="text-base break-words group-hover:text-primary transition-colors">
                           {model.name}
                         </CardTitle>
                         <p className="text-xs text-muted-foreground truncate mt-1">
@@ -246,19 +252,56 @@ export function ModelsPage() {
                       )}
                     </div>
                   </CardHeader>
-                  <CardContent className="pt-0">
+                  <CardContent className="pt-0 flex-1 flex flex-col">
                     {model.description && (
                       <CardDescription className="line-clamp-2 mb-3">
                         {model.description}
                       </CardDescription>
                     )}
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mt-auto">
                       {model.base_price !== undefined && (
                         <span className="text-sm font-medium text-primary">
                           ${model.base_price.toFixed(4)}/run
                         </span>
                       )}
-                      <div className="flex gap-1">
+                      <div className="flex gap-1 ml-auto">
+                        <HoverCard openDelay={200} closeDelay={100}>
+                          <HoverCardTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={(e) => e.stopPropagation()}
+                              title="More info"
+                            >
+                              <Info className="h-4 w-4" />
+                            </Button>
+                          </HoverCardTrigger>
+                          <HoverCardContent className="w-80" side="top" align="end">
+                            <div className="space-y-2">
+                              <h4 className="font-semibold">{model.name}</h4>
+                              <p className="text-xs text-muted-foreground font-mono break-all">
+                                {model.model_id}
+                              </p>
+                              {model.description && (
+                                <p className="text-sm text-muted-foreground">
+                                  {model.description}
+                                </p>
+                              )}
+                              {model.type && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <span className="text-muted-foreground">Type:</span>
+                                  <Badge variant="secondary">{model.type}</Badge>
+                                </div>
+                              )}
+                              {model.base_price !== undefined && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <span className="text-muted-foreground">Base price:</span>
+                                  <span className="font-medium text-primary">${model.base_price.toFixed(4)}/run</span>
+                                </div>
+                              )}
+                            </div>
+                          </HoverCardContent>
+                        </HoverCard>
                         <Button
                           size="sm"
                           variant="ghost"

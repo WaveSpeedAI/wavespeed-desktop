@@ -14,6 +14,7 @@ import {
 import { FileUpload } from './FileUpload'
 import { SizeSelector } from './SizeSelector'
 import { LoraSelector, type LoraItem } from './LoraSelector'
+import { PromptOptimizer } from './PromptOptimizer'
 import { cn } from '@/lib/utils'
 
 interface FormFieldProps {
@@ -22,9 +23,12 @@ interface FormFieldProps {
   onChange: (value: unknown) => void
   disabled?: boolean
   error?: string
+  modelType?: string
+  imageValue?: string
+  hideLabel?: boolean
 }
 
-export function FormField({ field, value, onChange, disabled = false, error }: FormFieldProps) {
+export function FormField({ field, value, onChange, disabled = false, error, modelType, imageValue, hideLabel = false }: FormFieldProps) {
   const renderInput = () => {
     switch (field.type) {
       case 'text':
@@ -51,7 +55,45 @@ export function FormField({ field, value, onChange, disabled = false, error }: F
           />
         )
 
-      case 'number':
+      case 'number': {
+        // Show slider + input when default, min, and max are all defined
+        const hasSliderRange = field.default !== undefined && field.min !== undefined && field.max !== undefined
+        const currentValue = value !== undefined && value !== null ? Number(value) : (field.default as number) ?? field.min ?? 0
+
+        if (hasSliderRange) {
+          return (
+            <div className="flex items-center gap-3">
+              <Slider
+                value={[currentValue]}
+                onValueChange={([v]) => onChange(v)}
+                min={field.min}
+                max={field.max}
+                step={field.step ?? 1}
+                disabled={disabled}
+                className="flex-1"
+              />
+              <Input
+                id={field.name}
+                type="number"
+                value={currentValue}
+                onChange={(e) => {
+                  const val = e.target.value
+                  if (val === '') {
+                    onChange(field.default)
+                  } else {
+                    onChange(Number(val))
+                  }
+                }}
+                min={field.min}
+                max={field.max}
+                step={field.step}
+                disabled={disabled}
+                className="w-24 h-8 text-sm"
+              />
+            </div>
+          )
+        }
+
         return (
           <Input
             id={field.name}
@@ -72,6 +114,7 @@ export function FormField({ field, value, onChange, disabled = false, error }: F
             disabled={disabled}
           />
         )
+      }
 
       case 'slider': {
         const currentValue = value !== undefined && value !== null ? Number(value) : (field.default as number) ?? field.min ?? 0
@@ -117,11 +160,18 @@ export function FormField({ field, value, onChange, disabled = false, error }: F
           </div>
         )
 
-      case 'select':
+      case 'select': {
+        const selectValue = value !== undefined && value !== null && value !== ''
+          ? String(value)
+          : (field.default !== undefined ? String(field.default) : '__empty__')
         return (
           <Select
-            value={value !== undefined && value !== null ? String(value) : (field.default !== undefined ? String(field.default) : '')}
+            value={selectValue}
             onValueChange={(v) => {
+              if (v === '__empty__') {
+                onChange(undefined)
+                return
+              }
               // Try to preserve the original type (number if it was a number)
               const originalOption = field.options?.find(opt => String(opt) === v)
               onChange(originalOption !== undefined ? originalOption : v)
@@ -132,6 +182,11 @@ export function FormField({ field, value, onChange, disabled = false, error }: F
               <SelectValue placeholder={`Select ${field.label.toLowerCase()}`} />
             </SelectTrigger>
             <SelectContent>
+              {!field.required && (
+                <SelectItem value="__empty__" className="text-muted-foreground">
+                  — None —
+                </SelectItem>
+              )}
               {field.options?.map((option) => (
                 <SelectItem key={String(option)} value={String(option)}>
                   {String(option)}
@@ -140,6 +195,7 @@ export function FormField({ field, value, onChange, disabled = false, error }: F
             </SelectContent>
           </Select>
         )
+      }
 
       case 'size':
         return (
@@ -189,25 +245,39 @@ export function FormField({ field, value, onChange, disabled = false, error }: F
     }
   }
 
+  // Check if this is a prompt field that can be optimized (only main "prompt", not negative_prompt)
+  const isOptimizablePrompt = field.name === 'prompt' && field.type === 'textarea'
+
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <Label
-          htmlFor={field.name}
-          className={cn(
-            field.required && "after:content-['*'] after:ml-0.5 after:text-destructive",
-            error && "text-destructive"
+      {!hideLabel && (
+        <div className="flex items-center gap-2">
+          <Label
+            htmlFor={field.name}
+            className={cn(
+              field.required && "after:content-['*'] after:ml-0.5 after:text-destructive",
+              error && "text-destructive"
+            )}
+          >
+            {field.label}
+          </Label>
+          {isOptimizablePrompt && (
+            <PromptOptimizer
+              currentPrompt={(value as string) || ''}
+              onOptimized={(optimized) => onChange(optimized)}
+              disabled={disabled}
+              modelType={modelType}
+              imageValue={imageValue}
+            />
           )}
-        >
-          {field.label}
-        </Label>
-        {field.min !== undefined && field.max !== undefined && (
-          <span className="text-xs text-muted-foreground">
-            ({field.min} - {field.max})
-          </span>
-        )}
-      </div>
-      <div className={cn(error && "[&_input]:border-destructive [&_textarea]:border-destructive")}>
+          {field.min !== undefined && field.max !== undefined && (
+            <span className="text-xs text-muted-foreground">
+              ({field.min} - {field.max})
+            </span>
+          )}
+        </div>
+      )}
+      <div className={cn("overflow-hidden", error && "[&_input]:border-destructive [&_textarea]:border-destructive")}>
         {renderInput()}
       </div>
       {error && (

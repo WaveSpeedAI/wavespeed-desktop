@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -11,16 +11,59 @@ interface SizeSelectorProps {
   max?: number  // maximum dimension value from schema
 }
 
-// Common size presets
-const PRESETS = [
-  { label: '1:1', width: 1024, height: 1024 },
-  { label: '16:9', width: 1280, height: 720 },
-  { label: '9:16', width: 720, height: 1280 },
-  { label: '4:3', width: 1024, height: 768 },
-  { label: '3:4', width: 768, height: 1024 },
-  { label: '3:2', width: 1152, height: 768 },
-  { label: '2:3', width: 768, height: 1152 },
+// Aspect ratios to support
+const ASPECT_RATIOS = [
+  { label: '1:1', ratio: 1 },
+  { label: '16:9', ratio: 16 / 9 },
+  { label: '9:16', ratio: 9 / 16 },
+  { label: '4:3', ratio: 4 / 3 },
+  { label: '3:4', ratio: 3 / 4 },
+  { label: '3:2', ratio: 3 / 2 },
+  { label: '2:3', ratio: 2 / 3 },
 ]
+
+// Generate presets based on min/max range
+function generatePresets(min: number, max: number) {
+  const presets: { label: string; width: number; height: number }[] = []
+
+  // Determine base sizes to use based on min/max range
+  const baseSizes = [1024, 1536, 2048, 3072, 4096].filter(
+    size => size >= min && size <= max
+  )
+
+  // If no standard sizes fit, use the min as base
+  if (baseSizes.length === 0) {
+    baseSizes.push(min)
+  }
+
+  // Prefer 2048 (2K) as the primary base if available, otherwise use the largest fitting size
+  const primaryBase = baseSizes.includes(2048) ? 2048 : baseSizes[baseSizes.length - 1]
+
+  for (const ar of ASPECT_RATIOS) {
+    let width: number, height: number
+
+    if (ar.ratio >= 1) {
+      // Landscape or square: width is the larger dimension
+      width = primaryBase
+      height = Math.round(primaryBase / ar.ratio)
+    } else {
+      // Portrait: height is the larger dimension
+      height = primaryBase
+      width = Math.round(primaryBase * ar.ratio)
+    }
+
+    // Round to nearest 64 for better compatibility
+    width = Math.round(width / 64) * 64
+    height = Math.round(height / 64) * 64
+
+    // Only add if both dimensions are within range
+    if (width >= min && width <= max && height >= min && height <= max) {
+      presets.push({ label: ar.label, width, height })
+    }
+  }
+
+  return presets
+}
 
 export function SizeSelector({ value, onChange, disabled, min = 256, max = 1536 }: SizeSelectorProps) {
   const [width, setWidth] = useState(1024)
@@ -63,10 +106,8 @@ export function SizeSelector({ value, onChange, disabled, min = 256, max = 1536 
     onChange(`${height}*${width}`)
   }
 
-  // Filter presets to only show ones within min/max range
-  const availablePresets = PRESETS.filter(p =>
-    p.width >= min && p.width <= max && p.height >= min && p.height <= max
-  )
+  // Generate presets based on min/max range
+  const availablePresets = useMemo(() => generatePresets(min, max), [min, max])
 
   const isCurrentPreset = (w: number, h: number) => width === w && height === h
 
@@ -147,9 +188,10 @@ export function SizeSelector({ value, onChange, disabled, min = 256, max = 1536 
         </div>
       </div>
 
-      {/* Current size display */}
-      <div className="text-xs text-muted-foreground text-center">
-        {width} x {height} pixels
+      {/* Current size and range display */}
+      <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <span>{width} × {height} px</span>
+        <span>Range: {min} - {max}</span>
       </div>
     </div>
   )

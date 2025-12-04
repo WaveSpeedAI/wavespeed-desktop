@@ -136,10 +136,11 @@ export const useModelsStore = create<ModelsState>((set, get) => ({
         model.description || '',
         model.type || ''
       ])
-      filtered = results.map(r => r.item)
+      // Return results sorted by match relevance (fuzzySearch already sorts by score)
+      return results.map(r => r.item)
     }
 
-    // Apply sorting
+    // Apply sorting only when not searching
     const sorted = [...filtered].sort((a, b) => {
       let comparison = 0
       switch (sortBy) {

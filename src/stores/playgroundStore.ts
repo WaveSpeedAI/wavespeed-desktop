@@ -13,7 +13,7 @@ interface PlaygroundTab {
   isRunning: boolean
   currentPrediction: PredictionResult | null
   error: string | null
-  outputs: string[]
+  outputs: (string | Record<string, unknown>)[]
 }
 
 interface PlaygroundState {

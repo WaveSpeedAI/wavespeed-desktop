@@ -89,7 +89,7 @@ export interface RunOptions {
 
 export interface HistoryFilters {
   model?: string
-  status?: 'completed' | 'failed' | 'processing'
+  status?: 'completed' | 'failed' | 'processing' | 'created'
   created_after?: string
   created_before?: string
 }
@@ -279,7 +279,9 @@ class WaveSpeedClient {
       )
 
       if (result.outputs && result.outputs.length > 0) {
-        return result.outputs[0]
+        const output = result.outputs[0]
+        // Prompt optimizer always returns a string
+        return typeof output === 'string' ? output : JSON.stringify(output)
       }
 
       throw new APIError('No optimized prompt returned')

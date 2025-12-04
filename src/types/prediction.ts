@@ -1,8 +1,8 @@
 export interface PredictionResult {
   id: string
   model: string
-  status: 'pending' | 'processing' | 'completed' | 'failed'
-  outputs?: string[]
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'created'
+  outputs?: (string | Record<string, unknown>)[]
   error?: string
   has_nsfw_contents?: boolean[]
   created_at?: string
@@ -23,8 +23,8 @@ export interface PredictionResponse {
 export interface HistoryItem {
   id: string
   model: string
-  status: 'pending' | 'processing' | 'completed' | 'failed'
-  outputs?: string[]
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'created'
+  outputs?: (string | Record<string, unknown>)[]
   created_at: string
   execution_time?: number
   has_nsfw_contents?: boolean[]

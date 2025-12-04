@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils'
 
 interface OutputDisplayProps {
   prediction: PredictionResult | null
-  outputs: string[]
+  outputs: (string | Record<string, unknown>)[]
   error: string | null
   isLoading: boolean
 }
@@ -114,8 +114,11 @@ export function OutputDisplay({ prediction, outputs, error, isLoading }: OutputD
       {/* Outputs - fill remaining space */}
       <div className="flex-1 min-h-0 flex flex-col gap-4">
         {outputs.map((output, index) => {
-          const isImage = isImageUrl(output)
-          const isVideo = isVideoUrl(output)
+          const isObject = typeof output === 'object' && output !== null
+          const outputStr = isObject ? JSON.stringify(output, null, 2) : String(output)
+          const isImage = !isObject && isImageUrl(outputStr)
+          const isVideo = !isObject && isVideoUrl(outputStr)
+          const copyValue = isObject ? outputStr : outputStr
 
           return (
             <div
@@ -124,32 +127,40 @@ export function OutputDisplay({ prediction, outputs, error, isLoading }: OutputD
             >
               {isImage && (
                 <img
-                  src={output}
+                  src={outputStr}
                   alt={`Output ${index + 1}`}
                   className="max-w-full max-h-full object-contain cursor-pointer hover:opacity-90 transition-opacity"
                   loading="lazy"
-                  onClick={() => setFullscreenMedia({ url: output, type: 'image' })}
+                  onClick={() => setFullscreenMedia({ url: outputStr, type: 'image' })}
                 />
               )}
 
               {isVideo && (
                 <video
-                  src={output}
+                  src={outputStr}
                   controls
                   className="max-w-full max-h-full object-contain cursor-pointer"
                   preload="metadata"
                   onClick={(e) => {
                     // Only open fullscreen if not clicking on controls
                     if ((e.target as HTMLVideoElement).paused) {
-                      setFullscreenMedia({ url: output, type: 'video' })
+                      setFullscreenMedia({ url: outputStr, type: 'video' })
                     }
                   }}
                 />
               )}
 
-              {!isImage && !isVideo && (
+              {isObject && (
+                <div className="p-4 w-full h-full overflow-auto">
+                  <pre className="text-sm font-mono whitespace-pre-wrap break-all">
+                    {outputStr}
+                  </pre>
+                </div>
+              )}
+
+              {!isImage && !isVideo && !isObject && (
                 <div className="p-4">
-                  <p className="text-sm break-all">{output}</p>
+                  <p className="text-sm break-all">{outputStr}</p>
                 </div>
               )}
 
@@ -174,7 +185,7 @@ export function OutputDisplay({ prediction, outputs, error, isLoading }: OutputD
                   size="icon"
                   variant="secondary"
                   className="h-8 w-8"
-                  onClick={() => handleCopy(output, index)}
+                  onClick={() => handleCopy(copyValue, index)}
                 >
                   {copiedIndex === index ? (
                     <Check className="h-4 w-4" />
@@ -182,20 +193,22 @@ export function OutputDisplay({ prediction, outputs, error, isLoading }: OutputD
                     <Copy className="h-4 w-4" />
                   )}
                 </Button>
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className="h-8 w-8"
-                  onClick={() => handleOpenExternal(output)}
-                >
-                  <ExternalLink className="h-4 w-4" />
-                </Button>
+                {!isObject && (
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    className="h-8 w-8"
+                    onClick={() => handleOpenExternal(outputStr)}
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                )}
                 {(isImage || isVideo) && (
                   <Button
                     size="icon"
                     variant="secondary"
                     className="h-8 w-8"
-                    onClick={() => handleDownload(output, index)}
+                    onClick={() => handleDownload(outputStr, index)}
                   >
                     <Download className="h-4 w-4" />
                   </Button>

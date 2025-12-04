@@ -293,9 +293,10 @@ export function HistoryPage() {
               {selectedItem.outputs && selectedItem.outputs.length > 0 && (
                 <div className="space-y-2">
                   {selectedItem.outputs.map((output, index) => {
-                    const outputStr = typeof output === 'string' ? output : String(output)
-                    const isImage = outputStr.match(/\.(jpg|jpeg|png|gif|webp)/i)
-                    const isVideo = outputStr.match(/\.(mp4|webm|mov)/i)
+                    const isObject = typeof output === 'object' && output !== null
+                    const outputStr = isObject ? JSON.stringify(output, null, 2) : String(output)
+                    const isImage = !isObject && outputStr.match(/\.(jpg|jpeg|png|gif|webp)/i)
+                    const isVideo = !isObject && outputStr.match(/\.(mp4|webm|mov)/i)
 
                     return (
                       <div key={index} className="relative group">
@@ -311,6 +312,10 @@ export function HistoryPage() {
                             controls
                             className="w-full rounded-lg"
                           />
+                        ) : isObject ? (
+                          <pre className="p-4 bg-muted rounded-lg text-sm font-mono overflow-auto max-h-64 whitespace-pre-wrap break-all">
+                            {outputStr}
+                          </pre>
                         ) : (
                           <a
                             href={outputStr}
@@ -321,15 +326,17 @@ export function HistoryPage() {
                             {outputStr}
                           </a>
                         )}
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => handleDownload(outputStr)}
-                        >
-                          <Download className="h-4 w-4 mr-1" />
-                          Download
-                        </Button>
+                        {(isImage || isVideo) && (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => handleDownload(outputStr)}
+                          >
+                            <Download className="h-4 w-4 mr-1" />
+                            Download
+                          </Button>
+                        )}
                       </div>
                     )
                   })}

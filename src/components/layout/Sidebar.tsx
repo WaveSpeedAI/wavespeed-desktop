@@ -1,7 +1,7 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import {
   Tooltip,
   TooltipContent,
@@ -55,6 +55,8 @@ interface SidebarProps {
 }
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
+  const location = useLocation()
+
   return (
     <div
       className={cn(
@@ -88,15 +90,12 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
               <TooltipTrigger asChild>
                 <NavLink
                   to={item.href}
-                  className={({ isActive }) =>
-                    cn(
-                      'flex items-center rounded-lg text-sm font-medium transition-colors duration-200',
-                      collapsed ? 'justify-center p-2' : 'px-3 py-2 gap-3',
-                      isActive
-                        ? 'bg-primary text-white shadow-md'
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
-                    )
-                  }
+                  className={cn(
+                    buttonVariants({ variant: location.pathname === item.href ? 'default' : 'ghost', size: 'sm' }),
+                    'w-full justify-start',
+                    collapsed ? 'justify-center px-2' : 'gap-3 px-3',
+                    location.pathname === item.href && 'shadow-md'
+                  )}
                 >
                   <item.icon className="h-5 w-5 shrink-0" />
                   {!collapsed && <span>{item.title}</span>}
@@ -120,15 +119,12 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
               <TooltipTrigger asChild>
                 <NavLink
                   to={item.href}
-                  className={({ isActive }) =>
-                    cn(
-                      'flex items-center rounded-lg text-sm font-medium transition-colors duration-200',
-                      collapsed ? 'justify-center p-2' : 'px-3 py-2 gap-3',
-                      isActive
-                        ? 'bg-primary text-white shadow-md'
-                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
-                    )
-                  }
+                  className={cn(
+                    buttonVariants({ variant: location.pathname === item.href ? 'default' : 'ghost', size: 'sm' }),
+                    'w-full justify-start',
+                    collapsed ? 'justify-center px-2' : 'gap-3 px-3',
+                    location.pathname === item.href && 'shadow-md'
+                  )}
                 >
                   <item.icon className="h-5 w-5 shrink-0" />
                   {!collapsed && <span>{item.title}</span>}

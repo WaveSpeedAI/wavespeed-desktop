@@ -170,22 +170,6 @@
   animation: gradient-shift 8s ease infinite;
 }
 
-/* Sidebar nav link */
-.sidebar-nav-link {
-  color: var(--sidebar-text-color) !important;
-  transition: all 0.2s ease;
-}
-
-.sidebar-nav-link:hover:not(.active) {
-  color: var(--sidebar-text-hover) !important;
-  background-color: hsl(var(--muted)) !important;
-}
-
-.sidebar-nav-link.active {
-  color: #ffffff !important;
-  background-color: hsl(var(--primary)) !important;
-}
-
 /* Card accent bar */
 .card-accent {
   height: 3px;

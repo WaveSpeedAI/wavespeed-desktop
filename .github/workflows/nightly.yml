@@ -82,7 +82,7 @@ jobs:
           fi
 
       - name: Build for ${{ matrix.platform }}
-        run: npm run build:${{ matrix.platform }}
+        run: npm run build:${{ matrix.platform }} -- --channel nightly
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # macOS signing
@@ -103,7 +103,7 @@ jobs:
             dist/*.zip
             dist/*.AppImage
             dist/*.deb
-            dist/latest*.yml
+            dist/nightly*.yml
             dist/*.blockmap
           if-no-files-found: ignore
           retention-days: 7

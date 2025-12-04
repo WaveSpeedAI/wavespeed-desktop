@@ -32,11 +32,7 @@ Download the latest release for your platform from the [Releases](https://github
 #### macOS
 1. Download `WaveSpeed Desktop-*-mac-arm64.dmg` (Apple Silicon) or `WaveSpeed Desktop-*-mac-x64.dmg` (Intel)
 2. Open the `.dmg` file and drag the app to Applications
-3. Since the app is not signed, run this command to bypass Gatekeeper:
-   ```bash
-   xattr -cr "/Applications/WaveSpeed Desktop.app"
-   ```
-4. Launch the app from Applications
+3. Launch the app from Applications
 
 #### Linux
 1. Download `WaveSpeed Desktop-*-linux-x64.AppImage` or `.deb`
@@ -76,6 +72,7 @@ npm run dev
 | Script | Description |
 |--------|-------------|
 | `npm run dev` | Start development server with hot reload |
+| `npx vite` | Start web-only dev server (no Electron) |
 | `npm run build` | Build the application |
 | `npm run build:win` | Build for Windows |
 | `npm run build:mac` | Build for macOS |

@@ -2,6 +2,7 @@ import { app, BrowserWindow, shell, ipcMain, dialog, Menu, clipboard } from 'ele
 import { join } from 'path'
 import { existsSync, readFileSync, writeFileSync, mkdirSync, createWriteStream } from 'fs'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { autoUpdater, UpdateInfo } from 'electron-updater'
 import https from 'https'
 import http from 'http'
 
@@ -20,13 +21,17 @@ interface Settings {
   theme: 'light' | 'dark' | 'system'
   defaultPollInterval: number
   defaultTimeout: number
+  updateChannel: 'stable' | 'nightly'
+  autoCheckUpdate: boolean
 }
 
 const defaultSettings: Settings = {
   apiKey: '',
   theme: 'system',
   defaultPollInterval: 1000,
-  defaultTimeout: 36000
+  defaultTimeout: 36000,
+  updateChannel: 'stable',
+  autoCheckUpdate: true
 }
 
 function loadSettings(): Settings {
@@ -55,7 +60,7 @@ function saveSettings(settings: Partial<Settings>): void {
 }
 
 function createWindow(): void {
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
     minWidth: 1000,
@@ -182,7 +187,9 @@ ipcMain.handle('get-settings', () => {
   return {
     theme: settings.theme,
     defaultPollInterval: settings.defaultPollInterval,
-    defaultTimeout: settings.defaultTimeout
+    defaultTimeout: settings.defaultTimeout,
+    updateChannel: settings.updateChannel,
+    autoCheckUpdate: settings.autoCheckUpdate
   }
 })
 
@@ -255,6 +262,112 @@ ipcMain.handle('download-file', async (_, url: string, defaultFilename: string) 
   })
 })
 
+// Auto-updater state
+let mainWindow: BrowserWindow | null = null
+
+// Configure auto-updater
+autoUpdater.autoDownload = false
+autoUpdater.autoInstallOnAppQuit = true
+
+function sendUpdateStatus(status: string, data?: Record<string, unknown>) {
+  if (mainWindow) {
+    mainWindow.webContents.send('update-status', { status, ...data })
+  }
+}
+
+function setupAutoUpdater() {
+  const settings = loadSettings()
+  const channel = settings.updateChannel || 'stable'
+
+  // For nightly, we use allowPrerelease and point to nightly tag
+  if (channel === 'nightly') {
+    autoUpdater.allowPrerelease = true
+    autoUpdater.channel = 'nightly'
+  } else {
+    autoUpdater.allowPrerelease = false
+    autoUpdater.channel = 'latest'
+  }
+
+  autoUpdater.on('checking-for-update', () => {
+    sendUpdateStatus('checking')
+  })
+
+  autoUpdater.on('update-available', (info: UpdateInfo) => {
+    sendUpdateStatus('available', {
+      version: info.version,
+      releaseNotes: info.releaseNotes,
+      releaseDate: info.releaseDate
+    })
+  })
+
+  autoUpdater.on('update-not-available', (info: UpdateInfo) => {
+    sendUpdateStatus('not-available', { version: info.version })
+  })
+
+  autoUpdater.on('download-progress', (progress) => {
+    sendUpdateStatus('downloading', {
+      percent: progress.percent,
+      bytesPerSecond: progress.bytesPerSecond,
+      transferred: progress.transferred,
+      total: progress.total
+    })
+  })
+
+  autoUpdater.on('update-downloaded', (info: UpdateInfo) => {
+    sendUpdateStatus('downloaded', {
+      version: info.version,
+      releaseNotes: info.releaseNotes
+    })
+  })
+
+  autoUpdater.on('error', (error) => {
+    sendUpdateStatus('error', { message: error.message })
+  })
+}
+
+// Auto-updater IPC handlers
+ipcMain.handle('check-for-updates', async () => {
+  if (is.dev) {
+    return { status: 'dev-mode', message: 'Auto-update disabled in development' }
+  }
+  try {
+    const result = await autoUpdater.checkForUpdates()
+    return { status: 'success', updateInfo: result?.updateInfo }
+  } catch (error) {
+    return { status: 'error', message: (error as Error).message }
+  }
+})
+
+ipcMain.handle('download-update', async () => {
+  try {
+    await autoUpdater.downloadUpdate()
+    return { status: 'success' }
+  } catch (error) {
+    return { status: 'error', message: (error as Error).message }
+  }
+})
+
+ipcMain.handle('install-update', () => {
+  autoUpdater.quitAndInstall(false, true)
+})
+
+ipcMain.handle('get-app-version', () => {
+  return app.getVersion()
+})
+
+ipcMain.handle('set-update-channel', (_, channel: 'stable' | 'nightly') => {
+  saveSettings({ updateChannel: channel })
+  // Reconfigure updater with new channel
+  if (channel === 'nightly') {
+    autoUpdater.allowPrerelease = true
+    autoUpdater.channel = 'nightly'
+  } else {
+    autoUpdater.allowPrerelease = false
+    autoUpdater.channel = 'latest'
+  }
+  return true
+})
+
 // App lifecycle
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.wavespeed.desktop')
@@ -264,6 +377,21 @@ app.whenReady().then(() => {
   })
 
   createWindow()
+
+  // Setup auto-updater after window is created
+  setupAutoUpdater()
+
+  // Check for updates on startup (after a short delay) if autoCheckUpdate is enabled
+  if (!is.dev) {
+    const settings = loadSettings()
+    if (settings.autoCheckUpdate !== false) {
+      setTimeout(() => {
+        autoUpdater.checkForUpdates().catch((err) => {
+          console.error('Failed to check for updates:', err)
+        })
+      }, 3000)
+    }
+  }
 
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()

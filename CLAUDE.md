@@ -85,7 +85,8 @@ The predictions history endpoint requires a POST request with JSON body:
 ## Development Commands
 
 ```bash
-npm run dev          # Start dev server with hot reload
+npm run dev          # Start dev server with hot reload (Electron + Vite)
+npx vite             # Start web-only dev server (no Electron, browser only)
 npm run build        # Build the app
 npm run build:win    # Build for Windows
 npm run build:mac    # Build for macOS

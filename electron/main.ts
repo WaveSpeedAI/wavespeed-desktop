@@ -283,12 +283,10 @@ function setupAutoUpdater() {
   if (channel === 'nightly') {
     autoUpdater.allowPrerelease = true
     autoUpdater.channel = 'nightly'
-    // Point to prerelease for nightly channel
+    // Use generic provider pointing to nightly release assets
     autoUpdater.setFeedURL({
-      provider: 'github',
-      owner: 'WaveSpeedAI',
-      repo: 'wavespeed-desktop',
-      releaseType: 'prerelease'
+      provider: 'generic',
+      url: 'https://github.com/WaveSpeedAI/wavespeed-desktop/releases/download/nightly'
     })
   } else {
     autoUpdater.allowPrerelease = false
@@ -368,11 +366,10 @@ ipcMain.handle('set-update-channel', (_, channel: 'stable' | 'nightly') => {
   if (channel === 'nightly') {
     autoUpdater.allowPrerelease = true
     autoUpdater.channel = 'nightly'
+    // Use generic provider pointing to nightly release assets
     autoUpdater.setFeedURL({
-      provider: 'github',
-      owner: 'WaveSpeedAI',
-      repo: 'wavespeed-desktop',
-      releaseType: 'prerelease'
+      provider: 'generic',
+      url: 'https://github.com/WaveSpeedAI/wavespeed-desktop/releases/download/nightly'
     })
   } else {
     autoUpdater.allowPrerelease = false

@@ -70,7 +70,7 @@ export function HistoryPage() {
 
     try {
       const filters = statusFilter !== 'all'
-        ? { status: statusFilter as 'completed' | 'failed' | 'processing' }
+        ? { status: statusFilter as 'completed' | 'failed' | 'processing' | 'created' }
         : undefined
 
       const response = await apiClient.getHistory(page, pageSize, filters)
@@ -97,6 +97,8 @@ export function HistoryPage() {
         return <Badge variant="destructive">Failed</Badge>
       case 'processing':
         return <Badge variant="warning">Processing</Badge>
+      case 'created':
+        return <Badge variant="info">Created</Badge>
       default:
         return <Badge variant="secondary">{status}</Badge>
     }
@@ -156,6 +158,7 @@ export function HistoryPage() {
                 <SelectItem value="completed">Completed</SelectItem>
                 <SelectItem value="failed">Failed</SelectItem>
                 <SelectItem value="processing">Processing</SelectItem>
+                <SelectItem value="created">Created</SelectItem>
               </SelectContent>
             </Select>
           </div>

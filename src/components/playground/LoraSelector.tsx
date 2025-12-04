@@ -98,7 +98,7 @@ export function LoraSelector({
           <div className="flex gap-2">
             <Input
               type="text"
-              placeholder="username/lora-name"
+              placeholder="user/repo or https://.../*.safetensors"
               value={customPath}
               onChange={(e) => setCustomPath(e.target.value)}
               disabled={disabled}
@@ -115,6 +115,9 @@ export function LoraSelector({
               <Plus className="h-4 w-4" />
             </Button>
           </div>
+          <p className="text-xs text-muted-foreground">
+            HuggingFace format (user/repo) or any .safetensors URL
+          </p>
         </div>
       )}
     </div>

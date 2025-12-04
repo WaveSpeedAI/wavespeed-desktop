@@ -261,7 +261,7 @@ export function ModelsPage() {
                     <div className="flex items-center justify-between mt-auto">
                       {model.base_price !== undefined && (
                         <span className="text-sm font-medium text-primary">
-                          ${model.base_price.toFixed(4)}/run
+                          ${model.base_price.toFixed(4)}
                         </span>
                       )}
                       <div className="flex gap-1 ml-auto">
@@ -296,7 +296,7 @@ export function ModelsPage() {
                               {model.base_price !== undefined && (
                                 <div className="flex items-center gap-2 text-sm">
                                   <span className="text-muted-foreground">Base price:</span>
-                                  <span className="font-medium text-primary">${model.base_price.toFixed(4)}/run</span>
+                                  <span className="font-medium text-primary">${model.base_price.toFixed(4)}</span>
                                 </div>
                               )}
                             </div>

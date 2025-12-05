@@ -2,6 +2,31 @@ import { useState, useEffect, useMemo } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+
+// Compact aspect ratio icon component
+function AspectIcon({ ratio, className }: { ratio: string; className?: string }) {
+  // Calculate relative dimensions for the icon (max 14px)
+  const getDimensions = () => {
+    switch (ratio) {
+      case '1:1': return { w: 12, h: 12 }
+      case '16:9': return { w: 14, h: 8 }
+      case '9:16': return { w: 8, h: 14 }
+      case '4:3': return { w: 14, h: 10 }
+      case '3:4': return { w: 10, h: 14 }
+      case '3:2': return { w: 14, h: 9 }
+      case '2:3': return { w: 9, h: 14 }
+      default: return { w: 12, h: 12 }
+    }
+  }
+  const { w, h } = getDimensions()
+  return (
+    <div
+      className={cn("border border-current rounded-[2px]", className)}
+      style={{ width: w, height: h }}
+    />
+  )
+}
 
 interface SizeSelectorProps {
   value: string
@@ -103,7 +128,7 @@ export function SizeSelector({ value, onChange, disabled, min = 256, max = 1536 
   return (
     <div className="space-y-3">
       {/* Preset buttons */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1.5">
         {availablePresets.map((preset) => (
           <Button
             key={`${preset.width}x${preset.height}`}
@@ -112,9 +137,11 @@ export function SizeSelector({ value, onChange, disabled, min = 256, max = 1536 
             size="sm"
             onClick={() => handlePreset(preset.width, preset.height)}
             disabled={disabled}
-            className="text-xs"
+            className="h-7 px-2 gap-1.5"
+            title={`${preset.width}×${preset.height}`}
           >
-            {preset.label}
+            <AspectIcon ratio={preset.label} />
+            <span className="text-xs">{preset.label}</span>
           </Button>
         ))}
       </div>

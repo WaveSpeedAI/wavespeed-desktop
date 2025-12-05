@@ -23,29 +23,44 @@ A cross-platform desktop application for running AI models from [WaveSpeedAI](ht
 
 ## Installation
 
-### Download
+### Quick Download
 
-Download the latest release for your platform from the [Releases](https://github.com/WaveSpeedAI/wavespeed-desktop/releases) page.
+[![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed.Desktop-win-x64.exe)
+[![macOS Intel](https://img.shields.io/badge/macOS_Intel-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed.Desktop-mac-x64.dmg)
+[![macOS Apple Silicon](https://img.shields.io/badge/macOS_Silicon-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed.Desktop-mac-arm64.dmg)
+[![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed.Desktop-linux-x64.AppImage)
 
-#### Windows
-1. Download `WaveSpeed Desktop-*-win-x64.exe` (installer) or `.zip` (portable)
+Or browse all releases on the [Releases](https://github.com/WaveSpeedAI/wavespeed-desktop/releases) page.
+
+### Platform Instructions
+
+<details>
+<summary><b>Windows</b></summary>
+
+1. Download `.exe` (installer) or `.zip` (portable)
 2. Run the installer and follow the prompts, or extract the zip file
 3. Launch "WaveSpeed Desktop" from Start Menu or the extracted folder
+</details>
 
-#### macOS
-1. Download `WaveSpeed Desktop-*-mac-arm64.dmg` (Apple Silicon) or `WaveSpeed Desktop-*-mac-x64.dmg` (Intel)
+<details>
+<summary><b>macOS</b></summary>
+
+1. Download `.dmg` for your chip (Apple Silicon or Intel)
 2. Open the `.dmg` file and drag the app to Applications
 3. Launch the app from Applications
+</details>
 
-#### Linux
-1. Download `WaveSpeed Desktop-*-linux-x64.AppImage` or `.deb`
+<details>
+<summary><b>Linux</b></summary>
+
+1. Download `.AppImage` or `.deb`
 2. For AppImage: Make it executable (`chmod +x *.AppImage`) and run it
 3. For .deb: Install with `sudo dpkg -i *.deb`
+</details>
 
 ### Nightly Builds
 
-Automated nightly builds are available for testing the latest features:
-[Nightly Release](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/tag/nightly)
+[![Nightly](https://img.shields.io/badge/Nightly-FF6B6B?style=for-the-badge&logo=github&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/tag/nightly)
 
 > **Note:** Nightly builds may be unstable. Use the stable releases for production use.
 

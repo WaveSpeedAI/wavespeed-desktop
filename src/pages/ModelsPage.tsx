@@ -421,13 +421,13 @@ export function ModelsPage() {
 
           {/* Tag Filter Bar - inline */}
           {allTypes.length > 0 && (
-            <div className="flex items-center gap-1.5 overflow-x-auto">
-              <span className="text-xs text-muted-foreground shrink-0">{t('models.type')}:</span>
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+              <span className="text-sm text-muted-foreground shrink-0">{t('models.type')}:</span>
               <Button
                 variant={selectedType === null ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setSelectedType(null)}
-                className="shrink-0 h-7 px-2 text-xs"
+                className="shrink-0 h-8 px-3 text-sm"
               >
                 {t('common.all')}
               </Button>
@@ -437,7 +437,7 @@ export function ModelsPage() {
                   variant={selectedType === type ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setSelectedType(selectedType === type ? null : type)}
-                  className="shrink-0 h-7 px-2 text-xs capitalize"
+                  className="shrink-0 h-8 px-3 text-sm capitalize"
                 >
                   {type}
                 </Button>

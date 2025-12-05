@@ -96,6 +96,21 @@
   background: hsl(var(--muted-foreground) / 0.5);
 }
 
+/* Thin scrollbar variant */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.2);
+  border-radius: 2px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.4);
+}
+
 /* Gradient utilities */
 @layer utilities {
   .gradient-text {
@@ -178,6 +193,24 @@
     hsl(var(--gradient-start)) 0%,
     hsl(var(--gradient-mid)) 50%,
     hsl(var(--gradient-end)) 100%
+  );
+}
+
+/* Sidebar background with depth */
+.sidebar-bg {
+  background: linear-gradient(
+    180deg,
+    hsl(var(--muted) / 0.6) 0%,
+    hsl(var(--muted) / 0.4) 100%
+  );
+  backdrop-filter: blur(8px);
+}
+
+.dark .sidebar-bg {
+  background: linear-gradient(
+    180deg,
+    hsl(220 20% 8%) 0%,
+    hsl(220 20% 6%) 100%
   );
 }
 

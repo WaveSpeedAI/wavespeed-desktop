@@ -84,6 +84,31 @@
       "newTab": "Neuer Tab",
       "closeTab": "Tab schließen",
       "closeOtherTabs": "Andere Tabs schließen"
+    },
+    "capture": {
+      "upload": "Hochladen",
+      "camera": "Kamera",
+      "record": "Aufnehmen",
+      "audio": "Audio",
+      "uploading": "Wird hochgeladen...",
+      "clickToUpload": "Klicken zum Hochladen",
+      "orDragDrop": "oder per Drag & Drop",
+      "enterUrl": "Oder URL eingeben...",
+      "add": "Hinzufügen",
+      "cameraPermissionDenied": "Kamerazugriff verweigert. Bitte erlauben Sie den Zugriff in Ihren Browsereinstellungen.",
+      "noCameraFound": "Keine Kamera gefunden. Bitte schließen Sie eine Kamera an und versuchen Sie es erneut.",
+      "cameraError": "Kamerazugriff fehlgeschlagen",
+      "micPermissionDenied": "Mikrofonzugriff verweigert. Bitte erlauben Sie den Zugriff in Ihren Browsereinstellungen.",
+      "noMicFound": "Kein Mikrofon gefunden. Bitte schließen Sie ein Mikrofon an und versuchen Sie es erneut.",
+      "micError": "Mikrofonzugriff fehlgeschlagen",
+      "switchCamera": "Kamera wechseln",
+      "takePhoto": "Foto aufnehmen",
+      "retake": "Neu aufnehmen",
+      "usePhoto": "Foto verwenden",
+      "startRecording": "Aufnahme starten",
+      "stopRecording": "Stoppen",
+      "useVideo": "Video verwenden",
+      "useAudio": "Audio verwenden"
     }
   },
   "history": {

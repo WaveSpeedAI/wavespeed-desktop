@@ -84,6 +84,31 @@
       "newTab": "새 탭",
       "closeTab": "탭 닫기",
       "closeOtherTabs": "다른 탭 닫기"
+    },
+    "capture": {
+      "upload": "업로드",
+      "camera": "카메라",
+      "record": "녹화",
+      "audio": "오디오",
+      "uploading": "업로드 중...",
+      "clickToUpload": "클릭하여 업로드",
+      "orDragDrop": "또는 드래그 앤 드롭",
+      "enterUrl": "또는 URL 입력...",
+      "add": "추가",
+      "cameraPermissionDenied": "카메라 권한이 거부되었습니다. 브라우저 설정에서 접근을 허용해 주세요.",
+      "noCameraFound": "카메라를 찾을 수 없습니다. 카메라를 연결하고 다시 시도해 주세요.",
+      "cameraError": "카메라에 접근할 수 없습니다",
+      "micPermissionDenied": "마이크 권한이 거부되었습니다. 브라우저 설정에서 접근을 허용해 주세요.",
+      "noMicFound": "마이크를 찾을 수 없습니다. 마이크를 연결하고 다시 시도해 주세요.",
+      "micError": "마이크에 접근할 수 없습니다",
+      "switchCamera": "카메라 전환",
+      "takePhoto": "사진 촬영",
+      "retake": "다시 촬영",
+      "usePhoto": "이 사진 사용",
+      "startRecording": "녹화 시작",
+      "stopRecording": "중지",
+      "useVideo": "이 비디오 사용",
+      "useAudio": "이 오디오 사용"
     }
   },
   "history": {

@@ -84,6 +84,31 @@
       "newTab": "Yeni Sekme",
       "closeTab": "Sekmeyi kapat",
       "closeOtherTabs": "Diğer sekmeleri kapat"
+    },
+    "capture": {
+      "upload": "Yükle",
+      "camera": "Kamera",
+      "record": "Kaydet",
+      "audio": "Ses",
+      "uploading": "Yükleniyor...",
+      "clickToUpload": "Yüklemek için tıklayın",
+      "orDragDrop": "veya sürükleyip bırakın",
+      "enterUrl": "Veya URL girin...",
+      "add": "Ekle",
+      "cameraPermissionDenied": "Kamera izni reddedildi. Lütfen tarayıcı ayarlarından erişime izin verin.",
+      "noCameraFound": "Kamera bulunamadı. Lütfen bir kamera bağlayın ve tekrar deneyin.",
+      "cameraError": "Kameraya erişilemedi",
+      "micPermissionDenied": "Mikrofon izni reddedildi. Lütfen tarayıcı ayarlarından erişime izin verin.",
+      "noMicFound": "Mikrofon bulunamadı. Lütfen bir mikrofon bağlayın ve tekrar deneyin.",
+      "micError": "Mikrofona erişilemedi",
+      "switchCamera": "Kamerayı değiştir",
+      "takePhoto": "Fotoğraf çek",
+      "retake": "Yeniden çek",
+      "usePhoto": "Fotoğrafı kullan",
+      "startRecording": "Kaydı başlat",
+      "stopRecording": "Durdur",
+      "useVideo": "Videoyu kullan",
+      "useAudio": "Sesi kullan"
     }
   },
   "history": {

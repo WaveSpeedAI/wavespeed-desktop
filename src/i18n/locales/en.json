@@ -84,6 +84,31 @@
       "newTab": "New Tab",
       "closeTab": "Close tab",
       "closeOtherTabs": "Close other tabs"
+    },
+    "capture": {
+      "upload": "Upload",
+      "camera": "Camera",
+      "record": "Record",
+      "audio": "Audio",
+      "uploading": "Uploading...",
+      "clickToUpload": "Click to upload",
+      "orDragDrop": "or drag and drop",
+      "enterUrl": "Or enter URL...",
+      "add": "Add",
+      "cameraPermissionDenied": "Camera permission denied. Please allow access in your browser settings.",
+      "noCameraFound": "No camera found. Please connect a camera and try again.",
+      "cameraError": "Failed to access camera",
+      "micPermissionDenied": "Microphone permission denied. Please allow access in your browser settings.",
+      "noMicFound": "No microphone found. Please connect a microphone and try again.",
+      "micError": "Failed to access microphone",
+      "switchCamera": "Switch camera",
+      "takePhoto": "Take photo",
+      "retake": "Retake",
+      "usePhoto": "Use Photo",
+      "startRecording": "Start Recording",
+      "stopRecording": "Stop",
+      "useVideo": "Use Video",
+      "useAudio": "Use Audio"
     }
   },
   "history": {

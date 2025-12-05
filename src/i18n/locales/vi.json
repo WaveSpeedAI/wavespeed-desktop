@@ -84,6 +84,31 @@
       "newTab": "Tab mới",
       "closeTab": "Đóng tab",
       "closeOtherTabs": "Đóng các tab khác"
+    },
+    "capture": {
+      "upload": "Tải lên",
+      "camera": "Máy ảnh",
+      "record": "Ghi hình",
+      "audio": "Âm thanh",
+      "uploading": "Đang tải lên...",
+      "clickToUpload": "Nhấp để tải lên",
+      "orDragDrop": "hoặc kéo và thả",
+      "enterUrl": "Hoặc nhập URL...",
+      "add": "Thêm",
+      "cameraPermissionDenied": "Quyền truy cập máy ảnh bị từ chối. Vui lòng cho phép truy cập trong cài đặt trình duyệt.",
+      "noCameraFound": "Không tìm thấy máy ảnh. Vui lòng kết nối máy ảnh và thử lại.",
+      "cameraError": "Không thể truy cập máy ảnh",
+      "micPermissionDenied": "Quyền truy cập micrô bị từ chối. Vui lòng cho phép truy cập trong cài đặt trình duyệt.",
+      "noMicFound": "Không tìm thấy micrô. Vui lòng kết nối micrô và thử lại.",
+      "micError": "Không thể truy cập micrô",
+      "switchCamera": "Đổi máy ảnh",
+      "takePhoto": "Chụp ảnh",
+      "retake": "Chụp lại",
+      "usePhoto": "Sử dụng ảnh",
+      "startRecording": "Bắt đầu ghi",
+      "stopRecording": "Dừng",
+      "useVideo": "Sử dụng video",
+      "useAudio": "Sử dụng âm thanh"
     }
   },
   "history": {

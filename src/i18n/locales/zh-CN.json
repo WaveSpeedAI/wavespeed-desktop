@@ -84,6 +84,31 @@
       "newTab": "新标签页",
       "closeTab": "关闭标签页",
       "closeOtherTabs": "关闭其他标签页"
+    },
+    "capture": {
+      "upload": "上传",
+      "camera": "相机",
+      "record": "录制",
+      "audio": "音频",
+      "uploading": "上传中...",
+      "clickToUpload": "点击上传",
+      "orDragDrop": "或拖放文件",
+      "enterUrl": "或输入 URL...",
+      "add": "添加",
+      "cameraPermissionDenied": "相机权限被拒绝。请在浏览器设置中允许访问。",
+      "noCameraFound": "未找到相机。请连接相机后重试。",
+      "cameraError": "无法访问相机",
+      "micPermissionDenied": "麦克风权限被拒绝。请在浏览器设置中允许访问。",
+      "noMicFound": "未找到麦克风。请连接麦克风后重试。",
+      "micError": "无法访问麦克风",
+      "switchCamera": "切换相机",
+      "takePhoto": "拍照",
+      "retake": "重拍",
+      "usePhoto": "使用照片",
+      "startRecording": "开始录制",
+      "stopRecording": "停止",
+      "useVideo": "使用视频",
+      "useAudio": "使用音频"
     }
   },
   "history": {

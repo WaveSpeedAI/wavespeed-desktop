@@ -84,6 +84,31 @@
       "newTab": "Nova Aba",
       "closeTab": "Fechar aba",
       "closeOtherTabs": "Fechar outras abas"
+    },
+    "capture": {
+      "upload": "Enviar",
+      "camera": "Câmera",
+      "record": "Gravar",
+      "audio": "Áudio",
+      "uploading": "Enviando...",
+      "clickToUpload": "Clique para enviar",
+      "orDragDrop": "ou arraste e solte",
+      "enterUrl": "Ou digite URL...",
+      "add": "Adicionar",
+      "cameraPermissionDenied": "Permissão de câmera negada. Por favor, permita o acesso nas configurações do navegador.",
+      "noCameraFound": "Nenhuma câmera encontrada. Por favor, conecte uma câmera e tente novamente.",
+      "cameraError": "Falha ao acessar a câmera",
+      "micPermissionDenied": "Permissão de microfone negada. Por favor, permita o acesso nas configurações do navegador.",
+      "noMicFound": "Nenhum microfone encontrado. Por favor, conecte um microfone e tente novamente.",
+      "micError": "Falha ao acessar o microfone",
+      "switchCamera": "Trocar câmera",
+      "takePhoto": "Tirar foto",
+      "retake": "Refazer",
+      "usePhoto": "Usar foto",
+      "startRecording": "Iniciar gravação",
+      "stopRecording": "Parar",
+      "useVideo": "Usar vídeo",
+      "useAudio": "Usar áudio"
     }
   },
   "history": {

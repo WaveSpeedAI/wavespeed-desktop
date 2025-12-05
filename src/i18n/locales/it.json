@@ -84,6 +84,31 @@
       "newTab": "Nuova Scheda",
       "closeTab": "Chiudi scheda",
       "closeOtherTabs": "Chiudi altre schede"
+    },
+    "capture": {
+      "upload": "Carica",
+      "camera": "Fotocamera",
+      "record": "Registra",
+      "audio": "Audio",
+      "uploading": "Caricamento...",
+      "clickToUpload": "Clicca per caricare",
+      "orDragDrop": "o trascina e rilascia",
+      "enterUrl": "O inserisci URL...",
+      "add": "Aggiungi",
+      "cameraPermissionDenied": "Permesso fotocamera negato. Consenti l'accesso nelle impostazioni del browser.",
+      "noCameraFound": "Nessuna fotocamera trovata. Collega una fotocamera e riprova.",
+      "cameraError": "Accesso alla fotocamera fallito",
+      "micPermissionDenied": "Permesso microfono negato. Consenti l'accesso nelle impostazioni del browser.",
+      "noMicFound": "Nessun microfono trovato. Collega un microfono e riprova.",
+      "micError": "Accesso al microfono fallito",
+      "switchCamera": "Cambia fotocamera",
+      "takePhoto": "Scatta foto",
+      "retake": "Riprendi",
+      "usePhoto": "Usa foto",
+      "startRecording": "Inizia registrazione",
+      "stopRecording": "Ferma",
+      "useVideo": "Usa video",
+      "useAudio": "Usa audio"
     }
   },
   "history": {

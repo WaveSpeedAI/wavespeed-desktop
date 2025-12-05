@@ -84,6 +84,31 @@
       "newTab": "新分頁",
       "closeTab": "關閉分頁",
       "closeOtherTabs": "關閉其他分頁"
+    },
+    "capture": {
+      "upload": "上傳",
+      "camera": "相機",
+      "record": "錄製",
+      "audio": "音訊",
+      "uploading": "上傳中...",
+      "clickToUpload": "點擊上傳",
+      "orDragDrop": "或拖放檔案",
+      "enterUrl": "或輸入 URL...",
+      "add": "新增",
+      "cameraPermissionDenied": "相機權限被拒絕。請在瀏覽器設定中允許存取。",
+      "noCameraFound": "找不到相機。請連接相機後重試。",
+      "cameraError": "無法存取相機",
+      "micPermissionDenied": "麥克風權限被拒絕。請在瀏覽器設定中允許存取。",
+      "noMicFound": "找不到麥克風。請連接麥克風後重試。",
+      "micError": "無法存取麥克風",
+      "switchCamera": "切換相機",
+      "takePhoto": "拍照",
+      "retake": "重拍",
+      "usePhoto": "使用照片",
+      "startRecording": "開始錄製",
+      "stopRecording": "停止",
+      "useVideo": "使用影片",
+      "useAudio": "使用音訊"
     }
   },
   "history": {

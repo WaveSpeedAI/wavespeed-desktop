@@ -84,6 +84,31 @@
       "newTab": "Nouvel onglet",
       "closeTab": "Fermer l'onglet",
       "closeOtherTabs": "Fermer les autres onglets"
+    },
+    "capture": {
+      "upload": "Téléverser",
+      "camera": "Caméra",
+      "record": "Enregistrer",
+      "audio": "Audio",
+      "uploading": "Téléversement...",
+      "clickToUpload": "Cliquez pour téléverser",
+      "orDragDrop": "ou glissez-déposez",
+      "enterUrl": "Ou entrez l'URL...",
+      "add": "Ajouter",
+      "cameraPermissionDenied": "Accès à la caméra refusé. Veuillez autoriser l'accès dans les paramètres de votre navigateur.",
+      "noCameraFound": "Aucune caméra trouvée. Veuillez connecter une caméra et réessayer.",
+      "cameraError": "Échec de l'accès à la caméra",
+      "micPermissionDenied": "Accès au microphone refusé. Veuillez autoriser l'accès dans les paramètres de votre navigateur.",
+      "noMicFound": "Aucun microphone trouvé. Veuillez connecter un microphone et réessayer.",
+      "micError": "Échec de l'accès au microphone",
+      "switchCamera": "Changer de caméra",
+      "takePhoto": "Prendre une photo",
+      "retake": "Reprendre",
+      "usePhoto": "Utiliser la photo",
+      "startRecording": "Commencer l'enregistrement",
+      "stopRecording": "Arrêter",
+      "useVideo": "Utiliser la vidéo",
+      "useAudio": "Utiliser l'audio"
     }
   },
   "history": {

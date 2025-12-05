@@ -84,6 +84,31 @@
       "newTab": "新しいタブ",
       "closeTab": "タブを閉じる",
       "closeOtherTabs": "他のタブを閉じる"
+    },
+    "capture": {
+      "upload": "アップロード",
+      "camera": "カメラ",
+      "record": "録画",
+      "audio": "音声",
+      "uploading": "アップロード中...",
+      "clickToUpload": "クリックしてアップロード",
+      "orDragDrop": "またはドラッグ＆ドロップ",
+      "enterUrl": "またはURLを入力...",
+      "add": "追加",
+      "cameraPermissionDenied": "カメラへのアクセスが拒否されました。ブラウザの設定でアクセスを許可してください。",
+      "noCameraFound": "カメラが見つかりません。カメラを接続して再試行してください。",
+      "cameraError": "カメラにアクセスできませんでした",
+      "micPermissionDenied": "マイクへのアクセスが拒否されました。ブラウザの設定でアクセスを許可してください。",
+      "noMicFound": "マイクが見つかりません。マイクを接続して再試行してください。",
+      "micError": "マイクにアクセスできませんでした",
+      "switchCamera": "カメラを切り替え",
+      "takePhoto": "写真を撮る",
+      "retake": "撮り直す",
+      "usePhoto": "この写真を使用",
+      "startRecording": "録画開始",
+      "stopRecording": "停止",
+      "useVideo": "この動画を使用",
+      "useAudio": "この音声を使用"
     }
   },
   "history": {

@@ -84,6 +84,31 @@
       "newTab": "Tab Baharu",
       "closeTab": "Tutup tab",
       "closeOtherTabs": "Tutup tab lain"
+    },
+    "capture": {
+      "upload": "Muat naik",
+      "camera": "Kamera",
+      "record": "Rakam",
+      "audio": "Audio",
+      "uploading": "Memuat naik...",
+      "clickToUpload": "Klik untuk memuat naik",
+      "orDragDrop": "atau seret dan lepas",
+      "enterUrl": "Atau masukkan URL...",
+      "add": "Tambah",
+      "cameraPermissionDenied": "Kebenaran kamera ditolak. Sila benarkan akses dalam tetapan pelayar anda.",
+      "noCameraFound": "Kamera tidak dijumpai. Sila sambungkan kamera dan cuba lagi.",
+      "cameraError": "Gagal mengakses kamera",
+      "micPermissionDenied": "Kebenaran mikrofon ditolak. Sila benarkan akses dalam tetapan pelayar anda.",
+      "noMicFound": "Mikrofon tidak dijumpai. Sila sambungkan mikrofon dan cuba lagi.",
+      "micError": "Gagal mengakses mikrofon",
+      "switchCamera": "Tukar kamera",
+      "takePhoto": "Ambil gambar",
+      "retake": "Ambil semula",
+      "usePhoto": "Gunakan gambar",
+      "startRecording": "Mula rakam",
+      "stopRecording": "Berhenti",
+      "useVideo": "Gunakan video",
+      "useAudio": "Gunakan audio"
     }
   },
   "history": {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { apiClient } from '@/api/client'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
@@ -120,7 +120,7 @@ export function HistoryPage() {
     setTimeout(() => setCopiedId(false), 2000)
   }
 
-  const fetchHistory = async () => {
+  const fetchHistory = useCallback(async () => {
     if (!isValidated) return
 
     setIsLoading(true)
@@ -132,18 +132,19 @@ export function HistoryPage() {
         : undefined
 
       const response = await apiClient.getHistory(page, pageSize, filters)
-      setItems(response.items)
-      setTotal(response.total)
+      setItems(response.items || [])
+      setTotal(response.total || 0)
     } catch (err) {
+      console.error('History fetch error:', err)
       setError(err instanceof Error ? err.message : 'Failed to fetch history')
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [isValidated, page, pageSize, statusFilter])
 
   useEffect(() => {
     fetchHistory()
-  }, [isValidated, page, statusFilter])
+  }, [fetchHistory])
 
   const totalPages = Math.ceil(total / pageSize)
 

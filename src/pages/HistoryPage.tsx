@@ -224,7 +224,13 @@ export function HistoryPage() {
 
         {/* Filters */}
         <div className="flex items-center gap-3">
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select
+            value={statusFilter}
+            onValueChange={(value) => {
+              setStatusFilter(value)
+              setPage(1)
+            }}
+          >
             <SelectTrigger className="w-36 h-9">
               <SelectValue placeholder={t('history.status.all')} />
             </SelectTrigger>

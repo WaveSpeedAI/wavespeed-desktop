@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useState } from 'react'
+import { useMemo, useEffect, useState, useRef } from 'react'
 import type { Model } from '@/types/model'
 import { schemaToFormFields, getDefaultValues, type FormFieldConfig } from '@/lib/schemaToForm'
 import { FormField } from './FormField'
@@ -26,6 +26,9 @@ export function DynamicForm({
 }: DynamicFormProps) {
   // Track which hidden fields are enabled
   const [enabledHiddenFields, setEnabledHiddenFields] = useState<Set<string>>(new Set())
+
+  // Track if we've initialized defaults for this model instance
+  const initializedRef = useRef<string | null>(null)
 
   // Extract schema from model
   const fields = useMemo<FormFieldConfig[]>(() => {
@@ -56,12 +59,25 @@ export function DynamicForm({
     setEnabledHiddenFields(new Set())
   }, [model.model_id])
 
-  // Set default values and register fields when model changes
+  // Register fields and set defaults when model changes
   useEffect(() => {
-    const defaults = getDefaultValues(fields)
-    onSetDefaults(defaults)
     onFieldsChange?.(fields)
-  }, [fields, onSetDefaults, onFieldsChange])
+
+    // Only set defaults if this is a new model (not just remount)
+    // Check if we already have values for this model
+    const hasExistingValues = Object.keys(values).some(key =>
+      values[key] !== undefined && values[key] !== '' &&
+      !(Array.isArray(values[key]) && values[key].length === 0)
+    )
+
+    // Set defaults only if model changed AND no existing values
+    if (initializedRef.current !== model.model_id && !hasExistingValues) {
+      const defaults = getDefaultValues(fields)
+      onSetDefaults(defaults)
+    }
+    initializedRef.current = model.model_id
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fields, model.model_id, onFieldsChange, onSetDefaults])
 
   // Toggle a hidden field
   const toggleHiddenField = (fieldName: string) => {

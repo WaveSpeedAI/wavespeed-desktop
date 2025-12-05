@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useTemplateStore, type Template, type TemplateExport } from '@/stores/templateStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,6 +26,7 @@ import { Search, FolderOpen, Play, Trash2, Pencil, MoreVertical, Plus, Download,
 import { fuzzyMatch } from '@/lib/fuzzySearch'
 
 export function TemplatesPage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { templates, loadTemplates, updateTemplate, deleteTemplate, exportTemplates, importTemplates, isLoaded } = useTemplateStore()
   const [searchQuery, setSearchQuery] = useState('')
@@ -52,8 +54,8 @@ export function TemplatesPage() {
   const handleExportAll = () => {
     if (templates.length === 0) {
       toast({
-        title: 'No templates to export',
-        description: 'Create some templates first',
+        title: t('templates.noTemplatesToExport'),
+        description: t('templates.createSomeFirst'),
         variant: 'destructive',
       })
       return
@@ -62,8 +64,8 @@ export function TemplatesPage() {
     const data = exportTemplates()
     downloadJson(data, 'wavespeed-templates.json')
     toast({
-      title: 'Templates exported',
-      description: `Exported ${templates.length} template(s)`,
+      title: t('templates.templatesExported'),
+      description: t('templates.exportedCount', { count: templates.length }),
     })
   }
 
@@ -73,8 +75,8 @@ export function TemplatesPage() {
     const fileName = `${template.name.toLowerCase().replace(/\s+/g, '-')}.json`
     downloadJson(data, fileName)
     toast({
-      title: 'Template exported',
-      description: `Exported "${template.name}"`,
+      title: t('templates.templateExported'),
+      description: t('templates.exported', { name: template.name }),
     })
   }
 
@@ -106,8 +108,8 @@ export function TemplatesPage() {
         setImportData(data)
       } catch {
         toast({
-          title: 'Invalid file',
-          description: 'The selected file is not a valid templates export',
+          title: t('templates.invalidFile'),
+          description: t('templates.invalidFileDesc'),
           variant: 'destructive',
         })
       }
@@ -123,14 +125,15 @@ export function TemplatesPage() {
 
     try {
       const result = importTemplates(importData, importMode)
+      const skippedText = result.skipped > 0 ? t('templates.skippedCount', { count: result.skipped }) : ''
       toast({
-        title: 'Templates imported',
-        description: `Imported ${result.imported} template(s)${result.skipped > 0 ? `, ${result.skipped} skipped (duplicates)` : ''}`,
+        title: t('templates.templatesImported'),
+        description: t('templates.importedCount', { imported: result.imported, skipped: skippedText }),
       })
     } catch (err) {
       toast({
-        title: 'Import failed',
-        description: err instanceof Error ? err.message : 'Unknown error',
+        title: t('templates.importFailed'),
+        description: err instanceof Error ? err.message : t('common.error'),
         variant: 'destructive',
       })
     }
@@ -211,8 +214,8 @@ export function TemplatesPage() {
   return (
     <div className="container py-8">
       <div className="flex items-baseline gap-3 mb-6">
-        <h1 className="text-2xl font-bold">Templates</h1>
-        <p className="text-muted-foreground text-sm">Manage your saved playground configurations</p>
+        <h1 className="text-2xl font-bold">{t('templates.title')}</h1>
+        <p className="text-muted-foreground text-sm">{t('templates.description')}</p>
       </div>
 
       {/* Search and Actions */}
@@ -220,7 +223,7 @@ export function TemplatesPage() {
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search templates..."
+            placeholder={t('templates.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -236,15 +239,15 @@ export function TemplatesPage() {
           />
           <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
             <Upload className="mr-2 h-4 w-4" />
-            Import
+            {t('templates.import')}
           </Button>
           <Button variant="outline" onClick={handleExportAll} disabled={templates.length === 0}>
             <Download className="mr-2 h-4 w-4" />
-            Export All
+            {t('templates.exportAll')}
           </Button>
           <Button onClick={handleCreateNew}>
             <Plus className="mr-2 h-4 w-4" />
-            New Template
+            {t('templates.newTemplate')}
           </Button>
         </div>
       </div>
@@ -255,13 +258,13 @@ export function TemplatesPage() {
           <CardContent className="py-12">
             <div className="text-center text-muted-foreground">
               <FolderOpen className="mx-auto h-12 w-12 mb-4 opacity-50" />
-              <h3 className="text-lg font-medium mb-2">No templates yet</h3>
+              <h3 className="text-lg font-medium mb-2">{t('templates.noTemplates')}</h3>
               <p className="mb-4">
-                Save your playground configurations as templates for quick reuse
+                {t('templates.noTemplatesDesc')}
               </p>
               <Button onClick={handleCreateNew}>
                 <Plus className="mr-2 h-4 w-4" />
-                Go to Playground
+                {t('templates.goToPlayground')}
               </Button>
             </div>
           </CardContent>
@@ -271,8 +274,8 @@ export function TemplatesPage() {
           <CardContent className="py-12">
             <div className="text-center text-muted-foreground">
               <Search className="mx-auto h-12 w-12 mb-4 opacity-50" />
-              <h3 className="text-lg font-medium mb-2">No results found</h3>
-              <p>Try a different search term</p>
+              <h3 className="text-lg font-medium mb-2">{t('templates.noResults')}</h3>
+              <p>{t('templates.noResultsDesc')}</p>
             </div>
           </CardContent>
         </Card>
@@ -285,7 +288,7 @@ export function TemplatesPage() {
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg">{group.modelName}</CardTitle>
                   <CardDescription>
-                    {group.templates.length} template{group.templates.length !== 1 ? 's' : ''}
+                    {t('templates.templateCount', { count: group.templates.length })}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -298,7 +301,7 @@ export function TemplatesPage() {
                         <div className="flex-1 min-w-0">
                           <p className="font-medium truncate">{template.name}</p>
                           <p className="text-xs text-muted-foreground">
-                            Last updated: {new Date(template.updatedAt).toLocaleDateString()}
+                            {t('templates.lastUpdated')}: {new Date(template.updatedAt).toLocaleDateString()}
                           </p>
                         </div>
                         <div className="flex items-center gap-2 ml-4">
@@ -307,7 +310,7 @@ export function TemplatesPage() {
                             onClick={() => handleUseTemplate(template)}
                           >
                             <Play className="mr-1 h-3 w-3" />
-                            Use
+                            {t('templates.use')}
                           </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -318,11 +321,11 @@ export function TemplatesPage() {
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => handleEditTemplate(template)}>
                                 <Pencil className="mr-2 h-4 w-4" />
-                                Rename
+                                {t('templates.rename')}
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleExportSingle(template)}>
                                 <Download className="mr-2 h-4 w-4" />
-                                Export
+                                {t('templates.export')}
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
@@ -330,7 +333,7 @@ export function TemplatesPage() {
                                 className="text-destructive focus:text-destructive"
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
+                                {t('common.delete')}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -349,19 +352,19 @@ export function TemplatesPage() {
       <Dialog open={!!editingTemplate} onOpenChange={(open) => !open && setEditingTemplate(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Rename Template</DialogTitle>
+            <DialogTitle>{t('templates.renameTemplate')}</DialogTitle>
             <DialogDescription>
-              Enter a new name for this template
+              {t('templates.renameDesc')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="editTemplateName">Template Name</Label>
+              <Label htmlFor="editTemplateName">{t('templates.templateName')}</Label>
               <Input
                 id="editTemplateName"
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
-                placeholder="My template"
+                placeholder={t('templates.templateNamePlaceholder')}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && editName.trim()) {
                     handleSaveEdit()
@@ -372,10 +375,10 @@ export function TemplatesPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingTemplate(null)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button onClick={handleSaveEdit} disabled={!editName.trim()}>
-              Save
+              {t('common.save')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -385,17 +388,17 @@ export function TemplatesPage() {
       <Dialog open={!!deletingTemplate} onOpenChange={(open) => !open && setDeletingTemplate(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Delete Template</DialogTitle>
+            <DialogTitle>{t('templates.deleteTemplate')}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{deletingTemplate?.name}"? This action cannot be undone.
+              {t('templates.deleteConfirm', { name: deletingTemplate?.name })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeletingTemplate(null)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button variant="destructive" onClick={handleDeleteTemplate}>
-              Delete
+              {t('common.delete')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -405,19 +408,19 @@ export function TemplatesPage() {
       <Dialog open={!!importData} onOpenChange={(open) => !open && setImportData(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Import Templates</DialogTitle>
+            <DialogTitle>{t('templates.importTemplates')}</DialogTitle>
             <DialogDescription>
-              Found {importData?.templates.length || 0} template(s) to import.
+              {t('templates.foundTemplates', { count: importData?.templates.length || 0 })}
               {importData?.exportedAt && (
                 <span className="block mt-1 text-xs">
-                  Exported on {new Date(importData.exportedAt).toLocaleString()}
+                  {t('templates.exportedOn', { date: new Date(importData.exportedAt).toLocaleString() })}
                 </span>
               )}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-3">
-              <Label>Import Mode</Label>
+              <Label>{t('templates.importMode')}</Label>
               <div className="space-y-2">
                 <label className="flex items-start gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
                   <input
@@ -429,9 +432,9 @@ export function TemplatesPage() {
                     className="mt-0.5"
                   />
                   <div>
-                    <div className="font-medium">Merge</div>
+                    <div className="font-medium">{t('templates.merge')}</div>
                     <div className="text-sm text-muted-foreground">
-                      Add imported templates, skip duplicates (same name + model)
+                      {t('templates.mergeDesc')}
                     </div>
                   </div>
                 </label>
@@ -445,9 +448,9 @@ export function TemplatesPage() {
                     className="mt-0.5"
                   />
                   <div>
-                    <div className="font-medium">Replace All</div>
+                    <div className="font-medium">{t('templates.replaceAll')}</div>
                     <div className="text-sm text-muted-foreground">
-                      Delete existing templates and replace with imported ones
+                      {t('templates.replaceAllDesc')}
                     </div>
                   </div>
                 </label>
@@ -456,11 +459,11 @@ export function TemplatesPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setImportData(null)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button onClick={handleImportConfirm}>
               <Upload className="mr-2 h-4 w-4" />
-              Import
+              {t('templates.import')}
             </Button>
           </DialogFooter>
         </DialogContent>

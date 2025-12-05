@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { usePlaygroundStore } from '@/stores/playgroundStore'
 import { useModelsStore } from '@/stores/modelsStore'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
@@ -26,6 +27,7 @@ import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/useToast'
 
 export function PlaygroundPage() {
+  const { t } = useTranslation()
   const { modelId } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -111,8 +113,8 @@ export function PlaygroundPage() {
         setFormValues(template.values)
         templateLoadedRef.current = templateId
         toast({
-          title: 'Template loaded',
-          description: `Loaded "${template.name}"`,
+          title: t('playground.templateLoaded'),
+          description: t('playground.loadedTemplate', { name: template.name }),
         })
         // Clear the query param after loading
         setSearchParams({}, { replace: true })
@@ -132,8 +134,8 @@ export function PlaygroundPage() {
     setNewTemplateName('')
     setShowSaveTemplateDialog(false)
     toast({
-      title: 'Template saved',
-      description: `Saved as "${newTemplateName.trim()}"`,
+      title: t('playground.templateSaved'),
+      description: t('playground.savedAs', { name: newTemplateName.trim() }),
     })
   }
 
@@ -280,7 +282,7 @@ export function PlaygroundPage() {
                   <Loader2 className="h-3 w-3 animate-spin" />
                 )}
                 <span className="max-w-[150px] truncate">
-                  {tab.selectedModel?.name || 'New Playground'}
+                  {tab.selectedModel?.name || t('playground.tabs.newTab')}
                 </span>
                 <button
                   onClick={(e) => handleCloseTab(e, tab.id)}
@@ -314,7 +316,7 @@ export function PlaygroundPage() {
           <div className="w-96 flex flex-col border-r">
             {/* Model Selector */}
             <div className="p-4 border-b">
-              <label className="text-sm font-medium mb-2 block">Model</label>
+              <label className="text-sm font-medium mb-2 block">{t('history.model')}</label>
               <ModelSelector
                 models={models}
                 value={activeTab.selectedModel?.model_id}
@@ -337,7 +339,7 @@ export function PlaygroundPage() {
                 />
               ) : (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
-                  <p>Select a model to configure parameters</p>
+                  <p>{t('playground.selectModelPrompt')}</p>
                 </div>
               )}
             </div>
@@ -353,12 +355,12 @@ export function PlaygroundPage() {
                   {activeTab.isRunning ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Running...
+                      {t('playground.running')}
                     </>
                   ) : (
                     <>
                       <Play className="mr-2 h-4 w-4" />
-                      Run
+                      {t('playground.run')}
                       {activeTab.selectedModel && (
                         <span className="ml-2 text-xs opacity-80">
                           {isPricingLoading ? (
@@ -377,7 +379,7 @@ export function PlaygroundPage() {
                   variant="outline"
                   onClick={handleReset}
                   disabled={activeTab.isRunning}
-                  title="Reset form"
+                  title={t('playground.resetForm')}
                 >
                   <RotateCcw className="h-4 w-4" />
                 </Button>
@@ -385,7 +387,7 @@ export function PlaygroundPage() {
                   variant="outline"
                   onClick={() => setShowSaveTemplateDialog(true)}
                   disabled={!activeTab.selectedModel || activeTab.isRunning}
-                  title="Save as template"
+                  title={t('playground.saveAsTemplate')}
                 >
                   <Save className="h-4 w-4" />
                 </Button>
@@ -397,7 +399,7 @@ export function PlaygroundPage() {
           <div className="flex-1 flex flex-col">
             <div className="px-4 py-2 border-b flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <h2 className="font-semibold">Output</h2>
+                <h2 className="font-semibold">{t('playground.output')}</h2>
                 {activeTab.selectedModel && (
                   <span className="text-sm text-muted-foreground">· {activeTab.selectedModel.name}</span>
                 )}
@@ -410,7 +412,7 @@ export function PlaygroundPage() {
                     onClick={handleViewWebPage}
                   >
                     <Globe className="mr-2 h-4 w-4" />
-                    WebPage
+                    {t('playground.webPage')}
                   </Button>
                   <Button
                     variant="outline"
@@ -418,7 +420,7 @@ export function PlaygroundPage() {
                     onClick={handleViewDocs}
                   >
                     <BookOpen className="mr-2 h-4 w-4" />
-                    Docs
+                    {t('playground.docs')}
                   </Button>
                 </div>
               )}
@@ -436,10 +438,10 @@ export function PlaygroundPage() {
       ) : (
         <div className="flex-1 flex items-center justify-center text-muted-foreground">
           <div className="text-center">
-            <p className="mb-4">No playground tabs open</p>
+            <p className="mb-4">{t('playground.noTabs')}</p>
             <Button onClick={handleNewTab}>
               <Plus className="mr-2 h-4 w-4" />
-              New Playground
+              {t('playground.tabs.newTab')}
             </Button>
           </div>
         </div>
@@ -449,19 +451,19 @@ export function PlaygroundPage() {
       <Dialog open={showSaveTemplateDialog} onOpenChange={setShowSaveTemplateDialog}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Save Template</DialogTitle>
+            <DialogTitle>{t('playground.saveTemplate')}</DialogTitle>
             <DialogDescription>
-              Save your current configuration for {activeTab?.selectedModel?.name}
+              {t('playground.saveTemplateDesc', { model: activeTab?.selectedModel?.name })}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="templateName">Template Name</Label>
+              <Label htmlFor="templateName">{t('playground.templateName')}</Label>
               <Input
                 id="templateName"
                 value={newTemplateName}
                 onChange={(e) => setNewTemplateName(e.target.value)}
-                placeholder="My template"
+                placeholder={t('templates.templateNamePlaceholder')}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && newTemplateName.trim()) {
                     handleSaveTemplate()
@@ -478,13 +480,13 @@ export function PlaygroundPage() {
                 setShowSaveTemplateDialog(false)
               }}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               onClick={handleSaveTemplate}
               disabled={!newTemplateName.trim()}
             >
-              Save
+              {t('common.save')}
             </Button>
           </DialogFooter>
         </DialogContent>

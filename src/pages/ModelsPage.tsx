@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo, memo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useModelsStore, type SortBy } from '@/stores/modelsStore'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
 import { ApiKeyRequired } from '@/components/shared/ApiKeyRequired'
@@ -28,11 +29,13 @@ import { usePlaygroundStore } from '@/stores/playgroundStore'
 const SearchInput = memo(function SearchInput({
   value,
   onChange,
-  onClear
+  onClear,
+  placeholder
 }: {
   value: string
   onChange: (value: string) => void
   onClear: () => void
+  placeholder: string
 }) {
   const [localValue, setLocalValue] = useState(value)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -56,7 +59,7 @@ const SearchInput = memo(function SearchInput({
     <div className="relative flex-1 max-w-md">
       <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       <Input
-        placeholder="Search models..."
+        placeholder={placeholder}
         value={localValue}
         onChange={(e) => setLocalValue(e.target.value)}
         className={cn("pl-10", localValue && "pr-10")}
@@ -68,7 +71,6 @@ const SearchInput = memo(function SearchInput({
             onClear()
           }}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-          title="Clear search"
         >
           <X className="h-4 w-4" />
         </button>
@@ -78,6 +80,7 @@ const SearchInput = memo(function SearchInput({
 })
 
 export function ModelsPage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const {
     isLoading,
@@ -150,9 +153,9 @@ export function ModelsPage() {
         <Card className="max-w-md">
           <CardHeader className="text-center">
             <Loader2 className="mx-auto h-12 w-12 animate-spin text-muted-foreground" />
-            <CardTitle>Validating API Key...</CardTitle>
+            <CardTitle>{t('settings.apiKey.validating')}</CardTitle>
             <CardDescription>
-              Please wait while we validate your API key.
+              {t('common.loading')}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -166,12 +169,12 @@ export function ModelsPage() {
       <div className="border-b p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-baseline gap-3">
-            <h1 className="text-xl font-bold">Models</h1>
-            <p className="text-muted-foreground text-sm">Browse available AI models</p>
+            <h1 className="text-xl font-bold">{t('models.title')}</h1>
+            <p className="text-muted-foreground text-sm">{t('models.description')}</p>
           </div>
           <Button variant="outline" size="sm" onClick={() => fetchModels()}>
             <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh
+            {t('common.refresh')}
           </Button>
         </div>
 
@@ -181,6 +184,7 @@ export function ModelsPage() {
             value={searchQuery}
             onChange={setSearchQuery}
             onClear={() => setSearchQuery('')}
+            placeholder={t('models.searchPlaceholder')}
           />
 
           {/* Favorites Filter */}
@@ -188,7 +192,7 @@ export function ModelsPage() {
             variant={showFavoritesOnly ? "default" : "outline"}
             size="sm"
             onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-            title={showFavoritesOnly ? "Show all models" : "Show favorites only"}
+            title={showFavoritesOnly ? t('models.showAll') : t('models.showFavoritesOnly')}
           >
             <Star className={cn("h-4 w-4", showFavoritesOnly && "fill-current")} />
           </Button>
@@ -200,10 +204,10 @@ export function ModelsPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="sort_order">Popularity</SelectItem>
-                <SelectItem value="name">Name</SelectItem>
-                <SelectItem value="price">Price</SelectItem>
-                <SelectItem value="type">Type</SelectItem>
+                <SelectItem value="sort_order">{t('models.popularity')}</SelectItem>
+                <SelectItem value="name">{t('models.name')}</SelectItem>
+                <SelectItem value="price">{t('models.price')}</SelectItem>
+                <SelectItem value="type">{t('models.type')}</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" className="h-9 w-9 p-0" onClick={toggleSortOrder}>
@@ -218,14 +222,14 @@ export function ModelsPage() {
           {/* Tag Filter Bar - inline */}
           {allTypes.length > 0 && (
             <div className="flex items-center gap-1.5 overflow-x-auto">
-              <span className="text-xs text-muted-foreground shrink-0">Type:</span>
+              <span className="text-xs text-muted-foreground shrink-0">{t('models.type')}:</span>
               <Button
                 variant={selectedType === null ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setSelectedType(null)}
                 className="shrink-0 h-7 px-2 text-xs"
               >
-                All
+                {t('common.all')}
               </Button>
               {allTypes.map((type) => (
                 <Button
@@ -254,12 +258,12 @@ export function ModelsPage() {
             <div className="text-center py-8">
               <p className="text-destructive text-sm">{error}</p>
               <Button variant="outline" size="sm" className="mt-3" onClick={() => fetchModels()}>
-                Try Again
+                {t('errors.tryAgain')}
               </Button>
             </div>
           ) : filteredModels.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-muted-foreground text-sm">No models found</p>
+              <p className="text-muted-foreground text-sm">{t('models.noResults')}</p>
             </div>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -315,13 +319,13 @@ export function ModelsPage() {
                               )}
                               {model.type && (
                                 <div className="flex items-center gap-2 text-xs">
-                                  <span className="text-muted-foreground">Type:</span>
+                                  <span className="text-muted-foreground">{t('models.type')}:</span>
                                   <Badge variant="secondary" className="text-xs">{model.type}</Badge>
                                 </div>
                               )}
                               {model.base_price !== undefined && (
                                 <div className="flex items-center gap-2 text-xs">
-                                  <span className="text-muted-foreground">Base price:</span>
+                                  <span className="text-muted-foreground">{t('models.basePrice')}:</span>
                                   <span className="font-medium text-primary">${model.base_price.toFixed(4)}</span>
                                 </div>
                               )}
@@ -333,7 +337,7 @@ export function ModelsPage() {
                           variant="ghost"
                           className="h-7 w-7 p-0"
                           onClick={(e) => handleToggleFavorite(e, model.model_id)}
-                          title={isFavorite(model.model_id) ? "Remove from favorites" : "Add to favorites"}
+                          title={isFavorite(model.model_id) ? t('models.removeFromFavorites') : t('models.addToFavorites')}
                         >
                           <Star className={cn(
                             "h-3.5 w-3.5",
@@ -344,7 +348,7 @@ export function ModelsPage() {
                           size="sm"
                           variant="ghost"
                           className="h-7 w-7 p-0"
-                          title="Open"
+                          title={t('common.open')}
                         >
                           <PlayCircle className="h-3.5 w-3.5" />
                         </Button>
@@ -353,7 +357,7 @@ export function ModelsPage() {
                           variant="ghost"
                           className="h-7 w-7 p-0"
                           onClick={(e) => handleOpenInNewTab(e, model.model_id)}
-                          title="Open in new tab"
+                          title={t('models.openInNewTab')}
                         >
                           <ExternalLink className="h-3.5 w-3.5" />
                         </Button>

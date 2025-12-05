@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { PredictionResult } from '@/types/prediction'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -19,6 +20,7 @@ interface OutputDisplayProps {
 }
 
 export function OutputDisplay({ prediction, outputs, error, isLoading }: OutputDisplayProps) {
+  const { t } = useTranslation()
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
   const [fullscreenMedia, setFullscreenMedia] = useState<{ url: string; type: 'image' | 'video' } | null>(null)
 
@@ -59,7 +61,7 @@ export function OutputDisplay({ prediction, outputs, error, isLoading }: OutputD
           <div className="w-16 h-16 border-4 border-muted rounded-full animate-pulse" />
           <div className="absolute inset-0 w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
-        <p className="text-muted-foreground">Generating...</p>
+        <p className="text-muted-foreground">{t('playground.generating')}</p>
         {prediction?.status && (
           <Badge variant="secondary">{prediction.status}</Badge>
         )}
@@ -105,8 +107,8 @@ export function OutputDisplay({ prediction, outputs, error, isLoading }: OutputD
   if (outputs.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground">
-        <p>No outputs yet</p>
-        <p className="text-sm">Configure the model and click Run to generate</p>
+        <p>{t('playground.noOutputs')}</p>
+        <p className="text-sm">{t('playground.configureAndRun')}</p>
       </div>
     )
   }

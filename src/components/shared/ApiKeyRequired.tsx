@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { KeyRound } from 'lucide-react'
@@ -8,8 +9,9 @@ interface ApiKeyRequiredProps {
 }
 
 export function ApiKeyRequired({
-  description = "Please configure your WaveSpeed API key in Settings to continue."
+  description
 }: ApiKeyRequiredProps) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
 
   return (
@@ -17,12 +19,12 @@ export function ApiKeyRequired({
       <Card className="max-w-md">
         <CardHeader className="text-center">
           <KeyRound className="mx-auto h-12 w-12 text-muted-foreground" />
-          <CardTitle>API Key Required</CardTitle>
-          <CardDescription>{description}</CardDescription>
+          <CardTitle>{t('apiKeyRequired.title')}</CardTitle>
+          <CardDescription>{description || t('apiKeyRequired.defaultDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="text-center">
           <Button onClick={() => navigate('/settings')}>
-            Go to Settings
+            {t('apiKeyRequired.goToSettings')}
           </Button>
         </CardContent>
       </Card>

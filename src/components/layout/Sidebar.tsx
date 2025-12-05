@@ -1,4 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -18,44 +19,45 @@ import {
   PanelLeft
 } from 'lucide-react'
 
-const navItems = [
-  {
-    title: 'Models',
-    href: '/models',
-    icon: LayoutGrid
-  },
-  {
-    title: 'Playground',
-    href: '/playground',
-    icon: PlayCircle
-  },
-  {
-    title: 'Templates',
-    href: '/templates',
-    icon: FolderOpen
-  },
-  {
-    title: 'History',
-    href: '/history',
-    icon: History
-  }
-]
-
-const bottomNavItems = [
-  {
-    title: 'Settings',
-    href: '/settings',
-    icon: Settings
-  }
-]
-
 interface SidebarProps {
   collapsed: boolean
   onToggle: () => void
 }
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
+  const { t } = useTranslation()
   const location = useLocation()
+
+  const navItems = [
+    {
+      titleKey: 'nav.models',
+      href: '/models',
+      icon: LayoutGrid
+    },
+    {
+      titleKey: 'nav.playground',
+      href: '/playground',
+      icon: PlayCircle
+    },
+    {
+      titleKey: 'nav.templates',
+      href: '/templates',
+      icon: FolderOpen
+    },
+    {
+      titleKey: 'nav.history',
+      href: '/history',
+      icon: History
+    }
+  ]
+
+  const bottomNavItems = [
+    {
+      titleKey: 'nav.settings',
+      href: '/settings',
+      icon: Settings
+    }
+  ]
 
   return (
     <div
@@ -98,12 +100,12 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                   )}
                 >
                   <item.icon className="h-5 w-5 shrink-0" />
-                  {!collapsed && <span>{item.title}</span>}
+                  {!collapsed && <span>{t(item.titleKey)}</span>}
                 </NavLink>
               </TooltipTrigger>
               {collapsed && (
                 <TooltipContent side="right">
-                  {item.title}
+                  {t(item.titleKey)}
                 </TooltipContent>
               )}
             </Tooltip>
@@ -127,12 +129,12 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                   )}
                 >
                   <item.icon className="h-5 w-5 shrink-0" />
-                  {!collapsed && <span>{item.title}</span>}
+                  {!collapsed && <span>{t(item.titleKey)}</span>}
                 </NavLink>
               </TooltipTrigger>
               {collapsed && (
                 <TooltipContent side="right">
-                  {item.title}
+                  {t(item.titleKey)}
                 </TooltipContent>
               )}
             </Tooltip>
@@ -156,16 +158,11 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
               ) : (
                 <>
                   <PanelLeftClose className="h-4 w-4" style={{ flexShrink: 0 }} />
-                  <span>Collapse</span>
+                  <span>{t('nav.collapse')}</span>
                 </>
               )}
             </Button>
           </TooltipTrigger>
-          {collapsed && (
-            <TooltipContent side="right">
-              Expand sidebar
-            </TooltipContent>
-          )}
         </Tooltip>
       </div>
     </div>

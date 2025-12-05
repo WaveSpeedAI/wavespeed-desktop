@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
 import { useThemeStore, type Theme } from '@/stores/themeStore'
+import { languages } from '@/i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -15,7 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { toast } from '@/hooks/useToast'
-import { Eye, EyeOff, Check, Loader2, Monitor, Moon, Sun, Download, RefreshCw, Rocket, AlertCircle, Shield, Github } from 'lucide-react'
+import { Eye, EyeOff, Check, Loader2, Monitor, Moon, Sun, Download, RefreshCw, Rocket, AlertCircle, Shield, Github, Globe } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 
 type UpdateChannel = 'stable' | 'nightly'
@@ -29,6 +31,7 @@ interface UpdateStatus {
 }
 
 export function SettingsPage() {
+  const { t, i18n } = useTranslation()
   const { apiKey, setApiKey, isValidated, isValidating: storeIsValidating, validateApiKey } = useApiKeyStore()
   const { theme, setTheme } = useThemeStore()
   const [inputKey, setInputKey] = useState(apiKey)
@@ -42,6 +45,15 @@ export function SettingsPage() {
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null)
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
+
+  const handleLanguageChange = useCallback((langCode: string) => {
+    i18n.changeLanguage(langCode)
+    localStorage.setItem('wavespeed_language', langCode)
+    toast({
+      title: t('settings.language.changed'),
+      description: t('settings.language.changedDesc'),
+    })
+  }, [i18n, t])
 
   // Load settings on mount
   useEffect(() => {
@@ -88,20 +100,20 @@ export function SettingsPage() {
       const isValid = await validateApiKey()
       if (isValid) {
         toast({
-          title: 'API Key saved',
-          description: 'Your API key has been validated and saved successfully.',
+          title: t('settings.apiKey.saved'),
+          description: t('settings.apiKey.savedDesc'),
         })
       } else {
         toast({
-          title: 'Invalid API Key',
-          description: 'The API key could not be validated. Please check and try again.',
+          title: t('settings.apiKey.invalid'),
+          description: t('settings.apiKey.invalidDesc'),
           variant: 'destructive',
         })
       }
     } catch {
       toast({
-        title: 'Error',
-        description: 'Failed to save API key.',
+        title: t('settings.apiKey.error'),
+        description: t('settings.apiKey.errorDesc'),
         variant: 'destructive',
       })
     } finally {
@@ -113,8 +125,8 @@ export function SettingsPage() {
     setInputKey('')
     await setApiKey('')
     toast({
-      title: 'API Key cleared',
-      description: 'Your API key has been removed.',
+      title: t('settings.apiKey.cleared'),
+      description: t('settings.apiKey.clearedDesc'),
     })
   }
 
@@ -124,11 +136,11 @@ export function SettingsPage() {
     if (window.electronAPI?.setUpdateChannel) {
       await window.electronAPI.setUpdateChannel(channel)
       toast({
-        title: 'Update channel changed',
-        description: `Switched to ${channel} channel. Click "Check for Updates" to see available updates.`,
+        title: t('settings.updates.channelChanged'),
+        description: t('settings.updates.channelChangedDesc', { channel }),
       })
     }
-  }, [])
+  }, [t])
 
   const handleAutoCheckUpdateChange = useCallback(async (checked: boolean) => {
     setAutoCheckUpdate(checked)
@@ -140,8 +152,8 @@ export function SettingsPage() {
   const handleCheckForUpdates = useCallback(async () => {
     if (!window.electronAPI?.checkForUpdates) {
       toast({
-        title: 'Not available',
-        description: 'Auto-update is not available in development mode.',
+        title: t('settings.updates.devMode'),
+        description: t('settings.updates.notAvailableInDev'),
         variant: 'destructive',
       })
       return
@@ -154,26 +166,26 @@ export function SettingsPage() {
       const result = await window.electronAPI.checkForUpdates()
       if (result.status === 'dev-mode') {
         toast({
-          title: 'Development Mode',
-          description: 'Auto-update is disabled in development mode.',
+          title: t('settings.updates.devMode'),
+          description: t('settings.updates.devModeDesc'),
         })
       } else if (result.status === 'error') {
         toast({
-          title: 'Update check failed',
-          description: result.message || 'Failed to check for updates.',
+          title: t('settings.updates.checkFailed'),
+          description: result.message || t('settings.updates.checkFailed'),
           variant: 'destructive',
         })
       }
-    } catch (error) {
+    } catch {
       toast({
-        title: 'Error',
-        description: 'Failed to check for updates.',
+        title: t('common.error'),
+        description: t('settings.updates.checkFailed'),
         variant: 'destructive',
       })
     } finally {
       setIsCheckingUpdate(false)
     }
-  }, [])
+  }, [t])
 
   const handleDownloadUpdate = useCallback(async () => {
     if (!window.electronAPI?.downloadUpdate) return
@@ -181,15 +193,15 @@ export function SettingsPage() {
     setIsDownloading(true)
     try {
       await window.electronAPI.downloadUpdate()
-    } catch (error) {
+    } catch {
       toast({
-        title: 'Download failed',
-        description: 'Failed to download the update.',
+        title: t('settings.updates.downloadFailed'),
+        description: t('settings.updates.downloadFailedDesc'),
         variant: 'destructive',
       })
       setIsDownloading(false)
     }
-  }, [])
+  }, [t])
 
   const handleInstallUpdate = useCallback(() => {
     if (window.electronAPI?.installUpdate) {
@@ -205,7 +217,7 @@ export function SettingsPage() {
         return (
           <div className="flex items-center gap-2 text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Checking for updates...</span>
+            <span>{t('settings.updates.checking')}</span>
           </div>
         )
 
@@ -214,11 +226,11 @@ export function SettingsPage() {
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
               <Download className="h-4 w-4" />
-              <span>Version {updateStatus.version} is available!</span>
+              <span>{t('settings.updates.available', { version: updateStatus.version })}</span>
             </div>
             <Button onClick={handleDownloadUpdate} disabled={isDownloading}>
               <Download className="mr-2 h-4 w-4" />
-              Download Update
+              {t('settings.updates.downloadUpdate')}
             </Button>
           </div>
         )
@@ -227,7 +239,7 @@ export function SettingsPage() {
         return (
           <div className="flex items-center gap-2 text-muted-foreground">
             <Check className="h-4 w-4" />
-            <span>You're on the latest version ({updateStatus.version})</span>
+            <span>{t('settings.updates.notAvailable', { version: updateStatus.version })}</span>
           </div>
         )
 
@@ -236,7 +248,7 @@ export function SettingsPage() {
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Downloading update... {Math.round(updateStatus.percent || 0)}%</span>
+              <span>{t('settings.updates.downloading', { percent: Math.round(updateStatus.percent || 0) })}</span>
             </div>
             <Progress value={updateStatus.percent || 0} />
           </div>
@@ -247,11 +259,11 @@ export function SettingsPage() {
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
               <Check className="h-4 w-4" />
-              <span>Update downloaded! Version {updateStatus.version} is ready to install.</span>
+              <span>{t('settings.updates.downloaded', { version: updateStatus.version })}</span>
             </div>
             <Button onClick={handleInstallUpdate}>
               <Rocket className="mr-2 h-4 w-4" />
-              Restart & Install
+              {t('settings.updates.restartInstall')}
             </Button>
           </div>
         )
@@ -260,7 +272,7 @@ export function SettingsPage() {
         return (
           <div className="flex items-center gap-2 text-destructive">
             <AlertCircle className="h-4 w-4" />
-            <span>Update error: {updateStatus.message}</span>
+            <span>{t('settings.updates.error', { message: updateStatus.message })}</span>
           </div>
         )
 
@@ -272,9 +284,9 @@ export function SettingsPage() {
   return (
     <div className="container max-w-2xl py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Settings</h1>
+        <h1 className="text-3xl font-bold">{t('settings.title')}</h1>
         <p className="text-muted-foreground mt-2">
-          Configure your WaveSpeed Desktop application
+          {t('settings.description')}
         </p>
       </div>
 
@@ -282,26 +294,26 @@ export function SettingsPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>API Key</CardTitle>
+              <CardTitle>{t('settings.apiKey.title')}</CardTitle>
               <CardDescription>
-                Enter your WaveSpeed API key to access the models
+                {t('settings.apiKey.description')}
               </CardDescription>
             </div>
             {apiKey && storeIsValidating && (
               <Badge variant="secondary">
-                <Loader2 className="mr-1 h-3 w-3 animate-spin" /> Validating
+                <Loader2 className="mr-1 h-3 w-3 animate-spin" /> {t('settings.apiKey.validating')}
               </Badge>
             )}
             {apiKey && !storeIsValidating && isValidated && (
               <Badge variant="success">
-                <Check className="mr-1 h-3 w-3" /> Valid
+                <Check className="mr-1 h-3 w-3" /> {t('settings.apiKey.valid')}
               </Badge>
             )}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="apiKey">API Key</Label>
+            <Label htmlFor="apiKey">{t('settings.apiKey.label')}</Label>
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Input
@@ -309,7 +321,7 @@ export function SettingsPage() {
                   type={showKey ? 'text' : 'password'}
                   value={inputKey}
                   onChange={(e) => setInputKey(e.target.value)}
-                  placeholder="Enter your API key"
+                  placeholder={t('settings.apiKey.placeholder')}
                   className="pr-10"
                 />
                 <Button
@@ -328,7 +340,7 @@ export function SettingsPage() {
               </div>
             </div>
             <p className="text-xs text-muted-foreground">
-              Get your API key from{' '}
+              {t('settings.apiKey.getKey')}{' '}
               <a
                 href="https://wavespeed.ai"
                 target="_blank"
@@ -345,14 +357,14 @@ export function SettingsPage() {
               {isSaving ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Validating...
+                  {t('settings.apiKey.validating')}
                 </>
               ) : (
-                'Save API Key'
+                t('settings.apiKey.save')
               )}
             </Button>
             <Button variant="outline" onClick={handleClear} disabled={!apiKey}>
-              Clear
+              {t('common.clear')}
             </Button>
           </div>
         </CardContent>
@@ -360,42 +372,71 @@ export function SettingsPage() {
 
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>Appearance</CardTitle>
+          <CardTitle>{t('settings.appearance.title')}</CardTitle>
           <CardDescription>
-            Customize the look of the application
+            {t('settings.appearance.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="theme">Theme</Label>
+            <Label htmlFor="theme">{t('settings.appearance.theme')}</Label>
             <Select value={theme} onValueChange={(value) => setTheme(value as Theme)}>
               <SelectTrigger id="theme" className="w-[200px]">
-                <SelectValue placeholder="Select theme" />
+                <SelectValue placeholder={t('settings.appearance.theme')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="auto">
                   <div className="flex items-center gap-2">
                     <Monitor className="h-4 w-4" />
-                    <span>Auto (System)</span>
+                    <span>{t('settings.appearance.themeAuto')}</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="light">
                   <div className="flex items-center gap-2">
                     <Sun className="h-4 w-4" />
-                    <span>Light</span>
+                    <span>{t('settings.appearance.themeLight')}</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="dark">
                   <div className="flex items-center gap-2">
                     <Moon className="h-4 w-4" />
-                    <span>Dark</span>
+                    <span>{t('settings.appearance.themeDark')}</span>
                   </div>
                 </SelectItem>
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              Choose how the application looks. Auto will follow your system preference.
+              {t('settings.appearance.themeDesc')}
             </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>{t('settings.language.title')}</CardTitle>
+          <CardDescription>
+            {t('settings.language.description')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="language">{t('settings.language.label')}</Label>
+            <Select value={i18n.language} onValueChange={handleLanguageChange}>
+              <SelectTrigger id="language" className="w-[200px]">
+                <SelectValue placeholder={t('settings.language.label')} />
+              </SelectTrigger>
+              <SelectContent>
+                {languages.map((lang) => (
+                  <SelectItem key={lang.code} value={lang.code}>
+                    <div className="flex items-center gap-2">
+                      <Globe className="h-4 w-4" />
+                      <span>{lang.nativeName}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
@@ -404,9 +445,9 @@ export function SettingsPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Updates</CardTitle>
+              <CardTitle>{t('settings.updates.title')}</CardTitle>
               <CardDescription>
-                Manage application updates
+                {t('settings.updates.description')}
               </CardDescription>
             </div>
             {appVersion && (
@@ -416,38 +457,38 @@ export function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="updateChannel">Update Channel</Label>
+            <Label htmlFor="updateChannel">{t('settings.updates.channel')}</Label>
             <Select value={updateChannel} onValueChange={(value) => handleChannelChange(value as UpdateChannel)}>
               <SelectTrigger id="updateChannel" className="w-[200px]">
-                <SelectValue placeholder="Select channel" />
+                <SelectValue placeholder={t('settings.updates.channel')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="stable">
                   <div className="flex items-center gap-2">
                     <Shield className="h-4 w-4" />
-                    <span>Stable</span>
+                    <span>{t('settings.updates.stable')}</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="nightly">
                   <div className="flex items-center gap-2">
                     <Rocket className="h-4 w-4" />
-                    <span>Nightly</span>
+                    <span>{t('settings.updates.nightly')}</span>
                   </div>
                 </SelectItem>
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
               {updateChannel === 'stable'
-                ? 'Receive stable releases with thoroughly tested features.'
-                : 'Receive nightly builds with the latest features (may be unstable).'}
+                ? t('settings.updates.stableDesc')
+                : t('settings.updates.nightlyDesc')}
             </p>
           </div>
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="autoCheckUpdate">Check for updates automatically</Label>
+              <Label htmlFor="autoCheckUpdate">{t('settings.updates.autoCheck')}</Label>
               <p className="text-xs text-muted-foreground">
-                Automatically check for updates when the app starts.
+                {t('settings.updates.autoCheckDesc')}
               </p>
             </div>
             <Switch
@@ -466,12 +507,12 @@ export function SettingsPage() {
               {isCheckingUpdate ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Checking...
+                  {t('settings.updates.checking')}
                 </>
               ) : (
                 <>
                   <RefreshCw className="mr-2 h-4 w-4" />
-                  Check for Updates
+                  {t('settings.updates.checkForUpdates')}
                 </>
               )}
             </Button>
@@ -483,21 +524,21 @@ export function SettingsPage() {
 
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>About</CardTitle>
+          <CardTitle>{t('settings.about.title')}</CardTitle>
           <CardDescription>
-            WaveSpeed Desktop - AI Model Playground
+            {t('settings.about.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            An open-source desktop application for running AI models with WaveSpeed API.
+            {t('settings.about.aboutText')}
           </p>
           <Button
             variant="outline"
             onClick={() => window.open('https://github.com/WaveSpeedAI/wavespeed-desktop', '_blank')}
           >
             <Github className="mr-2 h-4 w-4" />
-            View on GitHub
+            {t('settings.about.viewOnGitHub')}
           </Button>
         </CardContent>
       </Card>

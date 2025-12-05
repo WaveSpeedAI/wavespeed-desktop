@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ChevronDown, Search, Check, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { fuzzySearch } from '@/lib/fuzzySearch'
@@ -12,6 +13,7 @@ interface ModelSelectorProps {
 }
 
 export function ModelSelector({ models, value, onChange, disabled }: ModelSelectorProps) {
+  const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const [localSearch, setLocalSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -106,7 +108,7 @@ export function ModelSelector({ models, value, onChange, disabled }: ModelSelect
         )}
       >
         <span className={cn(!selectedModel && "text-muted-foreground")}>
-          {selectedModel?.name || "Select a model"}
+          {selectedModel?.name || t('playground.selectModel')}
         </span>
         <ChevronDown className={cn("h-4 w-4 opacity-50 transition-transform", isOpen && "rotate-180")} />
       </button>
@@ -123,7 +125,7 @@ export function ModelSelector({ models, value, onChange, disabled }: ModelSelect
               value={localSearch}
               onChange={(e) => setLocalSearch(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Search models... (space=AND, ^prefix, !exclude)"
+              placeholder={t('playground.searchModels')}
               className="flex h-10 w-full bg-transparent py-3 px-2 text-sm outline-none placeholder:text-muted-foreground"
             />
             {localSearch && (
@@ -141,7 +143,7 @@ export function ModelSelector({ models, value, onChange, disabled }: ModelSelect
           <div ref={listRef} className="max-h-60 overflow-auto p-1">
             {filteredModels.length === 0 ? (
               <div className="py-6 text-center text-sm text-muted-foreground">
-                No models found
+                {t('models.noResults')}
               </div>
             ) : (
               filteredModels.map((model) => (

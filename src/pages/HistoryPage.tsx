@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { apiClient } from '@/api/client'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
 import type { HistoryItem } from '@/types/prediction'
@@ -100,6 +101,7 @@ function VideoPreview({ src, enabled }: { src: string; enabled: boolean }) {
 }
 
 export function HistoryPage() {
+  const { t } = useTranslation()
   const { isLoading: isLoadingApiKey, isValidated, apiKey } = useApiKeyStore()
   const [items, setItems] = useState<HistoryItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -148,13 +150,13 @@ export function HistoryPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'completed':
-        return <Badge variant="success">Completed</Badge>
+        return <Badge variant="success">{t('history.status.completed')}</Badge>
       case 'failed':
-        return <Badge variant="destructive">Failed</Badge>
+        return <Badge variant="destructive">{t('history.status.failed')}</Badge>
       case 'processing':
-        return <Badge variant="warning">Processing</Badge>
+        return <Badge variant="warning">{t('history.status.processing')}</Badge>
       case 'created':
-        return <Badge variant="info">Created</Badge>
+        return <Badge variant="info">{t('history.status.created')}</Badge>
       default:
         return <Badge variant="secondary">{status}</Badge>
     }
@@ -210,12 +212,12 @@ export function HistoryPage() {
       <div className="border-b p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-baseline gap-3">
-            <h1 className="text-xl font-bold">History</h1>
-            <p className="text-muted-foreground text-sm">View your recent predictions (last 24 hours)</p>
+            <h1 className="text-xl font-bold">{t('history.title')}</h1>
+            <p className="text-muted-foreground text-sm">{t('history.description')}</p>
           </div>
           <Button variant="outline" size="sm" onClick={fetchHistory} disabled={isLoading}>
             <RefreshCw className={cn("mr-2 h-4 w-4", isLoading && "animate-spin")} />
-            Refresh
+            {t('common.refresh')}
           </Button>
         </div>
 
@@ -223,21 +225,21 @@ export function HistoryPage() {
         <div className="flex items-center gap-3">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-36 h-9">
-              <SelectValue placeholder="Status" />
+              <SelectValue placeholder={t('history.status.all')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="failed">Failed</SelectItem>
-              <SelectItem value="processing">Processing</SelectItem>
-              <SelectItem value="created">Created</SelectItem>
+              <SelectItem value="all">{t('history.status.all')}</SelectItem>
+              <SelectItem value="completed">{t('history.status.completed')}</SelectItem>
+              <SelectItem value="failed">{t('history.status.failed')}</SelectItem>
+              <SelectItem value="processing">{t('history.status.processing')}</SelectItem>
+              <SelectItem value="created">{t('history.status.created')}</SelectItem>
             </SelectContent>
           </Select>
           <Button
             variant={loadPreviews ? "default" : "outline"}
             size="sm"
             onClick={() => setLoadPreviews(!loadPreviews)}
-            title={loadPreviews ? "Disable preview loading" : "Enable preview loading"}
+            title={loadPreviews ? t('history.disablePreviews') : t('history.loadPreviews')}
           >
             {loadPreviews ? (
               <Eye className="h-4 w-4" />
@@ -260,16 +262,16 @@ export function HistoryPage() {
               <AlertCircle className="mx-auto h-10 w-10 text-muted-foreground mb-3" />
               {error.includes('404') || error.includes('page not found') || error.includes('504') || error.includes('timeout') || error.includes('Gateway') ? (
                 <>
-                  <p className="text-base font-medium">History Not Available</p>
+                  <p className="text-base font-medium">{t('history.notAvailable')}</p>
                   <p className="text-muted-foreground text-sm mt-1">
-                    The prediction history API is not available at this time.
+                    {t('history.notAvailableDesc')}
                   </p>
                 </>
               ) : (
                 <>
                   <p className="text-destructive text-sm">{error}</p>
                   <Button variant="outline" size="sm" className="mt-3" onClick={fetchHistory}>
-                    Try Again
+                    {t('errors.tryAgain')}
                   </Button>
                 </>
               )}
@@ -277,7 +279,7 @@ export function HistoryPage() {
           ) : items.length === 0 ? (
             <div className="text-center py-8">
               <Clock className="mx-auto h-10 w-10 text-muted-foreground mb-3" />
-              <p className="text-muted-foreground text-sm">No predictions found</p>
+              <p className="text-muted-foreground text-sm">{t('history.noHistory')}</p>
             </div>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -361,7 +363,7 @@ export function HistoryPage() {
       {totalPages > 1 && (
         <div className="border-t p-4 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing {(page - 1) * pageSize + 1} - {Math.min(page * pageSize, total)} of {total}
+            {(page - 1) * pageSize + 1} - {Math.min(page * pageSize, total)} / {total}
           </p>
           <div className="flex gap-2">
             <Button
@@ -371,7 +373,7 @@ export function HistoryPage() {
               disabled={page === 1 || isLoading}
             >
               <ChevronLeft className="h-4 w-4" />
-              Previous
+              {t('common.previous')}
             </Button>
             <Button
               variant="outline"
@@ -379,7 +381,7 @@ export function HistoryPage() {
               onClick={() => setPage(p => p + 1)}
               disabled={page >= totalPages || isLoading}
             >
-              Next
+              {t('common.next')}
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -390,7 +392,7 @@ export function HistoryPage() {
       <Dialog open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
-            <DialogTitle>Generation Details</DialogTitle>
+            <DialogTitle>{t('history.generationDetails')}</DialogTitle>
           </DialogHeader>
           {selectedItem && (
             <div className="flex-1 overflow-y-auto space-y-4">
@@ -418,25 +420,25 @@ export function HistoryPage() {
               {/* Details */}
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-muted-foreground">Model</p>
+                  <p className="text-muted-foreground">{t('history.model')}</p>
                   <p className="font-medium">{selectedItem.model}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Status</p>
+                  <p className="text-muted-foreground">{t('history.status.all').replace('All ', '')}</p>
                   <div>{getStatusBadge(selectedItem.status)}</div>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">Created</p>
+                  <p className="text-muted-foreground">{t('history.created')}</p>
                   <p className="font-medium">{formatDate(selectedItem.created_at)}</p>
                 </div>
                 {selectedItem.execution_time && (
                   <div>
-                    <p className="text-muted-foreground">Execution Time</p>
+                    <p className="text-muted-foreground">{t('history.executionTime')}</p>
                     <p className="font-medium">{(selectedItem.execution_time / 1000).toFixed(2)}s</p>
                   </div>
                 )}
                 <div className="col-span-2">
-                  <p className="text-muted-foreground">Prediction ID</p>
+                  <p className="text-muted-foreground">{t('history.predictionId')}</p>
                   <div className="flex items-center gap-2">
                     <code className="text-xs bg-muted px-2 py-1 rounded flex-1 truncate">
                       {selectedItem.id}

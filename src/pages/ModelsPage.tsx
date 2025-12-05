@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useMemo, memo } from 'react'
+import { useState, useEffect, useRef, useMemo, memo, useCallback } from 'react'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useModelsStore, type SortBy } from '@/stores/modelsStore'
@@ -6,9 +7,8 @@ import { useApiKeyStore } from '@/stores/apiKeyStore'
 import { ApiKeyRequired } from '@/components/shared/ApiKeyRequired'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   Select,
   SelectContent,
@@ -23,7 +23,125 @@ import {
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
 import { cn } from '@/lib/utils'
+import { fuzzySearch } from '@/lib/fuzzySearch'
 import { usePlaygroundStore } from '@/stores/playgroundStore'
+import type { Model } from '@/types/model'
+
+// Memoized model card component
+const ModelCard = memo(function ModelCard({
+  model,
+  isFavorite,
+  onOpenPlayground,
+  onOpenInNewTab,
+  onToggleFavorite,
+  t
+}: {
+  model: Model
+  isFavorite: boolean
+  onOpenPlayground: (modelId: string) => void
+  onOpenInNewTab: (e: React.MouseEvent, modelId: string) => void
+  onToggleFavorite: (e: React.MouseEvent, modelId: string) => void
+  t: (key: string) => string
+}) {
+  return (
+    <Card
+      className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 overflow-hidden group flex flex-col h-full"
+      onClick={() => onOpenPlayground(model.model_id)}
+    >
+      <div className="card-accent" />
+      <CardHeader className="p-3 pb-2">
+        <div className="flex items-start justify-between gap-2">
+          <CardTitle className="text-sm font-medium leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+            {model.name}
+          </CardTitle>
+          {model.type && (
+            <Badge variant="secondary" className="shrink-0 text-xs px-1.5 py-0">
+              {model.type}
+            </Badge>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="p-3 pt-0 mt-auto">
+        <div className="flex items-center justify-between">
+          {model.base_price !== undefined && (
+            <span className="text-xs font-medium text-primary">
+              ${model.base_price.toFixed(4)}
+            </span>
+          )}
+          <div className="flex gap-0.5 ml-auto">
+            <HoverCard openDelay={200} closeDelay={100}>
+              <HoverCardTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 w-7 p-0"
+                  onClick={(e) => e.stopPropagation()}
+                  title="More info"
+                >
+                  <Info className="h-3.5 w-3.5" />
+                </Button>
+              </HoverCardTrigger>
+              <HoverCardContent className="w-72" side="top" align="end">
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-sm">{model.name}</h4>
+                  <p className="text-xs text-muted-foreground font-mono break-all">
+                    {model.model_id}
+                  </p>
+                  {model.description && (
+                    <p className="text-xs text-muted-foreground">
+                      {model.description}
+                    </p>
+                  )}
+                  {model.type && (
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="text-muted-foreground">{t('models.type')}:</span>
+                      <Badge variant="secondary" className="text-xs">{model.type}</Badge>
+                    </div>
+                  )}
+                  {model.base_price !== undefined && (
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className="text-muted-foreground">{t('models.basePrice')}:</span>
+                      <span className="font-medium text-primary">${model.base_price.toFixed(4)}</span>
+                    </div>
+                  )}
+                </div>
+              </HoverCardContent>
+            </HoverCard>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 w-7 p-0"
+              onClick={(e) => onToggleFavorite(e, model.model_id)}
+              title={isFavorite ? t('models.removeFromFavorites') : t('models.addToFavorites')}
+            >
+              <Star className={cn(
+                "h-3.5 w-3.5",
+                isFavorite && "fill-yellow-400 text-yellow-400"
+              )} />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 w-7 p-0"
+              title={t('common.open')}
+            >
+              <PlayCircle className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 w-7 p-0"
+              onClick={(e) => onOpenInNewTab(e, model.model_id)}
+              title={t('models.openInNewTab')}
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+})
 
 // Separate component to prevent parent re-renders during typing
 const SearchInput = memo(function SearchInput({
@@ -87,7 +205,6 @@ export function ModelsPage() {
     error,
     searchQuery,
     setSearchQuery,
-    getFilteredModels,
     fetchModels,
     sortBy,
     sortOrder,
@@ -96,6 +213,7 @@ export function ModelsPage() {
     models,
     toggleFavorite,
     isFavorite,
+    favorites,
     showFavoritesOnly,
     setShowFavoritesOnly,
     selectedType,
@@ -104,8 +222,49 @@ export function ModelsPage() {
   const { isLoading: isLoadingApiKey, isValidated, apiKey } = useApiKeyStore()
   const { createTab } = usePlaygroundStore()
 
-  // Memoize filtered models to prevent unnecessary recalculations
-  const filteredModels = useMemo(() => getFilteredModels(), [models, searchQuery, sortBy, sortOrder, showFavoritesOnly, selectedType])
+  // Memoize filtered models with proper dependencies
+  const filteredModels = useMemo(() => {
+    // First filter by favorites if enabled
+    let filtered = showFavoritesOnly
+      ? models.filter(m => favorites.has(m.model_id))
+      : [...models]
+
+    // Then filter by type if selected
+    if (selectedType) {
+      filtered = filtered.filter(m => m.type === selectedType)
+    }
+
+    // Then apply fuzzy search
+    if (searchQuery.trim()) {
+      const results = fuzzySearch(filtered, searchQuery, (model) => [
+        model.name,
+        model.model_id,
+        model.description || '',
+        model.type || ''
+      ])
+      return results.map(r => r.item)
+    }
+
+    // Apply sorting only when not searching
+    return [...filtered].sort((a, b) => {
+      let comparison = 0
+      switch (sortBy) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name)
+          break
+        case 'price':
+          comparison = (a.base_price ?? 0) - (b.base_price ?? 0)
+          break
+        case 'type':
+          comparison = (a.type || '').localeCompare(b.type || '')
+          break
+        case 'sort_order':
+          comparison = (a.sort_order ?? 0) - (b.sort_order ?? 0)
+          break
+      }
+      return sortOrder === 'asc' ? comparison : -comparison
+    })
+  }, [models, searchQuery, sortBy, sortOrder, showFavoritesOnly, selectedType, favorites])
 
   // Extract unique types from all models for the tag filter
   const allTypes = useMemo(() => {
@@ -118,21 +277,62 @@ export function ModelsPage() {
     return Array.from(types).sort()
   }, [models])
 
-  const handleOpenPlayground = (modelId: string) => {
-    navigate(`/playground/${encodeURIComponent(modelId)}`)
-  }
+  // Grid virtualization
+  const parentRef = useRef<HTMLDivElement>(null)
+  const [columns, setColumns] = useState(4)
 
-  const handleOpenInNewTab = (e: React.MouseEvent, modelId: string) => {
+  // Calculate columns based on container width
+  useEffect(() => {
+    const updateColumns = () => {
+      if (parentRef.current) {
+        const width = parentRef.current.offsetWidth
+        if (width >= 1280) setColumns(4)
+        else if (width >= 1024) setColumns(3)
+        else if (width >= 640) setColumns(2)
+        else setColumns(1)
+      }
+    }
+
+    updateColumns()
+    const resizeObserver = new ResizeObserver(updateColumns)
+    if (parentRef.current) {
+      resizeObserver.observe(parentRef.current)
+    }
+    return () => resizeObserver.disconnect()
+  }, [])
+
+  // Group models into rows
+  const rows = useMemo(() => {
+    const result: Model[][] = []
+    for (let i = 0; i < filteredModels.length; i += columns) {
+      result.push(filteredModels.slice(i, i + columns))
+    }
+    return result
+  }, [filteredModels, columns])
+
+  const rowVirtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 110, // Estimated row height
+    overscan: 3,
+  })
+
+  // Memoized handlers
+  const handleOpenPlayground = useCallback((modelId: string) => {
+    navigate(`/playground/${encodeURIComponent(modelId)}`)
+  }, [navigate])
+
+  const handleOpenInNewTab = useCallback((e: React.MouseEvent, modelId: string) => {
     e.stopPropagation()
     const model = models.find(m => m.model_id === modelId)
     createTab(model)
     navigate(`/playground/${encodeURIComponent(modelId)}`)
-  }
+  }, [models, createTab, navigate])
 
-  const handleToggleFavorite = (e: React.MouseEvent, modelId: string) => {
+  const handleToggleFavorite = useCallback((e: React.MouseEvent, modelId: string) => {
     e.stopPropagation()
     toggleFavorite(modelId)
-  }
+  }, [toggleFavorite])
 
   // Show loading state while API key is being loaded from storage
   if (isLoadingApiKey) {
@@ -247,129 +447,64 @@ export function ModelsPage() {
         </div>
       </div>
 
-      {/* Content */}
-      <ScrollArea className="flex-1">
-        <div className="p-4">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : error ? (
-            <div className="text-center py-8">
-              <p className="text-destructive text-sm">{error}</p>
-              <Button variant="outline" size="sm" className="mt-3" onClick={() => fetchModels()}>
-                {t('errors.tryAgain')}
-              </Button>
-            </div>
-          ) : filteredModels.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground text-sm">{t('models.noResults')}</p>
-            </div>
-          ) : (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filteredModels.map((model) => (
-                <Card
-                  key={model.model_id}
-                  className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 overflow-hidden group flex flex-col"
-                  onClick={() => handleOpenPlayground(model.model_id)}
+      {/* Content - Virtualized Grid */}
+      <div ref={parentRef} className="flex-1 overflow-auto p-4">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : error ? (
+          <div className="text-center py-8">
+            <p className="text-destructive text-sm">{error}</p>
+            <Button variant="outline" size="sm" className="mt-3" onClick={() => fetchModels()}>
+              {t('errors.tryAgain')}
+            </Button>
+          </div>
+        ) : filteredModels.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground text-sm">{t('models.noResults')}</p>
+          </div>
+        ) : (
+          <div
+            style={{
+              height: `${rowVirtualizer.getTotalSize()}px`,
+              width: '100%',
+              position: 'relative',
+            }}
+          >
+            {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+              const rowModels = rows[virtualRow.index]
+              return (
+                <div
+                  key={virtualRow.key}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: `${virtualRow.size}px`,
+                    transform: `translateY(${virtualRow.start}px)`,
+                  }}
                 >
-                  <div className="card-accent" />
-                  <CardHeader className="p-3 pb-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <CardTitle className="text-sm font-medium leading-tight line-clamp-2 group-hover:text-primary transition-colors">
-                        {model.name}
-                      </CardTitle>
-                      {model.type && (
-                        <Badge variant="secondary" className="shrink-0 text-xs px-1.5 py-0">
-                          {model.type}
-                        </Badge>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-3 pt-0 mt-auto">
-                    <div className="flex items-center justify-between">
-                      {model.base_price !== undefined && (
-                        <span className="text-xs font-medium text-primary">
-                          ${model.base_price.toFixed(4)}
-                        </span>
-                      )}
-                      <div className="flex gap-0.5 ml-auto">
-                        <HoverCard openDelay={200} closeDelay={100}>
-                          <HoverCardTrigger asChild>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-7 w-7 p-0"
-                              onClick={(e) => e.stopPropagation()}
-                              title="More info"
-                            >
-                              <Info className="h-3.5 w-3.5" />
-                            </Button>
-                          </HoverCardTrigger>
-                          <HoverCardContent className="w-72" side="top" align="end">
-                            <div className="space-y-2">
-                              <h4 className="font-semibold text-sm">{model.name}</h4>
-                              <p className="text-xs text-muted-foreground font-mono break-all">
-                                {model.model_id}
-                              </p>
-                              {model.description && (
-                                <p className="text-xs text-muted-foreground">
-                                  {model.description}
-                                </p>
-                              )}
-                              {model.type && (
-                                <div className="flex items-center gap-2 text-xs">
-                                  <span className="text-muted-foreground">{t('models.type')}:</span>
-                                  <Badge variant="secondary" className="text-xs">{model.type}</Badge>
-                                </div>
-                              )}
-                              {model.base_price !== undefined && (
-                                <div className="flex items-center gap-2 text-xs">
-                                  <span className="text-muted-foreground">{t('models.basePrice')}:</span>
-                                  <span className="font-medium text-primary">${model.base_price.toFixed(4)}</span>
-                                </div>
-                              )}
-                            </div>
-                          </HoverCardContent>
-                        </HoverCard>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 w-7 p-0"
-                          onClick={(e) => handleToggleFavorite(e, model.model_id)}
-                          title={isFavorite(model.model_id) ? t('models.removeFromFavorites') : t('models.addToFavorites')}
-                        >
-                          <Star className={cn(
-                            "h-3.5 w-3.5",
-                            isFavorite(model.model_id) && "fill-yellow-400 text-yellow-400"
-                          )} />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 w-7 p-0"
-                          title={t('common.open')}
-                        >
-                          <PlayCircle className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 w-7 p-0"
-                          onClick={(e) => handleOpenInNewTab(e, model.model_id)}
-                          title={t('models.openInNewTab')}
-                        >
-                          <ExternalLink className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
-      </ScrollArea>
+                  <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
+                    {rowModels.map((model) => (
+                      <ModelCard
+                        key={model.model_id}
+                        model={model}
+                        isFavorite={isFavorite(model.model_id)}
+                        onOpenPlayground={handleOpenPlayground}
+                        onOpenInNewTab={handleOpenInNewTab}
+                        onToggleFavorite={handleToggleFavorite}
+                        t={t}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

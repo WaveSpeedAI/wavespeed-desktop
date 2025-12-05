@@ -37,7 +37,8 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     {
       titleKey: 'nav.playground',
       href: '/playground',
-      icon: PlayCircle
+      icon: PlayCircle,
+      matchPrefix: true  // Match /playground/*
     },
     {
       titleKey: 'nav.templates',
@@ -50,6 +51,14 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       icon: History
     }
   ]
+
+  // Check if a nav item is active
+  const isActive = (item: typeof navItems[0]) => {
+    if (item.matchPrefix) {
+      return location.pathname === item.href || location.pathname.startsWith(item.href + '/')
+    }
+    return location.pathname === item.href
+  }
 
   const bottomNavItems = [
     {
@@ -87,29 +96,32 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       {/* Navigation */}
       <ScrollArea className="flex-1 px-2 py-4">
         <nav className="flex flex-col gap-1">
-          {navItems.map((item) => (
-            <Tooltip key={item.href} delayDuration={0}>
-              <TooltipTrigger asChild>
-                <NavLink
-                  to={item.href}
-                  className={cn(
-                    buttonVariants({ variant: location.pathname === item.href ? 'default' : 'ghost', size: 'sm' }),
-                    'w-full justify-start',
-                    collapsed ? 'justify-center px-2' : 'gap-3 px-3',
-                    location.pathname === item.href && 'shadow-md'
-                  )}
-                >
-                  <item.icon className="h-5 w-5 shrink-0" />
-                  {!collapsed && <span>{t(item.titleKey)}</span>}
-                </NavLink>
-              </TooltipTrigger>
-              {collapsed && (
-                <TooltipContent side="right">
-                  {t(item.titleKey)}
-                </TooltipContent>
-              )}
-            </Tooltip>
-          ))}
+          {navItems.map((item) => {
+            const active = isActive(item)
+            return (
+              <Tooltip key={item.href} delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <NavLink
+                    to={item.href}
+                    className={cn(
+                      buttonVariants({ variant: active ? 'default' : 'ghost', size: 'sm' }),
+                      'w-full justify-start',
+                      collapsed ? 'justify-center px-2' : 'gap-3 px-3',
+                      active && 'shadow-md'
+                    )}
+                  >
+                    <item.icon className="h-5 w-5 shrink-0" />
+                    {!collapsed && <span>{t(item.titleKey)}</span>}
+                  </NavLink>
+                </TooltipTrigger>
+                {collapsed && (
+                  <TooltipContent side="right">
+                    {t(item.titleKey)}
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            )
+          })}
         </nav>
       </ScrollArea>
 

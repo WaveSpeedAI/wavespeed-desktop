@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTemplateStore, type Template, type TemplateExport } from '@/stores/templateStore'
-import { useModelsStore } from '@/stores/modelsStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -23,12 +22,11 @@ import {
 import { Label } from '@/components/ui/label'
 import { toast } from '@/hooks/useToast'
 import { Search, FolderOpen, Play, Trash2, Pencil, MoreVertical, Plus, Download, Upload } from 'lucide-react'
-import { fuzzySearch } from '@/lib/fuzzySearch'
+import { fuzzyMatch } from '@/lib/fuzzySearch'
 
 export function TemplatesPage() {
   const navigate = useNavigate()
   const { templates, loadTemplates, updateTemplate, deleteTemplate, exportTemplates, importTemplates, isLoaded } = useTemplateStore()
-  const { models } = useModelsStore()
   const [searchQuery, setSearchQuery] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -143,8 +141,8 @@ export function TemplatesPage() {
   const groupedTemplates = useMemo(() => {
     const filtered = searchQuery
       ? templates.filter(t =>
-          fuzzySearch(searchQuery, t.name) ||
-          fuzzySearch(searchQuery, t.modelName)
+          fuzzyMatch(searchQuery, t.name) ||
+          fuzzyMatch(searchQuery, t.modelName)
         )
       : templates
 

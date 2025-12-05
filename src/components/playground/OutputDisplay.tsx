@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Download, ExternalLink, Copy, Check, AlertTriangle, X } from 'lucide-react'
+import { AudioPlayer } from '@/components/shared/AudioPlayer'
 import { cn } from '@/lib/utils'
 
 interface OutputDisplayProps {
@@ -119,6 +120,7 @@ export function OutputDisplay({ prediction, outputs, error, isLoading }: OutputD
           const outputStr = isObject ? JSON.stringify(output, null, 2) : String(output)
           const isImage = !isObject && isImageUrl(outputStr)
           const isVideo = !isObject && isVideoUrl(outputStr)
+          const isAudio = !isObject && isAudioUrl(outputStr)
           const copyValue = isObject ? outputStr : outputStr
 
           return (
@@ -151,6 +153,10 @@ export function OutputDisplay({ prediction, outputs, error, isLoading }: OutputD
                 />
               )}
 
+              {isAudio && (
+                <AudioPlayer src={outputStr} />
+              )}
+
               {isObject && (
                 <div className="p-4 w-full h-full overflow-auto">
                   <pre className="text-sm font-mono whitespace-pre-wrap break-all">
@@ -159,7 +165,7 @@ export function OutputDisplay({ prediction, outputs, error, isLoading }: OutputD
                 </div>
               )}
 
-              {!isImage && !isVideo && !isObject && (
+              {!isImage && !isVideo && !isAudio && !isObject && (
                 <div className="p-4">
                   <p className="text-sm break-all">{outputStr}</p>
                 </div>
@@ -204,7 +210,7 @@ export function OutputDisplay({ prediction, outputs, error, isLoading }: OutputD
                     <ExternalLink className="h-4 w-4" />
                   </Button>
                 )}
-                {(isImage || isVideo) && (
+                {(isImage || isVideo || isAudio) && (
                   <Button
                     size="icon"
                     variant="secondary"
@@ -253,16 +259,20 @@ export function OutputDisplay({ prediction, outputs, error, isLoading }: OutputD
   )
 }
 
+function isUrl(str: string): boolean {
+  return str.startsWith('http://') || str.startsWith('https://')
+}
+
 function isImageUrl(url: string): boolean {
-  return /\.(jpg|jpeg|png|gif|webp|bmp)(\?.*)?$/i.test(url) ||
-    url.includes('/image') ||
-    url.includes('image/')
+  return isUrl(url) && /\.(jpg|jpeg|png|gif|webp|bmp)(\?.*)?$/i.test(url)
 }
 
 function isVideoUrl(url: string): boolean {
-  return /\.(mp4|webm|mov|avi|mkv)(\?.*)?$/i.test(url) ||
-    url.includes('/video') ||
-    url.includes('video/')
+  return isUrl(url) && /\.(mp4|webm|mov|avi|mkv)(\?.*)?$/i.test(url)
+}
+
+function isAudioUrl(url: string): boolean {
+  return isUrl(url) && /\.(mp3|wav|ogg|flac|aac|m4a|wma)(\?.*)?$/i.test(url)
 }
 
 function getExtensionFromUrl(url: string): string | null {

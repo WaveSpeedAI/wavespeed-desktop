@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { apiClient } from '@/api/client'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
 import type { HistoryItem } from '@/types/prediction'
@@ -28,12 +28,76 @@ import {
   ChevronRight,
   Image,
   Video,
+  Music,
   Clock,
+  FileText,
+  FileJson,
+  Link,
+  File,
   AlertCircle,
   Copy,
-  Check
+  Check,
+  Eye,
+  EyeOff
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { AudioPlayer } from '@/components/shared/AudioPlayer'
+
+// Video preview component - shows first frame, plays on hover
+function VideoPreview({ src, enabled }: { src: string; enabled: boolean }) {
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [isLoaded, setIsLoaded] = useState(false)
+  const [hasError, setHasError] = useState(false)
+
+  const handleMouseEnter = () => {
+    if (videoRef.current && isLoaded && enabled) {
+      videoRef.current.play().catch(() => {
+        // Ignore autoplay errors
+      })
+    }
+  }
+
+  const handleMouseLeave = () => {
+    if (videoRef.current) {
+      videoRef.current.pause()
+      videoRef.current.currentTime = 0
+    }
+  }
+
+  // Show placeholder if disabled or error
+  if (!enabled || hasError) {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <Video className="h-12 w-12 text-muted-foreground" />
+      </div>
+    )
+  }
+
+  return (
+    <div
+      className="w-full h-full relative"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {!isLoaded && (
+        <div className="absolute inset-0 flex items-center justify-center bg-muted z-10">
+          <Video className="h-12 w-12 text-muted-foreground" />
+        </div>
+      )}
+      <video
+        ref={videoRef}
+        src={src}
+        className="w-full h-full object-cover"
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        onLoadedData={() => setIsLoaded(true)}
+        onError={() => setHasError(true)}
+      />
+    </div>
+  )
+}
 
 export function HistoryPage() {
   const { isLoading: isLoadingApiKey, isValidated, apiKey } = useApiKeyStore()
@@ -45,6 +109,7 @@ export function HistoryPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [selectedItem, setSelectedItem] = useState<HistoryItem | null>(null)
   const [copiedId, setCopiedId] = useState(false)
+  const [loadPreviews, setLoadPreviews] = useState(true)
   const pageSize = 20
 
   const handleCopyId = async (id: string) => {
@@ -99,12 +164,31 @@ export function HistoryPage() {
     return new Date(dateString).toLocaleString()
   }
 
+  const getOutputType = (output: unknown): 'image' | 'video' | 'audio' | 'url' | 'json' | 'text' => {
+    if (typeof output === 'object' && output !== null) {
+      return 'json'
+    }
+    if (typeof output === 'string') {
+      if (output.match(/\.(jpg|jpeg|png|gif|webp|bmp)(\?.*)?$/i)) return 'image'
+      if (output.match(/\.(mp4|webm|mov|avi|mkv)(\?.*)?$/i)) return 'video'
+      if (output.match(/\.(mp3|wav|ogg|flac|aac|m4a|wma)(\?.*)?$/i)) return 'audio'
+      if (output.startsWith('http://') || output.startsWith('https://')) return 'url'
+    }
+    return 'text'
+  }
+
   const getPreviewIcon = (item: HistoryItem) => {
     const firstOutput = item.outputs?.[0]
-    if (typeof firstOutput === 'string' && firstOutput.match(/\.(mp4|webm|mov)/i)) {
-      return Video
+    const type = getOutputType(firstOutput)
+    switch (type) {
+      case 'image': return Image
+      case 'video': return Video
+      case 'audio': return Music
+      case 'url': return Link
+      case 'json': return FileJson
+      case 'text': return FileText
+      default: return File
     }
-    return Image
   }
 
   // Show loading state while API key is being loaded from storage
@@ -123,10 +207,10 @@ export function HistoryPage() {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-b p-6">
-        <div className="flex items-center justify-between mb-4">
+      <div className="border-b p-4">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-baseline gap-3">
-            <h1 className="text-2xl font-bold">History</h1>
+            <h1 className="text-xl font-bold">History</h1>
             <p className="text-muted-foreground text-sm">View your recent predictions (last 24 hours)</p>
           </div>
           <Button variant="outline" size="sm" onClick={fetchHistory} disabled={isLoading}>
@@ -136,63 +220,67 @@ export function HistoryPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex gap-4">
-          <div className="w-48">
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="failed">Failed</SelectItem>
-                <SelectItem value="processing">Processing</SelectItem>
-                <SelectItem value="created">Created</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="flex items-center gap-3">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-36 h-9">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="failed">Failed</SelectItem>
+              <SelectItem value="processing">Processing</SelectItem>
+              <SelectItem value="created">Created</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
+            variant={loadPreviews ? "default" : "outline"}
+            size="sm"
+            onClick={() => setLoadPreviews(!loadPreviews)}
+            title={loadPreviews ? "Disable preview loading" : "Enable preview loading"}
+          >
+            {loadPreviews ? (
+              <Eye className="h-4 w-4" />
+            ) : (
+              <EyeOff className="h-4 w-4" />
+            )}
+          </Button>
         </div>
       </div>
 
       {/* Content */}
       <ScrollArea className="flex-1">
-        <div className="p-6">
+        <div className="p-4">
           {isLoading && items.length === 0 ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : error ? (
-            <div className="text-center py-12">
-              <AlertCircle className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <div className="text-center py-8">
+              <AlertCircle className="mx-auto h-10 w-10 text-muted-foreground mb-3" />
               {error.includes('404') || error.includes('page not found') || error.includes('504') || error.includes('timeout') || error.includes('Gateway') ? (
                 <>
-                  <p className="text-lg font-medium">History Not Available</p>
-                  <p className="text-muted-foreground mt-2">
+                  <p className="text-base font-medium">History Not Available</p>
+                  <p className="text-muted-foreground text-sm mt-1">
                     The prediction history API is not available at this time.
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    You can still run predictions in the Playground.
                   </p>
                 </>
               ) : (
                 <>
-                  <p className="text-destructive">{error}</p>
-                  <Button variant="outline" className="mt-4" onClick={fetchHistory}>
+                  <p className="text-destructive text-sm">{error}</p>
+                  <Button variant="outline" size="sm" className="mt-3" onClick={fetchHistory}>
                     Try Again
                   </Button>
                 </>
               )}
             </div>
           ) : items.length === 0 ? (
-            <div className="text-center py-12">
-              <Clock className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">No predictions found</p>
-              <p className="text-sm text-muted-foreground mt-2">
-                Run some predictions in the Playground to see them here
-              </p>
+            <div className="text-center py-8">
+              <Clock className="mx-auto h-10 w-10 text-muted-foreground mb-3" />
+              <p className="text-muted-foreground text-sm">No predictions found</p>
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {items.map((item) => {
                 const PreviewIcon = getPreviewIcon(item)
                 const hasPreview = item.outputs && item.outputs.length > 0
@@ -205,33 +293,61 @@ export function HistoryPage() {
                   >
                     {/* Preview */}
                     <div className="aspect-video bg-muted relative">
-                      {hasPreview && typeof item.outputs![0] === 'string' && item.outputs![0].match(/\.(jpg|jpeg|png|gif|webp)/i) ? (
+                      {loadPreviews && hasPreview && typeof item.outputs![0] === 'string' && item.outputs![0].match(/\.(jpg|jpeg|png|gif|webp)/i) ? (
                         <img
                           src={item.outputs![0]}
                           alt="Preview"
                           className="w-full h-full object-cover"
                           loading="lazy"
                         />
+                      ) : loadPreviews && hasPreview && typeof item.outputs![0] === 'string' && item.outputs![0].match(/\.(mp4|webm|mov)/i) ? (
+                        <VideoPreview src={item.outputs![0]} enabled={loadPreviews} />
+                      ) : loadPreviews && hasPreview && typeof item.outputs![0] === 'string' && item.outputs![0].match(/\.(mp3|wav|ogg|flac|aac|m4a|wma)/i) ? (
+                        <div
+                          className="w-full h-full flex items-center justify-center p-3"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <AudioPlayer src={item.outputs![0]} compact />
+                        </div>
+                      ) : hasPreview && typeof item.outputs![0] === 'object' ? (
+                        <div className="w-full h-full flex flex-col items-center justify-center p-3 gap-1">
+                          <FileJson className="h-6 w-6 text-muted-foreground shrink-0" />
+                          <pre className="text-[10px] text-muted-foreground overflow-hidden text-ellipsis w-full text-center line-clamp-3">
+                            {JSON.stringify(item.outputs![0], null, 0).slice(0, 100)}
+                          </pre>
+                        </div>
+                      ) : hasPreview && typeof item.outputs![0] === 'string' && !item.outputs![0].startsWith('http') ? (
+                        <div className="w-full h-full flex flex-col items-center justify-center p-3 gap-1">
+                          <FileText className="h-6 w-6 text-muted-foreground shrink-0" />
+                          <p className="text-[10px] text-muted-foreground overflow-hidden text-ellipsis w-full text-center line-clamp-3">
+                            {item.outputs![0].slice(0, 150)}
+                          </p>
+                        </div>
+                      ) : hasPreview && typeof item.outputs![0] === 'string' && item.outputs![0].startsWith('http') ? (
+                        <div className="w-full h-full flex flex-col items-center justify-center p-3 gap-1">
+                          <Link className="h-6 w-6 text-muted-foreground shrink-0" />
+                          <p className="text-[10px] text-muted-foreground overflow-hidden text-ellipsis w-full text-center line-clamp-2 break-all">
+                            {item.outputs![0]}
+                          </p>
+                        </div>
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <PreviewIcon className="h-12 w-12 text-muted-foreground" />
+                          <PreviewIcon className="h-10 w-10 text-muted-foreground" />
                         </div>
                       )}
-                      <div className="absolute top-2 right-2">
+                      <div className="absolute top-1.5 right-1.5">
                         {getStatusBadge(item.status)}
                       </div>
                     </div>
 
-                    <CardContent className="p-4">
-                      <p className="font-medium text-sm truncate">{item.model}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {formatDate(item.created_at)}
-                      </p>
-                      {item.execution_time && (
-                        <p className="text-xs text-muted-foreground">
-                          {(item.execution_time / 1000).toFixed(2)}s
-                        </p>
-                      )}
+                    <CardContent className="p-2.5">
+                      <p className="font-medium text-xs truncate">{item.model}</p>
+                      <div className="flex items-center justify-between mt-1 text-xs text-muted-foreground">
+                        <span>{formatDate(item.created_at)}</span>
+                        {item.execution_time && (
+                          <span>{(item.execution_time / 1000).toFixed(2)}s</span>
+                        )}
+                      </div>
                     </CardContent>
                   </Card>
                 )

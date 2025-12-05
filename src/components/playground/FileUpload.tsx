@@ -4,7 +4,7 @@ import { apiClient } from '@/api/client'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Upload, X, Loader2, FileVideo, FileAudio, Image, FileArchive, File, Link } from 'lucide-react'
+import { Upload, X, Loader2, FileVideo, FileAudio, Image, FileArchive, File } from 'lucide-react'
 
 interface FileUploadProps {
   accept: string
@@ -22,8 +22,7 @@ export function FileUpload({
   maxFiles = 1,
   value,
   onChange,
-  disabled = false,
-  placeholder
+  disabled = false
 }: FileUploadProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -42,7 +41,6 @@ export function FileUpload({
       onChange(newUrl)
     }
     setUrlInput('')
-    setShowUrlInput(false)
   }
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {

@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { toast } from '@/hooks/useToast'
-import { Eye, EyeOff, Check, Loader2, Monitor, Moon, Sun, Download, RefreshCw, Rocket, AlertCircle, Shield } from 'lucide-react'
+import { Eye, EyeOff, Check, Loader2, Monitor, Moon, Sun, Download, RefreshCw, Rocket, AlertCircle, Shield, Github } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 
 type UpdateChannel = 'stable' | 'nightly'
@@ -478,6 +478,27 @@ export function SettingsPage() {
 
             {renderUpdateStatus()}
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>About</CardTitle>
+          <CardDescription>
+            WaveSpeed Desktop - AI Model Playground
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            An open-source desktop application for running AI models with WaveSpeed API.
+          </p>
+          <Button
+            variant="outline"
+            onClick={() => window.open('https://github.com/WaveSpeedAI/wavespeed-desktop', '_blank')}
+          >
+            <Github className="mr-2 h-4 w-4" />
+            View on GitHub
+          </Button>
         </CardContent>
       </Card>
     </div>

@@ -108,7 +108,11 @@
       "gatekeeperAssess": false,
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist",
-      "notarize": true
+      "notarize": true,
+      "extendInfo": {
+        "NSCameraUsageDescription": "WaveSpeed Desktop needs camera access to capture photos and record videos for AI model inputs.",
+        "NSMicrophoneUsageDescription": "WaveSpeed Desktop needs microphone access to record audio and video with sound for AI model inputs."
+      }
     },
     "dmg": {
       "writeUpdateInfo": false

@@ -1,25 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#2563eb"/>
       <stop offset="100%" style="stop-color:#1d4ed8"/>
     </linearGradient>
   </defs>
-  <!-- Rounded rectangle background -->
-  <rect x="0" y="0" width="512" height="512" rx="80" ry="80" fill="url(#bg)"/>
-  <!-- White W letter -->
-  <path d="M 100 140
-           L 160 140
-           L 210 340
-           L 256 200
-           L 302 340
-           L 352 140
-           L 412 140
-           L 330 380
-           L 270 380
-           L 256 330
-           L 242 380
-           L 182 380
+  <!-- Transparent padding for macOS icon guidelines (~10% margin) -->
+  <!-- Rounded rectangle background - centered with padding -->
+  <rect x="102" y="102" width="820" height="820" rx="140" ry="140" fill="url(#bg)"/>
+  <!-- White W letter - scaled and centered -->
+  <path d="M 264 346
+           L 360 346
+           L 440 666
+           L 512 442
+           L 584 666
+           L 664 346
+           L 760 346
+           L 629 730
+           L 533 730
+           L 512 650
+           L 491 730
+           L 395 730
            Z"
         fill="white"/>
 </svg>

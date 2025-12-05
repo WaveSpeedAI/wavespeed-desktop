@@ -196,6 +196,24 @@
   );
 }
 
+/* Sidebar background with depth */
+.sidebar-bg {
+  background: linear-gradient(
+    180deg,
+    hsl(var(--muted) / 0.6) 0%,
+    hsl(var(--muted) / 0.4) 100%
+  );
+  backdrop-filter: blur(8px);
+}
+
+.dark .sidebar-bg {
+  background: linear-gradient(
+    180deg,
+    hsl(220 20% 8%) 0%,
+    hsl(220 20% 6%) 100%
+  );
+}
+
 /* Abstract art animations */
 @keyframes float {
   0%, 100% {

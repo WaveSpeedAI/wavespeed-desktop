@@ -71,7 +71,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   return (
     <div
       className={cn(
-        "flex h-full flex-col border-r bg-card/50 backdrop-blur-sm transition-all duration-300",
+        "flex h-full flex-col border-r sidebar-bg transition-all duration-300",
         collapsed ? "w-16" : "w-48"
       )}
     >

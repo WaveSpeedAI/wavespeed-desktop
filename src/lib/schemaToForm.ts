@@ -17,19 +17,33 @@ export interface FormFieldConfig {
   hidden?: boolean  // x-hidden fields are optional and hidden by default
 }
 
-// Field names that indicate file inputs
-const FILE_FIELD_PATTERNS: Record<string, { accept: string; type: 'file' | 'file-array' }> = {
-  video: { accept: 'video/*', type: 'file' },
-  video_url: { accept: 'video/*', type: 'file' },
-  input_video: { accept: 'video/*', type: 'file' },
-  image: { accept: 'image/*', type: 'file' },
-  image_url: { accept: 'image/*', type: 'file' },
-  input_image: { accept: 'image/*', type: 'file' },
-  images: { accept: 'image/*', type: 'file-array' },
-  image_urls: { accept: 'image/*', type: 'file-array' },
-  audio: { accept: 'audio/*', type: 'file' },
-  audio_url: { accept: 'audio/*', type: 'file' },
-  input_audio: { accept: 'audio/*', type: 'file' },
+// Detect file input type based on field name patterns
+function detectFileType(name: string): { accept: string; type: 'file' | 'file-array' } | null {
+  const lowerName = name.toLowerCase()
+
+  // Check for plural forms (arrays)
+  if (lowerName.endsWith('images') || lowerName.endsWith('image_urls')) {
+    return { accept: 'image/*', type: 'file-array' }
+  }
+  if (lowerName.endsWith('videos') || lowerName.endsWith('video_urls')) {
+    return { accept: 'video/*', type: 'file-array' }
+  }
+  if (lowerName.endsWith('audios') || lowerName.endsWith('audio_urls')) {
+    return { accept: 'audio/*', type: 'file-array' }
+  }
+
+  // Check for singular patterns (matches *image, *video, *audio)
+  if (lowerName.endsWith('image') || lowerName.endsWith('image_url')) {
+    return { accept: 'image/*', type: 'file' }
+  }
+  if (lowerName.endsWith('video') || lowerName.endsWith('video_url')) {
+    return { accept: 'video/*', type: 'file' }
+  }
+  if (lowerName.endsWith('audio') || lowerName.endsWith('audio_url')) {
+    return { accept: 'audio/*', type: 'file' }
+  }
+
+  return null
 }
 
 // Fields that should use textarea
@@ -103,14 +117,16 @@ function propertyToField(
     }
   }
 
-  // Check if this is a file input field
-  const filePattern = FILE_FIELD_PATTERNS[name.toLowerCase()]
-  if (filePattern) {
-    return {
-      ...baseField,
-      type: filePattern.type,
-      accept: filePattern.accept,
-      maxFiles: prop.maxItems || (filePattern.type === 'file-array' ? 10 : 1),
+  // Check if this is a file input field (string type with matching name pattern)
+  if (prop.type === 'string') {
+    const filePattern = detectFileType(name)
+    if (filePattern) {
+      return {
+        ...baseField,
+        type: filePattern.type,
+        accept: filePattern.accept,
+        maxFiles: prop.maxItems || (filePattern.type === 'file-array' ? 10 : 1),
+      }
     }
   }
 
@@ -135,12 +151,16 @@ function propertyToField(
 
   // Handle array type (could be file array)
   if (prop.type === 'array') {
+    const lowerName = name.toLowerCase()
     // Check if it's an array of strings that looks like URLs/files
-    if (name.toLowerCase().includes('image') || name.toLowerCase().includes('video')) {
+    if (lowerName.includes('image') || lowerName.includes('video') || lowerName.includes('audio')) {
+      let accept = 'image/*'
+      if (lowerName.includes('video')) accept = 'video/*'
+      else if (lowerName.includes('audio')) accept = 'audio/*'
       return {
         ...baseField,
         type: 'file-array',
-        accept: name.toLowerCase().includes('video') ? 'video/*' : 'image/*',
+        accept,
         maxFiles: prop.maxItems || 10,
       }
     }

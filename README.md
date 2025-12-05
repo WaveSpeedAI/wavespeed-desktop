@@ -14,8 +14,10 @@ A cross-platform desktop application for running AI models from [WaveSpeedAI](ht
 - **LoRA Support**: Full support for LoRAs including high-noise and low-noise LoRAs for Wan 2.2 models
 - **History**: View your recent predictions (last 24 hours) with detailed view, download, and copy prediction ID
 - **File Upload**: Support for image, video, and audio file inputs with drag & drop
+- **Media Capture**: Built-in camera capture, video recording with audio waveform, and audio recording
 - **View Documentation**: Quick access to model documentation from the playground
 - **Theme Support**: Auto (system), dark, and light theme options
+- **Multi-Language**: Support for 18 languages including English, Chinese, Japanese, Korean, and more
 - **Auto Updates**: Automatic update checking with stable and nightly channels
 - **Cross-Platform**: Available for Windows, macOS, and Linux
 

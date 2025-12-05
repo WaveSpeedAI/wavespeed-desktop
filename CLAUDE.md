@@ -51,6 +51,10 @@ wavespeed-desktop/
 - **`src/components/playground/DynamicForm.tsx`**: Generates forms from model schemas
 - **`src/components/playground/ModelSelector.tsx`**: Searchable model dropdown with fuzzy search
 - **`src/components/playground/OutputDisplay.tsx`**: Displays prediction results (images, videos, text)
+- **`src/components/playground/FileUpload.tsx`**: File upload with drag & drop, URL input, and media capture
+- **`src/components/playground/CameraCapture.tsx`**: Camera capture component for taking photos
+- **`src/components/playground/VideoRecorder.tsx`**: Video recording with audio waveform visualization
+- **`src/components/playground/AudioRecorder.tsx`**: Audio recording with waveform display and playback
 - **`src/pages/TemplatesPage.tsx`**: Template management (browse, search, use, rename, delete)
 - **`src/pages/HistoryPage.tsx`**: Prediction history with detail dialog
 - **`src/lib/schemaToForm.ts`**: Converts API schema to form field configurations
@@ -158,3 +162,10 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - Auto-update uses electron-updater with support for stable and nightly channels
 - Update settings stored in electron-store: `updateChannel` (stable/nightly) and `autoCheckUpdate` (boolean)
 - IPC handlers for updates: `check-for-updates`, `download-update`, `install-update`, `set-update-channel`
+- Media capture components (CameraCapture, VideoRecorder, AudioRecorder) use MediaDevices API with proper cleanup
+- Media streams must be stopped on component unmount using mounted flag pattern to handle async getUserMedia
+- VideoRecorder shows real-time audio waveform visualization using Web Audio API AnalyserNode
+- Clicking on uploaded media thumbnails opens a preview dialog (image/video/audio)
+- i18n uses react-i18next with 18 language locales stored in `src/i18n/locales/`
+- Supported languages: en, zh-CN, zh-TW, ja, ko, es, fr, de, ru, it, pt, tr, hi, id, ms, ar, vi, th
+- Language preference is stored in localStorage with key `i18next` and auto-detected from browser

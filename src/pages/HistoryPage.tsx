@@ -125,11 +125,9 @@ export function HistoryPage() {
       {/* Header */}
       <div className="border-b p-6">
         <div className="flex items-center justify-between mb-4">
-          <div>
+          <div className="flex items-baseline gap-3">
             <h1 className="text-2xl font-bold">History</h1>
-            <p className="text-muted-foreground">
-              View your recent predictions (last 24 hours)
-            </p>
+            <p className="text-muted-foreground text-sm">View your recent predictions (last 24 hours)</p>
           </div>
           <Button variant="outline" size="sm" onClick={fetchHistory} disabled={isLoading}>
             <RefreshCw className={cn("mr-2 h-4 w-4", isLoading && "animate-spin")} />

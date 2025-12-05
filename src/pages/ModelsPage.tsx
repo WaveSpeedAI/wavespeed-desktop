@@ -94,13 +94,26 @@ export function ModelsPage() {
     toggleFavorite,
     isFavorite,
     showFavoritesOnly,
-    setShowFavoritesOnly
+    setShowFavoritesOnly,
+    selectedType,
+    setSelectedType
   } = useModelsStore()
   const { isLoading: isLoadingApiKey, isValidated, apiKey } = useApiKeyStore()
   const { createTab } = usePlaygroundStore()
 
   // Memoize filtered models to prevent unnecessary recalculations
-  const filteredModels = useMemo(() => getFilteredModels(), [models, searchQuery, sortBy, sortOrder, showFavoritesOnly])
+  const filteredModels = useMemo(() => getFilteredModels(), [models, searchQuery, sortBy, sortOrder, showFavoritesOnly, selectedType])
+
+  // Extract unique types from all models for the tag filter
+  const allTypes = useMemo(() => {
+    const types = new Set<string>()
+    models.forEach(model => {
+      if (model.type) {
+        types.add(model.type)
+      }
+    })
+    return Array.from(types).sort()
+  }, [models])
 
   const handleOpenPlayground = (modelId: string) => {
     navigate(`/playground/${encodeURIComponent(modelId)}`)
@@ -150,13 +163,11 @@ export function ModelsPage() {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-b p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold">Models</h1>
-            <p className="text-muted-foreground">
-              Browse available AI models
-            </p>
+      <div className="border-b p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-baseline gap-3">
+            <h1 className="text-xl font-bold">Models</h1>
+            <p className="text-muted-foreground text-sm">Browse available AI models</p>
           </div>
           <Button variant="outline" size="sm" onClick={() => fetchModels()}>
             <RefreshCw className="mr-2 h-4 w-4" />
@@ -164,8 +175,8 @@ export function ModelsPage() {
           </Button>
         </div>
 
-        {/* Search and Sort */}
-        <div className="flex items-center gap-4">
+        {/* Search, Filters and Sort */}
+        <div className="flex items-center gap-3 flex-wrap">
           <SearchInput
             value={searchQuery}
             onChange={setSearchQuery}
@@ -179,15 +190,13 @@ export function ModelsPage() {
             onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
             title={showFavoritesOnly ? "Show all models" : "Show favorites only"}
           >
-            <Star className={cn("h-4 w-4 mr-2", showFavoritesOnly && "fill-current")} />
-            Favorites
+            <Star className={cn("h-4 w-4", showFavoritesOnly && "fill-current")} />
           </Button>
 
           {/* Sort Controls */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Sort by:</span>
+          <div className="flex items-center gap-1">
             <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortBy)}>
-              <SelectTrigger className="w-[130px]">
+              <SelectTrigger className="w-[110px] h-9">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -197,7 +206,7 @@ export function ModelsPage() {
                 <SelectItem value="type">Type</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" size="icon" onClick={toggleSortOrder}>
+            <Button variant="outline" size="sm" className="h-9 w-9 p-0" onClick={toggleSortOrder}>
               {sortOrder === 'asc' ? (
                 <ArrowUp className="h-4 w-4" />
               ) : (
@@ -205,96 +214,113 @@ export function ModelsPage() {
               )}
             </Button>
           </div>
+
+          {/* Tag Filter Bar - inline */}
+          {allTypes.length > 0 && (
+            <div className="flex items-center gap-1.5 overflow-x-auto">
+              <span className="text-xs text-muted-foreground shrink-0">Type:</span>
+              <Button
+                variant={selectedType === null ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setSelectedType(null)}
+                className="shrink-0 h-7 px-2 text-xs"
+              >
+                All
+              </Button>
+              {allTypes.map((type) => (
+                <Button
+                  key={type}
+                  variant={selectedType === type ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setSelectedType(selectedType === type ? null : type)}
+                  className="shrink-0 h-7 px-2 text-xs capitalize"
+                >
+                  {type}
+                </Button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Content */}
       <ScrollArea className="flex-1">
-        <div className="p-6">
+        <div className="p-4">
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : error ? (
-            <div className="text-center py-12">
-              <p className="text-destructive">{error}</p>
-              <Button variant="outline" className="mt-4" onClick={() => fetchModels()}>
+            <div className="text-center py-8">
+              <p className="text-destructive text-sm">{error}</p>
+              <Button variant="outline" size="sm" className="mt-3" onClick={() => fetchModels()}>
                 Try Again
               </Button>
             </div>
           ) : filteredModels.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No models found</p>
+            <div className="text-center py-8">
+              <p className="text-muted-foreground text-sm">No models found</p>
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredModels.map((model) => (
                 <Card
                   key={model.model_id}
-                  className="cursor-pointer transition-all hover:shadow-lg hover:-translate-y-0.5 overflow-hidden group flex flex-col"
+                  className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 overflow-hidden group flex flex-col"
                   onClick={() => handleOpenPlayground(model.model_id)}
                 >
                   <div className="card-accent" />
-                  <CardHeader className="pb-3 flex-none">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-base break-words group-hover:text-primary transition-colors">
-                          {model.name}
-                        </CardTitle>
-                        <p className="text-xs text-muted-foreground truncate mt-1">
-                          {model.model_id}
-                        </p>
-                      </div>
+                  <CardHeader className="p-3 pb-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <CardTitle className="text-sm font-medium leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+                        {model.name}
+                      </CardTitle>
                       {model.type && (
-                        <Badge variant="secondary" className="ml-2 shrink-0">
+                        <Badge variant="secondary" className="shrink-0 text-xs px-1.5 py-0">
                           {model.type}
                         </Badge>
                       )}
                     </div>
                   </CardHeader>
-                  <CardContent className="pt-0 flex-1 flex flex-col">
-                    {model.description && (
-                      <CardDescription className="line-clamp-2 mb-3">
-                        {model.description}
-                      </CardDescription>
-                    )}
-                    <div className="flex items-center justify-between mt-auto">
+                  <CardContent className="p-3 pt-0 mt-auto">
+                    <div className="flex items-center justify-between">
                       {model.base_price !== undefined && (
-                        <span className="text-sm font-medium text-primary">
+                        <span className="text-xs font-medium text-primary">
                           ${model.base_price.toFixed(4)}
                         </span>
                       )}
-                      <div className="flex gap-1 ml-auto">
+                      <div className="flex gap-0.5 ml-auto">
                         <HoverCard openDelay={200} closeDelay={100}>
                           <HoverCardTrigger asChild>
                             <Button
                               size="sm"
                               variant="ghost"
+                              className="h-7 w-7 p-0"
                               onClick={(e) => e.stopPropagation()}
                               title="More info"
                             >
-                              <Info className="h-4 w-4" />
+                              <Info className="h-3.5 w-3.5" />
                             </Button>
                           </HoverCardTrigger>
-                          <HoverCardContent className="w-80" side="top" align="end">
+                          <HoverCardContent className="w-72" side="top" align="end">
                             <div className="space-y-2">
-                              <h4 className="font-semibold">{model.name}</h4>
+                              <h4 className="font-semibold text-sm">{model.name}</h4>
                               <p className="text-xs text-muted-foreground font-mono break-all">
                                 {model.model_id}
                               </p>
                               {model.description && (
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-xs text-muted-foreground">
                                   {model.description}
                                 </p>
                               )}
                               {model.type && (
-                                <div className="flex items-center gap-2 text-sm">
+                                <div className="flex items-center gap-2 text-xs">
                                   <span className="text-muted-foreground">Type:</span>
-                                  <Badge variant="secondary">{model.type}</Badge>
+                                  <Badge variant="secondary" className="text-xs">{model.type}</Badge>
                                 </div>
                               )}
                               {model.base_price !== undefined && (
-                                <div className="flex items-center gap-2 text-sm">
+                                <div className="flex items-center gap-2 text-xs">
                                   <span className="text-muted-foreground">Base price:</span>
                                   <span className="font-medium text-primary">${model.base_price.toFixed(4)}</span>
                                 </div>
@@ -305,25 +331,31 @@ export function ModelsPage() {
                         <Button
                           size="sm"
                           variant="ghost"
+                          className="h-7 w-7 p-0"
                           onClick={(e) => handleToggleFavorite(e, model.model_id)}
                           title={isFavorite(model.model_id) ? "Remove from favorites" : "Add to favorites"}
                         >
                           <Star className={cn(
-                            "h-4 w-4",
+                            "h-3.5 w-3.5",
                             isFavorite(model.model_id) && "fill-yellow-400 text-yellow-400"
                           )} />
-                        </Button>
-                        <Button size="sm" variant="ghost">
-                          <PlayCircle className="mr-1 h-4 w-4" />
-                          Open
                         </Button>
                         <Button
                           size="sm"
                           variant="ghost"
+                          className="h-7 w-7 p-0"
+                          title="Open"
+                        >
+                          <PlayCircle className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 w-7 p-0"
                           onClick={(e) => handleOpenInNewTab(e, model.model_id)}
                           title="Open in new tab"
                         >
-                          <ExternalLink className="h-4 w-4" />
+                          <ExternalLink className="h-3.5 w-3.5" />
                         </Button>
                       </div>
                     </div>

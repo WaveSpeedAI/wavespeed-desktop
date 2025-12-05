@@ -212,11 +212,9 @@ export function TemplatesPage() {
 
   return (
     <div className="container py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Templates</h1>
-        <p className="text-muted-foreground mt-2">
-          Manage your saved playground configurations
-        </p>
+      <div className="flex items-baseline gap-3 mb-6">
+        <h1 className="text-2xl font-bold">Templates</h1>
+        <p className="text-muted-foreground text-sm">Manage your saved playground configurations</p>
       </div>
 
       {/* Search and Actions */}

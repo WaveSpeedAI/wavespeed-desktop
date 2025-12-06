@@ -554,6 +554,8 @@ ipcMain.handle('download-update', async () => {
 })
 
 ipcMain.handle('install-update', () => {
+  // Set quitting flag before calling quitAndInstall so macOS window close handler allows quit
+  ;(app as typeof app & { isQuitting: boolean }).isQuitting = true
   autoUpdater.quitAndInstall(false, true)
 })
 

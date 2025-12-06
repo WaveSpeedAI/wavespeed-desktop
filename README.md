@@ -2,7 +2,7 @@
 
 A cross-platform desktop application for running AI models from [WaveSpeedAI](https://wavespeed.ai).
 
-![Playground Screenshot](https://github.com/user-attachments/assets/f672d314-ccf0-4229-8808-ee72e0ed0e4e)
+![Playground Screenshot](https://github.com/user-attachments/assets/26cbd692-737f-495a-b62a-16bc3b8de29e)
 
 ## Features
 

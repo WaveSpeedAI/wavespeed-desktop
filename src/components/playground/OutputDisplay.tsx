@@ -59,7 +59,6 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
 
     // Auto-save all media outputs
     const saveOutputs = async () => {
-      let savedCount = 0
       for (let i = 0; i < outputs.length; i++) {
         const output = outputs[i]
         if (typeof output !== 'string') continue
@@ -75,7 +74,6 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
             originalUrl: output
           })
           if (result) {
-            savedCount++
             setSavedIndexes(prev => new Set(prev).add(i))
           }
         } catch (err) {
@@ -83,12 +81,11 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
         }
       }
 
-      if (savedCount > 0) {
-        toast({
-          title: t('playground.autoSaved'),
-          description: t('playground.autoSavedDesc', { count: savedCount }),
-        })
-      }
+      // Show a brief, unobtrusive notification
+      toast({
+        description: t('playground.autoSaved'),
+        duration: 2000,
+      })
     }
 
     saveOutputs()

@@ -403,7 +403,7 @@ export function PlaygroundPage() {
           </div>
 
           {/* Right Panel - Output */}
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex-1 flex flex-col bg-white min-w-0">
             <div className="px-5 py-3 border-b bg-card flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <h2 className="font-semibold text-lg">{t('playground.output')}</h2>

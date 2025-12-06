@@ -322,7 +322,7 @@ export function PlaygroundPage() {
           {/* Left Panel - Configuration */}
           <div className="w-[420px] flex flex-col border-r bg-card">
             {/* Model Selector */}
-            <div className="p-4 border-b bg-muted/30">
+            <div className="p-4 border-b">
               <label className="text-sm font-semibold mb-2 block text-foreground">{t('history.model')}</label>
               <ModelSelector
                 models={models}
@@ -352,7 +352,7 @@ export function PlaygroundPage() {
             </div>
 
             {/* Actions */}
-            <div className="p-4 border-t bg-muted/30">
+            <div className="p-4 border-t">
               <div className="flex gap-2">
                 <Button
                   className="flex-1 gradient-bg hover:opacity-90 transition-opacity glow-sm"

@@ -43,7 +43,7 @@ function getTypeAccentClass(type?: string): string {
   }
   
   // Other types
-  return 'bg-gradient-to-r from-slate-400 to-slate-500'
+  return 'bg-gradient-to-r from-blue-500 to-cyan-500'
 }
 
 // Memoized model card component

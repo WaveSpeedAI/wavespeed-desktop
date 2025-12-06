@@ -48,9 +48,26 @@ export function SettingsPage() {
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
 
+  // Get the saved language preference (including 'auto')
+  const [languagePreference, setLanguagePreference] = useState(() => {
+    return localStorage.getItem('wavespeed_language') || 'auto'
+  })
+
   const handleLanguageChange = useCallback((langCode: string) => {
-    i18n.changeLanguage(langCode)
+    setLanguagePreference(langCode)
     localStorage.setItem('wavespeed_language', langCode)
+
+    if (langCode === 'auto') {
+      // Detect browser language
+      const browserLang = navigator.language || 'en'
+      // Find matching language or fallback to 'en'
+      const supportedLangs = ['en', 'zh-CN', 'zh-TW', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'ru', 'pt', 'hi', 'id', 'ms', 'th', 'vi', 'tr', 'ar']
+      const matchedLang = supportedLangs.find(l => browserLang.startsWith(l.split('-')[0])) || 'en'
+      i18n.changeLanguage(matchedLang)
+    } else {
+      i18n.changeLanguage(langCode)
+    }
+
     toast({
       title: t('settings.language.changed'),
       description: t('settings.language.changedDesc'),
@@ -454,7 +471,7 @@ export function SettingsPage() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="language">{t('settings.language.label')}</Label>
-            <Select value={i18n.language} onValueChange={handleLanguageChange}>
+            <Select value={languagePreference} onValueChange={handleLanguageChange}>
               <SelectTrigger id="language" className="w-[200px]">
                 <SelectValue placeholder={t('settings.language.label')} />
               </SelectTrigger>
@@ -463,7 +480,7 @@ export function SettingsPage() {
                   <SelectItem key={lang.code} value={lang.code}>
                     <div className="flex items-center gap-2">
                       <Globe className="h-4 w-4" />
-                      <span>{lang.nativeName}</span>
+                      <span>{lang.code === 'auto' ? t('settings.language.auto') : lang.nativeName}</span>
                     </div>
                   </SelectItem>
                 ))}

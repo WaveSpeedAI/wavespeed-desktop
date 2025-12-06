@@ -311,6 +311,7 @@
       "title": "Lingua",
       "description": "Scegli la tua lingua preferita",
       "label": "Lingua",
+      "auto": "Automatico (Sistema)",
       "changed": "Lingua cambiata",
       "changedDesc": "La lingua dell'applicazione è stata cambiata."
     },

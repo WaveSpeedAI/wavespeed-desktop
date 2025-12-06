@@ -311,6 +311,7 @@
       "title": "Ngôn ngữ",
       "description": "Chọn ngôn ngữ ưa thích",
       "label": "Ngôn ngữ",
+      "auto": "Tự động (Hệ thống)",
       "changed": "Đã đổi ngôn ngữ",
       "changedDesc": "Ngôn ngữ ứng dụng đã được thay đổi."
     },

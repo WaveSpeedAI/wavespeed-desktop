@@ -311,6 +311,7 @@
       "title": "Dil",
       "description": "Tercih ettiğiniz dili seçin",
       "label": "Dil",
+      "auto": "Otomatik (Sistem)",
       "changed": "Dil değiştirildi",
       "changedDesc": "Uygulama dili değiştirildi."
     },

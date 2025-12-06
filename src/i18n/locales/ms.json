@@ -311,6 +311,7 @@
       "title": "Bahasa",
       "description": "Pilih bahasa pilihan anda",
       "label": "Bahasa",
+      "auto": "Automatik (Sistem)",
       "changed": "Bahasa ditukar",
       "changedDesc": "Bahasa aplikasi telah ditukar."
     },

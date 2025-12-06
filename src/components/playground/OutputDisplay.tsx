@@ -36,7 +36,7 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
   const [savingIndex, setSavingIndex] = useState<number | null>(null)
   const autoSavedRef = useRef<string | null>(null)
 
-  const { settings, loadSettings, saveAsset } = useAssetsStore()
+  const { settings, loadSettings, saveAsset, hasAssetForPrediction } = useAssetsStore()
 
   // Load settings on mount
   useEffect(() => {
@@ -47,6 +47,12 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
   useEffect(() => {
     if (!settings.autoSaveAssets || !modelId || !modelName || outputs.length === 0) return
     if (!prediction?.id || autoSavedRef.current === prediction.id) return
+
+    // Check if assets already exist for this prediction (prevents duplicate saves on remount)
+    if (hasAssetForPrediction(prediction.id)) {
+      autoSavedRef.current = prediction.id
+      return
+    }
 
     // Mark as auto-saved to prevent duplicate saves
     autoSavedRef.current = prediction.id
@@ -86,7 +92,7 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
     }
 
     saveOutputs()
-  }, [outputs, prediction?.id, modelId, modelName, settings.autoSaveAssets, saveAsset, t])
+  }, [outputs, prediction?.id, modelId, modelName, settings.autoSaveAssets, saveAsset, hasAssetForPrediction, t])
 
   // Reset saved indexes when outputs change (new prediction)
   useEffect(() => {

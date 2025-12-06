@@ -93,6 +93,7 @@ interface AssetsState {
   // Utilities
   openAssetLocation: (id: string) => Promise<void>
   getAssetById: (id: string) => AssetMetadata | undefined
+  hasAssetForPrediction: (predictionId: string) => boolean
   validateAssets: () => Promise<void>
 }
 
@@ -375,6 +376,10 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
 
   getAssetById: (id) => {
     return get().assets.find(a => a.id === id)
+  },
+
+  hasAssetForPrediction: (predictionId: string) => {
+    return get().assets.some(a => a.predictionId === predictionId)
   },
 
   validateAssets: async () => {

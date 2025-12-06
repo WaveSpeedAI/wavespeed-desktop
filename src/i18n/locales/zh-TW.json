@@ -311,6 +311,7 @@
       "title": "語言",
       "description": "選擇您偏好的語言",
       "label": "語言",
+      "auto": "自動 (跟隨系統)",
       "changed": "語言已變更",
       "changedDesc": "應用程式語言已變更。"
     },

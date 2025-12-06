@@ -22,6 +22,7 @@ import tr from './locales/tr.json'
 import it from './locales/it.json'
 
 export const languages = [
+  { code: 'auto', name: 'Auto (System)', nativeName: 'Auto' },
   { code: 'en', name: 'English', nativeName: 'English' },
   { code: 'zh-CN', name: 'Chinese (Simplified)', nativeName: '简体中文' },
   { code: 'zh-TW', name: 'Chinese (Traditional)', nativeName: '繁體中文' },
@@ -66,20 +67,22 @@ const resources = {
 // Get saved language from localStorage
 const savedLanguage = localStorage.getItem('wavespeed_language')
 
+// If 'auto' or not set, let the detector decide based on browser language
+const effectiveLanguage = savedLanguage === 'auto' ? undefined : savedLanguage
+
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources,
-    lng: savedLanguage || undefined, // Use saved language or let detector decide
+    lng: effectiveLanguage || undefined, // Use saved language or let detector decide
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false, // React already escapes
     },
     detection: {
-      order: ['localStorage', 'navigator'],
-      lookupLocalStorage: 'wavespeed_language',
-      caches: ['localStorage'],
+      order: ['navigator'], // Only use navigator when auto mode
+      caches: [], // Don't cache when in auto mode
     },
   })
 

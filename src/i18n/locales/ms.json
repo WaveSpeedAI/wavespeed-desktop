@@ -111,7 +111,22 @@
       "startRecording": "Mula rakam",
       "stopRecording": "Berhenti",
       "useVideo": "Gunakan video",
-      "useAudio": "Gunakan audio"
+      "useAudio": "Gunakan audio",
+      "drawMask": "Lukis Mask",
+      "maskEditor": {
+        "title": "Editor Mask",
+        "brush": "Berus (putih mendedahkan)",
+        "eraser": "Pemadam (hitam menyembunyikan)",
+        "fill": "Isi kawasan",
+        "invert": "Songsangkan mask",
+        "clear": "Padam semua",
+        "undo": "Buat asal",
+        "redo": "Buat semula",
+        "brushSize": "Saiz",
+        "done": "Selesai",
+        "cancel": "Batal",
+        "hint": "Kawasan putih mendedahkan, kawasan hitam menyembunyikan"
+      }
     },
     "autoSaved": "Disimpan automatik ke Aset",
     "autoSavedDesc": "Menyimpan {{count}} output ke Aset Saya",

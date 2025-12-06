@@ -30,12 +30,13 @@ interface FormFieldProps {
   modelType?: string
   imageValue?: string
   hideLabel?: boolean
+  formValues?: Record<string, unknown>
 }
 
 // Generate a random seed (0 to 65535)
 const generateRandomSeed = () => Math.floor(Math.random() * 65536)
 
-export function FormField({ field, value, onChange, disabled = false, error, modelType, imageValue, hideLabel = false }: FormFieldProps) {
+export function FormField({ field, value, onChange, disabled = false, error, modelType, imageValue, hideLabel = false, formValues }: FormFieldProps) {
   const { t } = useTranslation()
   // Check if this is a seed field
   const isSeedField = field.name.toLowerCase() === 'seed'
@@ -251,6 +252,8 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
             onChange={onChange}
             disabled={disabled}
             placeholder={field.placeholder}
+            isMaskField={field.name.toLowerCase().includes('mask')}
+            formValues={formValues}
           />
         )
 

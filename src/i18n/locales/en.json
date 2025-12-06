@@ -111,7 +111,22 @@
       "startRecording": "Start Recording",
       "stopRecording": "Stop",
       "useVideo": "Use Video",
-      "useAudio": "Use Audio"
+      "useAudio": "Use Audio",
+      "drawMask": "Draw Mask",
+      "maskEditor": {
+        "title": "Mask Editor",
+        "brush": "Brush (white reveals)",
+        "eraser": "Eraser (black hides)",
+        "fill": "Fill area",
+        "invert": "Invert mask",
+        "clear": "Clear all",
+        "undo": "Undo",
+        "redo": "Redo",
+        "brushSize": "Size",
+        "done": "Done",
+        "cancel": "Cancel",
+        "hint": "White areas reveal, black areas hide"
+      }
     },
     "autoSaved": "Auto-saved to Assets",
     "autoSavedDesc": "Saved {{count}} output(s) to My Assets",

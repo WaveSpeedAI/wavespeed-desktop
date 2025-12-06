@@ -377,7 +377,7 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-4 right-4 z-50 text-white hover:bg-white/20 h-10 w-10"
+            className="absolute top-4 right-4 z-50 text-white hover:bg-white/20 h-10 w-10 [filter:drop-shadow(0_0_2px_rgba(0,0,0,0.8))_drop-shadow(0_0_4px_rgba(0,0,0,0.5))]"
             onClick={() => setFullscreenMedia(null)}
           >
             <X className="h-6 w-6" />

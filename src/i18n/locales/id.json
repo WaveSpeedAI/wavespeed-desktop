@@ -111,7 +111,22 @@
       "startRecording": "Mulai rekam",
       "stopRecording": "Berhenti",
       "useVideo": "Gunakan video",
-      "useAudio": "Gunakan audio"
+      "useAudio": "Gunakan audio",
+      "drawMask": "Gambar Mask",
+      "maskEditor": {
+        "title": "Editor Mask",
+        "brush": "Kuas (putih menampilkan)",
+        "eraser": "Penghapus (hitam menyembunyikan)",
+        "fill": "Isi area",
+        "invert": "Balik mask",
+        "clear": "Hapus semua",
+        "undo": "Urungkan",
+        "redo": "Ulangi",
+        "brushSize": "Ukuran",
+        "done": "Selesai",
+        "cancel": "Batal",
+        "hint": "Area putih menampilkan, area hitam menyembunyikan"
+      }
     },
     "autoSaved": "Otomatis disimpan ke Aset",
     "autoSavedDesc": "Menyimpan {{count}} output ke Aset Saya",

@@ -147,6 +147,7 @@ export function DynamicForm({
                       modelType={model.type}
                       imageValue={field.name === 'prompt' ? (values['image'] as string) : undefined}
                       hideLabel
+                      formValues={values}
                     />
                   </div>
                 )}
@@ -165,6 +166,7 @@ export function DynamicForm({
               error={validationErrors[field.name]}
               modelType={model.type}
               imageValue={field.name === 'prompt' ? (values['image'] as string) : undefined}
+              formValues={values}
             />
           )
         })}

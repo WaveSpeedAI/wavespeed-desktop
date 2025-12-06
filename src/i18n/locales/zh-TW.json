@@ -111,7 +111,22 @@
       "startRecording": "開始錄製",
       "stopRecording": "停止",
       "useVideo": "使用影片",
-      "useAudio": "使用音訊"
+      "useAudio": "使用音訊",
+      "drawMask": "繪製遮罩",
+      "maskEditor": {
+        "title": "遮罩編輯器",
+        "brush": "畫筆（白色顯示）",
+        "eraser": "橡皮擦（黑色隱藏）",
+        "fill": "填充區域",
+        "invert": "反轉遮罩",
+        "clear": "清除全部",
+        "undo": "復原",
+        "redo": "重做",
+        "brushSize": "大小",
+        "done": "完成",
+        "cancel": "取消",
+        "hint": "白色區域顯示，黑色區域隱藏"
+      }
     },
     "autoSaved": "已自動儲存至資產",
     "autoSavedDesc": "已儲存 {{count}} 個輸出至我的資產",

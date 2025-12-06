@@ -111,7 +111,22 @@
       "startRecording": "Iniciar grabación",
       "stopRecording": "Detener",
       "useVideo": "Usar video",
-      "useAudio": "Usar audio"
+      "useAudio": "Usar audio",
+      "drawMask": "Dibujar máscara",
+      "maskEditor": {
+        "title": "Editor de máscara",
+        "brush": "Pincel (blanco revela)",
+        "eraser": "Borrador (negro oculta)",
+        "fill": "Rellenar área",
+        "invert": "Invertir máscara",
+        "clear": "Limpiar todo",
+        "undo": "Deshacer",
+        "redo": "Rehacer",
+        "brushSize": "Tamaño",
+        "done": "Listo",
+        "cancel": "Cancelar",
+        "hint": "Las áreas blancas revelan, las negras ocultan"
+      }
     },
     "autoSaved": "Guardado automáticamente en Recursos",
     "autoSavedDesc": "Se guardaron {{count}} salida(s) en Mis Recursos",

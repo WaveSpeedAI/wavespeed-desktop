@@ -111,7 +111,22 @@
       "startRecording": "録画開始",
       "stopRecording": "停止",
       "useVideo": "この動画を使用",
-      "useAudio": "この音声を使用"
+      "useAudio": "この音声を使用",
+      "drawMask": "マスクを描画",
+      "maskEditor": {
+        "title": "マスクエディター",
+        "brush": "ブラシ（白で表示）",
+        "eraser": "消しゴム（黒で非表示）",
+        "fill": "塗りつぶし",
+        "invert": "マスクを反転",
+        "clear": "すべてクリア",
+        "undo": "元に戻す",
+        "redo": "やり直し",
+        "brushSize": "サイズ",
+        "done": "完了",
+        "cancel": "キャンセル",
+        "hint": "白い部分は表示、黒い部分は非表示"
+      }
     },
     "autoSaved": "アセットに自動保存されました",
     "autoSavedDesc": "{{count}}個の出力をマイアセットに保存しました",

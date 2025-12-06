@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDropzone } from 'react-dropzone'
 import { apiClient } from '@/api/client'
@@ -6,12 +6,13 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { Upload, X, Loader2, FileVideo, FileAudio, Image, FileArchive, File as FileIcon, Camera, Video, Mic } from 'lucide-react'
+import { Upload, X, Loader2, FileVideo, FileAudio, Image, FileArchive, File as FileIcon, Camera, Video, Mic, Brush } from 'lucide-react'
 import { CameraCapture } from './CameraCapture'
 import { VideoRecorder } from './VideoRecorder'
 import { AudioRecorder } from './AudioRecorder'
+import { MaskEditor } from './MaskEditor'
 
-type CaptureMode = 'upload' | 'camera' | 'video' | 'audio'
+type CaptureMode = 'upload' | 'camera' | 'video' | 'audio' | 'mask'
 
 interface FileUploadProps {
   accept: string
@@ -21,6 +22,8 @@ interface FileUploadProps {
   onChange: (urls: string | string[]) => void
   disabled?: boolean
   placeholder?: string
+  isMaskField?: boolean
+  formValues?: Record<string, unknown>
 }
 
 export function FileUpload({
@@ -29,7 +32,9 @@ export function FileUpload({
   maxFiles = 1,
   value,
   onChange,
-  disabled = false
+  disabled = false,
+  isMaskField = false,
+  formValues
 }: FileUploadProps) {
   const { t } = useTranslation()
   const [isUploading, setIsUploading] = useState(false)
@@ -43,10 +48,48 @@ export function FileUpload({
   const urls = Array.isArray(value) ? value : value ? [value] : []
 
   // Determine what capture options are available based on accept type
-  const supportsCamera = accept.includes('image')
+  const supportsCamera = accept.includes('image') && !isMaskField
   const supportsVideo = accept.includes('video')
   const supportsAudio = accept.includes('audio')
-  const hasCaptureOptions = supportsCamera || supportsVideo || supportsAudio
+  const supportsMask = isMaskField && accept.includes('image')
+  const hasCaptureOptions = supportsCamera || supportsVideo || supportsAudio || supportsMask
+
+  // Get reference image/video URL from formValues for mask editor
+  const referenceImageUrl = useMemo(() => {
+    if (!formValues || !supportsMask) return undefined
+
+    // Check for 'image' field first (most common)
+    if (formValues['image'] && typeof formValues['image'] === 'string') {
+      return formValues['image']
+    }
+
+    // Check for any field ending with '_image' or 'image_url'
+    for (const [key, val] of Object.entries(formValues)) {
+      if (typeof val === 'string' && val && (key.endsWith('_image') || key.endsWith('image_url'))) {
+        return val
+      }
+    }
+
+    return undefined
+  }, [formValues, supportsMask])
+
+  const referenceVideoUrl = useMemo(() => {
+    if (!formValues || !supportsMask) return undefined
+
+    // Check for 'video' field
+    if (formValues['video'] && typeof formValues['video'] === 'string') {
+      return formValues['video']
+    }
+
+    // Check for any field ending with '_video' or 'video_url'
+    for (const [key, val] of Object.entries(formValues)) {
+      if (typeof val === 'string' && val && (key.endsWith('_video') || key.endsWith('video_url'))) {
+        return val
+      }
+    }
+
+    return undefined
+  }, [formValues, supportsMask])
 
   const handleAddUrl = () => {
     if (!urlInput.trim()) return
@@ -68,7 +111,8 @@ export function FileUpload({
     try {
       // Create a file from the blob with appropriate extension
       const extension = blob.type.includes('video') ? 'webm' :
-                       blob.type.includes('audio') ? 'webm' : 'jpg'
+                       blob.type.includes('audio') ? 'webm' :
+                       blob.type.includes('png') ? 'png' : 'jpg'
       const filename = `capture_${Date.now()}.${extension}`
       const file = new File([blob], filename, { type: blob.type })
 
@@ -250,6 +294,17 @@ export function FileUpload({
             />
           )}
 
+          {/* Mask editor */}
+          {captureMode === 'mask' && (
+            <MaskEditor
+              referenceImageUrl={referenceImageUrl}
+              referenceVideoUrl={referenceVideoUrl}
+              onComplete={handleCapture}
+              onClose={() => setCaptureMode('upload')}
+              disabled={disabled || isUploading}
+            />
+          )}
+
           {/* File upload dropzone with integrated controls */}
           {captureMode === 'upload' && (
             <div className="flex gap-1.5 items-stretch">
@@ -317,6 +372,19 @@ export function FileUpload({
                       title={t('playground.capture.audio')}
                     >
                       <Mic className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {supportsMask && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setCaptureMode('mask')}
+                      disabled={disabled || isUploading}
+                      className="h-[38px] w-[38px]"
+                      title={t('playground.capture.drawMask')}
+                    >
+                      <Brush className="h-4 w-4" />
                     </Button>
                   )}
                 </div>

@@ -111,7 +111,22 @@
       "startRecording": "Inizia registrazione",
       "stopRecording": "Ferma",
       "useVideo": "Usa video",
-      "useAudio": "Usa audio"
+      "useAudio": "Usa audio",
+      "drawMask": "Disegna maschera",
+      "maskEditor": {
+        "title": "Editor maschera",
+        "brush": "Pennello (bianco rivela)",
+        "eraser": "Gomma (nero nasconde)",
+        "fill": "Riempi area",
+        "invert": "Inverti maschera",
+        "clear": "Cancella tutto",
+        "undo": "Annulla",
+        "redo": "Ripeti",
+        "brushSize": "Dimensione",
+        "done": "Fatto",
+        "cancel": "Annulla",
+        "hint": "Le aree bianche rivelano, le nere nascondono"
+      }
     },
     "autoSaved": "Salvato automaticamente negli Asset",
     "autoSavedDesc": "Salvato {{count}} output negli I Miei Asset",

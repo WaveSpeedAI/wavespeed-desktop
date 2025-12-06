@@ -111,7 +111,22 @@
       "startRecording": "Aufnahme starten",
       "stopRecording": "Stoppen",
       "useVideo": "Video verwenden",
-      "useAudio": "Audio verwenden"
+      "useAudio": "Audio verwenden",
+      "drawMask": "Maske zeichnen",
+      "maskEditor": {
+        "title": "Masken-Editor",
+        "brush": "Pinsel (Weiß zeigt an)",
+        "eraser": "Radierer (Schwarz verbirgt)",
+        "fill": "Bereich füllen",
+        "invert": "Maske invertieren",
+        "clear": "Alles löschen",
+        "undo": "Rückgängig",
+        "redo": "Wiederholen",
+        "brushSize": "Größe",
+        "done": "Fertig",
+        "cancel": "Abbrechen",
+        "hint": "Weiße Bereiche zeigen an, schwarze verbergen"
+      }
     },
     "autoSaved": "Automatisch in Assets gespeichert",
     "autoSavedDesc": "{{count}} Ausgabe(n) in Meine Assets gespeichert",

@@ -111,7 +111,22 @@
       "startRecording": "开始录制",
       "stopRecording": "停止",
       "useVideo": "使用视频",
-      "useAudio": "使用音频"
+      "useAudio": "使用音频",
+      "drawMask": "绘制蒙版",
+      "maskEditor": {
+        "title": "蒙版编辑器",
+        "brush": "画笔（白色显示）",
+        "eraser": "橡皮擦（黑色隐藏）",
+        "fill": "填充区域",
+        "invert": "反转蒙版",
+        "clear": "清除全部",
+        "undo": "撤销",
+        "redo": "重做",
+        "brushSize": "大小",
+        "done": "完成",
+        "cancel": "取消",
+        "hint": "白色区域显示，黑色区域隐藏"
+      }
     },
     "autoSaved": "已自动保存到资产",
     "autoSavedDesc": "已保存 {{count}} 个输出到我的资产",

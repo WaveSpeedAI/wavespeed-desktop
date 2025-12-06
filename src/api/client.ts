@@ -113,11 +113,10 @@ class WaveSpeedClient {
       baseURL: BASE_URL,
       timeout: 60000,
       headers: {
-        'channel': 'desktop',
         'Content-Type': 'application/json',
-        'X-Client-Name': 'wavespeed-desktop',
-        'X-Client-Version': version,
-        'X-Client-OS': getOperatingSystem()
+        // 'X-Client-Name': 'wavespeed-desktop',
+        // 'X-Client-Version': version,
+        // 'X-Client-OS': getOperatingSystem()
       }
     })
 

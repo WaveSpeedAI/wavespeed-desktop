@@ -111,7 +111,22 @@
       "startRecording": "Bắt đầu ghi",
       "stopRecording": "Dừng",
       "useVideo": "Sử dụng video",
-      "useAudio": "Sử dụng âm thanh"
+      "useAudio": "Sử dụng âm thanh",
+      "drawMask": "Vẽ Mask",
+      "maskEditor": {
+        "title": "Trình chỉnh sửa Mask",
+        "brush": "Cọ (trắng hiển thị)",
+        "eraser": "Tẩy (đen ẩn đi)",
+        "fill": "Tô vùng",
+        "invert": "Đảo ngược mask",
+        "clear": "Xóa tất cả",
+        "undo": "Hoàn tác",
+        "redo": "Làm lại",
+        "brushSize": "Kích thước",
+        "done": "Xong",
+        "cancel": "Hủy",
+        "hint": "Vùng trắng hiển thị, vùng đen ẩn đi"
+      }
     },
     "autoSaved": "Đã tự động lưu vào Tài sản",
     "autoSavedDesc": "Đã lưu {{count}} đầu ra vào Tài sản của tôi",

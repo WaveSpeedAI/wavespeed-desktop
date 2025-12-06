@@ -111,7 +111,22 @@
       "startRecording": "Kaydı başlat",
       "stopRecording": "Durdur",
       "useVideo": "Videoyu kullan",
-      "useAudio": "Sesi kullan"
+      "useAudio": "Sesi kullan",
+      "drawMask": "Maske Çiz",
+      "maskEditor": {
+        "title": "Maske Düzenleyici",
+        "brush": "Fırça (beyaz gösterir)",
+        "eraser": "Silgi (siyah gizler)",
+        "fill": "Alanı doldur",
+        "invert": "Maskeyi ters çevir",
+        "clear": "Tümünü temizle",
+        "undo": "Geri al",
+        "redo": "Yinele",
+        "brushSize": "Boyut",
+        "done": "Tamamla",
+        "cancel": "İptal",
+        "hint": "Beyaz alanlar gösterir, siyah alanlar gizler"
+      }
     },
     "autoSaved": "Varlıklara otomatik kaydedildi",
     "autoSavedDesc": "{{count}} çıktı Varlıklarım'a kaydedildi",

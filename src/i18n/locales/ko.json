@@ -111,7 +111,22 @@
       "startRecording": "녹화 시작",
       "stopRecording": "중지",
       "useVideo": "이 비디오 사용",
-      "useAudio": "이 오디오 사용"
+      "useAudio": "이 오디오 사용",
+      "drawMask": "마스크 그리기",
+      "maskEditor": {
+        "title": "마스크 편집기",
+        "brush": "브러시 (흰색으로 표시)",
+        "eraser": "지우개 (검은색으로 숨김)",
+        "fill": "영역 채우기",
+        "invert": "마스크 반전",
+        "clear": "전체 지우기",
+        "undo": "실행 취소",
+        "redo": "다시 실행",
+        "brushSize": "크기",
+        "done": "완료",
+        "cancel": "취소",
+        "hint": "흰색 영역은 표시, 검은색 영역은 숨김"
+      }
     },
     "autoSaved": "에셋에 자동 저장됨",
     "autoSavedDesc": "{{count}}개의 출력을 내 에셋에 저장했습니다",

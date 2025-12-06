@@ -204,13 +204,13 @@ export function HistoryPage() {
 
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col bg-background">
       {/* Header */}
-      <div className="border-b p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-baseline gap-3">
-            <h1 className="text-xl font-bold">{t('history.title')}</h1>
-            <p className="text-muted-foreground text-sm">{t('history.description')}</p>
+      <div className="page-header px-6 py-4">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">{t('history.title')}</h1>
+            <p className="text-muted-foreground text-sm mt-0.5">{t('history.description')}</p>
           </div>
           <Button variant="outline" size="sm" onClick={fetchHistory} disabled={isLoading}>
             <RefreshCw className={cn("mr-2 h-4 w-4", isLoading && "animate-spin")} />
@@ -255,7 +255,7 @@ export function HistoryPage() {
 
       {/* Content */}
       <ScrollArea className="flex-1">
-        <div className="p-4">
+        <div className="px-6 py-5">
           {isLoading && items.length === 0 ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -293,7 +293,7 @@ export function HistoryPage() {
                 return (
                   <Card
                     key={item.id}
-                    className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+                    className="overflow-hidden cursor-pointer card-elevated border-transparent hover:border-primary/20"
                     onClick={() => setSelectedItem(item)}
                   >
                     {/* Preview */}

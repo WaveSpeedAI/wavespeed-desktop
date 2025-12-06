@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 220 20% 97%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
@@ -33,14 +33,18 @@
     /* Sidebar text color */
     --sidebar-text-color: #374151;
     --sidebar-text-hover: #111827;
+
+    /* Content area */
+    --content-bg: 220 20% 97%;
+    --panel-bg: 0 0% 100%;
   }
 
   .dark {
     --background: 222 47% 6%;
     --foreground: 0 0% 95%;
-    --card: 222 47% 8%;
+    --card: 222 40% 10%;
     --card-foreground: 0 0% 95%;
-    --popover: 222 47% 8%;
+    --popover: 222 40% 10%;
     --popover-foreground: 0 0% 95%;
     --primary: 217 91% 65%;
     --primary-foreground: 0 0% 100%;
@@ -52,7 +56,7 @@
     --accent-foreground: 217 91% 75%;
     --destructive: 0 62.8% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 217 30% 18%;
+    --border: 217 25% 16%;
     --input: 217 30% 18%;
     --ring: 217 91% 65%;
 
@@ -64,6 +68,10 @@
     /* Sidebar text color */
     --sidebar-text-color: #e5e7eb;
     --sidebar-text-hover: #ffffff;
+
+    /* Content area */
+    --content-bg: 222 47% 6%;
+    --panel-bg: 222 40% 10%;
   }
 }
 
@@ -200,18 +208,59 @@
 .sidebar-bg {
   background: linear-gradient(
     180deg,
-    hsl(var(--muted) / 0.6) 0%,
-    hsl(var(--muted) / 0.4) 100%
+    hsl(220 30% 96%) 0%,
+    hsl(220 25% 94%) 100%
   );
-  backdrop-filter: blur(8px);
 }
 
 .dark .sidebar-bg {
   background: linear-gradient(
     180deg,
-    hsl(220 20% 8%) 0%,
-    hsl(220 20% 6%) 100%
+    hsl(222 45% 8%) 0%,
+    hsl(222 45% 6%) 100%
   );
+}
+
+/* Content panel with elevation */
+.content-panel {
+  background: hsl(var(--panel-bg));
+  border-radius: var(--radius);
+  box-shadow: 0 1px 3px hsl(var(--foreground) / 0.05),
+              0 1px 2px hsl(var(--foreground) / 0.03);
+}
+
+.dark .content-panel {
+  box-shadow: 0 1px 3px hsl(0 0% 0% / 0.3),
+              0 1px 2px hsl(0 0% 0% / 0.2);
+}
+
+/* Elevated card with better shadow */
+.card-elevated {
+  box-shadow: 0 1px 3px hsl(var(--foreground) / 0.06),
+              0 4px 6px hsl(var(--foreground) / 0.04);
+  transition: all 0.2s ease;
+}
+
+.card-elevated:hover {
+  box-shadow: 0 4px 12px hsl(var(--foreground) / 0.08),
+              0 8px 16px hsl(var(--foreground) / 0.06);
+  transform: translateY(-2px);
+}
+
+.dark .card-elevated {
+  box-shadow: 0 1px 3px hsl(0 0% 0% / 0.4),
+              0 4px 6px hsl(0 0% 0% / 0.3);
+}
+
+.dark .card-elevated:hover {
+  box-shadow: 0 4px 12px hsl(0 0% 0% / 0.5),
+              0 8px 16px hsl(0 0% 0% / 0.4);
+}
+
+/* Page header with background */
+.page-header {
+  background: hsl(var(--panel-bg));
+  border-bottom: 1px solid hsl(var(--border));
 }
 
 /* Abstract art animations */

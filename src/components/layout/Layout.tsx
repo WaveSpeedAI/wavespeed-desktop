@@ -7,6 +7,7 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { ToastAction } from '@/components/ui/toast'
 import { toast } from '@/hooks/useToast'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
+import { apiClient } from '@/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -19,14 +20,14 @@ export function Layout() {
   const location = useLocation()
   const hasShownUpdateToast = useRef(false)
 
-  const { apiKey, isLoading: isLoadingApiKey, setApiKey, validateApiKey, isValidating } = useApiKeyStore()
+  const { apiKey, isLoading: isLoadingApiKey, isValidated, loadApiKey } = useApiKeyStore()
   const [inputKey, setInputKey] = useState('')
   const [showKey, setShowKey] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
 
   // Pages that don't require API key
-  const publicPaths = ['/settings']
+  const publicPaths = ['/settings', '/templates', '/assets']
   const isPublicPage = publicPaths.includes(location.pathname)
 
   // Listen for update availability on startup
@@ -58,18 +59,28 @@ export function Layout() {
     setIsSaving(true)
     setError('')
     try {
-      await setApiKey(inputKey.trim())
-      const isValid = await validateApiKey()
-      if (isValid) {
-        toast({
-          title: t('settings.apiKey.saved'),
-          description: t('settings.apiKey.savedDesc'),
-        })
+      // Validate the key first by trying to fetch models
+      apiClient.setApiKey(inputKey.trim())
+      await apiClient.listModels()
+
+      // If we get here, the key is valid - save it directly
+      if (window.electronAPI) {
+        await window.electronAPI.setApiKey(inputKey.trim())
       } else {
-        setError(t('settings.apiKey.invalidDesc'))
+        localStorage.setItem('wavespeed_api_key', inputKey.trim())
       }
+
+      // Reload the API key state
+      await loadApiKey()
+
+      toast({
+        title: t('settings.apiKey.saved'),
+        description: t('settings.apiKey.savedDesc'),
+      })
     } catch {
-      setError(t('settings.apiKey.errorDesc'))
+      // Validation failed - clear the temporary key from client
+      apiClient.setApiKey('')
+      setError(t('settings.apiKey.invalidDesc'))
     } finally {
       setIsSaving(false)
     }
@@ -84,115 +95,106 @@ export function Layout() {
     )
   }
 
-  // Show unified login screen if no API key and not on a public page
-  if (!apiKey && !isPublicPage) {
-    return (
-      <TooltipProvider>
-        <div className="flex h-screen items-center justify-center bg-background relative overflow-hidden">
-          {/* Background decorations */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-float" />
-            <div className="absolute top-1/2 -left-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-float-delayed" />
-            <div className="absolute -bottom-40 right-1/3 w-72 h-72 bg-accent/15 rounded-full blur-3xl animate-float-slow" />
-          </div>
+  // Check if current page requires login (must have a validated API key)
+  const requiresLogin = !isValidated && !isPublicPage
 
-          <div className="relative z-10 w-full max-w-md px-6">
-            {/* Logo and title */}
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center mb-4">
-                <div className="gradient-bg rounded-xl p-3">
-                  <Zap className="h-8 w-8 text-white" />
-                </div>
-              </div>
-              <h1 className="text-3xl font-bold gradient-text mb-2">WaveSpeed</h1>
-              <p className="text-muted-foreground">
-                {t('apiKeyRequired.defaultDesc')}
-              </p>
+  // Login form content for protected pages
+  const loginContent = (
+    <div className="flex h-full items-center justify-center relative overflow-hidden">
+      <div className="relative z-10 w-full max-w-md px-6">
+        {/* Logo and title */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center mb-4">
+            <div className="gradient-bg rounded-xl p-3">
+              <Zap className="h-8 w-8 text-white" />
             </div>
-
-            {/* API Key form */}
-            <div className="bg-card border rounded-lg p-6 shadow-lg space-y-4">
-              <div className="flex items-center gap-2 mb-4">
-                <KeyRound className="h-5 w-5 text-muted-foreground" />
-                <h2 className="font-semibold">{t('settings.apiKey.title')}</h2>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="apiKey">{t('settings.apiKey.label')}</Label>
-                <div className="relative">
-                  <Input
-                    id="apiKey"
-                    type={showKey ? 'text' : 'password'}
-                    value={inputKey}
-                    onChange={(e) => {
-                      setInputKey(e.target.value)
-                      setError('')
-                    }}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSaveApiKey()}
-                    placeholder={t('settings.apiKey.placeholder')}
-                    className="pr-10"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3"
-                    onClick={() => setShowKey(!showKey)}
-                  >
-                    {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
-                </div>
-                {error && (
-                  <p className="text-sm text-destructive">{error}</p>
-                )}
-              </div>
-
-              <Button
-                className="w-full gradient-bg hover:opacity-90"
-                onClick={handleSaveApiKey}
-                disabled={isSaving || isValidating || !inputKey.trim()}
-              >
-                {(isSaving || isValidating) ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {t('settings.apiKey.validating')}
-                  </>
-                ) : (
-                  t('settings.apiKey.save')
-                )}
-              </Button>
-
-              <p className="text-xs text-muted-foreground text-center">
-                {t('settings.apiKey.getKey')}{' '}
-                <a
-                  href="https://wavespeed.ai"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline inline-flex items-center gap-1"
-                >
-                  wavespeed.ai
-                  <ExternalLink className="h-3 w-3" />
-                </a>
-              </p>
-            </div>
-
-            {/* Settings link */}
-            <p className="text-center mt-4 text-sm text-muted-foreground">
-              {t('apiKeyRequired.orGoTo')}{' '}
-              <Button
-                variant="link"
-                className="p-0 h-auto"
-                onClick={() => navigate('/settings')}
-              >
-                {t('nav.settings')}
-              </Button>
-            </p>
           </div>
-          <Toaster />
+          <h1 className="text-3xl font-bold gradient-text mb-2">WaveSpeed</h1>
+          <p className="text-muted-foreground">
+            {t('apiKeyRequired.defaultDesc')}
+          </p>
         </div>
-      </TooltipProvider>
-    )
-  }
+
+        {/* API Key form */}
+        <div className="bg-card border rounded-lg p-6 shadow-lg space-y-4">
+          <div className="flex items-center gap-2 mb-4">
+            <KeyRound className="h-5 w-5 text-muted-foreground" />
+            <h2 className="font-semibold">{t('settings.apiKey.title')}</h2>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="apiKey">{t('settings.apiKey.label')}</Label>
+            <div className="relative">
+              <Input
+                id="apiKey"
+                type={showKey ? 'text' : 'password'}
+                value={inputKey}
+                onChange={(e) => {
+                  setInputKey(e.target.value)
+                  setError('')
+                }}
+                onKeyDown={(e) => e.key === 'Enter' && handleSaveApiKey()}
+                placeholder={t('settings.apiKey.placeholder')}
+                className="pr-10"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="absolute right-0 top-0 h-full px-3"
+                onClick={() => setShowKey(!showKey)}
+              >
+                {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
+            {error && (
+              <p className="text-sm text-destructive">{error}</p>
+            )}
+          </div>
+
+          <Button
+            className="w-full gradient-bg hover:opacity-90"
+            onClick={handleSaveApiKey}
+            disabled={isSaving || !inputKey.trim()}
+          >
+            {isSaving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {t('settings.apiKey.validating')}
+              </>
+            ) : (
+              t('settings.apiKey.save')
+            )}
+          </Button>
+
+          <p className="text-xs text-muted-foreground text-center">
+            {t('settings.apiKey.getKey')}{' '}
+            <a
+              href="https://wavespeed.ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline inline-flex items-center gap-1"
+            >
+              wavespeed.ai
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          </p>
+        </div>
+
+        {/* Settings link */}
+        <p className="text-center mt-4 text-sm text-muted-foreground">
+          {t('apiKeyRequired.orGoTo')}{' '}
+          <Button
+            variant="link"
+            className="p-0 h-auto"
+            onClick={() => navigate('/settings')}
+          >
+            {t('nav.settings')}
+          </Button>
+        </p>
+      </div>
+    </div>
+  )
 
   return (
     <TooltipProvider>
@@ -254,7 +256,7 @@ export function Layout() {
           onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
         />
         <main className="flex-1 overflow-auto relative">
-          <Outlet />
+          {requiresLogin ? loginContent : <Outlet />}
         </main>
         <Toaster />
       </div>

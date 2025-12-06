@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, AxiosError } from 'axios'
 import type { Model, ModelsResponse } from '@/types/model'
 import type { PredictionResult, PredictionResponse, HistoryResponse, UploadResponse } from '@/types/prediction'
+import { version } from '../../package.json'
 
 const BASE_URL = 'https://api.wavespeed.ai'
 
@@ -103,7 +104,9 @@ class WaveSpeedClient {
       baseURL: BASE_URL,
       timeout: 60000,
       headers: {
-        'Content-Type': 'application/json'
+        'channel': 'desktop',
+        'Content-Type': 'application/json',
+        'X-Client-Version': version
       }
     })
 

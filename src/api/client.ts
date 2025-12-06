@@ -5,6 +5,15 @@ import { version } from '../../package.json'
 
 const BASE_URL = 'https://api.wavespeed.ai'
 
+// Detect operating system
+function getOperatingSystem(): string {
+  const platform = navigator.platform.toLowerCase()
+  if (platform.includes('win')) return 'windows'
+  if (platform.includes('mac')) return 'macos'
+  if (platform.includes('linux')) return 'linux'
+  return platform
+}
+
 // Custom error class with detailed information
 export class APIError extends Error {
   code?: number
@@ -106,7 +115,9 @@ class WaveSpeedClient {
       headers: {
         'channel': 'desktop',
         'Content-Type': 'application/json',
-        'X-Client-Version': version
+        'X-Client-Name': 'wavespeed-desktop',
+        'X-Client-Version': version,
+        'X-Client-OS': getOperatingSystem()
       }
     })
 

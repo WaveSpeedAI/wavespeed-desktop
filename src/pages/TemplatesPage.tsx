@@ -269,7 +269,7 @@ export function TemplatesPage() {
             placeholder={t('templates.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 bg-white dark:bg-card"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -286,7 +286,7 @@ export function TemplatesPage() {
             onChange={handleFileSelect}
             className="hidden"
           />
-          <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+          <Button variant="outline" className="bg-white hover:bg-gray-50 dark:bg-card dark:hover:bg-muted" onClick={() => fileInputRef.current?.click()}>
             <Upload className="mr-2 h-4 w-4" />
             {t('templates.import')}
           </Button>

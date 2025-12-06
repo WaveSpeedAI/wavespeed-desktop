@@ -26,6 +26,26 @@ import { fuzzySearch } from '@/lib/fuzzySearch'
 import { usePlaygroundStore } from '@/stores/playgroundStore'
 import type { Model } from '@/types/model'
 
+// Get accent color class based on model type (3 categories: image, video, other)
+function getTypeAccentClass(type?: string): string {
+  if (!type) return 'bg-gradient-to-r from-slate-400 to-slate-500'
+  
+  const normalizedType = type.toLowerCase()
+  
+  // Video related types
+  if (normalizedType.includes('video')) {
+    return 'bg-gradient-to-r from-orange-500 to-amber-500'
+  }
+  
+  // Image related types
+  if (normalizedType.includes('image')) {
+    return 'bg-gradient-to-r from-violet-500 to-purple-500'
+  }
+  
+  // Other types
+  return 'bg-gradient-to-r from-slate-400 to-slate-500'
+}
+
 // Memoized model card component
 const ModelCard = memo(function ModelCard({
   model,
@@ -44,17 +64,17 @@ const ModelCard = memo(function ModelCard({
 }) {
   return (
     <Card
-      className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 overflow-hidden group flex flex-col h-full"
+      className="cursor-pointer card-elevated overflow-hidden group flex flex-col h-full border-transparent hover:border-primary/20"
       onClick={() => onOpenPlayground(model.model_id)}
     >
-      <div className="card-accent" />
+      <div className={cn("h-[3px]", getTypeAccentClass(model.type))} />
       <CardHeader className="p-3 pb-2">
         <div className="flex items-start justify-between gap-2">
-          <CardTitle className="text-sm font-medium leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+          <CardTitle className="text-sm font-semibold leading-tight line-clamp-2 group-hover:text-primary transition-colors">
             {model.name}
           </CardTitle>
           {model.type && (
-            <Badge variant="secondary" className="shrink-0 text-xs px-1.5 py-0">
+            <Badge variant="secondary" className="shrink-0 text-[10px] px-1.5 py-0 font-medium">
               {model.type}
             </Badge>
           )}
@@ -63,11 +83,11 @@ const ModelCard = memo(function ModelCard({
       <CardContent className="p-3 pt-0 mt-auto">
         <div className="flex items-center justify-between">
           {model.base_price !== undefined && (
-            <span className="text-xs font-medium text-primary">
+            <span className="text-sm font-bold text-primary">
               ${model.base_price.toFixed(4)}
             </span>
           )}
-          <div className="flex gap-0.5 ml-auto">
+          <div className="flex gap-0.5 ml-auto opacity-60 group-hover:opacity-100 transition-opacity">
             <HoverCard openDelay={200} closeDelay={100}>
               <HoverCardTrigger asChild>
                 <Button
@@ -360,13 +380,13 @@ export function ModelsPage() {
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col bg-background">
       {/* Header */}
-      <div className="border-b p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-baseline gap-3">
-            <h1 className="text-xl font-bold">{t('models.title')}</h1>
-            <p className="text-muted-foreground text-sm">{t('models.description')}</p>
+      <div className="page-header px-6 py-4">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">{t('models.title')}</h1>
+            <p className="text-muted-foreground text-sm mt-0.5">{t('models.description')}</p>
           </div>
           <Button variant="outline" size="sm" onClick={() => fetchModels()}>
             <RefreshCw className="mr-2 h-4 w-4" />
@@ -444,7 +464,7 @@ export function ModelsPage() {
       </div>
 
       {/* Content - Virtualized Grid */}
-      <div ref={parentRef} className="flex-1 overflow-auto p-4">
+      <div ref={parentRef} className="flex-1 overflow-auto px-6 py-5">
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />

@@ -318,12 +318,12 @@ export function PlaygroundPage() {
 
       {/* Playground Content */}
       {activeTab ? (
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 overflow-hidden bg-background">
           {/* Left Panel - Configuration */}
-          <div className="w-96 flex flex-col border-r">
+          <div className="w-[420px] flex flex-col border-r bg-card">
             {/* Model Selector */}
-            <div className="p-4 border-b">
-              <label className="text-sm font-medium mb-2 block">{t('history.model')}</label>
+            <div className="p-4 border-b bg-muted/30">
+              <label className="text-sm font-semibold mb-2 block text-foreground">{t('history.model')}</label>
               <ModelSelector
                 models={models}
                 value={activeTab.selectedModel?.model_id}
@@ -352,7 +352,7 @@ export function PlaygroundPage() {
             </div>
 
             {/* Actions */}
-            <div className="p-4 border-t">
+            <div className="p-4 border-t bg-muted/30">
               <div className="flex gap-2">
                 <Button
                   className="flex-1 gradient-bg hover:opacity-90 transition-opacity glow-sm"
@@ -403,10 +403,10 @@ export function PlaygroundPage() {
           </div>
 
           {/* Right Panel - Output */}
-          <div className="flex-1 flex flex-col">
-            <div className="px-4 py-2 border-b flex items-center justify-between">
+          <div className="flex-1 flex flex-col min-w-0">
+            <div className="px-5 py-3 border-b bg-card flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <h2 className="font-semibold">{t('playground.output')}</h2>
+                <h2 className="font-semibold text-lg">{t('playground.output')}</h2>
                 {activeTab.selectedModel && (
                   <span className="text-sm text-muted-foreground">· {activeTab.selectedModel.name}</span>
                 )}
@@ -432,7 +432,7 @@ export function PlaygroundPage() {
                 </div>
               )}
             </div>
-            <div className="flex-1 p-4 overflow-hidden">
+            <div className="flex-1 p-5 overflow-hidden">
               <OutputDisplay
                 prediction={activeTab.currentPrediction}
                 outputs={activeTab.outputs}

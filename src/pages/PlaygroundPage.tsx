@@ -260,7 +260,7 @@ export function PlaygroundPage() {
   return (
     <div className="flex h-full flex-col">
       {/* Tab Bar */}
-      <div className="border-b bg-muted/30">
+      <div className="border-b bg-white dark:bg-card">
         <ScrollArea className="w-full">
           <div className="flex items-center">
             {tabs.map((tab) => (

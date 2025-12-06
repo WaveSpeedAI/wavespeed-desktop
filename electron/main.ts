@@ -101,6 +101,17 @@ function createWindow(): void {
     mainWindow?.show()
   })
 
+  // macOS: Hide window instead of closing when clicking the red button
+  // The app will only quit when user presses Cmd+Q
+  if (process.platform === 'darwin') {
+    mainWindow.on('close', (event) => {
+      if (!(app as typeof app & { isQuitting?: boolean }).isQuitting) {
+        event.preventDefault()
+        mainWindow?.hide()
+      }
+    })
+  }
+
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
@@ -600,8 +611,18 @@ app.whenReady().then(() => {
   }
 
   app.on('activate', function () {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    // macOS: Show the hidden window when clicking dock icon
+    if (mainWindow) {
+      mainWindow.show()
+    } else {
+      createWindow()
+    }
   })
+})
+
+// macOS: Set quitting flag so window close handler allows actual quit
+app.on('before-quit', () => {
+  (app as typeof app & { isQuitting: boolean }).isQuitting = true
 })
 
 app.on('window-all-closed', () => {

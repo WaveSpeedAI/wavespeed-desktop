@@ -30,7 +30,7 @@ export function VideoRecorder({ onRecord, onClose, disabled }: VideoRecorderProp
   const [recordedUrl, setRecordedUrl] = useState<string | null>(null)
   const [duration, setDuration] = useState(0)
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment')
-  const [audioLevel, setAudioLevel] = useState(0)
+  const [, setAudioLevel] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [videoDuration, setVideoDuration] = useState(0)

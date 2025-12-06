@@ -6,6 +6,7 @@
     "delete": "Xóa",
     "edit": "Chỉnh sửa",
     "close": "Đóng",
+    "done": "Xong",
     "refresh": "Làm mới",
     "search": "Tìm kiếm",
     "clear": "Xóa",
@@ -26,13 +27,15 @@
     "no": "Không",
     "error": "Lỗi",
     "success": "Thành công",
-    "warning": "Cảnh báo"
+    "warning": "Cảnh báo",
+    "selectAll": "Chọn tất cả"
   },
   "nav": {
     "models": "Mô hình",
     "playground": "Sân chơi",
     "history": "Lịch sử",
     "templates": "Mẫu",
+    "assets": "Tài sản của tôi",
     "settings": "Cài đặt",
     "collapse": "Thu gọn"
   },
@@ -109,6 +112,26 @@
       "stopRecording": "Dừng",
       "useVideo": "Sử dụng video",
       "useAudio": "Sử dụng âm thanh"
+    },
+    "autoSaved": "Đã tự động lưu vào Tài sản",
+    "autoSavedDesc": "Đã lưu {{count}} đầu ra vào Tài sản của tôi",
+    "savedToAssets": "Đã lưu vào Tài sản",
+    "savedToAssetsDesc": "Đầu ra đã được lưu vào thư mục tài sản của bạn",
+    "saveToAssets": "Lưu vào Tài sản",
+    "alreadySaved": "Đã lưu rồi",
+    "saveFailed": "Không thể lưu đầu ra",
+    "unsupportedFormat": "Định dạng đầu ra này không thể lưu làm tài sản",
+    "randomSeed": "Tạo seed ngẫu nhiên",
+    "optimizer": {
+      "tooltip": "Tối ưu hóa prompt bằng AI",
+      "title": "Tối Ưu Hóa Prompt",
+      "perRun": "lần",
+      "loading": "Đang tải trình tối ưu...",
+      "loadError": "Không thể tải cấu hình trình tối ưu",
+      "enterPromptError": "Vui lòng nhập prompt hoặc cung cấp hình ảnh",
+      "failedError": "Không thể tối ưu hóa prompt",
+      "optimizing": "Đang tối ưu...",
+      "optimize": "Tối ưu hóa"
     }
   },
   "history": {
@@ -178,7 +201,81 @@
     "skippedCount": ", bỏ qua {{count}} (trùng lặp)",
     "importFailed": "Nhập thất bại",
     "invalidFile": "Tệp không hợp lệ",
-    "invalidFileDesc": "Tệp đã chọn không phải là xuất mẫu hợp lệ"
+    "invalidFileDesc": "Tệp đã chọn không phải là xuất mẫu hợp lệ",
+    "deleteSelected": "Xóa ({{count}})",
+    "deleteTemplates": "Xóa mẫu",
+    "templatesDeleted": "Đã xóa mẫu",
+    "deletedCount": "Đã xóa {{count}} mẫu",
+    "batchDeleteConfirm": "Bạn có chắc muốn xóa {{count}} mẫu? Hành động này không thể hoàn tác."
+  },
+  "assets": {
+    "title": "Tài sản của tôi",
+    "subtitle": "{{count}} đầu ra đã lưu",
+    "apiKeyRequired": "Vui lòng cấu hình khóa API WaveSpeed để xem tài sản.",
+    "noAssets": "Chưa có tài sản",
+    "noAssetsDesc": "Bật tự động lưu trong Cài đặt để tự động lưu đầu ra đã tạo, hoặc lưu thủ công từ Sân chơi.",
+    "noMatchingAssets": "Không có tài sản nào khớp với bộ lọc của bạn",
+    "enableAutoSave": "Bật Tự động lưu",
+    "searchPlaceholder": "Tìm kiếm tài sản...",
+    "filters": "Bộ lọc",
+    "clearFilters": "Xóa bộ lọc",
+    "filterByType": "Loại",
+    "filterByModel": "Mô hình",
+    "allModels": "Tất cả mô hình",
+    "favorites": "Yêu thích",
+    "showFavoritesOnly": "Chỉ hiện yêu thích",
+    "types": {
+      "image": "Hình ảnh",
+      "video": "Video",
+      "audio": "Âm thanh",
+      "text": "Văn bản",
+      "json": "JSON"
+    },
+    "typesPlural": {
+      "image": "Hình ảnh",
+      "video": "Video",
+      "audio": "Âm thanh",
+      "text": "Văn bản"
+    },
+    "sort": {
+      "dateNewest": "Mới nhất",
+      "dateOldest": "Cũ nhất",
+      "nameAZ": "Tên (A-Z)",
+      "nameZA": "Tên (Z-A)",
+      "sizeLargest": "Lớn nhất",
+      "sizeSmallest": "Nhỏ nhất"
+    },
+    "select": "Chọn",
+    "selectAll": "Chọn tất cả",
+    "deselectAll": "Bỏ chọn tất cả",
+    "deleteSelected": "Xóa ({{count}})",
+    "settings": "Cài đặt",
+    "openFolder": "Mở thư mục",
+    "preview": "Xem trước",
+    "openLocation": "Mở vị trí tệp",
+    "favorite": "Thêm vào Yêu thích",
+    "unfavorite": "Xóa khỏi Yêu thích",
+    "addToFavorites": "Thêm vào yêu thích",
+    "removeFromFavorites": "Xóa khỏi yêu thích",
+    "addedToFavorites": "Đã thêm vào yêu thích",
+    "removedFromFavorites": "Đã xóa khỏi yêu thích",
+    "bulkFavoriteDesc": "Đã cập nhật {{count}} mục",
+    "manageTags": "Quản lý Thẻ",
+    "deleted": "Đã xóa tài sản",
+    "deletedDesc": "Đã xóa \"{{name}}\"",
+    "deletedBulk": "Đã xóa tài sản",
+    "deletedBulkDesc": "Đã xóa {{count}} tài sản",
+    "deleteFailed": "Không thể xóa tài sản",
+    "deleteConfirmTitle": "Xóa tài sản",
+    "deleteConfirmDesc": "Bạn có chắc muốn xóa \"{{name}}\"? Điều này sẽ xóa vĩnh viễn tệp khỏi ổ đĩa của bạn.",
+    "bulkDeleteConfirmTitle": "Xóa tài sản",
+    "bulkDeleteConfirmDesc": "Bạn có chắc muốn xóa {{count}} tài sản? Điều này sẽ xóa vĩnh viễn các tệp khỏi ổ đĩa của bạn.",
+    "currentTags": "Thẻ hiện tại",
+    "noTags": "Không có thẻ",
+    "addTag": "Thêm thẻ",
+    "tagPlaceholder": "Nhập tên thẻ...",
+    "manageTagsDesc": "Thêm hoặc xóa thẻ cho \"{{name}}\"",
+    "textPreviewUnavailable": "Không có xem trước văn bản. Mở vị trí tệp để xem."
   },
   "settings": {
     "title": "Cài đặt",
@@ -216,6 +313,23 @@
       "label": "Ngôn ngữ",
       "changed": "Đã đổi ngôn ngữ",
       "changedDesc": "Ngôn ngữ ứng dụng đã được thay đổi."
+    },
+    "assets": {
+      "title": "Tài sản",
+      "description": "Cấu hình cách lưu đầu ra đã tạo",
+      "autoSave": "Tự động lưu đầu ra",
+      "autoSaveDesc": "Tự động lưu hình ảnh, video và âm thanh đã tạo vào thư mục tài sản của bạn",
+      "autoSaveEnabled": "Đã bật tự động lưu",
+      "autoSaveEnabledDesc": "Đầu ra đã tạo sẽ được lưu tự động",
+      "autoSaveDisabled": "Đã tắt tự động lưu",
+      "autoSaveDisabledDesc": "Bạn vẫn có thể lưu đầu ra thủ công từ sân chơi",
+      "directory": "Thư mục Tài sản",
+      "directoryDesc": "Chọn nơi lưu đầu ra đã tạo của bạn",
+      "defaultDirectory": "Documents/WaveSpeed",
+      "browse": "Duyệt",
+      "directoryChanged": "Đã đổi thư mục",
+      "directoryChangedDesc": "Đầu ra mới sẽ được lưu vào {{path}}",
+      "desktopOnly": "Tính năng này yêu cầu ứng dụng desktop"
     },
     "updates": {
       "title": "Cập nhật",
@@ -255,7 +369,8 @@
   "apiKeyRequired": {
     "title": "Yêu cầu khóa API",
     "defaultDesc": "Vui lòng cấu hình khóa API WaveSpeed trong Cài đặt.",
-    "goToSettings": "Đến Cài đặt"
+    "goToSettings": "Đến Cài đặt",
+    "orGoTo": "Hoặc đến"
   },
   "errors": {
     "tryAgain": "Thử lại",

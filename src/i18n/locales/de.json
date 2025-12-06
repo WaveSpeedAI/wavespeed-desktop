@@ -6,6 +6,7 @@
     "delete": "Löschen",
     "edit": "Bearbeiten",
     "close": "Schließen",
+    "done": "Fertig",
     "refresh": "Aktualisieren",
     "search": "Suchen",
     "clear": "Leeren",
@@ -26,13 +27,15 @@
     "no": "Nein",
     "error": "Fehler",
     "success": "Erfolg",
-    "warning": "Warnung"
+    "warning": "Warnung",
+    "selectAll": "Alle auswählen"
   },
   "nav": {
     "models": "Modelle",
     "playground": "Playground",
     "history": "Verlauf",
     "templates": "Vorlagen",
+    "assets": "Meine Assets",
     "settings": "Einstellungen",
     "collapse": "Einklappen"
   },
@@ -109,6 +112,26 @@
       "stopRecording": "Stoppen",
       "useVideo": "Video verwenden",
       "useAudio": "Audio verwenden"
+    },
+    "autoSaved": "Automatisch in Assets gespeichert",
+    "autoSavedDesc": "{{count}} Ausgabe(n) in Meine Assets gespeichert",
+    "savedToAssets": "In Assets gespeichert",
+    "savedToAssetsDesc": "Ausgabe wurde in Ihrem Assets-Ordner gespeichert",
+    "saveToAssets": "In Assets speichern",
+    "alreadySaved": "Bereits gespeichert",
+    "saveFailed": "Fehler beim Speichern der Ausgabe",
+    "unsupportedFormat": "Dieses Ausgabeformat kann nicht als Asset gespeichert werden",
+    "randomSeed": "Zufälligen Seed generieren",
+    "optimizer": {
+      "tooltip": "Prompt mit KI optimieren",
+      "title": "Prompt Optimieren",
+      "perRun": "Ausführung",
+      "loading": "Optimierer wird geladen...",
+      "loadError": "Optimierer-Konfiguration konnte nicht geladen werden",
+      "enterPromptError": "Bitte geben Sie einen Prompt ein oder stellen Sie ein Bild bereit",
+      "failedError": "Prompt-Optimierung fehlgeschlagen",
+      "optimizing": "Optimiere...",
+      "optimize": "Optimieren"
     }
   },
   "history": {
@@ -178,7 +201,81 @@
     "skippedCount": ", {{count}} übersprungen (Duplikate)",
     "importFailed": "Import fehlgeschlagen",
     "invalidFile": "Ungültige Datei",
-    "invalidFileDesc": "Die ausgewählte Datei ist kein gültiger Vorlagenexport"
+    "invalidFileDesc": "Die ausgewählte Datei ist kein gültiger Vorlagenexport",
+    "deleteSelected": "Löschen ({{count}})",
+    "deleteTemplates": "Vorlagen löschen",
+    "templatesDeleted": "Vorlagen gelöscht",
+    "deletedCount": "{{count}} Vorlage(n) gelöscht",
+    "batchDeleteConfirm": "Sind Sie sicher, dass Sie {{count}} Vorlage(n) löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
+  },
+  "assets": {
+    "title": "Meine Assets",
+    "subtitle": "{{count}} gespeicherte Ausgaben",
+    "apiKeyRequired": "Bitte konfigurieren Sie Ihren WaveSpeed-API-Schlüssel, um Assets anzuzeigen.",
+    "noAssets": "Noch keine Assets",
+    "noAssetsDesc": "Aktivieren Sie die automatische Speicherung in den Einstellungen, um Ihre generierten Ausgaben automatisch zu speichern, oder speichern Sie sie manuell vom Playground aus.",
+    "noMatchingAssets": "Keine Assets entsprechen Ihren Filtern",
+    "enableAutoSave": "Automatisches Speichern aktivieren",
+    "searchPlaceholder": "Assets suchen...",
+    "filters": "Filter",
+    "clearFilters": "Filter löschen",
+    "filterByType": "Typ",
+    "filterByModel": "Modell",
+    "allModels": "Alle Modelle",
+    "favorites": "Favoriten",
+    "showFavoritesOnly": "Nur Favoriten anzeigen",
+    "types": {
+      "image": "Bild",
+      "video": "Video",
+      "audio": "Audio",
+      "text": "Text",
+      "json": "JSON"
+    },
+    "typesPlural": {
+      "image": "Bilder",
+      "video": "Videos",
+      "audio": "Audio",
+      "text": "Text"
+    },
+    "sort": {
+      "dateNewest": "Neueste zuerst",
+      "dateOldest": "Älteste zuerst",
+      "nameAZ": "Name (A-Z)",
+      "nameZA": "Name (Z-A)",
+      "sizeLargest": "Größte zuerst",
+      "sizeSmallest": "Kleinste zuerst"
+    },
+    "select": "Auswählen",
+    "selectAll": "Alle auswählen",
+    "deselectAll": "Alle abwählen",
+    "deleteSelected": "Löschen ({{count}})",
+    "settings": "Einstellungen",
+    "openFolder": "Ordner öffnen",
+    "preview": "Vorschau",
+    "openLocation": "Dateispeicherort öffnen",
+    "favorite": "Zu Favoriten hinzufügen",
+    "unfavorite": "Aus Favoriten entfernen",
+    "addToFavorites": "Zu Favoriten hinzufügen",
+    "removeFromFavorites": "Aus Favoriten entfernen",
+    "addedToFavorites": "Zu Favoriten hinzugefügt",
+    "removedFromFavorites": "Aus Favoriten entfernt",
+    "bulkFavoriteDesc": "{{count}} Element(e) aktualisiert",
+    "manageTags": "Tags verwalten",
+    "deleted": "Asset gelöscht",
+    "deletedDesc": "\"{{name}}\" gelöscht",
+    "deletedBulk": "Assets gelöscht",
+    "deletedBulkDesc": "{{count}} Asset(s) gelöscht",
+    "deleteFailed": "Fehler beim Löschen des Assets",
+    "deleteConfirmTitle": "Asset löschen",
+    "deleteConfirmDesc": "Sind Sie sicher, dass Sie \"{{name}}\" löschen möchten? Dadurch wird die Datei dauerhaft von Ihrer Festplatte entfernt.",
+    "bulkDeleteConfirmTitle": "Assets löschen",
+    "bulkDeleteConfirmDesc": "Sind Sie sicher, dass Sie {{count}} Asset(s) löschen möchten? Dadurch werden die Dateien dauerhaft von Ihrer Festplatte entfernt.",
+    "currentTags": "Aktuelle Tags",
+    "noTags": "Keine Tags",
+    "addTag": "Tag hinzufügen",
+    "tagPlaceholder": "Tag-Name eingeben...",
+    "manageTagsDesc": "Tags für \"{{name}}\" hinzufügen oder entfernen",
+    "textPreviewUnavailable": "Textvorschau nicht verfügbar. Öffnen Sie den Dateispeicherort zum Anzeigen."
   },
   "settings": {
     "title": "Einstellungen",
@@ -216,6 +313,23 @@
       "label": "Sprache",
       "changed": "Sprache geändert",
       "changedDesc": "Die Anwendungssprache wurde geändert."
+    },
+    "assets": {
+      "title": "Assets",
+      "description": "Konfigurieren, wie generierte Ausgaben gespeichert werden",
+      "autoSave": "Ausgaben automatisch speichern",
+      "autoSaveDesc": "Generierte Bilder, Videos und Audio automatisch in Ihrem Assets-Ordner speichern",
+      "autoSaveEnabled": "Automatisches Speichern aktiviert",
+      "autoSaveEnabledDesc": "Generierte Ausgaben werden automatisch gespeichert",
+      "autoSaveDisabled": "Automatisches Speichern deaktiviert",
+      "autoSaveDisabledDesc": "Sie können Ausgaben weiterhin manuell vom Playground aus speichern",
+      "directory": "Assets-Verzeichnis",
+      "directoryDesc": "Wählen Sie, wo Ihre generierten Ausgaben gespeichert werden sollen",
+      "defaultDirectory": "Documents/WaveSpeed",
+      "browse": "Durchsuchen",
+      "directoryChanged": "Verzeichnis geändert",
+      "directoryChangedDesc": "Neue Ausgaben werden in {{path}} gespeichert",
+      "desktopOnly": "Diese Funktion erfordert die Desktop-Anwendung"
     },
     "updates": {
       "title": "Updates",
@@ -255,7 +369,8 @@
   "apiKeyRequired": {
     "title": "API-Schlüssel erforderlich",
     "defaultDesc": "Bitte konfigurieren Sie Ihren WaveSpeed-API-Schlüssel in den Einstellungen.",
-    "goToSettings": "Zu Einstellungen"
+    "goToSettings": "Zu Einstellungen",
+    "orGoTo": "Oder gehen Sie zu"
   },
   "errors": {
     "tryAgain": "Erneut versuchen",

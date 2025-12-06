@@ -6,6 +6,7 @@
     "delete": "Hapus",
     "edit": "Edit",
     "close": "Tutup",
+    "done": "Selesai",
     "refresh": "Segarkan",
     "search": "Cari",
     "clear": "Bersihkan",
@@ -26,13 +27,15 @@
     "no": "Tidak",
     "error": "Error",
     "success": "Berhasil",
-    "warning": "Peringatan"
+    "warning": "Peringatan",
+    "selectAll": "Pilih semua"
   },
   "nav": {
     "models": "Model",
     "playground": "Playground",
     "history": "Riwayat",
     "templates": "Template",
+    "assets": "Aset Saya",
     "settings": "Pengaturan",
     "collapse": "Ciutkan"
   },
@@ -109,6 +112,26 @@
       "stopRecording": "Berhenti",
       "useVideo": "Gunakan video",
       "useAudio": "Gunakan audio"
+    },
+    "autoSaved": "Otomatis disimpan ke Aset",
+    "autoSavedDesc": "Menyimpan {{count}} output ke Aset Saya",
+    "savedToAssets": "Disimpan ke Aset",
+    "savedToAssetsDesc": "Output disimpan ke folder aset Anda",
+    "saveToAssets": "Simpan ke Aset",
+    "alreadySaved": "Sudah disimpan",
+    "saveFailed": "Gagal menyimpan output",
+    "unsupportedFormat": "Format output ini tidak dapat disimpan sebagai aset",
+    "randomSeed": "Hasilkan seed acak",
+    "optimizer": {
+      "tooltip": "Optimalkan prompt dengan AI",
+      "title": "Optimalkan Prompt",
+      "perRun": "eksekusi",
+      "loading": "Memuat pengoptimal...",
+      "loadError": "Tidak dapat memuat konfigurasi pengoptimal",
+      "enterPromptError": "Silakan masukkan prompt atau berikan gambar",
+      "failedError": "Gagal mengoptimalkan prompt",
+      "optimizing": "Mengoptimalkan...",
+      "optimize": "Optimalkan"
     }
   },
   "history": {
@@ -178,7 +201,81 @@
     "skippedCount": ", {{count}} dilewati (duplikat)",
     "importFailed": "Impor gagal",
     "invalidFile": "File tidak valid",
-    "invalidFileDesc": "File yang dipilih bukan ekspor template yang valid"
+    "invalidFileDesc": "File yang dipilih bukan ekspor template yang valid",
+    "deleteSelected": "Hapus ({{count}})",
+    "deleteTemplates": "Hapus template",
+    "templatesDeleted": "Template dihapus",
+    "deletedCount": "{{count}} template dihapus",
+    "batchDeleteConfirm": "Apakah Anda yakin ingin menghapus {{count}} template? Tindakan ini tidak dapat dibatalkan."
+  },
+  "assets": {
+    "title": "Aset Saya",
+    "subtitle": "{{count}} output tersimpan",
+    "apiKeyRequired": "Silakan konfigurasi kunci API WaveSpeed Anda untuk melihat aset.",
+    "noAssets": "Belum ada aset",
+    "noAssetsDesc": "Aktifkan simpan otomatis di Pengaturan untuk otomatis menyimpan output yang dihasilkan, atau simpan secara manual dari Playground.",
+    "noMatchingAssets": "Tidak ada aset yang cocok dengan filter Anda",
+    "enableAutoSave": "Aktifkan Simpan Otomatis",
+    "searchPlaceholder": "Cari aset...",
+    "filters": "Filter",
+    "clearFilters": "Hapus Filter",
+    "filterByType": "Tipe",
+    "filterByModel": "Model",
+    "allModels": "Semua Model",
+    "favorites": "Favorit",
+    "showFavoritesOnly": "Tampilkan favorit saja",
+    "types": {
+      "image": "Gambar",
+      "video": "Video",
+      "audio": "Audio",
+      "text": "Teks",
+      "json": "JSON"
+    },
+    "typesPlural": {
+      "image": "Gambar",
+      "video": "Video",
+      "audio": "Audio",
+      "text": "Teks"
+    },
+    "sort": {
+      "dateNewest": "Terbaru",
+      "dateOldest": "Terlama",
+      "nameAZ": "Nama (A-Z)",
+      "nameZA": "Nama (Z-A)",
+      "sizeLargest": "Terbesar",
+      "sizeSmallest": "Terkecil"
+    },
+    "select": "Pilih",
+    "selectAll": "Pilih Semua",
+    "deselectAll": "Batalkan Semua",
+    "deleteSelected": "Hapus ({{count}})",
+    "settings": "Pengaturan",
+    "openFolder": "Buka folder",
+    "preview": "Pratinjau",
+    "openLocation": "Buka Lokasi File",
+    "favorite": "Tambah ke Favorit",
+    "unfavorite": "Hapus dari Favorit",
+    "addToFavorites": "Tambah ke favorit",
+    "removeFromFavorites": "Hapus dari favorit",
+    "addedToFavorites": "Ditambahkan ke favorit",
+    "removedFromFavorites": "Dihapus dari favorit",
+    "bulkFavoriteDesc": "{{count}} item diperbarui",
+    "manageTags": "Kelola Tag",
+    "deleted": "Aset dihapus",
+    "deletedDesc": "Menghapus \"{{name}}\"",
+    "deletedBulk": "Aset dihapus",
+    "deletedBulkDesc": "Menghapus {{count}} aset",
+    "deleteFailed": "Gagal menghapus aset",
+    "deleteConfirmTitle": "Hapus Aset",
+    "deleteConfirmDesc": "Apakah Anda yakin ingin menghapus \"{{name}}\"? Ini akan menghapus file secara permanen dari disk Anda.",
+    "bulkDeleteConfirmTitle": "Hapus Aset",
+    "bulkDeleteConfirmDesc": "Apakah Anda yakin ingin menghapus {{count}} aset? Ini akan menghapus file secara permanen dari disk Anda.",
+    "currentTags": "Tag Saat Ini",
+    "noTags": "Tidak ada tag",
+    "addTag": "Tambah Tag",
+    "tagPlaceholder": "Masukkan nama tag...",
+    "manageTagsDesc": "Tambah atau hapus tag untuk \"{{name}}\"",
+    "textPreviewUnavailable": "Pratinjau teks tidak tersedia. Buka lokasi file untuk melihat."
   },
   "settings": {
     "title": "Pengaturan",
@@ -216,6 +313,23 @@
       "label": "Bahasa",
       "changed": "Bahasa diubah",
       "changedDesc": "Bahasa aplikasi telah diubah."
+    },
+    "assets": {
+      "title": "Aset",
+      "description": "Konfigurasikan cara menyimpan output yang dihasilkan",
+      "autoSave": "Simpan output otomatis",
+      "autoSaveDesc": "Otomatis menyimpan gambar, video, dan audio yang dihasilkan ke folder aset Anda",
+      "autoSaveEnabled": "Simpan otomatis diaktifkan",
+      "autoSaveEnabledDesc": "Output yang dihasilkan akan disimpan secara otomatis",
+      "autoSaveDisabled": "Simpan otomatis dinonaktifkan",
+      "autoSaveDisabledDesc": "Anda masih bisa menyimpan output secara manual dari playground",
+      "directory": "Direktori Aset",
+      "directoryDesc": "Pilih tempat untuk menyimpan output yang dihasilkan",
+      "defaultDirectory": "Documents/WaveSpeed",
+      "browse": "Telusuri",
+      "directoryChanged": "Direktori diubah",
+      "directoryChangedDesc": "Output baru akan disimpan ke {{path}}",
+      "desktopOnly": "Fitur ini memerlukan aplikasi desktop"
     },
     "updates": {
       "title": "Pembaruan",
@@ -255,7 +369,8 @@
   "apiKeyRequired": {
     "title": "Kunci API Diperlukan",
     "defaultDesc": "Silakan konfigurasikan kunci API WaveSpeed Anda di Pengaturan.",
-    "goToSettings": "Ke Pengaturan"
+    "goToSettings": "Ke Pengaturan",
+    "orGoTo": "Atau kunjungi"
   },
   "errors": {
     "tryAgain": "Coba Lagi",

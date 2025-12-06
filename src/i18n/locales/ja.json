@@ -26,13 +26,16 @@
     "no": "いいえ",
     "error": "エラー",
     "success": "成功",
-    "warning": "警告"
+    "warning": "警告",
+    "selectAll": "すべて選択",
+    "done": "完了"
   },
   "nav": {
     "models": "モデル",
     "playground": "プレイグラウンド",
     "history": "履歴",
     "templates": "テンプレート",
+    "assets": "マイアセット",
     "settings": "設定",
     "collapse": "折りたたむ"
   },
@@ -109,6 +112,26 @@
       "stopRecording": "停止",
       "useVideo": "この動画を使用",
       "useAudio": "この音声を使用"
+    },
+    "autoSaved": "アセットに自動保存されました",
+    "autoSavedDesc": "{{count}}個の出力をマイアセットに保存しました",
+    "savedToAssets": "アセットに保存されました",
+    "savedToAssetsDesc": "出力がアセットフォルダーに保存されました",
+    "saveToAssets": "アセットに保存",
+    "alreadySaved": "すでに保存されています",
+    "saveFailed": "出力の保存に失敗しました",
+    "unsupportedFormat": "この出力形式はアセットとして保存できません",
+    "randomSeed": "ランダムシードを生成",
+    "optimizer": {
+      "tooltip": "AIでプロンプトを最適化",
+      "title": "プロンプト最適化",
+      "perRun": "回",
+      "loading": "オプティマイザーを読み込み中...",
+      "loadError": "オプティマイザーの設定を読み込めません",
+      "enterPromptError": "プロンプトを入力するか画像を提供してください",
+      "failedError": "プロンプトの最適化に失敗しました",
+      "optimizing": "最適化中...",
+      "optimize": "最適化"
     }
   },
   "history": {
@@ -178,7 +201,81 @@
     "skippedCount": "、{{count}}個スキップ（重複）",
     "importFailed": "インポートに失敗しました",
     "invalidFile": "無効なファイル",
-    "invalidFileDesc": "選択したファイルは有効なテンプレートエクスポートファイルではありません"
+    "invalidFileDesc": "選択したファイルは有効なテンプレートエクスポートファイルではありません",
+    "deleteSelected": "削除 ({{count}})",
+    "deleteTemplates": "テンプレートを削除",
+    "templatesDeleted": "テンプレートを削除しました",
+    "deletedCount": "{{count}}個のテンプレートを削除しました",
+    "batchDeleteConfirm": "{{count}}個のテンプレートを削除してもよろしいですか？この操作は取り消せません。"
+  },
+  "assets": {
+    "title": "マイアセット",
+    "subtitle": "{{count}}個の保存された出力",
+    "apiKeyRequired": "アセットを表示するにはWaveSpeed APIキーを設定してください。",
+    "noAssets": "アセットがありません",
+    "noAssetsDesc": "設定で自動保存を有効にすると生成された出力を自動的に保存できます。またはプレイグラウンドから手動で保存してください。",
+    "noMatchingAssets": "フィルターに一致するアセットがありません",
+    "enableAutoSave": "自動保存を有効にする",
+    "searchPlaceholder": "アセットを検索...",
+    "filters": "フィルター",
+    "clearFilters": "フィルターをクリア",
+    "filterByType": "タイプ",
+    "filterByModel": "モデル",
+    "allModels": "すべてのモデル",
+    "favorites": "お気に入り",
+    "showFavoritesOnly": "お気に入りのみ表示",
+    "types": {
+      "image": "画像",
+      "video": "動画",
+      "audio": "音声",
+      "text": "テキスト",
+      "json": "JSON"
+    },
+    "typesPlural": {
+      "image": "画像",
+      "video": "動画",
+      "audio": "音声",
+      "text": "テキスト"
+    },
+    "sort": {
+      "dateNewest": "新しい順",
+      "dateOldest": "古い順",
+      "nameAZ": "名前 (A-Z)",
+      "nameZA": "名前 (Z-A)",
+      "sizeLargest": "大きい順",
+      "sizeSmallest": "小さい順"
+    },
+    "select": "選択",
+    "selectAll": "すべて選択",
+    "deselectAll": "選択解除",
+    "deleteSelected": "削除 ({{count}})",
+    "settings": "設定",
+    "openFolder": "フォルダを開く",
+    "preview": "プレビュー",
+    "openLocation": "ファイルの場所を開く",
+    "favorite": "お気に入りに追加",
+    "unfavorite": "お気に入りから削除",
+    "addToFavorites": "お気に入りに追加",
+    "removeFromFavorites": "お気に入りから削除",
+    "addedToFavorites": "お気に入りに追加しました",
+    "removedFromFavorites": "お気に入りから削除しました",
+    "bulkFavoriteDesc": "{{count}}件を更新しました",
+    "manageTags": "タグを管理",
+    "deleted": "アセットを削除しました",
+    "deletedDesc": "「{{name}}」を削除しました",
+    "deletedBulk": "アセットを削除しました",
+    "deletedBulkDesc": "{{count}}個のアセットを削除しました",
+    "deleteFailed": "アセットの削除に失敗しました",
+    "deleteConfirmTitle": "アセットを削除",
+    "deleteConfirmDesc": "「{{name}}」を削除してもよろしいですか？これによりディスクからファイルが永久に削除されます。",
+    "bulkDeleteConfirmTitle": "アセットを削除",
+    "bulkDeleteConfirmDesc": "{{count}}個のアセットを削除してもよろしいですか？これによりディスクからファイルが永久に削除されます。",
+    "currentTags": "現在のタグ",
+    "noTags": "タグなし",
+    "addTag": "タグを追加",
+    "tagPlaceholder": "タグ名を入力...",
+    "manageTagsDesc": "「{{name}}」のタグを追加または削除します",
+    "textPreviewUnavailable": "テキストプレビューは利用できません。ファイルの場所を開いて表示してください。"
   },
   "settings": {
     "title": "設定",
@@ -216,6 +313,23 @@
       "label": "言語",
       "changed": "言語を変更しました",
       "changedDesc": "アプリケーションの言語が変更されました。"
+    },
+    "assets": {
+      "title": "アセット",
+      "description": "生成された出力の保存方法を設定",
+      "autoSave": "出力を自動保存",
+      "autoSaveDesc": "生成された画像、動画、音声をアセットフォルダーに自動的に保存します",
+      "autoSaveEnabled": "自動保存が有効です",
+      "autoSaveEnabledDesc": "生成された出力は自動的に保存されます",
+      "autoSaveDisabled": "自動保存が無効です",
+      "autoSaveDisabledDesc": "プレイグラウンドから手動で出力を保存できます",
+      "directory": "アセットディレクトリ",
+      "directoryDesc": "生成された出力を保存する場所を選択",
+      "defaultDirectory": "ドキュメント/WaveSpeed",
+      "browse": "参照",
+      "directoryChanged": "ディレクトリを変更しました",
+      "directoryChangedDesc": "新しい出力は{{path}}に保存されます",
+      "desktopOnly": "この機能にはデスクトップアプリケーションが必要です"
     },
     "updates": {
       "title": "アップデート",
@@ -255,7 +369,8 @@
   "apiKeyRequired": {
     "title": "APIキーが必要です",
     "defaultDesc": "設定でWaveSpeed APIキーを設定してください。",
-    "goToSettings": "設定へ移動"
+    "goToSettings": "設定へ移動",
+    "orGoTo": "または移動"
   },
   "errors": {
     "tryAgain": "再試行",

@@ -4,7 +4,7 @@ This file provides guidance for Claude Code when working with this repository.
 
 ## Project Overview
 
-WaveSpeed Desktop is an Electron-based cross-platform desktop application that provides a playground interface for [WaveSpeedAI](https://wavespeed.ai) models. It allows users to browse models, run predictions, and view their history.
+WaveSpeed Desktop is an Electron-based cross-platform desktop application that provides a playground interface for [WaveSpeedAI](https://wavespeed.ai) models. It allows users to browse models, run predictions, view their history, and manage saved assets.
 
 ## Tech Stack
 
@@ -48,6 +48,7 @@ wavespeed-desktop/
 - **`src/stores/playgroundStore.ts`**: Multi-tab playground state management
 - **`src/stores/templateStore.ts`**: Template CRUD operations with localStorage persistence
 - **`src/stores/themeStore.ts`**: Theme management (auto/dark/light) with system preference detection
+- **`src/stores/assetsStore.ts`**: Asset management (save, delete, tags, favorites, filtering)
 - **`src/components/playground/DynamicForm.tsx`**: Generates forms from model schemas
 - **`src/components/playground/ModelSelector.tsx`**: Searchable model dropdown with fuzzy search
 - **`src/components/playground/OutputDisplay.tsx`**: Displays prediction results (images, videos, text)
@@ -57,6 +58,7 @@ wavespeed-desktop/
 - **`src/components/playground/AudioRecorder.tsx`**: Audio recording with waveform display and playback
 - **`src/pages/TemplatesPage.tsx`**: Template management (browse, search, use, rename, delete)
 - **`src/pages/HistoryPage.tsx`**: Prediction history with detail dialog
+- **`src/pages/AssetsPage.tsx`**: Asset management with grid view, filters, tags, favorites, bulk operations
 - **`src/lib/schemaToForm.ts`**: Converts API schema to form field configurations
 
 ## WaveSpeedAI API
@@ -154,7 +156,7 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - Models are sorted by `sort_order` (popularity) by default, with higher values appearing first
 - Documentation URLs follow the pattern: `https://wavespeed.ai/docs/docs-api/{owner}/{model-name}` where slashes after the owner become dashes
 - The playground supports multiple tabs, each with its own model and form state
-- IPC handlers in `electron/main.ts` include: `get-api-key`, `set-api-key`, `download-file`, `open-external`
+- IPC handlers in `electron/main.ts` include: `get-api-key`, `set-api-key`, `download-file`, `open-external`, plus asset-related handlers (`save-asset`, `delete-asset`, `get-assets-metadata`, `save-assets-metadata`, `open-file-location`, `select-directory`)
 - Templates are stored in localStorage with key `wavespeed_templates`, grouped by model
 - Theme preference is stored in localStorage with key `wavespeed_theme` (auto/dark/light)
 - Theme "auto" follows system preference and listens for system theme changes
@@ -169,3 +171,8 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - i18n uses react-i18next with 18 language locales stored in `src/i18n/locales/`
 - Supported languages: en, zh-CN, zh-TW, ja, ko, es, fr, de, ru, it, pt, tr, hi, id, ms, ar, vi, th
 - Language preference is stored in localStorage with key `i18next` and auto-detected from browser
+- Assets are auto-saved by default to `Documents/WaveSpeed/` with subdirectories for images, videos, audio, and text
+- Asset metadata is stored in `{userData}/assets-metadata.json` with tags, favorites, and file references
+- Asset file naming format: `{model-slug}_{YYYY-MM-DD}_{HHmmss}_{random}.{ext}`
+- Layout.tsx handles unified API key login screen - pages don't need individual ApiKeyRequired checks
+- Settings page (`/settings`) is a public path accessible without API key

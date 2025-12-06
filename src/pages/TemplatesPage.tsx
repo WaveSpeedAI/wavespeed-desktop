@@ -13,22 +13,15 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { Label } from '@/components/ui/label'
 import { toast } from '@/hooks/useToast'
-import { Search, FolderOpen, Play, Trash2, Pencil, MoreVertical, Plus, Download, Upload } from 'lucide-react'
+import { Search, FolderOpen, Play, Trash2, Pencil, Plus, Download, Upload } from 'lucide-react'
 import { fuzzyMatch } from '@/lib/fuzzySearch'
 
 export function TemplatesPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { templates, loadTemplates, updateTemplate, deleteTemplate, exportTemplates, importTemplates, isLoaded } = useTemplateStore()
+  const { templates, loadTemplates, updateTemplate, deleteTemplate, deleteTemplates, exportTemplates, importTemplates, isLoaded } = useTemplateStore()
   const [searchQuery, setSearchQuery] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -38,6 +31,10 @@ export function TemplatesPage() {
 
   // Delete confirmation state
   const [deletingTemplate, setDeletingTemplate] = useState<Template | null>(null)
+
+  // Batch selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [showBatchDeleteDialog, setShowBatchDeleteDialog] = useState(false)
 
   // Import dialog state
   const [importData, setImportData] = useState<TemplateExport | null>(null)
@@ -209,7 +206,42 @@ export function TemplatesPage() {
     navigate('/playground')
   }
 
+  // Batch selection helpers
+  const toggleSelection = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }
+
+  const toggleSelectAll = () => {
+    const allFilteredIds = Object.values(groupedTemplates).flatMap(g => g.templates.map(t => t.id))
+    if (selectedIds.size === allFilteredIds.length && allFilteredIds.length > 0) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(allFilteredIds))
+    }
+  }
+
+  const handleBatchDelete = () => {
+    if (selectedIds.size === 0) return
+    deleteTemplates(Array.from(selectedIds))
+    toast({
+      title: t('templates.templatesDeleted'),
+      description: t('templates.deletedCount', { count: selectedIds.size }),
+    })
+    setSelectedIds(new Set())
+    setShowBatchDeleteDialog(false)
+  }
+
   const modelIds = Object.keys(groupedTemplates)
+  const allFilteredIds = Object.values(groupedTemplates).flatMap(g => g.templates.map(t => t.id))
+  const isAllSelected = allFilteredIds.length > 0 && selectedIds.size === allFilteredIds.length
 
   return (
     <div className="container py-8">
@@ -220,6 +252,17 @@ export function TemplatesPage() {
 
       {/* Search and Actions */}
       <div className="flex items-center gap-4 mb-6">
+        {templates.length > 0 && (
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isAllSelected}
+              onChange={toggleSelectAll}
+              className="h-4 w-4 rounded border-gray-300"
+            />
+            <span className="text-sm text-muted-foreground">{t('common.selectAll')}</span>
+          </label>
+        )}
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -230,6 +273,12 @@ export function TemplatesPage() {
           />
         </div>
         <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <Button variant="destructive" onClick={() => setShowBatchDeleteDialog(true)}>
+              <Trash2 className="mr-2 h-4 w-4" />
+              {t('templates.deleteSelected', { count: selectedIds.size })}
+            </Button>
+          )}
           <input
             ref={fileInputRef}
             type="file"
@@ -298,13 +347,21 @@ export function TemplatesPage() {
                         key={template.id}
                         className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
                       >
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">{template.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {t('templates.lastUpdated')}: {new Date(template.updatedAt).toLocaleDateString()}
-                          </p>
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(template.id)}
+                            onChange={() => toggleSelection(template.id)}
+                            className="h-4 w-4 rounded border-gray-300 shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate">{template.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {t('templates.lastUpdated')}: {new Date(template.updatedAt).toLocaleDateString()}
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 ml-4">
+                        <div className="flex items-center gap-1 ml-4">
                           <Button
                             size="sm"
                             onClick={() => handleUseTemplate(template)}
@@ -312,31 +369,33 @@ export function TemplatesPage() {
                             <Play className="mr-1 h-3 w-3" />
                             {t('templates.use')}
                           </Button>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleEditTemplate(template)}>
-                                <Pencil className="mr-2 h-4 w-4" />
-                                {t('templates.rename')}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleExportSingle(template)}>
-                                <Download className="mr-2 h-4 w-4" />
-                                {t('templates.export')}
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                onClick={() => setDeletingTemplate(template)}
-                                className="text-destructive focus:text-destructive"
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                {t('common.delete')}
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => handleEditTemplate(template)}
+                            title={t('templates.rename')}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => handleExportSingle(template)}
+                            title={t('templates.export')}
+                          >
+                            <Download className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                            onClick={() => setDeletingTemplate(template)}
+                            title={t('common.delete')}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
                     ))}
@@ -464,6 +523,26 @@ export function TemplatesPage() {
             <Button onClick={handleImportConfirm}>
               <Upload className="mr-2 h-4 w-4" />
               {t('templates.import')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Batch Delete Confirmation Dialog */}
+      <Dialog open={showBatchDeleteDialog} onOpenChange={setShowBatchDeleteDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t('templates.deleteTemplates')}</DialogTitle>
+            <DialogDescription>
+              {t('templates.batchDeleteConfirm', { count: selectedIds.size })}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowBatchDeleteDialog(false)}>
+              {t('common.cancel')}
+            </Button>
+            <Button variant="destructive" onClick={handleBatchDelete}>
+              {t('common.delete')}
             </Button>
           </DialogFooter>
         </DialogContent>

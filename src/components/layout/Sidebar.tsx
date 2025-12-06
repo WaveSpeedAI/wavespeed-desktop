@@ -16,7 +16,8 @@ import {
   Settings,
   Zap,
   PanelLeftClose,
-  PanelLeft
+  PanelLeft,
+  FolderHeart
 } from 'lucide-react'
 
 interface SidebarProps {
@@ -49,6 +50,11 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       titleKey: 'nav.history',
       href: '/history',
       icon: History
+    },
+    {
+      titleKey: 'nav.assets',
+      href: '/assets',
+      icon: FolderHeart
     }
   ]
 

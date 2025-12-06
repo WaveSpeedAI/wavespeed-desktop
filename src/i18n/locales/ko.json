@@ -6,6 +6,7 @@
     "delete": "삭제",
     "edit": "편집",
     "close": "닫기",
+    "done": "완료",
     "refresh": "새로고침",
     "search": "검색",
     "clear": "지우기",
@@ -26,13 +27,15 @@
     "no": "아니오",
     "error": "오류",
     "success": "성공",
-    "warning": "경고"
+    "warning": "경고",
+    "selectAll": "전체 선택"
   },
   "nav": {
     "models": "모델",
     "playground": "플레이그라운드",
     "history": "기록",
     "templates": "템플릿",
+    "assets": "내 에셋",
     "settings": "설정",
     "collapse": "접기"
   },
@@ -109,6 +112,26 @@
       "stopRecording": "중지",
       "useVideo": "이 비디오 사용",
       "useAudio": "이 오디오 사용"
+    },
+    "autoSaved": "에셋에 자동 저장됨",
+    "autoSavedDesc": "{{count}}개의 출력을 내 에셋에 저장했습니다",
+    "savedToAssets": "에셋에 저장됨",
+    "savedToAssetsDesc": "출력이 에셋 폴더에 저장되었습니다",
+    "saveToAssets": "에셋에 저장",
+    "alreadySaved": "이미 저장됨",
+    "saveFailed": "출력 저장 실패",
+    "unsupportedFormat": "이 출력 형식은 에셋으로 저장할 수 없습니다",
+    "randomSeed": "랜덤 시드 생성",
+    "optimizer": {
+      "tooltip": "AI로 프롬프트 최적화",
+      "title": "프롬프트 최적화",
+      "perRun": "회",
+      "loading": "최적화 도구 로딩 중...",
+      "loadError": "최적화 도구 구성을 로드할 수 없습니다",
+      "enterPromptError": "프롬프트를 입력하거나 이미지를 제공해 주세요",
+      "failedError": "프롬프트 최적화에 실패했습니다",
+      "optimizing": "최적화 중...",
+      "optimize": "최적화"
     }
   },
   "history": {
@@ -178,7 +201,81 @@
     "skippedCount": ", {{count}}개 건너뜀 (중복)",
     "importFailed": "가져오기 실패",
     "invalidFile": "잘못된 파일",
-    "invalidFileDesc": "선택한 파일은 유효한 템플릿 내보내기 파일이 아닙니다"
+    "invalidFileDesc": "선택한 파일은 유효한 템플릿 내보내기 파일이 아닙니다",
+    "deleteSelected": "삭제 ({{count}})",
+    "deleteTemplates": "템플릿 삭제",
+    "templatesDeleted": "템플릿 삭제됨",
+    "deletedCount": "{{count}}개의 템플릿을 삭제했습니다",
+    "batchDeleteConfirm": "{{count}}개의 템플릿을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다."
+  },
+  "assets": {
+    "title": "내 에셋",
+    "subtitle": "{{count}}개의 저장된 출력",
+    "apiKeyRequired": "에셋을 보려면 WaveSpeed API 키를 구성하세요.",
+    "noAssets": "에셋 없음",
+    "noAssetsDesc": "설정에서 자동 저장을 활성화하여 생성된 출력을 자동으로 저장하거나 플레이그라운드에서 수동으로 저장하세요.",
+    "noMatchingAssets": "필터와 일치하는 에셋이 없습니다",
+    "enableAutoSave": "자동 저장 활성화",
+    "searchPlaceholder": "에셋 검색...",
+    "filters": "필터",
+    "clearFilters": "필터 지우기",
+    "filterByType": "유형",
+    "filterByModel": "모델",
+    "allModels": "모든 모델",
+    "favorites": "즐겨찾기",
+    "showFavoritesOnly": "즐겨찾기만 표시",
+    "types": {
+      "image": "이미지",
+      "video": "비디오",
+      "audio": "오디오",
+      "text": "텍스트",
+      "json": "JSON"
+    },
+    "typesPlural": {
+      "image": "이미지",
+      "video": "비디오",
+      "audio": "오디오",
+      "text": "텍스트"
+    },
+    "sort": {
+      "dateNewest": "최신순",
+      "dateOldest": "오래된순",
+      "nameAZ": "이름 (A-Z)",
+      "nameZA": "이름 (Z-A)",
+      "sizeLargest": "큰 순서",
+      "sizeSmallest": "작은 순서"
+    },
+    "select": "선택",
+    "selectAll": "전체 선택",
+    "deselectAll": "전체 선택 해제",
+    "deleteSelected": "삭제 ({{count}})",
+    "settings": "설정",
+    "openFolder": "폴더 열기",
+    "preview": "미리보기",
+    "openLocation": "파일 위치 열기",
+    "favorite": "즐겨찾기에 추가",
+    "unfavorite": "즐겨찾기에서 제거",
+    "addToFavorites": "즐겨찾기에 추가",
+    "removeFromFavorites": "즐겨찾기에서 제거",
+    "addedToFavorites": "즐겨찾기에 추가됨",
+    "removedFromFavorites": "즐겨찾기에서 제거됨",
+    "bulkFavoriteDesc": "{{count}}개 항목 업데이트됨",
+    "manageTags": "태그 관리",
+    "deleted": "에셋 삭제됨",
+    "deletedDesc": "\"{{name}}\" 삭제됨",
+    "deletedBulk": "에셋 삭제됨",
+    "deletedBulkDesc": "{{count}}개의 에셋을 삭제했습니다",
+    "deleteFailed": "에셋 삭제 실패",
+    "deleteConfirmTitle": "에셋 삭제",
+    "deleteConfirmDesc": "\"{{name}}\"을(를) 삭제하시겠습니까? 디스크에서 파일이 영구적으로 제거됩니다.",
+    "bulkDeleteConfirmTitle": "에셋 삭제",
+    "bulkDeleteConfirmDesc": "{{count}}개의 에셋을 삭제하시겠습니까? 디스크에서 파일이 영구적으로 제거됩니다.",
+    "currentTags": "현재 태그",
+    "noTags": "태그 없음",
+    "addTag": "태그 추가",
+    "tagPlaceholder": "태그 이름 입력...",
+    "manageTagsDesc": "\"{{name}}\"의 태그 추가 또는 제거",
+    "textPreviewUnavailable": "텍스트 미리보기를 사용할 수 없습니다. 보려면 파일 위치를 여세요."
   },
   "settings": {
     "title": "설정",
@@ -216,6 +313,23 @@
       "label": "언어",
       "changed": "언어 변경됨",
       "changedDesc": "애플리케이션 언어가 변경되었습니다."
+    },
+    "assets": {
+      "title": "에셋",
+      "description": "생성된 출력 저장 방식 구성",
+      "autoSave": "출력 자동 저장",
+      "autoSaveDesc": "생성된 이미지, 비디오, 오디오를 에셋 폴더에 자동으로 저장합니다",
+      "autoSaveEnabled": "자동 저장 활성화됨",
+      "autoSaveEnabledDesc": "생성된 출력이 자동으로 저장됩니다",
+      "autoSaveDisabled": "자동 저장 비활성화됨",
+      "autoSaveDisabledDesc": "플레이그라운드에서 수동으로 출력을 저장할 수 있습니다",
+      "directory": "에셋 디렉토리",
+      "directoryDesc": "생성된 출력을 저장할 위치를 선택하세요",
+      "defaultDirectory": "Documents/WaveSpeed",
+      "browse": "찾아보기",
+      "directoryChanged": "디렉토리 변경됨",
+      "directoryChangedDesc": "새 출력이 {{path}}에 저장됩니다",
+      "desktopOnly": "이 기능은 데스크톱 애플리케이션이 필요합니다"
     },
     "updates": {
       "title": "업데이트",
@@ -255,7 +369,8 @@
   "apiKeyRequired": {
     "title": "API 키 필요",
     "defaultDesc": "설정에서 WaveSpeed API 키를 구성하세요.",
-    "goToSettings": "설정으로 이동"
+    "goToSettings": "설정으로 이동",
+    "orGoTo": "또는 다음으로 이동"
   },
   "errors": {
     "tryAgain": "다시 시도",

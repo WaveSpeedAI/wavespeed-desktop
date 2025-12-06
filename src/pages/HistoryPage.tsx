@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { apiClient } from '@/api/client'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
 import type { HistoryItem } from '@/types/prediction'
-import { ApiKeyRequired } from '@/components/shared/ApiKeyRequired'
 import { OutputDisplay } from '@/components/playground/OutputDisplay'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -102,7 +101,7 @@ function VideoPreview({ src, enabled }: { src: string; enabled: boolean }) {
 
 export function HistoryPage() {
   const { t } = useTranslation()
-  const { isLoading: isLoadingApiKey, isValidated, apiKey } = useApiKeyStore()
+  const { isLoading: isLoadingApiKey, isValidated } = useApiKeyStore()
   const [items, setItems] = useState<HistoryItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -203,9 +202,6 @@ export function HistoryPage() {
     )
   }
 
-  if (!apiKey) {
-    return <ApiKeyRequired description="Please configure your WaveSpeed API key in Settings to view history." />
-  }
 
   return (
     <div className="flex h-full flex-col">

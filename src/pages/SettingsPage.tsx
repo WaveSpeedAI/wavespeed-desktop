@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
 import { useThemeStore, type Theme } from '@/stores/themeStore'
+import { useAssetsStore } from '@/stores/assetsStore'
 import { languages } from '@/i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,7 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { toast } from '@/hooks/useToast'
-import { Eye, EyeOff, Check, Loader2, Monitor, Moon, Sun, Download, RefreshCw, Rocket, AlertCircle, Shield, Github, Globe } from 'lucide-react'
+import { Eye, EyeOff, Check, Loader2, Monitor, Moon, Sun, Download, RefreshCw, Rocket, AlertCircle, Shield, Github, Globe, FolderOpen } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 
 type UpdateChannel = 'stable' | 'nightly'
@@ -34,6 +35,7 @@ export function SettingsPage() {
   const { t, i18n } = useTranslation()
   const { apiKey, setApiKey, isValidated, isValidating: storeIsValidating, validateApiKey } = useApiKeyStore()
   const { theme, setTheme } = useThemeStore()
+  const { settings: assetsSettings, loadSettings: loadAssetsSettings, setAutoSave, setAssetsDirectory } = useAssetsStore()
   const [inputKey, setInputKey] = useState(apiKey)
   const [showKey, setShowKey] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -66,9 +68,11 @@ export function SettingsPage() {
         setUpdateChannel(settings.updateChannel || 'stable')
         setAutoCheckUpdate(settings.autoCheckUpdate !== false)
       }
+      // Load assets settings
+      loadAssetsSettings()
     }
     loadSettings()
-  }, [])
+  }, [loadAssetsSettings])
 
   // Subscribe to update status events
   useEffect(() => {
@@ -148,6 +152,34 @@ export function SettingsPage() {
       await window.electronAPI.setSettings({ autoCheckUpdate: checked })
     }
   }, [])
+
+  const handleAutoSaveAssetsChange = useCallback(async (checked: boolean) => {
+    await setAutoSave(checked)
+    toast({
+      title: checked ? t('settings.assets.autoSaveEnabled') : t('settings.assets.autoSaveDisabled'),
+      description: checked ? t('settings.assets.autoSaveEnabledDesc') : t('settings.assets.autoSaveDisabledDesc'),
+    })
+  }, [setAutoSave, t])
+
+  const handleSelectAssetsDirectory = useCallback(async () => {
+    if (!window.electronAPI?.selectDirectory) {
+      toast({
+        title: t('common.error'),
+        description: t('settings.assets.desktopOnly'),
+        variant: 'destructive',
+      })
+      return
+    }
+
+    const result = await window.electronAPI.selectDirectory()
+    if (result.success && result.path) {
+      await setAssetsDirectory(result.path)
+      toast({
+        title: t('settings.assets.directoryChanged'),
+        description: t('settings.assets.directoryChangedDesc', { path: result.path }),
+      })
+    }
+  }, [setAssetsDirectory, t])
 
   const handleCheckForUpdates = useCallback(async () => {
     if (!window.electronAPI?.checkForUpdates) {
@@ -437,6 +469,48 @@ export function SettingsPage() {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>{t('settings.assets.title')}</CardTitle>
+          <CardDescription>
+            {t('settings.assets.description')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="autoSaveAssets">{t('settings.assets.autoSave')}</Label>
+              <p className="text-xs text-muted-foreground">
+                {t('settings.assets.autoSaveDesc')}
+              </p>
+            </div>
+            <Switch
+              id="autoSaveAssets"
+              checked={assetsSettings.autoSaveAssets}
+              onCheckedChange={handleAutoSaveAssetsChange}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>{t('settings.assets.directory')}</Label>
+            <div className="flex gap-2">
+              <Input
+                value={assetsSettings.assetsDirectory || t('settings.assets.defaultDirectory')}
+                readOnly
+                className="flex-1"
+              />
+              <Button variant="outline" onClick={handleSelectAssetsDirectory}>
+                <FolderOpen className="mr-2 h-4 w-4" />
+                {t('settings.assets.browse')}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {t('settings.assets.directoryDesc')}
+            </p>
           </div>
         </CardContent>
       </Card>

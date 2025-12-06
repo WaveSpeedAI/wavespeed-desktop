@@ -26,13 +26,16 @@
     "no": "Нет",
     "error": "Ошибка",
     "success": "Успех",
-    "warning": "Предупреждение"
+    "warning": "Предупреждение",
+    "selectAll": "Выбрать все",
+    "done": "Готово"
   },
   "nav": {
     "models": "Модели",
     "playground": "Playground",
     "history": "История",
     "templates": "Шаблоны",
+    "assets": "Мои Активы",
     "settings": "Настройки",
     "collapse": "Свернуть"
   },
@@ -109,6 +112,26 @@
       "stopRecording": "Остановить",
       "useVideo": "Использовать видео",
       "useAudio": "Использовать аудио"
+    },
+    "autoSaved": "Автосохранено в Активы",
+    "autoSavedDesc": "Сохранено {{count}} результат(ов) в Мои Активы",
+    "savedToAssets": "Сохранено в Активы",
+    "savedToAssetsDesc": "Результат сохранён в папку активов",
+    "saveToAssets": "Сохранить в Активы",
+    "alreadySaved": "Уже сохранено",
+    "saveFailed": "Не удалось сохранить результат",
+    "unsupportedFormat": "Этот формат результата невозможно сохранить как актив",
+    "randomSeed": "Сгенерировать случайный сид",
+    "optimizer": {
+      "tooltip": "Оптимизировать промпт с помощью ИИ",
+      "title": "Оптимизация Промпта",
+      "perRun": "запуск",
+      "loading": "Загрузка оптимизатора...",
+      "loadError": "Не удалось загрузить конфигурацию оптимизатора",
+      "enterPromptError": "Пожалуйста, введите промпт или предоставьте изображение",
+      "failedError": "Не удалось оптимизировать промпт",
+      "optimizing": "Оптимизация...",
+      "optimize": "Оптимизировать"
     }
   },
   "history": {
@@ -178,7 +201,81 @@
     "skippedCount": ", {{count}} пропущено (дубликаты)",
     "importFailed": "Ошибка импорта",
     "invalidFile": "Недопустимый файл",
-    "invalidFileDesc": "Выбранный файл не является допустимым экспортом шаблонов"
+    "invalidFileDesc": "Выбранный файл не является допустимым экспортом шаблонов",
+    "deleteSelected": "Удалить ({{count}})",
+    "deleteTemplates": "Удалить шаблоны",
+    "templatesDeleted": "Шаблоны удалены",
+    "deletedCount": "Удалено {{count}} шаблон(ов)",
+    "batchDeleteConfirm": "Вы уверены, что хотите удалить {{count}} шаблон(ов)? Это действие нельзя отменить."
+  },
+  "assets": {
+    "title": "Мои Активы",
+    "subtitle": "{{count}} сохранённых результатов",
+    "apiKeyRequired": "Пожалуйста, настройте ваш API-ключ WaveSpeed для просмотра активов.",
+    "noAssets": "Пока нет активов",
+    "noAssetsDesc": "Включите автосохранение в Настройках, чтобы автоматически сохранять сгенерированные результаты, или сохраняйте их вручную из Playground.",
+    "noMatchingAssets": "Нет активов, соответствующих вашим фильтрам",
+    "enableAutoSave": "Включить Автосохранение",
+    "searchPlaceholder": "Поиск активов...",
+    "filters": "Фильтры",
+    "clearFilters": "Очистить Фильтры",
+    "filterByType": "Тип",
+    "filterByModel": "Модель",
+    "allModels": "Все Модели",
+    "favorites": "Избранное",
+    "showFavoritesOnly": "Показать только избранное",
+    "types": {
+      "image": "Изображение",
+      "video": "Видео",
+      "audio": "Аудио",
+      "text": "Текст",
+      "json": "JSON"
+    },
+    "typesPlural": {
+      "image": "Изображения",
+      "video": "Видео",
+      "audio": "Аудио",
+      "text": "Текст"
+    },
+    "sort": {
+      "dateNewest": "Сначала новые",
+      "dateOldest": "Сначала старые",
+      "nameAZ": "Имя (А-Я)",
+      "nameZA": "Имя (Я-А)",
+      "sizeLargest": "Сначала большие",
+      "sizeSmallest": "Сначала маленькие"
+    },
+    "select": "Выбрать",
+    "selectAll": "Выбрать Все",
+    "deselectAll": "Отменить Выбор",
+    "deleteSelected": "Удалить ({{count}})",
+    "settings": "Настройки",
+    "openFolder": "Открыть папку",
+    "preview": "Превью",
+    "openLocation": "Открыть Расположение Файла",
+    "favorite": "Добавить в Избранное",
+    "unfavorite": "Удалить из Избранного",
+    "addToFavorites": "Добавить в избранное",
+    "removeFromFavorites": "Удалить из избранного",
+    "addedToFavorites": "Добавлено в избранное",
+    "removedFromFavorites": "Удалено из избранного",
+    "bulkFavoriteDesc": "Обновлено {{count}} элемент(ов)",
+    "manageTags": "Управление Тегами",
+    "deleted": "Актив удалён",
+    "deletedDesc": "Удалено \"{{name}}\"",
+    "deletedBulk": "Активы удалены",
+    "deletedBulkDesc": "Удалено {{count}} актив(ов)",
+    "deleteFailed": "Не удалось удалить актив",
+    "deleteConfirmTitle": "Удалить Актив",
+    "deleteConfirmDesc": "Вы уверены, что хотите удалить \"{{name}}\"? Это приведёт к безвозвратному удалению файла с диска.",
+    "bulkDeleteConfirmTitle": "Удалить Активы",
+    "bulkDeleteConfirmDesc": "Вы уверены, что хотите удалить {{count}} актив(ов)? Это приведёт к безвозвратному удалению файлов с диска.",
+    "currentTags": "Текущие Теги",
+    "noTags": "Нет тегов",
+    "addTag": "Добавить Тег",
+    "tagPlaceholder": "Введите название тега...",
+    "manageTagsDesc": "Добавить или удалить теги для \"{{name}}\"",
+    "textPreviewUnavailable": "Превью текста недоступно. Откройте расположение файла для просмотра."
   },
   "settings": {
     "title": "Настройки",
@@ -216,6 +313,23 @@
       "label": "Язык",
       "changed": "Язык изменён",
       "changedDesc": "Язык приложения был изменён."
+    },
+    "assets": {
+      "title": "Активы",
+      "description": "Настройка сохранения сгенерированных результатов",
+      "autoSave": "Автосохранение результатов",
+      "autoSaveDesc": "Автоматически сохранять сгенерированные изображения, видео и аудио в папку активов",
+      "autoSaveEnabled": "Автосохранение включено",
+      "autoSaveEnabledDesc": "Сгенерированные результаты будут сохраняться автоматически",
+      "autoSaveDisabled": "Автосохранение отключено",
+      "autoSaveDisabledDesc": "Вы всё ещё можете сохранять результаты вручную из playground",
+      "directory": "Папка Активов",
+      "directoryDesc": "Выберите, куда сохранять сгенерированные результаты",
+      "defaultDirectory": "Документы/WaveSpeed",
+      "browse": "Обзор",
+      "directoryChanged": "Папка изменена",
+      "directoryChangedDesc": "Новые результаты будут сохраняться в {{path}}",
+      "desktopOnly": "Эта функция требует настольное приложение"
     },
     "updates": {
       "title": "Обновления",
@@ -255,7 +369,8 @@
   "apiKeyRequired": {
     "title": "Требуется API-ключ",
     "defaultDesc": "Пожалуйста, настройте ваш API-ключ WaveSpeed в Настройках.",
-    "goToSettings": "Перейти в Настройки"
+    "goToSettings": "Перейти в Настройки",
+    "orGoTo": "Или перейти на"
   },
   "errors": {
     "tryAgain": "Попробовать снова",

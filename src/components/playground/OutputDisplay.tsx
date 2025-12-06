@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { PredictionResult } from '@/types/prediction'
+import { useAssetsStore, detectAssetType } from '@/stores/assetsStore'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -8,8 +9,14 @@ import {
   DialogContent,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Download, ExternalLink, Copy, Check, AlertTriangle, X } from 'lucide-react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { Download, ExternalLink, Copy, Check, AlertTriangle, X, Save, FolderHeart } from 'lucide-react'
 import { AudioPlayer } from '@/components/shared/AudioPlayer'
+import { toast } from '@/hooks/useToast'
 import { cn } from '@/lib/utils'
 
 interface OutputDisplayProps {
@@ -17,12 +24,122 @@ interface OutputDisplayProps {
   outputs: (string | Record<string, unknown>)[]
   error: string | null
   isLoading: boolean
+  modelId?: string
+  modelName?: string
 }
 
-export function OutputDisplay({ prediction, outputs, error, isLoading }: OutputDisplayProps) {
+export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, modelName }: OutputDisplayProps) {
   const { t } = useTranslation()
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
   const [fullscreenMedia, setFullscreenMedia] = useState<{ url: string; type: 'image' | 'video' } | null>(null)
+  const [savedIndexes, setSavedIndexes] = useState<Set<number>>(new Set())
+  const [savingIndex, setSavingIndex] = useState<number | null>(null)
+  const autoSavedRef = useRef<string | null>(null)
+
+  const { settings, loadSettings, saveAsset } = useAssetsStore()
+
+  // Load settings on mount
+  useEffect(() => {
+    loadSettings()
+  }, [loadSettings])
+
+  // Auto-save outputs when prediction completes
+  useEffect(() => {
+    if (!settings.autoSaveAssets || !modelId || !modelName || outputs.length === 0) return
+    if (!prediction?.id || autoSavedRef.current === prediction.id) return
+
+    // Mark as auto-saved to prevent duplicate saves
+    autoSavedRef.current = prediction.id
+
+    // Auto-save all media outputs
+    const saveOutputs = async () => {
+      let savedCount = 0
+      for (let i = 0; i < outputs.length; i++) {
+        const output = outputs[i]
+        if (typeof output !== 'string') continue
+
+        const assetType = detectAssetType(output)
+        if (!assetType) continue
+
+        try {
+          const result = await saveAsset(output, assetType, {
+            modelId,
+            modelName,
+            predictionId: prediction.id,
+            originalUrl: output
+          })
+          if (result) {
+            savedCount++
+            setSavedIndexes(prev => new Set(prev).add(i))
+          }
+        } catch (err) {
+          console.error('Failed to auto-save asset:', err)
+        }
+      }
+
+      if (savedCount > 0) {
+        toast({
+          title: t('playground.autoSaved'),
+          description: t('playground.autoSavedDesc', { count: savedCount }),
+        })
+      }
+    }
+
+    saveOutputs()
+  }, [outputs, prediction?.id, modelId, modelName, settings.autoSaveAssets, saveAsset, t])
+
+  // Reset saved indexes when outputs change (new prediction)
+  useEffect(() => {
+    if (prediction?.id && autoSavedRef.current !== prediction.id) {
+      setSavedIndexes(new Set())
+    }
+  }, [prediction?.id])
+
+  const handleSaveToAssets = useCallback(async (url: string, index: number) => {
+    if (!modelId || !modelName) return
+
+    const assetType = detectAssetType(url)
+    if (!assetType) {
+      toast({
+        title: t('common.error'),
+        description: t('playground.unsupportedFormat'),
+        variant: 'destructive',
+      })
+      return
+    }
+
+    setSavingIndex(index)
+    try {
+      const result = await saveAsset(url, assetType, {
+        modelId,
+        modelName,
+        predictionId: prediction?.id,
+        originalUrl: url
+      })
+
+      if (result) {
+        setSavedIndexes(prev => new Set(prev).add(index))
+        toast({
+          title: t('playground.savedToAssets'),
+          description: t('playground.savedToAssetsDesc'),
+        })
+      } else {
+        toast({
+          title: t('common.error'),
+          description: t('playground.saveFailed'),
+          variant: 'destructive',
+        })
+      }
+    } catch {
+      toast({
+        title: t('common.error'),
+        description: t('playground.saveFailed'),
+        variant: 'destructive',
+      })
+    } finally {
+      setSavingIndex(null)
+    }
+  }, [modelId, modelName, prediction?.id, saveAsset, t])
 
   const handleDownload = async (url: string, index: number) => {
     const extension = getExtensionFromUrl(url) || 'png'
@@ -213,14 +330,36 @@ export function OutputDisplay({ prediction, outputs, error, isLoading }: OutputD
                   </Button>
                 )}
                 {(isImage || isVideo || isAudio) && (
-                  <Button
-                    size="icon"
-                    variant="secondary"
-                    className="h-8 w-8"
-                    onClick={() => handleDownload(outputStr, index)}
-                  >
-                    <Download className="h-4 w-4" />
-                  </Button>
+                  <>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          size="icon"
+                          variant="secondary"
+                          className="h-8 w-8"
+                          onClick={() => handleSaveToAssets(outputStr, index)}
+                          disabled={savedIndexes.has(index) || savingIndex === index || !modelId}
+                        >
+                          {savedIndexes.has(index) ? (
+                            <FolderHeart className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <Save className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {savedIndexes.has(index) ? t('playground.alreadySaved') : t('playground.saveToAssets')}
+                      </TooltipContent>
+                    </Tooltip>
+                    <Button
+                      size="icon"
+                      variant="secondary"
+                      className="h-8 w-8"
+                      onClick={() => handleDownload(outputStr, index)}
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
+                  </>
                 )}
               </div>
             </div>

@@ -6,6 +6,7 @@
     "delete": "हटाएं",
     "edit": "संपादित करें",
     "close": "बंद करें",
+    "done": "पूर्ण",
     "refresh": "रीफ्रेश करें",
     "search": "खोजें",
     "clear": "साफ़ करें",
@@ -26,13 +27,15 @@
     "no": "नहीं",
     "error": "त्रुटि",
     "success": "सफलता",
-    "warning": "चेतावनी"
+    "warning": "चेतावनी",
+    "selectAll": "सभी चुनें"
   },
   "nav": {
     "models": "मॉडल",
     "playground": "प्लेग्राउंड",
     "history": "इतिहास",
     "templates": "टेम्पलेट",
+    "assets": "मेरी संपत्तियां",
     "settings": "सेटिंग्स",
     "collapse": "संक्षिप्त करें"
   },
@@ -109,6 +112,26 @@
       "stopRecording": "रोकें",
       "useVideo": "वीडियो उपयोग करें",
       "useAudio": "ऑडियो उपयोग करें"
+    },
+    "autoSaved": "संपत्तियों में ऑटो-सेव किया गया",
+    "autoSavedDesc": "मेरी संपत्तियों में {{count}} आउटपुट सहेजे गए",
+    "savedToAssets": "संपत्तियों में सहेजा गया",
+    "savedToAssetsDesc": "आउटपुट आपके संपत्ति फ़ोल्डर में सहेजा गया",
+    "saveToAssets": "संपत्तियों में सहेजें",
+    "alreadySaved": "पहले से सहेजा गया",
+    "saveFailed": "आउटपुट सहेजने में विफल",
+    "unsupportedFormat": "यह आउटपुट प्रारूप संपत्ति के रूप में सहेजा नहीं जा सकता",
+    "randomSeed": "रैंडम सीड जनरेट करें",
+    "optimizer": {
+      "tooltip": "AI से प्रॉम्प्ट ऑप्टिमाइज़ करें",
+      "title": "प्रॉम्प्ट ऑप्टिमाइज़ करें",
+      "perRun": "रन",
+      "loading": "ऑप्टिमाइज़र लोड हो रहा है...",
+      "loadError": "ऑप्टिमाइज़र कॉन्फ़िगरेशन लोड करने में असमर्थ",
+      "enterPromptError": "कृपया एक प्रॉम्प्ट दर्ज करें या एक छवि प्रदान करें",
+      "failedError": "प्रॉम्प्ट ऑप्टिमाइज़ करने में विफल",
+      "optimizing": "ऑप्टिमाइज़ हो रहा है...",
+      "optimize": "ऑप्टिमाइज़ करें"
     }
   },
   "history": {
@@ -178,7 +201,81 @@
     "skippedCount": ", {{count}} छोड़े गए (डुप्लिकेट)",
     "importFailed": "आयात विफल",
     "invalidFile": "अमान्य फ़ाइल",
-    "invalidFileDesc": "चयनित फ़ाइल वैध टेम्पलेट निर्यात नहीं है"
+    "invalidFileDesc": "चयनित फ़ाइल वैध टेम्पलेट निर्यात नहीं है",
+    "deleteSelected": "हटाएं ({{count}})",
+    "deleteTemplates": "टेम्पलेट हटाएं",
+    "templatesDeleted": "टेम्पलेट हटाए गए",
+    "deletedCount": "{{count}} टेम्पलेट हटाए गए",
+    "batchDeleteConfirm": "क्या आप वाकई {{count}} टेम्पलेट हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।"
+  },
+  "assets": {
+    "title": "मेरी संपत्तियां",
+    "subtitle": "{{count}} सहेजे गए आउटपुट",
+    "apiKeyRequired": "संपत्तियां देखने के लिए कृपया अपनी WaveSpeed API कुंजी कॉन्फ़िगर करें।",
+    "noAssets": "अभी तक कोई संपत्ति नहीं",
+    "noAssetsDesc": "अपने उत्पन्न आउटपुट को स्वचालित रूप से सहेजने के लिए सेटिंग्स में ऑटो-सेव सक्षम करें, या उन्हें प्लेग्राउंड से मैन्युअल रूप से सहेजें।",
+    "noMatchingAssets": "कोई संपत्ति आपके फ़िल्टर से मेल नहीं खाती",
+    "enableAutoSave": "ऑटो-सेव सक्षम करें",
+    "searchPlaceholder": "संपत्तियां खोजें...",
+    "filters": "फ़िल्टर",
+    "clearFilters": "फ़िल्टर साफ़ करें",
+    "filterByType": "प्रकार",
+    "filterByModel": "मॉडल",
+    "allModels": "सभी मॉडल",
+    "favorites": "पसंदीदा",
+    "showFavoritesOnly": "केवल पसंदीदा दिखाएं",
+    "types": {
+      "image": "छवि",
+      "video": "वीडियो",
+      "audio": "ऑडियो",
+      "text": "टेक्स्ट",
+      "json": "JSON"
+    },
+    "typesPlural": {
+      "image": "छवियाँ",
+      "video": "वीडियो",
+      "audio": "ऑडियो",
+      "text": "टेक्स्ट"
+    },
+    "sort": {
+      "dateNewest": "नवीनतम पहले",
+      "dateOldest": "पुराना पहले",
+      "nameAZ": "नाम (A-Z)",
+      "nameZA": "नाम (Z-A)",
+      "sizeLargest": "सबसे बड़ा पहले",
+      "sizeSmallest": "सबसे छोटा पहले"
+    },
+    "select": "चुनें",
+    "selectAll": "सभी चुनें",
+    "deselectAll": "सभी अचयनित करें",
+    "deleteSelected": "हटाएं ({{count}})",
+    "settings": "सेटिंग्स",
+    "openFolder": "फ़ोल्डर खोलें",
+    "preview": "प्रीव्यू",
+    "openLocation": "फ़ाइल स्थान खोलें",
+    "favorite": "पसंदीदा में जोड़ें",
+    "unfavorite": "पसंदीदा से हटाएं",
+    "addToFavorites": "पसंदीदा में जोड़ें",
+    "removeFromFavorites": "पसंदीदा से हटाएं",
+    "addedToFavorites": "पसंदीदा में जोड़ा गया",
+    "removedFromFavorites": "पसंदीदा से हटाया गया",
+    "bulkFavoriteDesc": "{{count}} आइटम अपडेट किया गया",
+    "manageTags": "टैग प्रबंधित करें",
+    "deleted": "संपत्ति हटाई गई",
+    "deletedDesc": "\"{{name}}\" हटाया गया",
+    "deletedBulk": "संपत्तियां हटाई गईं",
+    "deletedBulkDesc": "{{count}} संपत्तियां हटाई गईं",
+    "deleteFailed": "संपत्ति हटाने में विफल",
+    "deleteConfirmTitle": "संपत्ति हटाएं",
+    "deleteConfirmDesc": "क्या आप वाकई \"{{name}}\" हटाना चाहते हैं? यह आपकी डिस्क से फ़ाइल को स्थायी रूप से हटा देगा।",
+    "bulkDeleteConfirmTitle": "संपत्तियां हटाएं",
+    "bulkDeleteConfirmDesc": "क्या आप वाकई {{count}} संपत्तियां हटाना चाहते हैं? यह आपकी डिस्क से फ़ाइलें स्थायी रूप से हटा देगा।",
+    "currentTags": "वर्तमान टैग",
+    "noTags": "कोई टैग नहीं",
+    "addTag": "टैग जोड़ें",
+    "tagPlaceholder": "टैग नाम दर्ज करें...",
+    "manageTagsDesc": "\"{{name}}\" के लिए टैग जोड़ें या हटाएं",
+    "textPreviewUnavailable": "पाठ प्रीव्यू उपलब्ध नहीं। देखने के लिए फ़ाइल स्थान खोलें।"
   },
   "settings": {
     "title": "सेटिंग्स",
@@ -216,6 +313,23 @@
       "label": "भाषा",
       "changed": "भाषा बदली गई",
       "changedDesc": "एप्लिकेशन भाषा बदल दी गई है।"
+    },
+    "assets": {
+      "title": "संपत्तियां",
+      "description": "कॉन्फ़िगर करें कि उत्पन्न आउटपुट कैसे सहेजे जाते हैं",
+      "autoSave": "ऑटो-सेव आउटपुट",
+      "autoSaveDesc": "उत्पन्न छवियों, वीडियो और ऑडियो को स्वचालित रूप से अपने संपत्ति फ़ोल्डर में सहेजें",
+      "autoSaveEnabled": "ऑटो-सेव सक्षम",
+      "autoSaveEnabledDesc": "उत्पन्न आउटपुट स्वचालित रूप से सहेजे जाएंगे",
+      "autoSaveDisabled": "ऑटो-सेव अक्षम",
+      "autoSaveDisabledDesc": "आप अभी भी प्लेग्राउंड से आउटपुट को मैन्युअल रूप से सहेज सकते हैं",
+      "directory": "संपत्ति निर्देशिका",
+      "directoryDesc": "चुनें कि अपने उत्पन्न आउटपुट कहां सहेजें",
+      "defaultDirectory": "Documents/WaveSpeed",
+      "browse": "ब्राउज़ करें",
+      "directoryChanged": "निर्देशिका बदली गई",
+      "directoryChangedDesc": "नए आउटपुट {{path}} में सहेजे जाएंगे",
+      "desktopOnly": "यह सुविधा डेस्कटॉप एप्लिकेशन की आवश्यकता है"
     },
     "updates": {
       "title": "अपडेट",
@@ -255,7 +369,8 @@
   "apiKeyRequired": {
     "title": "API कुंजी आवश्यक",
     "defaultDesc": "कृपया सेटिंग्स में अपनी WaveSpeed API कुंजी कॉन्फ़िगर करें।",
-    "goToSettings": "सेटिंग्स पर जाएं"
+    "goToSettings": "सेटिंग्स पर जाएं",
+    "orGoTo": "या यहां जाएं"
   },
   "errors": {
     "tryAgain": "पुनः प्रयास करें",

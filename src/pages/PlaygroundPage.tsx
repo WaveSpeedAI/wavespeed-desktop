@@ -9,7 +9,6 @@ import { apiClient } from '@/api/client'
 import { DynamicForm } from '@/components/playground/DynamicForm'
 import { OutputDisplay } from '@/components/playground/OutputDisplay'
 import { ModelSelector } from '@/components/playground/ModelSelector'
-import { ApiKeyRequired } from '@/components/shared/ApiKeyRequired'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -22,6 +21,11 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { Play, RotateCcw, Loader2, Plus, X, BookOpen, Save, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/useToast'
@@ -253,10 +257,6 @@ export function PlaygroundPage() {
     )
   }
 
-  if (!apiKey) {
-    return <ApiKeyRequired description="Please configure your WaveSpeed API key in Settings to use the playground." />
-  }
-
   return (
     <div className="flex h-full flex-col">
       {/* Tab Bar */}
@@ -281,9 +281,16 @@ export function PlaygroundPage() {
                 {tab.isRunning && (
                   <Loader2 className="h-3 w-3 animate-spin" />
                 )}
-                <span className="max-w-[150px] truncate">
-                  {tab.selectedModel?.name || t('playground.tabs.newTab')}
-                </span>
+                <Tooltip delayDuration={300}>
+                  <TooltipTrigger asChild>
+                    <span className="max-w-[150px] truncate">
+                      {tab.selectedModel?.name || t('playground.tabs.newTab')}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    {tab.selectedModel?.name || t('playground.tabs.newTab')}
+                  </TooltipContent>
+                </Tooltip>
                 <button
                   onClick={(e) => handleCloseTab(e, tab.id)}
                   className={cn(
@@ -431,6 +438,8 @@ export function PlaygroundPage() {
                 outputs={activeTab.outputs}
                 error={activeTab.error}
                 isLoading={activeTab.isRunning}
+                modelId={activeTab.selectedModel?.model_id}
+                modelName={activeTab.selectedModel?.name}
               />
             </div>
           </div>

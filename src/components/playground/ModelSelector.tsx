@@ -3,6 +3,11 @@ import { useTranslation } from 'react-i18next'
 import { ChevronDown, Search, Check, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { fuzzySearch } from '@/lib/fuzzySearch'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import type { Model } from '@/types/model'
 
 interface ModelSelectorProps {
@@ -96,22 +101,31 @@ export function ModelSelector({ models, value, onChange, disabled }: ModelSelect
   return (
     <div ref={containerRef} className="relative">
       {/* Trigger button */}
-      <button
-        type="button"
-        onClick={() => !disabled && setIsOpen(!isOpen)}
-        disabled={disabled}
-        className={cn(
-          "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
-          "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-          "disabled:cursor-not-allowed disabled:opacity-50",
-          isOpen && "ring-2 ring-ring ring-offset-2"
+      <Tooltip delayDuration={300}>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            onClick={() => !disabled && setIsOpen(!isOpen)}
+            disabled={disabled}
+            className={cn(
+              "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
+              "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+              "disabled:cursor-not-allowed disabled:opacity-50",
+              isOpen && "ring-2 ring-ring ring-offset-2"
+            )}
+          >
+            <span className={cn("truncate", !selectedModel && "text-muted-foreground")}>
+              {selectedModel?.name || t('playground.selectModel')}
+            </span>
+            <ChevronDown className={cn("h-4 w-4 opacity-50 transition-transform shrink-0", isOpen && "rotate-180")} />
+          </button>
+        </TooltipTrigger>
+        {selectedModel && (
+          <TooltipContent side="bottom" className="max-w-xs">
+            {selectedModel.name}
+          </TooltipContent>
         )}
-      >
-        <span className={cn(!selectedModel && "text-muted-foreground")}>
-          {selectedModel?.name || t('playground.selectModel')}
-        </span>
-        <ChevronDown className={cn("h-4 w-4 opacity-50 transition-transform", isOpen && "rotate-180")} />
-      </button>
+      </Tooltip>
 
       {/* Dropdown */}
       {isOpen && (

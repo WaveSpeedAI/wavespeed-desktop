@@ -6,6 +6,7 @@
     "delete": "Supprimer",
     "edit": "Modifier",
     "close": "Fermer",
+    "done": "Terminé",
     "refresh": "Actualiser",
     "search": "Rechercher",
     "clear": "Effacer",
@@ -26,13 +27,15 @@
     "no": "Non",
     "error": "Erreur",
     "success": "Succès",
-    "warning": "Avertissement"
+    "warning": "Avertissement",
+    "selectAll": "Tout sélectionner"
   },
   "nav": {
     "models": "Modèles",
     "playground": "Playground",
     "history": "Historique",
     "templates": "Modèles",
+    "assets": "Mes Ressources",
     "settings": "Paramètres",
     "collapse": "Réduire"
   },
@@ -109,6 +112,26 @@
       "stopRecording": "Arrêter",
       "useVideo": "Utiliser la vidéo",
       "useAudio": "Utiliser l'audio"
+    },
+    "autoSaved": "Enregistré automatiquement dans les Ressources",
+    "autoSavedDesc": "{{count}} sortie(s) enregistrée(s) dans Mes Ressources",
+    "savedToAssets": "Enregistré dans les Ressources",
+    "savedToAssetsDesc": "La sortie a été enregistrée dans votre dossier de ressources",
+    "saveToAssets": "Enregistrer dans les Ressources",
+    "alreadySaved": "Déjà enregistré",
+    "saveFailed": "Échec de l'enregistrement de la sortie",
+    "unsupportedFormat": "Ce format de sortie ne peut pas être enregistré comme ressource",
+    "randomSeed": "Générer une graine aléatoire",
+    "optimizer": {
+      "tooltip": "Optimiser le prompt avec l'IA",
+      "title": "Optimiser le Prompt",
+      "perRun": "exécution",
+      "loading": "Chargement de l'optimiseur...",
+      "loadError": "Impossible de charger la configuration de l'optimiseur",
+      "enterPromptError": "Veuillez entrer un prompt ou fournir une image",
+      "failedError": "Échec de l'optimisation du prompt",
+      "optimizing": "Optimisation...",
+      "optimize": "Optimiser"
     }
   },
   "history": {
@@ -178,7 +201,81 @@
     "skippedCount": ", {{count}} ignoré(s) (doublons)",
     "importFailed": "Échec de l'importation",
     "invalidFile": "Fichier invalide",
-    "invalidFileDesc": "Le fichier sélectionné n'est pas une exportation de modèles valide"
+    "invalidFileDesc": "Le fichier sélectionné n'est pas une exportation de modèles valide",
+    "deleteSelected": "Supprimer ({{count}})",
+    "deleteTemplates": "Supprimer les modèles",
+    "templatesDeleted": "Modèles supprimés",
+    "deletedCount": "{{count}} modèle(s) supprimé(s)",
+    "batchDeleteConfirm": "Êtes-vous sûr de vouloir supprimer {{count}} modèle(s) ? Cette action est irréversible."
+  },
+  "assets": {
+    "title": "Mes Ressources",
+    "subtitle": "{{count}} sorties enregistrées",
+    "apiKeyRequired": "Veuillez configurer votre clé API WaveSpeed pour voir les ressources.",
+    "noAssets": "Pas encore de ressources",
+    "noAssetsDesc": "Activez l'enregistrement automatique dans les Paramètres pour sauvegarder automatiquement vos sorties générées, ou enregistrez-les manuellement depuis le Playground.",
+    "noMatchingAssets": "Aucune ressource ne correspond à vos filtres",
+    "enableAutoSave": "Activer l'enregistrement automatique",
+    "searchPlaceholder": "Rechercher des ressources...",
+    "filters": "Filtres",
+    "clearFilters": "Effacer les filtres",
+    "filterByType": "Type",
+    "filterByModel": "Modèle",
+    "allModels": "Tous les modèles",
+    "favorites": "Favoris",
+    "showFavoritesOnly": "Afficher uniquement les favoris",
+    "types": {
+      "image": "Image",
+      "video": "Vidéo",
+      "audio": "Audio",
+      "text": "Texte",
+      "json": "JSON"
+    },
+    "typesPlural": {
+      "image": "Images",
+      "video": "Vidéos",
+      "audio": "Audio",
+      "text": "Texte"
+    },
+    "sort": {
+      "dateNewest": "Plus récent",
+      "dateOldest": "Plus ancien",
+      "nameAZ": "Nom (A-Z)",
+      "nameZA": "Nom (Z-A)",
+      "sizeLargest": "Plus grand",
+      "sizeSmallest": "Plus petit"
+    },
+    "select": "Sélectionner",
+    "selectAll": "Tout sélectionner",
+    "deselectAll": "Tout désélectionner",
+    "deleteSelected": "Supprimer ({{count}})",
+    "settings": "Paramètres",
+    "openFolder": "Ouvrir le dossier",
+    "preview": "Aperçu",
+    "openLocation": "Ouvrir l'emplacement du fichier",
+    "favorite": "Ajouter aux favoris",
+    "unfavorite": "Retirer des favoris",
+    "addToFavorites": "Ajouter aux favoris",
+    "removeFromFavorites": "Retirer des favoris",
+    "addedToFavorites": "Ajouté aux favoris",
+    "removedFromFavorites": "Retiré des favoris",
+    "bulkFavoriteDesc": "{{count}} élément(s) mis à jour",
+    "manageTags": "Gérer les étiquettes",
+    "deleted": "Ressource supprimée",
+    "deletedDesc": "Supprimé \"{{name}}\"",
+    "deletedBulk": "Ressources supprimées",
+    "deletedBulkDesc": "{{count}} ressource(s) supprimée(s)",
+    "deleteFailed": "Échec de la suppression de la ressource",
+    "deleteConfirmTitle": "Supprimer la ressource",
+    "deleteConfirmDesc": "Êtes-vous sûr de vouloir supprimer \"{{name}}\" ? Cela supprimera définitivement le fichier de votre disque.",
+    "bulkDeleteConfirmTitle": "Supprimer les ressources",
+    "bulkDeleteConfirmDesc": "Êtes-vous sûr de vouloir supprimer {{count}} ressource(s) ? Cela supprimera définitivement les fichiers de votre disque.",
+    "currentTags": "Étiquettes actuelles",
+    "noTags": "Aucune étiquette",
+    "addTag": "Ajouter une étiquette",
+    "tagPlaceholder": "Entrez le nom de l'étiquette...",
+    "manageTagsDesc": "Ajouter ou retirer des étiquettes pour \"{{name}}\"",
+    "textPreviewUnavailable": "Aperçu du texte non disponible. Ouvrez l'emplacement du fichier pour le voir."
   },
   "settings": {
     "title": "Paramètres",
@@ -216,6 +313,23 @@
       "label": "Langue",
       "changed": "Langue modifiée",
       "changedDesc": "La langue de l'application a été modifiée."
+    },
+    "assets": {
+      "title": "Ressources",
+      "description": "Configurer la façon dont les sorties générées sont enregistrées",
+      "autoSave": "Enregistrer automatiquement les sorties",
+      "autoSaveDesc": "Enregistrer automatiquement les images, vidéos et audio générés dans votre dossier de ressources",
+      "autoSaveEnabled": "Enregistrement automatique activé",
+      "autoSaveEnabledDesc": "Les sorties générées seront enregistrées automatiquement",
+      "autoSaveDisabled": "Enregistrement automatique désactivé",
+      "autoSaveDisabledDesc": "Vous pouvez toujours enregistrer les sorties manuellement depuis le playground",
+      "directory": "Répertoire des ressources",
+      "directoryDesc": "Choisissez où enregistrer vos sorties générées",
+      "defaultDirectory": "Documents/WaveSpeed",
+      "browse": "Parcourir",
+      "directoryChanged": "Répertoire modifié",
+      "directoryChangedDesc": "Les nouvelles sorties seront enregistrées dans {{path}}",
+      "desktopOnly": "Cette fonctionnalité nécessite l'application de bureau"
     },
     "updates": {
       "title": "Mises à jour",
@@ -255,7 +369,8 @@
   "apiKeyRequired": {
     "title": "Clé API requise",
     "defaultDesc": "Veuillez configurer votre clé API WaveSpeed dans les Paramètres.",
-    "goToSettings": "Aller aux Paramètres"
+    "goToSettings": "Aller aux Paramètres",
+    "orGoTo": "Ou aller à"
   },
   "errors": {
     "tryAgain": "Réessayer",

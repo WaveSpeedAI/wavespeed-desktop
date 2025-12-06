@@ -26,13 +26,16 @@
     "no": "Hayır",
     "error": "Hata",
     "success": "Başarılı",
-    "warning": "Uyarı"
+    "warning": "Uyarı",
+    "selectAll": "Tümünü seç",
+    "done": "Tamamlandı"
   },
   "nav": {
     "models": "Modeller",
     "playground": "Oyun Alanı",
     "history": "Geçmiş",
     "templates": "Şablonlar",
+    "assets": "Varlıklarım",
     "settings": "Ayarlar",
     "collapse": "Daralt"
   },
@@ -109,6 +112,26 @@
       "stopRecording": "Durdur",
       "useVideo": "Videoyu kullan",
       "useAudio": "Sesi kullan"
+    },
+    "autoSaved": "Varlıklara otomatik kaydedildi",
+    "autoSavedDesc": "{{count}} çıktı Varlıklarım'a kaydedildi",
+    "savedToAssets": "Varlıklara kaydedildi",
+    "savedToAssetsDesc": "Çıktı varlıklar klasörüne kaydedildi",
+    "saveToAssets": "Varlıklara kaydet",
+    "alreadySaved": "Zaten kaydedildi",
+    "saveFailed": "Çıktı kaydedilemedi",
+    "unsupportedFormat": "Bu çıktı formatı varlık olarak kaydedilemez",
+    "randomSeed": "Rastgele tohum oluştur",
+    "optimizer": {
+      "tooltip": "Yapay zeka ile istemi optimize et",
+      "title": "İstemi Optimize Et",
+      "perRun": "çalıştırma",
+      "loading": "Optimize edici yükleniyor...",
+      "loadError": "Optimize edici yapılandırması yüklenemedi",
+      "enterPromptError": "Lütfen bir istem girin veya bir görsel sağlayın",
+      "failedError": "İstem optimize edilemedi",
+      "optimizing": "Optimize ediliyor...",
+      "optimize": "Optimize Et"
     }
   },
   "history": {
@@ -178,7 +201,81 @@
     "skippedCount": ", {{count}} atlandı (kopya)",
     "importFailed": "İçe aktarma başarısız",
     "invalidFile": "Geçersiz dosya",
-    "invalidFileDesc": "Seçilen dosya geçerli bir şablon dışa aktarması değil"
+    "invalidFileDesc": "Seçilen dosya geçerli bir şablon dışa aktarması değil",
+    "deleteSelected": "Sil ({{count}})",
+    "deleteTemplates": "Şablonları Sil",
+    "templatesDeleted": "Şablonlar silindi",
+    "deletedCount": "{{count}} şablon silindi",
+    "batchDeleteConfirm": "{{count}} şablonu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+  },
+  "assets": {
+    "title": "Varlıklarım",
+    "subtitle": "{{count}} kaydedilmiş çıktı",
+    "apiKeyRequired": "Varlıkları görüntülemek için lütfen WaveSpeed API anahtarınızı yapılandırın.",
+    "noAssets": "Henüz varlık yok",
+    "noAssetsDesc": "Oluşturulan çıktılarınızı otomatik olarak kaydetmek için Ayarlar'da otomatik kaydetmeyi etkinleştirin veya bunları Oyun Alanı'ndan manuel olarak kaydedin.",
+    "noMatchingAssets": "Filtrelerinize uygun varlık yok",
+    "enableAutoSave": "Otomatik Kaydetmeyi Etkinleştir",
+    "searchPlaceholder": "Varlık ara...",
+    "filters": "Filtreler",
+    "clearFilters": "Filtreleri Temizle",
+    "filterByType": "Tür",
+    "filterByModel": "Model",
+    "allModels": "Tüm Modeller",
+    "favorites": "Favoriler",
+    "showFavoritesOnly": "Sadece favorileri göster",
+    "types": {
+      "image": "Görsel",
+      "video": "Video",
+      "audio": "Ses",
+      "text": "Metin",
+      "json": "JSON"
+    },
+    "typesPlural": {
+      "image": "Görseller",
+      "video": "Videolar",
+      "audio": "Ses",
+      "text": "Metin"
+    },
+    "sort": {
+      "dateNewest": "En yeni",
+      "dateOldest": "En eski",
+      "nameAZ": "Ad (A-Z)",
+      "nameZA": "Ad (Z-A)",
+      "sizeLargest": "En büyük",
+      "sizeSmallest": "En küçük"
+    },
+    "select": "Seç",
+    "selectAll": "Tümünü Seç",
+    "deselectAll": "Seçimi Kaldır",
+    "deleteSelected": "Sil ({{count}})",
+    "settings": "Ayarlar",
+    "openFolder": "Klasörü aç",
+    "preview": "Önizleme",
+    "openLocation": "Dosya Konumunu Aç",
+    "favorite": "Favorilere Ekle",
+    "unfavorite": "Favorilerden Kaldır",
+    "addToFavorites": "Favorilere ekle",
+    "removeFromFavorites": "Favorilerden çıkar",
+    "addedToFavorites": "Favorilere eklendi",
+    "removedFromFavorites": "Favorilerden çıkarıldı",
+    "bulkFavoriteDesc": "{{count}} öğe güncellendi",
+    "manageTags": "Etiketleri Yönet",
+    "deleted": "Varlık silindi",
+    "deletedDesc": "\"{{name}}\" silindi",
+    "deletedBulk": "Varlıklar silindi",
+    "deletedBulkDesc": "{{count}} varlık silindi",
+    "deleteFailed": "Varlık silinemedi",
+    "deleteConfirmTitle": "Varlığı Sil",
+    "deleteConfirmDesc": "\"{{name}}\" silmek istediğinizden emin misiniz? Bu, dosyayı diskinizden kalıcı olarak kaldıracaktır.",
+    "bulkDeleteConfirmTitle": "Varlıkları Sil",
+    "bulkDeleteConfirmDesc": "{{count}} varlığı silmek istediğinizden emin misiniz? Bu, dosyaları diskinizden kalıcı olarak kaldıracaktır.",
+    "currentTags": "Mevcut Etiketler",
+    "noTags": "Etiket yok",
+    "addTag": "Etiket Ekle",
+    "tagPlaceholder": "Etiket adı girin...",
+    "manageTagsDesc": "\"{{name}}\" için etiket ekle veya kaldır",
+    "textPreviewUnavailable": "Metin önizlemesi mevcut değil. Görüntülemek için dosya konumunu açın."
   },
   "settings": {
     "title": "Ayarlar",
@@ -216,6 +313,23 @@
       "label": "Dil",
       "changed": "Dil değiştirildi",
       "changedDesc": "Uygulama dili değiştirildi."
+    },
+    "assets": {
+      "title": "Varlıklar",
+      "description": "Oluşturulan çıktıların nasıl kaydedileceğini yapılandırın",
+      "autoSave": "Çıktıları otomatik kaydet",
+      "autoSaveDesc": "Oluşturulan görselleri, videoları ve sesleri varlıklar klasörüne otomatik olarak kaydet",
+      "autoSaveEnabled": "Otomatik kaydetme etkin",
+      "autoSaveEnabledDesc": "Oluşturulan çıktılar otomatik olarak kaydedilecek",
+      "autoSaveDisabled": "Otomatik kaydetme devre dışı",
+      "autoSaveDisabledDesc": "Çıktıları oyun alanından manuel olarak kaydedebilirsiniz",
+      "directory": "Varlıklar Klasörü",
+      "directoryDesc": "Oluşturulan çıktılarınızın nereye kaydedileceğini seçin",
+      "defaultDirectory": "Belgelerim/WaveSpeed",
+      "browse": "Gözat",
+      "directoryChanged": "Klasör değiştirildi",
+      "directoryChangedDesc": "Yeni çıktılar {{path}} konumuna kaydedilecek",
+      "desktopOnly": "Bu özellik masaüstü uygulaması gerektirir"
     },
     "updates": {
       "title": "Güncellemeler",
@@ -255,7 +369,8 @@
   "apiKeyRequired": {
     "title": "API Anahtarı Gerekli",
     "defaultDesc": "Lütfen Ayarlar'da WaveSpeed API anahtarınızı yapılandırın.",
-    "goToSettings": "Ayarlara Git"
+    "goToSettings": "Ayarlara Git",
+    "orGoTo": "Veya şuraya gidin"
   },
   "errors": {
     "tryAgain": "Tekrar Dene",

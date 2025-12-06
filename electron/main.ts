@@ -1,6 +1,6 @@
 import { app, BrowserWindow, shell, ipcMain, dialog, Menu, clipboard } from 'electron'
 import { join } from 'path'
-import { existsSync, readFileSync, writeFileSync, mkdirSync, createWriteStream } from 'fs'
+import { existsSync, readFileSync, writeFileSync, mkdirSync, createWriteStream, unlinkSync, statSync } from 'fs'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { autoUpdater, UpdateInfo } from 'electron-updater'
 import https from 'https'
@@ -23,7 +23,27 @@ interface Settings {
   defaultTimeout: number
   updateChannel: 'stable' | 'nightly'
   autoCheckUpdate: boolean
+  autoSaveAssets: boolean
+  assetsDirectory: string
 }
+
+interface AssetMetadata {
+  id: string
+  filePath: string
+  fileName: string
+  type: 'image' | 'video' | 'audio' | 'text' | 'json'
+  modelId: string
+  modelName: string
+  createdAt: string
+  fileSize: number
+  tags: string[]
+  favorite: boolean
+  predictionId?: string
+  originalUrl?: string
+}
+
+const defaultAssetsDirectory = join(app.getPath('documents'), 'WaveSpeed')
+const assetsMetadataPath = join(userDataPath, 'assets-metadata.json')
 
 const defaultSettings: Settings = {
   apiKey: '',
@@ -31,7 +51,9 @@ const defaultSettings: Settings = {
   defaultPollInterval: 1000,
   defaultTimeout: 36000,
   updateChannel: 'stable',
-  autoCheckUpdate: true
+  autoCheckUpdate: true,
+  autoSaveAssets: true,
+  assetsDirectory: defaultAssetsDirectory
 }
 
 function loadSettings(): Settings {
@@ -260,6 +282,174 @@ ipcMain.handle('download-file', async (_, url: string, defaultFilename: string) 
       resolve({ success: false, error: err.message })
     })
   })
+})
+
+// Assets metadata helpers
+function loadAssetsMetadata(): AssetMetadata[] {
+  try {
+    if (existsSync(assetsMetadataPath)) {
+      const data = readFileSync(assetsMetadataPath, 'utf-8')
+      return JSON.parse(data)
+    }
+  } catch (error) {
+    console.error('Failed to load assets metadata:', error)
+  }
+  return []
+}
+
+function saveAssetsMetadata(metadata: AssetMetadata[]): void {
+  try {
+    if (!existsSync(userDataPath)) {
+      mkdirSync(userDataPath, { recursive: true })
+    }
+    writeFileSync(assetsMetadataPath, JSON.stringify(metadata, null, 2))
+  } catch (error) {
+    console.error('Failed to save assets metadata:', error)
+  }
+}
+
+// Assets IPC Handlers
+ipcMain.handle('get-assets-settings', () => {
+  const settings = loadSettings()
+  return {
+    autoSaveAssets: settings.autoSaveAssets,
+    assetsDirectory: settings.assetsDirectory || defaultAssetsDirectory
+  }
+})
+
+ipcMain.handle('set-assets-settings', (_, newSettings: { autoSaveAssets?: boolean; assetsDirectory?: string }) => {
+  saveSettings(newSettings)
+  return true
+})
+
+ipcMain.handle('get-default-assets-directory', () => {
+  return defaultAssetsDirectory
+})
+
+ipcMain.handle('select-directory', async () => {
+  const focusedWindow = BrowserWindow.getFocusedWindow()
+  if (!focusedWindow) return { success: false, error: 'No focused window' }
+
+  const result = await dialog.showOpenDialog(focusedWindow, {
+    properties: ['openDirectory', 'createDirectory'],
+    title: 'Select Assets Directory'
+  })
+
+  if (result.canceled || !result.filePaths[0]) {
+    return { success: false, canceled: true }
+  }
+
+  return { success: true, path: result.filePaths[0] }
+})
+
+ipcMain.handle('save-asset', async (_, url: string, _type: string, fileName: string, subDir: string) => {
+  const settings = loadSettings()
+  const baseDir = settings.assetsDirectory || defaultAssetsDirectory
+  const targetDir = join(baseDir, subDir)
+
+  // Ensure directory exists
+  if (!existsSync(targetDir)) {
+    mkdirSync(targetDir, { recursive: true })
+  }
+
+  const filePath = join(targetDir, fileName)
+
+  // Download file
+  return new Promise((resolve) => {
+    const protocol = url.startsWith('https') ? https : http
+    const file = createWriteStream(filePath)
+
+    const handleResponse = (response: http.IncomingMessage) => {
+      // Handle redirects
+      if (response.statusCode === 301 || response.statusCode === 302) {
+        const redirectUrl = response.headers.location
+        if (redirectUrl) {
+          const redirectProtocol = redirectUrl.startsWith('https') ? https : http
+          redirectProtocol.get(redirectUrl, (redirectResponse) => {
+            handleResponse(redirectResponse)
+          }).on('error', (err) => {
+            resolve({ success: false, error: err.message })
+          })
+          return
+        }
+      }
+
+      response.pipe(file)
+      file.on('finish', () => {
+        file.close()
+        try {
+          const stats = statSync(filePath)
+          resolve({ success: true, filePath, fileSize: stats.size })
+        } catch {
+          resolve({ success: true, filePath, fileSize: 0 })
+        }
+      })
+    }
+
+    protocol.get(url, handleResponse).on('error', (err) => {
+      resolve({ success: false, error: err.message })
+    })
+  })
+})
+
+ipcMain.handle('delete-asset', async (_, filePath: string) => {
+  try {
+    if (existsSync(filePath)) {
+      unlinkSync(filePath)
+    }
+    return { success: true }
+  } catch (error) {
+    return { success: false, error: (error as Error).message }
+  }
+})
+
+ipcMain.handle('delete-assets-bulk', async (_, filePaths: string[]) => {
+  let deleted = 0
+  for (const filePath of filePaths) {
+    try {
+      if (existsSync(filePath)) {
+        unlinkSync(filePath)
+        deleted++
+      }
+    } catch (error) {
+      console.error('Failed to delete:', filePath, error)
+    }
+  }
+  return { success: true, deleted }
+})
+
+ipcMain.handle('get-assets-metadata', () => {
+  return loadAssetsMetadata()
+})
+
+ipcMain.handle('save-assets-metadata', (_, metadata: AssetMetadata[]) => {
+  saveAssetsMetadata(metadata)
+  return true
+})
+
+ipcMain.handle('open-file-location', async (_, filePath: string) => {
+  if (existsSync(filePath)) {
+    shell.showItemInFolder(filePath)
+    return { success: true }
+  }
+  return { success: false, error: 'File not found' }
+})
+
+ipcMain.handle('check-file-exists', (_, filePath: string) => {
+  return existsSync(filePath)
+})
+
+ipcMain.handle('open-assets-folder', async () => {
+  const settings = loadSettings()
+  const assetsDir = settings.assetsDirectory || defaultAssetsDirectory
+
+  // Ensure directory exists
+  if (!existsSync(assetsDir)) {
+    mkdirSync(assetsDir, { recursive: true })
+  }
+
+  const result = await shell.openPath(assetsDir)
+  return { success: !result, error: result || undefined }
 })
 
 // Auto-updater state

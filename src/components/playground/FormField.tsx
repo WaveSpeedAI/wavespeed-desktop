@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { FormFieldConfig } from '@/lib/schemaToForm'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -15,6 +16,9 @@ import { FileUpload } from './FileUpload'
 import { SizeSelector } from './SizeSelector'
 import { LoraSelector, type LoraItem } from './LoraSelector'
 import { PromptOptimizer } from './PromptOptimizer'
+import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Dices } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface FormFieldProps {
@@ -28,7 +32,14 @@ interface FormFieldProps {
   hideLabel?: boolean
 }
 
+// Generate a random seed (0 to 65535)
+const generateRandomSeed = () => Math.floor(Math.random() * 65536)
+
 export function FormField({ field, value, onChange, disabled = false, error, modelType, imageValue, hideLabel = false }: FormFieldProps) {
+  const { t } = useTranslation()
+  // Check if this is a seed field
+  const isSeedField = field.name.toLowerCase() === 'seed'
+
   const renderInput = () => {
     switch (field.type) {
       case 'text':
@@ -95,24 +106,45 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
         }
 
         return (
-          <Input
-            id={field.name}
-            type="number"
-            value={value !== undefined && value !== null ? String(value) : ''}
-            onChange={(e) => {
-              const val = e.target.value
-              if (val === '') {
-                onChange(field.default)
-              } else {
-                onChange(Number(val))
-              }
-            }}
-            min={field.min}
-            max={field.max}
-            step={field.step}
-            placeholder={field.default !== undefined ? `Default: ${field.default}` : undefined}
-            disabled={disabled}
-          />
+          <div className="flex items-center gap-2">
+            <Input
+              id={field.name}
+              type="number"
+              value={value !== undefined && value !== null ? String(value) : ''}
+              onChange={(e) => {
+                const val = e.target.value
+                if (val === '') {
+                  onChange(field.default)
+                } else {
+                  onChange(Number(val))
+                }
+              }}
+              min={field.min}
+              max={field.max}
+              step={field.step}
+              placeholder={field.default !== undefined ? `Default: ${field.default}` : undefined}
+              disabled={disabled}
+              className={isSeedField ? 'flex-1' : undefined}
+            />
+            {isSeedField && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => onChange(generateRandomSeed())}
+                    disabled={disabled}
+                  >
+                    <Dices className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p>{t('playground.randomSeed')}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
         )
       }
 

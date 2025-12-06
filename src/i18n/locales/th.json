@@ -6,6 +6,7 @@
     "delete": "ลบ",
     "edit": "แก้ไข",
     "close": "ปิด",
+    "done": "เสร็จสิ้น",
     "refresh": "รีเฟรช",
     "search": "ค้นหา",
     "clear": "ล้าง",
@@ -26,13 +27,15 @@
     "no": "ไม่",
     "error": "ข้อผิดพลาด",
     "success": "สำเร็จ",
-    "warning": "คำเตือน"
+    "warning": "คำเตือน",
+    "selectAll": "เลือกทั้งหมด"
   },
   "nav": {
     "models": "โมเดล",
     "playground": "สนามทดสอบ",
     "history": "ประวัติ",
     "templates": "เทมเพลต",
+    "assets": "ทรัพย์สินของฉัน",
     "settings": "การตั้งค่า",
     "collapse": "ยุบ"
   },
@@ -109,6 +112,26 @@
       "stopRecording": "หยุด",
       "useVideo": "ใช้วิดีโอนี้",
       "useAudio": "ใช้เสียงนี้"
+    },
+    "autoSaved": "บันทึกอัตโนมัติไปยังทรัพย์สิน",
+    "autoSavedDesc": "บันทึก {{count}} ผลลัพธ์ไปยังทรัพย์สินของฉัน",
+    "savedToAssets": "บันทึกไปยังทรัพย์สิน",
+    "savedToAssetsDesc": "ผลลัพธ์ถูกบันทึกไปยังโฟลเดอร์ทรัพย์สินของคุณ",
+    "saveToAssets": "บันทึกไปยังทรัพย์สิน",
+    "alreadySaved": "บันทึกแล้ว",
+    "saveFailed": "ไม่สามารถบันทึกผลลัพธ์ได้",
+    "unsupportedFormat": "รูปแบบผลลัพธ์นี้ไม่สามารถบันทึกเป็นทรัพย์สินได้",
+    "randomSeed": "สร้าง seed แบบสุ่ม",
+    "optimizer": {
+      "tooltip": "ปรับแต่ง prompt ด้วย AI",
+      "title": "ปรับแต่ง Prompt",
+      "perRun": "ครั้ง",
+      "loading": "กำลังโหลดตัวปรับแต่ง...",
+      "loadError": "ไม่สามารถโหลดการกำหนดค่าตัวปรับแต่ง",
+      "enterPromptError": "กรุณาใส่ prompt หรือให้รูปภาพ",
+      "failedError": "ปรับแต่ง prompt ไม่สำเร็จ",
+      "optimizing": "กำลังปรับแต่ง...",
+      "optimize": "ปรับแต่ง"
     }
   },
   "history": {
@@ -178,7 +201,81 @@
     "skippedCount": ", ข้าม {{count}} (ซ้ำ)",
     "importFailed": "นำเข้าล้มเหลว",
     "invalidFile": "ไฟล์ไม่ถูกต้อง",
-    "invalidFileDesc": "ไฟล์ที่เลือกไม่ใช่การส่งออกเทมเพลตที่ถูกต้อง"
+    "invalidFileDesc": "ไฟล์ที่เลือกไม่ใช่การส่งออกเทมเพลตที่ถูกต้อง",
+    "deleteSelected": "ลบ ({{count}})",
+    "deleteTemplates": "ลบเทมเพลต",
+    "templatesDeleted": "ลบเทมเพลตแล้ว",
+    "deletedCount": "ลบ {{count}} เทมเพลตแล้ว",
+    "batchDeleteConfirm": "คุณแน่ใจหรือไม่ว่าต้องการลบ {{count}} เทมเพลต? การดำเนินการนี้ไม่สามารถย้อนกลับได้"
+  },
+  "assets": {
+    "title": "ทรัพย์สินของฉัน",
+    "subtitle": "{{count}} ผลลัพธ์ที่บันทึกไว้",
+    "apiKeyRequired": "กรุณากำหนดค่าคีย์ API WaveSpeed เพื่อดูทรัพย์สิน",
+    "noAssets": "ยังไม่มีทรัพย์สิน",
+    "noAssetsDesc": "เปิดใช้งานการบันทึกอัตโนมัติในการตั้งค่าเพื่อบันทึกผลลัพธ์ที่สร้างโดยอัตโนมัติ หรือบันทึกด้วยตนเองจากสนามทดสอบ",
+    "noMatchingAssets": "ไม่มีทรัพย์สินที่ตรงกับตัวกรอง",
+    "enableAutoSave": "เปิดใช้งานบันทึกอัตโนมัติ",
+    "searchPlaceholder": "ค้นหาทรัพย์สิน...",
+    "filters": "ตัวกรอง",
+    "clearFilters": "ล้างตัวกรอง",
+    "filterByType": "ประเภท",
+    "filterByModel": "โมเดล",
+    "allModels": "โมเดลทั้งหมด",
+    "favorites": "รายการโปรด",
+    "showFavoritesOnly": "แสดงเฉพาะรายการโปรด",
+    "types": {
+      "image": "รูปภาพ",
+      "video": "วิดีโอ",
+      "audio": "เสียง",
+      "text": "ข้อความ",
+      "json": "JSON"
+    },
+    "typesPlural": {
+      "image": "รูปภาพ",
+      "video": "วิดีโอ",
+      "audio": "เสียง",
+      "text": "ข้อความ"
+    },
+    "sort": {
+      "dateNewest": "ใหม่ล่าสุด",
+      "dateOldest": "เก่าที่สุด",
+      "nameAZ": "ชื่อ (A-Z)",
+      "nameZA": "ชื่อ (Z-A)",
+      "sizeLargest": "ใหญ่ที่สุด",
+      "sizeSmallest": "เล็กที่สุด"
+    },
+    "select": "เลือก",
+    "selectAll": "เลือกทั้งหมด",
+    "deselectAll": "ยกเลิกการเลือกทั้งหมด",
+    "deleteSelected": "ลบ ({{count}})",
+    "settings": "การตั้งค่า",
+    "openFolder": "เปิดโฟลเดอร์",
+    "preview": "ดูตัวอย่าง",
+    "openLocation": "เปิดตำแหน่งไฟล์",
+    "favorite": "เพิ่มในรายการโปรด",
+    "unfavorite": "ลบจากรายการโปรด",
+    "addToFavorites": "เพิ่มในรายการโปรด",
+    "removeFromFavorites": "ลบออกจากรายการโปรด",
+    "addedToFavorites": "เพิ่มในรายการโปรดแล้ว",
+    "removedFromFavorites": "ลบออกจากรายการโปรดแล้ว",
+    "bulkFavoriteDesc": "อัปเดต {{count}} รายการแล้ว",
+    "manageTags": "จัดการแท็ก",
+    "deleted": "ลบทรัพย์สินแล้ว",
+    "deletedDesc": "ลบ \"{{name}}\" แล้ว",
+    "deletedBulk": "ลบทรัพย์สินแล้ว",
+    "deletedBulkDesc": "ลบ {{count}} ทรัพย์สินแล้ว",
+    "deleteFailed": "ไม่สามารถลบทรัพย์สินได้",
+    "deleteConfirmTitle": "ลบทรัพย์สิน",
+    "deleteConfirmDesc": "คุณแน่ใจหรือไม่ว่าต้องการลบ \"{{name}}\"? การดำเนินการนี้จะลบไฟล์ออกจากดิสก์ของคุณอย่างถาวร",
+    "bulkDeleteConfirmTitle": "ลบทรัพย์สิน",
+    "bulkDeleteConfirmDesc": "คุณแน่ใจหรือไม่ว่าต้องการลบ {{count}} ทรัพย์สิน? การดำเนินการนี้จะลบไฟล์ออกจากดิสก์ของคุณอย่างถาวร",
+    "currentTags": "แท็กปัจจุบัน",
+    "noTags": "ไม่มีแท็ก",
+    "addTag": "เพิ่มแท็ก",
+    "tagPlaceholder": "ใส่ชื่อแท็ก...",
+    "manageTagsDesc": "เพิ่มหรือลบแท็กสำหรับ \"{{name}}\"",
+    "textPreviewUnavailable": "ไม่มีการแสดงตัวอย่างข้อความ เปิดตำแหน่งไฟล์เพื่อดู"
   },
   "settings": {
     "title": "การตั้งค่า",
@@ -216,6 +313,23 @@
       "label": "ภาษา",
       "changed": "เปลี่ยนภาษาแล้ว",
       "changedDesc": "ภาษาของแอปพลิเคชันถูกเปลี่ยนแล้ว"
+    },
+    "assets": {
+      "title": "ทรัพย์สิน",
+      "description": "กำหนดค่าวิธีการบันทึกผลลัพธ์ที่สร้าง",
+      "autoSave": "บันทึกผลลัพธ์อัตโนมัติ",
+      "autoSaveDesc": "บันทึกรูปภาพ วิดีโอ และเสียงที่สร้างไปยังโฟลเดอร์ทรัพย์สินของคุณโดยอัตโนมัติ",
+      "autoSaveEnabled": "เปิดใช้งานบันทึกอัตโนมัติแล้ว",
+      "autoSaveEnabledDesc": "ผลลัพธ์ที่สร้างจะถูกบันทึกโดยอัตโนมัติ",
+      "autoSaveDisabled": "ปิดการบันทึกอัตโนมัติแล้ว",
+      "autoSaveDisabledDesc": "คุณยังสามารถบันทึกผลลัพธ์ด้วยตนเองจากสนามทดสอบได้",
+      "directory": "ไดเรกทอรีทรัพย์สิน",
+      "directoryDesc": "เลือกตำแหน่งที่จะบันทึกผลลัพธ์ที่สร้างของคุณ",
+      "defaultDirectory": "Documents/WaveSpeed",
+      "browse": "เรียกดู",
+      "directoryChanged": "เปลี่ยนไดเรกทอรีแล้ว",
+      "directoryChangedDesc": "ผลลัพธ์ใหม่จะถูกบันทึกไปยัง {{path}}",
+      "desktopOnly": "คุณสมบัตินี้ต้องใช้แอปพลิเคชันเดสก์ท็อป"
     },
     "updates": {
       "title": "การอัปเดต",
@@ -255,7 +369,8 @@
   "apiKeyRequired": {
     "title": "ต้องการคีย์ API",
     "defaultDesc": "กรุณากำหนดค่าคีย์ API WaveSpeed ในการตั้งค่า",
-    "goToSettings": "ไปที่การตั้งค่า"
+    "goToSettings": "ไปที่การตั้งค่า",
+    "orGoTo": "หรือไปที่"
   },
   "errors": {
     "tryAgain": "ลองอีกครั้ง",

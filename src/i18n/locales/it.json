@@ -26,13 +26,16 @@
     "no": "No",
     "error": "Errore",
     "success": "Successo",
-    "warning": "Avviso"
+    "warning": "Avviso",
+    "selectAll": "Seleziona tutto",
+    "done": "Fatto"
   },
   "nav": {
     "models": "Modelli",
     "playground": "Playground",
     "history": "Cronologia",
     "templates": "Template",
+    "assets": "I Miei Asset",
     "settings": "Impostazioni",
     "collapse": "Comprimi"
   },
@@ -109,6 +112,26 @@
       "stopRecording": "Ferma",
       "useVideo": "Usa video",
       "useAudio": "Usa audio"
+    },
+    "autoSaved": "Salvato automaticamente negli Asset",
+    "autoSavedDesc": "Salvato {{count}} output negli I Miei Asset",
+    "savedToAssets": "Salvato negli Asset",
+    "savedToAssetsDesc": "Output salvato nella cartella degli asset",
+    "saveToAssets": "Salva negli Asset",
+    "alreadySaved": "Già salvato",
+    "saveFailed": "Salvataggio dell'output fallito",
+    "unsupportedFormat": "Questo formato di output non può essere salvato come asset",
+    "randomSeed": "Genera seed casuale",
+    "optimizer": {
+      "tooltip": "Ottimizza il prompt con l'IA",
+      "title": "Ottimizza Prompt",
+      "perRun": "esecuzione",
+      "loading": "Caricamento ottimizzatore...",
+      "loadError": "Impossibile caricare la configurazione dell'ottimizzatore",
+      "enterPromptError": "Inserisci un prompt o fornisci un'immagine",
+      "failedError": "Ottimizzazione del prompt fallita",
+      "optimizing": "Ottimizzazione...",
+      "optimize": "Ottimizza"
     }
   },
   "history": {
@@ -178,7 +201,81 @@
     "skippedCount": ", {{count}} saltati (duplicati)",
     "importFailed": "Importazione fallita",
     "invalidFile": "File non valido",
-    "invalidFileDesc": "Il file selezionato non è un'esportazione template valida"
+    "invalidFileDesc": "Il file selezionato non è un'esportazione template valida",
+    "deleteSelected": "Elimina ({{count}})",
+    "deleteTemplates": "Elimina template",
+    "templatesDeleted": "Template eliminati",
+    "deletedCount": "{{count}} template eliminati",
+    "batchDeleteConfirm": "Sei sicuro di voler eliminare {{count}} template? Questa azione non può essere annullata."
+  },
+  "assets": {
+    "title": "I Miei Asset",
+    "subtitle": "{{count}} output salvati",
+    "apiKeyRequired": "Configura la tua chiave API WaveSpeed per visualizzare gli asset.",
+    "noAssets": "Nessun asset ancora",
+    "noAssetsDesc": "Abilita il salvataggio automatico nelle Impostazioni per salvare automaticamente i tuoi output generati, o salvali manualmente dal Playground.",
+    "noMatchingAssets": "Nessun asset corrisponde ai tuoi filtri",
+    "enableAutoSave": "Abilita Salvataggio Automatico",
+    "searchPlaceholder": "Cerca asset...",
+    "filters": "Filtri",
+    "clearFilters": "Cancella Filtri",
+    "filterByType": "Tipo",
+    "filterByModel": "Modello",
+    "allModels": "Tutti i Modelli",
+    "favorites": "Preferiti",
+    "showFavoritesOnly": "Mostra solo preferiti",
+    "types": {
+      "image": "Immagine",
+      "video": "Video",
+      "audio": "Audio",
+      "text": "Testo",
+      "json": "JSON"
+    },
+    "typesPlural": {
+      "image": "Immagini",
+      "video": "Video",
+      "audio": "Audio",
+      "text": "Testo"
+    },
+    "sort": {
+      "dateNewest": "Più recenti",
+      "dateOldest": "Più vecchi",
+      "nameAZ": "Nome (A-Z)",
+      "nameZA": "Nome (Z-A)",
+      "sizeLargest": "Più grandi",
+      "sizeSmallest": "Più piccoli"
+    },
+    "select": "Seleziona",
+    "selectAll": "Seleziona Tutto",
+    "deselectAll": "Deseleziona Tutto",
+    "deleteSelected": "Elimina ({{count}})",
+    "settings": "Impostazioni",
+    "openFolder": "Apri cartella",
+    "preview": "Anteprima",
+    "openLocation": "Apri Posizione File",
+    "favorite": "Aggiungi ai Preferiti",
+    "unfavorite": "Rimuovi dai Preferiti",
+    "addToFavorites": "Aggiungi ai preferiti",
+    "removeFromFavorites": "Rimuovi dai preferiti",
+    "addedToFavorites": "Aggiunto ai preferiti",
+    "removedFromFavorites": "Rimosso dai preferiti",
+    "bulkFavoriteDesc": "{{count}} elemento/i aggiornato/i",
+    "manageTags": "Gestisci Tag",
+    "deleted": "Asset eliminato",
+    "deletedDesc": "Eliminato \"{{name}}\"",
+    "deletedBulk": "Asset eliminati",
+    "deletedBulkDesc": "Eliminati {{count}} asset",
+    "deleteFailed": "Eliminazione dell'asset fallita",
+    "deleteConfirmTitle": "Elimina Asset",
+    "deleteConfirmDesc": "Sei sicuro di voler eliminare \"{{name}}\"? Questo rimuoverà permanentemente il file dal tuo disco.",
+    "bulkDeleteConfirmTitle": "Elimina Asset",
+    "bulkDeleteConfirmDesc": "Sei sicuro di voler eliminare {{count}} asset? Questo rimuoverà permanentemente i file dal tuo disco.",
+    "currentTags": "Tag Correnti",
+    "noTags": "Nessun tag",
+    "addTag": "Aggiungi Tag",
+    "tagPlaceholder": "Inserisci nome tag...",
+    "manageTagsDesc": "Aggiungi o rimuovi tag per \"{{name}}\"",
+    "textPreviewUnavailable": "Anteprima testo non disponibile. Apri la posizione del file per visualizzare."
   },
   "settings": {
     "title": "Impostazioni",
@@ -216,6 +313,23 @@
       "label": "Lingua",
       "changed": "Lingua cambiata",
       "changedDesc": "La lingua dell'applicazione è stata cambiata."
+    },
+    "assets": {
+      "title": "Asset",
+      "description": "Configura come vengono salvati gli output generati",
+      "autoSave": "Salvataggio automatico output",
+      "autoSaveDesc": "Salva automaticamente immagini, video e audio generati nella cartella degli asset",
+      "autoSaveEnabled": "Salvataggio automatico abilitato",
+      "autoSaveEnabledDesc": "Gli output generati verranno salvati automaticamente",
+      "autoSaveDisabled": "Salvataggio automatico disabilitato",
+      "autoSaveDisabledDesc": "Puoi comunque salvare gli output manualmente dal playground",
+      "directory": "Cartella Asset",
+      "directoryDesc": "Scegli dove salvare i tuoi output generati",
+      "defaultDirectory": "Documenti/WaveSpeed",
+      "browse": "Sfoglia",
+      "directoryChanged": "Cartella cambiata",
+      "directoryChangedDesc": "I nuovi output verranno salvati in {{path}}",
+      "desktopOnly": "Questa funzionalità richiede l'applicazione desktop"
     },
     "updates": {
       "title": "Aggiornamenti",
@@ -255,7 +369,8 @@
   "apiKeyRequired": {
     "title": "Chiave API Richiesta",
     "defaultDesc": "Configura la tua chiave API WaveSpeed nelle Impostazioni.",
-    "goToSettings": "Vai alle Impostazioni"
+    "goToSettings": "Vai alle Impostazioni",
+    "orGoTo": "Oppure vai a"
   },
   "errors": {
     "tryAgain": "Riprova",

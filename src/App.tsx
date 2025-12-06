@@ -5,6 +5,7 @@ import { ModelsPage } from '@/pages/ModelsPage'
 import { PlaygroundPage } from '@/pages/PlaygroundPage'
 import { TemplatesPage } from '@/pages/TemplatesPage'
 import { HistoryPage } from '@/pages/HistoryPage'
+import { AssetsPage } from '@/pages/AssetsPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
 import { useModelsStore } from '@/stores/modelsStore'
@@ -35,6 +36,7 @@ function App() {
         <Route path="playground/:modelId" element={<PlaygroundPage />} />
         <Route path="templates" element={<TemplatesPage />} />
         <Route path="history" element={<HistoryPage />} />
+        <Route path="assets" element={<AssetsPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
     </Routes>

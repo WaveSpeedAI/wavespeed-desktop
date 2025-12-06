@@ -53,6 +53,7 @@ interface TemplateState {
   saveTemplate: (name: string, modelId: string, modelName: string, values: Record<string, unknown>) => Template
   updateTemplate: (id: string, updates: Partial<Pick<Template, 'name' | 'values'>>) => void
   deleteTemplate: (id: string) => void
+  deleteTemplates: (ids: string[]) => void
   getTemplatesByModel: (modelId: string) => Template[]
   exportTemplates: (templateIds?: string[]) => TemplateExport
   importTemplates: (data: TemplateExport, mode: 'merge' | 'replace') => { imported: number; skipped: number }
@@ -103,6 +104,15 @@ export const useTemplateStore = create<TemplateState>((set, get) => ({
   deleteTemplate: (id: string) => {
     set(state => {
       const newTemplates = state.templates.filter(t => t.id !== id)
+      saveTemplates(newTemplates)
+      return { templates: newTemplates }
+    })
+  },
+
+  deleteTemplates: (ids: string[]) => {
+    const idsSet = new Set(ids)
+    set(state => {
+      const newTemplates = state.templates.filter(t => !idsSet.has(t.id))
       saveTemplates(newTemplates)
       return { templates: newTemplates }
     })

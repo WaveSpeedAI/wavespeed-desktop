@@ -6,6 +6,7 @@
     "delete": "Delete",
     "edit": "Edit",
     "close": "Close",
+    "done": "Done",
     "refresh": "Refresh",
     "search": "Search",
     "clear": "Clear",
@@ -26,13 +27,15 @@
     "no": "No",
     "error": "Error",
     "success": "Success",
-    "warning": "Warning"
+    "warning": "Warning",
+    "selectAll": "Select All"
   },
   "nav": {
     "models": "Models",
     "playground": "Playground",
     "history": "History",
     "templates": "Templates",
+    "assets": "My Assets",
     "settings": "Settings",
     "collapse": "Collapse"
   },
@@ -109,6 +112,26 @@
       "stopRecording": "Stop",
       "useVideo": "Use Video",
       "useAudio": "Use Audio"
+    },
+    "autoSaved": "Auto-saved to Assets",
+    "autoSavedDesc": "Saved {{count}} output(s) to My Assets",
+    "savedToAssets": "Saved to Assets",
+    "savedToAssetsDesc": "Output saved to your assets folder",
+    "saveToAssets": "Save to Assets",
+    "alreadySaved": "Already saved",
+    "saveFailed": "Failed to save output",
+    "unsupportedFormat": "This output format cannot be saved as an asset",
+    "randomSeed": "Generate random seed",
+    "optimizer": {
+      "tooltip": "Optimize prompt with AI",
+      "title": "Optimize Prompt",
+      "perRun": "run",
+      "loading": "Loading optimizer...",
+      "loadError": "Unable to load optimizer configuration",
+      "enterPromptError": "Please enter a prompt or provide an image",
+      "failedError": "Failed to optimize prompt",
+      "optimizing": "Optimizing...",
+      "optimize": "Optimize"
     }
   },
   "history": {
@@ -178,7 +201,81 @@
     "skippedCount": ", {{count}} skipped (duplicates)",
     "importFailed": "Import failed",
     "invalidFile": "Invalid file",
-    "invalidFileDesc": "The selected file is not a valid templates export"
+    "invalidFileDesc": "The selected file is not a valid templates export",
+    "deleteSelected": "Delete ({{count}})",
+    "deleteTemplates": "Delete Templates",
+    "templatesDeleted": "Templates deleted",
+    "deletedCount": "Deleted {{count}} template(s)",
+    "batchDeleteConfirm": "Are you sure you want to delete {{count}} template(s)? This action cannot be undone."
+  },
+  "assets": {
+    "title": "My Assets",
+    "subtitle": "{{count}} saved outputs",
+    "apiKeyRequired": "Please configure your WaveSpeed API key to view assets.",
+    "noAssets": "No assets yet",
+    "noAssetsDesc": "Enable auto-save in Settings to automatically save your generated outputs, or manually save them from the Playground.",
+    "noMatchingAssets": "No assets match your filters",
+    "enableAutoSave": "Enable Auto-Save",
+    "searchPlaceholder": "Search assets...",
+    "filters": "Filters",
+    "clearFilters": "Clear Filters",
+    "filterByType": "Type",
+    "filterByModel": "Model",
+    "allModels": "All Models",
+    "favorites": "Favorites",
+    "showFavoritesOnly": "Show favorites only",
+    "types": {
+      "image": "Image",
+      "video": "Video",
+      "audio": "Audio",
+      "text": "Text",
+      "json": "JSON"
+    },
+    "typesPlural": {
+      "image": "Images",
+      "video": "Videos",
+      "audio": "Audio",
+      "text": "Text"
+    },
+    "sort": {
+      "dateNewest": "Newest first",
+      "dateOldest": "Oldest first",
+      "nameAZ": "Name (A-Z)",
+      "nameZA": "Name (Z-A)",
+      "sizeLargest": "Largest first",
+      "sizeSmallest": "Smallest first"
+    },
+    "select": "Select",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
+    "deleteSelected": "Delete ({{count}})",
+    "settings": "Settings",
+    "openFolder": "Open Folder",
+    "preview": "Preview",
+    "openLocation": "Open File Location",
+    "favorite": "Add to Favorites",
+    "unfavorite": "Remove from Favorites",
+    "addToFavorites": "Add to Favorites",
+    "removeFromFavorites": "Remove from Favorites",
+    "addedToFavorites": "Added to favorites",
+    "removedFromFavorites": "Removed from favorites",
+    "bulkFavoriteDesc": "Updated {{count}} asset(s)",
+    "manageTags": "Manage Tags",
+    "deleted": "Asset deleted",
+    "deletedDesc": "Deleted \"{{name}}\"",
+    "deletedBulk": "Assets deleted",
+    "deletedBulkDesc": "Deleted {{count}} asset(s)",
+    "deleteFailed": "Failed to delete asset",
+    "deleteConfirmTitle": "Delete Asset",
+    "deleteConfirmDesc": "Are you sure you want to delete \"{{name}}\"? This will permanently remove the file from your disk.",
+    "bulkDeleteConfirmTitle": "Delete Assets",
+    "bulkDeleteConfirmDesc": "Are you sure you want to delete {{count}} asset(s)? This will permanently remove the files from your disk.",
+    "currentTags": "Current Tags",
+    "noTags": "No tags",
+    "addTag": "Add Tag",
+    "tagPlaceholder": "Enter tag name...",
+    "manageTagsDesc": "Add or remove tags for \"{{name}}\"",
+    "textPreviewUnavailable": "Text preview not available. Open file location to view."
   },
   "settings": {
     "title": "Settings",
@@ -216,6 +313,23 @@
       "label": "Language",
       "changed": "Language changed",
       "changedDesc": "The application language has been changed."
+    },
+    "assets": {
+      "title": "Assets",
+      "description": "Configure how generated outputs are saved",
+      "autoSave": "Auto-save outputs",
+      "autoSaveDesc": "Automatically save generated images, videos, and audio to your assets folder",
+      "autoSaveEnabled": "Auto-save enabled",
+      "autoSaveEnabledDesc": "Generated outputs will be saved automatically",
+      "autoSaveDisabled": "Auto-save disabled",
+      "autoSaveDisabledDesc": "You can still save outputs manually from the playground",
+      "directory": "Assets Directory",
+      "directoryDesc": "Choose where to save your generated outputs",
+      "defaultDirectory": "Documents/WaveSpeed",
+      "browse": "Browse",
+      "directoryChanged": "Directory changed",
+      "directoryChangedDesc": "New outputs will be saved to {{path}}",
+      "desktopOnly": "This feature requires the desktop application"
     },
     "updates": {
       "title": "Updates",
@@ -255,7 +369,8 @@
   "apiKeyRequired": {
     "title": "API Key Required",
     "defaultDesc": "Please configure your WaveSpeed API key in Settings.",
-    "goToSettings": "Go to Settings"
+    "goToSettings": "Go to Settings",
+    "orGoTo": "Or go to"
   },
   "errors": {
     "tryAgain": "Try Again",

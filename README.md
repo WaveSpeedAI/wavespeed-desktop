@@ -13,6 +13,8 @@ A cross-platform desktop application for running AI models from [WaveSpeedAI](ht
 - **Templates**: Save and reuse playground configurations as templates for quick access
 - **LoRA Support**: Full support for LoRAs including high-noise and low-noise LoRAs for Wan 2.2 models
 - **History**: View your recent predictions (last 24 hours) with detailed view, download, and copy prediction ID
+- **My Assets**: Save, browse, and manage generated outputs (images, videos, audio) with tags, favorites, and search
+- **Auto-Save**: Automatically save generated outputs to your local assets folder (enabled by default)
 - **File Upload**: Support for image, video, and audio file inputs with drag & drop
 - **Media Capture**: Built-in camera capture, video recording with audio waveform, and audio recording
 - **View Documentation**: Quick access to model documentation from the playground

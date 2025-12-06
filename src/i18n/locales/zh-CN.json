@@ -26,13 +26,16 @@
     "no": "否",
     "error": "错误",
     "success": "成功",
-    "warning": "警告"
+    "warning": "警告",
+    "selectAll": "全选",
+    "done": "完成"
   },
   "nav": {
     "models": "模型",
     "playground": "演练场",
     "history": "历史记录",
     "templates": "模板",
+    "assets": "我的资产",
     "settings": "设置",
     "collapse": "收起"
   },
@@ -109,6 +112,26 @@
       "stopRecording": "停止",
       "useVideo": "使用视频",
       "useAudio": "使用音频"
+    },
+    "autoSaved": "已自动保存到资产",
+    "autoSavedDesc": "已保存 {{count}} 个输出到我的资产",
+    "savedToAssets": "已保存到资产",
+    "savedToAssetsDesc": "输出已保存到您的资产文件夹",
+    "saveToAssets": "保存到资产",
+    "alreadySaved": "已经保存",
+    "saveFailed": "保存输出失败",
+    "unsupportedFormat": "此输出格式无法保存为资产",
+    "randomSeed": "生成随机种子",
+    "optimizer": {
+      "tooltip": "使用 AI 优化提示词",
+      "title": "优化提示词",
+      "perRun": "次",
+      "loading": "加载优化器...",
+      "loadError": "无法加载优化器配置",
+      "enterPromptError": "请输入提示词或提供图片",
+      "failedError": "优化提示词失败",
+      "optimizing": "优化中...",
+      "optimize": "优化"
     }
   },
   "history": {
@@ -178,7 +201,81 @@
     "skippedCount": "，{{count}} 个跳过（重复）",
     "importFailed": "导入失败",
     "invalidFile": "无效文件",
-    "invalidFileDesc": "所选文件不是有效的模板导出文件"
+    "invalidFileDesc": "所选文件不是有效的模板导出文件",
+    "deleteSelected": "删除 ({{count}})",
+    "deleteTemplates": "删除模板",
+    "templatesDeleted": "模板已删除",
+    "deletedCount": "已删除 {{count}} 个模板",
+    "batchDeleteConfirm": "确定要删除 {{count}} 个模板吗？此操作无法撤销。"
+  },
+  "assets": {
+    "title": "我的资产",
+    "subtitle": "{{count}} 个已保存的输出",
+    "apiKeyRequired": "请配置您的 WaveSpeed API 密钥以查看资产。",
+    "noAssets": "暂无资产",
+    "noAssetsDesc": "在设置中启用自动保存以自动保存生成的输出，或从演练场手动保存。",
+    "noMatchingAssets": "没有资产匹配您的筛选条件",
+    "enableAutoSave": "启用自动保存",
+    "searchPlaceholder": "搜索资产...",
+    "filters": "筛选",
+    "clearFilters": "清除筛选",
+    "filterByType": "类型",
+    "filterByModel": "模型",
+    "allModels": "所有模型",
+    "favorites": "收藏",
+    "showFavoritesOnly": "仅显示收藏",
+    "types": {
+      "image": "图片",
+      "video": "视频",
+      "audio": "音频",
+      "text": "文本",
+      "json": "JSON"
+    },
+    "typesPlural": {
+      "image": "图片",
+      "video": "视频",
+      "audio": "音频",
+      "text": "文本"
+    },
+    "sort": {
+      "dateNewest": "最新优先",
+      "dateOldest": "最早优先",
+      "nameAZ": "名称 (A-Z)",
+      "nameZA": "名称 (Z-A)",
+      "sizeLargest": "最大优先",
+      "sizeSmallest": "最小优先"
+    },
+    "select": "选择",
+    "selectAll": "全选",
+    "deselectAll": "取消全选",
+    "deleteSelected": "删除 ({{count}})",
+    "settings": "设置",
+    "openFolder": "打开文件夹",
+    "preview": "预览",
+    "openLocation": "打开文件位置",
+    "favorite": "添加到收藏",
+    "unfavorite": "取消收藏",
+    "addToFavorites": "添加到收藏",
+    "removeFromFavorites": "从收藏中移除",
+    "addedToFavorites": "已添加到收藏",
+    "removedFromFavorites": "已从收藏中移除",
+    "bulkFavoriteDesc": "已更新 {{count}} 个资源",
+    "manageTags": "管理标签",
+    "deleted": "资产已删除",
+    "deletedDesc": "已删除「{{name}}」",
+    "deletedBulk": "资产已删除",
+    "deletedBulkDesc": "已删除 {{count}} 个资产",
+    "deleteFailed": "删除资产失败",
+    "deleteConfirmTitle": "删除资产",
+    "deleteConfirmDesc": "确定要删除「{{name}}」吗？这将从磁盘永久删除该文件。",
+    "bulkDeleteConfirmTitle": "删除资产",
+    "bulkDeleteConfirmDesc": "确定要删除 {{count}} 个资产吗？这将从磁盘永久删除这些文件。",
+    "currentTags": "当前标签",
+    "noTags": "无标签",
+    "addTag": "添加标签",
+    "tagPlaceholder": "输入标签名称...",
+    "manageTagsDesc": "为「{{name}}」添加或删除标签",
+    "textPreviewUnavailable": "文本预览不可用。请打开文件位置查看。"
   },
   "settings": {
     "title": "设置",
@@ -216,6 +313,23 @@
       "label": "语言",
       "changed": "语言已更改",
       "changedDesc": "应用程序语言已更改。"
+    },
+    "assets": {
+      "title": "资产",
+      "description": "配置生成输出的保存方式",
+      "autoSave": "自动保存输出",
+      "autoSaveDesc": "自动保存生成的图片、视频和音频到您的资产文件夹",
+      "autoSaveEnabled": "已启用自动保存",
+      "autoSaveEnabledDesc": "生成的输出将自动保存",
+      "autoSaveDisabled": "已禁用自动保存",
+      "autoSaveDisabledDesc": "您仍可从演练场手动保存输出",
+      "directory": "资产目录",
+      "directoryDesc": "选择保存生成输出的位置",
+      "defaultDirectory": "文档/WaveSpeed",
+      "browse": "浏览",
+      "directoryChanged": "目录已更改",
+      "directoryChangedDesc": "新输出将保存到 {{path}}",
+      "desktopOnly": "此功能需要桌面应用程序"
     },
     "updates": {
       "title": "更新",
@@ -255,7 +369,8 @@
   "apiKeyRequired": {
     "title": "需要 API 密钥",
     "defaultDesc": "请在设置中配置您的 WaveSpeed API 密钥。",
-    "goToSettings": "前往设置"
+    "goToSettings": "前往设置",
+    "orGoTo": "或前往"
   },
   "errors": {
     "tryAgain": "重试",

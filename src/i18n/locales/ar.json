@@ -6,6 +6,7 @@
     "delete": "حذف",
     "edit": "تعديل",
     "close": "إغلاق",
+    "done": "تم",
     "refresh": "تحديث",
     "search": "بحث",
     "clear": "مسح",
@@ -26,13 +27,15 @@
     "no": "لا",
     "error": "خطأ",
     "success": "نجاح",
-    "warning": "تحذير"
+    "warning": "تحذير",
+    "selectAll": "تحديد الكل"
   },
   "nav": {
     "models": "النماذج",
     "playground": "ساحة التجربة",
     "history": "السجل",
     "templates": "القوالب",
+    "assets": "أصولي",
     "settings": "الإعدادات",
     "collapse": "طي"
   },
@@ -109,6 +112,26 @@
       "stopRecording": "إيقاف",
       "useVideo": "استخدام الفيديو",
       "useAudio": "استخدام الصوت"
+    },
+    "autoSaved": "تم الحفظ التلقائي في الأصول",
+    "autoSavedDesc": "تم حفظ {{count}} مخرجات في أصولي",
+    "savedToAssets": "تم الحفظ في الأصول",
+    "savedToAssetsDesc": "تم حفظ المخرجات في مجلد الأصول الخاص بك",
+    "saveToAssets": "حفظ في الأصول",
+    "alreadySaved": "تم الحفظ مسبقاً",
+    "saveFailed": "فشل حفظ المخرجات",
+    "unsupportedFormat": "لا يمكن حفظ تنسيق المخرجات هذا كأصل",
+    "randomSeed": "توليد بذرة عشوائية",
+    "optimizer": {
+      "tooltip": "تحسين النص باستخدام الذكاء الاصطناعي",
+      "title": "تحسين النص",
+      "perRun": "تشغيل",
+      "loading": "جاري تحميل المحسّن...",
+      "loadError": "تعذر تحميل إعدادات المحسّن",
+      "enterPromptError": "يرجى إدخال نص أو تقديم صورة",
+      "failedError": "فشل تحسين النص",
+      "optimizing": "جاري التحسين...",
+      "optimize": "تحسين"
     }
   },
   "history": {
@@ -178,7 +201,81 @@
     "skippedCount": "، تم تخطي {{count}} (تكرارات)",
     "importFailed": "فشل الاستيراد",
     "invalidFile": "ملف غير صالح",
-    "invalidFileDesc": "الملف المحدد ليس تصدير قوالب صالح"
+    "invalidFileDesc": "الملف المحدد ليس تصدير قوالب صالح",
+    "deleteSelected": "حذف ({{count}})",
+    "deleteTemplates": "حذف القوالب",
+    "templatesDeleted": "تم حذف القوالب",
+    "deletedCount": "تم حذف {{count}} قالب",
+    "batchDeleteConfirm": "هل أنت متأكد من حذف {{count}} قالب؟ لا يمكن التراجع عن هذا الإجراء."
+  },
+  "assets": {
+    "title": "أصولي",
+    "subtitle": "{{count}} مخرجات محفوظة",
+    "apiKeyRequired": "يرجى تكوين مفتاح WaveSpeed API لعرض الأصول.",
+    "noAssets": "لا توجد أصول بعد",
+    "noAssetsDesc": "قم بتفعيل الحفظ التلقائي في الإعدادات لحفظ المخرجات المولدة تلقائياً، أو احفظها يدوياً من ساحة التجربة.",
+    "noMatchingAssets": "لا توجد أصول تطابق عوامل التصفية",
+    "enableAutoSave": "تفعيل الحفظ التلقائي",
+    "searchPlaceholder": "البحث عن الأصول...",
+    "filters": "عوامل التصفية",
+    "clearFilters": "مسح عوامل التصفية",
+    "filterByType": "النوع",
+    "filterByModel": "النموذج",
+    "allModels": "جميع النماذج",
+    "favorites": "المفضلة",
+    "showFavoritesOnly": "عرض المفضلة فقط",
+    "types": {
+      "image": "صورة",
+      "video": "فيديو",
+      "audio": "صوت",
+      "text": "نص",
+      "json": "JSON"
+    },
+    "typesPlural": {
+      "image": "صور",
+      "video": "فيديوهات",
+      "audio": "صوتيات",
+      "text": "نصوص"
+    },
+    "sort": {
+      "dateNewest": "الأحدث أولاً",
+      "dateOldest": "الأقدم أولاً",
+      "nameAZ": "الاسم (أ-ي)",
+      "nameZA": "الاسم (ي-أ)",
+      "sizeLargest": "الأكبر أولاً",
+      "sizeSmallest": "الأصغر أولاً"
+    },
+    "select": "تحديد",
+    "selectAll": "تحديد الكل",
+    "deselectAll": "إلغاء تحديد الكل",
+    "deleteSelected": "حذف ({{count}})",
+    "settings": "الإعدادات",
+    "openFolder": "فتح المجلد",
+    "preview": "معاينة",
+    "openLocation": "فتح موقع الملف",
+    "favorite": "إضافة إلى المفضلة",
+    "unfavorite": "إزالة من المفضلة",
+    "addToFavorites": "إضافة إلى المفضلة",
+    "removeFromFavorites": "إزالة من المفضلة",
+    "addedToFavorites": "تمت الإضافة إلى المفضلة",
+    "removedFromFavorites": "تمت الإزالة من المفضلة",
+    "bulkFavoriteDesc": "تم تحديث {{count}} عنصر",
+    "manageTags": "إدارة العلامات",
+    "deleted": "تم حذف الأصل",
+    "deletedDesc": "تم حذف \"{{name}}\"",
+    "deletedBulk": "تم حذف الأصول",
+    "deletedBulkDesc": "تم حذف {{count}} أصل",
+    "deleteFailed": "فشل حذف الأصل",
+    "deleteConfirmTitle": "حذف الأصل",
+    "deleteConfirmDesc": "هل أنت متأكد من حذف \"{{name}}\"؟ سيتم إزالة الملف نهائياً من القرص.",
+    "bulkDeleteConfirmTitle": "حذف الأصول",
+    "bulkDeleteConfirmDesc": "هل أنت متأكد من حذف {{count}} أصل؟ سيتم إزالة الملفات نهائياً من القرص.",
+    "currentTags": "العلامات الحالية",
+    "noTags": "لا توجد علامات",
+    "addTag": "إضافة علامة",
+    "tagPlaceholder": "أدخل اسم العلامة...",
+    "manageTagsDesc": "إضافة أو إزالة علامات لـ \"{{name}}\"",
+    "textPreviewUnavailable": "معاينة النص غير متاحة. افتح موقع الملف للعرض."
   },
   "settings": {
     "title": "الإعدادات",
@@ -216,6 +313,23 @@
       "label": "اللغة",
       "changed": "تم تغيير اللغة",
       "changedDesc": "تم تغيير لغة التطبيق."
+    },
+    "assets": {
+      "title": "الأصول",
+      "description": "تكوين كيفية حفظ المخرجات المولدة",
+      "autoSave": "الحفظ التلقائي للمخرجات",
+      "autoSaveDesc": "حفظ الصور والفيديو والصوت المولدة تلقائياً في مجلد الأصول",
+      "autoSaveEnabled": "تم تفعيل الحفظ التلقائي",
+      "autoSaveEnabledDesc": "سيتم حفظ المخرجات المولدة تلقائياً",
+      "autoSaveDisabled": "تم تعطيل الحفظ التلقائي",
+      "autoSaveDisabledDesc": "يمكنك حفظ المخرجات يدوياً من ساحة التجربة",
+      "directory": "دليل الأصول",
+      "directoryDesc": "اختر مكان حفظ المخرجات المولدة",
+      "defaultDirectory": "Documents/WaveSpeed",
+      "browse": "تصفح",
+      "directoryChanged": "تم تغيير الدليل",
+      "directoryChangedDesc": "سيتم حفظ المخرجات الجديدة في {{path}}",
+      "desktopOnly": "تتطلب هذه الميزة تطبيق سطح المكتب"
     },
     "updates": {
       "title": "التحديثات",
@@ -255,7 +369,8 @@
   "apiKeyRequired": {
     "title": "مفتاح API مطلوب",
     "defaultDesc": "يرجى تكوين مفتاح WaveSpeed API في الإعدادات.",
-    "goToSettings": "الذهاب إلى الإعدادات"
+    "goToSettings": "الذهاب إلى الإعدادات",
+    "orGoTo": "أو انتقل إلى"
   },
   "errors": {
     "tryAgain": "حاول مرة أخرى",

@@ -36,6 +36,50 @@ interface DownloadResult {
   canceled?: boolean
 }
 
+interface AssetsSettings {
+  autoSaveAssets: boolean
+  assetsDirectory: string
+}
+
+interface SaveAssetResult {
+  success: boolean
+  filePath?: string
+  fileSize?: number
+  error?: string
+}
+
+interface DeleteAssetResult {
+  success: boolean
+  error?: string
+}
+
+interface DeleteAssetsBulkResult {
+  success: boolean
+  deleted: number
+}
+
+interface SelectDirectoryResult {
+  success: boolean
+  path?: string
+  canceled?: boolean
+  error?: string
+}
+
+interface AssetMetadata {
+  id: string
+  filePath: string
+  fileName: string
+  type: 'image' | 'video' | 'audio' | 'text' | 'json'
+  modelId: string
+  modelName: string
+  createdAt: string
+  fileSize: number
+  tags: string[]
+  favorite: boolean
+  predictionId?: string
+  originalUrl?: string
+}
+
 const electronAPI = {
   getApiKey: (): Promise<string> => ipcRenderer.invoke('get-api-key'),
   setApiKey: (apiKey: string): Promise<boolean> => ipcRenderer.invoke('set-api-key', apiKey),
@@ -59,7 +103,27 @@ const electronAPI = {
     const handler = (_: unknown, status: UpdateStatus) => callback(status)
     ipcRenderer.on('update-status', handler)
     return () => ipcRenderer.removeListener('update-status', handler)
-  }
+  },
+
+  // Assets APIs
+  getAssetsSettings: (): Promise<AssetsSettings> => ipcRenderer.invoke('get-assets-settings'),
+  setAssetsSettings: (settings: Partial<AssetsSettings>): Promise<boolean> =>
+    ipcRenderer.invoke('set-assets-settings', settings),
+  getDefaultAssetsDirectory: (): Promise<string> => ipcRenderer.invoke('get-default-assets-directory'),
+  selectDirectory: (): Promise<SelectDirectoryResult> => ipcRenderer.invoke('select-directory'),
+  saveAsset: (url: string, type: string, fileName: string, subDir: string): Promise<SaveAssetResult> =>
+    ipcRenderer.invoke('save-asset', url, type, fileName, subDir),
+  deleteAsset: (filePath: string): Promise<DeleteAssetResult> => ipcRenderer.invoke('delete-asset', filePath),
+  deleteAssetsBulk: (filePaths: string[]): Promise<DeleteAssetsBulkResult> =>
+    ipcRenderer.invoke('delete-assets-bulk', filePaths),
+  getAssetsMetadata: (): Promise<AssetMetadata[]> => ipcRenderer.invoke('get-assets-metadata'),
+  saveAssetsMetadata: (metadata: AssetMetadata[]): Promise<boolean> =>
+    ipcRenderer.invoke('save-assets-metadata', metadata),
+  openFileLocation: (filePath: string): Promise<DeleteAssetResult> =>
+    ipcRenderer.invoke('open-file-location', filePath),
+  checkFileExists: (filePath: string): Promise<boolean> => ipcRenderer.invoke('check-file-exists', filePath),
+  openAssetsFolder: (): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke('open-assets-folder')
 }
 
 if (process.contextIsolated) {

@@ -4,10 +4,9 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useModelsStore, type SortBy } from '@/stores/modelsStore'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
-import { ApiKeyRequired } from '@/components/shared/ApiKeyRequired'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
   Select,
@@ -219,7 +218,7 @@ export function ModelsPage() {
     selectedType,
     setSelectedType
   } = useModelsStore()
-  const { isLoading: isLoadingApiKey, isValidated, apiKey } = useApiKeyStore()
+  const { isLoading: isLoadingApiKey, isValidated } = useApiKeyStore()
   const { createTab } = usePlaygroundStore()
 
   // Memoize filtered models with proper dependencies
@@ -343,9 +342,6 @@ export function ModelsPage() {
     )
   }
 
-  if (!apiKey) {
-    return <ApiKeyRequired description="Please configure your WaveSpeed API key in Settings to browse available models." />
-  }
 
   if (!isValidated) {
     return (

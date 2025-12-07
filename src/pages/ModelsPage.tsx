@@ -28,22 +28,24 @@ import type { Model } from '@/types/model'
 
 // Get accent color class based on model type (3 categories: image, video, other)
 function getTypeAccentClass(type?: string): string {
-  if (!type) return 'bg-gradient-to-r from-slate-400 to-slate-500'
-  
+  const baseClasses = 'bg-[length:200%_100%] animate-gradient'
+
+  if (!type) return `${baseClasses} bg-gradient-to-r from-emerald-400 via-teal-500 to-emerald-400`
+
   const normalizedType = type.toLowerCase()
-  
+
   // Video related types
   if (normalizedType.includes('video')) {
-    return 'bg-gradient-to-r from-orange-500 to-amber-500'
+    return `${baseClasses} bg-gradient-to-r from-purple-500 via-violet-500 to-purple-500`
   }
-  
+
   // Image related types
   if (normalizedType.includes('image')) {
-    return 'bg-gradient-to-r from-violet-500 to-purple-500'
+    return `${baseClasses} bg-gradient-to-r from-sky-400 via-blue-400 to-sky-400`
   }
-  
+
   // Other types
-  return 'bg-gradient-to-r from-blue-500 to-cyan-500'
+  return `${baseClasses} bg-gradient-to-r from-emerald-400 via-teal-500 to-emerald-400`
 }
 
 // Memoized model card component

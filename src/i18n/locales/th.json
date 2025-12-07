@@ -36,6 +36,7 @@
     "history": "ประวัติ",
     "templates": "เทมเพลต",
     "assets": "ทรัพย์สินของฉัน",
+    "freeTools": "เครื่องมือฟรี",
     "settings": "การตั้งค่า",
     "collapse": "ยุบ"
   },
@@ -391,5 +392,49 @@
   "errors": {
     "tryAgain": "ลองอีกครั้ง",
     "failedToFetch": "ไม่สามารถดึงข้อมูลได้"
+  },
+  "freeTools": {
+    "title": "เครื่องมือฟรี",
+    "description": "เครื่องมือ AI ฟรี เร็ว และทรงพลัง",
+    "videoEnhancer": {
+      "title": "ตัวปรับปรุงวิดีโอ",
+      "description": "ปรับปรุงวิดีโอเป็นความละเอียด 4x ด้วย AI",
+      "selectVideo": "เลือกวิดีโอ",
+      "orDragDrop": "หรือลากและวาง",
+      "modelFast": "เร็ว",
+      "modelBalanced": "สมดุล",
+      "modelQuality": "คุณภาพ",
+      "loadingModel": "กำลังโหลดโมเดล AI...",
+      "downloadingModel": "กำลังดาวน์โหลดโมเดล AI...",
+      "complete": "เสร็จสมบูรณ์",
+      "cancelled": "ยกเลิกแล้ว",
+      "start": "เริ่มปรับปรุง",
+      "stop": "หยุด",
+      "download": "ดาวน์โหลด",
+      "processing": "กำลังประมวลผลเฟรม...",
+      "encoding": "กำลังเข้ารหัสวิดีโอ...",
+      "addingAudio": "กำลังเพิ่มเสียง...",
+      "original": "ต้นฉบับ",
+      "enhanced": "ปรับปรุงแล้ว",
+      "eta": "~{{time}} เหลืออยู่"
+    },
+    "imageEnhancer": {
+      "title": "ตัวปรับปรุงรูปภาพ",
+      "description": "ปรับปรุงรูปภาพด้วย AI (สูงสุด 4x)",
+      "selectImage": "เลือกรูปภาพ",
+      "orDragDrop": "หรือลากและวาง",
+      "enhance": "ปรับปรุง",
+      "download": "ดาวน์โหลด",
+      "processing": "กำลังประมวลผล...",
+      "loadingModel": "กำลังโหลดโมเดล AI...",
+      "downloadingModel": "กำลังดาวน์โหลดโมเดล AI...",
+      "complete": "เสร็จสมบูรณ์",
+      "original": "ต้นฉบับ",
+      "enhanced": "ปรับปรุงแล้ว",
+      "modelFast": "เร็ว",
+      "modelBalanced": "สมดุล",
+      "modelQuality": "คุณภาพ",
+      "eta": "~{{time}} เหลืออยู่"
+    }
   }
 }

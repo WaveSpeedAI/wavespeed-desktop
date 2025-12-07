@@ -345,14 +345,14 @@ export function PlaygroundPage() {
                   disabled={activeTab.isRunning}
                 />
               ) : (
-                <div className="flex items-center justify-center h-full text-muted-foreground">
+                <div className="h-full flex items-center justify-center text-muted-foreground">
                   <p>{t('playground.selectModelPrompt')}</p>
                 </div>
               )}
             </div>
 
             {/* Actions */}
-            <div className="p-4 border-t">
+            <div className="p-4 border-t bg-muted/30">
               <div className="flex gap-2">
                 <Button
                   className="flex-1 gradient-bg hover:opacity-90 transition-opacity glow-sm"

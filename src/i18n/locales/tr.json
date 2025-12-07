@@ -36,6 +36,7 @@
     "history": "Geçmiş",
     "templates": "Şablonlar",
     "assets": "Varlıklarım",
+    "freeTools": "Ücretsiz Araçlar",
     "settings": "Ayarlar",
     "collapse": "Daralt"
   },
@@ -391,5 +392,49 @@
   "errors": {
     "tryAgain": "Tekrar Dene",
     "failedToFetch": "Veri alınamadı"
+  },
+  "freeTools": {
+    "title": "Ücretsiz Araçlar",
+    "description": "Ücretsiz, hızlı ve güçlü yapay zeka araçları",
+    "videoEnhancer": {
+      "title": "Video İyileştirici",
+      "description": "Yapay zeka kullanarak videoları 4x çözünürlüğe iyileştirin",
+      "selectVideo": "Video Seç",
+      "orDragDrop": "veya sürükleyip bırakın",
+      "modelFast": "Hızlı",
+      "modelBalanced": "Dengeli",
+      "modelQuality": "Kalite",
+      "loadingModel": "AI modeli yükleniyor...",
+      "downloadingModel": "AI modeli indiriliyor...",
+      "complete": "Tamamlandı",
+      "cancelled": "İptal Edildi",
+      "start": "İyileştirmeyi Başlat",
+      "stop": "Durdur",
+      "download": "İndir",
+      "processing": "Kareler işleniyor...",
+      "encoding": "Video kodlanıyor...",
+      "addingAudio": "Ses ekleniyor...",
+      "original": "Orijinal",
+      "enhanced": "İyileştirilmiş",
+      "eta": "~{{time}} kaldı"
+    },
+    "imageEnhancer": {
+      "title": "Görsel İyileştirici",
+      "description": "Yapay zeka kullanarak görselleri iyileştirin (4x'e kadar)",
+      "selectImage": "Görsel Seç",
+      "orDragDrop": "veya sürükleyip bırakın",
+      "enhance": "İyileştir",
+      "download": "İndir",
+      "processing": "İşleniyor...",
+      "loadingModel": "AI modeli yükleniyor...",
+      "downloadingModel": "AI modeli indiriliyor...",
+      "complete": "Tamamlandı",
+      "original": "Orijinal",
+      "enhanced": "İyileştirilmiş",
+      "modelFast": "Hızlı",
+      "modelBalanced": "Dengeli",
+      "modelQuality": "Kalite",
+      "eta": "~{{time}} kaldı"
+    }
   }
 }

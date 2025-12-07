@@ -36,6 +36,7 @@
     "history": "Sejarah",
     "templates": "Templat",
     "assets": "Aset Saya",
+    "freeTools": "Alat Percuma",
     "settings": "Tetapan",
     "collapse": "Kuncupkan"
   },
@@ -391,5 +392,49 @@
   "errors": {
     "tryAgain": "Cuba Lagi",
     "failedToFetch": "Gagal mengambil data"
+  },
+  "freeTools": {
+    "title": "Alat Percuma",
+    "description": "Alat AI percuma, pantas dan berkuasa",
+    "videoEnhancer": {
+      "title": "Penambah Baik Video",
+      "description": "Tingkatkan video sehingga resolusi 4x menggunakan AI",
+      "selectVideo": "Pilih Video",
+      "orDragDrop": "atau seret dan lepas",
+      "modelFast": "Pantas",
+      "modelBalanced": "Seimbang",
+      "modelQuality": "Kualiti",
+      "loadingModel": "Memuatkan model AI...",
+      "downloadingModel": "Memuat turun model AI...",
+      "complete": "Selesai",
+      "cancelled": "Dibatalkan",
+      "start": "Mula Penambahbaikan",
+      "stop": "Hentikan",
+      "download": "Muat turun",
+      "processing": "Memproses bingkai...",
+      "encoding": "Mengekod video...",
+      "addingAudio": "Menambah audio...",
+      "original": "Asal",
+      "enhanced": "Ditingkatkan",
+      "eta": "~{{time}} lagi"
+    },
+    "imageEnhancer": {
+      "title": "Penambah Baik Imej",
+      "description": "Tingkatkan imej menggunakan AI (sehingga 4x)",
+      "selectImage": "Pilih Imej",
+      "orDragDrop": "atau seret dan lepas",
+      "enhance": "Tingkatkan",
+      "download": "Muat turun",
+      "processing": "Memproses...",
+      "loadingModel": "Memuatkan model AI...",
+      "downloadingModel": "Memuat turun model AI...",
+      "complete": "Selesai",
+      "original": "Asal",
+      "enhanced": "Ditingkatkan",
+      "modelFast": "Pantas",
+      "modelBalanced": "Seimbang",
+      "modelQuality": "Kualiti",
+      "eta": "~{{time}} lagi"
+    }
   }
 }

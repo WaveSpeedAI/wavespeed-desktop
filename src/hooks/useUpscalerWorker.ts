@@ -1,0 +1,137 @@
+import { useRef, useCallback, useEffect } from 'react'
+
+type ModelType = 'slim' | 'medium' | 'thick'
+type ScaleType = '2x' | '3x' | '4x'
+
+interface UpscaleResult {
+  imageData: ImageData
+  width: number
+  height: number
+  id: number
+}
+
+interface WorkerMessage {
+  type: 'loaded' | 'status' | 'progress' | 'result' | 'error' | 'disposed'
+  payload?: unknown
+}
+
+interface UseUpscalerWorkerOptions {
+  onProgress?: (percent: number) => void
+  onStatus?: (status: string) => void
+  onError?: (error: string) => void
+}
+
+// Helper function to convert ImageData to data URL
+function imageDataToDataURL(imageData: ImageData, width: number, height: number): string {
+  const canvas = document.createElement('canvas')
+  canvas.width = width
+  canvas.height = height
+  const ctx = canvas.getContext('2d')!
+  ctx.putImageData(imageData, 0, 0)
+  return canvas.toDataURL('image/png')
+}
+
+export function useUpscalerWorker(options: UseUpscalerWorkerOptions = {}) {
+  const workerRef = useRef<Worker | null>(null)
+  const callbacksRef = useRef<Map<number, (result: string) => void>>(new Map())
+  const idCounterRef = useRef(0)
+  const optionsRef = useRef(options)
+
+  // Keep options ref up to date
+  optionsRef.current = options
+
+  // Initialize worker
+  useEffect(() => {
+    workerRef.current = new Worker(
+      new URL('../workers/upscaler.worker.ts', import.meta.url),
+      { type: 'module' }
+    )
+
+    workerRef.current.onmessage = (e: MessageEvent<WorkerMessage>) => {
+      const { type, payload } = e.data
+
+      switch (type) {
+        case 'status':
+          optionsRef.current.onStatus?.(payload as string)
+          break
+        case 'progress': {
+          const { percent } = payload as { percent: number; id: number }
+          optionsRef.current.onProgress?.(percent)
+          break
+        }
+        case 'result': {
+          const { imageData, width, height, id } = payload as UpscaleResult
+          const callback = callbacksRef.current.get(id)
+          if (callback) {
+            // Convert ImageData to data URL in main thread
+            const dataURL = imageDataToDataURL(imageData, width, height)
+            callback(dataURL)
+            callbacksRef.current.delete(id)
+          }
+          break
+        }
+        case 'error':
+          optionsRef.current.onError?.(payload as string)
+          break
+      }
+    }
+
+    return () => {
+      workerRef.current?.postMessage({ type: 'dispose' })
+      workerRef.current?.terminate()
+      workerRef.current = null
+    }
+  }, [])
+
+  const loadModel = useCallback((model: ModelType, scale: ScaleType): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      if (!workerRef.current) {
+        reject(new Error('Worker not initialized'))
+        return
+      }
+
+      const handleMessage = (e: MessageEvent<WorkerMessage>) => {
+        if (e.data.type === 'loaded') {
+          workerRef.current?.removeEventListener('message', handleMessage)
+          resolve()
+        } else if (e.data.type === 'error') {
+          workerRef.current?.removeEventListener('message', handleMessage)
+          reject(new Error(e.data.payload as string))
+        }
+      }
+
+      workerRef.current.addEventListener('message', handleMessage)
+      workerRef.current.postMessage({ type: 'load', payload: { model, scale } })
+    })
+  }, [])
+
+  const upscale = useCallback((imageData: ImageData): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      if (!workerRef.current) {
+        reject(new Error('Worker not initialized'))
+        return
+      }
+
+      const id = idCounterRef.current++
+      callbacksRef.current.set(id, resolve)
+
+      // Set up error handler for this specific call
+      const handleError = (e: MessageEvent<WorkerMessage>) => {
+        if (e.data.type === 'error') {
+          callbacksRef.current.delete(id)
+          workerRef.current?.removeEventListener('message', handleError)
+          reject(new Error(e.data.payload as string))
+        }
+      }
+      workerRef.current.addEventListener('message', handleError)
+
+      workerRef.current.postMessage({ type: 'upscale', payload: { imageData, id } })
+    })
+  }, [])
+
+  const dispose = useCallback(() => {
+    workerRef.current?.postMessage({ type: 'dispose' })
+  }, [])
+
+  return { loadModel, upscale, dispose }
+}

@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -17,17 +17,20 @@ import {
   Zap,
   PanelLeftClose,
   PanelLeft,
-  FolderHeart
+  FolderHeart,
+  Sparkles
 } from 'lucide-react'
 
 interface SidebarProps {
   collapsed: boolean
   onToggle: () => void
+  lastFreeToolsPage: string | null
 }
 
-export function Sidebar({ collapsed, onToggle }: SidebarProps) {
+export function Sidebar({ collapsed, onToggle, lastFreeToolsPage }: SidebarProps) {
   const { t } = useTranslation()
   const location = useLocation()
+  const navigate = useNavigate()
 
   const navItems = [
     {
@@ -55,6 +58,12 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       titleKey: 'nav.assets',
       href: '/assets',
       icon: FolderHeart
+    },
+    {
+      titleKey: 'nav.freeTools',
+      href: '/free-tools',
+      icon: Sparkles,
+      matchPrefix: true
     }
   ]
 
@@ -107,8 +116,20 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
             return (
               <Tooltip key={item.href} delayDuration={0}>
                 <TooltipTrigger asChild>
-                  <NavLink
-                    to={item.href}
+                  <button
+                    onClick={() => {
+                      // If on a sub-page of this item, don't navigate (stay on current page)
+                      if (item.matchPrefix && location.pathname.startsWith(item.href + '/')) {
+                        return
+                      }
+                      // For Free Tools, navigate to last visited sub-page if available
+                      if (item.href === '/free-tools' && lastFreeToolsPage) {
+                        navigate(lastFreeToolsPage)
+                        return
+                      }
+                      // Otherwise navigate to the item's href
+                      navigate(item.href)
+                    }}
                     className={cn(
                       buttonVariants({ variant: active ? 'default' : 'ghost', size: 'sm' }),
                       'w-full justify-start',
@@ -118,7 +139,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                   >
                     <item.icon className="h-5 w-5 shrink-0" />
                     {!collapsed && <span>{t(item.titleKey)}</span>}
-                  </NavLink>
+                  </button>
                 </TooltipTrigger>
                 {collapsed && (
                   <TooltipContent side="right">
@@ -134,29 +155,32 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
       {/* Bottom Navigation */}
       <div className="mt-auto border-t p-2">
         <nav className="flex flex-col gap-1">
-          {bottomNavItems.map((item) => (
-            <Tooltip key={item.href} delayDuration={0}>
-              <TooltipTrigger asChild>
-                <NavLink
-                  to={item.href}
-                  className={cn(
-                    buttonVariants({ variant: location.pathname === item.href ? 'default' : 'ghost', size: 'sm' }),
-                    'w-full justify-start',
-                    collapsed ? 'justify-center px-2' : 'gap-3 px-3',
-                    location.pathname === item.href && 'shadow-md'
-                  )}
-                >
-                  <item.icon className="h-5 w-5 shrink-0" />
-                  {!collapsed && <span>{t(item.titleKey)}</span>}
-                </NavLink>
-              </TooltipTrigger>
-              {collapsed && (
-                <TooltipContent side="right">
-                  {t(item.titleKey)}
-                </TooltipContent>
-              )}
-            </Tooltip>
-          ))}
+          {bottomNavItems.map((item) => {
+            const active = location.pathname === item.href
+            return (
+              <Tooltip key={item.href} delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => navigate(item.href)}
+                    className={cn(
+                      buttonVariants({ variant: active ? 'default' : 'ghost', size: 'sm' }),
+                      'w-full justify-start',
+                      collapsed ? 'justify-center px-2' : 'gap-3 px-3',
+                      active && 'shadow-md'
+                    )}
+                  >
+                    <item.icon className="h-5 w-5 shrink-0" />
+                    {!collapsed && <span>{t(item.titleKey)}</span>}
+                  </button>
+                </TooltipTrigger>
+                {collapsed && (
+                  <TooltipContent side="right">
+                    {t(item.titleKey)}
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            )
+          })}
         </nav>
 
         {/* Toggle Button */}

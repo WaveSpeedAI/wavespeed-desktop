@@ -36,6 +36,7 @@
     "history": "История",
     "templates": "Шаблоны",
     "assets": "Мои Активы",
+    "freeTools": "Бесплатные Инструменты",
     "settings": "Настройки",
     "collapse": "Свернуть"
   },
@@ -391,5 +392,49 @@
   "errors": {
     "tryAgain": "Попробовать снова",
     "failedToFetch": "Ошибка получения данных"
+  },
+  "freeTools": {
+    "title": "Бесплатные Инструменты",
+    "description": "Бесплатные, быстрые и мощные ИИ-инструменты",
+    "videoEnhancer": {
+      "title": "Улучшитель Видео",
+      "description": "Улучшите видео до 4x разрешения с помощью ИИ",
+      "selectVideo": "Выбрать Видео",
+      "orDragDrop": "или перетащите файл",
+      "modelFast": "Быстрый",
+      "modelBalanced": "Сбалансированный",
+      "modelQuality": "Качество",
+      "start": "Начать Улучшение",
+      "stop": "Остановить",
+      "download": "Скачать",
+      "processing": "Обработка кадров...",
+      "encoding": "Кодирование видео...",
+      "addingAudio": "Добавление аудио...",
+      "loadingModel": "Загрузка ИИ-модели...",
+      "downloadingModel": "Загрузка ИИ-модели...",
+      "complete": "Завершено",
+      "cancelled": "Отменено",
+      "original": "Оригинал",
+      "enhanced": "Улучшено",
+      "eta": "~{{time}} осталось"
+    },
+    "imageEnhancer": {
+      "title": "Улучшитель Изображений",
+      "description": "Улучшайте изображения до 4x разрешения с помощью ИИ",
+      "selectImage": "Выбрать Изображение",
+      "orDragDrop": "или перетащите файл",
+      "enhance": "Улучшить",
+      "download": "Скачать",
+      "processing": "Обработка...",
+      "loadingModel": "Загрузка модели ИИ...",
+      "downloadingModel": "Загрузка модели ИИ...",
+      "complete": "Завершено",
+      "original": "Оригинал",
+      "enhanced": "Улучшено",
+      "modelFast": "Быстрый",
+      "modelBalanced": "Сбалансированный",
+      "modelQuality": "Качество",
+      "eta": "~{{time}} осталось"
+    }
   }
 }

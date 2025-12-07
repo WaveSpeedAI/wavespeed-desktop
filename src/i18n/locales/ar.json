@@ -36,6 +36,7 @@
     "history": "السجل",
     "templates": "القوالب",
     "assets": "أصولي",
+    "freeTools": "أدوات مجانية",
     "settings": "الإعدادات",
     "collapse": "طي"
   },
@@ -391,5 +392,49 @@
   "errors": {
     "tryAgain": "حاول مرة أخرى",
     "failedToFetch": "فشل جلب البيانات"
+  },
+  "freeTools": {
+    "title": "أدوات مجانية",
+    "description": "أدوات ذكاء اصطناعي مجانية وسريعة وقوية",
+    "videoEnhancer": {
+      "title": "محسن الفيديو",
+      "description": "تحسين الفيديو حتى 4x باستخدام الذكاء الاصطناعي",
+      "selectVideo": "اختر فيديو",
+      "orDragDrop": "أو اسحب وأفلت",
+      "modelFast": "سريع",
+      "modelBalanced": "متوازن",
+      "modelQuality": "جودة",
+      "loadingModel": "جاري تحميل نموذج AI...",
+      "downloadingModel": "جاري تنزيل نموذج AI...",
+      "complete": "مكتمل",
+      "cancelled": "ملغى",
+      "start": "بدء التحسين",
+      "stop": "إيقاف",
+      "download": "تنزيل",
+      "processing": "جاري معالجة الإطارات...",
+      "encoding": "جاري ترميز الفيديو...",
+      "addingAudio": "جاري إضافة الصوت...",
+      "original": "الأصلي",
+      "enhanced": "محسّن",
+      "eta": "~{{time}} متبقي"
+    },
+    "imageEnhancer": {
+      "title": "محسن الصور",
+      "description": "تحسين الصور باستخدام الذكاء الاصطناعي (حتى 4x)",
+      "selectImage": "اختر صورة",
+      "orDragDrop": "أو اسحب وأفلت",
+      "enhance": "تحسين",
+      "download": "تنزيل",
+      "processing": "جاري المعالجة...",
+      "loadingModel": "جاري تحميل نموذج الذكاء الاصطناعي...",
+      "downloadingModel": "جاري تنزيل نموذج الذكاء الاصطناعي...",
+      "complete": "مكتمل",
+      "original": "الأصلي",
+      "enhanced": "محسّن",
+      "modelFast": "سريع",
+      "modelBalanced": "متوازن",
+      "modelQuality": "جودة",
+      "eta": "~{{time}} متبقي"
+    }
   }
 }

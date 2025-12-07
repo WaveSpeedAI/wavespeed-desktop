@@ -36,6 +36,7 @@
     "history": "History",
     "templates": "Templates",
     "assets": "My Assets",
+    "freeTools": "Free Tools",
     "settings": "Settings",
     "collapse": "Collapse"
   },
@@ -391,5 +392,49 @@
   "errors": {
     "tryAgain": "Try Again",
     "failedToFetch": "Failed to fetch data"
+  },
+  "freeTools": {
+    "title": "Free Tools",
+    "description": "Free, fast, and powerful AI tools",
+    "videoEnhancer": {
+      "title": "Video Enhancer",
+      "description": "Enhance videos up to 4x resolution using AI",
+      "selectVideo": "Select Video",
+      "orDragDrop": "or drag and drop",
+      "modelFast": "Fast",
+      "modelBalanced": "Balanced",
+      "modelQuality": "Quality",
+      "start": "Start Enhancing",
+      "stop": "Stop",
+      "download": "Download",
+      "processing": "Processing frames...",
+      "encoding": "Encoding video...",
+      "addingAudio": "Adding audio...",
+      "loadingModel": "Loading AI model...",
+      "downloadingModel": "Downloading AI model...",
+      "complete": "Complete",
+      "cancelled": "Cancelled",
+      "original": "Original",
+      "enhanced": "Enhanced",
+      "eta": "~{{time}} remaining"
+    },
+    "imageEnhancer": {
+      "title": "Image Enhancer",
+      "description": "Enhance images up to 4x resolution using AI",
+      "selectImage": "Select Image",
+      "orDragDrop": "or drag and drop",
+      "enhance": "Enhance",
+      "download": "Download",
+      "processing": "Processing...",
+      "loadingModel": "Loading AI model...",
+      "downloadingModel": "Downloading AI model...",
+      "complete": "Complete",
+      "original": "Original",
+      "enhanced": "Enhanced",
+      "modelFast": "Fast",
+      "modelBalanced": "Balanced",
+      "modelQuality": "Quality",
+      "eta": "~{{time}} remaining"
+    }
   }
 }

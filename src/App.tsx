@@ -7,9 +7,13 @@ import { TemplatesPage } from '@/pages/TemplatesPage'
 import { HistoryPage } from '@/pages/HistoryPage'
 import { AssetsPage } from '@/pages/AssetsPage'
 import { SettingsPage } from '@/pages/SettingsPage'
+import { FreeToolsPage } from '@/pages/FreeToolsPage'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
 import { useModelsStore } from '@/stores/modelsStore'
 import { useThemeStore } from '@/stores/themeStore'
+
+// Placeholder for persistent pages (rendered in Layout, not via router)
+const PersistentPagePlaceholder = () => null
 
 function App() {
   const { loadApiKey, isValidated } = useApiKeyStore()
@@ -37,6 +41,10 @@ function App() {
         <Route path="templates" element={<TemplatesPage />} />
         <Route path="history" element={<HistoryPage />} />
         <Route path="assets" element={<AssetsPage />} />
+        <Route path="free-tools" element={<FreeToolsPage />} />
+        {/* Video and Image enhancer pages are rendered persistently in Layout */}
+        <Route path="free-tools/video" element={<PersistentPagePlaceholder />} />
+        <Route path="free-tools/image" element={<PersistentPagePlaceholder />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
     </Routes>

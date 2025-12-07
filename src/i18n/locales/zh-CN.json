@@ -36,6 +36,7 @@
     "history": "历史记录",
     "templates": "模板",
     "assets": "我的资产",
+    "freeTools": "免费工具",
     "settings": "设置",
     "collapse": "收起"
   },
@@ -391,5 +392,49 @@
   "errors": {
     "tryAgain": "重试",
     "failedToFetch": "获取数据失败"
+  },
+  "freeTools": {
+    "title": "免费工具",
+    "description": "免费、快速、强大的 AI 工具",
+    "videoEnhancer": {
+      "title": "视频增强",
+      "description": "使用 AI 将视频增强至 4 倍分辨率",
+      "selectVideo": "选择视频",
+      "orDragDrop": "或拖放文件",
+      "modelFast": "快速",
+      "modelBalanced": "均衡",
+      "modelQuality": "高质量",
+      "start": "开始增强",
+      "stop": "停止",
+      "download": "下载",
+      "processing": "处理帧中...",
+      "encoding": "编码视频中...",
+      "addingAudio": "添加音频中...",
+      "loadingModel": "加载 AI 模型...",
+      "downloadingModel": "下载 AI 模型中...",
+      "complete": "完成",
+      "cancelled": "已取消",
+      "original": "原始",
+      "enhanced": "增强后",
+      "eta": "~{{time}} 剩余"
+    },
+    "imageEnhancer": {
+      "title": "图片增强",
+      "description": "使用 AI 将图片增强至 4 倍分辨率",
+      "selectImage": "选择图片",
+      "orDragDrop": "或拖放文件",
+      "enhance": "增强",
+      "download": "下载",
+      "processing": "处理中...",
+      "loadingModel": "加载 AI 模型...",
+      "downloadingModel": "下载 AI 模型中...",
+      "complete": "完成",
+      "original": "原始",
+      "enhanced": "增强后",
+      "modelFast": "快速",
+      "modelBalanced": "均衡",
+      "modelQuality": "高质量",
+      "eta": "~{{time}} 剩余"
+    }
   }
 }

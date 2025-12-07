@@ -36,6 +36,7 @@
     "history": "Cronologia",
     "templates": "Template",
     "assets": "I Miei Asset",
+    "freeTools": "Strumenti Gratuiti",
     "settings": "Impostazioni",
     "collapse": "Comprimi"
   },
@@ -391,5 +392,49 @@
   "errors": {
     "tryAgain": "Riprova",
     "failedToFetch": "Recupero dati fallito"
+  },
+  "freeTools": {
+    "title": "Strumenti Gratuiti",
+    "description": "Strumenti AI gratuiti, veloci e potenti",
+    "videoEnhancer": {
+      "title": "Miglioratore Video",
+      "description": "Migliora la risoluzione dei video fino a 4x usando l'AI",
+      "selectVideo": "Seleziona Video",
+      "orDragDrop": "o trascina e rilascia",
+      "modelFast": "Veloce",
+      "modelBalanced": "Bilanciato",
+      "modelQuality": "Qualità",
+      "loadingModel": "Caricamento modello AI...",
+      "downloadingModel": "Download modello AI...",
+      "complete": "Completato",
+      "cancelled": "Annullato",
+      "start": "Avvia Miglioramento",
+      "stop": "Ferma",
+      "download": "Scarica",
+      "processing": "Elaborazione frame...",
+      "encoding": "Codifica video...",
+      "addingAudio": "Aggiunta audio...",
+      "original": "Originale",
+      "enhanced": "Migliorato",
+      "eta": "~{{time}} rimanente"
+    },
+    "imageEnhancer": {
+      "title": "Miglioratore Immagini",
+      "description": "Migliora le immagini con l'AI (fino a 4x)",
+      "selectImage": "Seleziona Immagine",
+      "orDragDrop": "o trascina e rilascia",
+      "enhance": "Migliora",
+      "download": "Scarica",
+      "processing": "Elaborazione...",
+      "loadingModel": "Caricamento modello AI...",
+      "downloadingModel": "Download modello AI...",
+      "complete": "Completato",
+      "original": "Originale",
+      "enhanced": "Migliorato",
+      "modelFast": "Veloce",
+      "modelBalanced": "Bilanciato",
+      "modelQuality": "Qualità",
+      "eta": "~{{time}} rimanente"
+    }
   }
 }

@@ -36,6 +36,7 @@
     "history": "इतिहास",
     "templates": "टेम्पलेट",
     "assets": "मेरी संपत्तियां",
+    "freeTools": "मुफ्त उपकरण",
     "settings": "सेटिंग्स",
     "collapse": "संक्षिप्त करें"
   },
@@ -391,5 +392,49 @@
   "errors": {
     "tryAgain": "पुनः प्रयास करें",
     "failedToFetch": "डेटा प्राप्त करने में विफल"
+  },
+  "freeTools": {
+    "title": "मुफ्त उपकरण",
+    "description": "मुफ्त, तेज़ और शक्तिशाली AI उपकरण",
+    "videoEnhancer": {
+      "title": "वीडियो एन्हांसर",
+      "description": "AI का उपयोग करके वीडियो को 4x रिज़ॉल्यूशन तक बढ़ाएं",
+      "selectVideo": "वीडियो चुनें",
+      "orDragDrop": "या ड्रैग और ड्रॉप करें",
+      "modelFast": "तेज़",
+      "modelBalanced": "संतुलित",
+      "modelQuality": "गुणवत्ता",
+      "loadingModel": "AI मॉडल लोड हो रहा है...",
+      "downloadingModel": "AI मॉडल डाउनलोड हो रहा है...",
+      "complete": "पूर्ण",
+      "cancelled": "रद्द किया गया",
+      "start": "एन्हांसमेंट शुरू करें",
+      "stop": "रोकें",
+      "download": "डाउनलोड करें",
+      "processing": "फ्रेम प्रोसेस हो रहे हैं...",
+      "encoding": "वीडियो एनकोड हो रहा है...",
+      "addingAudio": "ऑडियो जोड़ा जा रहा है...",
+      "original": "मूल",
+      "enhanced": "एन्हांस्ड",
+      "eta": "~{{time}} शेष"
+    },
+    "imageEnhancer": {
+      "title": "छवि एन्हांसर",
+      "description": "AI का उपयोग करके छवियों को एन्हांस करें (4x तक)",
+      "selectImage": "छवि चुनें",
+      "orDragDrop": "या ड्रैग और ड्रॉप करें",
+      "enhance": "एन्हांस करें",
+      "download": "डाउनलोड करें",
+      "processing": "प्रोसेसिंग...",
+      "loadingModel": "AI मॉडल लोड हो रहा है...",
+      "downloadingModel": "AI मॉडल डाउनलोड हो रहा है...",
+      "complete": "पूर्ण",
+      "original": "मूल",
+      "enhanced": "एन्हांस्ड",
+      "modelFast": "तेज़",
+      "modelBalanced": "संतुलित",
+      "modelQuality": "गुणवत्ता",
+      "eta": "~{{time}} शेष"
+    }
   }
 }

@@ -12,6 +12,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { KeyRound, Eye, EyeOff, Loader2, Zap, ExternalLink } from 'lucide-react'
+import { VideoEnhancerPage } from '@/pages/VideoEnhancerPage'
+import { ImageEnhancerPage } from '@/pages/ImageEnhancerPage'
 
 export function Layout() {
   const { t } = useTranslation()
@@ -20,15 +22,35 @@ export function Layout() {
   const location = useLocation()
   const hasShownUpdateToast = useRef(false)
 
+  // Track which persistent pages have been visited (to delay initial mount)
+  const [visitedPages, setVisitedPages] = useState<Set<string>>(new Set())
+  // Track the last visited free-tools sub-page for navigation
+  const [lastFreeToolsPage, setLastFreeToolsPage] = useState<string | null>(null)
+
   const { apiKey, isLoading: isLoadingApiKey, isValidated, loadApiKey } = useApiKeyStore()
   const [inputKey, setInputKey] = useState('')
   const [showKey, setShowKey] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
 
+  // Track visits to persistent pages and last visited free-tools page
+  useEffect(() => {
+    const persistentPaths = ['/free-tools/video', '/free-tools/image']
+    if (persistentPaths.includes(location.pathname)) {
+      // Track for lazy mounting
+      if (!visitedPages.has(location.pathname)) {
+        setVisitedPages(prev => new Set(prev).add(location.pathname))
+      }
+      // Track last visited for sidebar navigation
+      setLastFreeToolsPage(location.pathname)
+    }
+  }, [location.pathname, visitedPages])
+
   // Pages that don't require API key
-  const publicPaths = ['/settings', '/templates', '/assets']
-  const isPublicPage = publicPaths.includes(location.pathname)
+  const publicPaths = ['/settings', '/templates', '/assets', '/free-tools']
+  const isPublicPage = publicPaths.some(path =>
+    location.pathname === path || location.pathname.startsWith(path + '/')
+  )
 
   // Listen for update availability on startup
   useEffect(() => {
@@ -254,9 +276,28 @@ export function Layout() {
         <Sidebar
           collapsed={sidebarCollapsed}
           onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+          lastFreeToolsPage={lastFreeToolsPage}
         />
         <main className="flex-1 overflow-auto relative">
-          {requiresLogin ? loginContent : <Outlet />}
+          {requiresLogin ? loginContent : (
+            <>
+              {/* Regular routes via Outlet */}
+              <div className={location.pathname === '/free-tools/video' || location.pathname === '/free-tools/image' ? 'hidden' : ''}>
+                <Outlet />
+              </div>
+              {/* Persistent Free Tools pages - mounted once visited, then persist via CSS show/hide */}
+              {visitedPages.has('/free-tools/video') && (
+                <div className={location.pathname === '/free-tools/video' ? '' : 'hidden'}>
+                  <VideoEnhancerPage />
+                </div>
+              )}
+              {visitedPages.has('/free-tools/image') && (
+                <div className={location.pathname === '/free-tools/image' ? '' : 'hidden'}>
+                  <ImageEnhancerPage />
+                </div>
+              )}
+            </>
+          )}
         </main>
         <Toaster />
       </div>

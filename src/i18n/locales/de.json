@@ -36,6 +36,7 @@
     "history": "Verlauf",
     "templates": "Vorlagen",
     "assets": "Meine Assets",
+    "freeTools": "Kostenlose Tools",
     "settings": "Einstellungen",
     "collapse": "Einklappen"
   },
@@ -391,5 +392,49 @@
   "errors": {
     "tryAgain": "Erneut versuchen",
     "failedToFetch": "Fehler beim Abrufen der Daten"
+  },
+  "freeTools": {
+    "title": "Kostenlose Tools",
+    "description": "Kostenlose, schnelle und leistungsstarke KI-Tools",
+    "videoEnhancer": {
+      "title": "Video-Verbesserer",
+      "description": "Videos mit KI auf 4-fache Auflösung verbessern",
+      "selectVideo": "Video auswählen",
+      "orDragDrop": "oder per Drag & Drop",
+      "modelFast": "Schnell",
+      "modelBalanced": "Ausgewogen",
+      "modelQuality": "Qualität",
+      "start": "Verbesserung starten",
+      "stop": "Stoppen",
+      "download": "Herunterladen",
+      "processing": "Frames verarbeiten...",
+      "encoding": "Video kodieren...",
+      "addingAudio": "Audio hinzufügen...",
+      "loadingModel": "KI-Modell wird geladen...",
+      "downloadingModel": "KI-Modell wird heruntergeladen...",
+      "complete": "Abgeschlossen",
+      "cancelled": "Abgebrochen",
+      "original": "Original",
+      "enhanced": "Verbessert",
+      "eta": "~{{time}} verbleibend"
+    },
+    "imageEnhancer": {
+      "title": "Bild-Verbesserer",
+      "description": "Bilder mit KI auf 4-fache Auflösung verbessern",
+      "selectImage": "Bild auswählen",
+      "orDragDrop": "oder per Drag & Drop",
+      "enhance": "Verbessern",
+      "download": "Herunterladen",
+      "processing": "Verarbeitung...",
+      "loadingModel": "KI-Modell wird geladen...",
+      "downloadingModel": "KI-Modell wird heruntergeladen...",
+      "complete": "Abgeschlossen",
+      "original": "Original",
+      "enhanced": "Verbessert",
+      "modelFast": "Schnell",
+      "modelBalanced": "Ausgewogen",
+      "modelQuality": "Qualität",
+      "eta": "~{{time}} verbleibend"
+    }
   }
 }

@@ -36,6 +36,7 @@
     "history": "履歴",
     "templates": "テンプレート",
     "assets": "マイアセット",
+    "freeTools": "無料ツール",
     "settings": "設定",
     "collapse": "折りたたむ"
   },
@@ -391,5 +392,49 @@
   "errors": {
     "tryAgain": "再試行",
     "failedToFetch": "データの取得に失敗しました"
+  },
+  "freeTools": {
+    "title": "無料ツール",
+    "description": "無料で高速、パワフルなAIツール",
+    "videoEnhancer": {
+      "title": "動画エンハンサー",
+      "description": "AIを使用して動画を4倍解像度に高画質化",
+      "selectVideo": "動画を選択",
+      "orDragDrop": "またはドラッグ＆ドロップ",
+      "modelFast": "高速",
+      "modelBalanced": "バランス",
+      "modelQuality": "高品質",
+      "start": "高画質化開始",
+      "stop": "停止",
+      "download": "ダウンロード",
+      "processing": "フレーム処理中...",
+      "encoding": "動画エンコード中...",
+      "addingAudio": "音声を追加中...",
+      "loadingModel": "AIモデルを読み込み中...",
+      "downloadingModel": "AIモデルをダウンロード中...",
+      "complete": "完了",
+      "cancelled": "キャンセル済み",
+      "original": "オリジナル",
+      "enhanced": "高画質化済み",
+      "eta": "~{{time}} 残り"
+    },
+    "imageEnhancer": {
+      "title": "画像エンハンサー",
+      "description": "AIを使用して画像を4倍解像度に高画質化",
+      "selectImage": "画像を選択",
+      "orDragDrop": "またはドラッグ＆ドロップ",
+      "enhance": "高画質化",
+      "download": "ダウンロード",
+      "processing": "処理中...",
+      "loadingModel": "AIモデルを読み込み中...",
+      "downloadingModel": "AIモデルをダウンロード中...",
+      "complete": "完了",
+      "original": "オリジナル",
+      "enhanced": "高画質化済み",
+      "modelFast": "高速",
+      "modelBalanced": "バランス",
+      "modelQuality": "高品質",
+      "eta": "~{{time}} 残り"
+    }
   }
 }

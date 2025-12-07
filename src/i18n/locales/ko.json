@@ -36,6 +36,7 @@
     "history": "기록",
     "templates": "템플릿",
     "assets": "내 에셋",
+    "freeTools": "무료 도구",
     "settings": "설정",
     "collapse": "접기"
   },
@@ -391,5 +392,49 @@
   "errors": {
     "tryAgain": "다시 시도",
     "failedToFetch": "데이터 가져오기 실패"
+  },
+  "freeTools": {
+    "title": "무료 도구",
+    "description": "무료, 빠르고 강력한 AI 도구",
+    "videoEnhancer": {
+      "title": "비디오 향상",
+      "description": "AI를 사용하여 비디오를 4배 해상도로 향상",
+      "selectVideo": "비디오 선택",
+      "orDragDrop": "또는 드래그 앤 드롭",
+      "modelFast": "빠름",
+      "modelBalanced": "균형",
+      "modelQuality": "고품질",
+      "start": "향상 시작",
+      "stop": "중지",
+      "download": "다운로드",
+      "processing": "프레임 처리 중...",
+      "encoding": "비디오 인코딩 중...",
+      "addingAudio": "오디오 추가 중...",
+      "loadingModel": "AI 모델 로딩 중...",
+      "downloadingModel": "AI 모델 다운로드 중...",
+      "complete": "완료",
+      "cancelled": "취소됨",
+      "original": "원본",
+      "enhanced": "향상됨",
+      "eta": "~{{time}} 남음"
+    },
+    "imageEnhancer": {
+      "title": "이미지 향상",
+      "description": "AI를 사용하여 이미지를 4배 해상도로 향상",
+      "selectImage": "이미지 선택",
+      "orDragDrop": "또는 드래그 앤 드롭",
+      "enhance": "향상",
+      "download": "다운로드",
+      "processing": "처리 중...",
+      "loadingModel": "AI 모델 로딩 중...",
+      "downloadingModel": "AI 모델 다운로드 중...",
+      "complete": "완료",
+      "original": "원본",
+      "enhanced": "향상됨",
+      "modelFast": "빠름",
+      "modelBalanced": "균형",
+      "modelQuality": "고품질",
+      "eta": "~{{time}} 남음"
+    }
   }
 }

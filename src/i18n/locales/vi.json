@@ -36,6 +36,7 @@
     "history": "Lịch sử",
     "templates": "Mẫu",
     "assets": "Tài sản của tôi",
+    "freeTools": "Công cụ Miễn phí",
     "settings": "Cài đặt",
     "collapse": "Thu gọn"
   },
@@ -391,5 +392,49 @@
   "errors": {
     "tryAgain": "Thử lại",
     "failedToFetch": "Không thể lấy dữ liệu"
+  },
+  "freeTools": {
+    "title": "Công cụ Miễn phí",
+    "description": "Công cụ AI miễn phí, nhanh và mạnh mẽ",
+    "videoEnhancer": {
+      "title": "Nâng cao Video",
+      "description": "Nâng cao video lên độ phân giải 4x bằng AI",
+      "selectVideo": "Chọn Video",
+      "orDragDrop": "hoặc kéo và thả",
+      "modelFast": "Nhanh",
+      "modelBalanced": "Cân bằng",
+      "modelQuality": "Chất lượng",
+      "loadingModel": "Đang tải mô hình AI...",
+      "downloadingModel": "Đang tải xuống mô hình AI...",
+      "complete": "Hoàn thành",
+      "cancelled": "Đã hủy",
+      "start": "Bắt đầu Nâng cao",
+      "stop": "Dừng",
+      "download": "Tải xuống",
+      "processing": "Đang xử lý khung hình...",
+      "encoding": "Đang mã hóa video...",
+      "addingAudio": "Đang thêm âm thanh...",
+      "original": "Gốc",
+      "enhanced": "Đã nâng cao",
+      "eta": "~{{time}} còn lại"
+    },
+    "imageEnhancer": {
+      "title": "Nâng cao Hình ảnh",
+      "description": "Nâng cao hình ảnh bằng AI (lên đến 4x)",
+      "selectImage": "Chọn Hình ảnh",
+      "orDragDrop": "hoặc kéo và thả",
+      "enhance": "Nâng cao",
+      "download": "Tải xuống",
+      "processing": "Đang xử lý...",
+      "loadingModel": "Đang tải mô hình AI...",
+      "downloadingModel": "Đang tải xuống mô hình AI...",
+      "complete": "Hoàn thành",
+      "original": "Gốc",
+      "enhanced": "Đã nâng cao",
+      "modelFast": "Nhanh",
+      "modelBalanced": "Cân bằng",
+      "modelQuality": "Chất lượng",
+      "eta": "~{{time}} còn lại"
+    }
   }
 }

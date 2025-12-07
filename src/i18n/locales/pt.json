@@ -36,6 +36,7 @@
     "history": "Histórico",
     "templates": "Templates",
     "assets": "Meus Recursos",
+    "freeTools": "Ferramentas Grátis",
     "settings": "Configurações",
     "collapse": "Recolher"
   },
@@ -391,5 +392,49 @@
   "errors": {
     "tryAgain": "Tentar Novamente",
     "failedToFetch": "Falha ao buscar dados"
+  },
+  "freeTools": {
+    "title": "Ferramentas Grátis",
+    "description": "Ferramentas de IA gratuitas, rápidas e poderosas",
+    "videoEnhancer": {
+      "title": "Melhorador de Vídeo",
+      "description": "Melhore vídeos até 4x de resolução usando IA",
+      "selectVideo": "Selecionar Vídeo",
+      "orDragDrop": "ou arraste e solte",
+      "modelFast": "Rápido",
+      "modelBalanced": "Equilibrado",
+      "modelQuality": "Qualidade",
+      "loadingModel": "Carregando modelo de IA...",
+      "downloadingModel": "Baixando modelo de IA...",
+      "complete": "Concluído",
+      "cancelled": "Cancelado",
+      "start": "Iniciar Melhoria",
+      "stop": "Parar",
+      "download": "Baixar",
+      "processing": "Processando frames...",
+      "encoding": "Codificando vídeo...",
+      "addingAudio": "Adicionando áudio...",
+      "original": "Original",
+      "enhanced": "Melhorado",
+      "eta": "~{{time}} restante"
+    },
+    "imageEnhancer": {
+      "title": "Melhorador de Imagens",
+      "description": "Melhore imagens usando IA (até 4x)",
+      "selectImage": "Selecionar Imagem",
+      "orDragDrop": "ou arraste e solte",
+      "enhance": "Melhorar",
+      "download": "Baixar",
+      "processing": "Processando...",
+      "loadingModel": "Carregando modelo de IA...",
+      "downloadingModel": "Baixando modelo de IA...",
+      "complete": "Concluído",
+      "original": "Original",
+      "enhanced": "Melhorado",
+      "modelFast": "Rápido",
+      "modelBalanced": "Equilibrado",
+      "modelQuality": "Qualidade",
+      "eta": "~{{time}} restante"
+    }
   }
 }

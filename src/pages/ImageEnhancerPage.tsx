@@ -2,10 +2,17 @@ import { useState, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useUpscalerWorker } from '@/hooks/useUpscalerWorker'
+import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
+import { ProcessingProgress } from '@/components/shared/ProcessingProgress'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Progress } from '@/components/ui/progress'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { ArrowLeft, Upload, Download, Loader2, ImageUp, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -13,92 +20,100 @@ import { cn } from '@/lib/utils'
 type ModelType = 'slim' | 'medium' | 'thick'
 type ScaleType = '2x' | '3x' | '4x'
 
+// Phase configuration for image enhancer
+const PHASES = [
+  { id: 'download', labelKey: 'freeTools.progress.downloading', weight: 0.2 },
+  { id: 'process', labelKey: 'freeTools.progress.processing', weight: 0.7 },
+  { id: 'finalize', labelKey: 'freeTools.progress.finalizing', weight: 0.1 }
+]
+
 export function ImageEnhancerPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const dragCounterRef = useRef(0)
-  const startTimeRef = useRef<number>(0)
 
   const [originalImage, setOriginalImage] = useState<string | null>(null)
   const [enhancedImage, setEnhancedImage] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [isLoadingModel, setIsLoadingModel] = useState(false)
-  const [progress, setProgress] = useState(0)
-  const [statusText, setStatusText] = useState('')
   const [isDragging, setIsDragging] = useState(false)
-  const [originalSize, setOriginalSize] = useState<{ width: number; height: number } | null>(null)
-  const [enhancedSize, setEnhancedSize] = useState<{ width: number; height: number } | null>(null)
+  const [originalSize, setOriginalSize] = useState<{
+    width: number
+    height: number
+  } | null>(null)
+  const [enhancedSize, setEnhancedSize] = useState<{
+    width: number
+    height: number
+  } | null>(null)
   const [model, setModel] = useState<ModelType>('slim')
   const [scale, setScale] = useState<ScaleType>('2x')
-  const [downloadFormat, setDownloadFormat] = useState<'png' | 'jpeg' | 'webp'>('jpeg')
+  const [downloadFormat, setDownloadFormat] = useState<'png' | 'jpeg' | 'webp'>(
+    'jpeg'
+  )
   const [showPreview, setShowPreview] = useState(false)
-  const [eta, setEta] = useState<string | null>(null)
+
+  // Multi-phase progress tracking
+  const {
+    progress,
+    startPhase,
+    updatePhase,
+    completePhase,
+    reset: resetProgress,
+    complete: completeAllPhases
+  } = useMultiPhaseProgress({ phases: PHASES })
 
   const { loadModel, upscale, dispose } = useUpscalerWorker({
-    onProgress: (percent) => {
-      setProgress(percent * 0.95)
-      // Calculate ETA
-      if (percent > 0.05) {
-        const elapsed = Date.now() - startTimeRef.current
-        const totalEstimated = elapsed / percent
-        const remainingMs = totalEstimated - elapsed
-        const remainingSec = Math.ceil(remainingMs / 1000)
-        if (remainingSec >= 60) {
-          const mins = Math.floor(remainingSec / 60)
-          const secs = remainingSec % 60
-          setEta(`${mins}m ${secs}s`)
-        } else if (remainingSec > 0) {
-          setEta(`${remainingSec}s`)
-        }
-      }
+    onPhase: (phase) => {
+      startPhase(phase)
     },
-    onStatus: (status) => {
-      if (status === 'downloading') {
-        setStatusText(t('freeTools.imageEnhancer.downloadingModel'))
-      }
+    onProgress: (phase, progressValue, detail) => {
+      updatePhase(phase, progressValue, detail)
     },
     onError: (error) => {
       console.error('Worker error:', error)
-      setStatusText(`Error: ${error}`)
       setIsProcessing(false)
       setIsLoadingModel(false)
-      setEta(null)
     }
   })
 
-  const handleFileSelect = useCallback((file: File) => {
-    if (!file.type.startsWith('image/')) return
+  const handleFileSelect = useCallback(
+    (file: File) => {
+      if (!file.type.startsWith('image/')) return
 
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const dataUrl = e.target?.result as string
-      setOriginalImage(dataUrl)
-      setEnhancedImage(null)
-      setEnhancedSize(null)
-      setProgress(0)
-      setStatusText('')
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const dataUrl = e.target?.result as string
+        setOriginalImage(dataUrl)
+        setEnhancedImage(null)
+        setEnhancedSize(null)
+        resetProgress()
 
-      // Get original dimensions
-      const img = new Image()
-      img.onload = () => {
-        setOriginalSize({ width: img.width, height: img.height })
+        // Get original dimensions
+        const img = new Image()
+        img.onload = () => {
+          setOriginalSize({ width: img.width, height: img.height })
+        }
+        img.src = dataUrl
       }
-      img.src = dataUrl
-    }
-    reader.readAsDataURL(file)
-  }, [])
+      reader.readAsDataURL(file)
+    },
+    [resetProgress]
+  )
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    dragCounterRef.current = 0
-    setIsDragging(false)
-    if (isProcessing || isLoadingModel) return
-    const file = e.dataTransfer.files[0]
-    if (file) handleFileSelect(file)
-  }, [handleFileSelect, isProcessing, isLoadingModel])
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      dragCounterRef.current = 0
+      setIsDragging(false)
+      if (isProcessing || isLoadingModel) return
+      const file = e.dataTransfer.files[0]
+      if (file) handleFileSelect(file)
+    },
+    [handleFileSelect, isProcessing, isLoadingModel]
+  )
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -127,18 +142,17 @@ export function ImageEnhancerPage() {
     if (!originalImage || !originalSize || !canvasRef.current) return
 
     setIsLoadingModel(true)
-    setProgress(0)
-    setStatusText(t('freeTools.imageEnhancer.loadingModel'))
-    setEta(null)
+    resetProgress()
+    startPhase('download')
 
     try {
       // Load the selected model in worker
       await loadModel(model, scale)
+      completePhase('download')
 
       setIsLoadingModel(false)
       setIsProcessing(true)
-      setStatusText(t('freeTools.imageEnhancer.processing'))
-      startTimeRef.current = Date.now()
+      startPhase('process')
 
       // Create source image and get ImageData
       const img = new Image()
@@ -158,8 +172,10 @@ export function ImageEnhancerPage() {
 
       // Upscale in worker
       const upscaledDataUrl = await upscale(imageData)
+      completePhase('process')
 
-      setProgress(95)
+      // Finalize phase
+      startPhase('finalize')
 
       // Get scale multiplier
       const scaleMultiplier = parseInt(scale.replace('x', ''))
@@ -185,14 +201,9 @@ export function ImageEnhancerPage() {
         resultImg.src = upscaledDataUrl
       })
 
-      setProgress(100)
-      setStatusText(t('freeTools.imageEnhancer.complete'))
-      setEta(null)
-
+      completeAllPhases()
     } catch (error) {
       console.error('Enhancement failed:', error)
-      setStatusText(`Error: ${(error as Error).message}`)
-      setEta(null)
     } finally {
       setIsProcessing(false)
       setIsLoadingModel(false)
@@ -233,7 +244,9 @@ export function ImageEnhancerPage() {
         <div className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center border-2 border-dashed border-primary rounded-lg m-4">
           <div className="text-center">
             <Upload className="h-12 w-12 text-primary mx-auto mb-2" />
-            <p className="text-lg font-medium">{t('freeTools.imageEnhancer.orDragDrop')}</p>
+            <p className="text-lg font-medium">
+              {t('freeTools.imageEnhancer.orDragDrop')}
+            </p>
           </div>
         </div>
       )}
@@ -248,7 +261,9 @@ export function ImageEnhancerPage() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">{t('freeTools.imageEnhancer.title')}</h1>
+          <h1 className="text-2xl font-bold">
+            {t('freeTools.imageEnhancer.title')}
+          </h1>
           <p className="text-muted-foreground text-sm">
             {t('freeTools.imageEnhancer.description')}
           </p>
@@ -259,8 +274,10 @@ export function ImageEnhancerPage() {
       {!originalImage && (
         <Card
           className={cn(
-            "border-2 border-dashed cursor-pointer transition-colors",
-            isDragging ? "border-primary bg-primary/5" : "border-muted-foreground/25 hover:border-primary/50"
+            'border-2 border-dashed cursor-pointer transition-colors',
+            isDragging
+              ? 'border-primary bg-primary/5'
+              : 'border-muted-foreground/25 hover:border-primary/50'
           )}
           onClick={() => fileInputRef.current?.click()}
           onDrop={handleDrop}
@@ -272,8 +289,12 @@ export function ImageEnhancerPage() {
             <div className="p-4 rounded-full bg-muted mb-4">
               <Upload className="h-8 w-8 text-muted-foreground" />
             </div>
-            <p className="text-lg font-medium">{t('freeTools.imageEnhancer.selectImage')}</p>
-            <p className="text-sm text-muted-foreground">{t('freeTools.imageEnhancer.orDragDrop')}</p>
+            <p className="text-lg font-medium">
+              {t('freeTools.imageEnhancer.selectImage')}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {t('freeTools.imageEnhancer.orDragDrop')}
+            </p>
           </CardContent>
         </Card>
       )}
@@ -303,7 +324,11 @@ export function ImageEnhancerPage() {
               {t('freeTools.imageEnhancer.selectImage')}
             </Button>
 
-            <Select value={model} onValueChange={(v) => setModel(v as ModelType)} disabled={isProcessing || isLoadingModel}>
+            <Select
+              value={model}
+              onValueChange={(v) => setModel(v as ModelType)}
+              disabled={isProcessing || isLoadingModel}
+            >
               <SelectTrigger className="w-36">
                 <SelectValue />
               </SelectTrigger>
@@ -320,7 +345,11 @@ export function ImageEnhancerPage() {
               </SelectContent>
             </Select>
 
-            <Select value={scale} onValueChange={(v) => setScale(v as ScaleType)} disabled={isProcessing || isLoadingModel}>
+            <Select
+              value={scale}
+              onValueChange={(v) => setScale(v as ScaleType)}
+              disabled={isProcessing || isLoadingModel}
+            >
               <SelectTrigger className="w-20">
                 <SelectValue />
               </SelectTrigger>
@@ -350,7 +379,12 @@ export function ImageEnhancerPage() {
             </Button>
             {enhancedImage && (
               <>
-                <Select value={downloadFormat} onValueChange={(v) => setDownloadFormat(v as 'png' | 'jpeg' | 'webp')}>
+                <Select
+                  value={downloadFormat}
+                  onValueChange={(v) =>
+                    setDownloadFormat(v as 'png' | 'jpeg' | 'webp')
+                  }
+                >
                   <SelectTrigger className="w-28">
                     <SelectValue />
                   </SelectTrigger>
@@ -368,26 +402,13 @@ export function ImageEnhancerPage() {
             )}
           </div>
 
-          {/* Progress bar */}
-          {(isProcessing || isLoadingModel || progress > 0) && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground flex items-center gap-2">
-                  {(isProcessing || isLoadingModel) && (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  )}
-                  {statusText}
-                  {eta && isProcessing && (
-                    <span className="text-muted-foreground/70">
-                      ({t('freeTools.imageEnhancer.eta', { time: eta })})
-                    </span>
-                  )}
-                </span>
-                <span className="font-medium">{Math.round(progress)}%</span>
-              </div>
-              <Progress value={progress} className="h-2" />
-            </div>
-          )}
+          {/* Progress display */}
+          <ProcessingProgress
+            progress={progress}
+            showPhases={true}
+            showOverall={true}
+            showEta={true}
+          />
 
           {/* Side by side preview */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -395,7 +416,9 @@ export function ImageEnhancerPage() {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium">{t('freeTools.imageEnhancer.original')}</span>
+                  <span className="text-sm font-medium">
+                    {t('freeTools.imageEnhancer.original')}
+                  </span>
                   {originalSize && (
                     <span className="text-xs text-muted-foreground">
                       {originalSize.width} x {originalSize.height}
@@ -416,7 +439,9 @@ export function ImageEnhancerPage() {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium">{t('freeTools.imageEnhancer.enhanced')}</span>
+                  <span className="text-sm font-medium">
+                    {t('freeTools.imageEnhancer.enhanced')}
+                  </span>
                   {enhancedSize && (
                     <span className="text-xs text-muted-foreground">
                       {enhancedSize.width} x {enhancedSize.height}
@@ -436,7 +461,9 @@ export function ImageEnhancerPage() {
                       {isProcessing || isLoadingModel ? (
                         <>
                           <Loader2 className="h-8 w-8 animate-spin mb-2" />
-                          <span className="text-sm">{statusText}</span>
+                          <span className="text-sm">
+                            {t('freeTools.imageEnhancer.processing')}
+                          </span>
                         </>
                       ) : (
                         <span className="text-sm">—</span>
@@ -452,7 +479,10 @@ export function ImageEnhancerPage() {
 
       {/* Fullscreen Preview Dialog */}
       <Dialog open={showPreview} onOpenChange={setShowPreview}>
-        <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 border-0 bg-black flex items-center justify-center" hideCloseButton>
+        <DialogContent
+          className="w-screen h-screen max-w-none max-h-none p-0 border-0 bg-black flex items-center justify-center"
+          hideCloseButton
+        >
           <DialogTitle className="sr-only">Fullscreen Preview</DialogTitle>
           <Button
             variant="ghost"

@@ -435,6 +435,35 @@
       "modelBalanced": "均衡",
       "modelQuality": "高质量",
       "eta": "~{{time}} 剩余"
+    },
+    "backgroundRemover": {
+      "title": "背景移除",
+      "description": "使用 AI 即时移除图片背景",
+      "selectImage": "选择图片",
+      "orDragDrop": "或拖放文件",
+      "remove": "移除背景",
+      "download": "下载",
+      "processing": "处理中...",
+      "loadingModel": "加载 AI 模型...",
+      "downloadingModel": "下载 AI 模型中...",
+      "complete": "完成",
+      "original": "原始",
+      "result": "结果",
+      "modelFast": "快速",
+      "modelBalanced": "均衡",
+      "modelQuality": "高质量",
+      "outputForeground": "前景",
+      "outputBackground": "背景",
+      "outputMask": "遮罩"
+    },
+    "progress": {
+      "downloading": "下载模型中",
+      "processing": "处理中",
+      "processingFrames": "处理帧中",
+      "encoding": "编码中",
+      "finalizing": "完成中",
+      "overall": "总进度",
+      "remaining": "剩余"
     }
   }
 }

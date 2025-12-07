@@ -11,18 +11,18 @@ const getModel = async (model: ModelType, scale: ScaleType) => {
     slim: {
       '2x': () => import('@upscalerjs/esrgan-slim/2x'),
       '3x': () => import('@upscalerjs/esrgan-slim/3x'),
-      '4x': () => import('@upscalerjs/esrgan-slim/4x'),
+      '4x': () => import('@upscalerjs/esrgan-slim/4x')
     },
     medium: {
       '2x': () => import('@upscalerjs/esrgan-medium/2x'),
       '3x': () => import('@upscalerjs/esrgan-medium/3x'),
-      '4x': () => import('@upscalerjs/esrgan-medium/4x'),
+      '4x': () => import('@upscalerjs/esrgan-medium/4x')
     },
     thick: {
       '2x': () => import('@upscalerjs/esrgan-thick/2x'),
       '3x': () => import('@upscalerjs/esrgan-thick/3x'),
-      '4x': () => import('@upscalerjs/esrgan-thick/4x'),
-    },
+      '4x': () => import('@upscalerjs/esrgan-thick/4x')
+    }
   }
   return (await modelMap[model][scale]()).default
 }
@@ -33,7 +33,11 @@ self.onmessage = async (e: MessageEvent) => {
   try {
     switch (type) {
       case 'load': {
-        const { model, scale } = payload as { model: ModelType; scale: ScaleType }
+        const { model, scale, id } = payload as {
+          model: ModelType
+          scale: ScaleType
+          id?: number
+        }
 
         // Dispose previous upscaler if exists
         if (upscaler) {
@@ -43,15 +47,47 @@ self.onmessage = async (e: MessageEvent) => {
 
         currentScale = parseInt(scale.replace('x', ''))
 
-        self.postMessage({ type: 'status', payload: 'downloading' })
+        // Signal start of download phase
+        self.postMessage({
+          type: 'phase',
+          payload: { phase: 'download', id }
+        })
+
+        self.postMessage({
+          type: 'progress',
+          payload: {
+            phase: 'download',
+            progress: 0,
+            id
+          }
+        })
 
         const modelDef = await getModel(model, scale)
+
+        self.postMessage({
+          type: 'progress',
+          payload: {
+            phase: 'download',
+            progress: 50,
+            id
+          }
+        })
+
         upscaler = new Upscaler({ model: modelDef })
 
         // Warmup to force model download
         await upscaler.warmup([{ patchSize: 64, padding: 2 }])
 
-        self.postMessage({ type: 'loaded' })
+        self.postMessage({
+          type: 'progress',
+          payload: {
+            phase: 'download',
+            progress: 100,
+            id
+          }
+        })
+
+        self.postMessage({ type: 'loaded', payload: { id } })
         break
       }
 
@@ -62,13 +98,32 @@ self.onmessage = async (e: MessageEvent) => {
 
         const { imageData, id } = payload as { imageData: ImageData; id: number }
 
+        // Signal start of process phase
+        self.postMessage({
+          type: 'phase',
+          payload: { phase: 'process', id }
+        })
+
         // Upscale using ImageData directly, output as tensor to avoid base64 issues in worker
         const result = await upscaler.upscale(imageData, {
           output: 'tensor',
           patchSize: 64,
           padding: 2,
           progress: (percent: number) => {
-            self.postMessage({ type: 'progress', payload: { percent, id } })
+            // Emit standardized progress (percent is 0-1 from upscaler)
+            self.postMessage({
+              type: 'progress',
+              payload: {
+                phase: 'process',
+                progress: percent * 100,
+                detail: {
+                  current: Math.round(percent * 100),
+                  total: 100,
+                  unit: 'percent' as const
+                },
+                id
+              }
+            })
           }
         })
 
@@ -85,10 +140,10 @@ self.onmessage = async (e: MessageEvent) => {
         for (let i = 0; i < pixelCount; i++) {
           const srcIdx = i * channels
           const dstIdx = i * 4
-          uint8Data[dstIdx] = Math.round(data[srcIdx])       // R
+          uint8Data[dstIdx] = Math.round(data[srcIdx]) // R
           uint8Data[dstIdx + 1] = Math.round(data[srcIdx + 1]) // G
           uint8Data[dstIdx + 2] = Math.round(data[srcIdx + 2]) // B
-          uint8Data[dstIdx + 3] = 255                          // A (fully opaque)
+          uint8Data[dstIdx + 3] = 255 // A (fully opaque)
         }
 
         const resultImageData = new ImageData(uint8Data, width, height)

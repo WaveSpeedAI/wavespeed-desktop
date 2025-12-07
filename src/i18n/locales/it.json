@@ -435,6 +435,35 @@
       "modelBalanced": "Bilanciato",
       "modelQuality": "Qualità",
       "eta": "~{{time}} rimanente"
+    },
+    "backgroundRemover": {
+      "title": "Rimozione Sfondo",
+      "description": "Rimuovi istantaneamente gli sfondi delle immagini con l'AI",
+      "selectImage": "Seleziona Immagine",
+      "orDragDrop": "o trascina e rilascia",
+      "remove": "Rimuovi Sfondo",
+      "download": "Scarica",
+      "processing": "Elaborazione...",
+      "loadingModel": "Caricamento modello AI...",
+      "downloadingModel": "Download modello AI...",
+      "complete": "Completato",
+      "original": "Originale",
+      "result": "Risultato",
+      "modelFast": "Veloce",
+      "modelBalanced": "Bilanciato",
+      "modelQuality": "Qualità",
+      "outputForeground": "Primo piano",
+      "outputBackground": "Sfondo",
+      "outputMask": "Maschera"
+    },
+    "progress": {
+      "downloading": "Scaricamento modello",
+      "processing": "Elaborazione",
+      "processingFrames": "Elaborazione frame",
+      "encoding": "Codifica",
+      "finalizing": "Finalizzazione",
+      "overall": "Complessivo",
+      "remaining": "rimanente"
     }
   }
 }

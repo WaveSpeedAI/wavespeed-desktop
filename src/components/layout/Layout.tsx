@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label'
 import { KeyRound, Eye, EyeOff, Loader2, Zap, ExternalLink } from 'lucide-react'
 import { VideoEnhancerPage } from '@/pages/VideoEnhancerPage'
 import { ImageEnhancerPage } from '@/pages/ImageEnhancerPage'
+import { BackgroundRemoverPage } from '@/pages/BackgroundRemoverPage'
 
 export function Layout() {
   const { t } = useTranslation()
@@ -35,7 +36,7 @@ export function Layout() {
 
   // Track visits to persistent pages and last visited free-tools page
   useEffect(() => {
-    const persistentPaths = ['/free-tools/video', '/free-tools/image']
+    const persistentPaths = ['/free-tools/video', '/free-tools/image', '/free-tools/background-remover']
     if (persistentPaths.includes(location.pathname)) {
       // Track for lazy mounting
       if (!visitedPages.has(location.pathname)) {
@@ -282,18 +283,23 @@ export function Layout() {
           {requiresLogin ? loginContent : (
             <>
               {/* Regular routes via Outlet */}
-              <div className={location.pathname === '/free-tools/video' || location.pathname === '/free-tools/image' ? 'hidden' : 'h-full overflow-auto'}>
+              <div className={location.pathname === '/free-tools/video' || location.pathname === '/free-tools/image' || location.pathname === '/free-tools/background-remover' ? 'hidden' : 'h-full overflow-auto'}>
                 <Outlet />
               </div>
               {/* Persistent Free Tools pages - mounted once visited, then persist via CSS show/hide */}
               {visitedPages.has('/free-tools/video') && (
-                <div className={location.pathname === '/free-tools/video' ? '' : 'hidden'}>
+                <div className={location.pathname === '/free-tools/video' ? 'h-full overflow-auto' : 'hidden'}>
                   <VideoEnhancerPage />
                 </div>
               )}
               {visitedPages.has('/free-tools/image') && (
-                <div className={location.pathname === '/free-tools/image' ? '' : 'hidden'}>
+                <div className={location.pathname === '/free-tools/image' ? 'h-full overflow-auto' : 'hidden'}>
                   <ImageEnhancerPage />
+                </div>
+              )}
+              {visitedPages.has('/free-tools/background-remover') && (
+                <div className={location.pathname === '/free-tools/background-remover' ? 'h-full overflow-auto' : 'hidden'}>
+                  <BackgroundRemoverPage />
                 </div>
               )}
             </>

@@ -2,17 +2,32 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useUpscalerWorker } from '@/hooks/useUpscalerWorker'
+import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
+import { ProcessingProgress } from '@/components/shared/ProcessingProgress'
 import { Muxer, ArrayBufferTarget } from 'webm-muxer'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Progress } from '@/components/ui/progress'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { ArrowLeft, Upload, Download, Loader2, Play, Square, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type ModelType = 'slim' | 'medium' | 'thick'
 type ScaleType = '2x' | '3x' | '4x'
+
+// Phase configuration for video enhancer
+const PHASES = [
+  { id: 'download', labelKey: 'freeTools.progress.downloading', weight: 0.1 },
+  { id: 'process', labelKey: 'freeTools.progress.processingFrames', weight: 0.8 },
+  { id: 'encode', labelKey: 'freeTools.progress.encoding', weight: 0.08 },
+  { id: 'finalize', labelKey: 'freeTools.progress.finalizing', weight: 0.02 }
+]
 
 export function VideoEnhancerPage() {
   const { t } = useTranslation()
@@ -23,7 +38,6 @@ export function VideoEnhancerPage() {
   const outputVideoRef = useRef<HTMLVideoElement>(null)
   const abortRef = useRef(false)
   const dragCounterRef = useRef(0)
-  const startTimeRef = useRef<number>(0)
 
   const [videoFile, setVideoFile] = useState<File | null>(null)
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
@@ -33,32 +47,47 @@ export function VideoEnhancerPage() {
   const [model, setModel] = useState<ModelType>('slim')
   const [scale, setScale] = useState<ScaleType>('2x')
   const [downloadFormat, setDownloadFormat] = useState<'webm' | 'mp4'>('mp4')
-  const [supportedFormats, setSupportedFormats] = useState<{ webm: boolean; mp4: boolean }>({ webm: true, mp4: false })
+  const [supportedFormats, setSupportedFormats] = useState<{
+    webm: boolean
+    mp4: boolean
+  }>({ webm: true, mp4: false })
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null)
-  const [progress, setProgress] = useState(0)
-  const [statusText, setStatusText] = useState('')
   const [showPreview, setShowPreview] = useState(false)
-  const [eta, setEta] = useState<string | null>(null)
+
+  // Multi-phase progress tracking
+  const {
+    progress,
+    startPhase,
+    updatePhase,
+    completePhase,
+    reset: resetProgress,
+    complete: completeAllPhases
+  } = useMultiPhaseProgress({ phases: PHASES })
 
   const { loadModel, upscale, dispose } = useUpscalerWorker({
-    onStatus: (status) => {
-      if (status === 'downloading') {
-        setStatusText(t('freeTools.videoEnhancer.downloadingModel'))
+    onPhase: (phase) => {
+      if (phase === 'download') {
+        startPhase('download')
+      }
+    },
+    onProgress: (phase, progressValue, detail) => {
+      if (phase === 'download') {
+        updatePhase('download', progressValue, detail)
       }
     },
     onError: (error) => {
       console.error('Worker error:', error)
-      setStatusText(`Error: ${error}`)
       setIsProcessing(false)
       setIsLoadingModel(false)
-      setEta(null)
     }
   })
 
   // Check supported video formats
   useEffect(() => {
     const webmSupported = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
-    const mp4Supported = MediaRecorder.isTypeSupported('video/mp4;codecs=avc1') || MediaRecorder.isTypeSupported('video/mp4')
+    const mp4Supported =
+      MediaRecorder.isTypeSupported('video/mp4;codecs=avc1') ||
+      MediaRecorder.isTypeSupported('video/mp4')
     setSupportedFormats({ webm: webmSupported, mp4: mp4Supported })
     // Fallback to webm if mp4 is not supported (default is mp4)
     if (!mp4Supported) {
@@ -73,35 +102,40 @@ export function VideoEnhancerPage() {
       if (downloadUrl) URL.revokeObjectURL(downloadUrl)
       abortRef.current = true
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const handleFileSelect = useCallback((file: File) => {
-    if (!file.type.startsWith('video/')) return
+  const handleFileSelect = useCallback(
+    (file: File) => {
+      if (!file.type.startsWith('video/')) return
 
-    // Cleanup previous
-    if (videoUrl) URL.revokeObjectURL(videoUrl)
-    if (downloadUrl) URL.revokeObjectURL(downloadUrl)
-    abortRef.current = true
+      // Cleanup previous
+      if (videoUrl) URL.revokeObjectURL(videoUrl)
+      if (downloadUrl) URL.revokeObjectURL(downloadUrl)
+      abortRef.current = true
 
-    const url = URL.createObjectURL(file)
-    setVideoFile(file)
-    setVideoUrl(url)
-    setDownloadUrl(null)
-    setProgress(0)
-    setStatusText('')
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [videoUrl, downloadUrl])
+      const url = URL.createObjectURL(file)
+      setVideoFile(file)
+      setVideoUrl(url)
+      setDownloadUrl(null)
+      resetProgress()
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    [videoUrl, downloadUrl, resetProgress]
+  )
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    dragCounterRef.current = 0
-    setIsDragging(false)
-    if (isProcessing || isLoadingModel) return
-    const file = e.dataTransfer.files[0]
-    if (file) handleFileSelect(file)
-  }, [handleFileSelect, isProcessing, isLoadingModel])
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      dragCounterRef.current = 0
+      setIsDragging(false)
+      if (isProcessing || isLoadingModel) return
+      const file = e.dataTransfer.files[0]
+      if (file) handleFileSelect(file)
+    },
+    [handleFileSelect, isProcessing, isLoadingModel]
+  )
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -131,18 +165,18 @@ export function VideoEnhancerPage() {
 
     abortRef.current = false
     setIsLoadingModel(true)
-    setProgress(0)
-    setStatusText(t('freeTools.videoEnhancer.loadingModel'))
+    resetProgress()
     setDownloadUrl(null)
-    setEta(null)
+    startPhase('download')
 
     try {
       // Load the selected model in worker
       await loadModel(model, scale)
+      completePhase('download')
 
       setIsLoadingModel(false)
       setIsProcessing(true)
-      startTimeRef.current = Date.now()
+      startPhase('process')
 
       const video = videoRef.current
       const outputCanvas = canvasRef.current
@@ -175,9 +209,6 @@ export function VideoEnhancerPage() {
       const frameInterval = 1 / targetFps
       const totalFrames = Math.ceil(duration * targetFps)
 
-      // Frame-by-frame processing
-      setStatusText(t('freeTools.videoEnhancer.processing'))
-
       video.pause()
       video.muted = true
 
@@ -189,9 +220,9 @@ export function VideoEnhancerPage() {
           codec: 'V_VP9',
           width: outputCanvas.width,
           height: outputCanvas.height,
-          frameRate: targetFps,
+          frameRate: targetFps
         },
-        firstTimestampBehavior: 'offset',
+        firstTimestampBehavior: 'offset'
       })
 
       // Setup encoder
@@ -201,7 +232,7 @@ export function VideoEnhancerPage() {
           encodedFrames++
           muxer.addVideoChunk(chunk, meta)
         },
-        error: (e) => console.error('Encoder error:', e),
+        error: (e) => console.error('Encoder error:', e)
       })
 
       encoder.configure({
@@ -209,7 +240,7 @@ export function VideoEnhancerPage() {
         width: outputCanvas.width,
         height: outputCanvas.height,
         bitrate: 8_000_000,
-        framerate: targetFps,
+        framerate: targetFps
       })
 
       console.log('Processing', totalFrames, 'frames at', targetFps, 'fps')
@@ -224,7 +255,7 @@ export function VideoEnhancerPage() {
 
         // Seek to frame position
         video.currentTime = currentTime
-        await new Promise<void>(resolve => {
+        await new Promise<void>((resolve) => {
           video.onseeked = () => resolve()
         })
 
@@ -232,7 +263,12 @@ export function VideoEnhancerPage() {
         sourceCtx.drawImage(video, 0, 0)
 
         // Get ImageData for worker
-        const imageData = sourceCtx.getImageData(0, 0, video.videoWidth, video.videoHeight)
+        const imageData = sourceCtx.getImageData(
+          0,
+          0,
+          video.videoWidth,
+          video.videoHeight
+        )
 
         // Upscale with worker
         const upscaledDataUrl = await upscale(imageData)
@@ -248,30 +284,18 @@ export function VideoEnhancerPage() {
         })
 
         // Create video frame with correct timestamp
-        const timestamp = Math.round(currentTime * 1_000_000)  // microseconds
+        const timestamp = Math.round(currentTime * 1_000_000) // microseconds
         const frame = new VideoFrame(outputCanvas, { timestamp })
         encoder.encode(frame, { keyFrame: frameIndex % 30 === 0 })
         frame.close()
 
-        // Update progress and ETA
-        const prog = ((frameIndex + 1) / totalFrames) * 95
-        setProgress(prog)
-
-        // Calculate ETA
-        if (frameIndex > 0) {
-          const elapsed = Date.now() - startTimeRef.current
-          const msPerFrame = elapsed / (frameIndex + 1)
-          const remainingFrames = totalFrames - frameIndex - 1
-          const remainingMs = msPerFrame * remainingFrames
-          const remainingSec = Math.ceil(remainingMs / 1000)
-          if (remainingSec >= 60) {
-            const mins = Math.floor(remainingSec / 60)
-            const secs = remainingSec % 60
-            setEta(`${mins}m ${secs}s`)
-          } else {
-            setEta(`${remainingSec}s`)
-          }
-        }
+        // Update progress with frame detail
+        const frameProgress = ((frameIndex + 1) / totalFrames) * 100
+        updatePhase('process', frameProgress, {
+          current: frameIndex + 1,
+          total: totalFrames,
+          unit: 'frames'
+        })
 
         if (frameIndex % 30 === 0) {
           console.log(`Frame ${frameIndex + 1}/${totalFrames}`)
@@ -281,12 +305,16 @@ export function VideoEnhancerPage() {
       console.log('All frames processed:', encodedFrames)
 
       video.currentTime = 0
+      completePhase('process')
 
-      // Flush and finalize
-      setStatusText(t('freeTools.videoEnhancer.encoding'))
+      // Encoding phase
+      startPhase('encode')
       await encoder.flush()
       encoder.close()
+      completePhase('encode')
 
+      // Finalize phase
+      startPhase('finalize')
       muxer.finalize()
       const buffer = muxerTarget.buffer
 
@@ -295,16 +323,17 @@ export function VideoEnhancerPage() {
       }
 
       const finalBlob = new Blob([buffer], { type: 'video/webm' })
-      console.log('Final video size:', finalBlob.size, 'bytes, frames:', encodedFrames)
-
-      setProgress(98)
+      console.log(
+        'Final video size:',
+        finalBlob.size,
+        'bytes, frames:',
+        encodedFrames
+      )
 
       const url = URL.createObjectURL(finalBlob)
       console.log('Created blob URL:', url)
       setDownloadUrl(url)
-      setProgress(100)
-      setStatusText(t('freeTools.videoEnhancer.complete'))
-      setEta(null)
+      completeAllPhases()
       setIsProcessing(false)
 
       // Show output video
@@ -312,15 +341,12 @@ export function VideoEnhancerPage() {
         outputVideoRef.current.src = url
         outputVideoRef.current.load()
       }
-
     } catch (error) {
       if ((error as Error).message !== 'Aborted') {
         console.error('Failed to process video:', error)
-        setStatusText(`Error: ${(error as Error).message}`)
       }
       setIsLoadingModel(false)
       setIsProcessing(false)
-      setEta(null)
       // Reset video state on error
       if (videoRef.current) {
         videoRef.current.playbackRate = 1
@@ -335,9 +361,7 @@ export function VideoEnhancerPage() {
     abortRef.current = true
     setIsProcessing(false)
     setIsLoadingModel(false)
-    setProgress(0)
-    setStatusText(t('freeTools.videoEnhancer.cancelled'))
-    setEta(null)
+    resetProgress()
     if (videoRef.current) {
       videoRef.current.pause()
       videoRef.current.playbackRate = 1
@@ -348,7 +372,8 @@ export function VideoEnhancerPage() {
   const handleDownload = () => {
     if (!downloadUrl) return
 
-    const extension = downloadFormat === 'mp4' && supportedFormats.mp4 ? 'mp4' : 'webm'
+    const extension =
+      downloadFormat === 'mp4' && supportedFormats.mp4 ? 'mp4' : 'webm'
     const link = document.createElement('a')
     link.href = downloadUrl
     link.download = `enhanced-${videoFile?.name?.replace(/\.[^.]+$/, '') || 'video'}.${extension}`
@@ -370,7 +395,9 @@ export function VideoEnhancerPage() {
         <div className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center border-2 border-dashed border-primary rounded-lg m-4">
           <div className="text-center">
             <Upload className="h-12 w-12 text-primary mx-auto mb-2" />
-            <p className="text-lg font-medium">{t('freeTools.videoEnhancer.orDragDrop')}</p>
+            <p className="text-lg font-medium">
+              {t('freeTools.videoEnhancer.orDragDrop')}
+            </p>
           </div>
         </div>
       )}
@@ -384,7 +411,9 @@ export function VideoEnhancerPage() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">{t('freeTools.videoEnhancer.title')}</h1>
+          <h1 className="text-2xl font-bold">
+            {t('freeTools.videoEnhancer.title')}
+          </h1>
           <p className="text-muted-foreground text-sm">
             {t('freeTools.videoEnhancer.description')}
           </p>
@@ -395,8 +424,10 @@ export function VideoEnhancerPage() {
       {!videoUrl && (
         <Card
           className={cn(
-            "border-2 border-dashed cursor-pointer transition-colors",
-            isDragging ? "border-primary bg-primary/5" : "border-muted-foreground/25 hover:border-primary/50"
+            'border-2 border-dashed cursor-pointer transition-colors',
+            isDragging
+              ? 'border-primary bg-primary/5'
+              : 'border-muted-foreground/25 hover:border-primary/50'
           )}
           onClick={() => fileInputRef.current?.click()}
           onDrop={handleDrop}
@@ -408,8 +439,12 @@ export function VideoEnhancerPage() {
             <div className="p-4 rounded-full bg-muted mb-4">
               <Upload className="h-8 w-8 text-muted-foreground" />
             </div>
-            <p className="text-lg font-medium">{t('freeTools.videoEnhancer.selectVideo')}</p>
-            <p className="text-sm text-muted-foreground">{t('freeTools.videoEnhancer.orDragDrop')}</p>
+            <p className="text-lg font-medium">
+              {t('freeTools.videoEnhancer.selectVideo')}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {t('freeTools.videoEnhancer.orDragDrop')}
+            </p>
           </CardContent>
         </Card>
       )}
@@ -439,7 +474,11 @@ export function VideoEnhancerPage() {
               {t('freeTools.videoEnhancer.selectVideo')}
             </Button>
 
-            <Select value={model} onValueChange={(v) => setModel(v as ModelType)} disabled={isProcessing || isLoadingModel}>
+            <Select
+              value={model}
+              onValueChange={(v) => setModel(v as ModelType)}
+              disabled={isProcessing || isLoadingModel}
+            >
               <SelectTrigger className="w-36">
                 <SelectValue />
               </SelectTrigger>
@@ -456,7 +495,11 @@ export function VideoEnhancerPage() {
               </SelectContent>
             </Select>
 
-            <Select value={scale} onValueChange={(v) => setScale(v as ScaleType)} disabled={isProcessing || isLoadingModel}>
+            <Select
+              value={scale}
+              onValueChange={(v) => setScale(v as ScaleType)}
+              disabled={isProcessing || isLoadingModel}
+            >
               <SelectTrigger className="w-20">
                 <SelectValue />
               </SelectTrigger>
@@ -468,18 +511,12 @@ export function VideoEnhancerPage() {
             </Select>
 
             {!isProcessing && !isLoadingModel ? (
-              <Button
-                onClick={startProcessing}
-                className="gradient-bg"
-              >
+              <Button onClick={startProcessing} className="gradient-bg">
                 <Play className="h-4 w-4 mr-2" />
                 {t('freeTools.videoEnhancer.start')}
               </Button>
             ) : (
-              <Button
-                variant="destructive"
-                onClick={stopProcessing}
-              >
+              <Button variant="destructive" onClick={stopProcessing}>
                 <Square className="h-4 w-4 mr-2" />
                 {t('freeTools.videoEnhancer.stop')}
               </Button>
@@ -487,12 +524,17 @@ export function VideoEnhancerPage() {
 
             {downloadUrl && (
               <>
-                <Select value={downloadFormat} onValueChange={(v) => setDownloadFormat(v as 'webm' | 'mp4')}>
+                <Select
+                  value={downloadFormat}
+                  onValueChange={(v) => setDownloadFormat(v as 'webm' | 'mp4')}
+                >
                   <SelectTrigger className="w-28">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {supportedFormats.mp4 && <SelectItem value="mp4">MP4</SelectItem>}
+                    {supportedFormats.mp4 && (
+                      <SelectItem value="mp4">MP4</SelectItem>
+                    )}
                     <SelectItem value="webm">WebM</SelectItem>
                   </SelectContent>
                 </Select>
@@ -504,26 +546,13 @@ export function VideoEnhancerPage() {
             )}
           </div>
 
-          {/* Progress bar */}
-          {(isProcessing || isLoadingModel || progress > 0) && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground flex items-center gap-2">
-                  {(isProcessing || isLoadingModel) && (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  )}
-                  {statusText}
-                  {eta && isProcessing && (
-                    <span className="text-muted-foreground/70">
-                      ({t('freeTools.videoEnhancer.eta', { time: eta })})
-                    </span>
-                  )}
-                </span>
-                <span className="font-medium">{Math.round(progress)}%</span>
-              </div>
-              <Progress value={progress} className="h-2" />
-            </div>
-          )}
+          {/* Progress display */}
+          <ProcessingProgress
+            progress={progress}
+            showPhases={true}
+            showOverall={true}
+            showEta={true}
+          />
 
           {/* Side by side preview */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -531,7 +560,9 @@ export function VideoEnhancerPage() {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium">{t('freeTools.videoEnhancer.original')}</span>
+                  <span className="text-sm font-medium">
+                    {t('freeTools.videoEnhancer.original')}
+                  </span>
                 </div>
                 <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
                   <video
@@ -550,12 +581,14 @@ export function VideoEnhancerPage() {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium">{t('freeTools.videoEnhancer.enhanced')}</span>
+                  <span className="text-sm font-medium">
+                    {t('freeTools.videoEnhancer.enhanced')}
+                  </span>
                 </div>
                 <div
                   className={cn(
-                    "relative aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center",
-                    downloadUrl && "cursor-pointer"
+                    'relative aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center',
+                    downloadUrl && 'cursor-pointer'
                   )}
                   onClick={() => downloadUrl && setShowPreview(true)}
                 >
@@ -569,25 +602,29 @@ export function VideoEnhancerPage() {
                       autoPlay
                       loop
                     />
-                  ) : !isProcessing && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground">
-                      {isLoadingModel ? (
-                        <>
-                          <Loader2 className="h-8 w-8 animate-spin mb-2" />
-                          <span className="text-sm">{statusText}</span>
-                        </>
-                      ) : (
-                        <span className="text-sm">—</span>
-                      )}
-                    </div>
+                  ) : (
+                    !isProcessing && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground">
+                        {isLoadingModel ? (
+                          <>
+                            <Loader2 className="h-8 w-8 animate-spin mb-2" />
+                            <span className="text-sm">
+                              {t('freeTools.videoEnhancer.loadingModel')}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-sm">—</span>
+                        )}
+                      </div>
+                    )
                   )}
                   {/* Canvas for processing - visible during processing, hidden otherwise */}
                   <canvas
                     ref={canvasRef}
                     className={cn(
                       isProcessing
-                        ? "w-full h-full object-contain"
-                        : "absolute -left-[9999px] -top-[9999px]"
+                        ? 'w-full h-full object-contain'
+                        : 'absolute -left-[9999px] -top-[9999px]'
                     )}
                   />
                 </div>
@@ -599,7 +636,10 @@ export function VideoEnhancerPage() {
 
       {/* Fullscreen Preview Dialog */}
       <Dialog open={showPreview} onOpenChange={setShowPreview}>
-        <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 border-0 bg-black flex items-center justify-center" hideCloseButton>
+        <DialogContent
+          className="w-screen h-screen max-w-none max-h-none p-0 border-0 bg-black flex items-center justify-center"
+          hideCloseButton
+        >
           <DialogTitle className="sr-only">Fullscreen Preview</DialogTitle>
           <Button
             variant="ghost"

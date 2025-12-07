@@ -435,6 +435,35 @@
       "modelBalanced": "สมดุล",
       "modelQuality": "คุณภาพ",
       "eta": "~{{time}} เหลืออยู่"
+    },
+    "backgroundRemover": {
+      "title": "ตัวลบพื้นหลัง",
+      "description": "ลบพื้นหลังรูปภาพทันทีด้วย AI",
+      "selectImage": "เลือกรูปภาพ",
+      "orDragDrop": "หรือลากและวาง",
+      "remove": "ลบพื้นหลัง",
+      "download": "ดาวน์โหลด",
+      "processing": "กำลังประมวลผล...",
+      "loadingModel": "กำลังโหลดโมเดล AI...",
+      "downloadingModel": "กำลังดาวน์โหลดโมเดล AI...",
+      "complete": "เสร็จสมบูรณ์",
+      "original": "ต้นฉบับ",
+      "result": "ผลลัพธ์",
+      "modelFast": "เร็ว",
+      "modelBalanced": "สมดุล",
+      "modelQuality": "คุณภาพ",
+      "outputForeground": "พื้นหน้า",
+      "outputBackground": "พื้นหลัง",
+      "outputMask": "มาสก์"
+    },
+    "progress": {
+      "downloading": "กำลังดาวน์โหลดโมเดล",
+      "processing": "กำลังประมวลผล",
+      "processingFrames": "กำลังประมวลผลเฟรม",
+      "encoding": "กำลังเข้ารหัส",
+      "finalizing": "กำลังจบ",
+      "overall": "รวม",
+      "remaining": "เหลืออยู่"
     }
   }
 }

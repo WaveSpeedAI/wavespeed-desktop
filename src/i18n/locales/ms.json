@@ -435,6 +435,35 @@
       "modelBalanced": "Seimbang",
       "modelQuality": "Kualiti",
       "eta": "~{{time}} lagi"
+    },
+    "backgroundRemover": {
+      "title": "Penyingkir Latar Belakang",
+      "description": "Buang latar belakang imej serta-merta menggunakan AI",
+      "selectImage": "Pilih Imej",
+      "orDragDrop": "atau seret dan lepas",
+      "remove": "Buang Latar Belakang",
+      "download": "Muat turun",
+      "processing": "Memproses...",
+      "loadingModel": "Memuatkan model AI...",
+      "downloadingModel": "Memuat turun model AI...",
+      "complete": "Selesai",
+      "original": "Asal",
+      "result": "Hasil",
+      "modelFast": "Pantas",
+      "modelBalanced": "Seimbang",
+      "modelQuality": "Kualiti",
+      "outputForeground": "Latar Depan",
+      "outputBackground": "Latar Belakang",
+      "outputMask": "Topeng"
+    },
+    "progress": {
+      "downloading": "Memuat turun model",
+      "processing": "Memproses",
+      "processingFrames": "Memproses bingkai",
+      "encoding": "Mengekod",
+      "finalizing": "Menyelesaikan",
+      "overall": "Keseluruhan",
+      "remaining": "lagi"
     }
   }
 }

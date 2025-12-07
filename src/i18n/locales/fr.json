@@ -435,6 +435,35 @@
       "modelBalanced": "Équilibré",
       "modelQuality": "Qualité",
       "eta": "~{{time}} restant"
+    },
+    "backgroundRemover": {
+      "title": "Suppresseur de Fond",
+      "description": "Supprimez instantanément les fonds d'images avec l'IA",
+      "selectImage": "Sélectionner une Image",
+      "orDragDrop": "ou glissez-déposez",
+      "remove": "Supprimer le Fond",
+      "download": "Télécharger",
+      "processing": "Traitement...",
+      "loadingModel": "Chargement du modèle IA...",
+      "downloadingModel": "Téléchargement du modèle IA...",
+      "complete": "Terminé",
+      "original": "Original",
+      "result": "Résultat",
+      "modelFast": "Rapide",
+      "modelBalanced": "Équilibré",
+      "modelQuality": "Qualité",
+      "outputForeground": "Premier plan",
+      "outputBackground": "Arrière-plan",
+      "outputMask": "Masque"
+    },
+    "progress": {
+      "downloading": "Téléchargement du modèle",
+      "processing": "Traitement",
+      "processingFrames": "Traitement des images",
+      "encoding": "Encodage",
+      "finalizing": "Finalisation",
+      "overall": "Général",
+      "remaining": "restant"
     }
   }
 }

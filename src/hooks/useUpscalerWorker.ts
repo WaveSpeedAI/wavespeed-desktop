@@ -1,4 +1,5 @@
 import { useRef, useCallback, useEffect } from 'react'
+import type { ProgressDetail } from '@/types/progress'
 
 type ModelType = 'slim' | 'medium' | 'thick'
 type ScaleType = '2x' | '3x' | '4x'
@@ -11,18 +12,34 @@ interface UpscaleResult {
 }
 
 interface WorkerMessage {
-  type: 'loaded' | 'status' | 'progress' | 'result' | 'error' | 'disposed'
+  type: 'loaded' | 'phase' | 'progress' | 'result' | 'error' | 'disposed'
   payload?: unknown
 }
 
+interface PhasePayload {
+  phase: string
+  id?: number
+}
+
+interface ProgressPayload {
+  phase: string
+  progress: number
+  detail?: ProgressDetail
+  id?: number
+}
+
 interface UseUpscalerWorkerOptions {
-  onProgress?: (percent: number) => void
-  onStatus?: (status: string) => void
+  onPhase?: (phase: string) => void
+  onProgress?: (phase: string, progress: number, detail?: ProgressDetail) => void
   onError?: (error: string) => void
 }
 
 // Helper function to convert ImageData to data URL
-function imageDataToDataURL(imageData: ImageData, width: number, height: number): string {
+function imageDataToDataURL(
+  imageData: ImageData,
+  width: number,
+  height: number
+): string {
   const canvas = document.createElement('canvas')
   canvas.width = width
   canvas.height = height
@@ -51,12 +68,14 @@ export function useUpscalerWorker(options: UseUpscalerWorkerOptions = {}) {
       const { type, payload } = e.data
 
       switch (type) {
-        case 'status':
-          optionsRef.current.onStatus?.(payload as string)
+        case 'phase': {
+          const { phase } = payload as PhasePayload
+          optionsRef.current.onPhase?.(phase)
           break
+        }
         case 'progress': {
-          const { percent } = payload as { percent: number; id: number }
-          optionsRef.current.onProgress?.(percent)
+          const { phase, progress, detail } = payload as ProgressPayload
+          optionsRef.current.onProgress?.(phase, progress, detail)
           break
         }
         case 'result': {
@@ -83,27 +102,32 @@ export function useUpscalerWorker(options: UseUpscalerWorkerOptions = {}) {
     }
   }, [])
 
-  const loadModel = useCallback((model: ModelType, scale: ScaleType): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      if (!workerRef.current) {
-        reject(new Error('Worker not initialized'))
-        return
-      }
-
-      const handleMessage = (e: MessageEvent<WorkerMessage>) => {
-        if (e.data.type === 'loaded') {
-          workerRef.current?.removeEventListener('message', handleMessage)
-          resolve()
-        } else if (e.data.type === 'error') {
-          workerRef.current?.removeEventListener('message', handleMessage)
-          reject(new Error(e.data.payload as string))
+  const loadModel = useCallback(
+    (model: ModelType, scale: ScaleType): Promise<void> => {
+      return new Promise((resolve, reject) => {
+        if (!workerRef.current) {
+          reject(new Error('Worker not initialized'))
+          return
         }
-      }
 
-      workerRef.current.addEventListener('message', handleMessage)
-      workerRef.current.postMessage({ type: 'load', payload: { model, scale } })
-    })
-  }, [])
+        const id = idCounterRef.current++
+
+        const handleMessage = (e: MessageEvent<WorkerMessage>) => {
+          if (e.data.type === 'loaded') {
+            workerRef.current?.removeEventListener('message', handleMessage)
+            resolve()
+          } else if (e.data.type === 'error') {
+            workerRef.current?.removeEventListener('message', handleMessage)
+            reject(new Error(e.data.payload as string))
+          }
+        }
+
+        workerRef.current.addEventListener('message', handleMessage)
+        workerRef.current.postMessage({ type: 'load', payload: { model, scale, id } })
+      })
+    },
+    []
+  )
 
   const upscale = useCallback((imageData: ImageData): Promise<string> => {
     return new Promise((resolve, reject) => {

@@ -435,6 +435,35 @@
       "modelBalanced": "Сбалансированный",
       "modelQuality": "Качество",
       "eta": "~{{time}} осталось"
+    },
+    "backgroundRemover": {
+      "title": "Удаление фона",
+      "description": "Мгновенно удаляйте фон с изображений с помощью ИИ",
+      "selectImage": "Выбрать Изображение",
+      "orDragDrop": "или перетащите файл",
+      "remove": "Удалить фон",
+      "download": "Скачать",
+      "processing": "Обработка...",
+      "loadingModel": "Загрузка модели ИИ...",
+      "downloadingModel": "Загрузка модели ИИ...",
+      "complete": "Завершено",
+      "original": "Оригинал",
+      "result": "Результат",
+      "modelFast": "Быстрый",
+      "modelBalanced": "Сбалансированный",
+      "modelQuality": "Качество",
+      "outputForeground": "Передний план",
+      "outputBackground": "Фон",
+      "outputMask": "Маска"
+    },
+    "progress": {
+      "downloading": "Загрузка модели",
+      "processing": "Обработка",
+      "processingFrames": "Обработка кадров",
+      "encoding": "Кодирование",
+      "finalizing": "Завершение",
+      "overall": "Общий",
+      "remaining": "осталось"
     }
   }
 }

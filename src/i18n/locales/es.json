@@ -435,6 +435,35 @@
       "modelBalanced": "Equilibrado",
       "modelQuality": "Calidad",
       "eta": "~{{time}} restante"
+    },
+    "backgroundRemover": {
+      "title": "Eliminador de Fondo",
+      "description": "Elimina fondos de imágenes instantáneamente usando IA",
+      "selectImage": "Seleccionar Imagen",
+      "orDragDrop": "o arrastra y suelta",
+      "remove": "Eliminar Fondo",
+      "download": "Descargar",
+      "processing": "Procesando...",
+      "loadingModel": "Cargando modelo de IA...",
+      "downloadingModel": "Descargando modelo de IA...",
+      "complete": "Completado",
+      "original": "Original",
+      "result": "Resultado",
+      "modelFast": "Rápido",
+      "modelBalanced": "Equilibrado",
+      "modelQuality": "Calidad",
+      "outputForeground": "Primer plano",
+      "outputBackground": "Fondo",
+      "outputMask": "Máscara"
+    },
+    "progress": {
+      "downloading": "Descargando modelo",
+      "processing": "Procesando",
+      "processingFrames": "Procesando frames",
+      "encoding": "Codificando",
+      "finalizing": "Finalizando",
+      "overall": "General",
+      "remaining": "restante"
     }
   }
 }

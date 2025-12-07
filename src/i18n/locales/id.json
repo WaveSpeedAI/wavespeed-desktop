@@ -435,6 +435,35 @@
       "modelBalanced": "Seimbang",
       "modelQuality": "Kualitas",
       "eta": "~{{time}} tersisa"
+    },
+    "backgroundRemover": {
+      "title": "Penghapus Latar Belakang",
+      "description": "Hapus latar belakang gambar secara instan menggunakan AI",
+      "selectImage": "Pilih Gambar",
+      "orDragDrop": "atau seret dan lepas",
+      "remove": "Hapus Latar Belakang",
+      "download": "Unduh",
+      "processing": "Memproses...",
+      "loadingModel": "Memuat model AI...",
+      "downloadingModel": "Mengunduh model AI...",
+      "complete": "Selesai",
+      "original": "Asli",
+      "result": "Hasil",
+      "modelFast": "Cepat",
+      "modelBalanced": "Seimbang",
+      "modelQuality": "Kualitas",
+      "outputForeground": "Latar Depan",
+      "outputBackground": "Latar Belakang",
+      "outputMask": "Masker"
+    },
+    "progress": {
+      "downloading": "Mengunduh model",
+      "processing": "Memproses",
+      "processingFrames": "Memproses frame",
+      "encoding": "Mengkodekan",
+      "finalizing": "Menyelesaikan",
+      "overall": "Keseluruhan",
+      "remaining": "tersisa"
     }
   }
 }

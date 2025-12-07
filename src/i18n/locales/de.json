@@ -435,6 +435,35 @@
       "modelBalanced": "Ausgewogen",
       "modelQuality": "Qualität",
       "eta": "~{{time}} verbleibend"
+    },
+    "backgroundRemover": {
+      "title": "Hintergrund-Entferner",
+      "description": "Bildhintergründe sofort mit KI entfernen",
+      "selectImage": "Bild auswählen",
+      "orDragDrop": "oder per Drag & Drop",
+      "remove": "Hintergrund entfernen",
+      "download": "Herunterladen",
+      "processing": "Verarbeitung...",
+      "loadingModel": "KI-Modell wird geladen...",
+      "downloadingModel": "KI-Modell wird heruntergeladen...",
+      "complete": "Abgeschlossen",
+      "original": "Original",
+      "result": "Ergebnis",
+      "modelFast": "Schnell",
+      "modelBalanced": "Ausgewogen",
+      "modelQuality": "Qualität",
+      "outputForeground": "Vordergrund",
+      "outputBackground": "Hintergrund",
+      "outputMask": "Maske"
+    },
+    "progress": {
+      "downloading": "Modell herunterladen",
+      "processing": "Verarbeitung",
+      "processingFrames": "Frames verarbeiten",
+      "encoding": "Kodierung",
+      "finalizing": "Fertigstellung",
+      "overall": "Gesamt",
+      "remaining": "verbleibend"
     }
   }
 }

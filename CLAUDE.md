@@ -29,14 +29,14 @@ wavespeed-desktop/
 │   │   ├── playground/   # DynamicForm, FileUpload, OutputDisplay, MaskEditor, etc.
 │   │   ├── shared/       # ApiKeyRequired and other shared components
 │   │   └── ui/           # shadcn/ui components (Button, Card, etc.)
-│   ├── hooks/            # Custom React hooks (useToast, useUpscalerWorker)
+│   ├── hooks/            # Custom React hooks (useToast, useUpscalerWorker, useMultiPhaseProgress)
 │   ├── i18n/             # Internationalization with react-i18next
 │   │   └── locales/      # 18 language locale files
 │   ├── lib/              # Utilities (cn, fuzzySearch, schemaUtils, maskUtils)
 │   ├── pages/            # Page components (ModelsPage, PlaygroundPage, FreeToolsPage, etc.)
 │   ├── stores/           # Zustand stores (apiKeyStore, modelsStore)
 │   ├── types/            # TypeScript type definitions
-│   └── workers/          # Web Workers (upscaler.worker.ts)
+│   └── workers/          # Web Workers (upscaler.worker.ts, backgroundRemover.worker.ts)
 ├── .github/workflows/    # GitHub Actions for CI/CD
 │   ├── build.yml         # Build on push/tag/PR
 │   └── nightly.yml       # Nightly builds
@@ -63,13 +63,19 @@ wavespeed-desktop/
 - **`src/pages/TemplatesPage.tsx`**: Template management (browse, search, use, rename, delete)
 - **`src/pages/HistoryPage.tsx`**: Prediction history with detail dialog
 - **`src/pages/AssetsPage.tsx`**: Asset management with grid view, filters, tags, favorites, bulk operations
-- **`src/pages/FreeToolsPage.tsx`**: Hub page for free upscaling tools (no API key required)
+- **`src/pages/FreeToolsPage.tsx`**: Hub page for free AI tools (no API key required)
 - **`src/pages/ImageEnhancerPage.tsx`**: Image upscaling with ESRGAN models (2x-4x)
 - **`src/pages/VideoEnhancerPage.tsx`**: Video upscaling frame-by-frame with progress and ETA
+- **`src/pages/BackgroundRemoverPage.tsx`**: Background removal displaying all 3 outputs (foreground, background, mask) simultaneously
 - **`src/lib/schemaToForm.ts`**: Converts API schema to form field configurations
 - **`src/lib/maskUtils.ts`**: Mask utility functions (flood fill, invert, video frame extraction)
-- **`src/hooks/useUpscalerWorker.ts`**: Hook for managing upscaler Web Worker
+- **`src/types/progress.ts`**: Multi-phase progress types (PhaseStatus, ProcessingPhase, MultiPhaseProgress) and utility functions (formatBytes, formatTime)
+- **`src/hooks/useUpscalerWorker.ts`**: Hook for managing upscaler Web Worker with phase/progress callbacks
+- **`src/hooks/useBackgroundRemoverWorker.ts`**: Hook for managing background remover Web Worker with removeBackgroundAll for batch processing
+- **`src/hooks/useMultiPhaseProgress.ts`**: Hook for multi-phase progress state management with weighted phases, ETA calculation
+- **`src/components/shared/ProcessingProgress.tsx`**: Compact single-row progress component with phase indicators, status, and ETA
 - **`src/workers/upscaler.worker.ts`**: Web Worker for GPU-free image/video upscaling with UpscalerJS
+- **`src/workers/backgroundRemover.worker.ts`**: Web Worker for background removal with @imgly/background-removal, supports processAll for batch output
 
 ## WaveSpeedAI API
 
@@ -187,10 +193,18 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - Asset file naming format: `{model-slug}_{YYYY-MM-DD}_{HHmmss}_{random}.{ext}`
 - Layout.tsx handles unified API key login screen - pages don't need individual ApiKeyRequired checks
 - Settings page (`/settings`) is a public path accessible without API key
-- Free Tools pages (`/free-tools`, `/free-tools/image`, `/free-tools/video`) are public paths accessible without API key
+- Free Tools pages (`/free-tools`, `/free-tools/image`, `/free-tools/video`, `/free-tools/background-remover`) are public paths accessible without API key
 - Free Tools feature uses UpscalerJS with ESRGAN models for image/video upscaling (slim/medium/thick quality options)
 - Video Enhancer processes frames at 30 FPS using WebM muxer with VP9 codec
 - Upscaler uses Web Worker to keep UI responsive during heavy processing
+- Background Remover uses @imgly/background-removal library with Web Worker for AI-based background removal
+- Background Remover displays all 3 outputs simultaneously: foreground (transparent background), background (subject removed), and mask (grayscale segmentation)
+- Background Remover processes all outputs in a single batch via `removeBackgroundAll` (model cached after first call)
+- Background Remover auto-detects GPU (WebGPU) support and falls back to CPU
+- Multi-phase progress system uses weighted phases to calculate overall progress (e.g., download: 30%, process: 70%)
+- ProcessingProgress component displays compact single-row UI: [phase dots] [spinner + label] [progress bar] [ETA] [%]
+- Progress phases are configured per-tool: BackgroundRemover (2 phases), ImageEnhancer (3 phases), VideoEnhancer (4 phases)
+- Worker messages use standardized format: `{ type: 'phase' | 'progress', payload: { phase, progress, detail? } }`
 - MaskEditor component provides brush (draw), eraser, and bucket fill (flood fill) tools
 - Mask fields are detected by checking if field name is one of: "mask_image", "mask_image_url", "mask_images", "mask_image_urls"
 - MaskEditor uses two-canvas architecture: background canvas for reference image, mask canvas for drawing at 70% opacity

@@ -435,6 +435,35 @@
       "modelBalanced": "Balanced",
       "modelQuality": "Quality",
       "eta": "~{{time}} remaining"
+    },
+    "backgroundRemover": {
+      "title": "Background Remover",
+      "description": "Remove image backgrounds instantly using AI",
+      "selectImage": "Select Image",
+      "orDragDrop": "or drag and drop",
+      "remove": "Remove Background",
+      "download": "Download",
+      "processing": "Processing...",
+      "loadingModel": "Loading AI model...",
+      "downloadingModel": "Downloading AI model...",
+      "complete": "Complete",
+      "original": "Original",
+      "result": "Result",
+      "modelFast": "Fast",
+      "modelBalanced": "Balanced",
+      "modelQuality": "Quality",
+      "outputForeground": "Foreground",
+      "outputBackground": "Background",
+      "outputMask": "Mask"
+    },
+    "progress": {
+      "downloading": "Downloading model",
+      "processing": "Processing",
+      "processingFrames": "Processing frames",
+      "encoding": "Encoding",
+      "finalizing": "Finalizing",
+      "overall": "Overall",
+      "remaining": "remaining"
     }
   }
 }

@@ -435,6 +435,35 @@
       "modelBalanced": "均衡",
       "modelQuality": "高品質",
       "eta": "~{{time}} 剩餘"
+    },
+    "backgroundRemover": {
+      "title": "背景移除器",
+      "description": "使用 AI 即時移除圖片背景",
+      "selectImage": "選擇圖片",
+      "orDragDrop": "或拖放檔案",
+      "remove": "移除背景",
+      "download": "下載",
+      "processing": "處理中...",
+      "loadingModel": "載入 AI 模型...",
+      "downloadingModel": "下載 AI 模型中...",
+      "complete": "完成",
+      "original": "原始",
+      "result": "結果",
+      "modelFast": "快速",
+      "modelBalanced": "均衡",
+      "modelQuality": "高品質",
+      "outputForeground": "前景",
+      "outputBackground": "背景",
+      "outputMask": "遮罩"
+    },
+    "progress": {
+      "downloading": "下載模型中",
+      "processing": "處理中",
+      "processingFrames": "處理幀中",
+      "encoding": "編碼中",
+      "finalizing": "完成中",
+      "overall": "總進度",
+      "remaining": "剩餘"
     }
   }
 }

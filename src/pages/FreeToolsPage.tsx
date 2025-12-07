@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Video, ImageUp, ArrowRight } from 'lucide-react'
+import { Video, ImageUp, Eraser, ArrowRight } from 'lucide-react'
 
 export function FreeToolsPage() {
   const { t } = useTranslation()
@@ -24,6 +24,14 @@ export function FreeToolsPage() {
       descriptionKey: 'freeTools.imageEnhancer.description',
       route: '/free-tools/image',
       gradient: 'from-cyan-500/20 via-blue-500/10 to-transparent'
+    },
+    {
+      id: 'background-remover',
+      icon: Eraser,
+      titleKey: 'freeTools.backgroundRemover.title',
+      descriptionKey: 'freeTools.backgroundRemover.description',
+      route: '/free-tools/background-remover',
+      gradient: 'from-emerald-500/20 via-green-500/10 to-transparent'
     }
   ]
 
@@ -36,7 +44,7 @@ export function FreeToolsPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl">
         {tools.map((tool) => (
           <Card
             key={tool.id}

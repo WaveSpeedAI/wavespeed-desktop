@@ -435,6 +435,35 @@
       "modelBalanced": "संतुलित",
       "modelQuality": "गुणवत्ता",
       "eta": "~{{time}} शेष"
+    },
+    "backgroundRemover": {
+      "title": "बैकग्राउंड रिमूवर",
+      "description": "AI का उपयोग करके छवि पृष्ठभूमि तुरंत हटाएं",
+      "selectImage": "छवि चुनें",
+      "orDragDrop": "या ड्रैग और ड्रॉप करें",
+      "remove": "बैकग्राउंड हटाएं",
+      "download": "डाउनलोड करें",
+      "processing": "प्रोसेसिंग...",
+      "loadingModel": "AI मॉडल लोड हो रहा है...",
+      "downloadingModel": "AI मॉडल डाउनलोड हो रहा है...",
+      "complete": "पूर्ण",
+      "original": "मूल",
+      "result": "परिणाम",
+      "modelFast": "तेज़",
+      "modelBalanced": "संतुलित",
+      "modelQuality": "गुणवत्ता",
+      "outputForeground": "अग्रभूमि",
+      "outputBackground": "पृष्ठभूमि",
+      "outputMask": "मास्क"
+    },
+    "progress": {
+      "downloading": "मॉडल डाउनलोड हो रहा है",
+      "processing": "प्रोसेसिंग",
+      "processingFrames": "फ्रेम प्रोसेस हो रहे हैं",
+      "encoding": "एनकोडिंग",
+      "finalizing": "अंतिम चरण",
+      "overall": "समग्र",
+      "remaining": "शेष"
     }
   }
 }

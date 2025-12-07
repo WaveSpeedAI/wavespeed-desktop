@@ -42,9 +42,10 @@ function App() {
         <Route path="history" element={<HistoryPage />} />
         <Route path="assets" element={<AssetsPage />} />
         <Route path="free-tools" element={<FreeToolsPage />} />
-        {/* Video and Image enhancer pages are rendered persistently in Layout */}
+        {/* Free tools pages are rendered persistently in Layout */}
         <Route path="free-tools/video" element={<PersistentPagePlaceholder />} />
         <Route path="free-tools/image" element={<PersistentPagePlaceholder />} />
+        <Route path="free-tools/background-remover" element={<PersistentPagePlaceholder />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
     </Routes>

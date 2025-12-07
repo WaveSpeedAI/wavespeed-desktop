@@ -435,6 +435,35 @@
       "modelBalanced": "متوازن",
       "modelQuality": "جودة",
       "eta": "~{{time}} متبقي"
+    },
+    "backgroundRemover": {
+      "title": "إزالة الخلفية",
+      "description": "إزالة خلفيات الصور فوراً باستخدام الذكاء الاصطناعي",
+      "selectImage": "اختر صورة",
+      "orDragDrop": "أو اسحب وأفلت",
+      "remove": "إزالة الخلفية",
+      "download": "تنزيل",
+      "processing": "جاري المعالجة...",
+      "loadingModel": "جاري تحميل نموذج الذكاء الاصطناعي...",
+      "downloadingModel": "جاري تنزيل نموذج الذكاء الاصطناعي...",
+      "complete": "مكتمل",
+      "original": "الأصلي",
+      "result": "النتيجة",
+      "modelFast": "سريع",
+      "modelBalanced": "متوازن",
+      "modelQuality": "جودة",
+      "outputForeground": "المقدمة",
+      "outputBackground": "الخلفية",
+      "outputMask": "القناع"
+    },
+    "progress": {
+      "downloading": "تنزيل النموذج",
+      "processing": "المعالجة",
+      "processingFrames": "معالجة الإطارات",
+      "encoding": "الترميز",
+      "finalizing": "الإنهاء",
+      "overall": "الإجمالي",
+      "remaining": "متبقي"
     }
   }
 }

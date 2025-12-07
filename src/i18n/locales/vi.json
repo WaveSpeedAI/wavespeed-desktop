@@ -435,6 +435,35 @@
       "modelBalanced": "Cân bằng",
       "modelQuality": "Chất lượng",
       "eta": "~{{time}} còn lại"
+    },
+    "backgroundRemover": {
+      "title": "Xóa Nền",
+      "description": "Xóa nền hình ảnh tức thì bằng AI",
+      "selectImage": "Chọn Hình ảnh",
+      "orDragDrop": "hoặc kéo và thả",
+      "remove": "Xóa Nền",
+      "download": "Tải xuống",
+      "processing": "Đang xử lý...",
+      "loadingModel": "Đang tải mô hình AI...",
+      "downloadingModel": "Đang tải xuống mô hình AI...",
+      "complete": "Hoàn thành",
+      "original": "Gốc",
+      "result": "Kết quả",
+      "modelFast": "Nhanh",
+      "modelBalanced": "Cân bằng",
+      "modelQuality": "Chất lượng",
+      "outputForeground": "Tiền cảnh",
+      "outputBackground": "Nền",
+      "outputMask": "Mặt nạ"
+    },
+    "progress": {
+      "downloading": "Đang tải xuống mô hình",
+      "processing": "Đang xử lý",
+      "processingFrames": "Đang xử lý khung hình",
+      "encoding": "Đang mã hóa",
+      "finalizing": "Đang hoàn tất",
+      "overall": "Tổng thể",
+      "remaining": "còn lại"
     }
   }
 }

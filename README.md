@@ -13,9 +13,11 @@ A cross-platform desktop application for running AI models from [WaveSpeedAI](ht
 - **Mask Drawing**: Interactive canvas-based mask editor for models that accept mask inputs, with brush, eraser, and bucket fill tools
 - **Templates**: Save and reuse playground configurations as templates for quick access
 - **LoRA Support**: Full support for LoRAs including high-noise and low-noise LoRAs for Wan 2.2 models
-- **Free Tools**: Free image and video upscaling tools powered by UpscalerJS (no API key required)
+- **Free Tools**: Free AI-powered image and video tools (no API key required)
   - **Image Enhancer**: Upscale images 2x-4x with ESRGAN models (slim, medium, thick quality options)
   - **Video Enhancer**: Frame-by-frame video upscaling with real-time progress and ETA
+  - **Background Remover**: Remove image backgrounds instantly using AI, displaying foreground, background, and mask outputs simultaneously with individual download buttons
+- **Multi-Phase Progress**: Compact progress bars with phase indicators, real-time status, and ETA for all Free Tools
 - **History**: View your recent predictions (last 24 hours) with detailed view, download, and copy prediction ID
 - **My Assets**: Save, browse, and manage generated outputs (images, videos, audio) with tags, favorites, and search
 - **Auto-Save**: Automatically save generated outputs to your local assets folder (enabled by default)
@@ -123,7 +125,7 @@ wavespeed-desktop/
 │   ├── pages/          # Page components
 │   ├── stores/         # Zustand stores
 │   ├── types/          # TypeScript types
-│   └── workers/        # Web Workers (upscaler)
+│   └── workers/        # Web Workers (upscaler, background remover)
 ├── .github/workflows/  # GitHub Actions
 └── build/              # Build resources
 ```

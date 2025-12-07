@@ -435,6 +435,35 @@
       "modelBalanced": "Dengeli",
       "modelQuality": "Kalite",
       "eta": "~{{time}} kaldı"
+    },
+    "backgroundRemover": {
+      "title": "Arka Plan Kaldırıcı",
+      "description": "Yapay zeka kullanarak görsel arka planlarını anında kaldırın",
+      "selectImage": "Görsel Seç",
+      "orDragDrop": "veya sürükleyip bırakın",
+      "remove": "Arka Planı Kaldır",
+      "download": "İndir",
+      "processing": "İşleniyor...",
+      "loadingModel": "AI modeli yükleniyor...",
+      "downloadingModel": "AI modeli indiriliyor...",
+      "complete": "Tamamlandı",
+      "original": "Orijinal",
+      "result": "Sonuç",
+      "modelFast": "Hızlı",
+      "modelBalanced": "Dengeli",
+      "modelQuality": "Kalite",
+      "outputForeground": "Ön Plan",
+      "outputBackground": "Arka Plan",
+      "outputMask": "Maske"
+    },
+    "progress": {
+      "downloading": "Model indiriliyor",
+      "processing": "İşleniyor",
+      "processingFrames": "Kareler işleniyor",
+      "encoding": "Kodlanıyor",
+      "finalizing": "Tamamlanıyor",
+      "overall": "Genel",
+      "remaining": "kaldı"
     }
   }
 }

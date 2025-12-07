@@ -435,6 +435,35 @@
       "modelBalanced": "균형",
       "modelQuality": "고품질",
       "eta": "~{{time}} 남음"
+    },
+    "backgroundRemover": {
+      "title": "배경 제거",
+      "description": "AI를 사용하여 이미지 배경을 즉시 제거",
+      "selectImage": "이미지 선택",
+      "orDragDrop": "또는 드래그 앤 드롭",
+      "remove": "배경 제거",
+      "download": "다운로드",
+      "processing": "처리 중...",
+      "loadingModel": "AI 모델 로딩 중...",
+      "downloadingModel": "AI 모델 다운로드 중...",
+      "complete": "완료",
+      "original": "원본",
+      "result": "결과",
+      "modelFast": "빠름",
+      "modelBalanced": "균형",
+      "modelQuality": "고품질",
+      "outputForeground": "전경",
+      "outputBackground": "배경",
+      "outputMask": "마스크"
+    },
+    "progress": {
+      "downloading": "모델 다운로드 중",
+      "processing": "처리 중",
+      "processingFrames": "프레임 처리 중",
+      "encoding": "인코딩 중",
+      "finalizing": "마무리 중",
+      "overall": "전체",
+      "remaining": "남음"
     }
   }
 }

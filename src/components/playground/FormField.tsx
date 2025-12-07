@@ -252,7 +252,7 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
             onChange={onChange}
             disabled={disabled}
             placeholder={field.placeholder}
-            isMaskField={field.name.toLowerCase().includes('mask')}
+            isMaskField={['mask_image', 'mask_image_url', 'mask_images', 'mask_image_urls'].includes(field.name)}
             formValues={formValues}
           />
         )

@@ -26,14 +26,17 @@ wavespeed-desktop/
 │   │   └── client.ts     # WaveSpeedAI API client (base URL, auth, methods)
 │   ├── components/
 │   │   ├── layout/       # Sidebar, Layout components
-│   │   ├── playground/   # DynamicForm, FileUpload, OutputDisplay, etc.
+│   │   ├── playground/   # DynamicForm, FileUpload, OutputDisplay, MaskEditor, etc.
 │   │   ├── shared/       # ApiKeyRequired and other shared components
 │   │   └── ui/           # shadcn/ui components (Button, Card, etc.)
-│   ├── hooks/            # Custom React hooks (useToast)
-│   ├── lib/              # Utilities (cn, fuzzySearch, schemaUtils)
-│   ├── pages/            # Page components (ModelsPage, PlaygroundPage, etc.)
+│   ├── hooks/            # Custom React hooks (useToast, useUpscalerWorker)
+│   ├── i18n/             # Internationalization with react-i18next
+│   │   └── locales/      # 18 language locale files
+│   ├── lib/              # Utilities (cn, fuzzySearch, schemaUtils, maskUtils)
+│   ├── pages/            # Page components (ModelsPage, PlaygroundPage, FreeToolsPage, etc.)
 │   ├── stores/           # Zustand stores (apiKeyStore, modelsStore)
-│   └── types/            # TypeScript type definitions
+│   ├── types/            # TypeScript type definitions
+│   └── workers/          # Web Workers (upscaler.worker.ts)
 ├── .github/workflows/    # GitHub Actions for CI/CD
 │   ├── build.yml         # Build on push/tag/PR
 │   └── nightly.yml       # Nightly builds
@@ -53,13 +56,20 @@ wavespeed-desktop/
 - **`src/components/playground/ModelSelector.tsx`**: Searchable model dropdown with fuzzy search
 - **`src/components/playground/OutputDisplay.tsx`**: Displays prediction results (images, videos, text)
 - **`src/components/playground/FileUpload.tsx`**: File upload with drag & drop, URL input, and media capture
+- **`src/components/playground/MaskEditor.tsx`**: Canvas-based mask drawing with brush, eraser, and bucket fill tools
 - **`src/components/playground/CameraCapture.tsx`**: Camera capture component for taking photos
 - **`src/components/playground/VideoRecorder.tsx`**: Video recording with audio waveform visualization
 - **`src/components/playground/AudioRecorder.tsx`**: Audio recording with waveform display and playback
 - **`src/pages/TemplatesPage.tsx`**: Template management (browse, search, use, rename, delete)
 - **`src/pages/HistoryPage.tsx`**: Prediction history with detail dialog
 - **`src/pages/AssetsPage.tsx`**: Asset management with grid view, filters, tags, favorites, bulk operations
+- **`src/pages/FreeToolsPage.tsx`**: Hub page for free upscaling tools (no API key required)
+- **`src/pages/ImageEnhancerPage.tsx`**: Image upscaling with ESRGAN models (2x-4x)
+- **`src/pages/VideoEnhancerPage.tsx`**: Video upscaling frame-by-frame with progress and ETA
 - **`src/lib/schemaToForm.ts`**: Converts API schema to form field configurations
+- **`src/lib/maskUtils.ts`**: Mask utility functions (flood fill, invert, video frame extraction)
+- **`src/hooks/useUpscalerWorker.ts`**: Hook for managing upscaler Web Worker
+- **`src/workers/upscaler.worker.ts`**: Web Worker for GPU-free image/video upscaling with UpscalerJS
 
 ## WaveSpeedAI API
 
@@ -144,6 +154,7 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - `type: "string"` with `enum` → Dropdown select
 - `type: "boolean"` → Toggle switch
 - Field names like `image`, `video`, `audio` → File upload (detected by pattern)
+- Field names `mask_image`, `mask_image_url`, `mask_images`, `mask_image_urls` → File upload with mask editor button
 
 ## Important Notes
 
@@ -176,3 +187,13 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - Asset file naming format: `{model-slug}_{YYYY-MM-DD}_{HHmmss}_{random}.{ext}`
 - Layout.tsx handles unified API key login screen - pages don't need individual ApiKeyRequired checks
 - Settings page (`/settings`) is a public path accessible without API key
+- Free Tools pages (`/free-tools`, `/free-tools/image`, `/free-tools/video`) are public paths accessible without API key
+- Free Tools feature uses UpscalerJS with ESRGAN models for image/video upscaling (slim/medium/thick quality options)
+- Video Enhancer processes frames at 30 FPS using WebM muxer with VP9 codec
+- Upscaler uses Web Worker to keep UI responsive during heavy processing
+- MaskEditor component provides brush (draw), eraser, and bucket fill (flood fill) tools
+- Mask fields are detected by checking if field name is one of: "mask_image", "mask_image_url", "mask_images", "mask_image_urls"
+- MaskEditor uses two-canvas architecture: background canvas for reference image, mask canvas for drawing at 70% opacity
+- MaskEditor supports undo/redo (Ctrl+Z, Ctrl+Shift+Z) with up to 50 history states
+- MaskEditor auto-detects reference images/videos from form values (fields ending with `_image`, `image_url`, `_video`, `video_url`)
+- Free Tools pages use persistent rendering (lazy-mounted after first visit) to preserve state during navigation

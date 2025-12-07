@@ -10,8 +10,12 @@ A cross-platform desktop application for running AI models from [WaveSpeedAI](ht
 - **Favorites**: Star your favorite models for quick access with a dedicated filter
 - **Multi-Tab Playground**: Run predictions with multiple models simultaneously in separate tabs
 - **Dynamic Forms**: Auto-generated forms from model schemas with validation
+- **Mask Drawing**: Interactive canvas-based mask editor for models that accept mask inputs, with brush, eraser, and bucket fill tools
 - **Templates**: Save and reuse playground configurations as templates for quick access
 - **LoRA Support**: Full support for LoRAs including high-noise and low-noise LoRAs for Wan 2.2 models
+- **Free Tools**: Free image and video upscaling tools powered by UpscalerJS (no API key required)
+  - **Image Enhancer**: Upscale images 2x-4x with ESRGAN models (slim, medium, thick quality options)
+  - **Video Enhancer**: Frame-by-frame video upscaling with real-time progress and ETA
 - **History**: View your recent predictions (last 24 hours) with detailed view, download, and copy prediction ID
 - **My Assets**: Save, browse, and manage generated outputs (images, videos, audio) with tags, favorites, and search
 - **Auto-Save**: Automatically save generated outputs to your local assets folder (enabled by default)
@@ -114,10 +118,12 @@ wavespeed-desktop/
 │   │   ├── shared/     # Shared components
 │   │   └── ui/         # shadcn/ui components
 │   ├── hooks/          # Custom React hooks
+│   ├── i18n/           # Internationalization (18 languages)
 │   ├── lib/            # Utility functions
 │   ├── pages/          # Page components
 │   ├── stores/         # Zustand stores
-│   └── types/          # TypeScript types
+│   ├── types/          # TypeScript types
+│   └── workers/        # Web Workers (upscaler)
 ├── .github/workflows/  # GitHub Actions
 └── build/              # Build resources
 ```

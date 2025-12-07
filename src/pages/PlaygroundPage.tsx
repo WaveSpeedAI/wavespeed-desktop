@@ -258,7 +258,7 @@ export function PlaygroundPage() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-background">
+    <div className="flex h-full flex-col">
       {/* Tab Bar */}
       <div className="page-header">
         <ScrollArea className="w-full">
@@ -318,7 +318,7 @@ export function PlaygroundPage() {
 
       {/* Playground Content */}
       {activeTab ? (
-        <div className="flex flex-1 overflow-hidden ">
+        <div className="flex flex-1 overflow-hidden">
           {/* Left Panel - Configuration */}
           <div className="w-[420px] flex flex-col border-r bg-muted/30">
             {/* Model Selector */}

@@ -143,6 +143,10 @@ const ModelCard = memo(function ModelCard({
               variant="ghost"
               className="h-7 w-7 p-0"
               title={t('common.open')}
+              onClick={(e) => {
+                e.stopPropagation()
+                onOpenPlayground(model.model_id)
+              }}
             >
               <PlayCircle className="h-3.5 w-3.5" />
             </Button>

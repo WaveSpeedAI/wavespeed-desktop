@@ -258,9 +258,9 @@ export function PlaygroundPage() {
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col bg-background">
       {/* Tab Bar */}
-      <div className="border-b bg-white dark:bg-card">
+      <div className="page-header">
         <ScrollArea className="w-full">
           <div className="flex items-center">
             {tabs.map((tab) => (

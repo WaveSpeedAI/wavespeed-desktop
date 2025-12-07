@@ -386,9 +386,14 @@ export function ModelsPage() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-background">
+    <div className="flex h-full flex-col relative overflow-hidden">
+      {/* Dynamic Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 via-transparent to-cyan-500/5" />
+      <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-primary/10 to-transparent rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-cyan-500/10 to-transparent rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+      
       {/* Header */}
-      <div className="page-header px-6 py-4">
+      <div className="page-header px-6 py-4 relative z-10">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">{t('models.title')}</h1>
@@ -470,7 +475,7 @@ export function ModelsPage() {
       </div>
 
       {/* Content - Virtualized Grid */}
-      <div ref={parentRef} className="flex-1 overflow-auto px-6 py-5">
+      <div ref={parentRef} className="flex-1 overflow-auto px-6 py-5 relative z-10">
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />

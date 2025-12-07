@@ -204,9 +204,14 @@ export function HistoryPage() {
 
 
   return (
-    <div className="flex h-full flex-col bg-background">
+    <div className="flex h-full flex-col relative overflow-hidden">
+      {/* Dynamic Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 via-transparent to-cyan-500/5" />
+      <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-primary/10 to-transparent rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-cyan-500/10 to-transparent rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+      
       {/* Header */}
-      <div className="page-header px-6 py-4">
+      <div className="page-header px-6 py-4 relative z-10">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">{t('history.title')}</h1>
@@ -254,7 +259,7 @@ export function HistoryPage() {
       </div>
 
       {/* Content */}
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 relative z-10">
         <div className="px-6 py-5">
           {isLoading && items.length === 0 ? (
             <div className="flex items-center justify-center py-8">
@@ -364,7 +369,7 @@ export function HistoryPage() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="border-t p-4 flex items-center justify-between">
+        <div className="border-t p-4 flex items-center justify-between relative z-10">
           <p className="text-sm text-muted-foreground">
             {(page - 1) * pageSize + 1} - {Math.min(page * pageSize, total)} / {total}
           </p>

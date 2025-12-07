@@ -248,7 +248,7 @@
 
 /* Page header with background */
 .page-header {
-  background: hsl(var(--panel-bg));
+  background: transparent;
   border-bottom: 1px solid hsl(var(--border));
 }
 

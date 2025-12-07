@@ -278,11 +278,11 @@ export function Layout() {
           onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
           lastFreeToolsPage={lastFreeToolsPage}
         />
-        <main className="flex-1 overflow-auto relative">
+        <main className="flex-1 overflow-hidden relative">
           {requiresLogin ? loginContent : (
             <>
               {/* Regular routes via Outlet */}
-              <div className={location.pathname === '/free-tools/video' || location.pathname === '/free-tools/image' ? 'hidden' : ''}>
+              <div className={location.pathname === '/free-tools/video' || location.pathname === '/free-tools/image' ? 'hidden' : 'h-full overflow-auto'}>
                 <Outlet />
               </div>
               {/* Persistent Free Tools pages - mounted once visited, then persist via CSS show/hide */}

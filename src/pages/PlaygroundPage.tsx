@@ -345,7 +345,7 @@ export function PlaygroundPage() {
                   disabled={activeTab.isRunning}
                 />
               ) : (
-                <div className="flex items-center justify-center h-full text-muted-foreground">
+                <div className="h-full flex items-center justify-center text-muted-foreground">
                   <p>{t('playground.selectModelPrompt')}</p>
                 </div>
               )}

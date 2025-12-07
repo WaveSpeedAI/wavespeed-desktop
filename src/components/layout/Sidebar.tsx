@@ -86,7 +86,7 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage }: SidebarProps
   return (
     <div
       className={cn(
-        "flex h-full flex-col border-r sidebar-bg transition-all duration-300",
+        "flex h-full flex-col border-r bg-slate-200 dark:bg-slate-950",
         collapsed ? "w-16" : "w-48"
       )}
     >
@@ -94,7 +94,7 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage }: SidebarProps
       <div
         style={{ display: 'flex', alignItems: 'center', flexDirection: 'row' }}
         className={cn(
-          "h-16 border-b",
+          "h-16 border-b border-slate-300 dark:border-slate-800",
           collapsed ? "justify-center px-2" : "gap-2 px-6"
         )}
       >

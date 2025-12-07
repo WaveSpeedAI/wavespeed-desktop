@@ -258,9 +258,9 @@ export function PlaygroundPage() {
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col bg-background">
       {/* Tab Bar */}
-      <div className="border-b bg-muted/30">
+      <div className="page-header">
         <ScrollArea className="w-full">
           <div className="flex items-center">
             {tabs.map((tab) => (
@@ -318,11 +318,11 @@ export function PlaygroundPage() {
 
       {/* Playground Content */}
       {activeTab ? (
-        <div className="flex flex-1 overflow-hidden bg-background">
+        <div className="flex flex-1 overflow-hidden ">
           {/* Left Panel - Configuration */}
-          <div className="w-[420px] flex flex-col border-r bg-card">
+          <div className="w-[420px] flex flex-col border-r bg-muted/30">
             {/* Model Selector */}
-            <div className="p-4 border-b bg-muted/30">
+            <div className="p-4 border-b">
               <label className="text-sm font-semibold mb-2 block text-foreground">{t('history.model')}</label>
               <ModelSelector
                 models={models}
@@ -404,7 +404,7 @@ export function PlaygroundPage() {
 
           {/* Right Panel - Output */}
           <div className="flex-1 flex flex-col min-w-0">
-            <div className="px-5 py-3 border-b bg-card flex items-center justify-between">
+            <div className="px-4 py-3 border-b bg-muted/30 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <h2 className="font-semibold text-lg">{t('playground.output')}</h2>
                 {activeTab.selectedModel && (

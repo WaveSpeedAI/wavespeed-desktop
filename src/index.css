@@ -193,17 +193,6 @@
   animation: gradient-shift 8s ease infinite;
 }
 
-/* Card accent bar */
-.card-accent {
-  height: 3px;
-  background: linear-gradient(
-    90deg,
-    hsl(var(--gradient-start)) 0%,
-    hsl(var(--gradient-mid)) 50%,
-    hsl(var(--gradient-end)) 100%
-  );
-}
-
 /* Sidebar background with depth */
 .sidebar-bg {
   background: linear-gradient(

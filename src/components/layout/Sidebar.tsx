@@ -86,7 +86,7 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage }: SidebarProps
   return (
     <div
       className={cn(
-        "flex h-full flex-col border-r bg-slate-200 dark:bg-slate-950",
+        "flex h-full flex-col border-r bg-slate-200 dark:bg-slate-900",
         collapsed ? "w-16" : "w-48"
       )}
     >

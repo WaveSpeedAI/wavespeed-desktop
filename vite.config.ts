@@ -12,5 +12,8 @@ export default defineConfig({
     alias: {
       '@': resolve(__dirname, 'src')
     }
+  },
+  worker: {
+    format: 'es'
   }
 })

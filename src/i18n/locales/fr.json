@@ -348,6 +348,18 @@
       "directoryChangedDesc": "Les nouvelles sorties seront enregistrées dans {{path}}",
       "desktopOnly": "Cette fonctionnalité nécessite l'application de bureau"
     },
+    "cache": {
+      "title": "Cache",
+      "description": "Gérer les modèles IA en cache",
+      "aiModels": "Modèles IA",
+      "aiModelsDesc": "Modèles en cache pour les Outils Gratuits",
+      "empty": "Vide",
+      "calculating": "Calcul...",
+      "clear": "Effacer",
+      "cleared": "Cache effacé",
+      "clearedDesc": "Le cache des modèles IA a été effacé. Les modèles seront retéléchargés si nécessaire.",
+      "clearFailed": "Échec de l'effacement du cache"
+    },
     "updates": {
       "title": "Mises à jour",
       "description": "Gérer les mises à jour de l'application",
@@ -455,6 +467,32 @@
       "outputForeground": "Premier plan",
       "outputBackground": "Arrière-plan",
       "outputMask": "Masque"
+    },
+    "imageEraser": {
+      "title": "Effaceur d'Image",
+      "description": "Supprimez les objets indésirables des images avec l'IA",
+      "selectImage": "Sélectionner une Image",
+      "orDragDrop": "ou glisser-déposer",
+      "removeObjects": "Supprimer les Objets",
+      "download": "Télécharger",
+      "processing": "Suppression des objets...",
+      "loadingModel": "Chargement du modèle IA...",
+      "downloadingModel": "Téléchargement du modèle IA...",
+      "complete": "Terminé",
+      "original": "Original",
+      "result": "Résultat",
+      "drawMask": "Dessinez sur les objets à supprimer",
+      "brush": "Pinceau",
+      "eraser": "Gomme",
+      "brushSize": "Taille",
+      "undo": "Annuler",
+      "redo": "Rétablir",
+      "clear": "Effacer",
+      "edits": "Modifications",
+      "undoEdit": "Annuler la suppression",
+      "redoEdit": "Rétablir la suppression",
+      "hint": "Dessinez sur les objets à supprimer, puis cliquez sur Supprimer les Objets",
+      "resultPlaceholder": "Le résultat apparaîtra ici"
     },
     "progress": {
       "downloading": "Téléchargement du modèle",

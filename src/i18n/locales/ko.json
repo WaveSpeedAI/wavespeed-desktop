@@ -346,7 +346,19 @@
       "browse": "찾아보기",
       "directoryChanged": "디렉토리 변경됨",
       "directoryChangedDesc": "새 출력이 {{path}}에 저장됩니다",
-      "desktopOnly": "이 기능은 데스크톱 애플리케이션이 필요합니다"
+      "desktopOnly": "此功能需要桌面应用程序"
+    },
+    "cache": {
+      "title": "缓存",
+      "description": "管理缓存的AI模型和数据",
+      "aiModels": "AI模型",
+      "aiModelsDesc": "무료 도구용 캐시된 모델",
+      "empty": "空",
+      "calculating": "计算中...",
+      "clear": "清除",
+      "cleared": "缓存已清除",
+      "clearedDesc": "AI模型缓存已清除。需要时将重新下载模型。",
+      "clearFailed": "清除缓存失败"
     },
     "updates": {
       "title": "업데이트",
@@ -455,6 +467,32 @@
       "outputForeground": "전경",
       "outputBackground": "배경",
       "outputMask": "마스크"
+    },
+    "imageEraser": {
+      "title": "이미지 지우개",
+      "description": "AI를 사용하여 이미지에서 원하지 않는 객체 제거",
+      "selectImage": "이미지 선택",
+      "orDragDrop": "또는 드래그 앤 드롭",
+      "removeObjects": "객체 제거",
+      "download": "다운로드",
+      "processing": "객체 제거 중...",
+      "loadingModel": "AI 모델 로딩 중...",
+      "downloadingModel": "AI 모델 다운로드 중...",
+      "complete": "완료",
+      "original": "원본",
+      "result": "결과",
+      "drawMask": "제거할 객체 위에 그리기",
+      "brush": "브러시",
+      "eraser": "지우개",
+      "brushSize": "크기",
+      "undo": "실행 취소",
+      "redo": "다시 실행",
+      "clear": "지우기",
+      "edits": "편집",
+      "undoEdit": "제거 취소",
+      "redoEdit": "제거 다시 실행",
+      "hint": "제거할 객체 위에 그린 후 객체 제거를 클릭하세요",
+      "resultPlaceholder": "결과가 여기에 표시됩니다"
     },
     "progress": {
       "downloading": "모델 다운로드 중",

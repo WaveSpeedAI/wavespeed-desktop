@@ -348,6 +348,18 @@
       "directoryChangedDesc": "Yeni çıktılar {{path}} konumuna kaydedilecek",
       "desktopOnly": "Bu özellik masaüstü uygulaması gerektirir"
     },
+    "cache": {
+      "title": "Önbellek",
+      "description": "Önbelleğe alınmış AI modellerini yönetin",
+      "aiModels": "AI Modelleri",
+      "aiModelsDesc": "Ücretsiz Araçlar için önbelleğe alınmış modeller",
+      "empty": "Boş",
+      "calculating": "Hesaplanıyor...",
+      "clear": "Temizle",
+      "cleared": "Önbellek temizlendi",
+      "clearedDesc": "AI model önbelleği temizlendi. Modeller gerektiğinde yeniden indirilecek.",
+      "clearFailed": "Önbellek temizlenemedi"
+    },
     "updates": {
       "title": "Güncellemeler",
       "description": "Uygulama güncellemelerini yönetin",
@@ -455,6 +467,32 @@
       "outputForeground": "Ön Plan",
       "outputBackground": "Arka Plan",
       "outputMask": "Maske"
+    },
+    "imageEraser": {
+      "title": "Görsel Silgisi",
+      "description": "AI kullanarak görsellerden istenmeyen nesneleri kaldırın",
+      "selectImage": "Görsel Seç",
+      "orDragDrop": "veya sürükle bırak",
+      "removeObjects": "Nesneleri Kaldır",
+      "download": "İndir",
+      "processing": "Nesneler kaldırılıyor...",
+      "loadingModel": "AI modeli yükleniyor...",
+      "downloadingModel": "AI modeli indiriliyor...",
+      "complete": "Tamamlandı",
+      "original": "Orijinal",
+      "result": "Sonuç",
+      "drawMask": "Kaldırılacak nesnelerin üzerine çizin",
+      "brush": "Fırça",
+      "eraser": "Silgi",
+      "brushSize": "Boyut",
+      "undo": "Geri Al",
+      "redo": "Yinele",
+      "clear": "Temizle",
+      "edits": "Düzenlemeler",
+      "undoEdit": "Kaldırmayı geri al",
+      "redoEdit": "Kaldırmayı yinele",
+      "hint": "Kaldırmak istediğiniz nesnelerin üzerine çizin, ardından Nesneleri Kaldır'a tıklayın",
+      "resultPlaceholder": "Sonuç burada görünecek"
     },
     "progress": {
       "downloading": "Model indiriliyor",

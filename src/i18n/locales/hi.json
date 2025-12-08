@@ -348,6 +348,18 @@
       "directoryChangedDesc": "नए आउटपुट {{path}} में सहेजे जाएंगे",
       "desktopOnly": "यह सुविधा डेस्कटॉप एप्लिकेशन की आवश्यकता है"
     },
+    "cache": {
+      "title": "कैश",
+      "description": "कैश किए गए AI मॉडल प्रबंधित करें",
+      "aiModels": "AI मॉडल",
+      "aiModelsDesc": "मुफ्त टूल के लिए कैश किए गए मॉडल",
+      "empty": "खाली",
+      "calculating": "गणना हो रही है...",
+      "clear": "साफ करें",
+      "cleared": "कैश साफ हो गया",
+      "clearedDesc": "AI मॉडल कैश साफ हो गया है। जरूरत पड़ने पर मॉडल फिर से डाउनलोड होंगे।",
+      "clearFailed": "कैश साफ करने में विफल"
+    },
     "updates": {
       "title": "अपडेट",
       "description": "एप्लिकेशन अपडेट प्रबंधित करें",
@@ -455,6 +467,32 @@
       "outputForeground": "अग्रभूमि",
       "outputBackground": "पृष्ठभूमि",
       "outputMask": "मास्क"
+    },
+    "imageEraser": {
+      "title": "इमेज इरेज़र",
+      "description": "AI का उपयोग करके छवियों से अनचाही वस्तुओं को हटाएं",
+      "selectImage": "छवि चुनें",
+      "orDragDrop": "या ड्रैग एंड ड्रॉप करें",
+      "removeObjects": "वस्तुएं हटाएं",
+      "download": "डाउनलोड",
+      "processing": "वस्तुएं हटाई जा रही हैं...",
+      "loadingModel": "AI मॉडल लोड हो रहा है...",
+      "downloadingModel": "AI मॉडल डाउनलोड हो रहा है...",
+      "complete": "पूर्ण",
+      "original": "मूल",
+      "result": "परिणाम",
+      "drawMask": "हटाने के लिए वस्तुओं पर ड्रॉ करें",
+      "brush": "ब्रश",
+      "eraser": "इरेज़र",
+      "brushSize": "आकार",
+      "undo": "पूर्ववत करें",
+      "redo": "फिर से करें",
+      "clear": "साफ़ करें",
+      "edits": "संपादन",
+      "undoEdit": "हटाना पूर्ववत करें",
+      "redoEdit": "हटाना फिर से करें",
+      "hint": "जिन वस्तुओं को हटाना है उन पर ड्रॉ करें, फिर वस्तुएं हटाएं पर क्लिक करें",
+      "resultPlaceholder": "परिणाम यहां दिखाई देगा"
     },
     "progress": {
       "downloading": "मॉडल डाउनलोड हो रहा है",

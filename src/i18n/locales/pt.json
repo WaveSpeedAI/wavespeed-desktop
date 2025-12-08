@@ -348,6 +348,18 @@
       "directoryChangedDesc": "Novas saídas serão salvas em {{path}}",
       "desktopOnly": "Este recurso requer o aplicativo desktop"
     },
+    "cache": {
+      "title": "Cache",
+      "description": "Gerenciar modelos de IA em cache",
+      "aiModels": "Modelos de IA",
+      "aiModelsDesc": "Modelos em cache para Ferramentas Gratuitas",
+      "empty": "Vazio",
+      "calculating": "Calculando...",
+      "clear": "Limpar",
+      "cleared": "Cache limpo",
+      "clearedDesc": "O cache de modelos de IA foi limpo. Os modelos serão baixados novamente quando necessário.",
+      "clearFailed": "Falha ao limpar o cache"
+    },
     "updates": {
       "title": "Atualizações",
       "description": "Gerenciar atualizações do aplicativo",
@@ -455,6 +467,32 @@
       "outputForeground": "Primeiro plano",
       "outputBackground": "Fundo",
       "outputMask": "Máscara"
+    },
+    "imageEraser": {
+      "title": "Borracha de Imagem",
+      "description": "Remova objetos indesejados de imagens usando IA",
+      "selectImage": "Selecionar Imagem",
+      "orDragDrop": "ou arraste e solte",
+      "removeObjects": "Remover Objetos",
+      "download": "Baixar",
+      "processing": "Removendo objetos...",
+      "loadingModel": "Carregando modelo de IA...",
+      "downloadingModel": "Baixando modelo de IA...",
+      "complete": "Completo",
+      "original": "Original",
+      "result": "Resultado",
+      "drawMask": "Desenhe sobre os objetos a remover",
+      "brush": "Pincel",
+      "eraser": "Borracha",
+      "brushSize": "Tamanho",
+      "undo": "Desfazer",
+      "redo": "Refazer",
+      "clear": "Limpar",
+      "edits": "Edições",
+      "undoEdit": "Desfazer remoção",
+      "redoEdit": "Refazer remoção",
+      "hint": "Desenhe sobre os objetos que deseja remover, depois clique em Remover Objetos",
+      "resultPlaceholder": "O resultado aparecerá aqui"
     },
     "progress": {
       "downloading": "Baixando modelo",

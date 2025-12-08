@@ -348,6 +348,18 @@
       "directoryChangedDesc": "Output baru akan disimpan ke {{path}}",
       "desktopOnly": "Fitur ini memerlukan aplikasi desktop"
     },
+    "cache": {
+      "title": "Cache",
+      "description": "Kelola model AI yang di-cache",
+      "aiModels": "Model AI",
+      "aiModelsDesc": "Model yang di-cache untuk Alat Gratis",
+      "empty": "Kosong",
+      "calculating": "Menghitung...",
+      "clear": "Hapus",
+      "cleared": "Cache dihapus",
+      "clearedDesc": "Cache model AI telah dihapus. Model akan diunduh ulang saat diperlukan.",
+      "clearFailed": "Gagal menghapus cache"
+    },
     "updates": {
       "title": "Pembaruan",
       "description": "Kelola pembaruan aplikasi",
@@ -455,6 +467,32 @@
       "outputForeground": "Latar Depan",
       "outputBackground": "Latar Belakang",
       "outputMask": "Masker"
+    },
+    "imageEraser": {
+      "title": "Penghapus Gambar",
+      "description": "Hapus objek yang tidak diinginkan dari gambar menggunakan AI",
+      "selectImage": "Pilih Gambar",
+      "orDragDrop": "atau seret dan lepas",
+      "removeObjects": "Hapus Objek",
+      "download": "Unduh",
+      "processing": "Menghapus objek...",
+      "loadingModel": "Memuat model AI...",
+      "downloadingModel": "Mengunduh model AI...",
+      "complete": "Selesai",
+      "original": "Asli",
+      "result": "Hasil",
+      "drawMask": "Gambar di atas objek yang akan dihapus",
+      "brush": "Kuas",
+      "eraser": "Penghapus",
+      "brushSize": "Ukuran",
+      "undo": "Urungkan",
+      "redo": "Ulangi",
+      "clear": "Bersihkan",
+      "edits": "Edit",
+      "undoEdit": "Urungkan penghapusan",
+      "redoEdit": "Ulangi penghapusan",
+      "hint": "Gambar di atas objek yang ingin dihapus, lalu klik Hapus Objek",
+      "resultPlaceholder": "Hasil akan muncul di sini"
     },
     "progress": {
       "downloading": "Mengunduh model",

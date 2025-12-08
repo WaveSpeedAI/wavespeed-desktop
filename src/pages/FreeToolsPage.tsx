@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Video, ImageUp, Eraser, ArrowRight } from 'lucide-react'
+import { Video, ImageUp, Eraser, Wand2, ArrowRight } from 'lucide-react'
 
 export function FreeToolsPage() {
   const { t } = useTranslation()
@@ -32,6 +32,14 @@ export function FreeToolsPage() {
       descriptionKey: 'freeTools.backgroundRemover.description',
       route: '/free-tools/background-remover',
       gradient: 'from-emerald-500/20 via-green-500/10 to-transparent'
+    },
+    {
+      id: 'image-eraser',
+      icon: Wand2,
+      titleKey: 'freeTools.imageEraser.title',
+      descriptionKey: 'freeTools.imageEraser.description',
+      route: '/free-tools/image-eraser',
+      gradient: 'from-orange-500/20 via-red-500/10 to-transparent'
     }
   ]
 

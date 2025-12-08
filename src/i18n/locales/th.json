@@ -348,6 +348,18 @@
       "directoryChangedDesc": "ผลลัพธ์ใหม่จะถูกบันทึกไปยัง {{path}}",
       "desktopOnly": "คุณสมบัตินี้ต้องใช้แอปพลิเคชันเดสก์ท็อป"
     },
+    "cache": {
+      "title": "แคช",
+      "description": "จัดการโมเดล AI ที่แคชไว้",
+      "aiModels": "โมเดล AI",
+      "aiModelsDesc": "โมเดลที่แคชไว้สำหรับเครื่องมือฟรี",
+      "empty": "ว่างเปล่า",
+      "calculating": "กำลังคำนวณ...",
+      "clear": "ล้าง",
+      "cleared": "ล้างแคชแล้ว",
+      "clearedDesc": "แคชโมเดล AI ถูกล้างแล้ว โมเดลจะถูกดาวน์โหลดใหม่เมื่อจำเป็น",
+      "clearFailed": "ล้างแคชไม่สำเร็จ"
+    },
     "updates": {
       "title": "การอัปเดต",
       "description": "จัดการการอัปเดตแอปพลิเคชัน",
@@ -455,6 +467,32 @@
       "outputForeground": "พื้นหน้า",
       "outputBackground": "พื้นหลัง",
       "outputMask": "มาสก์"
+    },
+    "imageEraser": {
+      "title": "ลบวัตถุในภาพ",
+      "description": "ลบวัตถุที่ไม่ต้องการออกจากรูปภาพโดยใช้ AI",
+      "selectImage": "เลือกรูปภาพ",
+      "orDragDrop": "หรือลากและวาง",
+      "removeObjects": "ลบวัตถุ",
+      "download": "ดาวน์โหลด",
+      "processing": "กำลังลบวัตถุ...",
+      "loadingModel": "กำลังโหลดโมเดล AI...",
+      "downloadingModel": "กำลังดาวน์โหลดโมเดล AI...",
+      "complete": "เสร็จสิ้น",
+      "original": "ต้นฉบับ",
+      "result": "ผลลัพธ์",
+      "drawMask": "วาดบนวัตถุที่ต้องการลบ",
+      "brush": "แปรง",
+      "eraser": "ยางลบ",
+      "brushSize": "ขนาด",
+      "undo": "เลิกทำ",
+      "redo": "ทำซ้ำ",
+      "clear": "ล้าง",
+      "edits": "การแก้ไข",
+      "undoEdit": "เลิกทำการลบ",
+      "redoEdit": "ทำซ้ำการลบ",
+      "hint": "วาดบนวัตถุที่คุณต้องการลบ แล้วคลิกลบวัตถุ",
+      "resultPlaceholder": "ผลลัพธ์จะปรากฏที่นี่"
     },
     "progress": {
       "downloading": "กำลังดาวน์โหลดโมเดล",

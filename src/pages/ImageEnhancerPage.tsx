@@ -217,7 +217,7 @@ export function ImageEnhancerPage() {
     // Get canvas and convert to selected format
     const canvas = canvasRef.current
     const mimeType = `image/${downloadFormat}`
-    const quality = downloadFormat === 'jpeg' ? 0.95 : undefined
+    const quality = downloadFormat === 'png' ? undefined : 0.95
     const dataUrl = canvas.toDataURL(mimeType, quality)
 
     const link = document.createElement('a')

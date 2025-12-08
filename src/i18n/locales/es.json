@@ -348,6 +348,18 @@
       "directoryChangedDesc": "Las nuevas salidas se guardarán en {{path}}",
       "desktopOnly": "Esta función requiere la aplicación de escritorio"
     },
+    "cache": {
+      "title": "Caché",
+      "description": "Gestionar modelos de IA en caché",
+      "aiModels": "Modelos de IA",
+      "aiModelsDesc": "Modelos en caché para Herramientas Gratuitas",
+      "empty": "Vacío",
+      "calculating": "Calculando...",
+      "clear": "Limpiar",
+      "cleared": "Caché limpiada",
+      "clearedDesc": "La caché de modelos de IA ha sido limpiada. Los modelos se descargarán nuevamente cuando sea necesario.",
+      "clearFailed": "Error al limpiar la caché"
+    },
     "updates": {
       "title": "Actualizaciones",
       "description": "Administrar actualizaciones de la aplicación",
@@ -455,6 +467,32 @@
       "outputForeground": "Primer plano",
       "outputBackground": "Fondo",
       "outputMask": "Máscara"
+    },
+    "imageEraser": {
+      "title": "Borrador de Imagen",
+      "description": "Elimina objetos no deseados de imágenes usando IA",
+      "selectImage": "Seleccionar Imagen",
+      "orDragDrop": "o arrastrar y soltar",
+      "removeObjects": "Eliminar Objetos",
+      "download": "Descargar",
+      "processing": "Eliminando objetos...",
+      "loadingModel": "Cargando modelo de IA...",
+      "downloadingModel": "Descargando modelo de IA...",
+      "complete": "Completo",
+      "original": "Original",
+      "result": "Resultado",
+      "drawMask": "Dibuja sobre los objetos a eliminar",
+      "brush": "Pincel",
+      "eraser": "Borrador",
+      "brushSize": "Tamaño",
+      "undo": "Deshacer",
+      "redo": "Rehacer",
+      "clear": "Limpiar",
+      "edits": "Ediciones",
+      "undoEdit": "Deshacer eliminación",
+      "redoEdit": "Rehacer eliminación",
+      "hint": "Dibuja sobre los objetos que quieras eliminar, luego haz clic en Eliminar Objetos",
+      "resultPlaceholder": "El resultado aparecerá aquí"
     },
     "progress": {
       "downloading": "Descargando modelo",

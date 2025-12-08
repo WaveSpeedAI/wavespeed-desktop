@@ -348,6 +348,18 @@
       "directoryChangedDesc": "New outputs will be saved to {{path}}",
       "desktopOnly": "This feature requires the desktop application"
     },
+    "cache": {
+      "title": "Cache",
+      "description": "Manage cached AI models and data",
+      "aiModels": "AI Models",
+      "aiModelsDesc": "Cached models for Free Tools",
+      "empty": "Empty",
+      "calculating": "Calculating...",
+      "clear": "Clear",
+      "cleared": "Cache cleared",
+      "clearedDesc": "AI model cache has been cleared. Models will be re-downloaded when needed.",
+      "clearFailed": "Failed to clear cache"
+    },
     "updates": {
       "title": "Updates",
       "description": "Manage application updates",
@@ -455,6 +467,32 @@
       "outputForeground": "Foreground",
       "outputBackground": "Background",
       "outputMask": "Mask"
+    },
+    "imageEraser": {
+      "title": "Image Eraser",
+      "description": "Remove unwanted objects from images using AI",
+      "selectImage": "Select Image",
+      "orDragDrop": "or drag and drop",
+      "removeObjects": "Remove Objects",
+      "download": "Download",
+      "processing": "Removing objects...",
+      "loadingModel": "Loading AI model...",
+      "downloadingModel": "Downloading AI model...",
+      "complete": "Complete",
+      "original": "Original",
+      "result": "Result",
+      "drawMask": "Draw over objects to remove",
+      "brush": "Brush",
+      "eraser": "Eraser",
+      "brushSize": "Size",
+      "undo": "Undo",
+      "redo": "Redo",
+      "clear": "Clear",
+      "edits": "Edits",
+      "undoEdit": "Undo removal",
+      "redoEdit": "Redo removal",
+      "hint": "Draw over objects you want to remove, then click Remove Objects",
+      "resultPlaceholder": "Result will appear here"
     },
     "progress": {
       "downloading": "Downloading model",

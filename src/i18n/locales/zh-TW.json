@@ -346,7 +346,19 @@
       "browse": "瀏覽",
       "directoryChanged": "目錄已變更",
       "directoryChangedDesc": "新輸出將儲存至 {{path}}",
-      "desktopOnly": "此功能需要桌面應用程式"
+      "desktopOnly": "此功能需要桌面应用程序"
+    },
+    "cache": {
+      "title": "缓存",
+      "description": "管理缓存的AI模型和数据",
+      "aiModels": "AI模型",
+      "aiModelsDesc": "免費工具的快取模型",
+      "empty": "空",
+      "calculating": "计算中...",
+      "clear": "清除",
+      "cleared": "缓存已清除",
+      "clearedDesc": "AI模型缓存已清除。需要时将重新下载模型。",
+      "clearFailed": "清除缓存失败"
     },
     "updates": {
       "title": "更新",
@@ -455,6 +467,32 @@
       "outputForeground": "前景",
       "outputBackground": "背景",
       "outputMask": "遮罩"
+    },
+    "imageEraser": {
+      "title": "圖片擦除",
+      "description": "使用 AI 移除圖片中不需要的物體",
+      "selectImage": "選擇圖片",
+      "orDragDrop": "或拖放檔案",
+      "removeObjects": "移除物體",
+      "download": "下載",
+      "processing": "正在移除物體...",
+      "loadingModel": "載入 AI 模型...",
+      "downloadingModel": "下載 AI 模型中...",
+      "complete": "完成",
+      "original": "原始",
+      "result": "結果",
+      "drawMask": "在要移除的物體上繪製",
+      "brush": "畫筆",
+      "eraser": "橡皮擦",
+      "brushSize": "大小",
+      "undo": "撤銷",
+      "redo": "重做",
+      "clear": "清除",
+      "edits": "編輯",
+      "undoEdit": "撤銷移除",
+      "redoEdit": "重做移除",
+      "hint": "在要移除的物體上繪製，然後點擊移除物體",
+      "resultPlaceholder": "結果將顯示在這裡"
     },
     "progress": {
       "downloading": "下載模型中",

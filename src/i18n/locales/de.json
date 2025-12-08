@@ -348,6 +348,18 @@
       "directoryChangedDesc": "Neue Ausgaben werden in {{path}} gespeichert",
       "desktopOnly": "Diese Funktion erfordert die Desktop-Anwendung"
     },
+    "cache": {
+      "title": "Cache",
+      "description": "Zwischengespeicherte KI-Modelle verwalten",
+      "aiModels": "KI-Modelle",
+      "aiModelsDesc": "Zwischengespeicherte Modelle für kostenlose Tools",
+      "empty": "Leer",
+      "calculating": "Berechnung...",
+      "clear": "Leeren",
+      "cleared": "Cache geleert",
+      "clearedDesc": "Der KI-Modell-Cache wurde geleert. Modelle werden bei Bedarf erneut heruntergeladen.",
+      "clearFailed": "Cache konnte nicht geleert werden"
+    },
     "updates": {
       "title": "Updates",
       "description": "Anwendungsupdates verwalten",
@@ -455,6 +467,32 @@
       "outputForeground": "Vordergrund",
       "outputBackground": "Hintergrund",
       "outputMask": "Maske"
+    },
+    "imageEraser": {
+      "title": "Bild-Radierer",
+      "description": "Entfernen Sie unerwünschte Objekte aus Bildern mit KI",
+      "selectImage": "Bild auswählen",
+      "orDragDrop": "oder per Drag & Drop",
+      "removeObjects": "Objekte entfernen",
+      "download": "Herunterladen",
+      "processing": "Objekte werden entfernt...",
+      "loadingModel": "KI-Modell wird geladen...",
+      "downloadingModel": "KI-Modell wird heruntergeladen...",
+      "complete": "Fertig",
+      "original": "Original",
+      "result": "Ergebnis",
+      "drawMask": "Zeichnen Sie über die zu entfernenden Objekte",
+      "brush": "Pinsel",
+      "eraser": "Radierer",
+      "brushSize": "Größe",
+      "undo": "Rückgängig",
+      "redo": "Wiederholen",
+      "clear": "Löschen",
+      "edits": "Bearbeitungen",
+      "undoEdit": "Entfernung rückgängig",
+      "redoEdit": "Entfernung wiederholen",
+      "hint": "Zeichnen Sie über die Objekte, die Sie entfernen möchten, dann klicken Sie auf Objekte entfernen",
+      "resultPlaceholder": "Das Ergebnis wird hier angezeigt"
     },
     "progress": {
       "downloading": "Modell herunterladen",

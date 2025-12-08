@@ -348,6 +348,18 @@
       "directoryChangedDesc": "Output baharu akan disimpan ke {{path}}",
       "desktopOnly": "Ciri ini memerlukan aplikasi desktop"
     },
+    "cache": {
+      "title": "Cache",
+      "description": "Urus model AI yang dicache",
+      "aiModels": "Model AI",
+      "aiModelsDesc": "Model yang dicache untuk Alat Percuma",
+      "empty": "Kosong",
+      "calculating": "Mengira...",
+      "clear": "Padam",
+      "cleared": "Cache dipadam",
+      "clearedDesc": "Cache model AI telah dipadam. Model akan dimuat turun semula apabila diperlukan.",
+      "clearFailed": "Gagal memadam cache"
+    },
     "updates": {
       "title": "Kemaskini",
       "description": "Urus kemaskini aplikasi",
@@ -455,6 +467,32 @@
       "outputForeground": "Latar Depan",
       "outputBackground": "Latar Belakang",
       "outputMask": "Topeng"
+    },
+    "imageEraser": {
+      "title": "Pemadam Imej",
+      "description": "Buang objek yang tidak diingini dari imej menggunakan AI",
+      "selectImage": "Pilih Imej",
+      "orDragDrop": "atau seret dan lepas",
+      "removeObjects": "Buang Objek",
+      "download": "Muat Turun",
+      "processing": "Membuang objek...",
+      "loadingModel": "Memuatkan model AI...",
+      "downloadingModel": "Memuat turun model AI...",
+      "complete": "Selesai",
+      "original": "Asal",
+      "result": "Hasil",
+      "drawMask": "Lukis di atas objek untuk dibuang",
+      "brush": "Berus",
+      "eraser": "Pemadam",
+      "brushSize": "Saiz",
+      "undo": "Buat Asal",
+      "redo": "Buat Semula",
+      "clear": "Padam",
+      "edits": "Suntingan",
+      "undoEdit": "Buat asal pembuangan",
+      "redoEdit": "Buat semula pembuangan",
+      "hint": "Lukis di atas objek yang anda mahu buang, kemudian klik Buang Objek",
+      "resultPlaceholder": "Hasil akan muncul di sini"
     },
     "progress": {
       "downloading": "Memuat turun model",

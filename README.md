@@ -17,6 +17,7 @@ A cross-platform desktop application for running AI models from [WaveSpeedAI](ht
   - **Image Enhancer**: Upscale images 2x-4x with ESRGAN models (slim, medium, thick quality options)
   - **Video Enhancer**: Frame-by-frame video upscaling with real-time progress and ETA
   - **Background Remover**: Remove image backgrounds instantly using AI, displaying foreground, background, and mask outputs simultaneously with individual download buttons
+  - **Image Eraser**: Remove unwanted objects from images using LaMa inpainting model with smart crop and blend
 - **Multi-Phase Progress**: Compact progress bars with phase indicators, real-time status, and ETA for all Free Tools
 - **History**: View your recent predictions (last 24 hours) with detailed view, download, and copy prediction ID
 - **My Assets**: Save, browse, and manage generated outputs (images, videos, audio) with tags, favorites, and search
@@ -33,10 +34,10 @@ A cross-platform desktop application for running AI models from [WaveSpeedAI](ht
 
 ### Quick Download
 
-[![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed.Desktop-win-x64.exe)
-[![macOS Intel](https://img.shields.io/badge/macOS_Intel-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed.Desktop-mac-x64.dmg)
-[![macOS Apple Silicon](https://img.shields.io/badge/macOS_Silicon-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed.Desktop-mac-arm64.dmg)
-[![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed.Desktop-linux-x64.AppImage)
+[![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Desktop-win-x64.exe)
+[![macOS Intel](https://img.shields.io/badge/macOS_Intel-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Desktop-mac-x64.dmg)
+[![macOS Apple Silicon](https://img.shields.io/badge/macOS_Silicon-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Desktop-mac-arm64.dmg)
+[![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Desktop-linux-x64.AppImage)
 
 Or browse all releases on the [Releases](https://github.com/WaveSpeedAI/wavespeed-desktop/releases) page.
 
@@ -125,7 +126,7 @@ wavespeed-desktop/
 │   ├── pages/          # Page components
 │   ├── stores/         # Zustand stores
 │   ├── types/          # TypeScript types
-│   └── workers/        # Web Workers (upscaler, background remover)
+│   └── workers/        # Web Workers (upscaler, background remover, image eraser)
 ├── .github/workflows/  # GitHub Actions
 └── build/              # Build resources
 ```

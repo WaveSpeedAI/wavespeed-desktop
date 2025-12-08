@@ -348,6 +348,18 @@
       "directoryChangedDesc": "I nuovi output verranno salvati in {{path}}",
       "desktopOnly": "Questa funzionalità richiede l'applicazione desktop"
     },
+    "cache": {
+      "title": "Cache",
+      "description": "Gestisci i modelli IA memorizzati nella cache",
+      "aiModels": "Modelli IA",
+      "aiModelsDesc": "Modelli memorizzati per gli Strumenti Gratuiti",
+      "empty": "Vuoto",
+      "calculating": "Calcolo...",
+      "clear": "Svuota",
+      "cleared": "Cache svuotata",
+      "clearedDesc": "La cache dei modelli IA è stata svuotata. I modelli verranno riscaricati quando necessario.",
+      "clearFailed": "Impossibile svuotare la cache"
+    },
     "updates": {
       "title": "Aggiornamenti",
       "description": "Gestisci gli aggiornamenti dell'applicazione",
@@ -455,6 +467,32 @@
       "outputForeground": "Primo piano",
       "outputBackground": "Sfondo",
       "outputMask": "Maschera"
+    },
+    "imageEraser": {
+      "title": "Gomma Immagine",
+      "description": "Rimuovi oggetti indesiderati dalle immagini usando l'IA",
+      "selectImage": "Seleziona Immagine",
+      "orDragDrop": "o trascina e rilascia",
+      "removeObjects": "Rimuovi Oggetti",
+      "download": "Scarica",
+      "processing": "Rimozione oggetti...",
+      "loadingModel": "Caricamento modello IA...",
+      "downloadingModel": "Download modello IA...",
+      "complete": "Completato",
+      "original": "Originale",
+      "result": "Risultato",
+      "drawMask": "Disegna sugli oggetti da rimuovere",
+      "brush": "Pennello",
+      "eraser": "Gomma",
+      "brushSize": "Dimensione",
+      "undo": "Annulla",
+      "redo": "Ripristina",
+      "clear": "Cancella",
+      "edits": "Modifiche",
+      "undoEdit": "Annulla rimozione",
+      "redoEdit": "Ripristina rimozione",
+      "hint": "Disegna sugli oggetti che vuoi rimuovere, poi clicca Rimuovi Oggetti",
+      "resultPlaceholder": "Il risultato apparirà qui"
     },
     "progress": {
       "downloading": "Scaricamento modello",

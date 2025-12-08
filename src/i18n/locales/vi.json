@@ -348,6 +348,18 @@
       "directoryChangedDesc": "Đầu ra mới sẽ được lưu vào {{path}}",
       "desktopOnly": "Tính năng này yêu cầu ứng dụng desktop"
     },
+    "cache": {
+      "title": "Bộ nhớ đệm",
+      "description": "Quản lý các mô hình AI đã lưu trong bộ nhớ đệm",
+      "aiModels": "Mô hình AI",
+      "aiModelsDesc": "Các mô hình đã lưu cho Công cụ Miễn phí",
+      "empty": "Trống",
+      "calculating": "Đang tính...",
+      "clear": "Xóa",
+      "cleared": "Đã xóa bộ nhớ đệm",
+      "clearedDesc": "Bộ nhớ đệm mô hình AI đã được xóa. Các mô hình sẽ được tải xuống lại khi cần.",
+      "clearFailed": "Không thể xóa bộ nhớ đệm"
+    },
     "updates": {
       "title": "Cập nhật",
       "description": "Quản lý cập nhật ứng dụng",
@@ -455,6 +467,32 @@
       "outputForeground": "Tiền cảnh",
       "outputBackground": "Nền",
       "outputMask": "Mặt nạ"
+    },
+    "imageEraser": {
+      "title": "Xóa Đối Tượng",
+      "description": "Xóa các đối tượng không mong muốn khỏi hình ảnh bằng AI",
+      "selectImage": "Chọn Hình Ảnh",
+      "orDragDrop": "hoặc kéo và thả",
+      "removeObjects": "Xóa Đối Tượng",
+      "download": "Tải Xuống",
+      "processing": "Đang xóa đối tượng...",
+      "loadingModel": "Đang tải mô hình AI...",
+      "downloadingModel": "Đang tải xuống mô hình AI...",
+      "complete": "Hoàn tất",
+      "original": "Gốc",
+      "result": "Kết quả",
+      "drawMask": "Vẽ lên các đối tượng cần xóa",
+      "brush": "Cọ",
+      "eraser": "Tẩy",
+      "brushSize": "Kích thước",
+      "undo": "Hoàn tác",
+      "redo": "Làm lại",
+      "clear": "Xóa",
+      "edits": "Chỉnh sửa",
+      "undoEdit": "Hoàn tác xóa",
+      "redoEdit": "Làm lại xóa",
+      "hint": "Vẽ lên các đối tượng bạn muốn xóa, sau đó nhấp Xóa Đối Tượng",
+      "resultPlaceholder": "Kết quả sẽ xuất hiện ở đây"
     },
     "progress": {
       "downloading": "Đang tải xuống mô hình",

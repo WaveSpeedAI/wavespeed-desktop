@@ -67,15 +67,19 @@ wavespeed-desktop/
 - **`src/pages/ImageEnhancerPage.tsx`**: Image upscaling with ESRGAN models (2x-4x)
 - **`src/pages/VideoEnhancerPage.tsx`**: Video upscaling frame-by-frame with progress and ETA
 - **`src/pages/BackgroundRemoverPage.tsx`**: Background removal displaying all 3 outputs (foreground, background, mask) simultaneously
+- **`src/pages/ImageEraserPage.tsx`**: Object removal using LaMa inpainting model with inline mask drawing and smart crop
 - **`src/lib/schemaToForm.ts`**: Converts API schema to form field configurations
+- **`src/lib/lamaUtils.ts`**: Image/tensor conversion utilities for inpainting models (canvasToFloat32Array, maskCanvasToFloat32Array, tensorToCanvas)
 - **`src/lib/maskUtils.ts`**: Mask utility functions (flood fill, invert, video frame extraction)
 - **`src/types/progress.ts`**: Multi-phase progress types (PhaseStatus, ProcessingPhase, MultiPhaseProgress) and utility functions (formatBytes, formatTime)
 - **`src/hooks/useUpscalerWorker.ts`**: Hook for managing upscaler Web Worker with phase/progress callbacks
 - **`src/hooks/useBackgroundRemoverWorker.ts`**: Hook for managing background remover Web Worker with removeBackgroundAll for batch processing
+- **`src/hooks/useImageEraserWorker.ts`**: Hook for managing image eraser Web Worker with LaMa model initialization and object removal
 - **`src/hooks/useMultiPhaseProgress.ts`**: Hook for multi-phase progress state management with weighted phases, ETA calculation
 - **`src/components/shared/ProcessingProgress.tsx`**: Compact single-row progress component with phase indicators, status, and ETA
 - **`src/workers/upscaler.worker.ts`**: Web Worker for GPU-free image/video upscaling with UpscalerJS
 - **`src/workers/backgroundRemover.worker.ts`**: Web Worker for background removal with @imgly/background-removal, supports processAll for batch output
+- **`src/workers/imageEraser.worker.ts`**: Web Worker for LaMa inpainting model (512x512, quantized) with onnxruntime-web WASM backend, smart crop around mask for better quality
 
 ## WaveSpeedAI API
 
@@ -193,7 +197,7 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - Asset file naming format: `{model-slug}_{YYYY-MM-DD}_{HHmmss}_{random}.{ext}`
 - Layout.tsx handles unified API key login screen - pages don't need individual ApiKeyRequired checks
 - Settings page (`/settings`) is a public path accessible without API key
-- Free Tools pages (`/free-tools`, `/free-tools/image`, `/free-tools/video`, `/free-tools/background-remover`) are public paths accessible without API key
+- Free Tools pages (`/free-tools`, `/free-tools/image`, `/free-tools/video`, `/free-tools/background-remover`, `/free-tools/image-eraser`) are public paths accessible without API key
 - Free Tools feature uses UpscalerJS with ESRGAN models for image/video upscaling (slim/medium/thick quality options)
 - Video Enhancer processes frames at 30 FPS using WebM muxer with VP9 codec
 - Upscaler uses Web Worker to keep UI responsive during heavy processing
@@ -201,6 +205,10 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - Background Remover displays all 3 outputs simultaneously: foreground (transparent background), background (subject removed), and mask (grayscale segmentation)
 - Background Remover processes all outputs in a single batch via `removeBackgroundAll` (model cached after first call)
 - Background Remover auto-detects GPU (WebGPU) support and falls back to CPU
+- Image Eraser uses LaMa inpainting model (512x512 input, quantized) via onnxruntime-web WASM backend for object removal
+- Image Eraser model is cached in browser Cache API after first download from Hugging Face (opencv/inpainting_lama repo)
+- Image Eraser uses smart crop (3x mask size, min 512x512) around masked area for better quality on large images
+- Image Eraser uses inline mask drawing (brush/eraser tools) with undo/redo support and feathered edge blending
 - Multi-phase progress system uses weighted phases to calculate overall progress (e.g., download: 30%, process: 70%)
 - ProcessingProgress component displays compact single-row UI: [phase dots] [spinner + label] [progress bar] [ETA] [%]
 - Progress phases are configured per-tool: BackgroundRemover (2 phases), ImageEnhancer (3 phases), VideoEnhancer (4 phases)

@@ -21,10 +21,9 @@ import { cn } from '@/lib/utils'
 type ModelType = 'slim' | 'medium' | 'thick'
 type ScaleType = '2x' | '3x' | '4x'
 
-// Phase configuration for video enhancer
+// Phase configuration for video enhancer (model loading is cached by browser)
 const PHASES = [
-  { id: 'download', labelKey: 'freeTools.progress.downloading', weight: 0.1 },
-  { id: 'process', labelKey: 'freeTools.progress.processingFrames', weight: 0.8 },
+  { id: 'process', labelKey: 'freeTools.progress.processingFrames', weight: 0.9 },
   { id: 'encode', labelKey: 'freeTools.progress.encoding', weight: 0.08 },
   { id: 'finalize', labelKey: 'freeTools.progress.finalizing', weight: 0.02 }
 ]
@@ -42,7 +41,6 @@ export function VideoEnhancerPage() {
   const [videoFile, setVideoFile] = useState<File | null>(null)
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
-  const [isLoadingModel, setIsLoadingModel] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [model, setModel] = useState<ModelType>('slim')
   const [scale, setScale] = useState<ScaleType>('2x')
@@ -61,24 +59,20 @@ export function VideoEnhancerPage() {
     updatePhase,
     completePhase,
     reset: resetProgress,
+    resetAndStart,
     complete: completeAllPhases
   } = useMultiPhaseProgress({ phases: PHASES })
 
   const { loadModel, upscale, dispose } = useUpscalerWorker({
-    onPhase: (phase) => {
-      if (phase === 'download') {
-        startPhase('download')
-      }
+    onPhase: () => {
+      // Model loading phases ignored - handled by browser caching
     },
-    onProgress: (phase, progressValue, detail) => {
-      if (phase === 'download') {
-        updatePhase('download', progressValue, detail)
-      }
+    onProgress: () => {
+      // Model loading progress ignored - handled by browser caching
     },
     onError: (error) => {
       console.error('Worker error:', error)
       setIsProcessing(false)
-      setIsLoadingModel(false)
     }
   })
 
@@ -130,11 +124,11 @@ export function VideoEnhancerPage() {
       e.stopPropagation()
       dragCounterRef.current = 0
       setIsDragging(false)
-      if (isProcessing || isLoadingModel) return
+      if (isProcessing) return
       const file = e.dataTransfer.files[0]
       if (file) handleFileSelect(file)
     },
-    [handleFileSelect, isProcessing, isLoadingModel]
+    [handleFileSelect, isProcessing]
   )
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -164,19 +158,13 @@ export function VideoEnhancerPage() {
     if (!videoRef.current || !canvasRef.current) return
 
     abortRef.current = false
-    setIsLoadingModel(true)
-    resetProgress()
+    setIsProcessing(true)
+    resetAndStart('process')
     setDownloadUrl(null)
-    startPhase('download')
 
     try {
-      // Load the selected model in worker
+      // Load the selected model in worker (cached by browser after first download)
       await loadModel(model, scale)
-      completePhase('download')
-
-      setIsLoadingModel(false)
-      setIsProcessing(true)
-      startPhase('process')
 
       const video = videoRef.current
       const outputCanvas = canvasRef.current
@@ -345,7 +333,6 @@ export function VideoEnhancerPage() {
       if ((error as Error).message !== 'Aborted') {
         console.error('Failed to process video:', error)
       }
-      setIsLoadingModel(false)
       setIsProcessing(false)
       // Reset video state on error
       if (videoRef.current) {
@@ -360,7 +347,6 @@ export function VideoEnhancerPage() {
   const stopProcessing = () => {
     abortRef.current = true
     setIsProcessing(false)
-    setIsLoadingModel(false)
     resetProgress()
     if (videoRef.current) {
       videoRef.current.pause()
@@ -468,7 +454,7 @@ export function VideoEnhancerPage() {
             <Button
               variant="outline"
               onClick={() => fileInputRef.current?.click()}
-              disabled={isProcessing || isLoadingModel}
+              disabled={isProcessing}
             >
               <Upload className="h-4 w-4 mr-2" />
               {t('freeTools.videoEnhancer.selectVideo')}
@@ -477,7 +463,7 @@ export function VideoEnhancerPage() {
             <Select
               value={model}
               onValueChange={(v) => setModel(v as ModelType)}
-              disabled={isProcessing || isLoadingModel}
+              disabled={isProcessing}
             >
               <SelectTrigger className="w-36">
                 <SelectValue />
@@ -498,7 +484,7 @@ export function VideoEnhancerPage() {
             <Select
               value={scale}
               onValueChange={(v) => setScale(v as ScaleType)}
-              disabled={isProcessing || isLoadingModel}
+              disabled={isProcessing}
             >
               <SelectTrigger className="w-20">
                 <SelectValue />
@@ -510,7 +496,7 @@ export function VideoEnhancerPage() {
               </SelectContent>
             </Select>
 
-            {!isProcessing && !isLoadingModel ? (
+            {!isProcessing ? (
               <Button onClick={startProcessing} className="gradient-bg">
                 <Play className="h-4 w-4 mr-2" />
                 {t('freeTools.videoEnhancer.start')}
@@ -605,16 +591,7 @@ export function VideoEnhancerPage() {
                   ) : (
                     !isProcessing && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground">
-                        {isLoadingModel ? (
-                          <>
-                            <Loader2 className="h-8 w-8 animate-spin mb-2" />
-                            <span className="text-sm">
-                              {t('freeTools.videoEnhancer.loadingModel')}
-                            </span>
-                          </>
-                        ) : (
-                          <span className="text-sm">—</span>
-                        )}
+                        <span className="text-sm">—</span>
                       </div>
                     )
                   )}

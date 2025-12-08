@@ -49,8 +49,8 @@ type Tool = 'brush' | 'eraser'
 
 // Phase configuration for image eraser
 const PHASES = [
-  { id: 'download', labelKey: 'freeTools.progress.downloading', weight: 0.4 },
-  { id: 'process', labelKey: 'freeTools.progress.processing', weight: 0.6 }
+  { id: 'download', labelKey: 'freeTools.progress.downloading', weight: 0.1 },
+  { id: 'process', labelKey: 'freeTools.progress.processing', weight: 0.9 }
 ]
 
 export function ImageEraserPage() {
@@ -68,7 +68,6 @@ export function ImageEraserPage() {
   const [loadedImage, setLoadedImage] = useState<HTMLImageElement | null>(null)
   const [resultImage, setResultImage] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
-  const [isModelLoading, setIsModelLoading] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [isDrawing, setIsDrawing] = useState(false)
   const [canvasSize, setCanvasSize] = useState({ width: 512, height: 512 })
@@ -93,23 +92,25 @@ export function ImageEraserPage() {
     startPhase,
     updatePhase,
     reset: resetProgress,
+    resetAndStart,
     complete: completeAllPhases
   } = useMultiPhaseProgress({ phases: PHASES })
 
   const { initModel, removeObjects, dispose, isInitialized } = useImageEraserWorker({
     onPhase: (phase) => {
-      startPhase(phase)
+      if (phase === 'download') {
+        startPhase('download')
+      } else if (phase === 'process') {
+        startPhase('process')
+      }
     },
     onProgress: (phase, progressValue, detail) => {
-      updatePhase(phase, progressValue, detail)
-    },
-    onReady: () => {
-      setIsModelLoading(false)
+      const phaseId = phase === 'download' ? 'download' : 'process'
+      updatePhase(phaseId, progressValue, detail)
     },
     onError: (error) => {
       console.error('Worker error:', error)
       setIsProcessing(false)
-      setIsModelLoading(false)
     }
   })
 
@@ -534,16 +535,11 @@ export function ImageEraserPage() {
     }
 
     setIsProcessing(true)
-    resetProgress()
+    resetAndStart('process')
 
     try {
-      // Initialize model if not already done
-      setIsModelLoading(true)
-      startPhase('download')
+      // Initialize model if not already done (instant if cached)
       await initModel()
-      setIsModelLoading(false)
-
-      startPhase('process')
 
       // Crop the region around the mask
       const croppedImage = cropCanvas(imageCanvas, bbox.x, bbox.y, bbox.width, bbox.height)
@@ -960,15 +956,13 @@ export function ImageEraserPage() {
 
             <Button
               onClick={handleRemoveObjects}
-              disabled={isProcessing || isModelLoading}
+              disabled={isProcessing}
               className="gradient-bg"
             >
-              {isProcessing || isModelLoading ? (
+              {isProcessing ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  {isModelLoading
-                    ? t('freeTools.progress.downloading')
-                    : t('freeTools.imageEraser.processing')}
+                  {t('freeTools.imageEraser.processing')}
                 </>
               ) : (
                 <>

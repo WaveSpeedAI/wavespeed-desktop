@@ -499,6 +499,7 @@
     },
     "progress": {
       "downloading": "मॉडल डाउनलोड हो रहा है",
+      "loading": "मॉडल लोड हो रहा है",
       "processing": "प्रोसेसिंग",
       "processingFrames": "फ्रेम प्रोसेस हो रहे हैं",
       "encoding": "एनकोडिंग",

@@ -33,9 +33,8 @@ type ScaleType = '2x' | '3x' | '4x'
 
 // Phase configuration for image enhancer
 const PHASES = [
-  { id: 'download', labelKey: 'freeTools.progress.downloading', weight: 0.2 },
-  { id: 'process', labelKey: 'freeTools.progress.processing', weight: 0.7 },
-  { id: 'finalize', labelKey: 'freeTools.progress.finalizing', weight: 0.1 }
+  { id: 'download', labelKey: 'freeTools.progress.downloading', weight: 0.1 },
+  { id: 'process', labelKey: 'freeTools.progress.processing', weight: 0.9 }
 ]
 
 export function ImageEnhancerPage() {
@@ -48,7 +47,6 @@ export function ImageEnhancerPage() {
   const [originalImage, setOriginalImage] = useState<string | null>(null)
   const [enhancedImage, setEnhancedImage] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
-  const [isLoadingModel, setIsLoadingModel] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [originalSize, setOriginalSize] = useState<{
     width: number
@@ -74,22 +72,28 @@ export function ImageEnhancerPage() {
     progress,
     startPhase,
     updatePhase,
-    completePhase,
     reset: resetProgress,
+    resetAndStart,
     complete: completeAllPhases
   } = useMultiPhaseProgress({ phases: PHASES })
 
   const { loadModel, upscale, dispose } = useUpscalerWorker({
     onPhase: (phase) => {
-      startPhase(phase)
+      // Start the corresponding phase when worker reports it
+      if (phase === 'download') {
+        startPhase('download')
+      } else if (phase === 'process') {
+        startPhase('process')
+      }
     },
     onProgress: (phase, progressValue, detail) => {
-      updatePhase(phase, progressValue, detail)
+      // Update the phase that worker reports
+      const phaseId = phase === 'download' ? 'download' : 'process'
+      updatePhase(phaseId, progressValue, detail)
     },
     onError: (error) => {
       console.error('Worker error:', error)
       setIsProcessing(false)
-      setIsLoadingModel(false)
     }
   })
 
@@ -123,11 +127,11 @@ export function ImageEnhancerPage() {
       e.stopPropagation()
       dragCounterRef.current = 0
       setIsDragging(false)
-      if (isProcessing || isLoadingModel) return
+      if (isProcessing) return
       const file = e.dataTransfer.files[0]
       if (file) handleFileSelect(file)
     },
-    [handleFileSelect, isProcessing, isLoadingModel]
+    [handleFileSelect, isProcessing]
   )
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -212,18 +216,12 @@ export function ImageEnhancerPage() {
   const handleEnhance = async () => {
     if (!originalImage || !originalSize || !canvasRef.current) return
 
-    setIsLoadingModel(true)
-    resetProgress()
-    startPhase('download')
+    setIsProcessing(true)
+    resetAndStart('process')
 
     try {
-      // Load the selected model in worker
+      // Load the selected model in worker (cached by browser after first download)
       await loadModel(model, scale)
-      completePhase('download')
-
-      setIsLoadingModel(false)
-      setIsProcessing(true)
-      startPhase('process')
 
       // Create source image and get ImageData
       const img = new Image()
@@ -243,10 +241,6 @@ export function ImageEnhancerPage() {
 
       // Upscale in worker
       const upscaledDataUrl = await upscale(imageData)
-      completePhase('process')
-
-      // Finalize phase
-      startPhase('finalize')
 
       // Get scale multiplier
       const scaleMultiplier = parseInt(scale.replace('x', ''))
@@ -277,7 +271,6 @@ export function ImageEnhancerPage() {
       console.error('Enhancement failed:', error)
     } finally {
       setIsProcessing(false)
-      setIsLoadingModel(false)
       dispose()
     }
   }
@@ -389,7 +382,7 @@ export function ImageEnhancerPage() {
             <Button
               variant="outline"
               onClick={() => fileInputRef.current?.click()}
-              disabled={isProcessing || isLoadingModel}
+              disabled={isProcessing}
             >
               <Upload className="h-4 w-4 mr-2" />
               {t('freeTools.imageEnhancer.selectImage')}
@@ -398,7 +391,7 @@ export function ImageEnhancerPage() {
             <Select
               value={model}
               onValueChange={(v) => setModel(v as ModelType)}
-              disabled={isProcessing || isLoadingModel}
+              disabled={isProcessing}
             >
               <SelectTrigger className="w-36">
                 <SelectValue />
@@ -419,7 +412,7 @@ export function ImageEnhancerPage() {
             <Select
               value={scale}
               onValueChange={(v) => setScale(v as ScaleType)}
-              disabled={isProcessing || isLoadingModel}
+              disabled={isProcessing}
             >
               <SelectTrigger className="w-20">
                 <SelectValue />
@@ -433,10 +426,10 @@ export function ImageEnhancerPage() {
 
             <Button
               onClick={handleEnhance}
-              disabled={isProcessing || isLoadingModel}
+              disabled={isProcessing}
               className="gradient-bg"
             >
-              {isProcessing || isLoadingModel ? (
+              {isProcessing ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   {t('freeTools.imageEnhancer.processing')}
@@ -553,7 +546,7 @@ export function ImageEnhancerPage() {
                       />
                     ) : (
                       <div className="flex flex-col items-center justify-center text-muted-foreground">
-                        {isProcessing || isLoadingModel ? (
+                        {isProcessing ? (
                           <>
                             <Loader2 className="h-8 w-8 animate-spin mb-2" />
                             <span className="text-sm">

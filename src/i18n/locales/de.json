@@ -499,6 +499,7 @@
     },
     "progress": {
       "downloading": "Modell herunterladen",
+      "loading": "Modell laden",
       "processing": "Verarbeitung",
       "processingFrames": "Frames verarbeiten",
       "encoding": "Kodierung",

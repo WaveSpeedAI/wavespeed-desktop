@@ -475,29 +475,44 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
   switch (type) {
     case 'init': {
       try {
-        // Phase: download
-        self.postMessage({
-          type: 'phase',
-          payload: { phase: 'download', id: payload?.id }
-        })
+        // Check if model is cached first
+        const cache = await caches.open(CACHE_NAME)
+        const cachedResponse = await cache.match(MODEL_URL)
 
-        const modelBuffer = await downloadModel((current, total) => {
+        let modelBuffer: ArrayBuffer
+
+        if (cachedResponse) {
+          // Model is cached - skip download phase, go straight to loading
           self.postMessage({
-            type: 'progress',
-            payload: {
-              phase: 'download',
-              progress: total > 0 ? (current / total) * 100 : 0,
-              detail: { current, total, unit: 'bytes' },
-              id: payload?.id
-            }
+            type: 'phase',
+            payload: { phase: 'loading', id: payload?.id }
           })
-        })
+          modelBuffer = await cachedResponse.arrayBuffer()
+        } else {
+          // Model not cached - show download phase
+          self.postMessage({
+            type: 'phase',
+            payload: { phase: 'download', id: payload?.id }
+          })
 
-        // Phase: loading
-        self.postMessage({
-          type: 'phase',
-          payload: { phase: 'loading', id: payload?.id }
-        })
+          modelBuffer = await downloadModel((current, total) => {
+            self.postMessage({
+              type: 'progress',
+              payload: {
+                phase: 'download',
+                progress: total > 0 ? (current / total) * 100 : 0,
+                detail: { current, total, unit: 'bytes' },
+                id: payload?.id
+              }
+            })
+          })
+
+          // Phase: loading (after download)
+          self.postMessage({
+            type: 'phase',
+            payload: { phase: 'loading', id: payload?.id }
+          })
+        }
 
         await initSession(modelBuffer)
 

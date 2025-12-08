@@ -75,9 +75,6 @@ self.onmessage = async (e: MessageEvent) => {
 
         upscaler = new Upscaler({ model: modelDef })
 
-        // Warmup to force model download
-        await upscaler.warmup([{ patchSize: 64, padding: 2 }])
-
         self.postMessage({
           type: 'progress',
           payload: {

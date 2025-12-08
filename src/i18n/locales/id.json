@@ -499,6 +499,7 @@
     },
     "progress": {
       "downloading": "Mengunduh model",
+      "loading": "Memuat model",
       "processing": "Memproses",
       "processingFrames": "Memproses frame",
       "encoding": "Mengkodekan",

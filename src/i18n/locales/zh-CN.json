@@ -499,6 +499,7 @@
     },
     "progress": {
       "downloading": "下载模型中",
+      "loading": "加载模型中",
       "processing": "处理中",
       "processingFrames": "处理帧中",
       "encoding": "编码中",

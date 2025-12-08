@@ -499,6 +499,7 @@
     },
     "progress": {
       "downloading": "Загрузка модели",
+      "loading": "Загрузка модели в память",
       "processing": "Обработка",
       "processingFrames": "Обработка кадров",
       "encoding": "Кодирование",

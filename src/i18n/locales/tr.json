@@ -499,6 +499,7 @@
     },
     "progress": {
       "downloading": "Model indiriliyor",
+      "loading": "Model yükleniyor",
       "processing": "İşleniyor",
       "processingFrames": "Kareler işleniyor",
       "encoding": "Kodlanıyor",

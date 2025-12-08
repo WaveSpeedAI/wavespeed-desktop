@@ -499,6 +499,7 @@
     },
     "progress": {
       "downloading": "تنزيل النموذج",
+      "loading": "جاري تحميل النموذج",
       "processing": "المعالجة",
       "processingFrames": "معالجة الإطارات",
       "encoding": "الترميز",

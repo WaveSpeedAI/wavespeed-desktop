@@ -27,8 +27,8 @@ interface ResultImages {
 
 // Phase configuration for background remover
 const PHASES = [
-  { id: 'download', labelKey: 'freeTools.progress.downloading', weight: 0.3 },
-  { id: 'process', labelKey: 'freeTools.progress.processing', weight: 0.7 }
+  { id: 'download', labelKey: 'freeTools.progress.downloading', weight: 0.1 },
+  { id: 'process', labelKey: 'freeTools.progress.processing', weight: 0.9 }
 ]
 
 export function BackgroundRemoverPage() {
@@ -50,6 +50,7 @@ export function BackgroundRemoverPage() {
     mask: null
   })
   const [isProcessing, setIsProcessing] = useState(false)
+  const [processingKey, setProcessingKey] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [originalSize, setOriginalSize] = useState<{
     width: number
@@ -67,15 +68,23 @@ export function BackgroundRemoverPage() {
     startPhase,
     updatePhase,
     reset: resetProgress,
+    resetAndStart,
     complete: completeAllPhases
   } = useMultiPhaseProgress({ phases: PHASES })
 
   const { removeBackgroundAll, dispose } = useBackgroundRemoverWorker({
     onPhase: (phase) => {
-      startPhase(phase)
+      // Start the corresponding phase when worker reports it
+      if (phase === 'download') {
+        startPhase('download')
+      } else if (phase === 'process') {
+        startPhase('process')
+      }
     },
     onProgress: (phase, progressValue, detail) => {
-      updatePhase(phase, progressValue, detail)
+      // Update the phase that worker reports
+      const phaseId = phase === 'download' ? 'download' : 'process'
+      updatePhase(phaseId, progressValue, detail)
     },
     onError: (error) => {
       console.error('Worker error:', error)
@@ -146,8 +155,8 @@ export function BackgroundRemoverPage() {
     if (!originalBlob) return
 
     setIsProcessing(true)
-    resetProgress()
-    startPhase('download')
+    setProcessingKey((k) => k + 1)
+    resetAndStart('process')
 
     try {
       // Process all three outputs in worker
@@ -377,6 +386,7 @@ export function BackgroundRemoverPage() {
 
           {/* Progress display */}
           <ProcessingProgress
+            key={processingKey}
             progress={progress}
             showPhases={true}
             showOverall={true}

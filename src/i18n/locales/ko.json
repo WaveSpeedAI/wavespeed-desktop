@@ -499,6 +499,7 @@
     },
     "progress": {
       "downloading": "모델 다운로드 중",
+      "loading": "모델 로딩 중",
       "processing": "처리 중",
       "processingFrames": "프레임 처리 중",
       "encoding": "인코딩 중",

@@ -499,6 +499,7 @@
     },
     "progress": {
       "downloading": "กำลังดาวน์โหลดโมเดล",
+      "loading": "กำลังโหลดโมเดล",
       "processing": "กำลังประมวลผล",
       "processingFrames": "กำลังประมวลผลเฟรม",
       "encoding": "กำลังเข้ารหัส",

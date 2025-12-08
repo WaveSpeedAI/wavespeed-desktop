@@ -499,6 +499,7 @@
     },
     "progress": {
       "downloading": "Đang tải xuống mô hình",
+      "loading": "Đang tải mô hình",
       "processing": "Đang xử lý",
       "processingFrames": "Đang xử lý khung hình",
       "encoding": "Đang mã hóa",

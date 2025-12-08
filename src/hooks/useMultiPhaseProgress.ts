@@ -138,6 +138,23 @@ export function useMultiPhaseProgress(options: UseMultiPhaseProgressOptions) {
     setIsActive(false)
   }, [options.phases])
 
+  // Reset and start a specific phase atomically (useful for re-running)
+  const resetAndStart = useCallback(
+    (phaseId: string) => {
+      setPhases(
+        options.phases.map((config) => ({
+          ...config,
+          progress: 0,
+          status: config.id === phaseId ? ('active' as PhaseStatus) : ('pending' as PhaseStatus),
+          detail: undefined
+        }))
+      )
+      setStartTime(Date.now())
+      setIsActive(true)
+    },
+    [options.phases]
+  )
+
   // Complete all phases (finish processing)
   const complete = useCallback(() => {
     setPhases((prev) =>
@@ -166,6 +183,7 @@ export function useMultiPhaseProgress(options: UseMultiPhaseProgressOptions) {
     completePhase,
     setError,
     reset,
+    resetAndStart,
     complete
   }
 }

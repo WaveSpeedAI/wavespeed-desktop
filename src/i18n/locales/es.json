@@ -499,6 +499,7 @@
     },
     "progress": {
       "downloading": "Descargando modelo",
+      "loading": "Cargando modelo",
       "processing": "Procesando",
       "processingFrames": "Procesando frames",
       "encoding": "Codificando",

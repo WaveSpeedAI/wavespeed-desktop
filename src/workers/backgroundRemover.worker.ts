@@ -69,12 +69,12 @@ self.onmessage = async (e: MessageEvent) => {
           }
         }
 
-        // Signal start of download phase
+        // Start in process phase - download phase only emitted if library fetches model
         self.postMessage({
           type: 'phase',
-          payload: { phase: 'download', id }
+          payload: { phase: 'process', id }
         })
-        lastPhase = 'download'
+        lastPhase = 'process'
 
         // Call the appropriate function based on output type
         let resultBlob: Blob
@@ -118,9 +118,11 @@ self.onmessage = async (e: MessageEvent) => {
         // Auto-detect GPU support
         const hasGpu = typeof navigator !== 'undefined' && 'gpu' in navigator
 
-        // Track total progress across all three operations
-        let completedOps = 0
+        // Total operations for progress calculation
         const totalOps = 3
+        const downloadWeight = 10 // Download is 10% of total progress
+        const processWeight = 90 // Processing is 90% of total progress
+        const perOpWeight = processWeight / totalOps // 30% per operation
 
         const createConfig = (opIndex: number): Config => ({
           model,
@@ -141,14 +143,16 @@ self.onmessage = async (e: MessageEvent) => {
               lastPhase = phase
             }
 
-            // Calculate progress: each op contributes 1/3 of total
-            // Download phase is shared (model cached after first), so only count once
+            // Calculate progress using opIndex for deterministic mapping:
+            // Download: 0-10%, Op 0: 10-40%, Op 1: 40-70%, Op 2: 70-100%
             let overallProgress: number
             if (isDownload) {
-              overallProgress = total > 0 ? (current / total) * 100 : 0
+              // Download progress scales to first 10%
+              overallProgress = total > 0 ? (current / total) * downloadWeight : 0
             } else {
+              // Each operation gets equal share of remaining 90%
               const opProgress = total > 0 ? (current / total) * 100 : 0
-              overallProgress = ((completedOps + opProgress / 100) / totalOps) * 100
+              overallProgress = downloadWeight + (opIndex * perOpWeight) + (opProgress / 100 * perOpWeight)
             }
 
             self.postMessage({
@@ -165,22 +169,17 @@ self.onmessage = async (e: MessageEvent) => {
           }
         })
 
-        // Signal start of download phase
+        // Start in process phase - download phase only emitted if library fetches model
         self.postMessage({
           type: 'phase',
-          payload: { phase: 'download', id }
+          payload: { phase: 'process', id }
         })
-        lastPhase = 'download'
+        lastPhase = 'process'
 
         // Process all three outputs (model is cached after first call)
         const foregroundBlob = await removeBackground(imageBlob, createConfig(0))
-        completedOps = 1
-
         const backgroundBlob = await removeForeground(imageBlob, createConfig(1))
-        completedOps = 2
-
         const maskBlob = await segmentForeground(imageBlob, createConfig(2))
-        completedOps = 3
 
         // Convert blobs to ArrayBuffers for transfer
         const foregroundBuffer = await foregroundBlob.arrayBuffer()

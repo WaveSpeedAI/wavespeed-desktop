@@ -499,6 +499,7 @@
     },
     "progress": {
       "downloading": "Memuat turun model",
+      "loading": "Memuatkan model",
       "processing": "Memproses",
       "processingFrames": "Memproses bingkai",
       "encoding": "Mengekod",

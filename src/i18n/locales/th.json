@@ -446,7 +446,10 @@
       "modelFast": "เร็ว",
       "modelBalanced": "สมดุล",
       "modelQuality": "คุณภาพ",
-      "eta": "~{{time}} เหลืออยู่"
+      "eta": "~{{time}} เหลืออยู่",
+      "sideBySide": "เทียบข้างกัน",
+      "comparison": "เปรียบเทียบแบบเลื่อน",
+      "dragToCompare": "ลากเพื่อเปรียบเทียบ"
     },
     "backgroundRemover": {
       "title": "ตัวลบพื้นหลัง",

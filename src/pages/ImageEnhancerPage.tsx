@@ -14,8 +14,19 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import { ArrowLeft, Upload, Download, Loader2, ImageUp, X } from 'lucide-react'
+import {
+  ArrowLeft,
+  Upload,
+  Download,
+  Loader2,
+  ImageUp,
+  X,
+  Columns2,
+  SplitSquareHorizontal
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+type ViewMode = 'sideBySide' | 'comparison'
 
 type ModelType = 'slim' | 'medium' | 'thick'
 type ScaleType = '2x' | '3x' | '4x'
@@ -53,6 +64,10 @@ export function ImageEnhancerPage() {
     'jpeg'
   )
   const [showPreview, setShowPreview] = useState(false)
+  const [viewMode, setViewMode] = useState<ViewMode>('sideBySide')
+  const [sliderPosition, setSliderPosition] = useState(50)
+  const comparisonRef = useRef<HTMLDivElement>(null)
+  const isDraggingSlider = useRef(false)
 
   // Multi-phase progress tracking
   const {
@@ -137,6 +152,62 @@ export function ImageEnhancerPage() {
       setIsDragging(false)
     }
   }, [])
+
+  // Comparison slider handlers
+  const handleSliderMove = useCallback((clientX: number) => {
+    if (!comparisonRef.current) return
+    const rect = comparisonRef.current.getBoundingClientRect()
+    const x = clientX - rect.left
+    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
+    setSliderPosition(percentage)
+  }, [])
+
+  const handleSliderMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault()
+      isDraggingSlider.current = true
+      handleSliderMove(e.clientX)
+
+      const handleMouseMove = (e: MouseEvent) => {
+        if (isDraggingSlider.current) {
+          handleSliderMove(e.clientX)
+        }
+      }
+
+      const handleMouseUp = () => {
+        isDraggingSlider.current = false
+        document.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener('mouseup', handleMouseUp)
+      }
+
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+    },
+    [handleSliderMove]
+  )
+
+  const handleSliderTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      isDraggingSlider.current = true
+      handleSliderMove(e.touches[0].clientX)
+
+      const handleTouchMove = (e: TouchEvent) => {
+        if (isDraggingSlider.current) {
+          handleSliderMove(e.touches[0].clientX)
+        }
+      }
+
+      const handleTouchEnd = () => {
+        isDraggingSlider.current = false
+        document.removeEventListener('touchmove', handleTouchMove)
+        document.removeEventListener('touchend', handleTouchEnd)
+      }
+
+      document.addEventListener('touchmove', handleTouchMove)
+      document.addEventListener('touchend', handleTouchEnd)
+    },
+    [handleSliderMove]
+  )
 
   const handleEnhance = async () => {
     if (!originalImage || !originalSize || !canvasRef.current) return
@@ -379,6 +450,28 @@ export function ImageEnhancerPage() {
             </Button>
             {enhancedImage && (
               <>
+                {/* View mode toggle */}
+                <div className="flex rounded-md border">
+                  <Button
+                    variant={viewMode === 'sideBySide' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    className="rounded-r-none border-0"
+                    onClick={() => setViewMode('sideBySide')}
+                    title={t('freeTools.imageEnhancer.sideBySide')}
+                  >
+                    <Columns2 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'comparison' ? 'secondary' : 'ghost'}
+                    size="sm"
+                    className="rounded-l-none border-0"
+                    onClick={() => setViewMode('comparison')}
+                    title={t('freeTools.imageEnhancer.comparison')}
+                  >
+                    <SplitSquareHorizontal className="h-4 w-4" />
+                  </Button>
+                </div>
+
                 <Select
                   value={downloadFormat}
                   onValueChange={(v) =>
@@ -410,70 +503,154 @@ export function ImageEnhancerPage() {
             showEta={true}
           />
 
-          {/* Side by side preview */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Original */}
+          {/* Preview area */}
+          {viewMode === 'sideBySide' || !enhancedImage ? (
+            /* Side by side preview */
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Original */}
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-medium">
+                      {t('freeTools.imageEnhancer.original')}
+                    </span>
+                    {originalSize && (
+                      <span className="text-xs text-muted-foreground">
+                        {originalSize.width} x {originalSize.height}
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative aspect-video bg-muted rounded-lg overflow-hidden flex items-center justify-center">
+                    <img
+                      src={originalImage}
+                      alt="Original"
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Enhanced */}
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-medium">
+                      {t('freeTools.imageEnhancer.enhanced')}
+                    </span>
+                    {enhancedSize && (
+                      <span className="text-xs text-muted-foreground">
+                        {enhancedSize.width} x {enhancedSize.height}
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative aspect-video bg-muted rounded-lg overflow-hidden flex items-center justify-center">
+                    {enhancedImage ? (
+                      <img
+                        src={enhancedImage}
+                        alt="Enhanced"
+                        className="max-w-full max-h-full object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => setShowPreview(true)}
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center text-muted-foreground">
+                        {isProcessing || isLoadingModel ? (
+                          <>
+                            <Loader2 className="h-8 w-8 animate-spin mb-2" />
+                            <span className="text-sm">
+                              {t('freeTools.imageEnhancer.processing')}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-sm">—</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+            /* Comparison slider view */
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium">
-                    {t('freeTools.imageEnhancer.original')}
-                  </span>
-                  {originalSize && (
-                    <span className="text-xs text-muted-foreground">
-                      {originalSize.width} x {originalSize.height}
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm font-medium">
+                      {t('freeTools.imageEnhancer.original')}
                     </span>
-                  )}
+                    <span className="text-xs text-muted-foreground">←</span>
+                    <span className="text-xs text-muted-foreground">
+                      {t('freeTools.imageEnhancer.dragToCompare')}
+                    </span>
+                    <span className="text-xs text-muted-foreground">→</span>
+                    <span className="text-sm font-medium">
+                      {t('freeTools.imageEnhancer.enhanced')}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    {originalSize && (
+                      <span>{originalSize.width} x {originalSize.height}</span>
+                    )}
+                    <span>→</span>
+                    {enhancedSize && (
+                      <span>{enhancedSize.width} x {enhancedSize.height}</span>
+                    )}
+                  </div>
                 </div>
-                <div className="relative aspect-video bg-muted rounded-lg overflow-hidden flex items-center justify-center">
+                <div
+                  ref={comparisonRef}
+                  className="relative aspect-video bg-muted rounded-lg overflow-hidden cursor-ew-resize select-none"
+                  onMouseDown={handleSliderMouseDown}
+                  onTouchStart={handleSliderTouchStart}
+                >
+                  {/* Enhanced image (full, background) */}
+                  <img
+                    src={enhancedImage}
+                    alt="Enhanced"
+                    className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                    draggable={false}
+                  />
+
+                  {/* Original image (clipped using clip-path) */}
                   <img
                     src={originalImage}
                     alt="Original"
-                    className="max-w-full max-h-full object-contain"
+                    className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                    style={{
+                      clipPath: `inset(0 ${100 - sliderPosition}% 0 0)`
+                    }}
+                    draggable={false}
                   />
-                </div>
-              </CardContent>
-            </Card>
 
-            {/* Enhanced */}
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium">
-                    {t('freeTools.imageEnhancer.enhanced')}
-                  </span>
-                  {enhancedSize && (
-                    <span className="text-xs text-muted-foreground">
-                      {enhancedSize.width} x {enhancedSize.height}
-                    </span>
-                  )}
-                </div>
-                <div className="relative aspect-video bg-muted rounded-lg overflow-hidden flex items-center justify-center">
-                  {enhancedImage ? (
-                    <img
-                      src={enhancedImage}
-                      alt="Enhanced"
-                      className="max-w-full max-h-full object-contain cursor-pointer hover:opacity-90 transition-opacity"
-                      onClick={() => setShowPreview(true)}
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center text-muted-foreground">
-                      {isProcessing || isLoadingModel ? (
-                        <>
-                          <Loader2 className="h-8 w-8 animate-spin mb-2" />
-                          <span className="text-sm">
-                            {t('freeTools.imageEnhancer.processing')}
-                          </span>
-                        </>
-                      ) : (
-                        <span className="text-sm">—</span>
-                      )}
+                  {/* Slider handle */}
+                  <div
+                    className="absolute top-0 bottom-0 w-0.5 bg-white cursor-ew-resize"
+                    style={{
+                      left: `${sliderPosition}%`,
+                      transform: 'translateX(-50%)',
+                      boxShadow: '0 0 0 1px rgba(0,0,0,0.3), 0 0 8px rgba(0,0,0,0.5)'
+                    }}
+                  >
+                    {/* Handle grip */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center border border-gray-200">
+                      <div className="flex gap-1">
+                        <div className="w-0.5 h-5 bg-gray-400 rounded-full" />
+                        <div className="w-0.5 h-5 bg-gray-400 rounded-full" />
+                      </div>
                     </div>
-                  )}
+                  </div>
+
+                  {/* Labels */}
+                  <div className="absolute bottom-3 left-3 px-2 py-1 bg-black/60 text-white text-xs rounded">
+                    {t('freeTools.imageEnhancer.original')}
+                  </div>
+                  <div className="absolute bottom-3 right-3 px-2 py-1 bg-black/60 text-white text-xs rounded">
+                    {t('freeTools.imageEnhancer.enhanced')}
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          </div>
+          )}
         </div>
       )}
 

@@ -446,7 +446,10 @@
       "modelFast": "Schnell",
       "modelBalanced": "Ausgewogen",
       "modelQuality": "Qualität",
-      "eta": "~{{time}} verbleibend"
+      "eta": "~{{time}} verbleibend",
+      "sideBySide": "Nebeneinander",
+      "comparison": "Schieberegler-Vergleich",
+      "dragToCompare": "Zum Vergleichen ziehen"
     },
     "backgroundRemover": {
       "title": "Hintergrund-Entferner",

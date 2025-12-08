@@ -446,7 +446,10 @@
       "modelFast": "तेज़",
       "modelBalanced": "संतुलित",
       "modelQuality": "गुणवत्ता",
-      "eta": "~{{time}} शेष"
+      "eta": "~{{time}} शेष",
+      "sideBySide": "साथ-साथ",
+      "comparison": "स्लाइडर तुलना",
+      "dragToCompare": "तुलना के लिए खींचें"
     },
     "backgroundRemover": {
       "title": "बैकग्राउंड रिमूवर",

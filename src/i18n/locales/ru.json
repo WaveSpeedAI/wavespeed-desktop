@@ -446,7 +446,10 @@
       "modelFast": "Быстрый",
       "modelBalanced": "Сбалансированный",
       "modelQuality": "Качество",
-      "eta": "~{{time}} осталось"
+      "eta": "~{{time}} осталось",
+      "sideBySide": "Рядом",
+      "comparison": "Сравнение ползунком",
+      "dragToCompare": "Перетащите для сравнения"
     },
     "backgroundRemover": {
       "title": "Удаление фона",

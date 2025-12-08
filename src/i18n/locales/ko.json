@@ -446,7 +446,10 @@
       "modelFast": "빠름",
       "modelBalanced": "균형",
       "modelQuality": "고품질",
-      "eta": "~{{time}} 남음"
+      "eta": "~{{time}} 남음",
+      "sideBySide": "나란히 비교",
+      "comparison": "슬라이더 비교",
+      "dragToCompare": "드래그하여 비교"
     },
     "backgroundRemover": {
       "title": "배경 제거",

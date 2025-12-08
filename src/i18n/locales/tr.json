@@ -446,7 +446,10 @@
       "modelFast": "Hızlı",
       "modelBalanced": "Dengeli",
       "modelQuality": "Kalite",
-      "eta": "~{{time}} kaldı"
+      "eta": "~{{time}} kaldı",
+      "sideBySide": "Yan yana",
+      "comparison": "Kaydırmalı karşılaştırma",
+      "dragToCompare": "Karşılaştırmak için sürükleyin"
     },
     "backgroundRemover": {
       "title": "Arka Plan Kaldırıcı",

@@ -446,7 +446,10 @@
       "modelFast": "Cepat",
       "modelBalanced": "Seimbang",
       "modelQuality": "Kualitas",
-      "eta": "~{{time}} tersisa"
+      "eta": "~{{time}} tersisa",
+      "sideBySide": "Berdampingan",
+      "comparison": "Perbandingan geser",
+      "dragToCompare": "Seret untuk membandingkan"
     },
     "backgroundRemover": {
       "title": "Penghapus Latar Belakang",

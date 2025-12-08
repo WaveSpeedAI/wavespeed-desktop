@@ -446,7 +446,10 @@
       "modelFast": "Nhanh",
       "modelBalanced": "Cân bằng",
       "modelQuality": "Chất lượng",
-      "eta": "~{{time}} còn lại"
+      "eta": "~{{time}} còn lại",
+      "sideBySide": "Cạnh nhau",
+      "comparison": "So sánh trượt",
+      "dragToCompare": "Kéo để so sánh"
     },
     "backgroundRemover": {
       "title": "Xóa Nền",

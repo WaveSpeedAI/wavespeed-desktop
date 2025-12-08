@@ -25,6 +25,12 @@ export function useMultiPhaseProgress(options: UseMultiPhaseProgressOptions) {
 
   // Calculate overall progress from weighted phases
   const overallProgress = useMemo(() => {
+    // If all phases are completed, return exactly 100 to avoid floating point issues
+    const allCompleted = phases.every((p) => p.status === 'completed')
+    if (allCompleted && phases.length > 0) {
+      return 100
+    }
+
     let totalWeight = 0
     let weightedProgress = 0
 

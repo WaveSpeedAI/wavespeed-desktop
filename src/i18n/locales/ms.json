@@ -446,7 +446,10 @@
       "modelFast": "Pantas",
       "modelBalanced": "Seimbang",
       "modelQuality": "Kualiti",
-      "eta": "~{{time}} lagi"
+      "eta": "~{{time}} lagi",
+      "sideBySide": "Bersebelahan",
+      "comparison": "Perbandingan gelongsor",
+      "dragToCompare": "Seret untuk membandingkan"
     },
     "backgroundRemover": {
       "title": "Penyingkir Latar Belakang",

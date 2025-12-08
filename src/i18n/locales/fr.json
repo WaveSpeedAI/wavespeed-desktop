@@ -446,7 +446,10 @@
       "modelFast": "Rapide",
       "modelBalanced": "Équilibré",
       "modelQuality": "Qualité",
-      "eta": "~{{time}} restant"
+      "eta": "~{{time}} restant",
+      "sideBySide": "Côte à côte",
+      "comparison": "Comparaison par curseur",
+      "dragToCompare": "Faites glisser pour comparer"
     },
     "backgroundRemover": {
       "title": "Suppresseur de Fond",

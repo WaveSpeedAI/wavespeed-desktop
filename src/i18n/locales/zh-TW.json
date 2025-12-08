@@ -446,7 +446,10 @@
       "modelFast": "快速",
       "modelBalanced": "均衡",
       "modelQuality": "高品質",
-      "eta": "~{{time}} 剩餘"
+      "eta": "~{{time}} 剩餘",
+      "sideBySide": "並排對比",
+      "comparison": "滑桿對比",
+      "dragToCompare": "拖曳對比"
     },
     "backgroundRemover": {
       "title": "背景移除器",

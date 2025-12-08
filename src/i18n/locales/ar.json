@@ -446,7 +446,10 @@
       "modelFast": "سريع",
       "modelBalanced": "متوازن",
       "modelQuality": "جودة",
-      "eta": "~{{time}} متبقي"
+      "eta": "~{{time}} متبقي",
+      "sideBySide": "جنباً إلى جنب",
+      "comparison": "مقارنة بالمنزلق",
+      "dragToCompare": "اسحب للمقارنة"
     },
     "backgroundRemover": {
       "title": "إزالة الخلفية",

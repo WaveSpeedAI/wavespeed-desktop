@@ -446,7 +446,10 @@
       "modelFast": "Rápido",
       "modelBalanced": "Equilibrado",
       "modelQuality": "Qualidade",
-      "eta": "~{{time}} restante"
+      "eta": "~{{time}} restante",
+      "sideBySide": "Lado a lado",
+      "comparison": "Comparação deslizante",
+      "dragToCompare": "Arraste para comparar"
     },
     "backgroundRemover": {
       "title": "Removedor de Fundo",

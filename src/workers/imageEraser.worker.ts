@@ -6,7 +6,7 @@
 import * as ort from 'onnxruntime-web'
 
 // Configure WASM paths to use CDN (required for Vite bundling)
-const ORT_WASM_VERSION = '1.23.0'
+const ORT_WASM_VERSION = '1.21.0'
 ort.env.wasm.wasmPaths = `https://cdn.jsdelivr.net/npm/onnxruntime-web@${ORT_WASM_VERSION}/dist/`
 
 // LaMa model from Hugging Face (quantized)

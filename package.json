@@ -60,7 +60,7 @@
     "i18next-browser-languagedetector": "^8.2.0",
     "lucide-react": "^0.454.0",
     "mp4-muxer": "^5.2.2",
-    "onnxruntime-web": "^1.23.2",
+    "onnxruntime-web": "1.21.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-dropzone": "^14.2.9",

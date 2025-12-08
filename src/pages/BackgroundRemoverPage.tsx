@@ -216,7 +216,25 @@ export function BackgroundRemoverPage() {
     const mimeType = `image/${downloadFormat}`
     // For PNG, maintain full quality for transparency; for JPEG/WebP, use high quality
     const quality = downloadFormat === 'png' ? undefined : 0.95
-    const dataUrl = canvas.toDataURL(mimeType, quality)
+
+    let dataUrl: string
+
+    // For JPEG with foreground/background (which have transparency), fill with white background
+    if (downloadFormat === 'jpeg' && (type === 'foreground' || type === 'background')) {
+      // Create a temporary canvas with white background
+      const tempCanvas = document.createElement('canvas')
+      tempCanvas.width = canvas.width
+      tempCanvas.height = canvas.height
+      const tempCtx = tempCanvas.getContext('2d')!
+      // Fill with white
+      tempCtx.fillStyle = '#ffffff'
+      tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height)
+      // Draw the original image on top
+      tempCtx.drawImage(canvas, 0, 0)
+      dataUrl = tempCanvas.toDataURL(mimeType, quality)
+    } else {
+      dataUrl = canvas.toDataURL(mimeType, quality)
+    }
 
     const link = document.createElement('a')
     link.href = dataUrl

@@ -12,7 +12,9 @@ import {
   resizeCanvas,
   getMaskBoundingBox,
   cropCanvas,
-  pasteWithBlending
+  pasteWithBlending,
+  addReflectPadding,
+  addMaskReflectPadding
 } from '@/lib/lamaUtils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -547,20 +549,45 @@ export function ImageEraserPage() {
       const croppedImage = cropCanvas(imageCanvas, bbox.x, bbox.y, bbox.width, bbox.height)
       const croppedMask = cropCanvas(maskCanvas, bbox.x, bbox.y, bbox.width, bbox.height)
 
+      // Add reflect padding at image edges to prevent seams
+      const padAmount = 32
+      const padding = {
+        top: bbox.y === 0 ? padAmount : 0,
+        left: bbox.x === 0 ? padAmount : 0,
+        bottom: originalSize && bbox.y + bbox.height >= originalSize.height ? padAmount : 0,
+        right: originalSize && bbox.x + bbox.width >= originalSize.width ? padAmount : 0
+      }
+      const hasPadding = padding.top > 0 || padding.left > 0 || padding.bottom > 0 || padding.right > 0
+
+      // Apply padding if needed
+      const processImage = hasPadding ? addReflectPadding(croppedImage, padding) : croppedImage
+      const processMask = hasPadding ? addMaskReflectPadding(croppedMask, padding) : croppedMask
+
       // Convert to Float32Arrays (worker handles resize to 768x768 internally)
-      const imageData = canvasToFloat32Array(croppedImage)
-      const maskData = maskCanvasToFloat32Array(croppedMask)
+      const imageData = canvasToFloat32Array(processImage)
+      const maskData = maskCanvasToFloat32Array(processMask)
 
       // Run inference (worker handles resize internally)
       const result = await removeObjects(
         imageData,
         maskData,
-        bbox.width,
-        bbox.height
+        processImage.width,
+        processImage.height
       )
 
       // Convert result back to canvas (DeepFillv2 outputs normalized 0-1)
-      const resultCanvas = tensorToCanvas(result.data, result.width, result.height, true)
+      let resultCanvas = tensorToCanvas(result.data, result.width, result.height, true)
+
+      // Crop away padding if it was added
+      if (hasPadding) {
+        resultCanvas = cropCanvas(
+          resultCanvas,
+          padding.left,
+          padding.top,
+          bbox.width,
+          bbox.height
+        )
+      }
 
       // Paste back into original image with blending
       pasteWithBlending(imageCanvas, resultCanvas, croppedMask, bbox.x, bbox.y, 12)

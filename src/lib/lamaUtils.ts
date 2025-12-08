@@ -7,6 +7,127 @@
 export const LAMA_INPUT_SIZE = 512
 
 /**
+ * Add reflect padding to a canvas on specified edges
+ * Returns new canvas with padding and the padding amounts
+ */
+export function addReflectPadding(
+  canvas: HTMLCanvasElement,
+  padding: { top: number; right: number; bottom: number; left: number }
+): HTMLCanvasElement {
+  const { top, right, bottom, left } = padding
+  const newWidth = canvas.width + left + right
+  const newHeight = canvas.height + top + bottom
+
+  const padded = document.createElement('canvas')
+  padded.width = newWidth
+  padded.height = newHeight
+  const ctx = padded.getContext('2d', { willReadFrequently: true })
+  if (!ctx) throw new Error('Failed to get canvas context')
+
+  // Draw original image in center
+  ctx.drawImage(canvas, left, top)
+
+  // Reflect padding on each edge
+  if (top > 0) {
+    // Top edge: flip vertically
+    ctx.save()
+    ctx.translate(left, top)
+    ctx.scale(1, -1)
+    ctx.drawImage(canvas, 0, 0, canvas.width, top, 0, 0, canvas.width, top)
+    ctx.restore()
+  }
+
+  if (bottom > 0) {
+    // Bottom edge: flip vertically
+    ctx.save()
+    ctx.translate(left, newHeight)
+    ctx.scale(1, -1)
+    ctx.drawImage(canvas, 0, canvas.height - bottom, canvas.width, bottom, 0, 0, canvas.width, bottom)
+    ctx.restore()
+  }
+
+  if (left > 0) {
+    // Left edge: flip horizontally
+    ctx.save()
+    ctx.translate(left, top)
+    ctx.scale(-1, 1)
+    ctx.drawImage(canvas, 0, 0, left, canvas.height, 0, 0, left, canvas.height)
+    ctx.restore()
+  }
+
+  if (right > 0) {
+    // Right edge: flip horizontally
+    ctx.save()
+    ctx.translate(newWidth, top)
+    ctx.scale(-1, 1)
+    ctx.drawImage(canvas, canvas.width - right, 0, right, canvas.height, 0, 0, right, canvas.height)
+    ctx.restore()
+  }
+
+  return padded
+}
+
+/**
+ * Add reflect padding to a mask canvas (extends mask to padded edges)
+ */
+export function addMaskReflectPadding(
+  canvas: HTMLCanvasElement,
+  padding: { top: number; right: number; bottom: number; left: number }
+): HTMLCanvasElement {
+  const { top, right, bottom, left } = padding
+  const newWidth = canvas.width + left + right
+  const newHeight = canvas.height + top + bottom
+
+  const padded = document.createElement('canvas')
+  padded.width = newWidth
+  padded.height = newHeight
+  const ctx = padded.getContext('2d', { willReadFrequently: true })
+  if (!ctx) throw new Error('Failed to get canvas context')
+
+  // Draw original mask in center
+  ctx.drawImage(canvas, left, top)
+
+  // For mask, extend the mask to cover padded edges (don't reflect)
+  // This ensures the model inpaints the padded area too
+  ctx.fillStyle = 'rgba(255, 80, 80, 1)'
+
+  // Get mask bounds to know where to extend from
+  const maskCtx = canvas.getContext('2d', { willReadFrequently: true })
+  if (maskCtx) {
+    const imgData = maskCtx.getImageData(0, 0, canvas.width, canvas.height)
+    let minX = canvas.width, minY = canvas.height, maxX = -1, maxY = -1
+    for (let y = 0; y < canvas.height; y++) {
+      for (let x = 0; x < canvas.width; x++) {
+        if (imgData.data[(y * canvas.width + x) * 4 + 3] > 0) {
+          minX = Math.min(minX, x)
+          minY = Math.min(minY, y)
+          maxX = Math.max(maxX, x)
+          maxY = Math.max(maxY, y)
+        }
+      }
+    }
+
+    if (maxX >= 0) {
+      // Extend mask into padded regions
+      if (top > 0) {
+        ctx.fillRect(left + minX, 0, maxX - minX + 1, top + minY)
+      }
+      if (bottom > 0) {
+        ctx.fillRect(left + minX, top + maxY + 1, maxX - minX + 1, bottom + (canvas.height - maxY - 1))
+      }
+      if (left > 0) {
+        ctx.fillRect(0, top + minY, left + minX, maxY - minY + 1)
+      }
+      if (right > 0) {
+        ctx.fillRect(left + maxX + 1, top + minY, right + (canvas.width - maxX - 1), maxY - minY + 1)
+      }
+    }
+  }
+
+  return padded
+}
+
+/**
  * Find bounding box of non-transparent pixels in mask canvas
  * Returns { x, y, width, height } or null if no mask
  * Ensures crop region always fully contains the mask with padding

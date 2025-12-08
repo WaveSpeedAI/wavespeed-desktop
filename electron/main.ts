@@ -1,10 +1,11 @@
-import { app, BrowserWindow, shell, ipcMain, dialog, Menu, clipboard } from 'electron'
+import { app, BrowserWindow, shell, ipcMain, dialog, Menu, clipboard, protocol, net } from 'electron'
 import { join } from 'path'
 import { existsSync, readFileSync, writeFileSync, mkdirSync, createWriteStream, unlinkSync, statSync } from 'fs'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { autoUpdater, UpdateInfo } from 'electron-updater'
 import https from 'https'
 import http from 'http'
+import { pathToFileURL } from 'url'
 
 // Linux-specific flags
 if (process.platform === 'linux') {
@@ -587,9 +588,28 @@ ipcMain.handle('set-update-channel', (_, channel: 'stable' | 'nightly') => {
   return true
 })
 
+// Register custom protocol for local asset files (must be before app.whenReady)
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'local-asset',
+    privileges: {
+      secure: true,
+      supportFetchAPI: true,
+      stream: true,
+      bypassCSP: true
+    }
+  }
+])
+
 // App lifecycle
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.wavespeed.desktop')
+
+  // Handle local-asset:// protocol for loading local files (videos, images, etc.)
+  protocol.handle('local-asset', (request) => {
+    const filePath = decodeURIComponent(request.url.replace('local-asset://', ''))
+    return net.fetch(pathToFileURL(filePath).href)
+  })
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)

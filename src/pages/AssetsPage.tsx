@@ -101,10 +101,11 @@ function formatDate(dateStr: string): string {
 // Check if running in desktop mode
 const isDesktopMode = !!window.electronAPI?.saveAsset
 
-// Get asset URL for preview (file:// in desktop, originalUrl in browser)
+// Get asset URL for preview (local-asset:// in desktop for proper video/audio support)
 function getAssetUrl(asset: AssetMetadata): string {
   if (asset.filePath) {
-    return `file://${asset.filePath}`
+    // Use custom protocol for local files to ensure proper media loading in Electron
+    return `local-asset://${encodeURIComponent(asset.filePath)}`
   }
   return asset.originalUrl || ''
 }
@@ -266,10 +267,16 @@ export function AssetsPage() {
   }, [openAssetLocation])
 
   const handleDownload = useCallback((asset: AssetMetadata) => {
-    const url = asset.originalUrl || (asset.filePath ? `file://${asset.filePath}` : '')
+    // For local files, open in file explorer instead of downloading
+    if (asset.filePath) {
+      openAssetLocation(asset.id)
+      return
+    }
+    
+    const url = asset.originalUrl
     if (!url) return
 
-    // Create a temporary link and trigger download
+    // Create a temporary link and trigger download for remote URLs
     const link = document.createElement('a')
     link.href = url
     link.download = asset.fileName
@@ -277,7 +284,7 @@ export function AssetsPage() {
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-  }, [])
+  }, [openAssetLocation])
 
   const handleSelectAll = useCallback(() => {
     if (selectedIds.size === filteredAssets.length) {

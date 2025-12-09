@@ -15,7 +15,7 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import { ArrowLeft, Upload, Download, Loader2, Play, Square, X } from 'lucide-react'
+import { ArrowLeft, Upload, Download, Loader2, Play, Square, X, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type ModelType = 'slim' | 'medium' | 'thick'
@@ -63,18 +63,26 @@ export function VideoEnhancerPage() {
     complete: completeAllPhases
   } = useMultiPhaseProgress({ phases: PHASES })
 
-  const { loadModel, upscale, dispose } = useUpscalerWorker({
+  const [error, setError] = useState<string | null>(null)
+
+  const { loadModel, upscale, dispose, hasFailed, retryWorker } = useUpscalerWorker({
     onPhase: () => {
       // Model loading phases ignored - handled by browser caching
     },
     onProgress: () => {
       // Model loading progress ignored - handled by browser caching
     },
-    onError: (error) => {
-      console.error('Worker error:', error)
+    onError: (err) => {
+      console.error('Worker error:', err)
+      setError(err)
       setIsProcessing(false)
     }
   })
+
+  const handleRetry = useCallback(() => {
+    setError(null)
+    retryWorker()
+  }, [retryWorker])
 
   // Check supported video formats
   useEffect(() => {
@@ -539,6 +547,17 @@ export function VideoEnhancerPage() {
             showOverall={true}
             showEta={true}
           />
+
+          {/* Error with retry button */}
+          {error && hasFailed() && !isProcessing && (
+            <div className="flex items-center justify-center gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+              <span className="text-sm text-destructive">{t('common.downloadFailed')}</span>
+              <Button variant="outline" size="sm" onClick={handleRetry}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                {t('common.retry')}
+              </Button>
+            </div>
+          )}
 
           {/* Side by side preview */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

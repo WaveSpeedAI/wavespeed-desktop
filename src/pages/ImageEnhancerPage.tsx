@@ -22,7 +22,8 @@ import {
   ImageUp,
   X,
   Columns2,
-  SplitSquareHorizontal
+  SplitSquareHorizontal,
+  RefreshCw
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -77,7 +78,9 @@ export function ImageEnhancerPage() {
     complete: completeAllPhases
   } = useMultiPhaseProgress({ phases: PHASES })
 
-  const { loadModel, upscale, dispose } = useUpscalerWorker({
+  const [error, setError] = useState<string | null>(null)
+
+  const { loadModel, upscale, dispose, hasFailed, retryWorker } = useUpscalerWorker({
     onPhase: (phase) => {
       // Start the corresponding phase when worker reports it
       if (phase === 'download') {
@@ -91,11 +94,17 @@ export function ImageEnhancerPage() {
       const phaseId = phase === 'download' ? 'download' : 'process'
       updatePhase(phaseId, progressValue, detail)
     },
-    onError: (error) => {
-      console.error('Worker error:', error)
+    onError: (err) => {
+      console.error('Worker error:', err)
+      setError(err)
       setIsProcessing(false)
     }
   })
+
+  const handleRetry = useCallback(() => {
+    setError(null)
+    retryWorker()
+  }, [retryWorker])
 
   const handleFileSelect = useCallback(
     (file: File) => {
@@ -495,6 +504,17 @@ export function ImageEnhancerPage() {
             showOverall={true}
             showEta={true}
           />
+
+          {/* Error with retry button */}
+          {error && hasFailed() && !isProcessing && (
+            <div className="flex items-center justify-center gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+              <span className="text-sm text-destructive">{t('common.downloadFailed')}</span>
+              <Button variant="outline" size="sm" onClick={handleRetry}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                {t('common.retry')}
+              </Button>
+            </div>
+          )}
 
           {/* Preview area */}
           {viewMode === 'sideBySide' || !enhancedImage ? (

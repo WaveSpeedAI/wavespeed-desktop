@@ -51,12 +51,18 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
   const idCounterRef = useRef(0)
   const optionsRef = useRef(options)
   const isInitializedRef = useRef(false)
+  const hasFailedRef = useRef(false)
 
   // Keep options ref up to date
   optionsRef.current = options
 
-  // Initialize worker
-  useEffect(() => {
+  const createWorker = useCallback(() => {
+    if (workerRef.current) {
+      workerRef.current.terminate()
+    }
+    isInitializedRef.current = false
+    hasFailedRef.current = false
+
     workerRef.current = new Worker(
       new URL('../workers/imageEraser.worker.ts', import.meta.url),
       { type: 'module' }
@@ -97,6 +103,7 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
           break
         }
         case 'error':
+          hasFailedRef.current = true
           optionsRef.current.onError?.(payload as string)
           // Reject all pending callbacks
           for (const [id] of callbacksRef.current) {
@@ -108,6 +115,11 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
           break
       }
     }
+  }, [])
+
+  // Initialize worker
+  useEffect(() => {
+    createWorker()
 
     return () => {
       workerRef.current?.postMessage({ type: 'dispose' })
@@ -115,7 +127,7 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
       workerRef.current = null
       isInitializedRef.current = false
     }
-  }, [])
+  }, [createWorker])
 
   const initModel = useCallback((): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -204,6 +216,11 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
   }, [])
 
   const isInitialized = useCallback(() => isInitializedRef.current, [])
+  const hasFailed = useCallback(() => hasFailedRef.current, [])
 
-  return { initModel, removeObjects, dispose, isInitialized }
+  const retryWorker = useCallback(() => {
+    createWorker()
+  }, [createWorker])
+
+  return { initModel, removeObjects, dispose, isInitialized, hasFailed, retryWorker }
 }

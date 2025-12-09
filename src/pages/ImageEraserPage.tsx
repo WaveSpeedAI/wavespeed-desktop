@@ -41,7 +41,8 @@ import {
   Trash2,
   ZoomIn,
   ZoomOut,
-  Maximize2
+  Maximize2,
+  RefreshCw
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -96,7 +97,9 @@ export function ImageEraserPage() {
     complete: completeAllPhases
   } = useMultiPhaseProgress({ phases: PHASES })
 
-  const { initModel, removeObjects, dispose, isInitialized } = useImageEraserWorker({
+  const [error, setError] = useState<string | null>(null)
+
+  const { initModel, removeObjects, dispose, isInitialized, hasFailed, retryWorker } = useImageEraserWorker({
     onPhase: (phase) => {
       if (phase === 'download') {
         startPhase('download')
@@ -108,11 +111,20 @@ export function ImageEraserPage() {
       const phaseId = phase === 'download' ? 'download' : 'process'
       updatePhase(phaseId, progressValue, detail)
     },
-    onError: (error) => {
-      console.error('Worker error:', error)
+    onReady: () => {
+      setError(null)
+    },
+    onError: (err) => {
+      console.error('Worker error:', err)
+      setError(err)
       setIsProcessing(false)
     }
   })
+
+  const handleRetry = useCallback(() => {
+    setError(null)
+    retryWorker()
+  }, [retryWorker])
 
   // Measure available container size on mount and window resize
   useEffect(() => {
@@ -980,6 +992,17 @@ export function ImageEraserPage() {
             showOverall={true}
             showEta={true}
           />
+
+          {/* Error with retry button */}
+          {error && hasFailed() && !isProcessing && (
+            <div className="flex items-center justify-center gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+              <span className="text-sm text-destructive">{t('common.downloadFailed')}</span>
+              <Button variant="outline" size="sm" onClick={handleRetry}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                {t('common.retry')}
+              </Button>
+            </div>
+          )}
 
           {/* Canvas area - single unified view */}
           <Card>

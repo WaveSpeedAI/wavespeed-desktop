@@ -14,7 +14,7 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import { ArrowLeft, Upload, Download, Loader2, Eraser, X } from 'lucide-react'
+import { ArrowLeft, Upload, Download, Loader2, Eraser, X, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type ModelType = 'isnet_quint8' | 'isnet_fp16' | 'isnet'
@@ -72,7 +72,9 @@ export function BackgroundRemoverPage() {
     complete: completeAllPhases
   } = useMultiPhaseProgress({ phases: PHASES })
 
-  const { removeBackgroundAll, dispose } = useBackgroundRemoverWorker({
+  const [error, setError] = useState<string | null>(null)
+
+  const { removeBackgroundAll, dispose, retryWorker, hasFailed } = useBackgroundRemoverWorker({
     onPhase: (phase) => {
       // Start the corresponding phase when worker reports it
       if (phase === 'download') {
@@ -86,11 +88,17 @@ export function BackgroundRemoverPage() {
       const phaseId = phase === 'download' ? 'download' : 'process'
       updatePhase(phaseId, progressValue, detail)
     },
-    onError: (error) => {
-      console.error('Worker error:', error)
+    onError: (err) => {
+      console.error('Worker error:', err)
+      setError(err)
       setIsProcessing(false)
     }
   })
+
+  const handleRetry = useCallback(() => {
+    setError(null)
+    retryWorker()
+  }, [retryWorker])
 
   const handleFileSelect = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) return
@@ -410,6 +418,17 @@ export function BackgroundRemoverPage() {
             showOverall={true}
             showEta={true}
           />
+
+          {/* Error with retry button */}
+          {error && hasFailed() && !isProcessing && (
+            <div className="flex items-center justify-center gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+              <span className="text-sm text-destructive">{t('common.downloadFailed')}</span>
+              <Button variant="outline" size="sm" onClick={handleRetry}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                {t('common.retry')}
+              </Button>
+            </div>
+          )}
 
           {/* Original + Results grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">

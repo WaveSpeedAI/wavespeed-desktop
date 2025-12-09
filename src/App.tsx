@@ -47,6 +47,7 @@ function App() {
         <Route path="free-tools/image" element={<PersistentPagePlaceholder />} />
         <Route path="free-tools/background-remover" element={<PersistentPagePlaceholder />} />
         <Route path="free-tools/image-eraser" element={<PersistentPagePlaceholder />} />
+        <Route path="free-tools/segment-anything" element={<PersistentPagePlaceholder />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
     </Routes>

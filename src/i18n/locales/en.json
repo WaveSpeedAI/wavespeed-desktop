@@ -8,6 +8,7 @@
     "close": "Close",
     "done": "Done",
     "refresh": "Refresh",
+    "retry": "Retry",
     "search": "Search",
     "clear": "Clear",
     "copy": "Copy",
@@ -28,7 +29,8 @@
     "error": "Error",
     "success": "Success",
     "warning": "Warning",
-    "selectAll": "Select All"
+    "selectAll": "Select All",
+    "downloadFailed": "Download failed. Please check your network connection."
   },
   "nav": {
     "models": "Models",
@@ -496,6 +498,20 @@
       "redoEdit": "Redo removal",
       "hint": "Draw over objects you want to remove, then click Remove Objects",
       "resultPlaceholder": "Result will appear here"
+    },
+    "segmentAnything": {
+      "title": "Segment Anything",
+      "description": "Select and cut out any object with a single click",
+      "selectImage": "Select Image",
+      "orDragDrop": "or drag and drop",
+      "processing": "Processing image...",
+      "hoverToPreview": "Hover over objects to preview segmentation",
+      "clickToRefine": "Click to add more points, right-click to exclude areas",
+      "resetImage": "Reset Image",
+      "clearPoints": "Clear Points",
+      "clearPointsTooltip": "Clear all points and return to hover preview mode",
+      "cutMask": "Cut Mask",
+      "hint": "Left-click to include areas, right-click to exclude areas"
     },
     "progress": {
       "downloading": "Downloading model",

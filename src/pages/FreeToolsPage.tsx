@@ -2,13 +2,14 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Video, ImageUp, Eraser, Wand2, ArrowRight } from 'lucide-react'
+import { Video, ImageUp, Eraser, Wand2, ArrowRight, MousePointer2 } from 'lucide-react'
 
 // Import tool demo images
-import videoEnhancerImg from '../../build/images/Video Enhancer.jpeg'
-import imageEnhancerImg from '../../build/images/Image Enhancer.jpeg'
-import backgroundRemoverImg from '../../build/images/Background Remover.png'
-import imageEraserImg from '../../build/images/Image Eraser.png'
+import videoEnhancerImg from '../../build/images/VideoEnhancer.jpeg'
+import imageEnhancerImg from '../../build/images/ImageEnhancer.jpeg'
+import backgroundRemoverImg from '../../build/images/BackgroundRemover.jpeg'
+import imageEraserImg from '../../build/images/ImageEraser.jpeg'
+import freeToolImg from '../../build/images/FreeTool.jpeg'
 
 export function FreeToolsPage() {
   const { t } = useTranslation()
@@ -50,6 +51,15 @@ export function FreeToolsPage() {
       route: '/free-tools/image-eraser',
       gradient: 'from-orange-500/20 via-red-500/10 to-transparent',
       image: imageEraserImg
+    },
+    {
+      id: 'segment-anything',
+      icon: MousePointer2,
+      titleKey: 'freeTools.segmentAnything.title',
+      descriptionKey: 'freeTools.segmentAnything.description',
+      route: '/free-tools/segment-anything',
+      gradient: 'from-pink-500/20 via-rose-500/10 to-transparent',
+      image: freeToolImg
     }
   ]
 

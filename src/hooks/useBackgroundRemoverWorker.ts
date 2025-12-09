@@ -53,12 +53,17 @@ export function useBackgroundRemoverWorker(
   const callbacksAllRef = useRef<Map<number, (result: AllOutputsResult) => void>>(new Map())
   const idCounterRef = useRef(0)
   const optionsRef = useRef(options)
+  const hasFailedRef = useRef(false)
 
   // Keep options ref up to date
   optionsRef.current = options
 
-  // Initialize worker
-  useEffect(() => {
+  const createWorker = useCallback(() => {
+    if (workerRef.current) {
+      workerRef.current.terminate()
+    }
+    hasFailedRef.current = false
+
     workerRef.current = new Worker(
       new URL('../workers/backgroundRemover.worker.ts', import.meta.url),
       { type: 'module' }
@@ -104,17 +109,23 @@ export function useBackgroundRemoverWorker(
           break
         }
         case 'error':
+          hasFailedRef.current = true
           optionsRef.current.onError?.(payload as string)
           break
       }
     }
+  }, [])
+
+  // Initialize worker
+  useEffect(() => {
+    createWorker()
 
     return () => {
       workerRef.current?.postMessage({ type: 'dispose' })
       workerRef.current?.terminate()
       workerRef.current = null
     }
-  }, [])
+  }, [createWorker])
 
   const removeBackground = useCallback(
     (
@@ -184,5 +195,11 @@ export function useBackgroundRemoverWorker(
     workerRef.current?.postMessage({ type: 'dispose' })
   }, [])
 
-  return { removeBackground, removeBackgroundAll, dispose }
+  const retryWorker = useCallback(() => {
+    createWorker()
+  }, [createWorker])
+
+  const hasFailed = useCallback(() => hasFailedRef.current, [])
+
+  return { removeBackground, removeBackgroundAll, dispose, retryWorker, hasFailed }
 }

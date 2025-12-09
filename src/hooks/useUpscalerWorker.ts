@@ -53,12 +53,17 @@ export function useUpscalerWorker(options: UseUpscalerWorkerOptions = {}) {
   const callbacksRef = useRef<Map<number, (result: string) => void>>(new Map())
   const idCounterRef = useRef(0)
   const optionsRef = useRef(options)
+  const hasFailedRef = useRef(false)
 
   // Keep options ref up to date
   optionsRef.current = options
 
-  // Initialize worker
-  useEffect(() => {
+  const createWorker = useCallback(() => {
+    if (workerRef.current) {
+      workerRef.current.terminate()
+    }
+    hasFailedRef.current = false
+
     workerRef.current = new Worker(
       new URL('../workers/upscaler.worker.ts', import.meta.url),
       { type: 'module' }
@@ -90,17 +95,23 @@ export function useUpscalerWorker(options: UseUpscalerWorkerOptions = {}) {
           break
         }
         case 'error':
+          hasFailedRef.current = true
           optionsRef.current.onError?.(payload as string)
           break
       }
     }
+  }, [])
+
+  // Initialize worker
+  useEffect(() => {
+    createWorker()
 
     return () => {
       workerRef.current?.postMessage({ type: 'dispose' })
       workerRef.current?.terminate()
       workerRef.current = null
     }
-  }, [])
+  }, [createWorker])
 
   const loadModel = useCallback(
     (model: ModelType, scale: ScaleType): Promise<void> => {
@@ -157,5 +168,11 @@ export function useUpscalerWorker(options: UseUpscalerWorkerOptions = {}) {
     workerRef.current?.postMessage({ type: 'dispose' })
   }, [])
 
-  return { loadModel, upscale, dispose }
+  const hasFailed = useCallback(() => hasFailedRef.current, [])
+
+  const retryWorker = useCallback(() => {
+    createWorker()
+  }, [createWorker])
+
+  return { loadModel, upscale, dispose, hasFailed, retryWorker }
 }

@@ -68,6 +68,7 @@ wavespeed-desktop/
 - **`src/pages/VideoEnhancerPage.tsx`**: Video upscaling frame-by-frame with progress and ETA
 - **`src/pages/BackgroundRemoverPage.tsx`**: Background removal displaying all 3 outputs (foreground, background, mask) simultaneously
 - **`src/pages/ImageEraserPage.tsx`**: Object removal using LaMa inpainting model with inline mask drawing and smart crop
+- **`src/pages/SegmentAnythingPage.tsx`**: Interactive object segmentation using SlimSAM model with point prompts
 - **`src/lib/schemaToForm.ts`**: Converts API schema to form field configurations
 - **`src/lib/lamaUtils.ts`**: Image/tensor conversion utilities for inpainting models (canvasToFloat32Array, maskCanvasToFloat32Array, tensorToCanvas)
 - **`src/lib/maskUtils.ts`**: Mask utility functions (flood fill, invert, video frame extraction)
@@ -75,11 +76,13 @@ wavespeed-desktop/
 - **`src/hooks/useUpscalerWorker.ts`**: Hook for managing upscaler Web Worker with phase/progress callbacks
 - **`src/hooks/useBackgroundRemoverWorker.ts`**: Hook for managing background remover Web Worker with removeBackgroundAll for batch processing
 - **`src/hooks/useImageEraserWorker.ts`**: Hook for managing image eraser Web Worker with LaMa model initialization and object removal
+- **`src/hooks/useSegmentAnythingWorker.ts`**: Hook for managing SAM Web Worker with segmentImage and decodeMask methods
 - **`src/hooks/useMultiPhaseProgress.ts`**: Hook for multi-phase progress state management with weighted phases, ETA calculation
 - **`src/components/shared/ProcessingProgress.tsx`**: Compact single-row progress component with phase indicators, status, and ETA
 - **`src/workers/upscaler.worker.ts`**: Web Worker for GPU-free image/video upscaling with UpscalerJS
 - **`src/workers/backgroundRemover.worker.ts`**: Web Worker for background removal with @imgly/background-removal, supports processAll for batch output
 - **`src/workers/imageEraser.worker.ts`**: Web Worker for LaMa inpainting model (512x512, quantized) with onnxruntime-web WASM backend, smart crop around mask for better quality
+- **`src/workers/segmentAnything.worker.ts`**: Web Worker for Segment Anything (SlimSAM) model using @xenova/transformers for interactive object segmentation
 
 ## WaveSpeedAI API
 
@@ -197,7 +200,7 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - Asset file naming format: `{model-slug}_{YYYY-MM-DD}_{HHmmss}_{random}.{ext}`
 - Layout.tsx handles unified API key login screen - pages don't need individual ApiKeyRequired checks
 - Settings page (`/settings`) is a public path accessible without API key
-- Free Tools pages (`/free-tools`, `/free-tools/image`, `/free-tools/video`, `/free-tools/background-remover`, `/free-tools/image-eraser`) are public paths accessible without API key
+- Free Tools pages (`/free-tools`, `/free-tools/image`, `/free-tools/video`, `/free-tools/background-remover`, `/free-tools/image-eraser`, `/free-tools/segment-anything`) are public paths accessible without API key
 - Free Tools feature uses UpscalerJS with ESRGAN models for image/video upscaling (slim/medium/thick quality options)
 - Video Enhancer processes frames at 30 FPS using WebM muxer with VP9 codec
 - Upscaler uses Web Worker to keep UI responsive during heavy processing
@@ -219,3 +222,7 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - MaskEditor supports undo/redo (Ctrl+Z, Ctrl+Shift+Z) with up to 50 history states
 - MaskEditor auto-detects reference images/videos from form values (fields ending with `_image`, `image_url`, `_video`, `video_url`)
 - Free Tools pages use persistent rendering (lazy-mounted after first visit) to preserve state during navigation
+- Segment Anything uses SlimSAM model (Xenova/slimsam-77-uniform) via @xenova/transformers for interactive object segmentation
+- Segment Anything uses two-step process: (1) segmentImage extracts embeddings once, (2) decodeMask generates masks from point prompts instantly
+- Segment Anything supports positive (include) and negative (exclude) point prompts, right-click for negative points
+- Segment Anything model is downloaded and cached by @xenova/transformers on first use

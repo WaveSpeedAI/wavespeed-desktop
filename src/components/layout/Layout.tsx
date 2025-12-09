@@ -16,6 +16,7 @@ import { VideoEnhancerPage } from '@/pages/VideoEnhancerPage'
 import { ImageEnhancerPage } from '@/pages/ImageEnhancerPage'
 import { BackgroundRemoverPage } from '@/pages/BackgroundRemoverPage'
 import { ImageEraserPage } from '@/pages/ImageEraserPage'
+import { SegmentAnythingPage } from '@/pages/SegmentAnythingPage'
 
 export function Layout() {
   const { t } = useTranslation()
@@ -37,7 +38,7 @@ export function Layout() {
 
   // Track visits to persistent pages and last visited free-tools page
   useEffect(() => {
-    const persistentPaths = ['/free-tools/video', '/free-tools/image', '/free-tools/background-remover', '/free-tools/image-eraser']
+    const persistentPaths = ['/free-tools/video', '/free-tools/image', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything']
     if (persistentPaths.includes(location.pathname)) {
       // Track for lazy mounting
       if (!visitedPages.has(location.pathname)) {
@@ -288,7 +289,7 @@ export function Layout() {
           {requiresLogin ? loginContent : (
             <>
               {/* Regular routes via Outlet */}
-              <div className={location.pathname === '/free-tools/video' || location.pathname === '/free-tools/image' || location.pathname === '/free-tools/background-remover' || location.pathname === '/free-tools/image-eraser' ? 'hidden' : 'h-full overflow-auto'}>
+              <div className={location.pathname === '/free-tools/video' || location.pathname === '/free-tools/image' || location.pathname === '/free-tools/background-remover' || location.pathname === '/free-tools/image-eraser' || location.pathname === '/free-tools/segment-anything' ? 'hidden' : 'h-full overflow-auto'}>
                 <Outlet />
               </div>
               {/* Persistent Free Tools pages - mounted once visited, then persist via CSS show/hide */}
@@ -310,6 +311,11 @@ export function Layout() {
               {visitedPages.has('/free-tools/image-eraser') && (
                 <div className={location.pathname === '/free-tools/image-eraser' ? 'h-full overflow-auto' : 'hidden'}>
                   <ImageEraserPage />
+                </div>
+              )}
+              {visitedPages.has('/free-tools/segment-anything') && (
+                <div className={location.pathname === '/free-tools/segment-anything' ? 'h-full overflow-auto' : 'hidden'}>
+                  <SegmentAnythingPage />
                 </div>
               )}
             </>

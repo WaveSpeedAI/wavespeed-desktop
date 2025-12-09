@@ -100,7 +100,7 @@ self.onmessage = async (e: MessageEvent) => {
             type: 'result',
             payload: { arrayBuffer, id }
           },
-          [arrayBuffer]
+          { transfer: [arrayBuffer] }
         )
         break
       }
@@ -196,7 +196,7 @@ self.onmessage = async (e: MessageEvent) => {
               id
             }
           },
-          [foregroundBuffer, backgroundBuffer, maskBuffer]
+          { transfer: [foregroundBuffer, backgroundBuffer, maskBuffer] }
         )
         break
       }

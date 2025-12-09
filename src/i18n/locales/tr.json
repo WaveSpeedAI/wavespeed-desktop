@@ -28,7 +28,9 @@
     "success": "Başarılı",
     "warning": "Uyarı",
     "selectAll": "Tümünü seç",
-    "done": "Tamamlandı"
+    "done": "Tamamlandı",
+    "retry": "Yeniden Dene",
+    "downloadFailed": "İndirme başarısız. Lütfen ağ bağlantınızı kontrol edin."
   },
   "nav": {
     "models": "Modeller",
@@ -496,6 +498,20 @@
       "redoEdit": "Kaldırmayı yinele",
       "hint": "Kaldırmak istediğiniz nesnelerin üzerine çizin, ardından Nesneleri Kaldır'a tıklayın",
       "resultPlaceholder": "Sonuç burada görünecek"
+    },
+    "segmentAnything": {
+      "title": "Her Şeyi Segmentler",
+      "description": "Tek tıkla herhangi bir nesneyi seçin ve kesin",
+      "selectImage": "Görsel Seç",
+      "orDragDrop": "veya sürükleyip bırakın",
+      "processing": "Görsel işleniyor...",
+      "hoverToPreview": "Segmentasyonu önizlemek için nesnelerin üzerine gelin",
+      "clickToRefine": "Nokta eklemek için tıklayın, alanları hariç tutmak için sağ tıklayın",
+      "resetImage": "Görseli sıfırla",
+      "clearPoints": "Noktaları temizle",
+      "clearPointsTooltip": "Tüm noktaları temizle ve hover önizleme moduna dön",
+      "cutMask": "Maskeyi kes",
+      "hint": "Dahil etmek için sol tık, hariç tutmak için sağ tık"
     },
     "progress": {
       "downloading": "Model indiriliyor",

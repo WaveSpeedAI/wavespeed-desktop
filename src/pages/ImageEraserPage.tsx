@@ -9,7 +9,6 @@ import {
   maskCanvasToFloat32Array,
   tensorToCanvas,
   canvasToBlob,
-  resizeCanvas,
   getMaskBoundingBox,
   cropCanvas,
   pasteWithBlending,
@@ -99,7 +98,7 @@ export function ImageEraserPage() {
 
   const [error, setError] = useState<string | null>(null)
 
-  const { initModel, removeObjects, dispose, isInitialized, hasFailed, retryWorker } = useImageEraserWorker({
+  const { initModel, removeObjects, dispose, hasFailed, retryWorker } = useImageEraserWorker({
     onPhase: (phase) => {
       if (phase === 'download') {
         startPhase('download')

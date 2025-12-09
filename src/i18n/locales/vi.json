@@ -28,7 +28,9 @@
     "error": "Lỗi",
     "success": "Thành công",
     "warning": "Cảnh báo",
-    "selectAll": "Chọn tất cả"
+    "selectAll": "Chọn tất cả",
+    "retry": "Thử lại",
+    "downloadFailed": "Tải xuống thất bại. Vui lòng kiểm tra kết nối mạng của bạn."
   },
   "nav": {
     "models": "Mô hình",
@@ -506,6 +508,20 @@
       "finalizing": "Đang hoàn tất",
       "overall": "Tổng thể",
       "remaining": "còn lại"
+    },
+    "segmentAnything": {
+      "title": "Phân Đoạn Mọi Thứ",
+      "description": "Chọn và cắt bất kỳ đối tượng nào chỉ với một cú nhấp",
+      "selectImage": "Chọn Hình ảnh",
+      "orDragDrop": "hoặc kéo và thả",
+      "processing": "Đang xử lý hình ảnh...",
+      "hoverToPreview": "Di chuột qua đối tượng để xem trước phân đoạn",
+      "clickToRefine": "Nhấp để thêm điểm, nhấp chuột phải để loại trừ vùng",
+      "resetImage": "Đặt lại hình ảnh",
+      "clearPoints": "Xóa điểm",
+      "clearPointsTooltip": "Xóa tất cả điểm và quay lại chế độ xem trước khi di chuột",
+      "cutMask": "Cắt Mặt nạ",
+      "hint": "Nhấp chuột trái để bao gồm, nhấp chuột phải để loại trừ vùng"
     }
   }
 }

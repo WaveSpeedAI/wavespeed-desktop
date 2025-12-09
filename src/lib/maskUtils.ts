@@ -182,3 +182,107 @@ export function fillCanvasWhite(ctx: CanvasRenderingContext2D): void {
   ctx.fillStyle = '#FFFFFF'
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 }
+
+/**
+ * Compute distance to nearest edge (outside pixel) for each inside pixel
+ * Uses a brute-force approach with limited search radius for performance
+ */
+function computeDistanceToEdge(
+  binary: Uint8Array,
+  width: number,
+  height: number,
+  searchRadius: number
+): Float32Array {
+  const dist = new Float32Array(width * height)
+
+  // For each inside pixel, find distance to nearest outside pixel
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const idx = y * width + x
+      if (binary[idx] === 0) {
+        dist[idx] = 0
+        continue
+      }
+
+      // Check if this is an edge pixel (adjacent to outside)
+      let minDist = searchRadius + 1 // Default to max if no edge found
+
+      for (let dy = -searchRadius; dy <= searchRadius; dy++) {
+        for (let dx = -searchRadius; dx <= searchRadius; dx++) {
+          const nx = x + dx
+          const ny = y + dy
+          if (nx < 0 || nx >= width || ny < 0 || ny >= height) {
+            // Treat out-of-bounds as outside
+            const d = Math.sqrt(dx * dx + dy * dy)
+            if (d < minDist) minDist = d
+          } else if (binary[ny * width + nx] === 0) {
+            const d = Math.sqrt(dx * dx + dy * dy)
+            if (d < minDist) minDist = d
+          }
+        }
+      }
+
+      dist[idx] = minDist
+    }
+  }
+
+  return dist
+}
+
+/**
+ * Apply feathering to a mask canvas to create smooth edges
+ * Creates a soft alpha gradient at mask boundaries
+ *
+ * @param maskCanvas - Canvas with mask (alpha channel used for mask detection)
+ * @param featherRadius - Number of pixels for the feather falloff (default: 4)
+ * @returns New canvas with feathered mask
+ */
+export function featherMask(
+  maskCanvas: HTMLCanvasElement,
+  featherRadius: number = 4
+): HTMLCanvasElement {
+  const width = maskCanvas.width
+  const height = maskCanvas.height
+
+  const ctx = maskCanvas.getContext('2d')
+  if (!ctx) return maskCanvas
+
+  const imageData = ctx.getImageData(0, 0, width, height)
+  const data = imageData.data
+
+  // Step 1: Create binary mask array (1 = inside, 0 = outside)
+  const binary = new Uint8Array(width * height)
+  for (let i = 0; i < binary.length; i++) {
+    binary[i] = data[i * 4 + 3] > 0 ? 1 : 0
+  }
+
+  // Step 2: Calculate distance to nearest edge for each pixel
+  const searchRadius = Math.max(featherRadius, 8)
+  const distances = computeDistanceToEdge(binary, width, height, searchRadius)
+
+  // Step 3: Apply feathering - pixels within featherRadius get soft alpha
+  for (let i = 0; i < binary.length; i++) {
+    if (binary[i] === 1) {
+      const dist = distances[i]
+      if (dist < featherRadius) {
+        // Smooth falloff from edge using ease-in-out curve
+        const t = dist / featherRadius
+        const smoothT = t * t * (3 - 2 * t) // Smoothstep function
+        data[i * 4 + 3] = Math.round(smoothT * 255)
+      } else {
+        data[i * 4 + 3] = 255 // Fully opaque inside
+      }
+    } else {
+      data[i * 4 + 3] = 0 // Fully transparent outside
+    }
+  }
+
+  // Create a new canvas for the result
+  const resultCanvas = document.createElement('canvas')
+  resultCanvas.width = width
+  resultCanvas.height = height
+  const resultCtx = resultCanvas.getContext('2d')!
+  resultCtx.putImageData(imageData, 0, 0)
+
+  return resultCanvas
+}

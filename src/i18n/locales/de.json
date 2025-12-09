@@ -28,7 +28,9 @@
     "error": "Fehler",
     "success": "Erfolg",
     "warning": "Warnung",
-    "selectAll": "Alle auswählen"
+    "selectAll": "Alle auswählen",
+    "retry": "Erneut versuchen",
+    "downloadFailed": "Download fehlgeschlagen. Bitte überprüfen Sie Ihre Netzwerkverbindung."
   },
   "nav": {
     "models": "Modelle",
@@ -496,6 +498,20 @@
       "redoEdit": "Entfernung wiederholen",
       "hint": "Zeichnen Sie über die Objekte, die Sie entfernen möchten, dann klicken Sie auf Objekte entfernen",
       "resultPlaceholder": "Das Ergebnis wird hier angezeigt"
+    },
+    "segmentAnything": {
+      "title": "Alles Segmentieren",
+      "description": "Wählen und schneiden Sie jedes Objekt mit einem Klick aus",
+      "selectImage": "Bild auswählen",
+      "orDragDrop": "oder per Drag & Drop",
+      "processing": "Bild wird verarbeitet...",
+      "hoverToPreview": "Fahren Sie über Objekte, um die Segmentierung anzuzeigen",
+      "clickToRefine": "Klicken Sie, um Punkte hinzuzufügen, Rechtsklick zum Ausschließen",
+      "resetImage": "Bild zurücksetzen",
+      "clearPoints": "Punkte löschen",
+      "clearPointsTooltip": "Alle Punkte löschen und zum Hover-Vorschaumodus zurückkehren",
+      "cutMask": "Maske ausschneiden",
+      "hint": "Linksklick zum Einschließen, Rechtsklick zum Ausschließen von Bereichen"
     },
     "progress": {
       "downloading": "Modell herunterladen",

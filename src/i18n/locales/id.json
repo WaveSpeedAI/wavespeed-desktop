@@ -28,7 +28,9 @@
     "error": "Error",
     "success": "Berhasil",
     "warning": "Peringatan",
-    "selectAll": "Pilih semua"
+    "selectAll": "Pilih semua",
+    "retry": "Coba Lagi",
+    "downloadFailed": "Unduhan gagal. Silakan periksa koneksi jaringan Anda."
   },
   "nav": {
     "models": "Model",
@@ -506,6 +508,20 @@
       "finalizing": "Menyelesaikan",
       "overall": "Keseluruhan",
       "remaining": "tersisa"
+    },
+    "segmentAnything": {
+      "title": "Segmentasi Apa Saja",
+      "description": "Pilih dan potong objek apa saja dengan satu klik",
+      "selectImage": "Pilih Gambar",
+      "orDragDrop": "atau seret dan lepas",
+      "processing": "Memproses gambar...",
+      "hoverToPreview": "Arahkan kursor ke objek untuk pratinjau segmentasi",
+      "clickToRefine": "Klik untuk menambahkan lebih banyak titik, klik kanan untuk mengecualikan area",
+      "resetImage": "Reset gambar",
+      "clearPoints": "Hapus titik",
+      "clearPointsTooltip": "Hapus semua titik dan kembali ke mode pratinjau hover",
+      "cutMask": "Potong Mask",
+      "hint": "Klik kiri untuk menyertakan, klik kanan untuk mengecualikan area"
     }
   }
 }

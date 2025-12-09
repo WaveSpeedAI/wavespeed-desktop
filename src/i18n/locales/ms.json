@@ -28,7 +28,9 @@
     "error": "Ralat",
     "success": "Berjaya",
     "warning": "Amaran",
-    "selectAll": "Pilih semua"
+    "selectAll": "Pilih semua",
+    "retry": "Cuba Lagi",
+    "downloadFailed": "Muat turun gagal. Sila semak sambungan rangkaian anda."
   },
   "nav": {
     "models": "Model",
@@ -506,6 +508,20 @@
       "finalizing": "Menyelesaikan",
       "overall": "Keseluruhan",
       "remaining": "lagi"
+    },
+    "segmentAnything": {
+      "title": "Segmen Apa Sahaja",
+      "description": "Pilih dan potong mana-mana objek dengan satu klik",
+      "selectImage": "Pilih Imej",
+      "orDragDrop": "atau seret dan lepas",
+      "processing": "Memproses imej...",
+      "hoverToPreview": "Tuding pada objek untuk pratonton segmentasi",
+      "clickToRefine": "Klik untuk tambah lebih banyak titik, klik kanan untuk mengecualikan kawasan",
+      "resetImage": "Set semula imej",
+      "clearPoints": "Padam titik",
+      "clearPointsTooltip": "Padam semua titik dan kembali ke mod pratonton tuding",
+      "cutMask": "Potong Topeng",
+      "hint": "Klik kiri untuk menyertakan, klik kanan untuk mengecualikan kawasan"
     }
   }
 }

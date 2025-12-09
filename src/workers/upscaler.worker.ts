@@ -4,7 +4,6 @@ type ModelType = 'slim' | 'medium' | 'thick'
 type ScaleType = '2x' | '3x' | '4x'
 
 let upscaler: InstanceType<typeof Upscaler> | null = null
-let currentScale: number = 2
 
 const getModel = async (model: ModelType, scale: ScaleType) => {
   const modelMap = {
@@ -44,8 +43,6 @@ self.onmessage = async (e: MessageEvent) => {
           upscaler.dispose()
           upscaler = null
         }
-
-        currentScale = parseInt(scale.replace('x', ''))
 
         // Signal start of download phase
         self.postMessage({
@@ -156,7 +153,7 @@ self.onmessage = async (e: MessageEvent) => {
               id
             }
           },
-          [resultImageData.data.buffer]
+          { transfer: [resultImageData.data.buffer] }
         )
         break
       }

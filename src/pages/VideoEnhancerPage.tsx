@@ -15,7 +15,7 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import { ArrowLeft, Upload, Download, Loader2, Play, Square, X, RefreshCw } from 'lucide-react'
+import { ArrowLeft, Upload, Download, Play, Square, X, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type ModelType = 'slim' | 'medium' | 'thick'

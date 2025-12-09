@@ -30,7 +30,8 @@ export function Layout() {
   // Track the last visited free-tools sub-page for navigation
   const [lastFreeToolsPage, setLastFreeToolsPage] = useState<string | null>(null)
 
-  const { apiKey, isLoading: isLoadingApiKey, isValidated, loadApiKey } = useApiKeyStore()
+  const { apiKey: _apiKey, isLoading: isLoadingApiKey, isValidated, loadApiKey } = useApiKeyStore()
+  void _apiKey // Used for conditional rendering
   const [inputKey, setInputKey] = useState('')
   const [showKey, setShowKey] = useState(false)
   const [isSaving, setIsSaving] = useState(false)

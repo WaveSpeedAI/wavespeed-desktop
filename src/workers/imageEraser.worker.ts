@@ -3,6 +3,7 @@
  * Uses LaMa inpainting model via ONNX Runtime (WASM only)
  */
 
+// @ts-expect-error - onnxruntime-web types not resolved due to package.json exports
 import * as ort from 'onnxruntime-web'
 
 // Configure WASM paths to use CDN (required for Vite bundling)

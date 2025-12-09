@@ -1,18 +1,8 @@
 import axios, { AxiosInstance, AxiosError } from 'axios'
 import type { Model, ModelsResponse } from '@/types/model'
 import type { PredictionResult, PredictionResponse, HistoryResponse, UploadResponse } from '@/types/prediction'
-import { version } from '../../package.json'
 
 const BASE_URL = 'https://api.wavespeed.ai'
-
-// Detect operating system
-function getOperatingSystem(): string {
-  const platform = navigator.platform.toLowerCase()
-  if (platform.includes('win')) return 'windows'
-  if (platform.includes('mac')) return 'macos'
-  if (platform.includes('linux')) return 'linux'
-  return platform
-}
 
 // Custom error class with detailed information
 export class APIError extends Error {

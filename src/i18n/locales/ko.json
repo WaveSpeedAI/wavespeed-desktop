@@ -28,7 +28,9 @@
     "error": "오류",
     "success": "성공",
     "warning": "경고",
-    "selectAll": "전체 선택"
+    "selectAll": "전체 선택",
+    "retry": "다시 시도",
+    "downloadFailed": "다운로드에 실패했습니다. 네트워크 연결을 확인해 주세요."
   },
   "nav": {
     "models": "모델",
@@ -496,6 +498,20 @@
       "redoEdit": "제거 다시 실행",
       "hint": "제거할 객체 위에 그린 후 객체 제거를 클릭하세요",
       "resultPlaceholder": "결과가 여기에 표시됩니다"
+    },
+    "segmentAnything": {
+      "title": "세그먼트 애니씽",
+      "description": "클릭 한 번으로 모든 객체 선택 및 잘라내기",
+      "selectImage": "이미지 선택",
+      "orDragDrop": "또는 드래그 앤 드롭",
+      "processing": "이미지 처리 중...",
+      "hoverToPreview": "객체 위에 마우스를 올려 세그멘테이션 미리보기",
+      "clickToRefine": "클릭하여 포인트 추가, 우클릭으로 영역 제외",
+      "resetImage": "이미지 초기화",
+      "clearPoints": "포인트 지우기",
+      "clearPointsTooltip": "모든 포인트를 지우고 호버 미리보기 모드로 돌아가기",
+      "cutMask": "마스크 잘라내기",
+      "hint": "좌클릭으로 포함할 영역, 우클릭으로 제외할 영역 지정"
     },
     "progress": {
       "downloading": "모델 다운로드 중",

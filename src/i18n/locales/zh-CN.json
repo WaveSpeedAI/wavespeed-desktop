@@ -28,7 +28,9 @@
     "success": "成功",
     "warning": "警告",
     "selectAll": "全选",
-    "done": "完成"
+    "done": "完成",
+    "retry": "重试",
+    "downloadFailed": "下载失败。请检查您的网络连接。"
   },
   "nav": {
     "models": "模型",
@@ -496,6 +498,20 @@
       "redoEdit": "重做移除",
       "hint": "在要移除的物体上绘制，然后点击移除物体",
       "resultPlaceholder": "结果将显示在这里"
+    },
+    "segmentAnything": {
+      "title": "智能分割",
+      "description": "一键选择并裁剪任意对象",
+      "selectImage": "选择图片",
+      "orDragDrop": "或拖放文件",
+      "processing": "处理图片中...",
+      "hoverToPreview": "悬停在对象上预览分割效果",
+      "clickToRefine": "点击添加更多点，右键点击排除区域",
+      "resetImage": "重置图片",
+      "clearPoints": "清除点",
+      "clearPointsTooltip": "清除所有点并返回悬停预览模式",
+      "cutMask": "裁剪蒙版",
+      "hint": "左键点击包含区域，右键点击排除区域"
     },
     "progress": {
       "downloading": "下载模型中",

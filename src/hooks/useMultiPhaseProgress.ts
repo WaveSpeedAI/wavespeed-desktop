@@ -61,7 +61,8 @@ export function useMultiPhaseProgress(options: UseMultiPhaseProgressOptions) {
     const activeIndex = phases.findIndex((p) => p.status === 'active')
     if (activeIndex >= 0) return activeIndex
     // If no active phase, return last completed or first pending
-    const lastCompleted = phases.findLastIndex((p) => p.status === 'completed')
+    const lastCompleted = phases.reduce((lastIdx: number, p: ProcessingPhase, idx: number) =>
+      p.status === 'completed' ? idx : lastIdx, -1)
     return lastCompleted >= 0 ? lastCompleted : 0
   }, [phases])
 

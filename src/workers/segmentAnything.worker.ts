@@ -12,8 +12,13 @@ env.allowLocalModels = false
 // Model configuration
 const MODEL_ID = 'Xenova/slimsam-77-uniform'
 
+// Detect WebGPU support for GPU acceleration
+const hasWebGPU = typeof navigator !== 'undefined' && 'gpu' in navigator
+const deviceType = hasWebGPU ? 'webgpu' : 'wasm'
+
 // Worker global state
 let modelInstance: Awaited<ReturnType<typeof SamModel.from_pretrained>> | null = null
+let currentDevice: 'webgpu' | 'wasm' = deviceType
 let processorInstance: Awaited<ReturnType<typeof AutoProcessor.from_pretrained>> | null = null
 let cachedImageInputs: {
   pixel_values: Tensor
@@ -57,7 +62,7 @@ type WorkerMessage = InitMessage | SegmentMessage | DecodeMaskMessage | ResetMes
 // Load model and processor
 async function loadModel(id: number): Promise<void> {
   if (modelInstance && processorInstance) {
-    self.postMessage({ type: 'ready', payload: { id } })
+    self.postMessage({ type: 'ready', payload: { id, device: currentDevice } })
     return
   }
 
@@ -96,22 +101,47 @@ async function loadModel(id: number): Promise<void> {
     }
   }
 
-  // Load model and processor in parallel
-  const [model, processor] = await Promise.all([
-    SamModel.from_pretrained(MODEL_ID, {
-      quantized: true,
-      progress_callback: progressCallback
-    }),
-    AutoProcessor.from_pretrained(MODEL_ID, {
-      progress_callback: progressCallback
-    })
-  ])
+  // Load model and processor in parallel with GPU acceleration if available
+  let model: Awaited<ReturnType<typeof SamModel.from_pretrained>>
+  let processor: Awaited<ReturnType<typeof AutoProcessor.from_pretrained>>
+
+  try {
+    // Note: 'device' option is supported at runtime but not in type definitions
+    ;[model, processor] = await Promise.all([
+      SamModel.from_pretrained(MODEL_ID, {
+        quantized: true,
+        device: currentDevice,
+        progress_callback: progressCallback
+      } as Parameters<typeof SamModel.from_pretrained>[1]),
+      AutoProcessor.from_pretrained(MODEL_ID, {
+        progress_callback: progressCallback
+      })
+    ])
+  } catch (error) {
+    // If WebGPU fails, fallback to WASM
+    if (currentDevice === 'webgpu') {
+      console.warn('WebGPU initialization failed, falling back to WASM:', error)
+      currentDevice = 'wasm'
+      ;[model, processor] = await Promise.all([
+        SamModel.from_pretrained(MODEL_ID, {
+          quantized: true,
+          device: 'wasm',
+          progress_callback: progressCallback
+        } as Parameters<typeof SamModel.from_pretrained>[1]),
+        AutoProcessor.from_pretrained(MODEL_ID, {
+          progress_callback: progressCallback
+        })
+      ])
+    } else {
+      throw error
+    }
+  }
 
   modelInstance = model
   processorInstance = processor
 
   self.postMessage({ type: 'progress', payload: { phase: 'download', progress: 100, id } })
-  self.postMessage({ type: 'ready', payload: { id } })
+  self.postMessage({ type: 'ready', payload: { id, device: currentDevice } })
 }
 
 // Segment image and cache embeddings
@@ -188,7 +218,7 @@ async function decodeMask(id: number, points: PointPrompt[]): Promise<void> {
         id
       }
     },
-    [maskBuffer, scoresBuffer]
+    { transfer: [maskBuffer, scoresBuffer] }
   )
 }
 

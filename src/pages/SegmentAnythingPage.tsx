@@ -20,13 +20,13 @@ import {
   Upload,
   Loader2,
   X,
-  Undo2,
   Trash2,
   Scissors,
   Star,
   RefreshCw
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { featherMask } from '@/lib/maskUtils'
 
 // Phase configuration for segment anything
 const PHASES = [
@@ -450,13 +450,16 @@ export function SegmentAnythingPage() {
     const imageData = imageCtx.getImageData(0, 0, originalSize.width, originalSize.height)
     const imagePixels = imageData.data
 
-    // Get mask data
+    // Get mask data and apply feathering for smooth edges
     const maskCanvas = maskCanvasRef.current
     if (!maskCanvas) return
-    const maskCtx = maskCanvas.getContext('2d', { willReadFrequently: true })
-    if (!maskCtx) return
-    const maskData = maskCtx.getImageData(0, 0, originalSize.width, originalSize.height)
-    const maskPixels = maskData.data
+
+    // Apply feathering to create smooth edges (4px soft falloff)
+    const featheredMask = featherMask(maskCanvas, 4)
+    const featheredCtx = featheredMask.getContext('2d', { willReadFrequently: true })
+    if (!featheredCtx) return
+    const featheredData = featheredCtx.getImageData(0, 0, originalSize.width, originalSize.height)
+    const featheredPixels = featheredData.data
 
     // Create output canvas with transparent background
     const outputCanvas = document.createElement('canvas')
@@ -468,14 +471,15 @@ export function SegmentAnythingPage() {
     const outputData = outputCtx.createImageData(originalSize.width, originalSize.height)
     const outputPixels = outputData.data
 
-    // Copy pixels where mask alpha > 0
-    for (let i = 3; i < maskPixels.length; i += 4) {
-      if (maskPixels[i] > 0) {
-        // Copy RGBA from image to output
+    // Copy pixels with feathered alpha for smooth edges
+    for (let i = 3; i < featheredPixels.length; i += 4) {
+      const alpha = featheredPixels[i]
+      if (alpha > 0) {
+        // Copy RGB from image to output
         outputPixels[i - 3] = imagePixels[i - 3] // R
         outputPixels[i - 2] = imagePixels[i - 2] // G
         outputPixels[i - 1] = imagePixels[i - 1] // B
-        outputPixels[i] = imagePixels[i]         // A (or 255)
+        outputPixels[i] = alpha                   // Use feathered alpha for smooth edges
       }
     }
 

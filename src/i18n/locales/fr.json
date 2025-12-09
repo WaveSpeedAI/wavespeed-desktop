@@ -28,7 +28,9 @@
     "error": "Erreur",
     "success": "Succès",
     "warning": "Avertissement",
-    "selectAll": "Tout sélectionner"
+    "selectAll": "Tout sélectionner",
+    "retry": "Réessayer",
+    "downloadFailed": "Le téléchargement a échoué. Veuillez vérifier votre connexion réseau."
   },
   "nav": {
     "models": "Modèles",
@@ -496,6 +498,20 @@
       "redoEdit": "Rétablir la suppression",
       "hint": "Dessinez sur les objets à supprimer, puis cliquez sur Supprimer les Objets",
       "resultPlaceholder": "Le résultat apparaîtra ici"
+    },
+    "segmentAnything": {
+      "title": "Segmenter N'importe Quoi",
+      "description": "Sélectionnez et découpez n'importe quel objet en un clic",
+      "selectImage": "Sélectionner une Image",
+      "orDragDrop": "ou glissez-déposez",
+      "processing": "Traitement de l'image...",
+      "hoverToPreview": "Survolez les objets pour prévisualiser la segmentation",
+      "clickToRefine": "Cliquez pour ajouter des points, clic droit pour exclure des zones",
+      "resetImage": "Réinitialiser l'image",
+      "clearPoints": "Effacer les points",
+      "clearPointsTooltip": "Effacer tous les points et revenir au mode de prévisualisation au survol",
+      "cutMask": "Découper le masque",
+      "hint": "Clic gauche pour inclure, clic droit pour exclure des zones"
     },
     "progress": {
       "downloading": "Téléchargement du modèle",

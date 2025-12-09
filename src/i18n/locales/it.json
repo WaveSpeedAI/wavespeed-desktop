@@ -28,7 +28,9 @@
     "success": "Successo",
     "warning": "Avviso",
     "selectAll": "Seleziona tutto",
-    "done": "Fatto"
+    "done": "Fatto",
+    "retry": "Riprova",
+    "downloadFailed": "Download fallito. Verifica la tua connessione di rete."
   },
   "nav": {
     "models": "Modelli",
@@ -496,6 +498,20 @@
       "redoEdit": "Ripristina rimozione",
       "hint": "Disegna sugli oggetti che vuoi rimuovere, poi clicca Rimuovi Oggetti",
       "resultPlaceholder": "Il risultato apparirà qui"
+    },
+    "segmentAnything": {
+      "title": "Segmenta Qualsiasi Cosa",
+      "description": "Seleziona e ritaglia qualsiasi oggetto con un clic",
+      "selectImage": "Seleziona Immagine",
+      "orDragDrop": "o trascina e rilascia",
+      "processing": "Elaborazione immagine...",
+      "hoverToPreview": "Passa sopra gli oggetti per visualizzare la segmentazione",
+      "clickToRefine": "Clicca per aggiungere punti, clic destro per escludere aree",
+      "resetImage": "Reimposta immagine",
+      "clearPoints": "Cancella punti",
+      "clearPointsTooltip": "Cancella tutti i punti e torna alla modalità anteprima al passaggio",
+      "cutMask": "Ritaglia maschera",
+      "hint": "Clic sinistro per includere, clic destro per escludere aree"
     },
     "progress": {
       "downloading": "Scaricamento modello",

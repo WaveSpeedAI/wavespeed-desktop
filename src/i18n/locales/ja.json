@@ -28,7 +28,9 @@
     "success": "成功",
     "warning": "警告",
     "selectAll": "すべて選択",
-    "done": "完了"
+    "done": "完了",
+    "retry": "再試行",
+    "downloadFailed": "ダウンロードに失敗しました。ネットワーク接続を確認してください。"
   },
   "nav": {
     "models": "モデル",
@@ -496,6 +498,20 @@
       "redoEdit": "削除をやり直す",
       "hint": "削除したいオブジェクトの上に描いてから、オブジェクトを削除をクリック",
       "resultPlaceholder": "結果がここに表示されます"
+    },
+    "segmentAnything": {
+      "title": "セグメント・エニシング",
+      "description": "ワンクリックで任意のオブジェクトを選択・切り抜き",
+      "selectImage": "画像を選択",
+      "orDragDrop": "またはドラッグ＆ドロップ",
+      "processing": "画像を処理中...",
+      "hoverToPreview": "オブジェクトにカーソルを合わせてセグメンテーションをプレビュー",
+      "clickToRefine": "クリックでポイントを追加、右クリックで領域を除外",
+      "resetImage": "画像をリセット",
+      "clearPoints": "ポイントをクリア",
+      "clearPointsTooltip": "すべてのポイントをクリアしてホバープレビューモードに戻る",
+      "cutMask": "マスクを切り抜き",
+      "hint": "左クリックで含める領域、右クリックで除外する領域を指定"
     },
     "progress": {
       "downloading": "モデルをダウンロード中",

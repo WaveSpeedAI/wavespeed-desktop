@@ -333,7 +333,7 @@ export function PlaygroundPage() {
             </div>
 
             {/* Parameters */}
-            <div className="flex-1 overflow-hidden p-4">
+            <div className="flex-1 overflow-hidden px-4 py-2">
               {activeTab.selectedModel ? (
                 <DynamicForm
                   model={activeTab.selectedModel}

@@ -106,7 +106,7 @@ export function DynamicForm({
 
   return (
     <ScrollArea className="h-full">
-      <div className="space-y-4 pr-4">
+      <div className="space-y-4 pr-4 py-2">
         {fields.map((field) => {
           // Hidden fields render with a toggle
           if (field.hidden) {

@@ -9,7 +9,7 @@ import videoEnhancerImg from '../../build/images/VideoEnhancer.jpeg'
 import imageEnhancerImg from '../../build/images/ImageEnhancer.jpeg'
 import backgroundRemoverImg from '../../build/images/BackgroundRemover.jpeg'
 import imageEraserImg from '../../build/images/ImageEraser.jpeg'
-import freeToolImg from '../../build/images/FreeTool.jpeg'
+import SegmentAnythingImg from '../../build/images/Segment Anything.png'
 
 export function FreeToolsPage() {
   const { t } = useTranslation()
@@ -59,7 +59,7 @@ export function FreeToolsPage() {
       descriptionKey: 'freeTools.segmentAnything.description',
       route: '/free-tools/segment-anything',
       gradient: 'from-pink-500/20 via-rose-500/10 to-transparent',
-      image: freeToolImg
+      image: SegmentAnythingImg
     }
   ]
 

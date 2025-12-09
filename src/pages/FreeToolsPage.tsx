@@ -9,7 +9,7 @@ import videoEnhancerImg from '../../build/images/VideoEnhancer.jpeg'
 import imageEnhancerImg from '../../build/images/ImageEnhancer.jpeg'
 import backgroundRemoverImg from '../../build/images/BackgroundRemover.jpeg'
 import imageEraserImg from '../../build/images/ImageEraser.jpeg'
-import SegmentAnythingImg from '../../build/images/Segment Anything.png'
+import SegmentAnythingImg from '../../build/images/SegmentAnything.png'
 
 export function FreeToolsPage() {
   const { t } = useTranslation()

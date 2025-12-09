@@ -316,6 +316,12 @@
       "error": "त्रुटि",
       "errorDesc": "API कुंजी सहेजने में विफल।"
     },
+    "balance": {
+      "title": "खाता शेष",
+      "description": "आपका वर्तमान WaveSpeed खाता शेष",
+      "currentBalance": "वर्तमान शेष",
+      "refreshFailed": "शेष प्राप्त करने में विफल"
+    },
     "appearance": {
       "title": "दिखावट",
       "description": "एप्लिकेशन का रूप अनुकूलित करें",

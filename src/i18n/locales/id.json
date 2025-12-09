@@ -316,6 +316,12 @@
       "error": "Error",
       "errorDesc": "Gagal menyimpan kunci API."
     },
+    "balance": {
+      "title": "Saldo Akun",
+      "description": "Saldo akun WaveSpeed Anda saat ini",
+      "currentBalance": "Saldo Saat Ini",
+      "refreshFailed": "Gagal mengambil saldo"
+    },
     "appearance": {
       "title": "Tampilan",
       "description": "Sesuaikan tampilan aplikasi",

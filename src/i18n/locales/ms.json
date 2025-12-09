@@ -316,6 +316,12 @@
       "error": "Ralat",
       "errorDesc": "Gagal menyimpan kunci API."
     },
+    "balance": {
+      "title": "Baki Akaun",
+      "description": "Baki akaun WaveSpeed semasa anda",
+      "currentBalance": "Baki Semasa",
+      "refreshFailed": "Gagal mendapatkan baki"
+    },
     "appearance": {
       "title": "Penampilan",
       "description": "Sesuaikan penampilan aplikasi",

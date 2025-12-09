@@ -316,6 +316,12 @@
       "error": "ข้อผิดพลาด",
       "errorDesc": "ไม่สามารถบันทึกคีย์ API ได้"
     },
+    "balance": {
+      "title": "ยอดเงินในบัญชี",
+      "description": "ยอดเงินในบัญชี WaveSpeed ปัจจุบันของคุณ",
+      "currentBalance": "ยอดเงินปัจจุบัน",
+      "refreshFailed": "ไม่สามารถดึงยอดเงินได้"
+    },
     "appearance": {
       "title": "ลักษณะที่ปรากฏ",
       "description": "ปรับแต่งลักษณะของแอปพลิเคชัน",

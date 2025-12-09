@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
+import { apiClient } from '@/api/client'
 import { useThemeStore, type Theme } from '@/stores/themeStore'
 import { useAssetsStore } from '@/stores/assetsStore'
 import { languages } from '@/i18n'
@@ -51,6 +52,10 @@ export function SettingsPage() {
   const [inputKey, setInputKey] = useState(apiKey)
   const [showKey, setShowKey] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+
+  // Balance state
+  const [balance, setBalance] = useState<number | null>(null)
+  const [isLoadingBalance, setIsLoadingBalance] = useState(false)
 
   // Update state
   const [appVersion, setAppVersion] = useState<string>('')
@@ -129,6 +134,24 @@ export function SettingsPage() {
   const calculateCacheSize = useCallback(async () => {
     await loadCacheDetails()
   }, [loadCacheDetails])
+
+  // Fetch account balance
+  const fetchBalance = useCallback(async () => {
+    if (!isValidated) return
+    setIsLoadingBalance(true)
+    try {
+      const bal = await apiClient.getBalance()
+      setBalance(bal)
+    } catch {
+      toast({
+        title: t('common.error'),
+        description: t('settings.balance.refreshFailed'),
+        variant: 'destructive',
+      })
+    } finally {
+      setIsLoadingBalance(false)
+    }
+  }, [isValidated, t])
 
   // Delete a single cache item
   const handleDeleteCacheItem = useCallback(async (cacheName: string, url: string) => {
@@ -209,6 +232,15 @@ export function SettingsPage() {
     }
     loadSettings()
   }, [loadAssetsSettings, calculateCacheSize])
+
+  // Fetch balance when authenticated
+  useEffect(() => {
+    if (isValidated) {
+      fetchBalance()
+    } else {
+      setBalance(null)
+    }
+  }, [isValidated, fetchBalance])
 
   // Subscribe to update status events
   useEffect(() => {
@@ -537,6 +569,42 @@ export function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {isValidated && (
+        <Card className="mt-6">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>{t('settings.balance.title')}</CardTitle>
+                <CardDescription>
+                  {t('settings.balance.description')}
+                </CardDescription>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={fetchBalance}
+                disabled={isLoadingBalance}
+              >
+                <RefreshCw className={`h-4 w-4 ${isLoadingBalance ? 'animate-spin' : ''}`} />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl font-bold">
+                {isLoadingBalance ? (
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                ) : balance !== null ? (
+                  `$${balance.toFixed(2)}`
+                ) : (
+                  '—'
+                )}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="mt-6">
         <CardHeader>

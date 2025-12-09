@@ -316,6 +316,27 @@ class WaveSpeedClient {
       throw createAPIError(error, 'Failed to calculate pricing')
     }
   }
+
+  async getBalance(): Promise<number> {
+    try {
+      const response = await this.client.get<{
+        code: number
+        message: string
+        data: { balance: number }
+      }>('/api/v3/balance')
+
+      if (response.data.code !== 200) {
+        throw new APIError(response.data.message || 'Failed to fetch balance', {
+          code: response.data.code,
+          details: response.data
+        })
+      }
+
+      return response.data.data.balance
+    } catch (error) {
+      throw createAPIError(error, 'Failed to fetch balance')
+    }
+  }
 }
 
 export const apiClient = new WaveSpeedClient()

@@ -82,7 +82,7 @@ wavespeed-desktop/
 - **`src/workers/upscaler.worker.ts`**: Web Worker for GPU-free image/video upscaling with UpscalerJS
 - **`src/workers/backgroundRemover.worker.ts`**: Web Worker for background removal with @imgly/background-removal, supports processAll for batch output
 - **`src/workers/imageEraser.worker.ts`**: Web Worker for LaMa inpainting model (512x512, quantized) with onnxruntime-web WASM backend, smart crop around mask for better quality
-- **`src/workers/segmentAnything.worker.ts`**: Web Worker for Segment Anything (SlimSAM) model using @xenova/transformers for interactive object segmentation
+- **`src/workers/segmentAnything.worker.ts`**: Web Worker for Segment Anything (SlimSAM) model using @huggingface/transformers with WebGPU acceleration for interactive object segmentation
 
 ## WaveSpeedAI API
 
@@ -98,6 +98,7 @@ Authentication: `Authorization: Bearer {API_KEY}`
 | `/api/v3/predictions/{id}/result` | GET | Poll for prediction result |
 | `/api/v3/predictions` | POST | Get prediction history (with date filters) |
 | `/api/v3/media/upload/binary` | POST | Upload files (multipart/form-data) |
+| `/api/v3/balance` | GET | Get account balance (returns `{ data: { balance: number } }`) |
 
 ### History API
 
@@ -222,7 +223,9 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - MaskEditor supports undo/redo (Ctrl+Z, Ctrl+Shift+Z) with up to 50 history states
 - MaskEditor auto-detects reference images/videos from form values (fields ending with `_image`, `image_url`, `_video`, `video_url`)
 - Free Tools pages use persistent rendering (lazy-mounted after first visit) to preserve state during navigation
-- Segment Anything uses SlimSAM model (Xenova/slimsam-77-uniform) via @xenova/transformers for interactive object segmentation
+- Segment Anything uses SlimSAM model (Xenova/slimsam-77-uniform) via @huggingface/transformers with WebGPU acceleration (falls back to WASM)
 - Segment Anything uses two-step process: (1) segmentImage extracts embeddings once, (2) decodeMask generates masks from point prompts instantly
 - Segment Anything supports positive (include) and negative (exclude) point prompts, right-click for negative points
-- Segment Anything model is downloaded and cached by @xenova/transformers on first use
+- Segment Anything model is downloaded and cached by @huggingface/transformers on first use
+- Settings page displays account balance when authenticated, fetched via `apiClient.getBalance()` with refresh button
+- Balance is displayed in USD format ($X.XX) and auto-fetches when API key is validated

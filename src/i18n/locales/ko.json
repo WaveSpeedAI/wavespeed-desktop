@@ -316,6 +316,12 @@
       "error": "오류",
       "errorDesc": "API 키 저장에 실패했습니다."
     },
+    "balance": {
+      "title": "계정 잔액",
+      "description": "현재 WaveSpeed 계정 잔액",
+      "currentBalance": "현재 잔액",
+      "refreshFailed": "잔액 조회 실패"
+    },
     "appearance": {
       "title": "외관",
       "description": "애플리케이션 모양 사용자 지정",

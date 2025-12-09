@@ -316,6 +316,12 @@
       "error": "Error",
       "errorDesc": "Failed to save API key."
     },
+    "balance": {
+      "title": "Account Balance",
+      "description": "Your current WaveSpeed account balance",
+      "currentBalance": "Current Balance",
+      "refreshFailed": "Failed to fetch balance"
+    },
     "appearance": {
       "title": "Appearance",
       "description": "Customize the look of the application",

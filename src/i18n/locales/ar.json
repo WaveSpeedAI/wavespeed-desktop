@@ -316,6 +316,12 @@
       "error": "خطأ",
       "errorDesc": "فشل حفظ مفتاح API."
     },
+    "balance": {
+      "title": "رصيد الحساب",
+      "description": "رصيد حسابك الحالي في WaveSpeed",
+      "currentBalance": "الرصيد الحالي",
+      "refreshFailed": "فشل في جلب الرصيد"
+    },
     "appearance": {
       "title": "المظهر",
       "description": "تخصيص مظهر التطبيق",

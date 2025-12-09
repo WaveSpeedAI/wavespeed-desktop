@@ -316,6 +316,12 @@
       "error": "Ошибка",
       "errorDesc": "Не удалось сохранить API-ключ."
     },
+    "balance": {
+      "title": "Баланс аккаунта",
+      "description": "Ваш текущий баланс аккаунта WaveSpeed",
+      "currentBalance": "Текущий баланс",
+      "refreshFailed": "Не удалось получить баланс"
+    },
     "appearance": {
       "title": "Внешний вид",
       "description": "Настройка внешнего вида приложения",

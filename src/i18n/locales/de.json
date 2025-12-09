@@ -316,6 +316,12 @@
       "error": "Fehler",
       "errorDesc": "Fehler beim Speichern des API-Schlüssels."
     },
+    "balance": {
+      "title": "Kontostand",
+      "description": "Ihr aktueller WaveSpeed-Kontostand",
+      "currentBalance": "Aktueller Kontostand",
+      "refreshFailed": "Kontostand konnte nicht abgerufen werden"
+    },
     "appearance": {
       "title": "Erscheinungsbild",
       "description": "Das Aussehen der Anwendung anpassen",

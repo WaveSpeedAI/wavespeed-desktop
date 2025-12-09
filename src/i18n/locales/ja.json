@@ -316,6 +316,12 @@
       "error": "エラー",
       "errorDesc": "APIキーの保存に失敗しました。"
     },
+    "balance": {
+      "title": "アカウント残高",
+      "description": "現在のWaveSpeedアカウント残高",
+      "currentBalance": "現在の残高",
+      "refreshFailed": "残高の取得に失敗しました"
+    },
     "appearance": {
       "title": "外観",
       "description": "アプリケーションの見た目をカスタマイズ",

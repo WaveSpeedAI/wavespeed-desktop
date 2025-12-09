@@ -64,7 +64,9 @@ export function SegmentAnythingPage() {
   // Multi-mask mode: starts false (hover preview), becomes true after first click
   const [isMultiMaskMode, setIsMultiMaskMode] = useState(false)
   const [points, setPoints] = useState<Point[]>([])
-  const lastPointsRef = useRef<Point[] | null>(null)
+  const lastDecodedPointRef = useRef<{ x: number; y: number } | null>(null)
+  const pendingPointRef = useRef<Point | null>(null)
+  const isHoveringRef = useRef(false)
 
   const [downloadFormat, setDownloadFormat] = useState<'png' | 'jpeg' | 'webp'>('png')
   const [previewImage, setPreviewImage] = useState<string | null>(null)
@@ -171,27 +173,6 @@ export function SegmentAnythingPage() {
     maskCtx.clearRect(0, 0, originalSize.width, originalSize.height)
   }, [originalSize])
 
-  // Decode mask function
-  const decode = useCallback(async (pointsToUse: Point[]) => {
-    if (!isEncoded || isDecoding || pointsToUse.length === 0) return
-
-    setIsDecoding(true)
-    try {
-      const result = await decodeMask(
-        pointsToUse.map((p) => ({
-          point: [p.x, p.y] as [number, number],
-          label: p.label
-        }))
-      )
-      setLastMaskResult(result)
-      drawMask(result)
-    } catch (error) {
-      console.error('Decode error:', error)
-    } finally {
-      setIsDecoding(false)
-    }
-  }, [isEncoded, isDecoding, decodeMask])
-
   // Draw mask overlay on canvas
   const drawMask = useCallback(
     (result: MaskResult) => {
@@ -201,28 +182,21 @@ export function SegmentAnythingPage() {
       const ctx = maskCanvas.getContext('2d', { willReadFrequently: true })
       if (!ctx) return
 
-      // Clear previous mask
       ctx.clearRect(0, 0, maskCanvas.width, maskCanvas.height)
 
-      // Create image data for the mask
       const imageData = ctx.createImageData(result.width, result.height)
       const pixelData = imageData.data
 
-      // SAM returns 3 masks with different quality levels
-      // Select the one with highest score
+      // Select mask with highest score
       const numMasks = result.scores.length
       let bestIndex = 0
       for (let i = 1; i < numMasks; i++) {
-        if (result.scores[i] > result.scores[bestIndex]) {
-          bestIndex = i
-        }
+        if (result.scores[i] > result.scores[bestIndex]) bestIndex = i
       }
 
-      // Calculate pixels per mask (masks are contiguous, not interleaved)
       const pixelsPerMask = result.width * result.height
       const maskOffset = bestIndex * pixelsPerMask
 
-      // Fill mask with color where mask value is 1
       for (let i = 0; i < pixelsPerMask; i++) {
         if (result.mask[maskOffset + i] === 1) {
           const offset = 4 * i
@@ -237,6 +211,41 @@ export function SegmentAnythingPage() {
     },
     [originalSize]
   )
+
+  // Decode mask function
+  const decode = useCallback(async (pointsToUse: Point[], forMultiMask = false) => {
+    if (!isEncoded || pointsToUse.length === 0) return
+    if (isDecoding) {
+      pendingPointRef.current = pointsToUse[0]
+      return
+    }
+
+    setIsDecoding(true)
+    lastDecodedPointRef.current = { x: pointsToUse[0].x, y: pointsToUse[0].y }
+    try {
+      const result = await decodeMask(
+        pointsToUse.map((p) => ({
+          point: [p.x, p.y] as [number, number],
+          label: p.label
+        }))
+      )
+      // Only draw if still hovering (for hover mode) or in multi-mask mode
+      if (forMultiMask || isHoveringRef.current) {
+        setLastMaskResult(result)
+        drawMask(result)
+      }
+    } catch (error) {
+      console.error('Decode error:', error)
+    } finally {
+      setIsDecoding(false)
+      // Process pending point if cursor moved during decode
+      const pending = pendingPointRef.current
+      if (pending && isHoveringRef.current && (pending.x !== lastDecodedPointRef.current?.x || pending.y !== lastDecodedPointRef.current?.y)) {
+        pendingPointRef.current = null
+        decode([pending])
+      }
+    }
+  }, [isEncoded, isDecoding, decodeMask, drawMask])
 
   // Clamp value between 0 and 1
   const clamp = (x: number) => Math.max(0, Math.min(1, x))
@@ -262,30 +271,19 @@ export function SegmentAnythingPage() {
   // Handle mouse move - hover preview in single point mode
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      // Update cursor position for custom cursor
+      isHoveringRef.current = true
       const container = imageContainerRef.current
       if (container) {
         const rect = container.getBoundingClientRect()
-        setCursorPos({
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top
-        })
+        setCursorPos({ x: e.clientX - rect.left, y: e.clientY - rect.top })
       }
 
       if (!isEncoded || isMultiMaskMode) return
 
       const point = getPoint(e)
-      if (!point) return
-
-      // Set as single hover point
-      lastPointsRef.current = [point]
-
-      // Decode if not already decoding
-      if (!isDecoding) {
-        decode([point])
-      }
+      if (point) decode([point])
     },
-    [isEncoded, isMultiMaskMode, getPoint, isDecoding, decode]
+    [isEncoded, isMultiMaskMode, getPoint, decode]
   )
 
   // Handle mouse down - add point and switch to multi-mask mode
@@ -297,32 +295,26 @@ export function SegmentAnythingPage() {
       const point = getPoint(e)
       if (!point) return
 
-      if (!isMultiMaskMode) {
-        // First click: switch to multi-mask mode
-        setIsMultiMaskMode(true)
-        setPoints([point])
-        lastPointsRef.current = [point]
-      } else {
-        // Subsequent clicks: add to points
-        const newPoints = [...points, point]
-        setPoints(newPoints)
-        lastPointsRef.current = newPoints
-      }
-
-      decode(lastPointsRef.current || [point])
+      const newPoints = isMultiMaskMode ? [...points, point] : [point]
+      if (!isMultiMaskMode) setIsMultiMaskMode(true)
+      setPoints(newPoints)
+      decode(newPoints, true)
     },
     [isEncoded, isMultiMaskMode, points, getPoint, decode]
   )
 
   // Handle mouse leave - clear hover preview if not in multi-mask mode
   const handleMouseLeave = useCallback(() => {
+    isHoveringRef.current = false
     setCursorPos(null)
-    if (!isMultiMaskMode && maskCanvasRef.current) {
-      const ctx = maskCanvasRef.current.getContext('2d')
-      if (ctx) {
-        ctx.clearRect(0, 0, maskCanvasRef.current.width, maskCanvasRef.current.height)
-      }
+    if (!isMultiMaskMode) {
+      pendingPointRef.current = null
+      lastDecodedPointRef.current = null
       setLastMaskResult(null)
+      if (maskCanvasRef.current) {
+        const ctx = maskCanvasRef.current.getContext('2d')
+        if (ctx) ctx.clearRect(0, 0, maskCanvasRef.current.width, maskCanvasRef.current.height)
+      }
     }
   }, [isMultiMaskMode])
 
@@ -335,7 +327,8 @@ export function SegmentAnythingPage() {
   const clearPoints = useCallback(() => {
     setPoints([])
     setIsMultiMaskMode(false)
-    lastPointsRef.current = null
+    lastDecodedPointRef.current = null
+    pendingPointRef.current = null
     setLastMaskResult(null)
     const maskCanvas = maskCanvasRef.current
     if (maskCanvas) {
@@ -353,7 +346,8 @@ export function SegmentAnythingPage() {
     setIsEncoded(false)
     setIsMultiMaskMode(false)
     setPoints([])
-    lastPointsRef.current = null
+    lastDecodedPointRef.current = null
+    pendingPointRef.current = null
     setLastMaskResult(null)
     setOriginalSize(null)
     resetProgress()

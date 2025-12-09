@@ -316,6 +316,12 @@
       "error": "Lỗi",
       "errorDesc": "Không thể lưu khóa API."
     },
+    "balance": {
+      "title": "Số dư tài khoản",
+      "description": "Số dư tài khoản WaveSpeed hiện tại của bạn",
+      "currentBalance": "Số dư hiện tại",
+      "refreshFailed": "Không thể lấy số dư"
+    },
     "appearance": {
       "title": "Giao diện",
       "description": "Tùy chỉnh giao diện ứng dụng",

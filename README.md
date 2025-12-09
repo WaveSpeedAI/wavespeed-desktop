@@ -25,6 +25,7 @@ A cross-platform desktop application for running AI models from [WaveSpeedAI](ht
 - **File Upload**: Support for image, video, and audio file inputs with drag & drop
 - **Media Capture**: Built-in camera capture, video recording with audio waveform, and audio recording
 - **View Documentation**: Quick access to model documentation from the playground
+- **Account Balance**: View your current WaveSpeed account balance in Settings with one-click refresh
 - **Theme Support**: Auto (system), dark, and light theme options
 - **Multi-Language**: Support for 18 languages including English, Chinese, Japanese, Korean, and more
 - **Auto Updates**: Automatic update checking with stable and nightly channels
@@ -159,6 +160,7 @@ The application uses the WaveSpeedAI API v3:
 | `/api/v3/predictions/{id}/result` | GET | Get prediction result |
 | `/api/v3/predictions` | POST | Get prediction history |
 | `/api/v3/media/upload/binary` | POST | Upload files |
+| `/api/v3/balance` | GET | Get account balance |
 
 ## Contributing
 

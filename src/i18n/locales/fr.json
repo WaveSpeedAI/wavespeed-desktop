@@ -316,6 +316,12 @@
       "error": "Erreur",
       "errorDesc": "Échec de l'enregistrement de la clé API."
     },
+    "balance": {
+      "title": "Solde du compte",
+      "description": "Votre solde actuel du compte WaveSpeed",
+      "currentBalance": "Solde actuel",
+      "refreshFailed": "Échec de la récupération du solde"
+    },
     "appearance": {
       "title": "Apparence",
       "description": "Personnaliser l'apparence de l'application",

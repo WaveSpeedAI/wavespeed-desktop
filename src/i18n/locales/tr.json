@@ -316,6 +316,12 @@
       "error": "Hata",
       "errorDesc": "API anahtarı kaydedilemedi."
     },
+    "balance": {
+      "title": "Hesap Bakiyesi",
+      "description": "Mevcut WaveSpeed hesap bakiyeniz",
+      "currentBalance": "Mevcut Bakiye",
+      "refreshFailed": "Bakiye alınamadı"
+    },
     "appearance": {
       "title": "Görünüm",
       "description": "Uygulamanın görünümünü özelleştirin",

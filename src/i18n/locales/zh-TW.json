@@ -316,6 +316,12 @@
       "error": "錯誤",
       "errorDesc": "儲存 API 金鑰失敗。"
     },
+    "balance": {
+      "title": "帳戶餘額",
+      "description": "您目前的 WaveSpeed 帳戶餘額",
+      "currentBalance": "目前餘額",
+      "refreshFailed": "取得餘額失敗"
+    },
     "appearance": {
       "title": "外觀",
       "description": "自訂應用程式的外觀",

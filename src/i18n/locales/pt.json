@@ -316,6 +316,12 @@
       "error": "Erro",
       "errorDesc": "Falha ao salvar a chave API."
     },
+    "balance": {
+      "title": "Saldo da conta",
+      "description": "Seu saldo atual da conta WaveSpeed",
+      "currentBalance": "Saldo atual",
+      "refreshFailed": "Falha ao obter o saldo"
+    },
     "appearance": {
       "title": "Aparência",
       "description": "Personalize a aparência do aplicativo",

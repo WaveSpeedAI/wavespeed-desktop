@@ -264,14 +264,8 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
                 <video
                   src={outputStr}
                   controls
-                  className="max-w-full max-h-full object-contain cursor-pointer"
+                  className="max-w-full max-h-full object-contain"
                   preload="metadata"
-                  onClick={(e) => {
-                    // Only open fullscreen if not clicking on controls
-                    if ((e.target as HTMLVideoElement).paused) {
-                      setFullscreenMedia({ url: outputStr, type: 'video' })
-                    }
-                  }}
                 />
               )}
 

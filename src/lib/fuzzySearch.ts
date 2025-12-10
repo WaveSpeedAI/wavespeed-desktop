@@ -63,7 +63,8 @@ function fzfMatch(query: string, text: string): MatchResult | null {
 }
 
 /**
- * Find the best fuzzy match path using dynamic scoring
+ * Find the best fuzzy match path using dynamic programming
+ * Uses O(N*M) algorithm instead of exponential recursive backtracking
  */
 function findBestMatch(query: string, text: string, originalText: string): MatchResult | null {
   const n = query.length
@@ -71,92 +72,94 @@ function findBestMatch(query: string, text: string, originalText: string): Match
 
   if (n > m) return null
 
-  // Find all positions where each query character appears
-  const positions: number[][] = []
+  // Quick check: all query chars must exist in text
   for (let i = 0; i < n; i++) {
-    positions[i] = []
-    for (let j = 0; j < m; j++) {
-      if (text[j] === query[i]) {
-        positions[i].push(j)
-      }
-    }
-    // If any query character is not found, no match
-    if (positions[i].length === 0) return null
+    if (text.indexOf(query[i]) === -1) return null
   }
 
-  // Find the best matching path using recursive search with memoization
+  // DP table: dp[i][j] = best score matching query[0..i-1] ending at text[j-1]
+  // prev[i][j] = previous text position for backtracking
+  const dp: number[][] = Array(n + 1).fill(null).map(() => Array(m + 1).fill(-Infinity))
+  const prev: number[][] = Array(n + 1).fill(null).map(() => Array(m + 1).fill(-1))
+
+  dp[0].fill(0) // Empty query matches with score 0
+
+  for (let i = 1; i <= n; i++) {
+    for (let j = i; j <= m; j++) {
+      if (text[j - 1] !== query[i - 1]) continue
+
+      let bestPrevScore = -Infinity
+      let bestPrevPos = -1
+
+      // Find best previous state
+      for (let k = i - 1; k < j; k++) {
+        if (dp[i - 1][k] === -Infinity) continue
+
+        let score = dp[i - 1][k] + 10 // Base score
+
+        // Consecutive match bonus
+        if (k === j - 1) score += 40
+
+        // Word boundary bonus
+        if (j === 1 || /[\s\-_\/.]/.test(originalText[j - 2])) score += 30
+
+        // CamelCase bonus
+        if (j > 1 && /[a-z]/.test(originalText[j - 2]) && /[A-Z]/.test(originalText[j - 1])) score += 25
+
+        // First char bonus
+        if (j === 1) score += 20
+
+        // Gap penalty
+        if (k > 0) score -= (j - k - 1) * 2
+
+        // Start position penalty (for first char only)
+        if (i === 1) score -= (j - 1) * 0.5
+
+        if (score > bestPrevScore) {
+          bestPrevScore = score
+          bestPrevPos = k
+        }
+      }
+
+      if (bestPrevScore > dp[i][j]) {
+        dp[i][j] = bestPrevScore
+        prev[i][j] = bestPrevPos
+      }
+    }
+  }
+
+  // Find best ending position
   let bestScore = -Infinity
-  let bestPath: number[] = []
-
-  function search(qIdx: number, minPos: number, path: number[], score: number): void {
-    if (qIdx === n) {
-      if (score > bestScore) {
-        bestScore = score
-        bestPath = [...path]
-      }
-      return
-    }
-
-    // Pruning: if we can't possibly beat the best score, skip
-    const maxPossibleBonus = (n - qIdx) * 50
-    if (score + maxPossibleBonus < bestScore) return
-
-    for (const pos of positions[qIdx]) {
-      if (pos < minPos) continue
-
-      let posScore = 10 // Base score for matching character
-
-      // Consecutive match bonus (big bonus like fzf)
-      if (path.length > 0 && pos === path[path.length - 1] + 1) {
-        posScore += 40
-      }
-
-      // Word boundary bonus
-      if (pos === 0 || /[\s\-_\/.]/.test(originalText[pos - 1])) {
-        posScore += 30
-      }
-
-      // CamelCase boundary bonus
-      if (pos > 0 && /[a-z]/.test(originalText[pos - 1]) && /[A-Z]/.test(originalText[pos])) {
-        posScore += 25
-      }
-
-      // First character match bonus
-      if (pos === 0) {
-        posScore += 20
-      }
-
-      // Penalty for gaps (smaller gaps are better)
-      if (path.length > 0) {
-        const gap = pos - path[path.length - 1] - 1
-        posScore -= gap * 2
-      }
-
-      // Penalty for starting late
-      if (qIdx === 0) {
-        posScore -= pos * 0.5
-      }
-
-      search(qIdx + 1, pos + 1, [...path, pos], score + posScore)
+  let bestEnd = -1
+  for (let j = n; j <= m; j++) {
+    if (dp[n][j] > bestScore) {
+      bestScore = dp[n][j]
+      bestEnd = j
     }
   }
 
-  search(0, 0, [], 0)
+  if (bestEnd === -1) return null
 
-  if (bestPath.length !== n) return null
+  // Backtrack to get path
+  const path: number[] = []
+  let j = bestEnd
+  for (let i = n; i > 0; i--) {
+    path.unshift(j - 1)
+    j = prev[i][j]
+  }
 
   // Convert path to match ranges (merge consecutive)
   const matches: Array<[number, number]> = []
-  let start = bestPath[0]
-  let end = bestPath[0] + 1
+  let start = path[0]
+  let end = path[0] + 1
 
-  for (let i = 1; i < bestPath.length; i++) {
-    if (bestPath[i] === end) {
+  for (let i = 1; i < path.length; i++) {
+    if (path[i] === end) {
       end++
     } else {
       matches.push([start, end])
-      start = bestPath[i]
-      end = bestPath[i] + 1
+      start = path[i]
+      end = path[i] + 1
     }
   }
   matches.push([start, end])

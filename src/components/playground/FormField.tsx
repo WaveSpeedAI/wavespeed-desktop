@@ -312,7 +312,7 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
           )}
         </div>
       )}
-      <div className={cn("overflow-hidden", error && "[&_input]:border-destructive [&_textarea]:border-destructive")}>
+      <div className={cn(field.type !== 'loras' && "overflow-hidden", error && "[&_input]:border-destructive [&_textarea]:border-destructive")}>
         {renderInput()}
       </div>
       {error && (

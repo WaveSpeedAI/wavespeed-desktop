@@ -82,7 +82,7 @@ export function ImageEraserPage() {
   const [imageHistory, setImageHistory] = useState<ImageData[]>([])
   const [imageHistoryIndex, setImageHistoryIndex] = useState(-1)
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(null)
-  const [downloadFormat, setDownloadFormat] = useState<'png' | 'jpeg' | 'webp'>('png')
+  const [downloadFormat, setDownloadFormat] = useState<'png' | 'jpeg' | 'webp'>('jpeg')
   const [previewImage, setPreviewImage] = useState<string | null>(null)
   const [zoom, setZoom] = useState(1)
 
@@ -1026,8 +1026,8 @@ export function ImageEraserPage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="png">PNG</SelectItem>
                           <SelectItem value="jpeg">JPEG</SelectItem>
+                          <SelectItem value="png">PNG</SelectItem>
                           <SelectItem value="webp">WebP</SelectItem>
                         </SelectContent>
                       </Select>

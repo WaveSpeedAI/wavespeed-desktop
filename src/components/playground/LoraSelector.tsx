@@ -58,9 +58,9 @@ export function LoraSelector({
           <Label className="text-xs text-muted-foreground">Selected LoRAs ({value.length}/{maxItems})</Label>
           {value.map((lora, index) => (
             <div key={lora.path} className="space-y-2 p-3 bg-muted/50 rounded-lg">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-sm font-medium truncate flex-1" title={lora.path}>
-                  {lora.path.split('/').pop()}
+              <div className="flex items-start justify-between gap-2">
+                <span className="text-sm font-medium break-all flex-1" title={lora.path}>
+                  {lora.path}
                 </span>
                 <Button
                   type="button"

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useAssetsStore } from '@/stores/assetsStore'
@@ -55,6 +55,7 @@ import {
   FolderOpen,
   Download,
   Eye,
+  EyeOff,
   Tag,
   X,
   Filter,
@@ -63,8 +64,66 @@ import {
   Square,
   Plus,
   ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 import type { AssetMetadata, AssetType, AssetSortBy, AssetsFilter } from '@/types/asset'
+
+// Video preview component - shows first frame, plays on hover
+function VideoPreview({ src, enabled }: { src: string; enabled: boolean }) {
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [isLoaded, setIsLoaded] = useState(false)
+  const [hasError, setHasError] = useState(false)
+
+  const handleMouseEnter = () => {
+    if (videoRef.current && isLoaded && enabled) {
+      videoRef.current.play().catch(() => {
+        // Ignore autoplay errors
+      })
+    }
+  }
+
+  const handleMouseLeave = () => {
+    if (videoRef.current) {
+      videoRef.current.pause()
+      videoRef.current.currentTime = 0
+    }
+  }
+
+  // Show placeholder if disabled or error
+  if (!enabled || hasError) {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <Video className="h-12 w-12 text-muted-foreground" />
+      </div>
+    )
+  }
+
+  return (
+    <div
+      className="w-full h-full relative"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {!isLoaded && (
+        <div className="absolute inset-0 flex items-center justify-center bg-muted z-10">
+          <Video className="h-12 w-12 text-muted-foreground" />
+        </div>
+      )}
+      <video
+        ref={videoRef}
+        src={src}
+        className="w-full h-full object-cover"
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        onLoadedData={() => setIsLoaded(true)}
+        onError={() => setHasError(true)}
+      />
+    </div>
+  )
+}
 
 // Asset type icon component
 function AssetTypeIcon({ type, className }: { type: AssetType; className?: string }) {
@@ -148,6 +207,13 @@ export function AssetsPage() {
   // Loading state
   const [isDeleting, setIsDeleting] = useState(false)
 
+  // Pagination state
+  const [page, setPage] = useState(1)
+  const pageSize = 20
+
+  // Preview toggle
+  const [loadPreviews, setLoadPreviews] = useState(true)
+
   // Load assets on mount
   useEffect(() => {
     loadAssets()
@@ -169,10 +235,22 @@ export function AssetsPage() {
     return () => clearTimeout(timer)
   }, [searchQuery])
 
+  // Reset page when filter changes
+  useEffect(() => {
+    setPage(1)
+  }, [filter])
+
   // Get filtered assets
   const filteredAssets = useMemo(() => {
     return getFilteredAssets(filter)
   }, [getFilteredAssets, filter, assets])
+
+  // Pagination
+  const totalPages = Math.ceil(filteredAssets.length / pageSize)
+  const paginatedAssets = useMemo(() => {
+    const start = (page - 1) * pageSize
+    return filteredAssets.slice(start, start + pageSize)
+  }, [filteredAssets, page, pageSize])
 
   // Get all tags and models for filters
   const allTags = useMemo(() => getAllTags(), [getAllTags, assets])
@@ -457,6 +535,18 @@ export function AssetsPage() {
             </SelectContent>
           </Select>
           <Button
+            variant={loadPreviews ? 'default' : 'outline'}
+            size="icon"
+            onClick={() => setLoadPreviews(!loadPreviews)}
+            title={loadPreviews ? t('assets.disablePreviews') : t('assets.loadPreviews')}
+          >
+            {loadPreviews ? (
+              <Eye className="h-4 w-4" />
+            ) : (
+              <EyeOff className="h-4 w-4" />
+            )}
+          </Button>
+          <Button
             variant={showFilters ? 'default' : 'outline'}
             size="icon"
             onClick={() => setShowFilters(!showFilters)}
@@ -556,7 +646,7 @@ export function AssetsPage() {
           </div>
         ) : (
           <div className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {filteredAssets.map((asset) => (
+            {paginatedAssets.map((asset) => (
               <div
                 key={asset.id}
                 className={cn(
@@ -569,13 +659,15 @@ export function AssetsPage() {
                   className="aspect-square bg-muted flex items-center justify-center cursor-pointer"
                   onClick={() => isSelectionMode ? handleToggleSelect(asset.id) : setPreviewAsset(asset)}
                 >
-                  {asset.type === 'image' && getAssetUrl(asset) ? (
+                  {asset.type === 'image' && loadPreviews && getAssetUrl(asset) ? (
                     <img
                       src={getAssetUrl(asset)}
                       alt={asset.fileName}
                       className="w-full h-full object-cover"
                       loading="lazy"
                     />
+                  ) : asset.type === 'video' && getAssetUrl(asset) ? (
+                    <VideoPreview src={getAssetUrl(asset)} enabled={loadPreviews} />
                   ) : (
                     <AssetTypeIcon type={asset.type} className="h-12 w-12 text-muted-foreground" />
                   )}
@@ -690,6 +782,35 @@ export function AssetsPage() {
           </div>
         )}
       </ScrollArea>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="border-t p-4 flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            {(page - 1) * pageSize + 1} - {Math.min(page * pageSize, filteredAssets.length)} / {filteredAssets.length}
+          </p>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(p => p - 1)}
+              disabled={page === 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+              {t('common.previous')}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(p => p + 1)}
+              disabled={page >= totalPages}
+            >
+              {t('common.next')}
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Preview Dialog */}
       <Dialog open={!!previewAsset} onOpenChange={() => setPreviewAsset(null)}>

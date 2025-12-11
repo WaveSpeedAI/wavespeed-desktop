@@ -293,7 +293,9 @@
     "addTag": "添加标签",
     "tagPlaceholder": "输入标签名称...",
     "manageTagsDesc": "为「{{name}}」添加或删除标签",
-    "textPreviewUnavailable": "文本预览不可用。请打开文件位置查看。"
+    "textPreviewUnavailable": "文本预览不可用。请打开文件位置查看。",
+    "loadPreviews": "加载预览",
+    "disablePreviews": "禁用预览"
   },
   "settings": {
     "title": "设置",

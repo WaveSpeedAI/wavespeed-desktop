@@ -293,7 +293,9 @@
     "addTag": "Adicionar Tag",
     "tagPlaceholder": "Digite o nome da tag...",
     "manageTagsDesc": "Adicionar ou remover tags para \"{{name}}\"",
-    "textPreviewUnavailable": "Pré-visualização de texto não disponível. Abra o local do arquivo para visualizar."
+    "textPreviewUnavailable": "Pré-visualização de texto não disponível. Abra o local do arquivo para visualizar.",
+    "loadPreviews": "Carregar visualizações",
+    "disablePreviews": "Desativar visualizações"
   },
   "settings": {
     "title": "Configurações",

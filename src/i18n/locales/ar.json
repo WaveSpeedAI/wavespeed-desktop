@@ -293,7 +293,9 @@
     "addTag": "إضافة علامة",
     "tagPlaceholder": "أدخل اسم العلامة...",
     "manageTagsDesc": "إضافة أو إزالة علامات لـ \"{{name}}\"",
-    "textPreviewUnavailable": "معاينة النص غير متاحة. افتح موقع الملف للعرض."
+    "textPreviewUnavailable": "معاينة النص غير متاحة. افتح موقع الملف للعرض.",
+    "loadPreviews": "تحميل المعاينات",
+    "disablePreviews": "تعطيل المعاينات"
   },
   "settings": {
     "title": "الإعدادات",

@@ -293,7 +293,9 @@
     "addTag": "Add Tag",
     "tagPlaceholder": "Enter tag name...",
     "manageTagsDesc": "Add or remove tags for \"{{name}}\"",
-    "textPreviewUnavailable": "Text preview not available. Open file location to view."
+    "textPreviewUnavailable": "Text preview not available. Open file location to view.",
+    "loadPreviews": "Load previews",
+    "disablePreviews": "Disable previews"
   },
   "settings": {
     "title": "Settings",

@@ -293,7 +293,9 @@
     "addTag": "Ajouter une étiquette",
     "tagPlaceholder": "Entrez le nom de l'étiquette...",
     "manageTagsDesc": "Ajouter ou retirer des étiquettes pour \"{{name}}\"",
-    "textPreviewUnavailable": "Aperçu du texte non disponible. Ouvrez l'emplacement du fichier pour le voir."
+    "textPreviewUnavailable": "Aperçu du texte non disponible. Ouvrez l'emplacement du fichier pour le voir.",
+    "loadPreviews": "Charger les aperçus",
+    "disablePreviews": "Désactiver les aperçus"
   },
   "settings": {
     "title": "Paramètres",

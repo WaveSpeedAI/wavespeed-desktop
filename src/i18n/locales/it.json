@@ -293,7 +293,9 @@
     "addTag": "Aggiungi Tag",
     "tagPlaceholder": "Inserisci nome tag...",
     "manageTagsDesc": "Aggiungi o rimuovi tag per \"{{name}}\"",
-    "textPreviewUnavailable": "Anteprima testo non disponibile. Apri la posizione del file per visualizzare."
+    "textPreviewUnavailable": "Anteprima testo non disponibile. Apri la posizione del file per visualizzare.",
+    "loadPreviews": "Carica anteprime",
+    "disablePreviews": "Disabilita anteprime"
   },
   "settings": {
     "title": "Impostazioni",

@@ -293,7 +293,9 @@
     "addTag": "태그 추가",
     "tagPlaceholder": "태그 이름 입력...",
     "manageTagsDesc": "\"{{name}}\"의 태그 추가 또는 제거",
-    "textPreviewUnavailable": "텍스트 미리보기를 사용할 수 없습니다. 보려면 파일 위치를 여세요."
+    "textPreviewUnavailable": "텍스트 미리보기를 사용할 수 없습니다. 보려면 파일 위치를 여세요.",
+    "loadPreviews": "미리보기 로드",
+    "disablePreviews": "미리보기 비활성화"
   },
   "settings": {
     "title": "설정",

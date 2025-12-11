@@ -293,7 +293,9 @@
     "addTag": "Tambah Tag",
     "tagPlaceholder": "Masukkan nama tag...",
     "manageTagsDesc": "Tambah atau hapus tag untuk \"{{name}}\"",
-    "textPreviewUnavailable": "Pratinjau teks tidak tersedia. Buka lokasi file untuk melihat."
+    "textPreviewUnavailable": "Pratinjau teks tidak tersedia. Buka lokasi file untuk melihat.",
+    "loadPreviews": "Muat pratinjau",
+    "disablePreviews": "Nonaktifkan pratinjau"
   },
   "settings": {
     "title": "Pengaturan",

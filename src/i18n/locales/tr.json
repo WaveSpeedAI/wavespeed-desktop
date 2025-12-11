@@ -293,7 +293,9 @@
     "addTag": "Etiket Ekle",
     "tagPlaceholder": "Etiket adı girin...",
     "manageTagsDesc": "\"{{name}}\" için etiket ekle veya kaldır",
-    "textPreviewUnavailable": "Metin önizlemesi mevcut değil. Görüntülemek için dosya konumunu açın."
+    "textPreviewUnavailable": "Metin önizlemesi mevcut değil. Görüntülemek için dosya konumunu açın.",
+    "loadPreviews": "Önizlemeleri yükle",
+    "disablePreviews": "Önizlemeleri devre dışı bırak"
   },
   "settings": {
     "title": "Ayarlar",

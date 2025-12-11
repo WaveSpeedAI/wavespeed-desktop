@@ -293,7 +293,9 @@
     "addTag": "Tambah Tag",
     "tagPlaceholder": "Masukkan nama tag...",
     "manageTagsDesc": "Tambah atau buang tag untuk \"{{name}}\"",
-    "textPreviewUnavailable": "Pratonton teks tidak tersedia. Buka lokasi fail untuk melihat."
+    "textPreviewUnavailable": "Pratonton teks tidak tersedia. Buka lokasi fail untuk melihat.",
+    "loadPreviews": "Muat pratonton",
+    "disablePreviews": "Lumpuhkan pratonton"
   },
   "settings": {
     "title": "Tetapan",

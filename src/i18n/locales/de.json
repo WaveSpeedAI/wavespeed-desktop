@@ -293,7 +293,9 @@
     "addTag": "Tag hinzufügen",
     "tagPlaceholder": "Tag-Name eingeben...",
     "manageTagsDesc": "Tags für \"{{name}}\" hinzufügen oder entfernen",
-    "textPreviewUnavailable": "Textvorschau nicht verfügbar. Öffnen Sie den Dateispeicherort zum Anzeigen."
+    "textPreviewUnavailable": "Textvorschau nicht verfügbar. Öffnen Sie den Dateispeicherort zum Anzeigen.",
+    "loadPreviews": "Vorschauen laden",
+    "disablePreviews": "Vorschauen deaktivieren"
   },
   "settings": {
     "title": "Einstellungen",

@@ -293,7 +293,9 @@
     "addTag": "タグを追加",
     "tagPlaceholder": "タグ名を入力...",
     "manageTagsDesc": "「{{name}}」のタグを追加または削除します",
-    "textPreviewUnavailable": "テキストプレビューは利用できません。ファイルの場所を開いて表示してください。"
+    "textPreviewUnavailable": "テキストプレビューは利用できません。ファイルの場所を開いて表示してください。",
+    "loadPreviews": "プレビューを読み込む",
+    "disablePreviews": "プレビューを無効にする"
   },
   "settings": {
     "title": "設定",

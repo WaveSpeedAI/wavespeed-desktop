@@ -293,7 +293,9 @@
     "addTag": "टैग जोड़ें",
     "tagPlaceholder": "टैग नाम दर्ज करें...",
     "manageTagsDesc": "\"{{name}}\" के लिए टैग जोड़ें या हटाएं",
-    "textPreviewUnavailable": "पाठ प्रीव्यू उपलब्ध नहीं। देखने के लिए फ़ाइल स्थान खोलें।"
+    "textPreviewUnavailable": "पाठ प्रीव्यू उपलब्ध नहीं। देखने के लिए फ़ाइल स्थान खोलें।",
+    "loadPreviews": "प्रीव्यू लोड करें",
+    "disablePreviews": "प्रीव्यू अक्षम करें"
   },
   "settings": {
     "title": "सेटिंग्स",

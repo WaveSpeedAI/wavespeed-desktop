@@ -293,7 +293,9 @@
     "addTag": "Thêm thẻ",
     "tagPlaceholder": "Nhập tên thẻ...",
     "manageTagsDesc": "Thêm hoặc xóa thẻ cho \"{{name}}\"",
-    "textPreviewUnavailable": "Không có xem trước văn bản. Mở vị trí tệp để xem."
+    "textPreviewUnavailable": "Không có xem trước văn bản. Mở vị trí tệp để xem.",
+    "loadPreviews": "Tải xem trước",
+    "disablePreviews": "Tắt xem trước"
   },
   "settings": {
     "title": "Cài đặt",

@@ -293,7 +293,9 @@
     "addTag": "新增標籤",
     "tagPlaceholder": "輸入標籤名稱...",
     "manageTagsDesc": "為「{{name}}」新增或移除標籤",
-    "textPreviewUnavailable": "文字預覽不可用。請開啟檔案位置以檢視。"
+    "textPreviewUnavailable": "文字預覽不可用。請開啟檔案位置以檢視。",
+    "loadPreviews": "載入預覽",
+    "disablePreviews": "停用預覽"
   },
   "settings": {
     "title": "設定",

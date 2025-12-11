@@ -293,7 +293,9 @@
     "addTag": "เพิ่มแท็ก",
     "tagPlaceholder": "ใส่ชื่อแท็ก...",
     "manageTagsDesc": "เพิ่มหรือลบแท็กสำหรับ \"{{name}}\"",
-    "textPreviewUnavailable": "ไม่มีการแสดงตัวอย่างข้อความ เปิดตำแหน่งไฟล์เพื่อดู"
+    "textPreviewUnavailable": "ไม่มีการแสดงตัวอย่างข้อความ เปิดตำแหน่งไฟล์เพื่อดู",
+    "loadPreviews": "โหลดตัวอย่าง",
+    "disablePreviews": "ปิดใช้งานตัวอย่าง"
   },
   "settings": {
     "title": "การตั้งค่า",

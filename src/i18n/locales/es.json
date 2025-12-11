@@ -293,7 +293,9 @@
     "addTag": "Agregar etiqueta",
     "tagPlaceholder": "Ingresa el nombre de la etiqueta...",
     "manageTagsDesc": "Agregar o quitar etiquetas para \"{{name}}\"",
-    "textPreviewUnavailable": "Vista previa de texto no disponible. Abre la ubicación del archivo para verlo."
+    "textPreviewUnavailable": "Vista previa de texto no disponible. Abre la ubicación del archivo para verlo.",
+    "loadPreviews": "Cargar vistas previas",
+    "disablePreviews": "Deshabilitar vistas previas"
   },
   "settings": {
     "title": "Configuración",

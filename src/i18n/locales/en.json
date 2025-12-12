@@ -176,7 +176,8 @@
       "preview": "Preview",
       "items": "items",
       "noPreview": "No preview available",
-      "seedsGenerated": "Seeds auto-generated"
+      "seedsGenerated": "Seeds auto-generated",
+      "settings": "Batch Settings"
     }
   },
   "history": {

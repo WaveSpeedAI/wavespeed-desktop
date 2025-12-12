@@ -201,7 +201,7 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - Language preference is stored in localStorage with key `i18next` and auto-detected from browser
 - Assets are auto-saved by default to `Documents/WaveSpeed/` with subdirectories for images, videos, audio, and text
 - Asset metadata is stored in `{userData}/assets-metadata.json` with tags, favorites, and file references
-- Asset file naming format: `{model-slug}_{uuid}_{resultindex}.{ext}` (e.g., `flux-schnell_m1a2b3c4_0.png`)
+- Asset file naming format: `{model-slug}_{predictionId}_{resultindex}.{ext}` (e.g., `flux-schnell_pred-abc123_0.png`)
 - Layout.tsx handles unified API key login screen - pages don't need individual ApiKeyRequired checks
 - Settings page (`/settings`) is a public path accessible without API key
 - Free Tools pages (`/free-tools`, `/free-tools/image`, `/free-tools/video`, `/free-tools/background-remover`, `/free-tools/image-eraser`, `/free-tools/segment-anything`) are public paths accessible without API key

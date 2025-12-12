@@ -171,7 +171,20 @@
     "executionTime": "Thời gian thực thi",
     "predictionId": "ID dự đoán",
     "notAvailable": "Lịch sử không khả dụng",
-    "notAvailableDesc": "API lịch sử dự đoán hiện không khả dụng."
+    "notAvailableDesc": "API lịch sử dự đoán hiện không khả dụng.",
+    "saveTemplate": {
+      "button": "Lưu làm mẫu",
+      "dialogTitle": "Lưu làm mẫu",
+      "nameLabel": "Tên mẫu",
+      "namePlaceholder": "Nhập tên mẫu",
+      "duplicateName": "Đã tồn tại mẫu với tên này",
+      "success": "Đã lưu mẫu",
+      "successDesc": "Mẫu của bạn đã được lưu thành công",
+      "error": "Lưu thất bại",
+      "noInputsTitle": "Không thể lưu mẫu",
+      "noInputsDesc": "Tham số đầu vào chỉ khả dụng cho các dự đoán được thực hiện trong ứng dụng này. Hãy thử chạy một dự đoán mới trước."
+    },
+    "hasInputs": "Có thể lưu làm mẫu"
   },
   "templates": {
     "title": "Mẫu",
@@ -530,6 +543,10 @@
       "clearPointsTooltip": "Xóa tất cả điểm và quay lại chế độ xem trước khi di chuột",
       "cutMask": "Cắt Mặt nạ",
       "hint": "Nhấp chuột trái để bao gồm, nhấp chuột phải để loại trừ vùng"
+    },
+    "videoConverter": {
+      "title": "Chuyển đổi Video",
+      "description": "Chuyển đổi video giữa các định dạng"
     }
   }
 }

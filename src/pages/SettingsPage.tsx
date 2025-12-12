@@ -72,6 +72,11 @@ export function SettingsPage() {
   const [showCacheDialog, setShowCacheDialog] = useState(false)
   const [isDeletingItem, setIsDeletingItem] = useState<string | null>(null)
 
+  // Model download state
+  const [isDownloadingModels, setIsDownloadingModels] = useState(false)
+  const [modelDownloadProgress, setModelDownloadProgress] = useState(0)
+  const [modelDownloadStatus, setModelDownloadStatus] = useState<string | null>(null)
+
   // Get the saved language preference (including 'auto')
   const [languagePreference, setLanguagePreference] = useState(() => {
     return localStorage.getItem('wavespeed_language') || 'auto'
@@ -194,6 +199,99 @@ export function SettingsPage() {
       setIsClearingCache(false)
     }
   }, [t])
+
+  // Download all Free Tools models
+  const handleDownloadModels = useCallback(async () => {
+    setIsDownloadingModels(true)
+    setModelDownloadProgress(0)
+    setModelDownloadStatus(null)
+
+    const models = [
+      {
+        name: 'Image Eraser (LaMa)',
+        url: 'https://huggingface.co/opencv/inpainting_lama/resolve/main/inpainting_lama_2025jan.onnx',
+        cacheName: 'lama-model-cache'
+      }
+    ]
+
+    try {
+      for (let i = 0; i < models.length; i++) {
+        const model = models[i]
+        setModelDownloadStatus(`${t('settings.cache.downloading')} ${model.name}...`)
+
+        // Check if already cached
+        const cache = await caches.open(model.cacheName)
+        const cached = await cache.match(model.url)
+
+        if (cached) {
+          setModelDownloadProgress(((i + 1) / models.length) * 100)
+          continue
+        }
+
+        // Download with progress
+        const response = await fetch(model.url, { mode: 'cors' })
+        if (!response.ok) throw new Error(`Failed to download ${model.name}`)
+
+        const contentLength = response.headers.get('content-length')
+        const total = contentLength ? parseInt(contentLength, 10) : 0
+        const reader = response.body?.getReader()
+
+        if (!reader) throw new Error('Failed to get response reader')
+
+        const chunks: Uint8Array[] = []
+        let received = 0
+
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+
+          chunks.push(value)
+          received += value.length
+
+          if (total > 0) {
+            const modelProgress = (received / total) * 100
+            const overallProgress = ((i + modelProgress / 100) / models.length) * 100
+            setModelDownloadProgress(overallProgress)
+          }
+        }
+
+        // Combine chunks and cache
+        const buffer = new Uint8Array(received)
+        let position = 0
+        for (const chunk of chunks) {
+          buffer.set(chunk, position)
+          position += chunk.length
+        }
+
+        const cacheResponse = new Response(buffer.buffer, {
+          headers: {
+            'Content-Type': 'application/octet-stream',
+            'Content-Length': buffer.byteLength.toString()
+          }
+        })
+        await cache.put(model.url, cacheResponse)
+
+        setModelDownloadProgress(((i + 1) / models.length) * 100)
+      }
+
+      setModelDownloadStatus(null)
+      await loadCacheDetails()
+      toast({
+        title: t('settings.cache.downloadComplete'),
+        description: t('settings.cache.downloadCompleteDesc'),
+      })
+    } catch (error) {
+      toast({
+        title: t('common.error'),
+        description: (error as Error).message,
+        variant: 'destructive',
+      })
+    } finally {
+      setIsDownloadingModels(false)
+      setModelDownloadProgress(0)
+      setModelDownloadStatus(null)
+    }
+  }, [t, loadCacheDetails])
 
   // Format file size
   const formatSize = (bytes: number) => {
@@ -770,6 +868,49 @@ export function SettingsPage() {
                 )}
               </Button>
             </div>
+          </div>
+
+          {/* Download Models Section */}
+          <div className="border-t pt-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <Download className="h-4 w-4 text-muted-foreground" />
+                  <Label>{t('settings.cache.predownload')}</Label>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {t('settings.cache.predownloadDesc')}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDownloadModels}
+                disabled={isDownloadingModels}
+              >
+                {isDownloadingModels ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {Math.round(modelDownloadProgress)}%
+                  </>
+                ) : (
+                  <>
+                    <Download className="mr-2 h-4 w-4" />
+                    {t('settings.cache.downloadModels')}
+                  </>
+                )}
+              </Button>
+            </div>
+            {isDownloadingModels && (
+              <div className="space-y-2">
+                <Progress value={modelDownloadProgress} />
+                {modelDownloadStatus && (
+                  <p className="text-xs text-muted-foreground text-center">
+                    {modelDownloadStatus}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

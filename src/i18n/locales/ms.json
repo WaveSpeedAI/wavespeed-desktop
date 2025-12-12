@@ -171,7 +171,20 @@
     "executionTime": "Masa Pelaksanaan",
     "predictionId": "ID Ramalan",
     "notAvailable": "Sejarah Tidak Tersedia",
-    "notAvailableDesc": "API sejarah ramalan tidak tersedia pada masa ini."
+    "notAvailableDesc": "API sejarah ramalan tidak tersedia pada masa ini.",
+    "saveTemplate": {
+      "button": "Simpan sebagai templat",
+      "dialogTitle": "Simpan sebagai templat",
+      "nameLabel": "Nama templat",
+      "namePlaceholder": "Masukkan nama templat",
+      "duplicateName": "Templat dengan nama ini sudah wujud",
+      "success": "Templat disimpan",
+      "successDesc": "Templat anda berjaya disimpan",
+      "error": "Gagal menyimpan",
+      "noInputsTitle": "Tidak dapat menyimpan templat",
+      "noInputsDesc": "Parameter input hanya tersedia untuk ramalan yang dibuat dalam aplikasi ini. Cuba jalankan ramalan baharu dahulu."
+    },
+    "hasInputs": "Boleh disimpan sebagai templat"
   },
   "templates": {
     "title": "Templat",
@@ -530,6 +543,10 @@
       "clearPointsTooltip": "Padam semua titik dan kembali ke mod pratonton tuding",
       "cutMask": "Potong Topeng",
       "hint": "Klik kiri untuk menyertakan, klik kanan untuk mengecualikan kawasan"
+    },
+    "videoConverter": {
+      "title": "Penukar Video",
+      "description": "Tukar video antara format"
     }
   }
 }

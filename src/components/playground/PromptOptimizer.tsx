@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -151,6 +152,9 @@ export function PromptOptimizer({ currentPrompt, onOptimized, disabled, modelTyp
                 </span>
               )}
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              {t('playground.optimizer.tooltip')}
+            </DialogDescription>
           </DialogHeader>
 
           {!optimizerModel ? (

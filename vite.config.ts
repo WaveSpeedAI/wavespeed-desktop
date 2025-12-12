@@ -16,6 +16,8 @@ export default defineConfig({
   worker: {
     format: 'es'
   },
+  // Ensure WASM files are properly served
+  assetsInclude: ['**/*.wasm'],
   optimizeDeps: {
     exclude: ['@huggingface/transformers']
   }

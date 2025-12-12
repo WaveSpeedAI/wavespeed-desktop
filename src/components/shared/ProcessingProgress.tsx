@@ -76,6 +76,9 @@ export function ProcessingProgress({
 
   const currentPhase = phases[currentPhaseIndex]
 
+  // Check if all phases are completed
+  const allCompleted = phases.every(phase => phase.status === 'completed')
+
   if (!isActive && overallProgress === 0) {
     return null
   }
@@ -111,11 +114,11 @@ export function ProcessingProgress({
             {isActive && currentPhase.status === 'active' && (
               <Loader2 className="h-3 w-3 animate-spin" />
             )}
-            {currentPhase.status === 'completed' && (
+            {(allCompleted || currentPhase.status === 'completed') && (
               <Check className="h-3 w-3 text-primary" />
             )}
-            {t(currentPhase.labelKey)}
-            {currentPhase.detail && (
+            {allCompleted ? t('history.status.completed') : t(currentPhase.labelKey)}
+            {!allCompleted && currentPhase.detail && (
               <span className="text-muted-foreground/60">
                 ({formatDetail(currentPhase.detail)})
               </span>

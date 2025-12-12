@@ -41,16 +41,16 @@ import {
   ZoomIn,
   ZoomOut,
   Maximize2,
-  RefreshCw
+  RefreshCw,
+  StopCircle
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type Tool = 'brush' | 'eraser'
 
-// Phase configuration for image eraser
+// Phase configuration for image eraser (simplified to single phase)
 const PHASES = [
-  { id: 'download', labelKey: 'freeTools.progress.downloading', weight: 0.1 },
-  { id: 'process', labelKey: 'freeTools.progress.processing', weight: 0.9 }
+  { id: 'process', labelKey: 'freeTools.progress.processing', weight: 1.0 }
 ]
 
 export function ImageEraserPage() {
@@ -98,7 +98,7 @@ export function ImageEraserPage() {
 
   const [error, setError] = useState<string | null>(null)
 
-  const { initModel, removeObjects, dispose, hasFailed, retryWorker } = useImageEraserWorker({
+  const { initModel, removeObjects, dispose, hasFailed, retryWorker, cancel } = useImageEraserWorker({
     onPhase: (phase) => {
       if (phase === 'download') {
         startPhase('download')
@@ -124,6 +124,12 @@ export function ImageEraserPage() {
     setError(null)
     retryWorker()
   }, [retryWorker])
+
+  const handleCancel = useCallback(() => {
+    cancel()
+    setIsProcessing(false)
+    resetProgress()
+  }, [cancel, resetProgress])
 
   // Measure available container size on mount and window resize
   useEffect(() => {
@@ -965,23 +971,17 @@ export function ImageEraserPage() {
 
             <div className="flex-1" />
 
-            <Button
-              onClick={handleRemoveObjects}
-              disabled={isProcessing}
-              className="gradient-bg"
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  {t('freeTools.imageEraser.processing')}
-                </>
-              ) : (
-                <>
-                  <Eraser className="h-4 w-4 mr-2" />
-                  {t('freeTools.imageEraser.removeObjects')}
-                </>
-              )}
-            </Button>
+            {isProcessing ? (
+              <Button onClick={handleCancel} variant="destructive">
+                <StopCircle className="h-4 w-4 mr-2" />
+                {t('common.cancel')}
+              </Button>
+            ) : (
+              <Button onClick={handleRemoveObjects} className="gradient-bg">
+                <Eraser className="h-4 w-4 mr-2" />
+                {t('freeTools.imageEraser.removeObjects')}
+              </Button>
+            )}
           </div>
 
           {/* Progress display */}
@@ -995,7 +995,7 @@ export function ImageEraserPage() {
           {/* Error with retry button */}
           {error && hasFailed() && !isProcessing && (
             <div className="flex items-center justify-center gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-              <span className="text-sm text-destructive">{t('common.downloadFailed')}</span>
+              <span className="text-sm text-destructive">{error}</span>
               <Button variant="outline" size="sm" onClick={handleRetry}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 {t('common.retry')}

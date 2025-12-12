@@ -1,15 +1,15 @@
 import { useTranslation } from 'react-i18next'
 import { usePlaygroundStore } from '@/stores/playgroundStore'
 import { Switch } from '@/components/ui/switch'
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { Slider } from '@/components/ui/slider'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Play, Loader2, ChevronDown, Minus, Plus } from 'lucide-react'
+import { Play, Loader2, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface BatchControlsProps {
@@ -42,16 +42,8 @@ export function BatchControls({
     setBatchConfig({ enabled: checked })
   }
 
-  const handleCountChange = (delta: number) => {
-    const newCount = Math.max(2, Math.min(50, repeatCount + delta))
-    setBatchConfig({ repeatCount: newCount })
-  }
-
-  const handleCountInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value, 10)
-    if (!isNaN(value)) {
-      setBatchConfig({ repeatCount: Math.max(2, Math.min(50, value)) })
-    }
+  const handleCountChange = (value: number[]) => {
+    setBatchConfig({ repeatCount: value[0] })
   }
 
   const handleRandomizeSeedChange = (checked: boolean) => {
@@ -124,35 +116,18 @@ export function BatchControls({
               <>
                 {/* Repeat Count */}
                 <div className="space-y-2">
-                  <Label className="text-sm">{t('playground.batch.repeatCount')}</Label>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => handleCountChange(-1)}
-                      disabled={repeatCount <= 2}
-                    >
-                      <Minus className="h-3 w-3" />
-                    </Button>
-                    <Input
-                      type="number"
-                      value={repeatCount}
-                      onChange={handleCountInputChange}
-                      className="h-8 w-16 text-center"
-                      min={2}
-                      max={50}
-                    />
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => handleCountChange(1)}
-                      disabled={repeatCount >= 50}
-                    >
-                      <Plus className="h-3 w-3" />
-                    </Button>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm">{t('playground.batch.repeatCount')}</Label>
+                    <span className="text-sm font-medium">{repeatCount}</span>
                   </div>
+                  <Slider
+                    value={[repeatCount]}
+                    onValueChange={handleCountChange}
+                    min={1}
+                    max={16}
+                    step={1}
+                    className="w-full"
+                  />
                 </div>
 
                 {/* Randomize Seed */}

@@ -171,20 +171,7 @@
     "executionTime": "実行時間",
     "predictionId": "予測ID",
     "notAvailable": "履歴を利用できません",
-    "notAvailableDesc": "予測履歴APIは現在利用できません。",
-    "saveTemplate": {
-      "button": "テンプレートとして保存",
-      "dialogTitle": "テンプレートとして保存",
-      "nameLabel": "テンプレート名",
-      "namePlaceholder": "テンプレート名を入力",
-      "duplicateName": "同じ名前のテンプレートが既に存在します",
-      "success": "テンプレートを保存しました",
-      "successDesc": "テンプレートが正常に保存されました",
-      "error": "保存に失敗しました",
-      "noInputsTitle": "テンプレートを保存できません",
-      "noInputsDesc": "入力パラメータは、このアプリで行った予測のみ利用可能です。先に新しい予測を実行してください。"
-    },
-    "hasInputs": "テンプレートとして保存可能"
+    "notAvailableDesc": "予測履歴APIは現在利用できません。"
   },
   "templates": {
     "title": "テンプレート",
@@ -533,10 +520,6 @@
       "clearPointsTooltip": "すべてのポイントをクリアしてホバープレビューモードに戻る",
       "cutMask": "マスクを切り抜き",
       "hint": "左クリックで含める領域、右クリックで除外する領域を指定"
-    },
-    "videoConverter": {
-      "title": "ビデオコンバーター",
-      "description": "動画をフォーマット間で変換"
     },
     "progress": {
       "downloading": "モデルをダウンロード中",

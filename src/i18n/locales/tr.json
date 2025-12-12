@@ -171,20 +171,7 @@
     "executionTime": "Çalışma Süresi",
     "predictionId": "Tahmin ID",
     "notAvailable": "Geçmiş Mevcut Değil",
-    "notAvailableDesc": "Tahmin geçmişi API'si şu anda mevcut değil.",
-    "saveTemplate": {
-      "button": "Şablon olarak kaydet",
-      "dialogTitle": "Şablon olarak kaydet",
-      "nameLabel": "Şablon adı",
-      "namePlaceholder": "Şablon adını girin",
-      "duplicateName": "Bu isimde bir şablon zaten mevcut",
-      "success": "Şablon kaydedildi",
-      "successDesc": "Şablonunuz başarıyla kaydedildi",
-      "error": "Kaydetme başarısız",
-      "noInputsTitle": "Şablon kaydedilemiyor",
-      "noInputsDesc": "Giriş parametreleri yalnızca bu uygulamada yapılan tahminler için kullanılabilir. Önce yeni bir tahmin çalıştırmayı deneyin."
-    },
-    "hasInputs": "Şablon olarak kaydedilebilir"
+    "notAvailableDesc": "Tahmin geçmişi API'si şu anda mevcut değil."
   },
   "templates": {
     "title": "Şablonlar",
@@ -533,10 +520,6 @@
       "clearPointsTooltip": "Tüm noktaları temizle ve hover önizleme moduna dön",
       "cutMask": "Maskeyi kes",
       "hint": "Dahil etmek için sol tık, hariç tutmak için sağ tık"
-    },
-    "videoConverter": {
-      "title": "Video Dönüştürücü",
-      "description": "Videoları formatlar arasında dönüştürün"
     },
     "progress": {
       "downloading": "Model indiriliyor",

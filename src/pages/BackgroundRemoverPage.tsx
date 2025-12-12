@@ -14,7 +14,7 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import { ArrowLeft, Upload, Download, Loader2, Eraser, X, RefreshCw, StopCircle } from 'lucide-react'
+import { ArrowLeft, Upload, Download, Loader2, Eraser, X, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type ModelType = 'isnet_quint8' | 'isnet_fp16' | 'isnet'
@@ -25,9 +25,10 @@ interface ResultImages {
   mask: string | null
 }
 
-// Phase configuration for background remover (simplified to single phase)
+// Phase configuration for background remover
 const PHASES = [
-  { id: 'process', labelKey: 'freeTools.progress.processing', weight: 1.0 }
+  { id: 'download', labelKey: 'freeTools.progress.downloading', weight: 0.1 },
+  { id: 'process', labelKey: 'freeTools.progress.processing', weight: 0.9 }
 ]
 
 export function BackgroundRemoverPage() {
@@ -73,7 +74,7 @@ export function BackgroundRemoverPage() {
 
   const [error, setError] = useState<string | null>(null)
 
-  const { removeBackgroundAll, dispose, retryWorker, hasFailed, cancel } = useBackgroundRemoverWorker({
+  const { removeBackgroundAll, dispose, retryWorker, hasFailed } = useBackgroundRemoverWorker({
     onPhase: (phase) => {
       // Start the corresponding phase when worker reports it
       if (phase === 'download') {
@@ -98,12 +99,6 @@ export function BackgroundRemoverPage() {
     setError(null)
     retryWorker()
   }, [retryWorker])
-
-  const handleCancel = useCallback(() => {
-    cancel()
-    setIsProcessing(false)
-    resetProgress()
-  }, [cancel, resetProgress])
 
   const handleFileSelect = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) return
@@ -378,23 +373,23 @@ export function BackgroundRemoverPage() {
               </SelectContent>
             </Select>
 
-            {isProcessing ? (
-              <Button
-                onClick={handleCancel}
-                variant="destructive"
-              >
-                <StopCircle className="h-4 w-4 mr-2" />
-                {t('common.cancel')}
-              </Button>
-            ) : (
-              <Button
-                onClick={handleRemoveBackground}
-                className="gradient-bg"
-              >
-                <Eraser className="h-4 w-4 mr-2" />
-                {t('freeTools.backgroundRemover.remove')}
-              </Button>
-            )}
+            <Button
+              onClick={handleRemoveBackground}
+              disabled={isProcessing}
+              className="gradient-bg"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {t('freeTools.backgroundRemover.processing')}
+                </>
+              ) : (
+                <>
+                  <Eraser className="h-4 w-4 mr-2" />
+                  {t('freeTools.backgroundRemover.remove')}
+                </>
+              )}
+            </Button>
 
             {hasResults && (
               <Select

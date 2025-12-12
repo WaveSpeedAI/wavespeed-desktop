@@ -171,20 +171,7 @@
     "executionTime": "Tiempo de ejecución",
     "predictionId": "ID de predicción",
     "notAvailable": "Historial no disponible",
-    "notAvailableDesc": "La API de historial de predicciones no está disponible en este momento.",
-    "saveTemplate": {
-      "button": "Guardar como plantilla",
-      "dialogTitle": "Guardar como plantilla",
-      "nameLabel": "Nombre de la plantilla",
-      "namePlaceholder": "Ingrese el nombre de la plantilla",
-      "duplicateName": "Ya existe una plantilla con este nombre",
-      "success": "Plantilla guardada",
-      "successDesc": "Tu plantilla se ha guardado correctamente",
-      "error": "Error al guardar",
-      "noInputsTitle": "No se puede guardar la plantilla",
-      "noInputsDesc": "Los parámetros de entrada solo están disponibles para predicciones realizadas en esta aplicación. Intenta ejecutar una nueva predicción primero."
-    },
-    "hasInputs": "Se puede guardar como plantilla"
+    "notAvailableDesc": "La API de historial de predicciones no está disponible en este momento."
   },
   "templates": {
     "title": "Plantillas",
@@ -533,10 +520,6 @@
       "clearPointsTooltip": "Limpiar todos los puntos y volver al modo de vista previa al pasar el cursor",
       "cutMask": "Recortar máscara",
       "hint": "Clic izquierdo para incluir, clic derecho para excluir áreas"
-    },
-    "videoConverter": {
-      "title": "Convertidor de Video",
-      "description": "Convierte videos entre formatos"
     },
     "progress": {
       "downloading": "Descargando modelo",

@@ -171,23 +171,6 @@ class WaveSpeedClient {
     }
   }
 
-  // Get prediction details including inputs (if available from API)
-  async getPredictionDetails(predictionId: string): Promise<PredictionResult & { input?: Record<string, unknown> }> {
-    try {
-      const response = await this.client.get<PredictionResponse>(`/api/v3/predictions/${predictionId}/result`)
-      if (response.data.code !== 200) {
-        throw new APIError(response.data.message || 'Failed to get prediction details', {
-          code: response.data.code,
-          details: response.data
-        })
-      }
-      // The API might return 'input' field with the original inputs
-      return response.data.data as PredictionResult & { input?: Record<string, unknown> }
-    } catch (error) {
-      throw createAPIError(error, 'Failed to get prediction details')
-    }
-  }
-
   async run(
     model: string,
     input: Record<string, unknown>,

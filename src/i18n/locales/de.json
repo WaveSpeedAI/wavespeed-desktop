@@ -171,20 +171,7 @@
     "executionTime": "Ausführungszeit",
     "predictionId": "Vorhersage-ID",
     "notAvailable": "Verlauf nicht verfügbar",
-    "notAvailableDesc": "Die Vorhersagenverlauf-API ist derzeit nicht verfügbar.",
-    "saveTemplate": {
-      "button": "Als Vorlage speichern",
-      "dialogTitle": "Als Vorlage speichern",
-      "nameLabel": "Vorlagenname",
-      "namePlaceholder": "Vorlagennamen eingeben",
-      "duplicateName": "Eine Vorlage mit diesem Namen existiert bereits",
-      "success": "Vorlage gespeichert",
-      "successDesc": "Ihre Vorlage wurde erfolgreich gespeichert",
-      "error": "Speichern fehlgeschlagen",
-      "noInputsTitle": "Vorlage kann nicht gespeichert werden",
-      "noInputsDesc": "Eingabeparameter sind nur für Vorhersagen verfügbar, die in dieser App erstellt wurden. Versuchen Sie zuerst, eine neue Vorhersage auszuführen."
-    },
-    "hasInputs": "Kann als Vorlage gespeichert werden"
+    "notAvailableDesc": "Die Vorhersagenverlauf-API ist derzeit nicht verfügbar."
   },
   "templates": {
     "title": "Vorlagen",
@@ -533,10 +520,6 @@
       "clearPointsTooltip": "Alle Punkte löschen und zum Hover-Vorschaumodus zurückkehren",
       "cutMask": "Maske ausschneiden",
       "hint": "Linksklick zum Einschließen, Rechtsklick zum Ausschließen von Bereichen"
-    },
-    "videoConverter": {
-      "title": "Videokonverter",
-      "description": "Videos zwischen Formaten konvertieren"
     },
     "progress": {
       "downloading": "Modell herunterladen",

@@ -7,7 +7,8 @@
 import * as ort from 'onnxruntime-web'
 
 // Configure WASM paths to use CDN (required for Vite bundling)
-const ORT_WASM_VERSION = '1.21.0'
+// v1.23.0 has all WASM variants (basic, simd, threaded, simd-threaded)
+const ORT_WASM_VERSION = '1.23.0'
 ort.env.wasm.wasmPaths = `https://cdn.jsdelivr.net/npm/onnxruntime-web@${ORT_WASM_VERSION}/dist/`
 
 // LaMa model from Hugging Face (quantized)
@@ -48,9 +49,7 @@ async function downloadModel(
 
   // Download with progress
   const response = await fetch(MODEL_URL, {
-    headers: {
-      Origin: self.location.origin
-    }
+    mode: 'cors'
   })
 
   if (!response.ok) {
@@ -109,7 +108,7 @@ async function initSession(modelBuffer: ArrayBuffer): Promise<void> {
     executionProviders: ['wasm'],
     graphOptimizationLevel: 'all',
     enableCpuMemArena: true,
-    executionMode: 'parallel'
+    executionMode: 'sequential'
   })
   console.log('Using WASM backend')
 }
@@ -522,10 +521,20 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
           payload: { id: payload?.id }
         })
       } catch (error) {
+        console.error('Model initialization error:', error)
+        let errorMessage = 'Failed to initialize model'
+        if (error instanceof Error) {
+          errorMessage = error.message
+          // Add more context for common errors
+          if (error.message.includes('Failed to download')) {
+            errorMessage = `Model download failed. Please check your network connection. (${error.message})`
+          } else if (error.message.includes('CORS') || error.message.includes('cross-origin')) {
+            errorMessage = 'Cross-origin request blocked. Try refreshing the page.'
+          }
+        }
         self.postMessage({
           type: 'error',
-          payload:
-            error instanceof Error ? error.message : 'Failed to initialize model'
+          payload: errorMessage
         })
       }
       break

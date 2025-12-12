@@ -171,7 +171,20 @@
     "executionTime": "Tempo di Esecuzione",
     "predictionId": "ID Previsione",
     "notAvailable": "Cronologia Non Disponibile",
-    "notAvailableDesc": "L'API della cronologia delle previsioni non è disponibile al momento."
+    "notAvailableDesc": "L'API della cronologia delle previsioni non è disponibile al momento.",
+    "saveTemplate": {
+      "button": "Salva come template",
+      "dialogTitle": "Salva come template",
+      "nameLabel": "Nome template",
+      "namePlaceholder": "Inserisci nome template",
+      "duplicateName": "Esiste già un template con questo nome",
+      "success": "Template salvato",
+      "successDesc": "Il tuo template è stato salvato con successo",
+      "error": "Salvataggio fallito",
+      "noInputsTitle": "Impossibile salvare il template",
+      "noInputsDesc": "I parametri di input sono disponibili solo per le previsioni effettuate in questa app. Prova prima a eseguire una nuova previsione."
+    },
+    "hasInputs": "Può essere salvato come template"
   },
   "templates": {
     "title": "Template",
@@ -520,6 +533,10 @@
       "clearPointsTooltip": "Cancella tutti i punti e torna alla modalità anteprima al passaggio",
       "cutMask": "Ritaglia maschera",
       "hint": "Clic sinistro per includere, clic destro per escludere aree"
+    },
+    "videoConverter": {
+      "title": "Convertitore Video",
+      "description": "Converti video tra formati"
     },
     "progress": {
       "downloading": "Scaricamento modello",

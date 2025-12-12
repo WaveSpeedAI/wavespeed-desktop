@@ -63,7 +63,7 @@
   "playground": {
     "title": "Playground",
     "selectModel": "Select a model",
-    "searchModels": "Search models...",
+    "searchModels": "Search...",
     "noModelSelected": "No model selected",
     "selectModelPrompt": "Select a model to configure parameters",
     "run": "Run",
@@ -74,6 +74,13 @@
     "noOutputs": "No outputs yet",
     "configureAndRun": "Configure the model and click Run to generate",
     "generating": "Generating...",
+    "imageCopied": "Image copied to clipboard",
+    "urlCopied": "URL copied to clipboard",
+    "copyFailed": "Failed to copy",
+    "copyImage": "Copy image",
+    "copyUrl": "Copy URL",
+    "copy": "Copy",
+    "download": "Download",
     "saveAsTemplate": "Save as Template",
     "saveTemplate": "Save Template",
     "saveTemplateDesc": "Save your current configuration for {{model}}",
@@ -161,7 +168,8 @@
       "completed": "Completed",
       "failed": "Failed",
       "processing": "Processing",
-      "created": "Created"
+      "created": "Created",
+      "archived": "Archived"
     },
     "loadPreviews": "Load previews",
     "disablePreviews": "Disable previews",
@@ -171,7 +179,20 @@
     "executionTime": "Execution Time",
     "predictionId": "Prediction ID",
     "notAvailable": "History Not Available",
-    "notAvailableDesc": "The prediction history API is not available at this time."
+    "notAvailableDesc": "The prediction history API is not available at this time.",
+    "saveTemplate": {
+      "button": "Save as Template",
+      "dialogTitle": "Save as Template",
+      "nameLabel": "Template Name",
+      "namePlaceholder": "Enter template name",
+      "duplicateName": "A template with this name already exists",
+      "success": "Template Saved",
+      "successDesc": "Your template has been saved successfully",
+      "error": "Failed to Save",
+      "noInputsTitle": "Cannot Save Template",
+      "noInputsDesc": "Input parameters are only available for predictions made in this app. Try running a new prediction first."
+    },
+    "hasInputs": "Can be saved as template"
   },
   "templates": {
     "title": "Templates",
@@ -368,7 +389,20 @@
       "clear": "Clear",
       "cleared": "Cache cleared",
       "clearedDesc": "AI model cache has been cleared. Models will be re-downloaded when needed.",
-      "clearFailed": "Failed to clear cache"
+      "clearFailed": "Failed to clear cache",
+      "predownload": "Pre-download Models",
+      "predownloadDesc": "Download all Free Tools AI models for offline use",
+      "downloadModels": "Download All",
+      "downloading": "Downloading",
+      "alreadyCached": "Already cached",
+      "downloaded": "Downloaded",
+      "overallProgress": "Overall Progress",
+      "downloadCancelled": "Download cancelled",
+      "downloadCancelledDesc": "Model download was cancelled",
+      "downloadPartial": "Partial download",
+      "downloadPartialDesc": "Some models failed to download. You can try again later.",
+      "downloadComplete": "Download complete",
+      "downloadCompleteDesc": "All AI models have been downloaded and cached."
     },
     "updates": {
       "title": "Updates",
@@ -438,7 +472,16 @@
       "cancelled": "Cancelled",
       "original": "Original",
       "enhanced": "Enhanced",
-      "eta": "~{{time}} remaining"
+      "eta": "~{{time}} remaining",
+      "mobileWarning": {
+        "title": "Mobile Device Warning",
+        "description": "Video enhancement may cause the app to crash on mobile devices due to memory limitations.",
+        "recommendations": "For best results, we recommend:",
+        "duration": "Video length under 5 seconds",
+        "resolution": "Resolution under 720p (1280×720)",
+        "model": "Use the \"Fast\" model option",
+        "proceed": "Continue Anyway"
+      }
     },
     "imageEnhancer": {
       "title": "Image Enhancer",
@@ -520,6 +563,10 @@
       "clearPointsTooltip": "Clear all points and return to hover preview mode",
       "cutMask": "Cut Mask",
       "hint": "Left-click to include areas, right-click to exclude areas"
+    },
+    "videoConverter": {
+      "title": "Video Converter",
+      "description": "Convert videos between formats"
     },
     "progress": {
       "downloading": "Downloading model",

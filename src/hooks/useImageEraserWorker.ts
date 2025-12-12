@@ -222,5 +222,23 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
     createWorker()
   }, [createWorker])
 
-  return { initModel, removeObjects, dispose, isInitialized, hasFailed, retryWorker }
+  // Cancel ongoing processing by terminating and recreating the worker
+  const cancel = useCallback(() => {
+    // Clear all pending callbacks
+    for (const [id] of callbacksRef.current) {
+      callbacksRef.current.delete(id)
+    }
+    for (const [id] of readyCallbacksRef.current) {
+      readyCallbacksRef.current.delete(id)
+    }
+    // Terminate and recreate worker
+    if (workerRef.current) {
+      workerRef.current.terminate()
+      workerRef.current = null
+    }
+    isInitializedRef.current = false
+    createWorker()
+  }, [createWorker])
+
+  return { initModel, removeObjects, dispose, isInitialized, hasFailed, retryWorker, cancel }
 }

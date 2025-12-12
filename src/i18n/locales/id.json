@@ -171,7 +171,20 @@
     "executionTime": "Waktu Eksekusi",
     "predictionId": "ID Prediksi",
     "notAvailable": "Riwayat Tidak Tersedia",
-    "notAvailableDesc": "API riwayat prediksi saat ini tidak tersedia."
+    "notAvailableDesc": "API riwayat prediksi saat ini tidak tersedia.",
+    "saveTemplate": {
+      "button": "Simpan sebagai template",
+      "dialogTitle": "Simpan sebagai template",
+      "nameLabel": "Nama template",
+      "namePlaceholder": "Masukkan nama template",
+      "duplicateName": "Template dengan nama ini sudah ada",
+      "success": "Template disimpan",
+      "successDesc": "Template Anda berhasil disimpan",
+      "error": "Gagal menyimpan",
+      "noInputsTitle": "Tidak dapat menyimpan template",
+      "noInputsDesc": "Parameter input hanya tersedia untuk prediksi yang dibuat di aplikasi ini. Coba jalankan prediksi baru terlebih dahulu."
+    },
+    "hasInputs": "Dapat disimpan sebagai template"
   },
   "templates": {
     "title": "Template",
@@ -530,6 +543,10 @@
       "clearPointsTooltip": "Hapus semua titik dan kembali ke mode pratinjau hover",
       "cutMask": "Potong Mask",
       "hint": "Klik kiri untuk menyertakan, klik kanan untuk mengecualikan area"
+    },
+    "videoConverter": {
+      "title": "Konverter Video",
+      "description": "Konversi video antar format"
     }
   }
 }

@@ -201,5 +201,22 @@ export function useBackgroundRemoverWorker(
 
   const hasFailed = useCallback(() => hasFailedRef.current, [])
 
-  return { removeBackground, removeBackgroundAll, dispose, retryWorker, hasFailed }
+  // Cancel ongoing processing by terminating and recreating the worker
+  const cancel = useCallback(() => {
+    // Clear all pending callbacks
+    for (const [id] of callbacksRef.current) {
+      callbacksRef.current.delete(id)
+    }
+    for (const [id] of callbacksAllRef.current) {
+      callbacksAllRef.current.delete(id)
+    }
+    // Terminate and recreate worker
+    if (workerRef.current) {
+      workerRef.current.terminate()
+      workerRef.current = null
+    }
+    createWorker()
+  }, [createWorker])
+
+  return { removeBackground, removeBackgroundAll, dispose, retryWorker, hasFailed, cancel }
 }

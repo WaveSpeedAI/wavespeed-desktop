@@ -171,7 +171,20 @@
     "executionTime": "Temps d'exécution",
     "predictionId": "ID de prédiction",
     "notAvailable": "Historique non disponible",
-    "notAvailableDesc": "L'API d'historique des prédictions n'est pas disponible pour le moment."
+    "notAvailableDesc": "L'API d'historique des prédictions n'est pas disponible pour le moment.",
+    "saveTemplate": {
+      "button": "Enregistrer comme modèle",
+      "dialogTitle": "Enregistrer comme modèle",
+      "nameLabel": "Nom du modèle",
+      "namePlaceholder": "Entrez le nom du modèle",
+      "duplicateName": "Un modèle avec ce nom existe déjà",
+      "success": "Modèle enregistré",
+      "successDesc": "Votre modèle a été enregistré avec succès",
+      "error": "Échec de l'enregistrement",
+      "noInputsTitle": "Impossible d'enregistrer le modèle",
+      "noInputsDesc": "Les paramètres d'entrée ne sont disponibles que pour les prédictions effectuées dans cette application. Essayez d'exécuter une nouvelle prédiction d'abord."
+    },
+    "hasInputs": "Peut être enregistré comme modèle"
   },
   "templates": {
     "title": "Modèles",
@@ -520,6 +533,10 @@
       "clearPointsTooltip": "Effacer tous les points et revenir au mode de prévisualisation au survol",
       "cutMask": "Découper le masque",
       "hint": "Clic gauche pour inclure, clic droit pour exclure des zones"
+    },
+    "videoConverter": {
+      "title": "Convertisseur Vidéo",
+      "description": "Convertir des vidéos entre formats"
     },
     "progress": {
       "downloading": "Téléchargement du modèle",

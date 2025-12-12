@@ -23,7 +23,8 @@ import {
   X,
   Columns2,
   SplitSquareHorizontal,
-  RefreshCw
+  RefreshCw,
+  StopCircle
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -32,10 +33,9 @@ type ViewMode = 'sideBySide' | 'comparison'
 type ModelType = 'slim' | 'medium' | 'thick'
 type ScaleType = '2x' | '3x' | '4x'
 
-// Phase configuration for image enhancer
+// Phase configuration for image enhancer (simplified to single phase)
 const PHASES = [
-  { id: 'download', labelKey: 'freeTools.progress.downloading', weight: 0.1 },
-  { id: 'process', labelKey: 'freeTools.progress.processing', weight: 0.9 }
+  { id: 'process', labelKey: 'freeTools.progress.processing', weight: 1.0 }
 ]
 
 export function ImageEnhancerPage() {
@@ -80,7 +80,7 @@ export function ImageEnhancerPage() {
 
   const [error, setError] = useState<string | null>(null)
 
-  const { loadModel, upscale, dispose, hasFailed, retryWorker } = useUpscalerWorker({
+  const { loadModel, upscale, dispose, hasFailed, retryWorker, cancel } = useUpscalerWorker({
     onPhase: (phase) => {
       // Start the corresponding phase when worker reports it
       if (phase === 'download') {
@@ -105,6 +105,12 @@ export function ImageEnhancerPage() {
     setError(null)
     retryWorker()
   }, [retryWorker])
+
+  const handleCancel = useCallback(() => {
+    cancel()
+    setIsProcessing(false)
+    resetProgress()
+  }, [cancel, resetProgress])
 
   const handleFileSelect = useCallback(
     (file: File) => {
@@ -433,23 +439,23 @@ export function ImageEnhancerPage() {
               </SelectContent>
             </Select>
 
-            <Button
-              onClick={handleEnhance}
-              disabled={isProcessing}
-              className="gradient-bg"
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  {t('freeTools.imageEnhancer.processing')}
-                </>
-              ) : (
-                <>
-                  <ImageUp className="h-4 w-4 mr-2" />
-                  {t('freeTools.imageEnhancer.enhance')}
-                </>
-              )}
-            </Button>
+            {isProcessing ? (
+              <Button
+                onClick={handleCancel}
+                variant="destructive"
+              >
+                <StopCircle className="h-4 w-4 mr-2" />
+                {t('common.cancel')}
+              </Button>
+            ) : (
+              <Button
+                onClick={handleEnhance}
+                className="gradient-bg"
+              >
+                <ImageUp className="h-4 w-4 mr-2" />
+                {t('freeTools.imageEnhancer.enhance')}
+              </Button>
+            )}
             {enhancedImage && (
               <>
                 {/* View mode toggle */}

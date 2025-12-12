@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
-import { Mic, X, RotateCcw, Check, Loader2, Play, Pause } from 'lucide-react'
+import { Mic, Square, X, RotateCcw, Check, Loader2, Play, Pause } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface AudioRecorderProps {
@@ -94,10 +94,20 @@ export function AudioRecorder({ onRecord, onClose, disabled }: AudioRecorderProp
 
     const startMicrophone = async () => {
       try {
+        // Check if mediaDevices API is available
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          console.error('Microphone error: mediaDevices API not available')
+          setError(t('playground.capture.micError'))
+          setIsLoading(false)
+          return
+        }
+
+        console.log('[AudioRecorder] Requesting microphone access...')
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: true,
           video: false
         })
+        console.log('[AudioRecorder] Microphone access granted')
 
         if (!mounted) {
           stream.getTracks().forEach(track => track.stop())
@@ -135,11 +145,23 @@ export function AudioRecorder({ onRecord, onClose, disabled }: AudioRecorderProp
         if (!mounted) return
 
         console.error('Microphone error:', err)
+        console.error('Error name:', err instanceof Error ? err.name : 'unknown')
+        console.error('Error message:', err instanceof Error ? err.message : String(err))
+
         if (err instanceof Error) {
-          if (err.name === 'NotAllowedError') {
+          if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
             setError(t('playground.capture.micPermissionDenied'))
-          } else if (err.name === 'NotFoundError') {
+          } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
             setError(t('playground.capture.noMicFound'))
+          } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+            // Device is already in use or hardware error
+            setError(t('playground.capture.micError'))
+          } else if (err.name === 'OverconstrainedError') {
+            // Constraints cannot be satisfied
+            setError(t('playground.capture.noMicFound'))
+          } else if (err.name === 'SecurityError') {
+            // Insecure context (non-HTTPS)
+            setError(t('playground.capture.micPermissionDenied'))
           } else {
             setError(t('playground.capture.micError'))
           }
@@ -529,7 +551,11 @@ export function AudioRecorder({ onRecord, onClose, disabled }: AudioRecorderProp
             )}
             title={isRecording ? t('playground.capture.stopRecording') : t('playground.capture.startRecording')}
           >
-            {!isRecording && <Mic className="h-5 w-5" />}
+            {isRecording ? (
+              <Square className="h-5 w-5" />
+            ) : (
+              <Mic className="h-5 w-5" />
+            )}
           </Button>
         ) : (
           <>

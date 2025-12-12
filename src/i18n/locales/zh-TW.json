@@ -74,6 +74,13 @@
     "noOutputs": "尚無輸出",
     "configureAndRun": "設定模型並點擊執行以產生",
     "generating": "產生中...",
+    "imageCopied": "圖片已複製到剪貼簿",
+    "urlCopied": "連結已複製到剪貼簿",
+    "copyFailed": "複製失敗",
+    "copyImage": "複製圖片",
+    "copyUrl": "複製連結",
+    "copy": "複製",
+    "download": "下載",
     "saveAsTemplate": "儲存為範本",
     "saveTemplate": "儲存範本",
     "saveTemplateDesc": "為 {{model}} 儲存目前設定",
@@ -171,7 +178,20 @@
     "executionTime": "執行時間",
     "predictionId": "預測 ID",
     "notAvailable": "歷史紀錄不可用",
-    "notAvailableDesc": "預測歷史 API 目前不可用。"
+    "notAvailableDesc": "預測歷史 API 目前不可用。",
+    "saveTemplate": {
+      "button": "儲存為範本",
+      "dialogTitle": "儲存為範本",
+      "nameLabel": "範本名稱",
+      "namePlaceholder": "輸入範本名稱",
+      "duplicateName": "已存在同名範本",
+      "success": "範本已儲存",
+      "successDesc": "您的範本已成功儲存",
+      "error": "儲存失敗",
+      "noInputsTitle": "無法儲存範本",
+      "noInputsDesc": "輸入參數僅適用於在此應用程式中進行的預測。請先執行新的預測。"
+    },
+    "hasInputs": "可儲存為範本"
   },
   "templates": {
     "title": "範本",
@@ -520,6 +540,10 @@
       "clearPointsTooltip": "清除所有點並返回懸停預覽模式",
       "cutMask": "裁剪遮罩",
       "hint": "左鍵點擊包含區域，右鍵點擊排除區域"
+    },
+    "videoConverter": {
+      "title": "視頻轉換",
+      "description": "在不同格式之間轉換視頻"
     },
     "progress": {
       "downloading": "下載模型中",

@@ -63,7 +63,7 @@
   "playground": {
     "title": "演练场",
     "selectModel": "选择模型",
-    "searchModels": "搜索模型...",
+    "searchModels": "搜索...",
     "noModelSelected": "未选择模型",
     "selectModelPrompt": "选择一个模型以配置参数",
     "run": "运行",
@@ -74,6 +74,13 @@
     "noOutputs": "暂无输出",
     "configureAndRun": "配置模型并点击运行以生成",
     "generating": "生成中...",
+    "imageCopied": "图片已复制到剪贴板",
+    "urlCopied": "链接已复制到剪贴板",
+    "copyFailed": "复制失败",
+    "copyImage": "复制图片",
+    "copyUrl": "复制链接",
+    "copy": "复制",
+    "download": "下载",
     "saveAsTemplate": "保存为模板",
     "saveTemplate": "保存模板",
     "saveTemplateDesc": "为 {{model}} 保存当前配置",
@@ -161,7 +168,8 @@
       "completed": "已完成",
       "failed": "失败",
       "processing": "处理中",
-      "created": "已创建"
+      "created": "已创建",
+      "archived": "已归档"
     },
     "loadPreviews": "加载预览",
     "disablePreviews": "禁用预览",
@@ -171,7 +179,20 @@
     "executionTime": "执行时间",
     "predictionId": "预测 ID",
     "notAvailable": "历史记录不可用",
-    "notAvailableDesc": "预测历史 API 当前不可用。"
+    "notAvailableDesc": "预测历史 API 当前不可用。",
+    "saveTemplate": {
+      "button": "保存为模板",
+      "dialogTitle": "保存为模板",
+      "nameLabel": "模板名称",
+      "namePlaceholder": "输入模板名称",
+      "duplicateName": "已存在同名模板",
+      "success": "模板已保存",
+      "successDesc": "您的模板已成功保存",
+      "error": "保存失败",
+      "noInputsTitle": "无法保存模板",
+      "noInputsDesc": "输入参数仅适用于在此应用中进行的预测。请先运行新的预测。"
+    },
+    "hasInputs": "可保存为模板"
   },
   "templates": {
     "title": "模板",
@@ -368,7 +389,20 @@
       "clear": "清除",
       "cleared": "缓存已清除",
       "clearedDesc": "AI模型缓存已清除。需要时将重新下载模型。",
-      "clearFailed": "清除缓存失败"
+      "clearFailed": "清除缓存失败",
+      "predownload": "预下载模型",
+      "predownloadDesc": "下载所有免费工具的AI模型以供离线使用",
+      "downloadModels": "下载全部",
+      "downloading": "下载中",
+      "alreadyCached": "已缓存",
+      "downloaded": "已下载",
+      "overallProgress": "总进度",
+      "downloadCancelled": "下载已取消",
+      "downloadCancelledDesc": "模型下载已取消",
+      "downloadPartial": "部分下载",
+      "downloadPartialDesc": "部分模型下载失败，您可以稍后重试。",
+      "downloadComplete": "下载完成",
+      "downloadCompleteDesc": "所有AI模型已下载并缓存。"
     },
     "updates": {
       "title": "更新",
@@ -438,7 +472,16 @@
       "cancelled": "已取消",
       "original": "原始",
       "enhanced": "增强后",
-      "eta": "~{{time}} 剩余"
+      "eta": "~{{time}} 剩余",
+      "mobileWarning": {
+        "title": "移动设备警告",
+        "description": "由于内存限制，视频增强可能会导致移动设备上的应用崩溃。",
+        "recommendations": "为了获得最佳效果，我们建议：",
+        "duration": "视频长度小于 5 秒",
+        "resolution": "分辨率低于 720p (1280×720)",
+        "model": "使用「快速」模型选项",
+        "proceed": "仍然继续"
+      }
     },
     "imageEnhancer": {
       "title": "图片增强",
@@ -520,6 +563,10 @@
       "clearPointsTooltip": "清除所有点并返回悬停预览模式",
       "cutMask": "裁剪蒙版",
       "hint": "左键点击包含区域，右键点击排除区域"
+    },
+    "videoConverter": {
+      "title": "视频转换",
+      "description": "在不同格式之间转换视频"
     },
     "progress": {
       "downloading": "下载模型中",

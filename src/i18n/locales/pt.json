@@ -171,7 +171,20 @@
     "executionTime": "Tempo de Execução",
     "predictionId": "ID da Previsão",
     "notAvailable": "Histórico Não Disponível",
-    "notAvailableDesc": "A API de histórico de previsões não está disponível no momento."
+    "notAvailableDesc": "A API de histórico de previsões não está disponível no momento.",
+    "saveTemplate": {
+      "button": "Salvar como template",
+      "dialogTitle": "Salvar como template",
+      "nameLabel": "Nome do template",
+      "namePlaceholder": "Digite o nome do template",
+      "duplicateName": "Já existe um template com este nome",
+      "success": "Template salvo",
+      "successDesc": "Seu template foi salvo com sucesso",
+      "error": "Falha ao salvar",
+      "noInputsTitle": "Não é possível salvar o template",
+      "noInputsDesc": "Os parâmetros de entrada estão disponíveis apenas para previsões feitas neste aplicativo. Tente executar uma nova previsão primeiro."
+    },
+    "hasInputs": "Pode ser salvo como template"
   },
   "templates": {
     "title": "Templates",
@@ -520,6 +533,10 @@
       "clearPointsTooltip": "Limpar todos os pontos e voltar ao modo de visualização ao passar o mouse",
       "cutMask": "Recortar máscara",
       "hint": "Clique esquerdo para incluir, clique direito para excluir áreas"
+    },
+    "videoConverter": {
+      "title": "Conversor de Vídeo",
+      "description": "Converter vídeos entre formatos"
     },
     "progress": {
       "downloading": "Baixando modelo",

@@ -33,6 +33,7 @@
     "downloadFailed": "Muat turun gagal. Sila semak sambungan rangkaian anda."
   },
   "nav": {
+    "home": "Laman Utama",
     "models": "Model",
     "playground": "Playground",
     "history": "Sejarah",
@@ -41,6 +42,39 @@
     "freeTools": "Alat Percuma",
     "settings": "Tetapan",
     "collapse": "Kuncupkan"
+  },
+  "welcome": {
+    "tagline": "Alat Kreatif AI di Hujung Jari Anda",
+    "explore": "Terokai",
+    "getStarted": "Mula",
+    "tryFreeTools": "Cuba Alat Percuma",
+    "features": {
+      "models": {
+        "title": "Pelayar Model",
+        "description": "Layari 100+ model AI untuk penjanaan imej, video dan audio"
+      },
+      "playground": {
+        "title": "Playground",
+        "description": "Ruang kerja berbilang tab untuk menjalankan model dengan parameter tersuai"
+      },
+      "templates": {
+        "title": "Templat",
+        "description": "Simpan dan guna semula konfigurasi kegemaran anda"
+      },
+      "history": {
+        "title": "Sejarah",
+        "description": "Jejak dan semak ramalan terkini anda"
+      },
+      "assets": {
+        "title": "Aset Saya",
+        "description": "Susun dan urus output yang dijana"
+      },
+      "freeTools": {
+        "title": "Alat Percuma",
+        "description": "Alat AI yang berkuasa yang berjalan secara tempatan - tiada kunci API diperlukan",
+        "badge": "Percuma"
+      }
+    }
   },
   "models": {
     "title": "Model",

@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import { Layout } from '@/components/layout/Layout'
+import { WelcomePage } from '@/pages/WelcomePage'
 import { ModelsPage } from '@/pages/ModelsPage'
 import { PlaygroundPage } from '@/pages/PlaygroundPage'
 import { TemplatesPage } from '@/pages/TemplatesPage'
@@ -8,33 +9,22 @@ import { HistoryPage } from '@/pages/HistoryPage'
 import { AssetsPage } from '@/pages/AssetsPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { FreeToolsPage } from '@/pages/FreeToolsPage'
-import { useApiKeyStore } from '@/stores/apiKeyStore'
-import { useModelsStore } from '@/stores/modelsStore'
 import { useThemeStore } from '@/stores/themeStore'
 
 // Placeholder for persistent pages (rendered in Layout, not via router)
 const PersistentPagePlaceholder = () => null
 
 function App() {
-  const { loadApiKey, isValidated } = useApiKeyStore()
-  const { fetchModels } = useModelsStore()
   const { initTheme } = useThemeStore()
 
   useEffect(() => {
     initTheme()
-    loadApiKey()
-  }, [initTheme, loadApiKey])
-
-  useEffect(() => {
-    if (isValidated) {
-      fetchModels()
-    }
-  }, [isValidated, fetchModels])
+  }, [initTheme])
 
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        <Route index element={<Navigate to="/models" replace />} />
+        <Route index element={<WelcomePage />} />
         <Route path="models" element={<ModelsPage />} />
         <Route path="playground" element={<PlaygroundPage />} />
         <Route path="playground/:modelId" element={<PlaygroundPage />} />

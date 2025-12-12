@@ -30,8 +30,7 @@ export function Layout() {
   // Track the last visited free-tools sub-page for navigation
   const [lastFreeToolsPage, setLastFreeToolsPage] = useState<string | null>(null)
 
-  const { apiKey: _apiKey, isLoading: isLoadingApiKey, isValidated, loadApiKey } = useApiKeyStore()
-  void _apiKey // Used for conditional rendering
+  const { isValidated, loadApiKey, hasAttemptedLoad, isLoading: isLoadingApiKey } = useApiKeyStore()
   const [inputKey, setInputKey] = useState('')
   const [showKey, setShowKey] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -55,9 +54,11 @@ export function Layout() {
   }, [location.pathname, visitedPages])
 
   // Pages that don't require API key
-  const publicPaths = ['/settings', '/templates', '/assets', '/free-tools']
+  const publicPaths = ['/', '/settings', '/templates', '/assets', '/free-tools']
   const isPublicPage = publicPaths.some(path =>
-    location.pathname === path || location.pathname.startsWith(path + '/')
+    path === '/'
+      ? location.pathname === '/'
+      : location.pathname === path || location.pathname.startsWith(path + '/')
   )
 
   // Listen for update availability on startup
@@ -116,17 +117,9 @@ export function Layout() {
     }
   }
 
-  // Show loading state while API key is being loaded
-  if (isLoadingApiKey) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    )
-  }
-
   // Check if current page requires login (must have a validated API key)
-  const requiresLogin = !isValidated && !isPublicPage
+  // Only show login form after we've attempted to load the API key and finished loading
+  const requiresLogin = !isValidated && !isPublicPage && hasAttemptedLoad && !isLoadingApiKey
 
   // Login form content for protected pages
   const loginContent = (

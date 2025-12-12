@@ -33,6 +33,7 @@
     "downloadFailed": "Le téléchargement a échoué. Veuillez vérifier votre connexion réseau."
   },
   "nav": {
+    "home": "Accueil",
     "models": "Modèles",
     "playground": "Playground",
     "history": "Historique",
@@ -41,6 +42,39 @@
     "freeTools": "Outils Gratuits",
     "settings": "Paramètres",
     "collapse": "Réduire"
+  },
+  "welcome": {
+    "tagline": "Outils Créatifs IA à Portée de Main",
+    "explore": "Explorer",
+    "getStarted": "Commencer",
+    "tryFreeTools": "Essayer les Outils Gratuits",
+    "features": {
+      "models": {
+        "title": "Explorateur de Modèles",
+        "description": "Parcourez plus de 100 modèles IA pour la génération d'images, vidéos et audio"
+      },
+      "playground": {
+        "title": "Playground",
+        "description": "Espace de travail multi-onglets pour exécuter des modèles avec des paramètres personnalisés"
+      },
+      "templates": {
+        "title": "Modèles",
+        "description": "Sauvegardez et réutilisez vos configurations préférées"
+      },
+      "history": {
+        "title": "Historique",
+        "description": "Suivez et consultez vos prédictions récentes"
+      },
+      "assets": {
+        "title": "Mes Ressources",
+        "description": "Organisez et gérez vos sorties générées"
+      },
+      "freeTools": {
+        "title": "Outils Gratuits",
+        "description": "Outils IA puissants qui fonctionnent localement - pas de clé API requise",
+        "badge": "Gratuit"
+      }
+    }
   },
   "models": {
     "title": "Modèles",

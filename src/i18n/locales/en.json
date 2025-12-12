@@ -33,6 +33,7 @@
     "downloadFailed": "Download failed. Please check your network connection."
   },
   "nav": {
+    "home": "Home",
     "models": "Models",
     "playground": "Playground",
     "history": "History",
@@ -41,6 +42,39 @@
     "freeTools": "Free Tools",
     "settings": "Settings",
     "collapse": "Collapse"
+  },
+  "welcome": {
+    "tagline": "AI-Powered Creative Tools at Your Fingertips",
+    "explore": "Explore",
+    "getStarted": "Get Started",
+    "tryFreeTools": "Try Free Tools",
+    "features": {
+      "models": {
+        "title": "Model Browser",
+        "description": "Browse and explore 100+ AI models for image, video, and audio generation"
+      },
+      "playground": {
+        "title": "Playground",
+        "description": "Multi-tab workspace to run models with custom parameters"
+      },
+      "templates": {
+        "title": "Templates",
+        "description": "Save and reuse your favorite configurations"
+      },
+      "history": {
+        "title": "History",
+        "description": "Track and review your recent predictions"
+      },
+      "assets": {
+        "title": "My Assets",
+        "description": "Organize and manage your generated outputs"
+      },
+      "freeTools": {
+        "title": "Free Tools",
+        "description": "Powerful AI tools that run locally - no API key needed",
+        "badge": "Free"
+      }
+    }
   },
   "models": {
     "title": "Models",

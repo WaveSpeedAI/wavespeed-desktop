@@ -33,6 +33,7 @@
     "downloadFailed": "Unduhan gagal. Silakan periksa koneksi jaringan Anda."
   },
   "nav": {
+    "home": "Beranda",
     "models": "Model",
     "playground": "Playground",
     "history": "Riwayat",
@@ -41,6 +42,39 @@
     "freeTools": "Alat Gratis",
     "settings": "Pengaturan",
     "collapse": "Ciutkan"
+  },
+  "welcome": {
+    "tagline": "Alat Kreatif AI di Ujung Jari Anda",
+    "explore": "Jelajahi",
+    "getStarted": "Mulai",
+    "tryFreeTools": "Coba Alat Gratis",
+    "features": {
+      "models": {
+        "title": "Browser Model",
+        "description": "Jelajahi 100+ model AI untuk pembuatan gambar, video, dan audio"
+      },
+      "playground": {
+        "title": "Playground",
+        "description": "Ruang kerja multi-tab untuk menjalankan model dengan parameter khusus"
+      },
+      "templates": {
+        "title": "Template",
+        "description": "Simpan dan gunakan kembali konfigurasi favorit Anda"
+      },
+      "history": {
+        "title": "Riwayat",
+        "description": "Lacak dan tinjau prediksi terbaru Anda"
+      },
+      "assets": {
+        "title": "Aset Saya",
+        "description": "Atur dan kelola output yang dihasilkan"
+      },
+      "freeTools": {
+        "title": "Alat Gratis",
+        "description": "Alat AI yang kuat yang berjalan secara lokal - tidak perlu kunci API",
+        "badge": "Gratis"
+      }
+    }
   },
   "models": {
     "title": "Model",

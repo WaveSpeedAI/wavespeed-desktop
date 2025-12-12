@@ -8,6 +8,7 @@ interface ApiKeyState {
   isLoading: boolean
   isValidating: boolean
   isValidated: boolean
+  hasAttemptedLoad: boolean
   setApiKey: (apiKey: string) => Promise<void>
   loadApiKey: () => Promise<void>
   validateApiKey: () => Promise<boolean>
@@ -35,9 +36,10 @@ async function loadStoredApiKey(): Promise<string | null> {
 
 export const useApiKeyStore = create<ApiKeyState>((set, get) => ({
   apiKey: '',
-  isLoading: true,
+  isLoading: false,
   isValidating: false,
   isValidated: false,
+  hasAttemptedLoad: false,
 
   setApiKey: async (apiKey: string) => {
     apiClient.setApiKey(apiKey)
@@ -51,7 +53,11 @@ export const useApiKeyStore = create<ApiKeyState>((set, get) => ({
   },
 
   loadApiKey: async () => {
-    set({ isLoading: true })
+    // Skip if already attempted
+    if (get().hasAttemptedLoad) {
+      return
+    }
+    set({ isLoading: true, hasAttemptedLoad: true })
     try {
       const storedKey = await loadStoredApiKey()
       if (storedKey) {
@@ -75,8 +81,8 @@ export const useApiKeyStore = create<ApiKeyState>((set, get) => ({
 
     set({ isValidating: true })
     try {
-      // Try to fetch models to validate the key
-      await apiClient.listModels()
+      // Check account balance to validate the key (lighter than listing models)
+      await apiClient.getBalance()
       set({ isValidated: true, isValidating: false })
       return true
     } catch {

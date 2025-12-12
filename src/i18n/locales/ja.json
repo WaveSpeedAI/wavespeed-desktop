@@ -33,6 +33,7 @@
     "downloadFailed": "ダウンロードに失敗しました。ネットワーク接続を確認してください。"
   },
   "nav": {
+    "home": "ホーム",
     "models": "モデル",
     "playground": "プレイグラウンド",
     "history": "履歴",
@@ -41,6 +42,39 @@
     "freeTools": "無料ツール",
     "settings": "設定",
     "collapse": "折りたたむ"
+  },
+  "welcome": {
+    "tagline": "すぐに使えるAIクリエイティブツール",
+    "explore": "探索",
+    "getStarted": "始める",
+    "tryFreeTools": "無料ツールを試す",
+    "features": {
+      "models": {
+        "title": "モデルブラウザ",
+        "description": "画像、動画、音声生成用の100以上のAIモデルを閲覧"
+      },
+      "playground": {
+        "title": "プレイグラウンド",
+        "description": "カスタムパラメータでモデルを実行できるマルチタブワークスペース"
+      },
+      "templates": {
+        "title": "テンプレート",
+        "description": "お気に入りの設定を保存して再利用"
+      },
+      "history": {
+        "title": "履歴",
+        "description": "最近の予測を追跡・確認"
+      },
+      "assets": {
+        "title": "マイアセット",
+        "description": "生成した出力を整理・管理"
+      },
+      "freeTools": {
+        "title": "無料ツール",
+        "description": "ローカルで動作する強力なAIツール - APIキー不要",
+        "badge": "無料"
+      }
+    }
   },
   "models": {
     "title": "モデル",

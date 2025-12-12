@@ -33,6 +33,7 @@
     "downloadFailed": "Download fehlgeschlagen. Bitte überprüfen Sie Ihre Netzwerkverbindung."
   },
   "nav": {
+    "home": "Startseite",
     "models": "Modelle",
     "playground": "Playground",
     "history": "Verlauf",
@@ -41,6 +42,39 @@
     "freeTools": "Kostenlose Tools",
     "settings": "Einstellungen",
     "collapse": "Einklappen"
+  },
+  "welcome": {
+    "tagline": "KI-Kreativwerkzeuge direkt zur Hand",
+    "explore": "Erkunden",
+    "getStarted": "Loslegen",
+    "tryFreeTools": "Kostenlose Tools ausprobieren",
+    "features": {
+      "models": {
+        "title": "Modell-Browser",
+        "description": "Durchsuchen Sie über 100 KI-Modelle für Bild-, Video- und Audiogenerierung"
+      },
+      "playground": {
+        "title": "Playground",
+        "description": "Multi-Tab-Arbeitsbereich zum Ausführen von Modellen mit benutzerdefinierten Parametern"
+      },
+      "templates": {
+        "title": "Vorlagen",
+        "description": "Speichern und verwenden Sie Ihre Lieblingskonfigurationen wieder"
+      },
+      "history": {
+        "title": "Verlauf",
+        "description": "Verfolgen und überprüfen Sie Ihre letzten Vorhersagen"
+      },
+      "assets": {
+        "title": "Meine Assets",
+        "description": "Organisieren und verwalten Sie Ihre generierten Ausgaben"
+      },
+      "freeTools": {
+        "title": "Kostenlose Tools",
+        "description": "Leistungsstarke KI-Tools, die lokal laufen - kein API-Schlüssel erforderlich",
+        "badge": "Kostenlos"
+      }
+    }
   },
   "models": {
     "title": "Modelle",

@@ -37,8 +37,8 @@ export function PlaygroundPage() {
   const { modelId } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
-  const { models } = useModelsStore()
-  const { isLoading: isLoadingApiKey, apiKey } = useApiKeyStore()
+  const { models, fetchModels } = useModelsStore()
+  const { isLoading: isLoadingApiKey, isValidated, loadApiKey, apiKey, hasAttemptedLoad } = useApiKeyStore()
   const {
     tabs,
     activeTabId,
@@ -84,6 +84,17 @@ export function PlaygroundPage() {
       loadTemplates()
     }
   }, [templatesLoaded, loadTemplates])
+
+  // Load API key and fetch models on mount
+  useEffect(() => {
+    loadApiKey()
+  }, [loadApiKey])
+
+  useEffect(() => {
+    if (isValidated) {
+      fetchModels()
+    }
+  }, [isValidated, fetchModels])
 
   // Calculate dynamic pricing with debounce
   useEffect(() => {
@@ -270,7 +281,7 @@ export function PlaygroundPage() {
   }
 
   // Show loading state while API key is being loaded from storage
-  if (isLoadingApiKey) {
+  if (isLoadingApiKey || !hasAttemptedLoad) {
     return (
       <div className="flex h-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

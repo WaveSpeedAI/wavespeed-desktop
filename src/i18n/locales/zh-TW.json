@@ -33,6 +33,7 @@
     "downloadFailed": "下載失敗。請檢查您的網路連線。"
   },
   "nav": {
+    "home": "首頁",
     "models": "模型",
     "playground": "演練場",
     "history": "歷史紀錄",
@@ -41,6 +42,39 @@
     "freeTools": "免費工具",
     "settings": "設定",
     "collapse": "收合"
+  },
+  "welcome": {
+    "tagline": "觸手可及的 AI 創意工具",
+    "explore": "探索",
+    "getStarted": "開始使用",
+    "tryFreeTools": "試用免費工具",
+    "features": {
+      "models": {
+        "title": "模型瀏覽",
+        "description": "瀏覽 100+ AI 模型，支援圖像、影片和音訊生成"
+      },
+      "playground": {
+        "title": "演練場",
+        "description": "多分頁工作區，自訂參數執行模型"
+      },
+      "templates": {
+        "title": "範本",
+        "description": "儲存和重複使用您喜愛的設定"
+      },
+      "history": {
+        "title": "歷史紀錄",
+        "description": "追蹤和檢視最近的預測紀錄"
+      },
+      "assets": {
+        "title": "我的資產",
+        "description": "整理和管理生成的輸出內容"
+      },
+      "freeTools": {
+        "title": "免費工具",
+        "description": "本機執行的強大 AI 工具 - 無需 API 金鑰",
+        "badge": "免費"
+      }
+    }
   },
   "models": {
     "title": "模型",

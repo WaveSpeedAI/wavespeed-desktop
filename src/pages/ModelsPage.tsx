@@ -244,8 +244,19 @@ export function ModelsPage() {
     selectedType,
     setSelectedType
   } = useModelsStore()
-  const { isLoading: isLoadingApiKey, isValidated } = useApiKeyStore()
+  const { isLoading: isLoadingApiKey, isValidated, loadApiKey, hasAttemptedLoad } = useApiKeyStore()
   const { createTab } = usePlaygroundStore()
+
+  // Load API key and fetch models on mount
+  useEffect(() => {
+    loadApiKey()
+  }, [loadApiKey])
+
+  useEffect(() => {
+    if (isValidated) {
+      fetchModels()
+    }
+  }, [isValidated, fetchModels])
 
   // Memoize filtered models with proper dependencies
   const filteredModels = useMemo(() => {
@@ -360,27 +371,10 @@ export function ModelsPage() {
   }, [toggleFavorite])
 
   // Show loading state while API key is being loaded from storage
-  if (isLoadingApiKey) {
+  if (isLoadingApiKey || !hasAttemptedLoad) {
     return (
       <div className="flex h-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    )
-  }
-
-
-  if (!isValidated) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <Card className="max-w-md">
-          <CardHeader className="text-center">
-            <Loader2 className="mx-auto h-12 w-12 animate-spin text-muted-foreground" />
-            <CardTitle>{t('settings.apiKey.validating')}</CardTitle>
-            <CardDescription>
-              {t('common.loading')}
-            </CardDescription>
-          </CardHeader>
-        </Card>
       </div>
     )
   }
@@ -399,7 +393,7 @@ export function ModelsPage() {
             <h1 className="text-2xl font-bold tracking-tight">{t('models.title')}</h1>
             <p className="text-muted-foreground text-sm mt-0.5">{t('models.description')}</p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => fetchModels()}>
+          <Button variant="outline" size="sm" onClick={() => fetchModels(true)}>
             <RefreshCw className="mr-2 h-4 w-4" />
             {t('common.refresh')}
           </Button>
@@ -483,7 +477,7 @@ export function ModelsPage() {
         ) : error ? (
           <div className="text-center py-8">
             <p className="text-destructive text-sm">{error}</p>
-            <Button variant="outline" size="sm" className="mt-3" onClick={() => fetchModels()}>
+            <Button variant="outline" size="sm" className="mt-3" onClick={() => fetchModels(true)}>
               {t('errors.tryAgain')}
             </Button>
           </div>

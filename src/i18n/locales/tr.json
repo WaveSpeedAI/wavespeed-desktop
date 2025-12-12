@@ -33,6 +33,7 @@
     "downloadFailed": "İndirme başarısız. Lütfen ağ bağlantınızı kontrol edin."
   },
   "nav": {
+    "home": "Ana Sayfa",
     "models": "Modeller",
     "playground": "Oyun Alanı",
     "history": "Geçmiş",
@@ -41,6 +42,39 @@
     "freeTools": "Ücretsiz Araçlar",
     "settings": "Ayarlar",
     "collapse": "Daralt"
+  },
+  "welcome": {
+    "tagline": "Parmaklarınızın Ucunda AI Destekli Yaratıcı Araçlar",
+    "explore": "Keşfet",
+    "getStarted": "Başla",
+    "tryFreeTools": "Ücretsiz Araçları Dene",
+    "features": {
+      "models": {
+        "title": "Model Tarayıcı",
+        "description": "Görüntü, video ve ses üretimi için 100'den fazla AI modelini keşfedin"
+      },
+      "playground": {
+        "title": "Oyun Alanı",
+        "description": "Özel parametrelerle modelleri çalıştırmak için çoklu sekme çalışma alanı"
+      },
+      "templates": {
+        "title": "Şablonlar",
+        "description": "Favori yapılandırmalarınızı kaydedin ve yeniden kullanın"
+      },
+      "history": {
+        "title": "Geçmiş",
+        "description": "Son tahminlerinizi takip edin ve inceleyin"
+      },
+      "assets": {
+        "title": "Varlıklarım",
+        "description": "Oluşturulan çıktılarınızı düzenleyin ve yönetin"
+      },
+      "freeTools": {
+        "title": "Ücretsiz Araçlar",
+        "description": "Yerel olarak çalışan güçlü AI araçları - API anahtarı gerekmez",
+        "badge": "Ücretsiz"
+      }
+    }
   },
   "models": {
     "title": "Modeller",

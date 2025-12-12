@@ -150,6 +150,33 @@
       "failedError": "Failed to optimize prompt",
       "optimizing": "Optimizing...",
       "optimize": "Optimize"
+    },
+    "batch": {
+      "title": "Batch",
+      "enable": "Enable batch mode",
+      "disable": "Disable batch mode",
+      "repeatCount": "Count",
+      "randomizeSeed": "Randomize Seed",
+      "stopOnError": "Stop on Error",
+      "runBatch": "Run Batch ({{count}})",
+      "running": "Running {{current}}/{{total}}...",
+      "cancelling": "Cancelling...",
+      "cancel": "Cancel",
+      "completed": "{{count}} completed",
+      "failed": "{{count}} failed",
+      "downloadAll": "Download All",
+      "saveAllToAssets": "Save All",
+      "savedAll": "Saved to Assets",
+      "savedAllDesc": "Saved {{count}} output(s)",
+      "saved": "Saved",
+      "clearResults": "Clear",
+      "results": "Results",
+      "result": "Result",
+      "inputDetails": "Input Details",
+      "preview": "Preview",
+      "items": "items",
+      "noPreview": "No preview available",
+      "seedsGenerated": "Seeds auto-generated"
     }
   },
   "history": {

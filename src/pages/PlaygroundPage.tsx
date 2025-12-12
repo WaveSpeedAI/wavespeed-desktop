@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { usePlaygroundStore } from '@/stores/playgroundStore'
@@ -9,6 +9,9 @@ import { apiClient } from '@/api/client'
 import { DynamicForm } from '@/components/playground/DynamicForm'
 import { OutputDisplay } from '@/components/playground/OutputDisplay'
 import { ModelSelector } from '@/components/playground/ModelSelector'
+import { BatchControls } from '@/components/playground/BatchControls'
+import { BatchPreviewGrid } from '@/components/playground/BatchPreviewGrid'
+import { BatchOutputGrid } from '@/components/playground/BatchOutputGrid'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -26,7 +29,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { Play, RotateCcw, Loader2, Plus, X, BookOpen, Save, Globe } from 'lucide-react'
+import { RotateCcw, Loader2, Plus, X, BookOpen, Save, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/useToast'
 
@@ -50,6 +53,9 @@ export function PlaygroundPage() {
     setFormFields,
     resetForm,
     runPrediction,
+    runBatch,
+    clearBatchResults,
+    generateBatchInputs,
   } = usePlaygroundStore()
   const { templates, loadTemplates, saveTemplate, isLoaded: templatesLoaded } = useTemplateStore()
 
@@ -59,6 +65,14 @@ export function PlaygroundPage() {
   // Template dialog states
   const [showSaveTemplateDialog, setShowSaveTemplateDialog] = useState(false)
   const [newTemplateName, setNewTemplateName] = useState('')
+
+  // Generate batch preview inputs
+  const batchPreviewInputs = useMemo(() => {
+    if (!activeTab) return []
+    const { batchConfig } = activeTab
+    if (!batchConfig.enabled || batchConfig.repeatCount <= 1) return []
+    return generateBatchInputs()
+  }, [activeTab, generateBatchInputs])
 
   // Dynamic pricing state
   const [calculatedPrice, setCalculatedPrice] = useState<number | null>(null)
@@ -180,11 +194,19 @@ export function PlaygroundPage() {
   }, [setFormValues])
 
   const handleRun = async () => {
-    await runPrediction()
+    if (!activeTab) return
+
+    const { batchConfig } = activeTab
+    if (batchConfig.enabled && batchConfig.repeatCount > 1) {
+      await runBatch()
+    } else {
+      await runPrediction()
+    }
   }
 
   const handleReset = () => {
     resetForm()
+    clearBatchResults()
   }
 
   const handleNewTab = () => {
@@ -354,34 +376,33 @@ export function PlaygroundPage() {
             {/* Actions */}
             <div className="p-4 border-t bg-muted/30">
               <div className="flex gap-2">
-                <Button
-                  className="flex-1 gradient-bg hover:opacity-90 transition-opacity glow-sm"
-                  onClick={handleRun}
-                  disabled={!activeTab.selectedModel || activeTab.isRunning}
-                >
-                  {activeTab.isRunning ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {t('playground.running')}
-                    </>
-                  ) : (
-                    <>
-                      <Play className="mr-2 h-4 w-4" />
-                      {t('playground.run')}
-                      {activeTab.selectedModel && (
-                        <span className="ml-2 text-xs opacity-80">
-                          {isPricingLoading ? (
-                            '...'
-                          ) : calculatedPrice != null ? (
-                            `$${calculatedPrice.toFixed(4)}`
-                          ) : activeTab.selectedModel.base_price != null ? (
-                            `$${activeTab.selectedModel.base_price.toFixed(4)}`
-                          ) : null}
-                        </span>
-                      )}
-                    </>
-                  )}
-                </Button>
+                <div className="flex-1">
+                  <BatchControls
+                    disabled={!activeTab.selectedModel}
+                    isRunning={activeTab.isRunning}
+                    onRun={handleRun}
+                    runLabel={t('playground.run')}
+                    runningLabel={
+                      activeTab.batchState?.isRunning
+                        ? t('playground.batch.running', {
+                            current: (activeTab.batchState.currentIndex || 0) + 1,
+                            total: activeTab.batchState.queue.length
+                          })
+                        : t('playground.running')
+                    }
+                    price={
+                      activeTab.selectedModel
+                        ? isPricingLoading
+                          ? '...'
+                          : calculatedPrice != null
+                            ? `$${calculatedPrice.toFixed(4)}`
+                            : activeTab.selectedModel.base_price != null
+                              ? `$${activeTab.selectedModel.base_price.toFixed(4)}`
+                              : undefined
+                        : undefined
+                    }
+                  />
+                </div>
                 <Button
                   variant="outline"
                   onClick={handleReset}
@@ -433,14 +454,44 @@ export function PlaygroundPage() {
               )}
             </div>
             <div className="flex-1 p-5 overflow-hidden">
-              <OutputDisplay
-                prediction={activeTab.currentPrediction}
-                outputs={activeTab.outputs}
-                error={activeTab.error}
-                isLoading={activeTab.isRunning}
-                modelId={activeTab.selectedModel?.model_id}
-                modelName={activeTab.selectedModel?.name}
-              />
+              {/* Batch Results - shown while running or when completed */}
+              {(activeTab.batchState?.isRunning || activeTab.batchResults.length > 0) ? (
+                <BatchOutputGrid
+                  results={activeTab.batchResults}
+                  modelId={activeTab.selectedModel?.model_id}
+                  modelName={activeTab.selectedModel?.name}
+                  onClear={clearBatchResults}
+                  isRunning={activeTab.batchState?.isRunning}
+                  totalCount={activeTab.batchState?.queue.length}
+                  queue={activeTab.batchState?.queue}
+                />
+              ) : /* Batch Preview - shown when batch mode is active but not yet run */
+              batchPreviewInputs.length > 0 ? (
+                <BatchOutputGrid
+                  results={[]}
+                  modelId={activeTab.selectedModel?.model_id}
+                  modelName={activeTab.selectedModel?.name}
+                  onClear={() => {}}
+                  isRunning={false}
+                  totalCount={batchPreviewInputs.length}
+                  queue={batchPreviewInputs.map((input, index) => ({
+                    id: `preview-${index}`,
+                    index,
+                    input,
+                    status: 'pending' as const
+                  }))}
+                />
+              ) : (
+                /* Single output display - default */
+                <OutputDisplay
+                  prediction={activeTab.currentPrediction}
+                  outputs={activeTab.outputs}
+                  error={activeTab.error}
+                  isLoading={activeTab.isRunning}
+                  modelId={activeTab.selectedModel?.model_id}
+                  modelName={activeTab.selectedModel?.name}
+                />
+              )}
             </div>
           </div>
         </div>
@@ -500,6 +551,7 @@ export function PlaygroundPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
     </div>
   )
 }

@@ -60,6 +60,8 @@ wavespeed-desktop/
 - **`src/components/playground/CameraCapture.tsx`**: Camera capture component for taking photos
 - **`src/components/playground/VideoRecorder.tsx`**: Video recording with audio waveform visualization
 - **`src/components/playground/AudioRecorder.tsx`**: Audio recording with waveform display and playback
+- **`src/components/playground/BatchControls.tsx`**: Batch mode dropdown UI with slider for repeat count (1-16)
+- **`src/components/playground/BatchOutputGrid.tsx`**: Grid display for batch prediction results with bulk actions
 - **`src/pages/TemplatesPage.tsx`**: Template management (browse, search, use, rename, delete)
 - **`src/pages/HistoryPage.tsx`**: Prediction history with detail dialog
 - **`src/pages/AssetsPage.tsx`**: Asset management with grid view, filters, tags, favorites, bulk operations
@@ -73,6 +75,7 @@ wavespeed-desktop/
 - **`src/lib/lamaUtils.ts`**: Image/tensor conversion utilities for inpainting models (canvasToFloat32Array, maskCanvasToFloat32Array, tensorToCanvas)
 - **`src/lib/maskUtils.ts`**: Mask utility functions (flood fill, invert, video frame extraction)
 - **`src/types/progress.ts`**: Multi-phase progress types (PhaseStatus, ProcessingPhase, MultiPhaseProgress) and utility functions (formatBytes, formatTime)
+- **`src/types/batch.ts`**: Batch processing types (BatchConfig, BatchQueueItem, BatchState, BatchResult) and DEFAULT_BATCH_CONFIG
 - **`src/hooks/useUpscalerWorker.ts`**: Hook for managing upscaler Web Worker with phase/progress callbacks
 - **`src/hooks/useBackgroundRemoverWorker.ts`**: Hook for managing background remover Web Worker with removeBackgroundAll for batch processing
 - **`src/hooks/useImageEraserWorker.ts`**: Hook for managing image eraser Web Worker with LaMa model initialization and object removal
@@ -229,3 +232,11 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - Segment Anything model is downloaded and cached by @huggingface/transformers on first use
 - Settings page displays account balance when authenticated, fetched via `apiClient.getBalance()` with refresh button
 - Balance is displayed in USD format ($X.XX) and auto-fetches when API key is validated
+- Batch processing allows running the same prediction 1-16 times with auto-randomized seeds for variations
+- Batch config is stored per-tab in playgroundStore: `batchConfig`, `batchState`, `batchResults`
+- Batch mode uses a slider UI in a dropdown menu attached to the Run button
+- When batch is enabled, Run button shows count (e.g., "Run (4)") and price is multiplied by repeat count
+- Batch results are displayed in a grid with thumbnails, click to expand full output
+- Batch outputs can be bulk downloaded or saved to assets via "Download All" / "Save All" buttons
+- Seed randomization generates unique seeds per batch item using base seed + index to ensure reproducibility
+- Segment Anything worker forces onnxruntime-web 1.21.0 WASM from CDN to avoid version mismatch with @huggingface/transformers bundled WASM

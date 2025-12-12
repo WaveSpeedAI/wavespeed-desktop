@@ -250,11 +250,11 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
       return
     }
 
-    // Set running state
+    // Set running state and clear batch results (switching to single mode)
     set(state => ({
       tabs: state.tabs.map(tab =>
         tab.id === state.activeTabId
-          ? { ...tab, isRunning: true, error: null, currentPrediction: null, outputs: [] }
+          ? { ...tab, isRunning: true, error: null, currentPrediction: null, outputs: [], batchState: null, batchResults: [] }
           : tab
       )
     }))

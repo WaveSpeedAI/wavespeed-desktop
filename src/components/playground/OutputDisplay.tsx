@@ -71,7 +71,8 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
             modelId,
             modelName,
             predictionId: prediction.id,
-            originalUrl: output
+            originalUrl: output,
+            resultIndex: i
           })
           if (result) {
             setSavedIndexes(prev => new Set(prev).add(i))
@@ -117,7 +118,8 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
         modelId,
         modelName,
         predictionId: prediction?.id,
-        originalUrl: url
+        originalUrl: url,
+        resultIndex: index
       })
 
       if (result) {

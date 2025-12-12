@@ -9,7 +9,7 @@ A cross-platform desktop application for running AI models from [WaveSpeedAI](ht
 - **Model Browser**: Browse and search available AI models with fuzzy search, sortable by popularity, name, price, or type
 - **Favorites**: Star your favorite models for quick access with a dedicated filter
 - **Multi-Tab Playground**: Run predictions with multiple models simultaneously in separate tabs
-- **Batch Processing**: Run the same prediction multiple times (1-16) with auto-randomized seeds for variations
+- **Batch Processing**: Run the same prediction multiple times (2-16) with auto-randomized seeds for variations
 - **Dynamic Forms**: Auto-generated forms from model schemas with validation
 - **Mask Drawing**: Interactive canvas-based mask editor for models that accept mask inputs, with brush, eraser, and bucket fill tools
 - **Templates**: Save and reuse playground configurations as templates for quick access

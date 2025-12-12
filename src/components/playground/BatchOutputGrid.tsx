@@ -72,10 +72,12 @@ export function BatchOutputGrid({
 
   const { saveAsset, settings, hasAssetForPrediction } = useAssetsStore()
 
-  const completedCount = results.filter(r => !r.error).length
+  const completedResults = results.filter(r => !r.error)
+  const completedCount = completedResults.length
   const failedCount = results.filter(r => r.error).length
   const total = totalCount || results.length
   const progress = total > 0 ? ((completedCount + failedCount) / total) * 100 : 0
+  const allSaved = completedCount > 0 && completedResults.every(r => savedIndexes.has(r.index))
 
   // Auto-save results as they complete
   useEffect(() => {
@@ -110,7 +112,8 @@ export function BatchOutputGrid({
               modelId,
               modelName,
               predictionId: result.prediction?.id,
-              originalUrl: output
+              originalUrl: output,
+              resultIndex: result.index
             })
             if (saveResult) {
               setSavedIndexes(prev => new Set(prev).add(result.index))
@@ -186,7 +189,8 @@ export function BatchOutputGrid({
             modelId,
             modelName,
             predictionId: result.prediction?.id,
-            originalUrl: output
+            originalUrl: output,
+            resultIndex: result.index
           })
           if (saveResult) {
             savedCount++
@@ -268,10 +272,12 @@ export function BatchOutputGrid({
             variant="outline"
             size="sm"
             onClick={handleSaveAll}
-            disabled={completedCount === 0 || savingAll || !modelId || isRunning}
+            disabled={completedCount === 0 || savingAll || !modelId || isRunning || allSaved}
           >
             {savingAll ? (
               <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+            ) : allSaved ? (
+              <Check className="h-3 w-3 mr-1" />
             ) : (
               <Save className="h-3 w-3 mr-1" />
             )}

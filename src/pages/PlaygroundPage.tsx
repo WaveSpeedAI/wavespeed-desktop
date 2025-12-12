@@ -383,10 +383,7 @@ export function PlaygroundPage() {
                     runLabel={t('playground.run')}
                     runningLabel={
                       activeTab.batchState?.isRunning
-                        ? t('playground.batch.running', {
-                            current: (activeTab.batchState.currentIndex || 0) + 1,
-                            total: activeTab.batchState.queue.length
-                          })
+                        ? `${t('playground.running')} (${activeTab.batchState.queue.length})`
                         : t('playground.running')
                     }
                     price={

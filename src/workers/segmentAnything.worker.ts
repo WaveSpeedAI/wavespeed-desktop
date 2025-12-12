@@ -1,6 +1,9 @@
 import { env, SamModel, AutoProcessor, RawImage, Tensor } from '@huggingface/transformers'
 
 env.allowLocalModels = false
+// Force onnxruntime-web@1.21.0 WASM files from CDN to avoid version mismatch
+// with bundled WASM in @huggingface/transformers
+env.backends.onnx.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/'
 
 const MODEL_ID = 'Xenova/slimsam-77-uniform'
 

@@ -73,6 +73,9 @@
     "webm-muxer": "^5.1.4",
     "zustand": "^5.0.1"
   },
+  "overrides": {
+    "onnxruntime-web": "1.21.0"
+  },
   "devDependencies": {
     "@electron-toolkit/utils": "^3.0.0",
     "@types/node": "^22.9.0",

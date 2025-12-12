@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -68,13 +68,78 @@ export function BatchOutputGrid({
   const [savingAll, setSavingAll] = useState(false)
   const [savedIndexes, setSavedIndexes] = useState<Set<number>>(new Set())
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
+  const autoSavedIndexesRef = useRef<Set<number>>(new Set())
 
-  const { saveAsset } = useAssetsStore()
+  const { saveAsset, settings, hasAssetForPrediction } = useAssetsStore()
 
   const completedCount = results.filter(r => !r.error).length
   const failedCount = results.filter(r => r.error).length
   const total = totalCount || results.length
   const progress = total > 0 ? ((completedCount + failedCount) / total) * 100 : 0
+
+  // Auto-save results as they complete
+  useEffect(() => {
+    if (!settings.autoSaveAssets || !modelId || !modelName) return
+
+    const saveNewResults = async () => {
+      let newSaveCount = 0
+
+      for (const result of results) {
+        // Skip if already auto-saved, has error, or no outputs
+        if (autoSavedIndexesRef.current.has(result.index)) continue
+        if (result.error || result.outputs.length === 0) continue
+
+        // Check if already saved for this prediction
+        if (result.prediction?.id && hasAssetForPrediction(result.prediction.id)) {
+          autoSavedIndexesRef.current.add(result.index)
+          setSavedIndexes(prev => new Set(prev).add(result.index))
+          continue
+        }
+
+        // Mark as being saved
+        autoSavedIndexesRef.current.add(result.index)
+
+        for (const output of result.outputs) {
+          if (typeof output !== 'string') continue
+
+          const assetType = detectAssetType(output)
+          if (!assetType) continue
+
+          try {
+            const saveResult = await saveAsset(output, assetType, {
+              modelId,
+              modelName,
+              predictionId: result.prediction?.id,
+              originalUrl: output
+            })
+            if (saveResult) {
+              setSavedIndexes(prev => new Set(prev).add(result.index))
+              newSaveCount++
+            }
+          } catch (err) {
+            console.error('Failed to auto-save batch asset:', err)
+          }
+        }
+      }
+
+      if (newSaveCount > 0 && !isRunning) {
+        toast({
+          description: t('playground.autoSaved'),
+          duration: 2000,
+        })
+      }
+    }
+
+    saveNewResults()
+  }, [results, modelId, modelName, settings.autoSaveAssets, saveAsset, hasAssetForPrediction, isRunning, t])
+
+  // Reset auto-saved tracking when results are cleared
+  useEffect(() => {
+    if (results.length === 0) {
+      autoSavedIndexesRef.current = new Set()
+      setSavedIndexes(new Set())
+    }
+  }, [results.length])
 
   const handleDownload = async (url: string, index: number) => {
     const extension = getExtensionFromUrl(url) || 'png'

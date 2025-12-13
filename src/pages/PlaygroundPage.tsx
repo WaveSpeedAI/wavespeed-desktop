@@ -60,6 +60,7 @@ export function PlaygroundPage() {
 
   const activeTab = getActiveTab()
   const templateLoadedRef = useRef<string | null>(null)
+  const initialTabCreatedRef = useRef(false)
 
   // Template dialog states
   const [showSaveTemplateDialog, setShowSaveTemplateDialog] = useState(false)
@@ -167,12 +168,19 @@ export function PlaygroundPage() {
     })
   }
 
-  // Create tab when navigating with a modelId (e.g., from Models page)
+  // Create tab when navigating to playground (only on initial load)
   useEffect(() => {
-    if (modelId && models.length > 0 && tabs.length === 0) {
-      const decodedId = decodeURIComponent(modelId)
-      const model = models.find(m => m.model_id === decodedId)
-      createTab(model)
+    if (models.length > 0 && tabs.length === 0 && !initialTabCreatedRef.current) {
+      initialTabCreatedRef.current = true
+      if (modelId) {
+        // With modelId: create tab with that model
+        const decodedId = decodeURIComponent(modelId)
+        const model = models.find(m => m.model_id === decodedId)
+        createTab(model)
+      } else {
+        // Without modelId: create empty tab
+        createTab()
+      }
     }
   }, [modelId, models, tabs.length, createTab])
 

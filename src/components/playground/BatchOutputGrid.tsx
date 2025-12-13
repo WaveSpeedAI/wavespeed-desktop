@@ -101,19 +101,21 @@ export function BatchOutputGrid({
         // Mark as being saved
         autoSavedIndexesRef.current.add(result.index)
 
-        for (const output of result.outputs) {
+        for (let outputIndex = 0; outputIndex < result.outputs.length; outputIndex++) {
+          const output = result.outputs[outputIndex]
           if (typeof output !== 'string') continue
 
           const assetType = detectAssetType(output)
           if (!assetType) continue
 
           try {
+            // Each batch item has unique predictionId, so just use outputIndex
             const saveResult = await saveAsset(output, assetType, {
               modelId,
               modelName,
               predictionId: result.prediction?.id,
               originalUrl: output,
-              resultIndex: result.index
+              resultIndex: outputIndex
             })
             if (saveResult) {
               setSavedIndexes(prev => new Set(prev).add(result.index))
@@ -178,19 +180,21 @@ export function BatchOutputGrid({
     for (const result of results) {
       if (result.error) continue
 
-      for (const output of result.outputs) {
+      for (let outputIndex = 0; outputIndex < result.outputs.length; outputIndex++) {
+        const output = result.outputs[outputIndex]
         if (typeof output !== 'string') continue
 
         const assetType = detectAssetType(output)
         if (!assetType) continue
 
         try {
+          // Each batch item has unique predictionId, so just use outputIndex
           const saveResult = await saveAsset(output, assetType, {
             modelId,
             modelName,
             predictionId: result.prediction?.id,
             originalUrl: output,
-            resultIndex: result.index
+            resultIndex: outputIndex
           })
           if (saveResult) {
             savedCount++

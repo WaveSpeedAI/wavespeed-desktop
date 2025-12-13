@@ -2,7 +2,7 @@ import type { PredictionResult } from './prediction'
 
 export interface BatchConfig {
   enabled: boolean
-  repeatCount: number // 2-16
+  repeatCount: number // 2-8
   randomizeSeed: boolean // Auto-randomize seed for each run
   stopOnError: boolean // Stop batch on first error or continue
 }

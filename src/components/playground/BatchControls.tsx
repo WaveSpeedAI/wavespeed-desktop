@@ -124,7 +124,7 @@ export function BatchControls({
                     value={[repeatCount]}
                     onValueChange={handleCountChange}
                     min={2}
-                    max={16}
+                    max={8}
                     step={1}
                     className="w-full"
                   />

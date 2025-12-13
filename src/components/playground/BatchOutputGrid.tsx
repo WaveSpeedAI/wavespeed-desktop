@@ -294,13 +294,15 @@ export function BatchOutputGrid({
         </div>
       </div>
 
-      {/* Results Grid - auto-adjust columns based on item count, max 4 per row */}
+      {/* Results Grid - dynamic columns based on item count with minimum cell size */}
       <ScrollArea className="flex-1">
         <div className={cn(
-          'grid gap-3 p-1',
-          total <= 2 && 'grid-cols-2',
-          total === 3 && 'grid-cols-3',
-          total >= 4 && 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'
+          'grid gap-4 p-1',
+          // For fewer items, use larger minimum cell sizes
+          total <= 2 && 'grid-cols-1 sm:grid-cols-2',
+          total === 3 && 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+          total === 4 && 'grid-cols-2 lg:grid-cols-4',
+          total > 4 && 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
         )}>
           {Array.from({ length: total }, (_, index) => {
             const result = results.find(r => r.index === index)

@@ -94,7 +94,7 @@ async function downloadModel(
     })
     await cache.put(MODEL_URL, cacheResponse)
   } catch (e) {
-    console.warn('Failed to cache model:', e)
+    // Model cache failed
   }
 
   return buffer.buffer
@@ -110,7 +110,7 @@ async function initSession(modelBuffer: ArrayBuffer): Promise<void> {
     enableCpuMemArena: true,
     executionMode: 'sequential'
   })
-  console.log('Using WASM backend')
+  // WASM backend initialized
 }
 
 /**

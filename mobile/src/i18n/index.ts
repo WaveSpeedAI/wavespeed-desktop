@@ -1,6 +1,9 @@
 // Mobile-specific i18n setup
-// Import shared i18n first
-import i18n from '@/i18n'
+// Use relative path to explicitly import from desktop's i18n (not alias, to avoid circular resolution)
+import i18n, { languages } from '../../../src/i18n'
+
+// Re-export for mobile imports
+export { languages }
 
 // Add mobile-specific translations for all 18 supported languages
 const mobileTranslations = {

@@ -18,6 +18,7 @@ import { BackgroundRemoverPage } from '@/pages/BackgroundRemoverPage'
 import { ImageEraserPage } from '@/pages/ImageEraserPage'
 import { MobileSegmentAnythingPage } from '@mobile/pages/MobileSegmentAnythingPage'
 import { VideoConverterPage } from '@mobile/pages/VideoConverterPage'
+import { ErrorBoundary } from '@mobile/components/shared/ErrorBoundary'
 
 export function MobileLayout() {
   const { t } = useTranslation()
@@ -222,32 +223,32 @@ export function MobileLayout() {
               {/* Persistent Free Tools pages */}
               {visitedPages.has('/free-tools/video') && (
                 <div className={location.pathname === '/free-tools/video' ? 'h-full overflow-auto' : 'hidden'}>
-                  <VideoEnhancerPage />
+                  <ErrorBoundary><VideoEnhancerPage /></ErrorBoundary>
                 </div>
               )}
               {visitedPages.has('/free-tools/image') && (
                 <div className={location.pathname === '/free-tools/image' ? 'h-full overflow-auto' : 'hidden'}>
-                  <ImageEnhancerPage />
+                  <ErrorBoundary><ImageEnhancerPage /></ErrorBoundary>
                 </div>
               )}
               {visitedPages.has('/free-tools/background-remover') && (
                 <div className={location.pathname === '/free-tools/background-remover' ? 'h-full overflow-auto' : 'hidden'}>
-                  <BackgroundRemoverPage />
+                  <ErrorBoundary><BackgroundRemoverPage /></ErrorBoundary>
                 </div>
               )}
               {visitedPages.has('/free-tools/image-eraser') && (
                 <div className={location.pathname === '/free-tools/image-eraser' ? 'h-full overflow-auto' : 'hidden'}>
-                  <ImageEraserPage />
+                  <ErrorBoundary><ImageEraserPage /></ErrorBoundary>
                 </div>
               )}
               {visitedPages.has('/free-tools/segment-anything') && (
                 <div className={location.pathname === '/free-tools/segment-anything' ? 'h-full overflow-auto' : 'hidden'}>
-                  <MobileSegmentAnythingPage />
+                  <ErrorBoundary><MobileSegmentAnythingPage /></ErrorBoundary>
                 </div>
               )}
               {visitedPages.has('/free-tools/video-converter') && (
                 <div className={location.pathname === '/free-tools/video-converter' ? 'h-full overflow-auto' : 'hidden'}>
-                  <VideoConverterPage />
+                  <ErrorBoundary><VideoConverterPage /></ErrorBoundary>
                 </div>
               )}
             </>

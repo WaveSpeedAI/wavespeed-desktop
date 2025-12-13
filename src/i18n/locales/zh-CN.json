@@ -57,6 +57,8 @@
     "type": "类型",
     "basePrice": "基础价格",
     "openInNewTab": "在新标签页打开",
+    "openDocs": "打开文档",
+    "openWaveSpeed": "在 WaveSpeed 打开",
     "addToFavorites": "添加到收藏",
     "removeFromFavorites": "取消收藏"
   },

@@ -263,14 +263,14 @@ export function MobilePlaygroundPage() {
           onClick={() => setActiveView('input')}
         >
           <Settings2 className="h-4 w-4 inline-block mr-1.5" />
-          {t('playground.input')}
+          Input
         </button>
         <button
           className={cn('tab-item', activeView === 'output' && 'active')}
           onClick={() => setActiveView('output')}
         >
           <Image className="h-4 w-4 inline-block mr-1.5" />
-          {t('playground.output')}
+          Output
           {activeTab?.isRunning && (
             <Loader2 className="h-3 w-3 animate-spin inline-block ml-1.5" />
           )}

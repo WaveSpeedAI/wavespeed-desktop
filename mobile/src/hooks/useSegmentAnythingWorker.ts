@@ -154,7 +154,7 @@ export function useSegmentAnythingWorker(options: UseSegmentAnythingOptions = {}
     }
 
     workerRef.current.onerror = (e) => {
-      console.error('Worker error:', e)
+      // Worker error handled via onError callback
       hasFailedRef.current = true
       optionsRef.current.onError?.(e.message || 'Worker error')
     }
@@ -179,12 +179,23 @@ export function useSegmentAnythingWorker(options: UseSegmentAnythingOptions = {}
       }
 
       const id = idCounterRef.current++
-      initCallbacksRef.current.set(id, resolve)
+      let cleaned = false
+
+      const cleanup = () => {
+        if (cleaned) return
+        cleaned = true
+        initCallbacksRef.current.delete(id)
+        workerRef.current?.removeEventListener('message', handleError)
+      }
+
+      initCallbacksRef.current.set(id, () => {
+        cleanup()
+        resolve()
+      })
 
       const handleError = (e: MessageEvent<WorkerMessage>) => {
         if (e.data.type === 'error' && (e.data.payload as ErrorPayload).id === id) {
-          initCallbacksRef.current.delete(id)
-          workerRef.current?.removeEventListener('message', handleError)
+          cleanup()
           reject(new Error((e.data.payload as ErrorPayload).message))
         }
       }
@@ -202,12 +213,23 @@ export function useSegmentAnythingWorker(options: UseSegmentAnythingOptions = {}
       }
 
       const id = idCounterRef.current++
-      segmentCallbacksRef.current.set(id, resolve)
+      let cleaned = false
+
+      const cleanup = () => {
+        if (cleaned) return
+        cleaned = true
+        segmentCallbacksRef.current.delete(id)
+        workerRef.current?.removeEventListener('message', handleError)
+      }
+
+      segmentCallbacksRef.current.set(id, () => {
+        cleanup()
+        resolve()
+      })
 
       const handleError = (e: MessageEvent<WorkerMessage>) => {
         if (e.data.type === 'error' && (e.data.payload as ErrorPayload).id === id) {
-          segmentCallbacksRef.current.delete(id)
-          workerRef.current?.removeEventListener('message', handleError)
+          cleanup()
           reject(new Error((e.data.payload as ErrorPayload).message))
         }
       }
@@ -225,12 +247,23 @@ export function useSegmentAnythingWorker(options: UseSegmentAnythingOptions = {}
       }
 
       const id = idCounterRef.current++
-      maskCallbacksRef.current.set(id, resolve)
+      let cleaned = false
+
+      const cleanup = () => {
+        if (cleaned) return
+        cleaned = true
+        maskCallbacksRef.current.delete(id)
+        workerRef.current?.removeEventListener('message', handleError)
+      }
+
+      maskCallbacksRef.current.set(id, (result) => {
+        cleanup()
+        resolve(result)
+      })
 
       const handleError = (e: MessageEvent<WorkerMessage>) => {
         if (e.data.type === 'error' && (e.data.payload as ErrorPayload).id === id) {
-          maskCallbacksRef.current.delete(id)
-          workerRef.current?.removeEventListener('message', handleError)
+          cleanup()
           reject(new Error((e.data.payload as ErrorPayload).message))
         }
       }

@@ -88,6 +88,8 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
+      // i18n module (explicit path for directory import)
+      '@/i18n': path.resolve(__dirname, '../src/i18n/index'),
       // Mobile-specific overrides (must come before @/)
       '@/hooks/useSegmentAnythingWorker': path.resolve(__dirname, './src/hooks/useSegmentAnythingWorker'),
       '@/hooks/useUpscalerWorker': path.resolve(__dirname, './src/hooks/useUpscalerWorker'),
@@ -99,10 +101,10 @@ export default defineConfig({
       '@/components/playground/PromptOptimizer': path.resolve(__dirname, './src/components/playground/PromptOptimizer'),
       '@/components/playground/SizeSelector': path.resolve(__dirname, './src/components/playground/SizeSelector'),
       '@/pages/SettingsPage': path.resolve(__dirname, './src/pages/SettingsPage'),
+      // Mobile-specific code (must come before @/ to avoid prefix matching issues)
+      '@mobile': path.resolve(__dirname, './src'),
       // Share code from the main src directory
-      '@': path.resolve(__dirname, '../src'),
-      // Mobile-specific code
-      '@mobile': path.resolve(__dirname, './src')
+      '@': path.resolve(__dirname, '../src')
     },
     // Dedupe these packages to ensure they're resolved from mobile/node_modules
     dedupe: sharedPackages

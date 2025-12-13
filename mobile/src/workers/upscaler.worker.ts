@@ -27,10 +27,10 @@ async function initBackend(): Promise<string> {
     testTensor.dispose()
 
     backendInitialized = true
-    console.log('Using WebGL backend')
+    // WebGL backend initialized
     return 'webgl'
   } catch (e) {
-    console.warn('WebGL backend failed, falling back to CPU:', e)
+    // WebGL backend fallback
   }
 
   // Fall back to CPU (slower but more compatible)
@@ -38,7 +38,7 @@ async function initBackend(): Promise<string> {
     await tf.setBackend('cpu')
     await tf.ready()
     backendInitialized = true
-    console.log('Using CPU backend')
+    // CPU backend initialized
     return 'cpu'
   } catch (e) {
     throw new Error('Failed to initialize any TensorFlow.js backend')

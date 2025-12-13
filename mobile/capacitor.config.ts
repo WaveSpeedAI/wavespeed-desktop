@@ -1,5 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli'
 
+// Only enable debugging in development builds
+const isDev = process.env.NODE_ENV === 'development'
+
 const config: CapacitorConfig = {
   appId: 'ai.wavespeed.mobile',
   appName: 'WaveSpeed',
@@ -32,7 +35,8 @@ const config: CapacitorConfig = {
   },
   android: {
     allowMixedContent: true,
-    webContentsDebuggingEnabled: true // Set to false in production
+    // SECURITY: Only enable debugging in development, disabled in production builds
+    webContentsDebuggingEnabled: isDev
   }
 }
 

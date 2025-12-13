@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { HashRouter } from 'react-router-dom'
 import App from './App'
 import './index.css'
-import './i18n'
+import '@/i18n'
 
 // Initialize Capacitor plugins
 import { StatusBar, Style } from '@capacitor/status-bar'

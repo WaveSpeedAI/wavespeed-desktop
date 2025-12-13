@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Search, PlayCircle, Loader2, RefreshCw, ArrowUp, ArrowDown, ExternalLink, Star, X, Info } from 'lucide-react'
+import { Search, FileText, Loader2, RefreshCw, ArrowUp, ArrowDown, Globe, Star, X, Info } from 'lucide-react'
 import {
   HoverCard,
   HoverCardContent,
@@ -23,7 +23,6 @@ import {
 } from '@/components/ui/hover-card'
 import { cn } from '@/lib/utils'
 import { fuzzySearch } from '@/lib/fuzzySearch'
-import { usePlaygroundStore } from '@/stores/playgroundStore'
 import type { Model } from '@/types/model'
 
 // Get accent color class based on model type (3 categories: image, video, other)
@@ -53,14 +52,16 @@ const ModelCard = memo(function ModelCard({
   model,
   isFavorite,
   onOpenPlayground,
-  onOpenInNewTab,
+  onOpenDocs,
+  onOpenWaveSpeedPage,
   onToggleFavorite,
   t
 }: {
   model: Model
   isFavorite: boolean
   onOpenPlayground: (modelId: string) => void
-  onOpenInNewTab: (e: React.MouseEvent, modelId: string) => void
+  onOpenDocs: (e: React.MouseEvent, modelId: string) => void
+  onOpenWaveSpeedPage: (e: React.MouseEvent, modelId: string) => void
   onToggleFavorite: (e: React.MouseEvent, modelId: string) => void
   t: (key: string) => string
 }) {
@@ -144,22 +145,19 @@ const ModelCard = memo(function ModelCard({
               size="sm"
               variant="ghost"
               className="h-7 w-7 p-0"
-              title={t('common.open')}
-              onClick={(e) => {
-                e.stopPropagation()
-                onOpenPlayground(model.model_id)
-              }}
+              title={t('models.openDocs')}
+              onClick={(e) => onOpenDocs(e, model.model_id)}
             >
-              <PlayCircle className="h-3.5 w-3.5" />
+              <FileText className="h-3.5 w-3.5" />
             </Button>
             <Button
               size="sm"
               variant="ghost"
               className="h-7 w-7 p-0"
-              onClick={(e) => onOpenInNewTab(e, model.model_id)}
-              title={t('models.openInNewTab')}
+              onClick={(e) => onOpenWaveSpeedPage(e, model.model_id)}
+              title={t('models.openWaveSpeed')}
             >
-              <ExternalLink className="h-3.5 w-3.5" />
+              <Globe className="h-3.5 w-3.5" />
             </Button>
           </div>
         </div>
@@ -245,7 +243,6 @@ export function ModelsPage() {
     setSelectedType
   } = useModelsStore()
   const { isLoading: isLoadingApiKey, isValidated } = useApiKeyStore()
-  const { createTab } = usePlaygroundStore()
 
   // Memoize filtered models with proper dependencies
   const filteredModels = useMemo(() => {
@@ -347,12 +344,24 @@ export function ModelsPage() {
     navigate(`/playground/${encodeURIComponent(modelId)}`)
   }, [navigate])
 
-  const handleOpenInNewTab = useCallback((e: React.MouseEvent, modelId: string) => {
+  const handleOpenDocs = useCallback((e: React.MouseEvent, modelId: string) => {
     e.stopPropagation()
-    const model = models.find(m => m.model_id === modelId)
-    createTab(model)
-    navigate(`/playground/${encodeURIComponent(modelId)}`)
-  }, [models, createTab, navigate])
+    // Convert model_id (e.g., "kwaivgi/kling-v2.6-pro") to docs URL format
+    // Pattern: https://wavespeed.ai/docs/docs-api/{owner}/{model-name}
+    const parts = modelId.split('/')
+    const owner = parts[0]
+    const modelName = parts.slice(1).join('-') // Convert any remaining slashes to dashes
+    const docsUrl = `https://wavespeed.ai/docs/docs-api/${owner}/${modelName}`
+    window.open(docsUrl, '_blank')
+  }, [])
+
+  const handleOpenWaveSpeedPage = useCallback((e: React.MouseEvent, modelId: string) => {
+    e.stopPropagation()
+    // Pattern: https://wavespeed.ai/models/{model_id}
+    // e.g., https://wavespeed.ai/models/kwaivgi/kling-v2.6-pro
+    const modelUrl = `https://wavespeed.ai/models/${modelId}`
+    window.open(modelUrl, '_blank')
+  }, [])
 
   const handleToggleFavorite = useCallback((e: React.MouseEvent, modelId: string) => {
     e.stopPropagation()
@@ -520,7 +529,8 @@ export function ModelsPage() {
                         model={model}
                         isFavorite={isFavorite(model.model_id)}
                         onOpenPlayground={handleOpenPlayground}
-                        onOpenInNewTab={handleOpenInNewTab}
+                        onOpenDocs={handleOpenDocs}
+                        onOpenWaveSpeedPage={handleOpenWaveSpeedPage}
                         onToggleFavorite={handleToggleFavorite}
                         t={t}
                       />

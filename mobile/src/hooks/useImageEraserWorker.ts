@@ -144,13 +144,25 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
       }
 
       const id = idCounterRef.current++
-      readyCallbacksRef.current.set(id, resolve)
+      let cleaned = false
+
+      const cleanup = () => {
+        if (cleaned) return
+        cleaned = true
+        readyCallbacksRef.current.delete(id)
+        workerRef.current?.removeEventListener('message', handleError)
+      }
+
+      // Wrap resolve to ensure cleanup on success
+      readyCallbacksRef.current.set(id, () => {
+        cleanup()
+        resolve()
+      })
 
       // Set up error handler for this specific call
       const handleError = (e: MessageEvent<WorkerMessage>) => {
         if (e.data.type === 'error') {
-          readyCallbacksRef.current.delete(id)
-          workerRef.current?.removeEventListener('message', handleError)
+          cleanup()
           reject(new Error(e.data.payload as string))
         }
       }
@@ -177,13 +189,25 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
         }
 
         const id = idCounterRef.current++
-        callbacksRef.current.set(id, resolve)
+        let cleaned = false
+
+        const cleanup = () => {
+          if (cleaned) return
+          cleaned = true
+          callbacksRef.current.delete(id)
+          workerRef.current?.removeEventListener('message', handleError)
+        }
+
+        // Wrap resolve to ensure cleanup on success
+        callbacksRef.current.set(id, (result) => {
+          cleanup()
+          resolve(result)
+        })
 
         // Set up error handler for this specific call
         const handleError = (e: MessageEvent<WorkerMessage>) => {
           if (e.data.type === 'error') {
-            callbacksRef.current.delete(id)
-            workerRef.current?.removeEventListener('message', handleError)
+            cleanup()
             reject(new Error(e.data.payload as string))
           }
         }

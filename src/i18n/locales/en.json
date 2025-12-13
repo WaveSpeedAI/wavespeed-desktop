@@ -57,6 +57,8 @@
     "type": "Type",
     "basePrice": "Base price",
     "openInNewTab": "Open in new tab",
+    "openDocs": "Open documentation",
+    "openWaveSpeed": "Open on WaveSpeed",
     "addToFavorites": "Add to favorites",
     "removeFromFavorites": "Remove from favorites"
   },

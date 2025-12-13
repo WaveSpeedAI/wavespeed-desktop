@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+import { getMediaTypeFromUrl, isHttpUrl } from '@mobile/lib/mediaUtils'
 import { apiClient } from '@/api/client'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
 import { useTemplateStore } from '@/stores/templateStore'
@@ -304,10 +305,10 @@ export function MobileHistoryPage() {
       return 'json'
     }
     if (typeof output === 'string') {
-      if (output.match(/\.(jpg|jpeg|png|gif|webp|bmp)(\?.*)?$/i)) return 'image'
-      if (output.match(/\.(mp4|webm|mov|avi|mkv)(\?.*)?$/i)) return 'video'
-      if (output.match(/\.(mp3|wav|ogg|flac|aac|m4a|wma)(\?.*)?$/i)) return 'audio'
-      if (output.startsWith('http://') || output.startsWith('https://')) return 'url'
+      const mediaType = getMediaTypeFromUrl(output); if (mediaType === 'image') return 'image'
+      if (mediaType === 'video') return 'video'
+      if (mediaType === 'audio') return 'audio'
+      if (isHttpUrl(output)) return 'url'
     }
     return 'text'
   }

@@ -36,7 +36,7 @@ wavespeed-desktop/
 │   ├── pages/            # Page components (ModelsPage, PlaygroundPage, FreeToolsPage, etc.)
 │   ├── stores/           # Zustand stores (apiKeyStore, modelsStore)
 │   ├── types/            # TypeScript type definitions
-│   └── workers/          # Web Workers (upscaler.worker.ts, backgroundRemover.worker.ts)
+│   └── workers/          # Web Workers (upscaler, backgroundRemover, imageEraser, segmentAnything, ffmpeg)
 ├── .github/workflows/    # GitHub Actions for CI/CD
 │   ├── build.yml         # Build on push/tag/PR
 │   └── nightly.yml       # Nightly builds
@@ -71,6 +71,11 @@ wavespeed-desktop/
 - **`src/pages/BackgroundRemoverPage.tsx`**: Background removal displaying all 3 outputs (foreground, background, mask) simultaneously
 - **`src/pages/ImageEraserPage.tsx`**: Object removal using LaMa inpainting model with inline mask drawing and smart crop
 - **`src/pages/SegmentAnythingPage.tsx`**: Interactive object segmentation using SlimSAM model with point prompts
+- **`src/pages/VideoConverterPage.tsx`**: Video format conversion with codec and quality options using FFmpeg WASM
+- **`src/pages/AudioConverterPage.tsx`**: Audio format conversion with bitrate control using FFmpeg WASM
+- **`src/pages/ImageConverterPage.tsx`**: Batch image format conversion with quality settings using FFmpeg WASM
+- **`src/pages/MediaTrimmerPage.tsx`**: Video/audio trimming with start/end time selection using FFmpeg WASM
+- **`src/pages/MediaMergerPage.tsx`**: Merge multiple video/audio files using FFmpeg WASM
 - **`src/lib/schemaToForm.ts`**: Converts API schema to form field configurations
 - **`src/lib/lamaUtils.ts`**: Image/tensor conversion utilities for inpainting models (canvasToFloat32Array, maskCanvasToFloat32Array, tensorToCanvas)
 - **`src/lib/maskUtils.ts`**: Mask utility functions (flood fill, invert, video frame extraction)
@@ -80,12 +85,15 @@ wavespeed-desktop/
 - **`src/hooks/useBackgroundRemoverWorker.ts`**: Hook for managing background remover Web Worker with removeBackgroundAll for batch processing
 - **`src/hooks/useImageEraserWorker.ts`**: Hook for managing image eraser Web Worker with LaMa model initialization and object removal
 - **`src/hooks/useSegmentAnythingWorker.ts`**: Hook for managing SAM Web Worker with segmentImage and decodeMask methods
+- **`src/hooks/useFFmpegWorker.ts`**: Hook for managing FFmpeg Web Worker with convert, merge, trim, and getInfo methods
 - **`src/hooks/useMultiPhaseProgress.ts`**: Hook for multi-phase progress state management with weighted phases, ETA calculation
 - **`src/components/shared/ProcessingProgress.tsx`**: Compact single-row progress component with phase indicators, status, and ETA
 - **`src/workers/upscaler.worker.ts`**: Web Worker for GPU-free image/video upscaling with UpscalerJS
 - **`src/workers/backgroundRemover.worker.ts`**: Web Worker for background removal with @imgly/background-removal, supports processAll for batch output
 - **`src/workers/imageEraser.worker.ts`**: Web Worker for LaMa inpainting model (512x512, quantized) with onnxruntime-web WASM backend, smart crop around mask for better quality
 - **`src/workers/segmentAnything.worker.ts`**: Web Worker for Segment Anything (SlimSAM) model using @huggingface/transformers with WebGPU acceleration for interactive object segmentation
+- **`src/workers/ffmpeg.worker.ts`**: Web Worker for FFmpeg WASM operations (convert, merge, trim, getInfo) with progress reporting
+- **`src/lib/ffmpegFormats.ts`**: Format definitions for video, audio, and image conversion (codecs, extensions, quality presets)
 
 ## WaveSpeedAI API
 
@@ -204,7 +212,7 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - Asset file naming format: `{model-slug}_{predictionId}_{resultindex}.{ext}` (e.g., `flux-schnell_pred-abc123_0.png`)
 - Layout.tsx handles unified API key login screen - pages don't need individual ApiKeyRequired checks
 - Settings page (`/settings`) is a public path accessible without API key
-- Free Tools pages (`/free-tools`, `/free-tools/image`, `/free-tools/video`, `/free-tools/background-remover`, `/free-tools/image-eraser`, `/free-tools/segment-anything`) are public paths accessible without API key
+- Free Tools pages are public paths accessible without API key: `/free-tools`, `/free-tools/image`, `/free-tools/video`, `/free-tools/background-remover`, `/free-tools/image-eraser`, `/free-tools/segment-anything`, `/free-tools/video-converter`, `/free-tools/audio-converter`, `/free-tools/image-converter`, `/free-tools/media-trimmer`, `/free-tools/media-merger`
 - Free Tools feature uses UpscalerJS with ESRGAN models for image/video upscaling (slim/medium/thick quality options)
 - Video Enhancer processes frames at 30 FPS using WebM muxer with VP9 codec
 - Upscaler uses Web Worker to keep UI responsive during heavy processing
@@ -240,3 +248,9 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - Batch outputs can be bulk downloaded or saved to assets via "Download All" / "Save All" buttons
 - Seed randomization generates unique seeds per batch item using base seed + index to ensure reproducibility
 - Segment Anything worker forces onnxruntime-web 1.21.0 WASM from CDN to avoid version mismatch with @huggingface/transformers bundled WASM
+- FFmpeg WASM tools use @ffmpeg/ffmpeg 0.12.x with ESM build loaded from jsdelivr CDN
+- FFmpeg worker supports convert, merge, trim, and getInfo operations with progress reporting
+- FFmpeg tools pages: VideoConverterPage, AudioConverterPage, ImageConverterPage, MediaTrimmerPage, MediaMergerPage
+- FFmpeg tools are public paths accessible without API key: `/free-tools/video-converter`, `/free-tools/audio-converter`, `/free-tools/image-converter`, `/free-tools/media-trimmer`, `/free-tools/media-merger`
+- FFmpeg format definitions in `src/lib/ffmpegFormats.ts` include VIDEO_FORMATS, AUDIO_FORMATS, IMAGE_FORMATS with codec mappings
+- @ffmpeg/ffmpeg and @ffmpeg/util are excluded from Vite's optimizeDeps to avoid bundling issues

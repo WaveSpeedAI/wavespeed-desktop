@@ -17,6 +17,11 @@ import { ImageEnhancerPage } from '@/pages/ImageEnhancerPage'
 import { BackgroundRemoverPage } from '@/pages/BackgroundRemoverPage'
 import { ImageEraserPage } from '@/pages/ImageEraserPage'
 import { SegmentAnythingPage } from '@/pages/SegmentAnythingPage'
+import { VideoConverterPage } from '@/pages/VideoConverterPage'
+import { AudioConverterPage } from '@/pages/AudioConverterPage'
+import { ImageConverterPage } from '@/pages/ImageConverterPage'
+import { MediaTrimmerPage } from '@/pages/MediaTrimmerPage'
+import { MediaMergerPage } from '@/pages/MediaMergerPage'
 
 export function Layout() {
   const { t } = useTranslation()
@@ -38,7 +43,7 @@ export function Layout() {
 
   // Track visits to persistent pages and last visited free-tools page
   useEffect(() => {
-    const persistentPaths = ['/free-tools/video', '/free-tools/image', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything']
+    const persistentPaths = ['/free-tools/video', '/free-tools/image', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/free-tools/video-converter', '/free-tools/audio-converter', '/free-tools/image-converter', '/free-tools/media-trimmer', '/free-tools/media-merger']
     if (persistentPaths.includes(location.pathname)) {
       // Track for lazy mounting
       if (!visitedPages.has(location.pathname)) {
@@ -283,7 +288,7 @@ export function Layout() {
           {requiresLogin ? loginContent : (
             <>
               {/* Regular routes via Outlet */}
-              <div className={location.pathname === '/free-tools/video' || location.pathname === '/free-tools/image' || location.pathname === '/free-tools/background-remover' || location.pathname === '/free-tools/image-eraser' || location.pathname === '/free-tools/segment-anything' ? 'hidden' : 'h-full overflow-auto'}>
+              <div className={['/free-tools/video', '/free-tools/image', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/free-tools/video-converter', '/free-tools/audio-converter', '/free-tools/image-converter', '/free-tools/media-trimmer', '/free-tools/media-merger'].includes(location.pathname) ? 'hidden' : 'h-full overflow-auto'}>
                 <Outlet />
               </div>
               {/* Persistent Free Tools pages - mounted once visited, then persist via CSS show/hide */}
@@ -310,6 +315,31 @@ export function Layout() {
               {visitedPages.has('/free-tools/segment-anything') && (
                 <div className={location.pathname === '/free-tools/segment-anything' ? 'h-full overflow-auto' : 'hidden'}>
                   <SegmentAnythingPage />
+                </div>
+              )}
+              {visitedPages.has('/free-tools/video-converter') && (
+                <div className={location.pathname === '/free-tools/video-converter' ? 'h-full overflow-auto' : 'hidden'}>
+                  <VideoConverterPage />
+                </div>
+              )}
+              {visitedPages.has('/free-tools/audio-converter') && (
+                <div className={location.pathname === '/free-tools/audio-converter' ? 'h-full overflow-auto' : 'hidden'}>
+                  <AudioConverterPage />
+                </div>
+              )}
+              {visitedPages.has('/free-tools/image-converter') && (
+                <div className={location.pathname === '/free-tools/image-converter' ? 'h-full overflow-auto' : 'hidden'}>
+                  <ImageConverterPage />
+                </div>
+              )}
+              {visitedPages.has('/free-tools/media-trimmer') && (
+                <div className={location.pathname === '/free-tools/media-trimmer' ? 'h-full overflow-auto' : 'hidden'}>
+                  <MediaTrimmerPage />
+                </div>
+              )}
+              {visitedPages.has('/free-tools/media-merger') && (
+                <div className={location.pathname === '/free-tools/media-merger' ? 'h-full overflow-auto' : 'hidden'}>
+                  <MediaMergerPage />
                 </div>
               )}
             </>

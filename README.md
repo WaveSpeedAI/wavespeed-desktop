@@ -19,6 +19,12 @@ A cross-platform desktop application for running AI models from [WaveSpeedAI](ht
   - **Video Enhancer**: Frame-by-frame video upscaling with real-time progress and ETA
   - **Background Remover**: Remove image backgrounds instantly using AI, displaying foreground, background, and mask outputs simultaneously with individual download buttons
   - **Image Eraser**: Remove unwanted objects from images using LaMa inpainting model with smart crop and blend
+  - **Segment Anything**: Interactive object segmentation with point prompts using SlimSAM model
+  - **Video Converter**: Convert videos between formats (MP4, WebM, AVI, MOV, MKV) with codec and quality options
+  - **Audio Converter**: Convert audio between formats (MP3, WAV, AAC, FLAC, OGG) with bitrate control
+  - **Image Converter**: Batch convert images between formats (JPG, PNG, WebP, GIF, BMP) with quality settings
+  - **Media Trimmer**: Trim video/audio files by selecting start and end times
+  - **Media Merger**: Merge multiple video/audio files into one
 - **Multi-Phase Progress**: Compact progress bars with phase indicators, real-time status, and ETA for all Free Tools
 - **History**: View your recent predictions (last 24 hours) with detailed view, download, and copy prediction ID
 - **My Assets**: Save, browse, and manage generated outputs (images, videos, audio) with tags, favorites, and search
@@ -128,7 +134,7 @@ wavespeed-desktop/
 │   ├── pages/          # Page components
 │   ├── stores/         # Zustand stores
 │   ├── types/          # TypeScript types
-│   └── workers/        # Web Workers (upscaler, background remover, image eraser)
+│   └── workers/        # Web Workers (upscaler, background remover, image eraser, ffmpeg)
 ├── .github/workflows/  # GitHub Actions
 └── build/              # Build resources
 ```

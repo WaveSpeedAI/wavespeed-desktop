@@ -597,6 +597,83 @@
       "finalizing": "完成中",
       "overall": "總進度",
       "remaining": "剩餘"
+    },
+    "videoConverter": {
+      "title": "影片轉換器",
+      "description": "在多種格式之間轉換影片（MP4、WebM、MOV、AVI）",
+      "selectVideo": "選擇影片",
+      "orDragDrop": "或拖放檔案",
+      "dropToReplace": "拖放以替換影片",
+      "supportedFormats": "支援 MP4、WebM、MOV、AVI、MKV",
+      "convert": "轉換",
+      "converting": "轉換中...",
+      "original": "原始",
+      "outputSettings": "輸出設定",
+      "format": "格式",
+      "quality": "品質",
+      "resolution": "解析度",
+      "convertedSize": "轉換後大小"
+    },
+    "audioConverter": {
+      "title": "音訊轉換器",
+      "description": "在多種格式之間轉換音訊（MP3、AAC、FLAC、WAV）",
+      "selectAudio": "選擇音訊",
+      "orDragDrop": "或拖放檔案",
+      "dropToReplace": "拖放以替換音訊",
+      "supportedFormats": "支援 MP3、M4A、OGG、WAV、FLAC",
+      "convert": "轉換",
+      "converting": "轉換中...",
+      "converted": "已轉換",
+      "playOriginal": "播放原始",
+      "playConverted": "播放轉換後"
+    },
+    "imageConverter": {
+      "title": "圖片轉換器",
+      "description": "在多種格式之間轉換圖片（JPG、PNG、WebP、GIF）",
+      "selectImages": "選擇圖片",
+      "orDragDrop": "或拖放檔案",
+      "dropToAdd": "拖放以新增圖片",
+      "supportedFormats": "支援 JPG、PNG、WebP、GIF、BMP",
+      "addMore": "新增更多",
+      "convert": "轉換",
+      "converting": "轉換中...",
+      "quality": "品質",
+      "downloadAll": "全部下載"
+    },
+    "mediaTrimmer": {
+      "title": "媒體裁剪器",
+      "description": "將影片或音訊裁剪到特定時長",
+      "selectMedia": "選擇媒體",
+      "orDragDrop": "或拖放檔案",
+      "dropToReplace": "拖放以替換媒體",
+      "supportedFormats": "支援影片和音訊檔案",
+      "trim": "裁剪",
+      "trimming": "裁剪中...",
+      "originalDuration": "原始時長",
+      "selectedDuration": "已選時長",
+      "trimmedSize": "裁剪後大小",
+      "playingOriginal": "播放原始",
+      "playingTrimmed": "播放裁剪後"
+    },
+    "mediaMerger": {
+      "title": "媒體合併器",
+      "description": "將多個影片或音訊檔案合併為一個",
+      "selectFiles": "選擇檔案",
+      "orDragDrop": "或拖放檔案",
+      "dropToAdd": "拖放以新增檔案",
+      "supportedFormats": "支援影片和音訊檔案",
+      "addMore": "新增更多",
+      "merge": "合併",
+      "merging": "合併中...",
+      "merged": "已合併",
+      "totalDuration": "總時長",
+      "sameFormatNote": "檔案必須具有相同格式才能無損合併"
+    },
+    "ffmpeg": {
+      "loading": "載入 FFmpeg",
+      "converting": "轉換中",
+      "merging": "合併中",
+      "trimming": "裁剪中"
     }
   }
 }

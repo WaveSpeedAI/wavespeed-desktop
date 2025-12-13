@@ -597,6 +597,83 @@
       "finalizing": "Finalisation",
       "overall": "Général",
       "remaining": "restant"
+    },
+    "videoConverter": {
+      "title": "Convertisseur Vidéo",
+      "description": "Convertir des vidéos entre formats (MP4, WebM, MOV, AVI)",
+      "selectVideo": "Sélectionner une Vidéo",
+      "orDragDrop": "ou glisser-déposer",
+      "dropToReplace": "Déposer pour remplacer la vidéo",
+      "supportedFormats": "Supporte MP4, WebM, MOV, AVI, MKV",
+      "convert": "Convertir",
+      "converting": "Conversion...",
+      "original": "Original",
+      "outputSettings": "Paramètres de Sortie",
+      "format": "Format",
+      "quality": "Qualité",
+      "resolution": "Résolution",
+      "convertedSize": "Taille Convertie"
+    },
+    "audioConverter": {
+      "title": "Convertisseur Audio",
+      "description": "Convertir de l'audio entre formats (MP3, AAC, FLAC, WAV)",
+      "selectAudio": "Sélectionner un Audio",
+      "orDragDrop": "ou glisser-déposer",
+      "dropToReplace": "Déposer pour remplacer l'audio",
+      "supportedFormats": "Supporte MP3, M4A, OGG, WAV, FLAC",
+      "convert": "Convertir",
+      "converting": "Conversion...",
+      "converted": "Converti",
+      "playOriginal": "Lire l'original",
+      "playConverted": "Lire le converti"
+    },
+    "imageConverter": {
+      "title": "Convertisseur d'Images",
+      "description": "Convertir des images entre formats (JPG, PNG, WebP, GIF)",
+      "selectImages": "Sélectionner des Images",
+      "orDragDrop": "ou glisser-déposer",
+      "dropToAdd": "Déposer pour ajouter des images",
+      "supportedFormats": "Supporte JPG, PNG, WebP, GIF, BMP",
+      "addMore": "Ajouter Plus",
+      "convert": "Convertir",
+      "converting": "Conversion...",
+      "quality": "Qualité",
+      "downloadAll": "Tout Télécharger"
+    },
+    "mediaTrimmer": {
+      "title": "Découpeur de Médias",
+      "description": "Découper des vidéos ou audio à une durée spécifique",
+      "selectMedia": "Sélectionner un Média",
+      "orDragDrop": "ou glisser-déposer",
+      "dropToReplace": "Déposer pour remplacer le média",
+      "supportedFormats": "Supporte les fichiers vidéo et audio",
+      "trim": "Découper",
+      "trimming": "Découpage...",
+      "originalDuration": "Original",
+      "selectedDuration": "Sélectionné",
+      "trimmedSize": "Taille Découpée",
+      "playingOriginal": "Lecture originale",
+      "playingTrimmed": "Lecture découpée"
+    },
+    "mediaMerger": {
+      "title": "Fusionneur de Médias",
+      "description": "Fusionner plusieurs fichiers vidéo ou audio en un seul",
+      "selectFiles": "Sélectionner des Fichiers",
+      "orDragDrop": "ou glisser-déposer",
+      "dropToAdd": "Déposer pour ajouter des fichiers",
+      "supportedFormats": "Supporte les fichiers vidéo et audio",
+      "addMore": "Ajouter Plus",
+      "merge": "Fusionner",
+      "merging": "Fusion...",
+      "merged": "Fusionné",
+      "totalDuration": "Durée Totale",
+      "sameFormatNote": "Les fichiers doivent avoir le même format pour une fusion sans perte"
+    },
+    "ffmpeg": {
+      "loading": "Chargement de FFmpeg",
+      "converting": "Conversion",
+      "merging": "Fusion",
+      "trimming": "Découpage"
     }
   }
 }

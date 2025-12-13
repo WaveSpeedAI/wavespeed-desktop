@@ -597,6 +597,83 @@
       "finalizing": "Finalizando",
       "overall": "General",
       "remaining": "restante"
+    },
+    "videoConverter": {
+      "title": "Conversor de Video",
+      "description": "Convierte videos entre formatos (MP4, WebM, MOV, AVI)",
+      "selectVideo": "Seleccionar Video",
+      "orDragDrop": "o arrastrar y soltar",
+      "dropToReplace": "Soltar para reemplazar video",
+      "supportedFormats": "Soporta MP4, WebM, MOV, AVI, MKV",
+      "convert": "Convertir",
+      "converting": "Convirtiendo...",
+      "original": "Original",
+      "outputSettings": "Configuración de Salida",
+      "format": "Formato",
+      "quality": "Calidad",
+      "resolution": "Resolución",
+      "convertedSize": "Tamaño Convertido"
+    },
+    "audioConverter": {
+      "title": "Conversor de Audio",
+      "description": "Convierte audio entre formatos (MP3, AAC, FLAC, WAV)",
+      "selectAudio": "Seleccionar Audio",
+      "orDragDrop": "o arrastrar y soltar",
+      "dropToReplace": "Soltar para reemplazar audio",
+      "supportedFormats": "Soporta MP3, M4A, OGG, WAV, FLAC",
+      "convert": "Convertir",
+      "converting": "Convirtiendo...",
+      "converted": "Convertido",
+      "playOriginal": "Reproducir original",
+      "playConverted": "Reproducir convertido"
+    },
+    "imageConverter": {
+      "title": "Conversor de Imágenes",
+      "description": "Convierte imágenes entre formatos (JPG, PNG, WebP, GIF)",
+      "selectImages": "Seleccionar Imágenes",
+      "orDragDrop": "o arrastrar y soltar",
+      "dropToAdd": "Soltar para añadir imágenes",
+      "supportedFormats": "Soporta JPG, PNG, WebP, GIF, BMP",
+      "addMore": "Añadir Más",
+      "convert": "Convertir",
+      "converting": "Convirtiendo...",
+      "quality": "Calidad",
+      "downloadAll": "Descargar Todo"
+    },
+    "mediaTrimmer": {
+      "title": "Recortador de Medios",
+      "description": "Recorta videos o audio a una duración específica",
+      "selectMedia": "Seleccionar Medio",
+      "orDragDrop": "o arrastrar y soltar",
+      "dropToReplace": "Soltar para reemplazar medio",
+      "supportedFormats": "Soporta archivos de video y audio",
+      "trim": "Recortar",
+      "trimming": "Recortando...",
+      "originalDuration": "Original",
+      "selectedDuration": "Seleccionado",
+      "trimmedSize": "Tamaño Recortado",
+      "playingOriginal": "Reproduciendo original",
+      "playingTrimmed": "Reproduciendo recortado"
+    },
+    "mediaMerger": {
+      "title": "Fusionador de Medios",
+      "description": "Fusiona múltiples archivos de video o audio en uno",
+      "selectFiles": "Seleccionar Archivos",
+      "orDragDrop": "o arrastrar y soltar",
+      "dropToAdd": "Soltar para añadir archivos",
+      "supportedFormats": "Soporta archivos de video y audio",
+      "addMore": "Añadir Más",
+      "merge": "Fusionar",
+      "merging": "Fusionando...",
+      "merged": "Fusionado",
+      "totalDuration": "Duración Total",
+      "sameFormatNote": "Los archivos deben tener el mismo formato para fusión sin pérdida"
+    },
+    "ffmpeg": {
+      "loading": "Cargando FFmpeg",
+      "converting": "Convirtiendo",
+      "merging": "Fusionando",
+      "trimming": "Recortando"
     }
   }
 }

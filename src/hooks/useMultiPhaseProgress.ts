@@ -66,16 +66,21 @@ export function useMultiPhaseProgress(options: UseMultiPhaseProgressOptions) {
     return lastCompleted >= 0 ? lastCompleted : 0
   }, [phases])
 
-  // Start a specific phase
+  // Start a specific phase (completes all previous phases)
   const startPhase = useCallback((phaseId: string) => {
-    setPhases((prev) =>
-      prev.map((phase) => {
+    setPhases((prev) => {
+      const phaseIndex = prev.findIndex((p) => p.id === phaseId)
+      return prev.map((phase, idx) => {
         if (phase.id === phaseId) {
           return { ...phase, status: 'active', progress: 0 }
         }
+        // Complete all phases before the new one
+        if (idx < phaseIndex && phase.status !== 'completed') {
+          return { ...phase, status: 'completed', progress: 100 }
+        }
         return phase
       })
-    )
+    })
     setIsActive(true)
     setStartTime((prev) => prev ?? Date.now())
   }, [])

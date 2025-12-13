@@ -46,12 +46,26 @@ async function downloadModel(
     return buffer
   }
 
-  // Download with progress
-  const response = await fetch(MODEL_URL, {
-    headers: {
-      Origin: self.location.origin
+  // Download with progress and 120s timeout
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 120000)
+
+  let response: Response
+  try {
+    response = await fetch(MODEL_URL, {
+      headers: {
+        Origin: self.location.origin
+      },
+      signal: controller.signal
+    })
+    clearTimeout(timeoutId)
+  } catch (error) {
+    clearTimeout(timeoutId)
+    if ((error as Error).name === 'AbortError') {
+      throw new Error('Model download timed out after 120 seconds')
     }
-  })
+    throw error
+  }
 
   if (!response.ok) {
     throw new Error(`Failed to download model: ${response.status}`)

@@ -597,6 +597,83 @@
       "finalizing": "最終処理中",
       "overall": "全体",
       "remaining": "残り"
+    },
+    "videoConverter": {
+      "title": "ビデオ変換",
+      "description": "動画形式を変換（MP4、WebM、MOV、AVI）",
+      "selectVideo": "動画を選択",
+      "orDragDrop": "またはドラッグ＆ドロップ",
+      "dropToReplace": "ドロップして動画を置換",
+      "supportedFormats": "MP4、WebM、MOV、AVI、MKVに対応",
+      "convert": "変換",
+      "converting": "変換中...",
+      "original": "オリジナル",
+      "outputSettings": "出力設定",
+      "format": "形式",
+      "quality": "品質",
+      "resolution": "解像度",
+      "convertedSize": "変換後サイズ"
+    },
+    "audioConverter": {
+      "title": "オーディオ変換",
+      "description": "音声形式を変換（MP3、AAC、FLAC、WAV）",
+      "selectAudio": "音声を選択",
+      "orDragDrop": "またはドラッグ＆ドロップ",
+      "dropToReplace": "ドロップして音声を置換",
+      "supportedFormats": "MP3、M4A、OGG、WAV、FLACに対応",
+      "convert": "変換",
+      "converting": "変換中...",
+      "converted": "変換済み",
+      "playOriginal": "オリジナルを再生",
+      "playConverted": "変換後を再生"
+    },
+    "imageConverter": {
+      "title": "画像変換",
+      "description": "画像形式を変換（JPG、PNG、WebP、GIF）",
+      "selectImages": "画像を選択",
+      "orDragDrop": "またはドラッグ＆ドロップ",
+      "dropToAdd": "ドロップして画像を追加",
+      "supportedFormats": "JPG、PNG、WebP、GIF、BMPに対応",
+      "addMore": "追加",
+      "convert": "変換",
+      "converting": "変換中...",
+      "quality": "品質",
+      "downloadAll": "すべてダウンロード"
+    },
+    "mediaTrimmer": {
+      "title": "メディアトリミング",
+      "description": "動画や音声を特定の長さに切り取り",
+      "selectMedia": "メディアを選択",
+      "orDragDrop": "またはドラッグ＆ドロップ",
+      "dropToReplace": "ドロップしてメディアを置換",
+      "supportedFormats": "動画と音声ファイルに対応",
+      "trim": "トリミング",
+      "trimming": "トリミング中...",
+      "originalDuration": "オリジナル",
+      "selectedDuration": "選択範囲",
+      "trimmedSize": "トリミング後サイズ",
+      "playingOriginal": "オリジナルを再生中",
+      "playingTrimmed": "トリミング後を再生中"
+    },
+    "mediaMerger": {
+      "title": "メディア結合",
+      "description": "複数の動画または音声ファイルを1つに結合",
+      "selectFiles": "ファイルを選択",
+      "orDragDrop": "またはドラッグ＆ドロップ",
+      "dropToAdd": "ドロップしてファイルを追加",
+      "supportedFormats": "動画と音声ファイルに対応",
+      "addMore": "追加",
+      "merge": "結合",
+      "merging": "結合中...",
+      "merged": "結合済み",
+      "totalDuration": "合計時間",
+      "sameFormatNote": "ロスレス結合には同じ形式のファイルが必要です"
+    },
+    "ffmpeg": {
+      "loading": "FFmpegを読み込み中",
+      "converting": "変換中",
+      "merging": "結合中",
+      "trimming": "トリミング中"
     }
   }
 }

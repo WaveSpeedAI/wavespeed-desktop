@@ -597,6 +597,83 @@
       "clearPointsTooltip": "امسح جميع النقاط وعد إلى وضع معاينة التمرير",
       "cutMask": "قص القناع",
       "hint": "انقر بزر الماوس الأيسر للتضمين، انقر بزر الماوس الأيمن لاستبعاد المناطق"
+    },
+    "videoConverter": {
+      "title": "Video Converter",
+      "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
+      "selectVideo": "Select Video",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace video",
+      "supportedFormats": "Supports MP4, WebM, MOV, AVI, MKV",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "original": "Original",
+      "outputSettings": "Output Settings",
+      "format": "Format",
+      "quality": "Quality",
+      "resolution": "Resolution",
+      "convertedSize": "Converted Size"
+    },
+    "audioConverter": {
+      "title": "Audio Converter",
+      "description": "Convert audio between formats (MP3, AAC, FLAC, WAV)",
+      "selectAudio": "Select Audio",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace audio",
+      "supportedFormats": "Supports MP3, M4A, OGG, WAV, FLAC",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "converted": "Converted",
+      "playOriginal": "Play original",
+      "playConverted": "Play converted"
+    },
+    "imageConverter": {
+      "title": "Image Converter",
+      "description": "Convert images between formats (JPG, PNG, WebP, GIF)",
+      "selectImages": "Select Images",
+      "orDragDrop": "or drag and drop",
+      "dropToAdd": "Drop to add images",
+      "supportedFormats": "Supports JPG, PNG, WebP, GIF, BMP",
+      "addMore": "Add More",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "quality": "Quality",
+      "downloadAll": "Download All"
+    },
+    "mediaTrimmer": {
+      "title": "Media Trimmer",
+      "description": "Trim videos or audio to a specific duration",
+      "selectMedia": "Select Media",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace media",
+      "supportedFormats": "Supports video and audio files",
+      "trim": "Trim",
+      "trimming": "Trimming...",
+      "originalDuration": "Original",
+      "selectedDuration": "Selected",
+      "trimmedSize": "Trimmed Size",
+      "playingOriginal": "Playing original",
+      "playingTrimmed": "Playing trimmed"
+    },
+    "mediaMerger": {
+      "title": "Media Merger",
+      "description": "Merge multiple video or audio files into one",
+      "selectFiles": "Select Files",
+      "orDragDrop": "or drag and drop",
+      "dropToAdd": "Drop to add files",
+      "supportedFormats": "Supports video and audio files",
+      "addMore": "Add More",
+      "merge": "Merge",
+      "merging": "Merging...",
+      "merged": "Merged",
+      "totalDuration": "Total Duration",
+      "sameFormatNote": "Files must have the same format for lossless merging"
+    },
+    "ffmpeg": {
+      "loading": "Loading FFmpeg",
+      "converting": "Converting",
+      "merging": "Merging",
+      "trimming": "Trimming"
     }
   }
 }

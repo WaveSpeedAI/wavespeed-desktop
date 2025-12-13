@@ -597,6 +597,83 @@
       "finalizing": "Завершение",
       "overall": "Общий",
       "remaining": "осталось"
+    },
+    "videoConverter": {
+      "title": "Конвертер видео",
+      "description": "Конвертация видео между форматами (MP4, WebM, MOV, AVI)",
+      "selectVideo": "Выбрать видео",
+      "orDragDrop": "или перетащите сюда",
+      "dropToReplace": "Перетащите для замены видео",
+      "supportedFormats": "Поддерживает MP4, WebM, MOV, AVI, MKV",
+      "convert": "Конвертировать",
+      "converting": "Конвертация...",
+      "original": "Оригинал",
+      "outputSettings": "Настройки вывода",
+      "format": "Формат",
+      "quality": "Качество",
+      "resolution": "Разрешение",
+      "convertedSize": "Размер после конвертации"
+    },
+    "audioConverter": {
+      "title": "Конвертер аудио",
+      "description": "Конвертация аудио между форматами (MP3, AAC, FLAC, WAV)",
+      "selectAudio": "Выбрать аудио",
+      "orDragDrop": "или перетащите сюда",
+      "dropToReplace": "Перетащите для замены аудио",
+      "supportedFormats": "Поддерживает MP3, M4A, OGG, WAV, FLAC",
+      "convert": "Конвертировать",
+      "converting": "Конвертация...",
+      "converted": "Конвертировано",
+      "playOriginal": "Воспроизвести оригинал",
+      "playConverted": "Воспроизвести конвертированное"
+    },
+    "imageConverter": {
+      "title": "Конвертер изображений",
+      "description": "Конвертация изображений между форматами (JPG, PNG, WebP, GIF)",
+      "selectImages": "Выбрать изображения",
+      "orDragDrop": "или перетащите сюда",
+      "dropToAdd": "Перетащите для добавления изображений",
+      "supportedFormats": "Поддерживает JPG, PNG, WebP, GIF, BMP",
+      "addMore": "Добавить ещё",
+      "convert": "Конвертировать",
+      "converting": "Конвертация...",
+      "quality": "Качество",
+      "downloadAll": "Скачать все"
+    },
+    "mediaTrimmer": {
+      "title": "Обрезка медиа",
+      "description": "Обрезка видео или аудио до определённой длительности",
+      "selectMedia": "Выбрать медиа",
+      "orDragDrop": "или перетащите сюда",
+      "dropToReplace": "Перетащите для замены медиа",
+      "supportedFormats": "Поддерживает видео и аудио файлы",
+      "trim": "Обрезать",
+      "trimming": "Обрезка...",
+      "originalDuration": "Оригинал",
+      "selectedDuration": "Выбрано",
+      "trimmedSize": "Размер после обрезки",
+      "playingOriginal": "Воспроизведение оригинала",
+      "playingTrimmed": "Воспроизведение обрезанного"
+    },
+    "mediaMerger": {
+      "title": "Объединение медиа",
+      "description": "Объединение нескольких видео или аудио файлов в один",
+      "selectFiles": "Выбрать файлы",
+      "orDragDrop": "или перетащите сюда",
+      "dropToAdd": "Перетащите для добавления файлов",
+      "supportedFormats": "Поддерживает видео и аудио файлы",
+      "addMore": "Добавить ещё",
+      "merge": "Объединить",
+      "merging": "Объединение...",
+      "merged": "Объединено",
+      "totalDuration": "Общая длительность",
+      "sameFormatNote": "Файлы должны иметь одинаковый формат для объединения без потерь"
+    },
+    "ffmpeg": {
+      "loading": "Загрузка FFmpeg",
+      "converting": "Конвертация",
+      "merging": "Объединение",
+      "trimming": "Обрезка"
     }
   }
 }

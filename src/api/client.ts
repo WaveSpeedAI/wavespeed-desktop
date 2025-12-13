@@ -28,7 +28,7 @@ function extractErrorMessage(error: unknown): string {
 
     // Handle timeout errors
     if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-      return `Request timed out after 60 seconds. The server may be experiencing high load.`
+      return `Request timed out. The server may be experiencing high load.`
     }
 
     // Handle network errors
@@ -101,7 +101,7 @@ class WaveSpeedClient {
   constructor() {
     this.client = axios.create({
       baseURL: BASE_URL,
-      timeout: 60000,
+      timeout: 60000, // 60 second timeout for connection and read
       headers: {
         'Content-Type': 'application/json',
         // 'X-Client-Name': 'wavespeed-desktop',
@@ -141,9 +141,11 @@ class WaveSpeedClient {
     }
   }
 
-  async runPrediction(model: string, input: Record<string, unknown>): Promise<PredictionResult> {
+  async runPrediction(model: string, input: Record<string, unknown>, options?: { timeout?: number }): Promise<PredictionResult> {
     try {
-      const response = await this.client.post<PredictionResponse>(`/api/v3/${model}`, input)
+      const response = await this.client.post<PredictionResponse>(`/api/v3/${model}`, input, {
+        timeout: options?.timeout
+      })
       if (response.data.code !== 200) {
         throw new APIError(response.data.message || 'Failed to run prediction', {
           code: response.data.code,
@@ -171,6 +173,21 @@ class WaveSpeedClient {
     }
   }
 
+  // Check if error is a connection/network error that should be retried
+  private isConnectionError(error: unknown): boolean {
+    if (error instanceof AxiosError) {
+      // Timeout errors
+      if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+        return true
+      }
+      // Network errors
+      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+        return true
+      }
+    }
+    return false
+  }
+
   async run(
     model: string,
     input: Record<string, unknown>,
@@ -178,9 +195,9 @@ class WaveSpeedClient {
   ): Promise<PredictionResult> {
     const { timeout = 36000000, pollInterval = 1000, enableSyncMode = false } = options
 
-    // If sync mode is enabled, add it to input and wait for response
+    // If sync mode is enabled, add it to input and wait for response (use longer timeout)
     if (enableSyncMode) {
-      const result = await this.runPrediction(model, { ...input, enable_sync_mode: true })
+      const result = await this.runPrediction(model, { ...input, enable_sync_mode: true }, { timeout: 120000 })
       return result
     }
 
@@ -192,23 +209,34 @@ class WaveSpeedClient {
       throw new Error('No request ID in response')
     }
 
-    // Poll for result
+    // Poll for result with retry on connection errors
     const startTime = Date.now()
     while (true) {
       if (Date.now() - startTime > timeout) {
         throw new Error('Prediction timed out')
       }
 
-      const result = await this.getResult(requestId)
+      try {
+        const result = await this.getResult(requestId)
 
-      if (result.status === 'completed') {
-        return result
-      }
+        if (result.status === 'completed') {
+          return result
+        }
 
-      if (result.status === 'failed') {
-        throw new APIError(result.error || 'Prediction failed', {
-          details: result
-        })
+        if (result.status === 'failed') {
+          throw new APIError(result.error || 'Prediction failed', {
+            details: result
+          })
+        }
+      } catch (error) {
+        // Retry after 1 second on connection errors
+        if (this.isConnectionError(error)) {
+          console.warn('Connection error during polling, retrying in 1 second...', error)
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          continue
+        }
+        // Re-throw non-connection errors
+        throw error
       }
 
       // Wait before next poll
@@ -257,7 +285,8 @@ class WaveSpeedClient {
       const response = await this.client.post<UploadResponse>('/api/v3/media/upload/binary', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
-        }
+        },
+        timeout: 120000 // 120 seconds for file uploads
       })
 
       if (response.data.code !== 200) {

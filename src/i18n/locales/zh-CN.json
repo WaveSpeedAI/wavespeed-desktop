@@ -597,6 +597,85 @@
       "finalizing": "完成中",
       "overall": "总进度",
       "remaining": "剩余"
+    },
+    "videoConverter": {
+      "title": "视频转换器",
+      "description": "在多种格式之间转换视频（MP4、WebM、MOV、AVI）",
+      "selectVideo": "选择视频",
+      "orDragDrop": "或拖放文件",
+      "dropToReplace": "拖放以替换视频",
+      "supportedFormats": "支持 MP4、WebM、MOV、AVI、MKV",
+      "convert": "转换",
+      "converting": "转换中...",
+      "original": "原始",
+      "outputSettings": "输出设置",
+      "format": "格式",
+      "quality": "质量",
+      "resolution": "分辨率",
+      "convertedSize": "转换后大小",
+      "converted": "已转换"
+    },
+    "audioConverter": {
+      "title": "音频转换器",
+      "description": "在多种格式之间转换音频（MP3、AAC、FLAC、WAV）",
+      "selectAudio": "选择音频",
+      "orDragDrop": "或拖放文件",
+      "dropToReplace": "拖放以替换音频",
+      "supportedFormats": "支持 MP3、M4A、OGG、WAV、FLAC",
+      "convert": "转换",
+      "converting": "转换中...",
+      "original": "原始",
+      "converted": "已转换",
+      "playOriginal": "播放原始",
+      "playConverted": "播放转换后"
+    },
+    "imageConverter": {
+      "title": "图片转换器",
+      "description": "在多种格式之间转换图片（JPG、PNG、WebP、GIF）",
+      "selectImages": "选择图片",
+      "orDragDrop": "或拖放文件",
+      "dropToAdd": "拖放以添加图片",
+      "supportedFormats": "支持 JPG、PNG、WebP、GIF、BMP",
+      "addMore": "添加更多",
+      "convert": "转换",
+      "converting": "转换中...",
+      "quality": "质量",
+      "downloadAll": "全部下载"
+    },
+    "mediaTrimmer": {
+      "title": "媒体裁剪器",
+      "description": "将视频或音频裁剪到特定时长",
+      "selectMedia": "选择媒体",
+      "orDragDrop": "或拖放文件",
+      "dropToReplace": "拖放以替换媒体",
+      "supportedFormats": "支持视频和音频文件",
+      "trim": "裁剪",
+      "trimming": "裁剪中...",
+      "originalDuration": "原始时长",
+      "selectedDuration": "已选时长",
+      "trimmedSize": "裁剪后大小",
+      "playingOriginal": "播放原始",
+      "playingTrimmed": "播放裁剪后"
+    },
+    "mediaMerger": {
+      "title": "媒体合并器",
+      "description": "将多个视频或音频文件合并为一个",
+      "selectFiles": "选择文件",
+      "orDragDrop": "或拖放文件",
+      "dropToAdd": "拖放以添加文件",
+      "supportedFormats": "支持视频和音频文件",
+      "addMore": "添加更多",
+      "merge": "合并",
+      "merging": "合并中...",
+      "merged": "已合并",
+      "totalDuration": "总时长",
+      "sameFormatNote": "文件必须具有相同格式才能无损合并"
+    },
+    "ffmpeg": {
+      "loading": "加载 FFmpeg",
+      "converting": "转换中",
+      "merging": "合并中",
+      "trimming": "裁剪中"
     }
   }
 }

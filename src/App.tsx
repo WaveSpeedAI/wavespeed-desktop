@@ -38,6 +38,11 @@ function App() {
         <Route path="free-tools/background-remover" element={<PersistentPagePlaceholder />} />
         <Route path="free-tools/image-eraser" element={<PersistentPagePlaceholder />} />
         <Route path="free-tools/segment-anything" element={<PersistentPagePlaceholder />} />
+        <Route path="free-tools/video-converter" element={<PersistentPagePlaceholder />} />
+        <Route path="free-tools/audio-converter" element={<PersistentPagePlaceholder />} />
+        <Route path="free-tools/image-converter" element={<PersistentPagePlaceholder />} />
+        <Route path="free-tools/media-trimmer" element={<PersistentPagePlaceholder />} />
+        <Route path="free-tools/media-merger" element={<PersistentPagePlaceholder />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
     </Routes>

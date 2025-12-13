@@ -597,6 +597,83 @@
       "finalizing": "마무리 중",
       "overall": "전체",
       "remaining": "남음"
+    },
+    "videoConverter": {
+      "title": "비디오 변환기",
+      "description": "다양한 형식 간 비디오 변환 (MP4, WebM, MOV, AVI)",
+      "selectVideo": "비디오 선택",
+      "orDragDrop": "또는 드래그 앤 드롭",
+      "dropToReplace": "드롭하여 비디오 교체",
+      "supportedFormats": "MP4, WebM, MOV, AVI, MKV 지원",
+      "convert": "변환",
+      "converting": "변환 중...",
+      "original": "원본",
+      "outputSettings": "출력 설정",
+      "format": "형식",
+      "quality": "품질",
+      "resolution": "해상도",
+      "convertedSize": "변환 후 크기"
+    },
+    "audioConverter": {
+      "title": "오디오 변환기",
+      "description": "다양한 형식 간 오디오 변환 (MP3, AAC, FLAC, WAV)",
+      "selectAudio": "오디오 선택",
+      "orDragDrop": "또는 드래그 앤 드롭",
+      "dropToReplace": "드롭하여 오디오 교체",
+      "supportedFormats": "MP3, M4A, OGG, WAV, FLAC 지원",
+      "convert": "변환",
+      "converting": "변환 중...",
+      "converted": "변환됨",
+      "playOriginal": "원본 재생",
+      "playConverted": "변환 후 재생"
+    },
+    "imageConverter": {
+      "title": "이미지 변환기",
+      "description": "다양한 형식 간 이미지 변환 (JPG, PNG, WebP, GIF)",
+      "selectImages": "이미지 선택",
+      "orDragDrop": "또는 드래그 앤 드롭",
+      "dropToAdd": "드롭하여 이미지 추가",
+      "supportedFormats": "JPG, PNG, WebP, GIF, BMP 지원",
+      "addMore": "더 추가",
+      "convert": "변환",
+      "converting": "변환 중...",
+      "quality": "품질",
+      "downloadAll": "모두 다운로드"
+    },
+    "mediaTrimmer": {
+      "title": "미디어 트리머",
+      "description": "비디오 또는 오디오를 특정 길이로 자르기",
+      "selectMedia": "미디어 선택",
+      "orDragDrop": "또는 드래그 앤 드롭",
+      "dropToReplace": "드롭하여 미디어 교체",
+      "supportedFormats": "비디오 및 오디오 파일 지원",
+      "trim": "자르기",
+      "trimming": "자르는 중...",
+      "originalDuration": "원본 길이",
+      "selectedDuration": "선택 길이",
+      "trimmedSize": "자른 후 크기",
+      "playingOriginal": "원본 재생 중",
+      "playingTrimmed": "자른 파일 재생 중"
+    },
+    "mediaMerger": {
+      "title": "미디어 병합기",
+      "description": "여러 비디오 또는 오디오 파일을 하나로 병합",
+      "selectFiles": "파일 선택",
+      "orDragDrop": "또는 드래그 앤 드롭",
+      "dropToAdd": "드롭하여 파일 추가",
+      "supportedFormats": "비디오 및 오디오 파일 지원",
+      "addMore": "더 추가",
+      "merge": "병합",
+      "merging": "병합 중...",
+      "merged": "병합됨",
+      "totalDuration": "총 길이",
+      "sameFormatNote": "무손실 병합을 위해 파일은 동일한 형식이어야 합니다"
+    },
+    "ffmpeg": {
+      "loading": "FFmpeg 로드 중",
+      "converting": "변환 중",
+      "merging": "병합 중",
+      "trimming": "자르는 중"
     }
   }
 }

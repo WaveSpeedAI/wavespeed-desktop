@@ -21,6 +21,16 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog'
+import {
   ArrowLeft,
   Upload,
   Download,
@@ -53,6 +63,7 @@ export function AudioConverterPage() {
   const [outputFormat, setOutputFormat] = useState('mp3')
   const [bitrate, setBitrate] = useState('192k')
   const [error, setError] = useState<string | null>(null)
+  const [showBackWarning, setShowBackWarning] = useState(false)
 
   // Multi-phase progress tracking
   const {
@@ -87,6 +98,19 @@ export function AudioConverterPage() {
     setError(null)
     retryWorker()
   }, [retryWorker])
+
+  const handleBack = useCallback(() => {
+    if (isProcessing) {
+      setShowBackWarning(true)
+    } else {
+      navigate('/free-tools')
+    }
+  }, [isProcessing, navigate])
+
+  const handleConfirmBack = useCallback(() => {
+    setShowBackWarning(false)
+    navigate('/free-tools')
+  }, [navigate])
 
   const handleFileSelect = useCallback(
     (file: File) => {
@@ -224,7 +248,7 @@ export function AudioConverterPage() {
 
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/free-tools')}>
+        <Button variant="ghost" size="icon" onClick={handleBack}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
@@ -422,6 +446,24 @@ export function AudioConverterPage() {
           </div>
         </div>
       )}
+
+      {/* Back Warning Dialog */}
+      <AlertDialog open={showBackWarning} onOpenChange={setShowBackWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('freeTools.backWarning.title')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('freeTools.backWarning.description')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('freeTools.backWarning.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmBack}>
+              {t('freeTools.backWarning.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

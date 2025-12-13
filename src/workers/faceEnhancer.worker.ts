@@ -1,7 +1,7 @@
 /**
  * Face Enhancer Web Worker
  * Uses YOLO v8 for face detection and GFPGAN v1.4 for face enhancement
- * Both models run via ONNX Runtime (WASM)
+ * Both models run via ONNX Runtime (WebGPU with WASM fallback)
  */
 
 // @ts-expect-error - onnxruntime-web types not resolved due to package.json exports
@@ -10,6 +10,22 @@ import * as ort from 'onnxruntime-web'
 // Configure WASM paths to use CDN
 const ORT_WASM_VERSION = '1.21.0'
 ort.env.wasm.wasmPaths = `https://cdn.jsdelivr.net/npm/onnxruntime-web@${ORT_WASM_VERSION}/dist/`
+
+// Track which backend is being used
+let useWebGPU = false
+
+/**
+ * Check if WebGPU is available
+ */
+async function checkWebGPU(): Promise<boolean> {
+  try {
+    if (!navigator.gpu) return false
+    const adapter = await navigator.gpu.requestAdapter()
+    return adapter !== null
+  } catch {
+    return false
+  }
+}
 
 // Model URLs
 const YOLO_MODEL_URL = 'https://huggingface.co/deepghs/yolo-face/resolve/main/yolov8n-face/model.onnx'
@@ -45,15 +61,20 @@ interface WorkerMessage {
     width?: number
     height?: number
     id?: number
+    timeout?: number // in milliseconds
   }
 }
+
+// Default timeout (60 minutes)
+const DEFAULT_TIMEOUT = 3600000
 
 /**
  * Download model with progress tracking
  */
 async function downloadModel(
   url: string,
-  onProgress: (current: number, total: number) => void
+  onProgress: (current: number, total: number) => void,
+  timeout: number = DEFAULT_TIMEOUT
 ): Promise<ArrayBuffer> {
   // Try to get from cache first
   const cache = await caches.open(CACHE_NAME)
@@ -65,71 +86,78 @@ async function downloadModel(
     return buffer
   }
 
-  // Download with progress and 180s timeout (GFPGAN is large)
+  // Download with progress and configurable timeout
   const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 180000)
+  const timeoutId = setTimeout(() => controller.abort(), timeout)
+  const timeoutSeconds = Math.round(timeout / 1000)
 
-  let response: Response
   try {
-    response = await fetch(url, {
+    const response = await fetch(url, {
       headers: { Origin: self.location.origin },
       signal: controller.signal
     })
+
+    if (!response.ok) {
+      throw new Error(`Failed to download model: ${response.status}`)
+    }
+
+    const contentLength = response.headers.get('content-length')
+    const total = contentLength ? parseInt(contentLength, 10) : 0
+
+    const reader = response.body?.getReader()
+    if (!reader) {
+      throw new Error('Failed to get response reader')
+    }
+
+    const chunks: Uint8Array[] = []
+    let received = 0
+
+    while (true) {
+      // Check if aborted during streaming
+      if (controller.signal.aborted) {
+        reader.cancel()
+        throw new Error(`Model download timed out after ${timeoutSeconds} seconds`)
+      }
+
+      const { done, value } = await reader.read()
+      if (done) break
+
+      chunks.push(value)
+      received += value.length
+      onProgress(received, total)
+    }
+
     clearTimeout(timeoutId)
+
+    // Combine chunks
+    const buffer = new Uint8Array(received)
+    let position = 0
+    for (const chunk of chunks) {
+      buffer.set(chunk, position)
+      position += chunk.length
+    }
+
+    // Cache the model
+    try {
+      const cacheResponse = new Response(buffer.buffer, {
+        headers: {
+          'Content-Type': 'application/octet-stream',
+          'Content-Length': buffer.byteLength.toString()
+        }
+      })
+      await cache.put(url, cacheResponse)
+    } catch (e) {
+      console.warn('Failed to cache model:', e)
+    }
+
+    return buffer.buffer
   } catch (error) {
     clearTimeout(timeoutId)
     if ((error as Error).name === 'AbortError') {
-      throw new Error('Model download timed out after 180 seconds')
+      throw new Error(`Model download timed out after ${timeoutSeconds} seconds`)
     }
     throw error
   }
-
-  if (!response.ok) {
-    throw new Error(`Failed to download model: ${response.status}`)
-  }
-
-  const contentLength = response.headers.get('content-length')
-  const total = contentLength ? parseInt(contentLength, 10) : 0
-
-  const reader = response.body?.getReader()
-  if (!reader) {
-    throw new Error('Failed to get response reader')
-  }
-
-  const chunks: Uint8Array[] = []
-  let received = 0
-
-  while (true) {
-    const { done, value } = await reader.read()
-    if (done) break
-
-    chunks.push(value)
-    received += value.length
-    onProgress(received, total)
-  }
-
-  // Combine chunks
-  const buffer = new Uint8Array(received)
-  let position = 0
-  for (const chunk of chunks) {
-    buffer.set(chunk, position)
-    position += chunk.length
-  }
-
-  // Cache the model
-  try {
-    const cacheResponse = new Response(buffer.buffer, {
-      headers: {
-        'Content-Type': 'application/octet-stream',
-        'Content-Length': buffer.byteLength.toString()
-      }
-    })
-    await cache.put(url, cacheResponse)
-  } catch (e) {
-    console.warn('Failed to cache model:', e)
-  }
-
-  return buffer.buffer
 }
 
 /**
@@ -142,9 +170,23 @@ async function isModelCached(url: string): Promise<boolean> {
 }
 
 /**
- * Initialize ONNX session
+ * Initialize ONNX session with WebGPU (fallback to WASM)
  */
 async function createSession(modelBuffer: ArrayBuffer): Promise<ort.InferenceSession> {
+  // Try WebGPU first if available
+  if (useWebGPU) {
+    try {
+      return await ort.InferenceSession.create(modelBuffer, {
+        executionProviders: ['webgpu'],
+        graphOptimizationLevel: 'all'
+      })
+    } catch (e) {
+      console.warn('WebGPU session creation failed, falling back to WASM:', e)
+      useWebGPU = false
+    }
+  }
+
+  // Fallback to WASM
   return await ort.InferenceSession.create(modelBuffer, {
     executionProviders: ['wasm'],
     graphOptimizationLevel: 'all',
@@ -551,6 +593,13 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
   switch (type) {
     case 'init': {
       try {
+        // Get timeout from payload
+        const timeout = payload?.timeout ?? DEFAULT_TIMEOUT
+
+        // Check for WebGPU support
+        useWebGPU = await checkWebGPU()
+        console.log(`Face Enhancer using ${useWebGPU ? 'WebGPU' : 'WASM'} backend`)
+
         // Check if models are cached
         const yoloCached = await isModelCached(YOLO_MODEL_URL)
         const gfpganCached = await isModelCached(GFPGAN_MODEL_URL)
@@ -575,7 +624,7 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
               id: payload?.id
             }
           })
-        })
+        }, timeout)
         totalProgress = yoloWeight * 100
 
         // Download/load GFPGAN model
@@ -594,7 +643,7 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
               id: payload?.id
             }
           })
-        })
+        }, timeout)
 
         // Create sessions
         self.postMessage({ type: 'phase', payload: { phase: 'loading', id: payload?.id } })

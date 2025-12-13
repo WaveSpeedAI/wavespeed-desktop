@@ -435,7 +435,14 @@
       "clear": "清除",
       "cleared": "缓存已清除",
       "clearedDesc": "AI模型缓存已清除。需要时将重新下载模型。",
-      "clearFailed": "清除缓存失败"
+      "clearFailed": "清除快取失敗"
+    },
+    "freeTools": {
+      "title": "免費工具",
+      "description": "配置免費工具設定",
+      "downloadTimeout": "下載超時",
+      "downloadTimeoutDesc": "下載AI模型的最大等待時間",
+      "minutes": "分鐘"
     },
     "updates": {
       "title": "更新",
@@ -528,6 +535,24 @@
       "comparison": "滑桿對比",
       "dragToCompare": "拖曳對比"
     },
+    "faceEnhancer": {
+      "title": "人臉增強",
+      "description": "使用 AI 增強和修復人臉品質",
+      "selectImage": "選擇包含人臉的圖片",
+      "orDragDrop": "或拖放檔案",
+      "enhance": "增強",
+      "download": "下載",
+      "processing": "處理中...",
+      "original": "原始",
+      "enhanced": "增強後",
+      "sideBySide": "並排對比",
+      "comparison": "滑桿對比",
+      "dragToCompare": "拖曳對比",
+      "detecting": "偵測人臉",
+      "enhancing": "增強人臉",
+      "noFaces": "圖片中未偵測到人臉",
+      "facesFound": "偵測到 {{count}} 張人臉"
+    },
     "backgroundRemover": {
       "title": "背景移除器",
       "description": "使用 AI 即時移除圖片背景",
@@ -597,6 +622,12 @@
       "finalizing": "完成中",
       "overall": "總進度",
       "remaining": "剩餘"
+    },
+    "backWarning": {
+      "title": "正在處理中",
+      "description": "任務正在處理中。確定要返回嗎？這將取消當前操作。",
+      "cancel": "取消",
+      "confirm": "返回"
     },
     "videoConverter": {
       "title": "影片轉換器",

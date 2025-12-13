@@ -437,6 +437,13 @@
       "clearedDesc": "AI model cache has been cleared. Models will be re-downloaded when needed.",
       "clearFailed": "Failed to clear cache"
     },
+    "freeTools": {
+      "title": "Free Tools",
+      "description": "Configure settings for Free Tools",
+      "downloadTimeout": "Download Timeout",
+      "downloadTimeoutDesc": "Maximum time to wait when downloading AI models",
+      "minutes": "minutes"
+    },
     "updates": {
       "title": "Updates",
       "description": "Manage application updates",
@@ -528,6 +535,24 @@
       "comparison": "Comparison slider",
       "dragToCompare": "Drag to compare"
     },
+    "faceEnhancer": {
+      "title": "Face Enhancer",
+      "description": "Enhance and restore face quality using AI",
+      "selectImage": "Select an image with faces",
+      "orDragDrop": "or drag and drop",
+      "enhance": "Enhance",
+      "download": "Download",
+      "processing": "Processing...",
+      "original": "Original",
+      "enhanced": "Enhanced",
+      "sideBySide": "Side by side",
+      "comparison": "Comparison slider",
+      "dragToCompare": "Drag to compare",
+      "detecting": "Detecting faces",
+      "enhancing": "Enhancing faces",
+      "noFaces": "No faces detected in the image",
+      "facesFound": "{{count}} face(s) detected"
+    },
     "backgroundRemover": {
       "title": "Background Remover",
       "description": "Remove image backgrounds instantly using AI",
@@ -597,6 +622,12 @@
       "finalizing": "Finalizing",
       "overall": "Overall",
       "remaining": "remaining"
+    },
+    "backWarning": {
+      "title": "Processing in Progress",
+      "description": "A task is currently processing. Are you sure you want to go back? This will cancel the current operation.",
+      "cancel": "Cancel",
+      "confirm": "Go Back"
     },
     "videoConverter": {
       "title": "Video Converter",

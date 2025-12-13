@@ -15,6 +15,16 @@ import {
 } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog'
+import {
   ArrowLeft,
   Upload,
   Download,
@@ -62,7 +72,8 @@ export function ImageEnhancerPage() {
   const [downloadFormat, setDownloadFormat] = useState<'png' | 'jpeg' | 'webp'>(
     'jpeg'
   )
-  const [showPreview, setShowPreview] = useState(false)
+  const [previewImage, setPreviewImage] = useState<string | null>(null)
+  const [showBackWarning, setShowBackWarning] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>('sideBySide')
   const [sliderPosition, setSliderPosition] = useState(50)
   const comparisonRef = useRef<HTMLDivElement>(null)
@@ -105,6 +116,21 @@ export function ImageEnhancerPage() {
     setError(null)
     retryWorker()
   }, [retryWorker])
+
+  const handleBack = useCallback(() => {
+    if (isProcessing) {
+      setShowBackWarning(true)
+    } else {
+      dispose()
+      navigate('/free-tools')
+    }
+  }, [isProcessing, dispose, navigate])
+
+  const handleConfirmBack = useCallback(() => {
+    setShowBackWarning(false)
+    dispose()
+    navigate('/free-tools')
+  }, [dispose, navigate])
 
   const handleFileSelect = useCallback(
     (file: File) => {
@@ -329,7 +355,7 @@ export function ImageEnhancerPage() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => navigate('/free-tools')}
+          onClick={handleBack}
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -537,7 +563,8 @@ export function ImageEnhancerPage() {
                     <img
                       src={originalImage}
                       alt="Original"
-                      className="max-w-full max-h-full object-contain"
+                      className="max-w-full max-h-full object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => setPreviewImage(originalImage)}
                     />
                   </div>
                 </CardContent>
@@ -562,7 +589,7 @@ export function ImageEnhancerPage() {
                         src={enhancedImage}
                         alt="Enhanced"
                         className="max-w-full max-h-full object-contain cursor-pointer hover:opacity-90 transition-opacity"
-                        onClick={() => setShowPreview(true)}
+                        onClick={() => setPreviewImage(enhancedImage)}
                       />
                     ) : (
                       <div className="flex flex-col items-center justify-center text-muted-foreground">
@@ -668,7 +695,7 @@ export function ImageEnhancerPage() {
       )}
 
       {/* Fullscreen Preview Dialog */}
-      <Dialog open={showPreview} onOpenChange={setShowPreview}>
+      <Dialog open={!!previewImage} onOpenChange={(open) => !open && setPreviewImage(null)}>
         <DialogContent
           className="w-screen h-screen max-w-none max-h-none p-0 border-0 bg-black flex items-center justify-center"
           hideCloseButton
@@ -678,19 +705,37 @@ export function ImageEnhancerPage() {
             variant="ghost"
             size="icon"
             className="absolute top-4 right-4 z-50 text-white hover:bg-white/20 h-10 w-10 [filter:drop-shadow(0_0_2px_rgba(0,0,0,0.8))_drop-shadow(0_0_4px_rgba(0,0,0,0.5))]"
-            onClick={() => setShowPreview(false)}
+            onClick={() => setPreviewImage(null)}
           >
             <X className="h-6 w-6" />
           </Button>
-          {enhancedImage && (
+          {previewImage && (
             <img
-              src={enhancedImage}
+              src={previewImage}
               alt="Fullscreen preview"
               className="max-w-full max-h-full object-contain"
             />
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Back Warning Dialog */}
+      <AlertDialog open={showBackWarning} onOpenChange={setShowBackWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('freeTools.backWarning.title')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('freeTools.backWarning.description')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('freeTools.backWarning.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmBack}>
+              {t('freeTools.backWarning.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

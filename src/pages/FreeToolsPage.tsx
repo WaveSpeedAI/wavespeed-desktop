@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Video, ImageUp, Eraser, Wand2, ArrowRight, MousePointer2, FileVideo, FileAudio, FileImage, Scissors, Combine } from 'lucide-react'
+import { Video, ImageUp, Eraser, Wand2, ArrowRight, MousePointer2, FileVideo, FileAudio, FileImage, Scissors, Combine, Sparkles } from 'lucide-react'
 
 // Import tool demo images
 import videoEnhancerImg from '../../build/images/VideoEnhancer.jpeg'
@@ -33,6 +33,15 @@ export function FreeToolsPage() {
       descriptionKey: 'freeTools.imageEnhancer.description',
       route: '/free-tools/image',
       gradient: 'from-cyan-500/20 via-blue-500/10 to-transparent',
+      image: imageEnhancerImg
+    },
+    {
+      id: 'face-enhancer',
+      icon: Sparkles,
+      titleKey: 'freeTools.faceEnhancer.title',
+      descriptionKey: 'freeTools.faceEnhancer.description',
+      route: '/free-tools/face-enhancer',
+      gradient: 'from-rose-500/20 via-pink-500/10 to-transparent',
       image: imageEnhancerImg
     },
     {

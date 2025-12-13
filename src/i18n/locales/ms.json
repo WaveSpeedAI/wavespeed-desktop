@@ -437,6 +437,13 @@
       "clearedDesc": "Cache model AI telah dipadam. Model akan dimuat turun semula apabila diperlukan.",
       "clearFailed": "Gagal memadam cache"
     },
+    "freeTools": {
+      "title": "Alat Percuma",
+      "description": "Konfigurasikan tetapan alat percuma",
+      "downloadTimeout": "Had Masa Muat Turun",
+      "downloadTimeoutDesc": "Masa menunggu maksimum semasa memuat turun model AI",
+      "minutes": "minit"
+    },
     "updates": {
       "title": "Kemaskini",
       "description": "Urus kemaskini aplikasi",
@@ -528,6 +535,24 @@
       "comparison": "Perbandingan gelongsor",
       "dragToCompare": "Seret untuk membandingkan"
     },
+    "faceEnhancer": {
+      "title": "Penambah Baik Wajah",
+      "description": "Tingkatkan dan pulihkan kualiti wajah menggunakan AI",
+      "selectImage": "Pilih imej dengan wajah",
+      "orDragDrop": "atau seret dan lepas",
+      "enhance": "Tingkatkan",
+      "download": "Muat Turun",
+      "processing": "Memproses...",
+      "original": "Asal",
+      "enhanced": "Ditingkatkan",
+      "sideBySide": "Bersebelahan",
+      "comparison": "Perbandingan gelongsor",
+      "dragToCompare": "Seret untuk membandingkan",
+      "detecting": "Mengesan wajah",
+      "enhancing": "Meningkatkan wajah",
+      "noFaces": "Tiada wajah dikesan dalam imej",
+      "facesFound": "{{count}} wajah dikesan"
+    },
     "backgroundRemover": {
       "title": "Penyingkir Latar Belakang",
       "description": "Buang latar belakang imej serta-merta menggunakan AI",
@@ -597,6 +622,12 @@
       "clearPointsTooltip": "Padam semua titik dan kembali ke mod pratonton tuding",
       "cutMask": "Potong Topeng",
       "hint": "Klik kiri untuk menyertakan, klik kanan untuk mengecualikan kawasan"
+    },
+    "backWarning": {
+      "title": "Pemprosesan Sedang Berjalan",
+      "description": "Satu tugas sedang diproses. Adakah anda pasti mahu kembali? Ini akan membatalkan operasi semasa.",
+      "cancel": "Batal",
+      "confirm": "Kembali"
     },
     "videoConverter": {
       "title": "Video Converter",

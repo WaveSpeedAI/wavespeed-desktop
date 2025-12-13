@@ -437,6 +437,13 @@
       "clearedDesc": "Cache model AI telah dihapus. Model akan diunduh ulang saat diperlukan.",
       "clearFailed": "Gagal menghapus cache"
     },
+    "freeTools": {
+      "title": "Alat Gratis",
+      "description": "Konfigurasi pengaturan alat gratis",
+      "downloadTimeout": "Batas Waktu Unduh",
+      "downloadTimeoutDesc": "Waktu tunggu maksimum saat mengunduh model AI",
+      "minutes": "menit"
+    },
     "updates": {
       "title": "Pembaruan",
       "description": "Kelola pembaruan aplikasi",
@@ -528,6 +535,24 @@
       "comparison": "Perbandingan geser",
       "dragToCompare": "Seret untuk membandingkan"
     },
+    "faceEnhancer": {
+      "title": "Peningkat Wajah",
+      "description": "Tingkatkan dan pulihkan kualitas wajah menggunakan AI",
+      "selectImage": "Pilih gambar dengan wajah",
+      "orDragDrop": "atau seret dan lepas",
+      "enhance": "Tingkatkan",
+      "download": "Unduh",
+      "processing": "Memproses...",
+      "original": "Asli",
+      "enhanced": "Ditingkatkan",
+      "sideBySide": "Berdampingan",
+      "comparison": "Perbandingan geser",
+      "dragToCompare": "Seret untuk membandingkan",
+      "detecting": "Mendeteksi wajah",
+      "enhancing": "Meningkatkan wajah",
+      "noFaces": "Tidak ada wajah terdeteksi dalam gambar",
+      "facesFound": "{{count}} wajah terdeteksi"
+    },
     "backgroundRemover": {
       "title": "Penghapus Latar Belakang",
       "description": "Hapus latar belakang gambar secara instan menggunakan AI",
@@ -583,6 +608,12 @@
       "finalizing": "Menyelesaikan",
       "overall": "Keseluruhan",
       "remaining": "tersisa"
+    },
+    "backWarning": {
+      "title": "Sedang Memproses",
+      "description": "Tugas sedang diproses. Yakin ingin kembali? Ini akan membatalkan operasi saat ini.",
+      "cancel": "Batal",
+      "confirm": "Kembali"
     },
     "videoConverter": {
       "title": "Video Converter",

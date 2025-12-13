@@ -437,6 +437,13 @@
       "clearedDesc": "Bộ nhớ đệm mô hình AI đã được xóa. Các mô hình sẽ được tải xuống lại khi cần.",
       "clearFailed": "Không thể xóa bộ nhớ đệm"
     },
+    "freeTools": {
+      "title": "Công cụ miễn phí",
+      "description": "Cấu hình cài đặt công cụ miễn phí",
+      "downloadTimeout": "Thời gian chờ tải xuống",
+      "downloadTimeoutDesc": "Thời gian chờ tối đa khi tải xuống các mô hình AI",
+      "minutes": "phút"
+    },
     "updates": {
       "title": "Cập nhật",
       "description": "Quản lý cập nhật ứng dụng",
@@ -528,6 +535,24 @@
       "comparison": "So sánh trượt",
       "dragToCompare": "Kéo để so sánh"
     },
+    "faceEnhancer": {
+      "title": "Cải thiện Khuôn mặt",
+      "description": "Cải thiện và phục hồi chất lượng khuôn mặt bằng AI",
+      "selectImage": "Chọn hình ảnh có khuôn mặt",
+      "orDragDrop": "hoặc kéo thả",
+      "enhance": "Cải thiện",
+      "download": "Tải xuống",
+      "processing": "Đang xử lý...",
+      "original": "Gốc",
+      "enhanced": "Đã cải thiện",
+      "sideBySide": "Cạnh nhau",
+      "comparison": "So sánh trượt",
+      "dragToCompare": "Kéo để so sánh",
+      "detecting": "Đang phát hiện khuôn mặt",
+      "enhancing": "Đang cải thiện khuôn mặt",
+      "noFaces": "Không phát hiện khuôn mặt trong hình ảnh",
+      "facesFound": "Phát hiện {{count}} khuôn mặt"
+    },
     "backgroundRemover": {
       "title": "Xóa Nền",
       "description": "Xóa nền hình ảnh tức thì bằng AI",
@@ -597,6 +622,12 @@
       "clearPointsTooltip": "Xóa tất cả điểm và quay lại chế độ xem trước khi di chuột",
       "cutMask": "Cắt Mặt nạ",
       "hint": "Nhấp chuột trái để bao gồm, nhấp chuột phải để loại trừ vùng"
+    },
+    "backWarning": {
+      "title": "Đang Xử Lý",
+      "description": "Một tác vụ đang được xử lý. Bạn có chắc chắn muốn quay lại? Điều này sẽ hủy thao tác hiện tại.",
+      "cancel": "Hủy",
+      "confirm": "Quay Lại"
     },
     "videoConverter": {
       "title": "Video Converter",

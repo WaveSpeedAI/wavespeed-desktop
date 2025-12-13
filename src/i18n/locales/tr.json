@@ -437,6 +437,13 @@
       "clearedDesc": "AI model önbelleği temizlendi. Modeller gerektiğinde yeniden indirilecek.",
       "clearFailed": "Önbellek temizlenemedi"
     },
+    "freeTools": {
+      "title": "Ücretsiz Araçlar",
+      "description": "Ücretsiz araç ayarlarını yapılandır",
+      "downloadTimeout": "İndirme Zaman Aşımı",
+      "downloadTimeoutDesc": "AI modelleri indirirken maksimum bekleme süresi",
+      "minutes": "dakika"
+    },
     "updates": {
       "title": "Güncellemeler",
       "description": "Uygulama güncellemelerini yönetin",
@@ -528,6 +535,24 @@
       "comparison": "Kaydırmalı karşılaştırma",
       "dragToCompare": "Karşılaştırmak için sürükleyin"
     },
+    "faceEnhancer": {
+      "title": "Yüz Geliştirici",
+      "description": "Yapay zeka kullanarak yüz kalitesini iyileştirin ve onarın",
+      "selectImage": "Yüzlü bir görsel seçin",
+      "orDragDrop": "veya sürükle bırak",
+      "enhance": "Geliştir",
+      "download": "İndir",
+      "processing": "İşleniyor...",
+      "original": "Orijinal",
+      "enhanced": "Geliştirilmiş",
+      "sideBySide": "Yan yana",
+      "comparison": "Kaydırmalı karşılaştırma",
+      "dragToCompare": "Karşılaştırmak için sürükleyin",
+      "detecting": "Yüzler algılanıyor",
+      "enhancing": "Yüzler geliştiriliyor",
+      "noFaces": "Görselde yüz algılanmadı",
+      "facesFound": "{{count}} yüz algılandı"
+    },
     "backgroundRemover": {
       "title": "Arka Plan Kaldırıcı",
       "description": "Yapay zeka kullanarak görsel arka planlarını anında kaldırın",
@@ -597,6 +622,12 @@
       "finalizing": "Tamamlanıyor",
       "overall": "Genel",
       "remaining": "kaldı"
+    },
+    "backWarning": {
+      "title": "İşlem Devam Ediyor",
+      "description": "Bir görev şu anda işleniyor. Geri dönmek istediğinizden emin misiniz? Bu, mevcut işlemi iptal edecektir.",
+      "cancel": "İptal",
+      "confirm": "Geri Dön"
     },
     "videoConverter": {
       "title": "Video Converter",

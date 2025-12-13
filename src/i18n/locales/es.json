@@ -437,6 +437,13 @@
       "clearedDesc": "La caché de modelos de IA ha sido limpiada. Los modelos se descargarán nuevamente cuando sea necesario.",
       "clearFailed": "Error al limpiar la caché"
     },
+    "freeTools": {
+      "title": "Herramientas Gratuitas",
+      "description": "Configurar ajustes de herramientas gratuitas",
+      "downloadTimeout": "Tiempo de espera de descarga",
+      "downloadTimeoutDesc": "Tiempo máximo de espera al descargar modelos de IA",
+      "minutes": "minutos"
+    },
     "updates": {
       "title": "Actualizaciones",
       "description": "Administrar actualizaciones de la aplicación",
@@ -528,6 +535,24 @@
       "comparison": "Comparación deslizante",
       "dragToCompare": "Arrastra para comparar"
     },
+    "faceEnhancer": {
+      "title": "Mejorador de Rostros",
+      "description": "Mejora y restaura la calidad del rostro usando IA",
+      "selectImage": "Selecciona una imagen con rostros",
+      "orDragDrop": "o arrastra y suelta",
+      "enhance": "Mejorar",
+      "download": "Descargar",
+      "processing": "Procesando...",
+      "original": "Original",
+      "enhanced": "Mejorado",
+      "sideBySide": "Lado a lado",
+      "comparison": "Comparación deslizante",
+      "dragToCompare": "Arrastra para comparar",
+      "detecting": "Detectando rostros",
+      "enhancing": "Mejorando rostros",
+      "noFaces": "No se detectaron rostros en la imagen",
+      "facesFound": "{{count}} rostro(s) detectado(s)"
+    },
     "backgroundRemover": {
       "title": "Eliminador de Fondo",
       "description": "Elimina fondos de imágenes instantáneamente usando IA",
@@ -597,6 +622,12 @@
       "finalizing": "Finalizando",
       "overall": "General",
       "remaining": "restante"
+    },
+    "backWarning": {
+      "title": "Procesamiento en Curso",
+      "description": "Una tarea está en proceso. ¿Estás seguro de que quieres volver? Esto cancelará la operación actual.",
+      "cancel": "Cancelar",
+      "confirm": "Volver"
     },
     "videoConverter": {
       "title": "Conversor de Video",

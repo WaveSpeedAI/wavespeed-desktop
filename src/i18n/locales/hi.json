@@ -437,6 +437,13 @@
       "clearedDesc": "AI मॉडल कैश साफ हो गया है। जरूरत पड़ने पर मॉडल फिर से डाउनलोड होंगे।",
       "clearFailed": "कैश साफ करने में विफल"
     },
+    "freeTools": {
+      "title": "मुफ्त उपकरण",
+      "description": "मुफ्त उपकरण सेटिंग्स कॉन्फ़िगर करें",
+      "downloadTimeout": "डाउनलोड टाइमआउट",
+      "downloadTimeoutDesc": "AI मॉडल डाउनलोड करते समय अधिकतम प्रतीक्षा समय",
+      "minutes": "मिनट"
+    },
     "updates": {
       "title": "अपडेट",
       "description": "एप्लिकेशन अपडेट प्रबंधित करें",
@@ -528,6 +535,24 @@
       "comparison": "स्लाइडर तुलना",
       "dragToCompare": "तुलना के लिए खींचें"
     },
+    "faceEnhancer": {
+      "title": "फेस एन्हांसर",
+      "description": "AI का उपयोग करके चेहरे की गुणवत्ता बढ़ाएं और पुनर्स्थापित करें",
+      "selectImage": "चेहरों वाली छवि चुनें",
+      "orDragDrop": "या ड्रैग और ड्रॉप करें",
+      "enhance": "बेहतर बनाएं",
+      "download": "डाउनलोड",
+      "processing": "प्रसंस्करण...",
+      "original": "मूल",
+      "enhanced": "बेहतर",
+      "sideBySide": "साथ-साथ",
+      "comparison": "स्लाइडर तुलना",
+      "dragToCompare": "तुलना के लिए खींचें",
+      "detecting": "चेहरे पहचान रहे हैं",
+      "enhancing": "चेहरे बेहतर बना रहे हैं",
+      "noFaces": "छवि में कोई चेहरा नहीं मिला",
+      "facesFound": "{{count}} चेहरे मिले"
+    },
     "backgroundRemover": {
       "title": "बैकग्राउंड रिमूवर",
       "description": "AI का उपयोग करके छवि पृष्ठभूमि तुरंत हटाएं",
@@ -597,6 +622,12 @@
       "finalizing": "अंतिम चरण",
       "overall": "समग्र",
       "remaining": "शेष"
+    },
+    "backWarning": {
+      "title": "प्रक्रिया जारी है",
+      "description": "एक कार्य वर्तमान में संसाधित हो रहा है। क्या आप वाकई वापस जाना चाहते हैं? यह वर्तमान ऑपरेशन को रद्द कर देगा।",
+      "cancel": "रद्द करें",
+      "confirm": "वापस जाएं"
     },
     "videoConverter": {
       "title": "Video Converter",

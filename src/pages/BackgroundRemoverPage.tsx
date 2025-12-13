@@ -14,6 +14,16 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog'
 import { ArrowLeft, Upload, Download, Loader2, Eraser, X, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -61,6 +71,7 @@ export function BackgroundRemoverPage() {
     'png'
   )
   const [previewImage, setPreviewImage] = useState<string | null>(null)
+  const [showBackWarning, setShowBackWarning] = useState(false)
 
   // Multi-phase progress tracking
   const {
@@ -99,6 +110,21 @@ export function BackgroundRemoverPage() {
     setError(null)
     retryWorker()
   }, [retryWorker])
+
+  const handleBack = useCallback(() => {
+    if (isProcessing) {
+      setShowBackWarning(true)
+    } else {
+      dispose()
+      navigate('/free-tools')
+    }
+  }, [isProcessing, dispose, navigate])
+
+  const handleConfirmBack = useCallback(() => {
+    setShowBackWarning(false)
+    dispose()
+    navigate('/free-tools')
+  }, [dispose, navigate])
 
   const handleFileSelect = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) return
@@ -284,7 +310,7 @@ export function BackgroundRemoverPage() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => navigate('/free-tools')}
+          onClick={handleBack}
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -449,7 +475,8 @@ export function BackgroundRemoverPage() {
                   <img
                     src={originalImage}
                     alt="Original"
-                    className="max-w-full max-h-full object-contain"
+                    className="max-w-full max-h-full object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                    onClick={() => setPreviewImage(originalImage)}
                   />
                 </div>
               </CardContent>
@@ -599,6 +626,24 @@ export function BackgroundRemoverPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Back Warning Dialog */}
+      <AlertDialog open={showBackWarning} onOpenChange={setShowBackWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('freeTools.backWarning.title')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('freeTools.backWarning.description')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('freeTools.backWarning.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmBack}>
+              {t('freeTools.backWarning.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

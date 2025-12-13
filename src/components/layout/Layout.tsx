@@ -22,6 +22,7 @@ import { AudioConverterPage } from '@/pages/AudioConverterPage'
 import { ImageConverterPage } from '@/pages/ImageConverterPage'
 import { MediaTrimmerPage } from '@/pages/MediaTrimmerPage'
 import { MediaMergerPage } from '@/pages/MediaMergerPage'
+import { FaceEnhancerPage } from '@/pages/FaceEnhancerPage'
 
 export function Layout() {
   const { t } = useTranslation()
@@ -43,7 +44,7 @@ export function Layout() {
 
   // Track visits to persistent pages and last visited free-tools page
   useEffect(() => {
-    const persistentPaths = ['/free-tools/video', '/free-tools/image', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/free-tools/video-converter', '/free-tools/audio-converter', '/free-tools/image-converter', '/free-tools/media-trimmer', '/free-tools/media-merger']
+    const persistentPaths = ['/free-tools/video', '/free-tools/image', '/free-tools/face-enhancer', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/free-tools/video-converter', '/free-tools/audio-converter', '/free-tools/image-converter', '/free-tools/media-trimmer', '/free-tools/media-merger']
     if (persistentPaths.includes(location.pathname)) {
       // Track for lazy mounting
       if (!visitedPages.has(location.pathname)) {
@@ -288,7 +289,7 @@ export function Layout() {
           {requiresLogin ? loginContent : (
             <>
               {/* Regular routes via Outlet */}
-              <div className={['/free-tools/video', '/free-tools/image', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/free-tools/video-converter', '/free-tools/audio-converter', '/free-tools/image-converter', '/free-tools/media-trimmer', '/free-tools/media-merger'].includes(location.pathname) ? 'hidden' : 'h-full overflow-auto'}>
+              <div className={['/free-tools/video', '/free-tools/image', '/free-tools/face-enhancer', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/free-tools/video-converter', '/free-tools/audio-converter', '/free-tools/image-converter', '/free-tools/media-trimmer', '/free-tools/media-merger'].includes(location.pathname) ? 'hidden' : 'h-full overflow-auto'}>
                 <Outlet />
               </div>
               {/* Persistent Free Tools pages - mounted once visited, then persist via CSS show/hide */}
@@ -300,6 +301,11 @@ export function Layout() {
               {visitedPages.has('/free-tools/image') && (
                 <div className={location.pathname === '/free-tools/image' ? 'h-full overflow-auto' : 'hidden'}>
                   <ImageEnhancerPage />
+                </div>
+              )}
+              {visitedPages.has('/free-tools/face-enhancer') && (
+                <div className={location.pathname === '/free-tools/face-enhancer' ? 'h-full overflow-auto' : 'hidden'}>
+                  <FaceEnhancerPage />
                 </div>
               )}
               {visitedPages.has('/free-tools/background-remover') && (

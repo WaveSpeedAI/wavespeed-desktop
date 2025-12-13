@@ -435,7 +435,14 @@
       "clear": "清除",
       "cleared": "缓存已清除",
       "clearedDesc": "AI模型缓存已清除。需要时将重新下载模型。",
-      "clearFailed": "清除缓存失败"
+      "clearFailed": "캐시 삭제 실패"
+    },
+    "freeTools": {
+      "title": "무료 도구",
+      "description": "무료 도구 설정 구성",
+      "downloadTimeout": "다운로드 시간 제한",
+      "downloadTimeoutDesc": "AI 모델 다운로드 최대 대기 시간",
+      "minutes": "분"
     },
     "updates": {
       "title": "업데이트",
@@ -528,6 +535,24 @@
       "comparison": "슬라이더 비교",
       "dragToCompare": "드래그하여 비교"
     },
+    "faceEnhancer": {
+      "title": "얼굴 보정",
+      "description": "AI를 사용하여 얼굴 품질 향상 및 복원",
+      "selectImage": "얼굴이 포함된 이미지 선택",
+      "orDragDrop": "또는 드래그 앤 드롭",
+      "enhance": "보정",
+      "download": "다운로드",
+      "processing": "처리 중...",
+      "original": "원본",
+      "enhanced": "보정됨",
+      "sideBySide": "나란히 비교",
+      "comparison": "슬라이더 비교",
+      "dragToCompare": "드래그하여 비교",
+      "detecting": "얼굴 감지 중",
+      "enhancing": "얼굴 보정 중",
+      "noFaces": "이미지에서 얼굴이 감지되지 않았습니다",
+      "facesFound": "{{count}}개의 얼굴 감지됨"
+    },
     "backgroundRemover": {
       "title": "배경 제거",
       "description": "AI를 사용하여 이미지 배경을 즉시 제거",
@@ -597,6 +622,12 @@
       "finalizing": "마무리 중",
       "overall": "전체",
       "remaining": "남음"
+    },
+    "backWarning": {
+      "title": "처리 중",
+      "description": "작업이 진행 중입니다. 돌아가시겠습니까? 현재 작업이 취소됩니다.",
+      "cancel": "취소",
+      "confirm": "돌아가기"
     },
     "videoConverter": {
       "title": "비디오 변환기",

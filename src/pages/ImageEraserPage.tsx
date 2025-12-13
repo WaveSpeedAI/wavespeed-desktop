@@ -28,6 +28,16 @@ import {
 } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog'
+import {
   ArrowLeft,
   Upload,
   Download,
@@ -84,6 +94,7 @@ export function ImageEraserPage() {
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(null)
   const [downloadFormat, setDownloadFormat] = useState<'png' | 'jpeg' | 'webp'>('jpeg')
   const [previewImage, setPreviewImage] = useState<string | null>(null)
+  const [showBackWarning, setShowBackWarning] = useState(false)
   const [zoom, setZoom] = useState(1)
 
   // Multi-phase progress tracking
@@ -124,6 +135,21 @@ export function ImageEraserPage() {
     setError(null)
     retryWorker()
   }, [retryWorker])
+
+  const handleBack = useCallback(() => {
+    if (isProcessing) {
+      setShowBackWarning(true)
+    } else {
+      dispose()
+      navigate('/free-tools')
+    }
+  }, [isProcessing, dispose, navigate])
+
+  const handleConfirmBack = useCallback(() => {
+    setShowBackWarning(false)
+    dispose()
+    navigate('/free-tools')
+  }, [dispose, navigate])
 
   // Measure available container size on mount and window resize
   useEffect(() => {
@@ -715,7 +741,7 @@ export function ImageEraserPage() {
 
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/free-tools')}>
+        <Button variant="ghost" size="icon" onClick={handleBack}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
@@ -1143,6 +1169,24 @@ export function ImageEraserPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Back Warning Dialog */}
+      <AlertDialog open={showBackWarning} onOpenChange={setShowBackWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('freeTools.backWarning.title')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('freeTools.backWarning.description')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('freeTools.backWarning.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmBack}>
+              {t('freeTools.backWarning.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

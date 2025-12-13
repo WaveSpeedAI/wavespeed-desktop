@@ -437,6 +437,13 @@
       "clearedDesc": "Le cache des modèles IA a été effacé. Les modèles seront retéléchargés si nécessaire.",
       "clearFailed": "Échec de l'effacement du cache"
     },
+    "freeTools": {
+      "title": "Outils Gratuits",
+      "description": "Configurer les paramètres des outils gratuits",
+      "downloadTimeout": "Délai de téléchargement",
+      "downloadTimeoutDesc": "Temps d'attente maximum pour le téléchargement des modèles IA",
+      "minutes": "minutes"
+    },
     "updates": {
       "title": "Mises à jour",
       "description": "Gérer les mises à jour de l'application",
@@ -528,6 +535,24 @@
       "comparison": "Comparaison par curseur",
       "dragToCompare": "Faites glisser pour comparer"
     },
+    "faceEnhancer": {
+      "title": "Amélioration des Visages",
+      "description": "Améliorez et restaurez la qualité des visages avec l'IA",
+      "selectImage": "Sélectionnez une image avec des visages",
+      "orDragDrop": "ou glissez-déposez",
+      "enhance": "Améliorer",
+      "download": "Télécharger",
+      "processing": "Traitement...",
+      "original": "Original",
+      "enhanced": "Amélioré",
+      "sideBySide": "Côte à côte",
+      "comparison": "Comparaison par curseur",
+      "dragToCompare": "Faites glisser pour comparer",
+      "detecting": "Détection des visages",
+      "enhancing": "Amélioration des visages",
+      "noFaces": "Aucun visage détecté dans l'image",
+      "facesFound": "{{count}} visage(s) détecté(s)"
+    },
     "backgroundRemover": {
       "title": "Suppresseur de Fond",
       "description": "Supprimez instantanément les fonds d'images avec l'IA",
@@ -597,6 +622,12 @@
       "finalizing": "Finalisation",
       "overall": "Général",
       "remaining": "restant"
+    },
+    "backWarning": {
+      "title": "Traitement en Cours",
+      "description": "Une tâche est en cours de traitement. Êtes-vous sûr de vouloir revenir? Cela annulera l'opération en cours.",
+      "cancel": "Annuler",
+      "confirm": "Revenir"
     },
     "videoConverter": {
       "title": "Convertisseur Vidéo",

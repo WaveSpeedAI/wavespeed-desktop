@@ -8,6 +8,16 @@ import { getMediaType, formatFileSize, formatDuration } from '@/lib/ffmpegFormat
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog'
+import {
   ArrowLeft,
   Upload,
   Download,
@@ -50,6 +60,7 @@ export function MediaMergerPage() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showBackWarning, setShowBackWarning] = useState(false)
 
   // Multi-phase progress tracking
   const {
@@ -84,6 +95,19 @@ export function MediaMergerPage() {
     setError(null)
     retryWorker()
   }, [retryWorker])
+
+  const handleBack = useCallback(() => {
+    if (isProcessing) {
+      setShowBackWarning(true)
+    } else {
+      navigate('/free-tools')
+    }
+  }, [isProcessing, navigate])
+
+  const handleConfirmBack = useCallback(() => {
+    setShowBackWarning(false)
+    navigate('/free-tools')
+  }, [navigate])
 
   const handleFilesSelect = useCallback(
     (files: FileList | File[]) => {
@@ -272,7 +296,7 @@ export function MediaMergerPage() {
 
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/free-tools')}>
+        <Button variant="ghost" size="icon" onClick={handleBack}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
@@ -520,6 +544,24 @@ export function MediaMergerPage() {
           </p>
         </div>
       )}
+
+      {/* Back Warning Dialog */}
+      <AlertDialog open={showBackWarning} onOpenChange={setShowBackWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('freeTools.backWarning.title')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('freeTools.backWarning.description')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('freeTools.backWarning.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmBack}>
+              {t('freeTools.backWarning.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import { useRef, useCallback, useEffect } from 'react'
 import type { ProgressDetail } from '@/types/progress'
+import { getDownloadTimeoutMs } from '@/stores/settingsStore'
 
 interface EnhanceResult {
   data: Float32Array
@@ -187,7 +188,13 @@ export function useFaceEnhancerWorker(options: UseFaceEnhancerWorkerOptions = {}
       }
 
       workerRef.current.addEventListener('message', handleMessage)
-      workerRef.current.postMessage({ type: 'init', payload: { id } })
+      workerRef.current.postMessage({
+        type: 'init',
+        payload: {
+          id,
+          timeout: getDownloadTimeoutMs()
+        }
+      })
     })
   }, [])
 

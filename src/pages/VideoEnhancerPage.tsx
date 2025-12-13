@@ -15,6 +15,16 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog'
 import { ArrowLeft, Upload, Download, Play, Square, X, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -51,6 +61,7 @@ export function VideoEnhancerPage() {
   }>({ webm: true, mp4: false })
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null)
   const [showPreview, setShowPreview] = useState(false)
+  const [showBackWarning, setShowBackWarning] = useState(false)
 
   // Multi-phase progress tracking
   const {
@@ -83,6 +94,23 @@ export function VideoEnhancerPage() {
     setError(null)
     retryWorker()
   }, [retryWorker])
+
+  const handleBack = useCallback(() => {
+    if (isProcessing) {
+      setShowBackWarning(true)
+    } else {
+      abortRef.current = true
+      dispose()
+      navigate('/free-tools')
+    }
+  }, [isProcessing, dispose, navigate])
+
+  const handleConfirmBack = useCallback(() => {
+    setShowBackWarning(false)
+    abortRef.current = true
+    dispose()
+    navigate('/free-tools')
+  }, [dispose, navigate])
 
   // Check supported video formats
   useEffect(() => {
@@ -400,7 +428,7 @@ export function VideoEnhancerPage() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => navigate('/free-tools')}
+          onClick={handleBack}
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -655,6 +683,24 @@ export function VideoEnhancerPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Back Warning Dialog */}
+      <AlertDialog open={showBackWarning} onOpenChange={setShowBackWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('freeTools.backWarning.title')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('freeTools.backWarning.description')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('freeTools.backWarning.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmBack}>
+              {t('freeTools.backWarning.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

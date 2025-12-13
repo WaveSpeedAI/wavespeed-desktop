@@ -437,6 +437,13 @@
       "clearedDesc": "La cache dei modelli IA è stata svuotata. I modelli verranno riscaricati quando necessario.",
       "clearFailed": "Impossibile svuotare la cache"
     },
+    "freeTools": {
+      "title": "Strumenti Gratuiti",
+      "description": "Configura le impostazioni degli strumenti gratuiti",
+      "downloadTimeout": "Timeout Download",
+      "downloadTimeoutDesc": "Tempo massimo di attesa per il download dei modelli IA",
+      "minutes": "minuti"
+    },
     "updates": {
       "title": "Aggiornamenti",
       "description": "Gestisci gli aggiornamenti dell'applicazione",
@@ -528,6 +535,24 @@
       "comparison": "Confronto a scorrimento",
       "dragToCompare": "Trascina per confrontare"
     },
+    "faceEnhancer": {
+      "title": "Miglioramento Volti",
+      "description": "Migliora e ripristina la qualità dei volti con l'AI",
+      "selectImage": "Seleziona un'immagine con volti",
+      "orDragDrop": "o trascina e rilascia",
+      "enhance": "Migliora",
+      "download": "Scarica",
+      "processing": "Elaborazione...",
+      "original": "Originale",
+      "enhanced": "Migliorato",
+      "sideBySide": "Affiancato",
+      "comparison": "Confronto a scorrimento",
+      "dragToCompare": "Trascina per confrontare",
+      "detecting": "Rilevamento volti",
+      "enhancing": "Miglioramento volti",
+      "noFaces": "Nessun volto rilevato nell'immagine",
+      "facesFound": "{{count}} volto/i rilevato/i"
+    },
     "backgroundRemover": {
       "title": "Rimozione Sfondo",
       "description": "Rimuovi istantaneamente gli sfondi delle immagini con l'AI",
@@ -597,6 +622,12 @@
       "finalizing": "Finalizzazione",
       "overall": "Complessivo",
       "remaining": "rimanente"
+    },
+    "backWarning": {
+      "title": "Elaborazione in Corso",
+      "description": "Un'attività è in elaborazione. Sei sicuro di voler tornare indietro? Questo annullerà l'operazione corrente.",
+      "cancel": "Annulla",
+      "confirm": "Torna Indietro"
     },
     "videoConverter": {
       "title": "Video Converter",

@@ -437,6 +437,13 @@
       "clearedDesc": "O cache de modelos de IA foi limpo. Os modelos serão baixados novamente quando necessário.",
       "clearFailed": "Falha ao limpar o cache"
     },
+    "freeTools": {
+      "title": "Ferramentas Gratuitas",
+      "description": "Configurar definições das ferramentas gratuitas",
+      "downloadTimeout": "Tempo Limite de Download",
+      "downloadTimeoutDesc": "Tempo máximo de espera ao baixar modelos de IA",
+      "minutes": "minutos"
+    },
     "updates": {
       "title": "Atualizações",
       "description": "Gerenciar atualizações do aplicativo",
@@ -528,6 +535,24 @@
       "comparison": "Comparação deslizante",
       "dragToCompare": "Arraste para comparar"
     },
+    "faceEnhancer": {
+      "title": "Melhorador de Rostos",
+      "description": "Melhore e restaure a qualidade dos rostos usando IA",
+      "selectImage": "Selecione uma imagem com rostos",
+      "orDragDrop": "ou arraste e solte",
+      "enhance": "Melhorar",
+      "download": "Baixar",
+      "processing": "Processando...",
+      "original": "Original",
+      "enhanced": "Melhorado",
+      "sideBySide": "Lado a lado",
+      "comparison": "Comparação deslizante",
+      "dragToCompare": "Arraste para comparar",
+      "detecting": "Detectando rostos",
+      "enhancing": "Melhorando rostos",
+      "noFaces": "Nenhum rosto detectado na imagem",
+      "facesFound": "{{count}} rosto(s) detectado(s)"
+    },
     "backgroundRemover": {
       "title": "Removedor de Fundo",
       "description": "Remova fundos de imagens instantaneamente usando IA",
@@ -597,6 +622,12 @@
       "finalizing": "Finalizando",
       "overall": "Geral",
       "remaining": "restante"
+    },
+    "backWarning": {
+      "title": "Processamento em Andamento",
+      "description": "Uma tarefa está sendo processada. Tem certeza que deseja voltar? Isso cancelará a operação atual.",
+      "cancel": "Cancelar",
+      "confirm": "Voltar"
     },
     "videoConverter": {
       "title": "Video Converter",

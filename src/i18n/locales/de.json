@@ -437,6 +437,13 @@
       "clearedDesc": "Der KI-Modell-Cache wurde geleert. Modelle werden bei Bedarf erneut heruntergeladen.",
       "clearFailed": "Cache konnte nicht geleert werden"
     },
+    "freeTools": {
+      "title": "Kostenlose Tools",
+      "description": "Einstellungen für kostenlose Tools konfigurieren",
+      "downloadTimeout": "Download-Timeout",
+      "downloadTimeoutDesc": "Maximale Wartezeit beim Herunterladen von KI-Modellen",
+      "minutes": "Minuten"
+    },
     "updates": {
       "title": "Updates",
       "description": "Anwendungsupdates verwalten",
@@ -528,6 +535,24 @@
       "comparison": "Schieberegler-Vergleich",
       "dragToCompare": "Zum Vergleichen ziehen"
     },
+    "faceEnhancer": {
+      "title": "Gesichtsverbesserung",
+      "description": "Verbessern und restaurieren Sie Gesichtsqualität mit KI",
+      "selectImage": "Bild mit Gesichtern auswählen",
+      "orDragDrop": "oder Drag & Drop",
+      "enhance": "Verbessern",
+      "download": "Herunterladen",
+      "processing": "Verarbeitung...",
+      "original": "Original",
+      "enhanced": "Verbessert",
+      "sideBySide": "Nebeneinander",
+      "comparison": "Schieberegler-Vergleich",
+      "dragToCompare": "Zum Vergleichen ziehen",
+      "detecting": "Gesichter erkennen",
+      "enhancing": "Gesichter verbessern",
+      "noFaces": "Keine Gesichter im Bild erkannt",
+      "facesFound": "{{count}} Gesicht(er) erkannt"
+    },
     "backgroundRemover": {
       "title": "Hintergrund-Entferner",
       "description": "Bildhintergründe sofort mit KI entfernen",
@@ -597,6 +622,12 @@
       "finalizing": "Fertigstellung",
       "overall": "Gesamt",
       "remaining": "verbleibend"
+    },
+    "backWarning": {
+      "title": "Verarbeitung läuft",
+      "description": "Eine Aufgabe wird gerade verarbeitet. Möchten Sie wirklich zurückgehen? Dies wird den aktuellen Vorgang abbrechen.",
+      "cancel": "Abbrechen",
+      "confirm": "Zurück"
     },
     "videoConverter": {
       "title": "Video-Konverter",

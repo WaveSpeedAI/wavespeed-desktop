@@ -4,6 +4,7 @@ import { useApiKeyStore } from '@/stores/apiKeyStore'
 import { apiClient } from '@/api/client'
 import { useThemeStore, type Theme } from '@/stores/themeStore'
 import { useAssetsStore } from '@/stores/assetsStore'
+import { useSettingsStore } from '@/stores/settingsStore'
 import { languages } from '@/i18n'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,7 +26,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { toast } from '@/hooks/useToast'
-import { Eye, EyeOff, Check, Loader2, Monitor, Moon, Sun, Download, RefreshCw, Rocket, AlertCircle, Shield, Github, Globe, FolderOpen, Trash2, Database, ChevronRight, X } from 'lucide-react'
+import { Eye, EyeOff, Check, Loader2, Monitor, Moon, Sun, Download, RefreshCw, Rocket, AlertCircle, Shield, Github, Globe, FolderOpen, Trash2, Database, ChevronRight, X, Clock } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 
 interface CacheItem {
@@ -49,6 +50,7 @@ export function SettingsPage() {
   const { apiKey, setApiKey, isValidated, isValidating: storeIsValidating, validateApiKey } = useApiKeyStore()
   const { theme, setTheme } = useThemeStore()
   const { settings: assetsSettings, loadSettings: loadAssetsSettings, setAutoSave, setAssetsDirectory } = useAssetsStore()
+  const { settings: generalSettings, setDownloadTimeout, initSettings: initGeneralSettings } = useSettingsStore()
   const [inputKey, setInputKey] = useState(apiKey)
   const [showKey, setShowKey] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -227,11 +229,13 @@ export function SettingsPage() {
       }
       // Load assets settings
       loadAssetsSettings()
+      // Load general settings
+      initGeneralSettings()
       // Calculate cache size
       calculateCacheSize()
     }
     loadSettings()
-  }, [loadAssetsSettings, calculateCacheSize])
+  }, [loadAssetsSettings, initGeneralSettings, calculateCacheSize])
 
   // Fetch balance when authenticated
   useEffect(() => {
@@ -714,6 +718,44 @@ export function SettingsPage() {
             </div>
             <p className="text-xs text-muted-foreground">
               {t('settings.assets.directoryDesc')}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>{t('settings.freeTools.title')}</CardTitle>
+          <CardDescription>
+            {t('settings.freeTools.description')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <Label>{t('settings.freeTools.downloadTimeout')}</Label>
+            </div>
+            <div className="flex items-center gap-3">
+              <Select
+                value={String(generalSettings.downloadTimeout)}
+                onValueChange={(value) => setDownloadTimeout(parseInt(value, 10))}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="120">2 {t('settings.freeTools.minutes')}</SelectItem>
+                  <SelectItem value="300">5 {t('settings.freeTools.minutes')}</SelectItem>
+                  <SelectItem value="600">10 {t('settings.freeTools.minutes')}</SelectItem>
+                  <SelectItem value="900">15 {t('settings.freeTools.minutes')}</SelectItem>
+                  <SelectItem value="1800">30 {t('settings.freeTools.minutes')}</SelectItem>
+                  <SelectItem value="3600">60 {t('settings.freeTools.minutes')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {t('settings.freeTools.downloadTimeoutDesc')}
             </p>
           </div>
         </CardContent>

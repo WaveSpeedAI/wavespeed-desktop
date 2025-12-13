@@ -185,6 +185,11 @@
       "optimizing": "Optimizing...",
       "optimize": "Optimize"
     },
+    "flappyBird": {
+      "clickToStart": "Click or press Space to start a game",
+      "viewResults": "View Results",
+      "playWhileWaiting": "Play while waiting"
+    },
     "batch": {
       "title": "Batch",
       "enable": "Enable batch mode",

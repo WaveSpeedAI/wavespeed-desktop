@@ -185,6 +185,11 @@
       "optimizing": "最適化中...",
       "optimize": "最適化"
     },
+    "flappyBird": {
+      "clickToStart": "クリックまたはスペースキーでゲーム開始",
+      "viewResults": "結果を見る",
+      "playWhileWaiting": "待っている間にプレイ"
+    },
     "batch": {
       "title": "バッチ",
       "enable": "バッチモードを有効化",

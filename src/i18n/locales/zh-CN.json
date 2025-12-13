@@ -185,6 +185,11 @@
       "optimizing": "优化中...",
       "optimize": "优化"
     },
+    "flappyBird": {
+      "clickToStart": "点击或按空格键开始游戏",
+      "viewResults": "查看结果",
+      "playWhileWaiting": "边等边玩"
+    },
     "batch": {
       "title": "批量",
       "enable": "启用批量模式",

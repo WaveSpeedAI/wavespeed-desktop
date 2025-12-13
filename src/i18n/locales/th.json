@@ -212,6 +212,11 @@
       "noPreview": "ไม่มีตัวอย่าง",
       "seedsGenerated": "สร้าง seed อัตโนมัติแล้ว",
       "settings": "การตั้งค่าแบตช์"
+    },
+    "flappyBird": {
+      "clickToStart": "คลิกหรือกด Space เพื่อเริ่มเกม",
+      "viewResults": "ดูผลลัพธ์",
+      "playWhileWaiting": "เล่นขณะรอ"
     }
   },
   "history": {

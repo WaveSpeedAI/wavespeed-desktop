@@ -185,6 +185,11 @@
       "optimizing": "Optimize ediliyor...",
       "optimize": "Optimize Et"
     },
+    "flappyBird": {
+      "clickToStart": "Oyun başlatmak için tıklayın veya Boşluk tuşuna basın",
+      "viewResults": "Sonuçları Gör",
+      "playWhileWaiting": "Beklerken oyna"
+    },
     "batch": {
       "title": "Toplu",
       "enable": "Toplu modu etkinleştir",

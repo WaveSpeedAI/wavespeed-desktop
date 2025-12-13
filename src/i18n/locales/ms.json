@@ -185,6 +185,11 @@
       "optimizing": "Mengoptimumkan...",
       "optimize": "Optimumkan"
     },
+    "flappyBird": {
+      "clickToStart": "Klik atau tekan Ruang untuk memulakan permainan",
+      "viewResults": "Lihat Keputusan",
+      "playWhileWaiting": "Bermain semasa menunggu"
+    },
     "batch": {
       "title": "Kelompok",
       "enable": "Dayakan mod kelompok",

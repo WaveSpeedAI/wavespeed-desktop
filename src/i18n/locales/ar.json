@@ -212,6 +212,11 @@
       "noPreview": "لا توجد معاينة",
       "seedsGenerated": "تم إنشاء البذور تلقائياً",
       "settings": "إعدادات الدفعة"
+    },
+    "flappyBird": {
+      "clickToStart": "انقر أو اضغط مسافة لبدء لعبة",
+      "viewResults": "عرض النتائج",
+      "playWhileWaiting": "العب أثناء الانتظار"
     }
   },
   "history": {

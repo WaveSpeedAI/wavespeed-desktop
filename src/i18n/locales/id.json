@@ -185,6 +185,11 @@
       "optimizing": "Mengoptimalkan...",
       "optimize": "Optimalkan"
     },
+    "flappyBird": {
+      "clickToStart": "Klik atau tekan Spasi untuk memulai game",
+      "viewResults": "Lihat Hasil",
+      "playWhileWaiting": "Mainkan sambil menunggu"
+    },
     "batch": {
       "title": "Batch",
       "enable": "Aktifkan mode batch",

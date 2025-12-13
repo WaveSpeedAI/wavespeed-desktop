@@ -185,6 +185,11 @@
       "optimizing": "Optimizando...",
       "optimize": "Optimizar"
     },
+    "flappyBird": {
+      "clickToStart": "Clic o presiona Espacio para iniciar un juego",
+      "viewResults": "Ver Resultados",
+      "playWhileWaiting": "Jugar mientras esperas"
+    },
     "batch": {
       "title": "Lote",
       "enable": "Activar modo lote",

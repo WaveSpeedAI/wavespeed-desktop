@@ -37,7 +37,7 @@ export function PlaygroundPage() {
   const { modelId } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
-  const { models, fetchModels } = useModelsStore()
+  const { models, fetchModels, isLoading: isLoadingModels } = useModelsStore()
   const { isLoading: isLoadingApiKey, isValidated, loadApiKey, apiKey, hasAttemptedLoad } = useApiKeyStore()
   const {
     tabs,
@@ -167,18 +167,14 @@ export function PlaygroundPage() {
     })
   }
 
-  // Create initial tab if none exist
+  // Create tab when navigating with a modelId (e.g., from Models page)
   useEffect(() => {
-    if (tabs.length === 0 && models.length > 0) {
-      if (modelId) {
-        const decodedId = decodeURIComponent(modelId)
-        const model = models.find(m => m.model_id === decodedId)
-        createTab(model)
-      } else {
-        createTab()
-      }
+    if (modelId && models.length > 0 && tabs.length === 0) {
+      const decodedId = decodeURIComponent(modelId)
+      const model = models.find(m => m.model_id === decodedId)
+      createTab(model)
     }
-  }, [tabs.length, models, modelId, createTab])
+  }, [modelId, models, tabs.length, createTab])
 
   // Set model from URL param when navigating
   useEffect(() => {
@@ -281,7 +277,8 @@ export function PlaygroundPage() {
   }
 
   // Show loading state while API key is being loaded from storage
-  if (isLoadingApiKey || !hasAttemptedLoad) {
+  // Also show loading when models are loading (needed for model selector)
+  if (isLoadingApiKey || !hasAttemptedLoad || (isValidated && models.length === 0)) {
     return (
       <div className="flex h-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -491,6 +488,7 @@ export function PlaygroundPage() {
               ) : (
                 /* Single output display - default */
                 <OutputDisplay
+                  key={activeTabId}
                   prediction={activeTab.currentPrediction}
                   outputs={activeTab.outputs}
                   error={activeTab.error}

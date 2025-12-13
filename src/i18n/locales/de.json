@@ -185,6 +185,11 @@
       "optimizing": "Optimiere...",
       "optimize": "Optimieren"
     },
+    "flappyBird": {
+      "clickToStart": "Klicken oder Leertaste drücken um ein Spiel zu starten",
+      "viewResults": "Ergebnisse Anzeigen",
+      "playWhileWaiting": "Spielen während du wartest"
+    },
     "batch": {
       "title": "Stapel",
       "enable": "Stapelmodus aktivieren",

@@ -51,7 +51,7 @@
     "features": {
       "models": {
         "title": "Model Tarayıcı",
-        "description": "Görüntü, video ve ses üretimi için 100'den fazla AI modelini keşfedin"
+        "description": "Görüntü, video ve ses üretimi için AI modellerini keşfedin"
       },
       "playground": {
         "title": "Oyun Alanı",

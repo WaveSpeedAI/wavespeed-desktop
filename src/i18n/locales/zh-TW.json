@@ -51,7 +51,7 @@
     "features": {
       "models": {
         "title": "模型瀏覽",
-        "description": "瀏覽 100+ AI 模型，支援圖像、影片和音訊生成"
+        "description": "瀏覽 AI 模型，支援圖像、影片和音訊生成"
       },
       "playground": {
         "title": "演練場",

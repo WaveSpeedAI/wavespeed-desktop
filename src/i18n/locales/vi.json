@@ -51,7 +51,7 @@
     "features": {
       "models": {
         "title": "Trình duyệt Mô hình",
-        "description": "Duyệt hơn 100 mô hình AI để tạo hình ảnh, video và âm thanh"
+        "description": "Duyệt các mô hình AI để tạo hình ảnh, video và âm thanh"
       },
       "playground": {
         "title": "Sân chơi",

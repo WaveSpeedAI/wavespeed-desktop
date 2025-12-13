@@ -51,7 +51,7 @@
     "features": {
       "models": {
         "title": "モデルブラウザ",
-        "description": "画像、動画、音声生成用の100以上のAIモデルを閲覧"
+        "description": "画像、動画、音声生成用のAIモデルを閲覧"
       },
       "playground": {
         "title": "プレイグラウンド",

@@ -51,7 +51,7 @@
     "features": {
       "models": {
         "title": "Modell-Browser",
-        "description": "Durchsuchen Sie über 100 KI-Modelle für Bild-, Video- und Audiogenerierung"
+        "description": "Durchsuchen Sie KI-Modelle für Bild-, Video- und Audiogenerierung"
       },
       "playground": {
         "title": "Playground",

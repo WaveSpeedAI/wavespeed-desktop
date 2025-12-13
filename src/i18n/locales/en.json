@@ -51,7 +51,7 @@
     "features": {
       "models": {
         "title": "Model Browser",
-        "description": "Browse and explore 100+ AI models for image, video, and audio generation"
+        "description": "Browse and explore AI models for image, video, and audio generation"
       },
       "playground": {
         "title": "Playground",

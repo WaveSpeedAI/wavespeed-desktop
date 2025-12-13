@@ -51,7 +51,7 @@
     "features": {
       "models": {
         "title": "모델 브라우저",
-        "description": "이미지, 비디오, 오디오 생성을 위한 100개 이상의 AI 모델 탐색"
+        "description": "이미지, 비디오, 오디오 생성을 위한 AI 모델 탐색"
       },
       "playground": {
         "title": "플레이그라운드",

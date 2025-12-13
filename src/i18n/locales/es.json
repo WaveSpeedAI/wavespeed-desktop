@@ -51,7 +51,7 @@
     "features": {
       "models": {
         "title": "Explorador de Modelos",
-        "description": "Explora más de 100 modelos de IA para generación de imágenes, video y audio"
+        "description": "Explora modelos de IA para generación de imágenes, video y audio"
       },
       "playground": {
         "title": "Playground",

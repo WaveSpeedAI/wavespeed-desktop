@@ -548,5 +548,9 @@
       "overall": "全体",
       "remaining": "残り"
     }
+  },
+  "game": {
+    "waitingLong": "待ち時間が長い？ミニゲームで遊ぼう！",
+    "clickToPlay": "クリックして開始"
   }
 }

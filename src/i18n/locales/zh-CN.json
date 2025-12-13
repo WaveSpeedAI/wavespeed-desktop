@@ -580,5 +580,9 @@
       "overall": "总进度",
       "remaining": "剩余"
     }
+  },
+  "game": {
+    "waitingLong": "等了很久？来局小游戏！",
+    "clickToPlay": "点击开始"
   }
 }

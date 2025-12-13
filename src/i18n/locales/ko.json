@@ -548,5 +548,9 @@
       "overall": "전체",
       "remaining": "남음"
     }
+  },
+  "game": {
+    "waitingLong": "오래 기다리셨나요? 미니 게임 해보세요!",
+    "clickToPlay": "클릭하여 시작"
   }
 }

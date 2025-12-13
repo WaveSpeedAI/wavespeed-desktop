@@ -548,5 +548,9 @@
       "title": "Konverter Video",
       "description": "Konversi video antar format"
     }
+  },
+  "game": {
+    "waitingLong": "Menunggu lama? Main mini game!",
+    "clickToPlay": "Klik untuk mulai"
   }
 }

@@ -548,5 +548,9 @@
       "overall": "Général",
       "remaining": "restant"
     }
+  },
+  "game": {
+    "waitingLong": "L'attente est longue ? Jouez à un mini-jeu !",
+    "clickToPlay": "Cliquez pour commencer"
   }
 }

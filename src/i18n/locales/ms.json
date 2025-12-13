@@ -548,5 +548,9 @@
       "title": "Penukar Video",
       "description": "Tukar video antara format"
     }
+  },
+  "game": {
+    "waitingLong": "Menunggu lama? Main permainan mini!",
+    "clickToPlay": "Klik untuk mula"
   }
 }

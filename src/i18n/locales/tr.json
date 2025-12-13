@@ -548,5 +548,9 @@
       "overall": "Genel",
       "remaining": "kaldı"
     }
+  },
+  "game": {
+    "waitingLong": "Çok mu bekliyorsunuz? Mini oyun oynayın!",
+    "clickToPlay": "Başlamak için tıklayın"
   }
 }

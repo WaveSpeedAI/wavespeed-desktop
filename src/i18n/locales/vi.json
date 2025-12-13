@@ -548,5 +548,9 @@
       "title": "Chuyển đổi Video",
       "description": "Chuyển đổi video giữa các định dạng"
     }
+  },
+  "game": {
+    "waitingLong": "Đợi lâu quá? Chơi mini game nhé!",
+    "clickToPlay": "Nhấp để bắt đầu"
   }
 }

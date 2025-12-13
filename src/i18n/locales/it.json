@@ -548,5 +548,9 @@
       "overall": "Complessivo",
       "remaining": "rimanente"
     }
+  },
+  "game": {
+    "waitingLong": "Attesa troppo lunga? Gioca a un mini gioco!",
+    "clickToPlay": "Clicca per iniziare"
   }
 }

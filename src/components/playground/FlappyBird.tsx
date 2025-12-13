@@ -217,6 +217,12 @@ export function FlappyBird({ onGameStart, onGameEnd, isTaskRunning, taskStatus, 
   // Handle keyboard input
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't capture keys when user is typing in form elements
+      const target = e.target as HTMLElement
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+        return
+      }
+
       if (e.code === 'Space' || e.code === 'ArrowUp') {
         e.preventDefault()
         if (gameStateRef.current === 'gameover') {
@@ -420,24 +426,33 @@ export function FlappyBird({ onGameStart, onGameEnd, isTaskRunning, taskStatus, 
       ctx.fillRect(cx + 5 * s, cy + pixelSize * 5, 30 * s, pixelSize * 2)
     })
 
-    // Draw meadow ground
-    const meadowColor = isDark ? '#4a5a4a' : '#7DBD7D'
-    const meadowDark = isDark ? '#3a4a3a' : '#5A9A5A'
-    ctx.fillStyle = meadowColor
-    ctx.fillRect(0, canvasHeight - 50, canvasWidth, 50)
+    // Draw rolling hills
+    const hillColorBack = isDark ? '#3a4a3a' : '#5A9A5A'
+    const hillColorFront = isDark ? '#4a5a4a' : '#7DBD7D'
 
-    // Draw grass blades
-    const grassColor = isDark ? '#5a6a5a' : '#5DAD5D'
-    const grassDark = isDark ? '#4a5a4a' : '#4A9A4A'
-    backgroundRef.current.grass.forEach((blade, i) => {
-      const gx = ((blade.x - scrollOffset * 0.8) % (canvasWidth + 20) + canvasWidth + 20) % (canvasWidth + 20) - 10
-      ctx.fillStyle = i % 3 === 0 ? grassDark : grassColor
-      ctx.fillRect(gx, canvasHeight - 50 - blade.h, pixelSize, blade.h)
-    })
+    // Back hills (slower parallax, darker)
+    ctx.fillStyle = hillColorBack
+    ctx.beginPath()
+    ctx.moveTo(0, canvasHeight)
+    for (let x = 0; x <= canvasWidth; x += 2) {
+      const hillY = canvasHeight - 60 + Math.sin((x + scrollOffset * 0.2) * 0.015) * 20 + Math.sin((x + scrollOffset * 0.2) * 0.03) * 10
+      ctx.lineTo(x, hillY)
+    }
+    ctx.lineTo(canvasWidth, canvasHeight)
+    ctx.closePath()
+    ctx.fill()
 
-    // Ground line
-    ctx.fillStyle = meadowDark
-    ctx.fillRect(0, canvasHeight - 50, canvasWidth, pixelSize)
+    // Front hills (faster parallax, lighter)
+    ctx.fillStyle = hillColorFront
+    ctx.beginPath()
+    ctx.moveTo(0, canvasHeight)
+    for (let x = 0; x <= canvasWidth; x += 2) {
+      const hillY = canvasHeight - 40 + Math.sin((x + scrollOffset * 0.5) * 0.02) * 15 + Math.sin((x + scrollOffset * 0.5) * 0.008) * 25
+      ctx.lineTo(x, hillY)
+    }
+    ctx.lineTo(canvasWidth, canvasHeight)
+    ctx.closePath()
+    ctx.fill()
   }, [])
 
   // Game loop
@@ -462,13 +477,8 @@ export function FlappyBird({ onGameStart, onGameEnd, isTaskRunning, taskStatus, 
         scrollOffsetRef.current += PIPE_SPEED
       }
 
-      // In idle state, just clear the canvas (no background)
-      if (currentGameState === 'idle') {
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
-      } else {
-        // Draw background (with parallax scrolling)
-        drawBackground(ctx, canvas.width, canvas.height, isDark, scrollOffsetRef.current)
-      }
+      // Draw background (with parallax scrolling)
+      drawBackground(ctx, canvas.width, canvas.height, isDark, scrollOffsetRef.current)
 
       if (currentGameState === 'playing') {
         // Update bird
@@ -573,16 +583,16 @@ export function FlappyBird({ onGameStart, onGameEnd, isTaskRunning, taskStatus, 
         drawPixelText(ctx, scoreLabel, canvas.width / 2 - scoreLabelWidth / 2 + 1, canvas.height / 2 + 10 + 1, medPixel, shadowColor)
         drawPixelText(ctx, scoreLabel, canvas.width / 2 - scoreLabelWidth / 2, canvas.height / 2 + 10, medPixel, textColor)
 
-        // Best score (small)
-        const smallPixel = 2
+        // Best score
         const isNewBest = scoreRef.current >= highScoreRef.current && scoreRef.current > 0
         const bestLabel = isNewBest ? '*NEW BEST*' : 'BEST:' + String(highScoreRef.current)
-        const bestLabelWidth = bestLabel.length * 6 * smallPixel
-        const bestColor = isNewBest ? goldColor : '#AAAAAA'
-        drawPixelText(ctx, bestLabel, canvas.width / 2 - bestLabelWidth / 2 + 1, canvas.height / 2 + 35 + 1, smallPixel, shadowColor)
-        drawPixelText(ctx, bestLabel, canvas.width / 2 - bestLabelWidth / 2, canvas.height / 2 + 35, smallPixel, bestColor)
+        const bestLabelWidth = bestLabel.length * 6 * medPixel
+        const bestColor = isNewBest ? goldColor : '#FFFFFF'
+        drawPixelText(ctx, bestLabel, canvas.width / 2 - bestLabelWidth / 2 + 1, canvas.height / 2 + 35 + 1, medPixel, shadowColor)
+        drawPixelText(ctx, bestLabel, canvas.width / 2 - bestLabelWidth / 2, canvas.height / 2 + 35, medPixel, bestColor)
 
-        // Tap to restart hint (small)
+        // Tap to restart hint
+        const smallPixel = 2
         const tapLabel = 'TAP TO RESTART'
         const tapLabelWidth = tapLabel.length * 6 * smallPixel
         drawPixelText(ctx, tapLabel, canvas.width / 2 - tapLabelWidth / 2 + 1, canvas.height / 2 + 70 + 1, smallPixel, shadowColor)
@@ -618,7 +628,7 @@ export function FlappyBird({ onGameStart, onGameEnd, isTaskRunning, taskStatus, 
         onClick={handleCanvasClick}
         className={cn(
           "rounded-xl cursor-pointer border border-border/30 bg-muted/20 backdrop-blur-sm transition-opacity duration-300",
-          gameState === 'idle' && "opacity-40"
+          gameState === 'idle' && "opacity-30"
         )}
         style={{ imageRendering: 'pixelated' }}
       />

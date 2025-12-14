@@ -329,7 +329,8 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
 
     const { formValues, formFields, batchConfig } = activeTab
     const count = batchConfig.repeatCount
-    const hasSeedField = formFields.some(f => f.name.toLowerCase() === 'seed')
+    // Only randomize seed if the field exists and is a number type
+    const hasSeedField = formFields.some(f => f.name.toLowerCase() === 'seed' && f.type === 'number')
 
     // Clean input values
     const cleanedBase: Record<string, unknown> = {}

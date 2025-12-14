@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 interface FlappyBirdProps {
   onGameStart?: () => void
   onGameEnd?: (score: number) => void
+  onGameQuit?: () => void
   isTaskRunning?: boolean
   taskStatus?: string
   idleMessage?: {
@@ -122,7 +123,7 @@ const PIXEL_LETTERS: Record<string, number[][]> = {
   '*': [[0,0,0,0,0],[0,1,0,1,0],[0,0,1,0,0],[0,1,0,1,0],[0,0,0,0,0]],
 }
 
-export function FlappyBird({ onGameStart, onGameEnd, isTaskRunning, taskStatus, idleMessage, hasResults, onViewResults }: FlappyBirdProps) {
+export function FlappyBird({ onGameStart, onGameEnd, onGameQuit, isTaskRunning, taskStatus, idleMessage, hasResults, onViewResults }: FlappyBirdProps) {
   const { t } = useTranslation()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -213,6 +214,13 @@ export function FlappyBird({ onGameStart, onGameEnd, isTaskRunning, taskStatus, 
     }
     onGameEnd?.(finalScore)
   }, [onGameEnd])
+
+  const quitGame = useCallback(() => {
+    resetGame()
+    gameStateRef.current = 'idle'
+    setGameState('idle')
+    onGameQuit?.()
+  }, [resetGame, onGameQuit])
 
   // Handle keyboard input
   useEffect(() => {
@@ -685,6 +693,22 @@ export function FlappyBird({ onGameStart, onGameEnd, isTaskRunning, taskStatus, 
             onClick={onViewResults}
           >
             {t('playground.flappyBird.viewResults')}
+          </Badge>
+        </div>
+      )}
+
+      {/* Quit button - show during playing and gameover */}
+      {gameState !== 'idle' && (
+        <div className="absolute top-4 left-4">
+          <Badge
+            variant="secondary"
+            className="px-3 py-1.5 cursor-pointer hover:bg-destructive hover:text-destructive-foreground transition-colors bg-background/80 backdrop-blur-sm border border-border/50"
+            onClick={(e) => {
+              e.stopPropagation()
+              quitGame()
+            }}
+          >
+            {t('playground.flappyBird.quit')}
           </Badge>
         </div>
       )}

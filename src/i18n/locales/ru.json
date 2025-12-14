@@ -188,7 +188,8 @@
     "flappyBird": {
       "clickToStart": "Нажмите или пробел чтобы начать игру",
       "viewResults": "Посмотреть Результаты",
-      "playWhileWaiting": "Играть пока ждёте"
+      "playWhileWaiting": "Играть пока ждёте",
+      "quit": "Выход"
     },
     "batch": {
       "title": "Пакет",

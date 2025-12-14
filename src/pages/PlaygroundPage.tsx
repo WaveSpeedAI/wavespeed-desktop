@@ -55,6 +55,7 @@ export function PlaygroundPage() {
     runBatch,
     clearBatchResults,
     generateBatchInputs,
+    setUploading,
   } = usePlaygroundStore()
   const { templates, loadTemplates, saveTemplate, isLoaded: templatesLoaded } = useTemplateStore()
 
@@ -380,6 +381,7 @@ export function PlaygroundPage() {
                   onSetDefaults={handleSetDefaults}
                   onFieldsChange={setFormFields}
                   disabled={activeTab.isRunning}
+                  onUploadingChange={setUploading}
                 />
               ) : (
                 <div className="h-full flex items-center justify-center text-muted-foreground">
@@ -395,6 +397,7 @@ export function PlaygroundPage() {
                   <BatchControls
                     disabled={!activeTab.selectedModel}
                     isRunning={activeTab.isRunning}
+                    isUploading={activeTab.uploadingCount > 0}
                     onRun={handleRun}
                     runLabel={t('playground.run')}
                     runningLabel={

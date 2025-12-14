@@ -216,7 +216,8 @@
     "flappyBird": {
       "clickToStart": "انقر أو اضغط مسافة لبدء لعبة",
       "viewResults": "عرض النتائج",
-      "playWhileWaiting": "العب أثناء الانتظار"
+      "playWhileWaiting": "العب أثناء الانتظار",
+      "quit": "خروج"
     }
   },
   "history": {

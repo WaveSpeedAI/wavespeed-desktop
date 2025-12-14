@@ -188,7 +188,8 @@
     "flappyBird": {
       "clickToStart": "Klik atau tekan Ruang untuk memulakan permainan",
       "viewResults": "Lihat Keputusan",
-      "playWhileWaiting": "Bermain semasa menunggu"
+      "playWhileWaiting": "Bermain semasa menunggu",
+      "quit": "Keluar"
     },
     "batch": {
       "title": "Kelompok",

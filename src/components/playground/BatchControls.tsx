@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils'
 interface BatchControlsProps {
   disabled?: boolean
   isRunning?: boolean
+  isUploading?: boolean
   onRun: () => void
   runLabel: string
   runningLabel: string
@@ -24,6 +25,7 @@ interface BatchControlsProps {
 export function BatchControls({
   disabled,
   isRunning,
+  isUploading,
   onRun,
   runLabel,
   runningLabel,
@@ -76,7 +78,7 @@ export function BatchControls({
           'rounded-r-none border-r border-r-white/20'
         )}
         onClick={onRun}
-        disabled={disabled || isRunning}
+        disabled={disabled || isRunning || isUploading}
       >
         {isRunning ? (
           <>
@@ -102,7 +104,7 @@ export function BatchControls({
               'gradient-bg hover:opacity-90 transition-opacity glow-sm',
               'rounded-l-none px-2'
             )}
-            disabled={disabled || isRunning}
+            disabled={disabled || isRunning || isUploading}
           >
             <ChevronDown className="h-4 w-4" />
           </Button>

@@ -13,19 +13,6 @@ ort.env.wasm.wasmPaths = `https://cdn.jsdelivr.net/npm/onnxruntime-web@${ORT_WAS
 // Track which backend is being used
 let useWebGPU = false
 
-/**
- * Check if WebGPU is available
- */
-async function checkWebGPU(): Promise<boolean> {
-  try {
-    if (!navigator.gpu) return false
-    const adapter = await navigator.gpu.requestAdapter()
-    return adapter !== null
-  } catch {
-    return false
-  }
-}
-
 // LaMa model from Hugging Face (quantized)
 const MODEL_URL =
   'https://huggingface.co/opencv/inpainting_lama/resolve/main/inpainting_lama_2025jan.onnx'

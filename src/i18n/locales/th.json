@@ -216,7 +216,8 @@
     "flappyBird": {
       "clickToStart": "คลิกหรือกด Space เพื่อเริ่มเกม",
       "viewResults": "ดูผลลัพธ์",
-      "playWhileWaiting": "เล่นขณะรอ"
+      "playWhileWaiting": "เล่นขณะรอ",
+      "quit": "ออก"
     }
   },
   "history": {

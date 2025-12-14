@@ -188,7 +188,8 @@
     "flappyBird": {
       "clickToStart": "Oyun başlatmak için tıklayın veya Boşluk tuşuna basın",
       "viewResults": "Sonuçları Gör",
-      "playWhileWaiting": "Beklerken oyna"
+      "playWhileWaiting": "Beklerken oyna",
+      "quit": "Çık"
     },
     "batch": {
       "title": "Toplu",

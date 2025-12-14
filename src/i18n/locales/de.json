@@ -188,7 +188,8 @@
     "flappyBird": {
       "clickToStart": "Klicken oder Leertaste drücken um ein Spiel zu starten",
       "viewResults": "Ergebnisse Anzeigen",
-      "playWhileWaiting": "Spielen während du wartest"
+      "playWhileWaiting": "Spielen während du wartest",
+      "quit": "Beenden"
     },
     "batch": {
       "title": "Stapel",

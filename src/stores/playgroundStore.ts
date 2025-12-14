@@ -20,6 +20,8 @@ interface PlaygroundTab {
   batchConfig: BatchConfig
   batchState: BatchState | null
   batchResults: BatchResult[]
+  // File upload tracking
+  uploadingCount: number
 }
 
 interface PlaygroundState {
@@ -51,6 +53,9 @@ interface PlaygroundState {
   cancelBatch: () => void
   clearBatchResults: () => void
   generateBatchInputs: () => Record<string, unknown>[]
+
+  // File upload tracking
+  setUploading: (isUploading: boolean) => void
 }
 
 // Check if a value is considered "empty"
@@ -74,7 +79,9 @@ function createEmptyTab(id: string, model?: Model): PlaygroundTab {
     // Batch processing defaults
     batchConfig: { ...DEFAULT_BATCH_CONFIG },
     batchState: null,
-    batchResults: []
+    batchResults: [],
+    // File upload tracking
+    uploadingCount: 0
   }
 }
 
@@ -544,6 +551,19 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
               batchState: null,
               batchResults: [],
               error: null
+            }
+          : tab
+      )
+    }))
+  },
+
+  setUploading: (isUploading: boolean) => {
+    set(state => ({
+      tabs: state.tabs.map(tab =>
+        tab.id === state.activeTabId
+          ? {
+              ...tab,
+              uploadingCount: Math.max(0, tab.uploadingCount + (isUploading ? 1 : -1))
             }
           : tab
       )

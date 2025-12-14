@@ -216,7 +216,8 @@
     "flappyBird": {
       "clickToStart": "Nhấp hoặc nhấn Space để bắt đầu trò chơi",
       "viewResults": "Xem kết quả",
-      "playWhileWaiting": "Chơi trong khi chờ"
+      "playWhileWaiting": "Chơi trong khi chờ",
+      "quit": "Thoát"
     }
   },
   "history": {

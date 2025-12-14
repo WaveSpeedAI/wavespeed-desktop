@@ -188,7 +188,8 @@
     "flappyBird": {
       "clickToStart": "Klik atau tekan Spasi untuk memulai game",
       "viewResults": "Lihat Hasil",
-      "playWhileWaiting": "Mainkan sambil menunggu"
+      "playWhileWaiting": "Mainkan sambil menunggu",
+      "quit": "Keluar"
     },
     "batch": {
       "title": "Batch",

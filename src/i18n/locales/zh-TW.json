@@ -188,7 +188,8 @@
     "flappyBird": {
       "clickToStart": "點擊或按空格鍵開始遊戲",
       "viewResults": "查看結果",
-      "playWhileWaiting": "邊等邊玩"
+      "playWhileWaiting": "邊等邊玩",
+      "quit": "退出"
     },
     "batch": {
       "title": "批次",

@@ -188,7 +188,8 @@
     "flappyBird": {
       "clickToStart": "Clic o presiona Espacio para iniciar un juego",
       "viewResults": "Ver Resultados",
-      "playWhileWaiting": "Jugar mientras esperas"
+      "playWhileWaiting": "Jugar mientras esperas",
+      "quit": "Salir"
     },
     "batch": {
       "title": "Lote",

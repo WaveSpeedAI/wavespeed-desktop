@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDropzone } from 'react-dropzone'
 import { apiClient } from '@/api/client'
@@ -24,6 +24,7 @@ interface FileUploadProps {
   placeholder?: string
   isMaskField?: boolean
   formValues?: Record<string, unknown>
+  onUploadingChange?: (isUploading: boolean) => void
 }
 
 export function FileUpload({
@@ -34,7 +35,8 @@ export function FileUpload({
   onChange,
   disabled = false,
   isMaskField = false,
-  formValues
+  formValues,
+  onUploadingChange
 }: FileUploadProps) {
   const { t } = useTranslation()
   const [isUploading, setIsUploading] = useState(false)
@@ -43,6 +45,7 @@ export function FileUpload({
   const [captureMode, setCaptureMode] = useState<CaptureMode>('upload')
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [previewType, setPreviewType] = useState<'image' | 'video' | 'audio' | null>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   // Convert value to array for consistent handling
   const urls = Array.isArray(value) ? value : value ? [value] : []
@@ -106,7 +109,11 @@ export function FileUpload({
   const handleCapture = useCallback(async (blob: Blob) => {
     setError(null)
     setIsUploading(true)
+    onUploadingChange?.(true)
     setCaptureMode('upload')
+
+    // Create abort controller for this upload
+    abortControllerRef.current = new AbortController()
 
     try {
       // Create a file from the blob with appropriate extension
@@ -116,7 +123,7 @@ export function FileUpload({
       const filename = `capture_${Date.now()}.${extension}`
       const file = new File([blob], filename, { type: blob.type })
 
-      const url = await apiClient.uploadFile(file)
+      const url = await apiClient.uploadFile(file, abortControllerRef.current.signal)
 
       if (multiple) {
         onChange([...urls, url])
@@ -124,24 +131,39 @@ export function FileUpload({
         onChange(url)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed')
+      // Don't show error for cancelled uploads
+      if (err instanceof Error && err.message === 'Upload cancelled') {
+        // Silently ignore
+      } else {
+        setError(err instanceof Error ? err.message : 'Upload failed')
+      }
     } finally {
+      abortControllerRef.current = null
       setIsUploading(false)
+      onUploadingChange?.(false)
     }
-  }, [multiple, urls, onChange])
+  }, [multiple, urls, onChange, onUploadingChange])
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (disabled) return
 
     setError(null)
     setIsUploading(true)
+    onUploadingChange?.(true)
+
+    // Create abort controller for this upload batch
+    abortControllerRef.current = new AbortController()
 
     try {
       const uploadPromises = acceptedFiles.slice(0, maxFiles - urls.length).map(async (file) => {
         try {
-          const url = await apiClient.uploadFile(file)
+          const url = await apiClient.uploadFile(file, abortControllerRef.current?.signal)
           return { url, name: file.name, type: file.type }
-        } catch {
+        } catch (err) {
+          // Re-throw cancellation errors to stop all uploads
+          if (err instanceof Error && err.message === 'Upload cancelled') {
+            throw err
+          }
           throw new Error(`Failed to upload ${file.name}`)
         }
       })
@@ -155,11 +177,18 @@ export function FileUpload({
         onChange(newUrls[0] || '')
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed')
+      // Don't show error for cancelled uploads
+      if (err instanceof Error && err.message === 'Upload cancelled') {
+        // Silently ignore
+      } else {
+        setError(err instanceof Error ? err.message : 'Upload failed')
+      }
     } finally {
+      abortControllerRef.current = null
       setIsUploading(false)
+      onUploadingChange?.(false)
     }
-  }, [disabled, maxFiles, urls, multiple, onChange])
+  }, [disabled, maxFiles, urls, multiple, onChange, onUploadingChange])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -194,6 +223,12 @@ export function FileUpload({
   }
 
   const canAddMore = multiple ? urls.length < maxFiles : urls.length === 0
+
+  const handleCancelUpload = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+  }, [])
 
   return (
     <div className="space-y-2">
@@ -323,6 +358,19 @@ export function FileUpload({
                   <div className="flex items-center gap-2 w-full justify-center">
                     <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
                     <span className="text-xs text-muted-foreground">{t('playground.capture.uploading')}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleCancelUpload()
+                      }}
+                      className="h-5 px-1.5 text-xs text-muted-foreground hover:text-destructive"
+                    >
+                      <X className="h-3 w-3 mr-0.5" />
+                      {t('common.cancel')}
+                    </Button>
                   </div>
                 ) : (
                   <div className="flex items-center gap-1.5 w-full justify-center">

@@ -277,7 +277,7 @@ class WaveSpeedClient {
     }
   }
 
-  async uploadFile(file: File): Promise<string> {
+  async uploadFile(file: File, signal?: AbortSignal): Promise<string> {
     try {
       const formData = new FormData()
       formData.append('file', file)
@@ -286,7 +286,8 @@ class WaveSpeedClient {
         headers: {
           'Content-Type': 'multipart/form-data'
         },
-        timeout: 120000 // 120 seconds for file uploads
+        timeout: 120000, // 120 seconds for file uploads
+        signal
       })
 
       if (response.data.code !== 200) {
@@ -298,6 +299,10 @@ class WaveSpeedClient {
 
       return response.data.data.download_url
     } catch (error) {
+      // Check if this is a cancellation error
+      if (axios.isCancel(error) || (error instanceof Error && error.name === 'CanceledError')) {
+        throw new APIError('Upload cancelled', { code: 0 })
+      }
       throw createAPIError(error, 'Failed to upload file')
     }
   }

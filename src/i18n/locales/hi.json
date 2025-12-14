@@ -188,7 +188,8 @@
     "flappyBird": {
       "clickToStart": "गेम शुरू करने के लिए क्लिक करें या स्पेस दबाएं",
       "viewResults": "परिणाम देखें",
-      "playWhileWaiting": "प्रतीक्षा करते समय खेलें"
+      "playWhileWaiting": "प्रतीक्षा करते समय खेलें",
+      "quit": "बाहर निकलें"
     },
     "batch": {
       "title": "बैच",

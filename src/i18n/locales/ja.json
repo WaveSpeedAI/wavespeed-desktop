@@ -188,7 +188,8 @@
     "flappyBird": {
       "clickToStart": "クリックまたはスペースキーでゲーム開始",
       "viewResults": "結果を見る",
-      "playWhileWaiting": "待っている間にプレイ"
+      "playWhileWaiting": "待っている間にプレイ",
+      "quit": "終了"
     },
     "batch": {
       "title": "バッチ",

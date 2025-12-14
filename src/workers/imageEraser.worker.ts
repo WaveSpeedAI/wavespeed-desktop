@@ -538,9 +538,9 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
         // Get timeout from payload
         const timeout = payload?.timeout ?? DEFAULT_TIMEOUT
 
-        // Check for WebGPU support
-        useWebGPU = await checkWebGPU()
-        console.log(`Image Eraser using ${useWebGPU ? 'WebGPU' : 'WASM'} backend`)
+        // Force WASM backend - WebGPU has kernel compatibility issues with LaMa model
+        useWebGPU = false
+        console.log('Image Eraser using WASM backend')
 
         // Check if model is cached first
         const cache = await caches.open(CACHE_NAME)

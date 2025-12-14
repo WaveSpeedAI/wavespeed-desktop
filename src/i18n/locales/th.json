@@ -313,6 +313,7 @@
   "settings": {
     "title": "การตั้งค่า",
     "description": "กำหนดค่าแอปพลิเคชัน WaveSpeed Desktop",
+    "mobileDescription": "กำหนดค่าแอปพลิเคชัน WaveSpeed Mobile",
     "apiKey": {
       "title": "คีย์ API",
       "description": "ใส่คีย์ API WaveSpeed เพื่อเข้าถึงโมเดล",
@@ -414,7 +415,9 @@
     "about": {
       "title": "เกี่ยวกับ",
       "description": "WaveSpeed Desktop - สนามทดสอบโมเดล AI",
+      "mobileDescription": "WaveSpeed Mobile - สนามทดสอบโมเดล AI",
       "aboutText": "แอปพลิเคชันเดสก์ท็อปโอเพนซอร์สสำหรับเรียกใช้โมเดล AI ด้วย WaveSpeed API",
+      "mobileAboutText": "แอปพลิเคชันมือถือโอเพนซอร์สสำหรับเรียกใช้โมเดล AI ด้วย WaveSpeed API",
       "viewOnGitHub": "ดูบน GitHub"
     }
   },
@@ -547,6 +550,94 @@
     "videoConverter": {
       "title": "ตัวแปลงวิดีโอ",
       "description": "แปลงวิดีโอระหว่างรูปแบบ"
+    },
+    "audioConverter": {
+      "title": "ตัวแปลงเสียง",
+      "description": "แปลงระหว่างรูปแบบ MP3 และ WAV",
+      "selectAudio": "คลิกหรือลากไฟล์ MP3/WAV มาที่นี่",
+      "supportedFormats": "แปลง MP3 ↔ WAV",
+      "converting": "กำลังแปลง...",
+      "convert": "แปลง",
+      "download": "ดาวน์โหลด",
+      "complete": "เสร็จสมบูรณ์",
+      "outputFormat": "รูปแบบผลลัพธ์",
+      "bitrate": "อัตราบิต",
+      "noFileSelected": "ไม่ได้เลือกไฟล์"
+    },
+    "imageConverter": {
+      "title": "ตัวแปลงรูปภาพ",
+      "description": "แปลงรูปภาพเป็น JPG, PNG หรือ WebP",
+      "selectImage": "คลิกหรือลากรูปภาพมาที่นี่",
+      "supportedFormats": "รูปภาพใดก็ได้ → JPG/PNG/WebP",
+      "converting": "กำลังแปลง...",
+      "convert": "แปลง",
+      "download": "ดาวน์โหลด",
+      "complete": "เสร็จสมบูรณ์",
+      "outputFormat": "รูปแบบผลลัพธ์",
+      "quality": "คุณภาพ",
+      "noFileSelected": "ไม่ได้เลือกไฟล์"
+    },
+    "mediaTrimmer": {
+      "title": "ตัดสื่อ",
+      "description": "ตัดวิดีโอและเสียงตามความยาวที่ต้องการ",
+      "selectMedia": "ลากไฟล์สื่อมาที่นี่",
+      "supportedFormats": "รองรับไฟล์วิดีโอและเสียง",
+      "inputMedia": "สื่อนำเข้า",
+      "selectMediaFile": "เลือกไฟล์ที่จะตัด",
+      "trimSettings": "การตั้งค่าการตัด",
+      "selectRange": "เลือกเวลาเริ่มต้นและสิ้นสุด",
+      "startTime": "เวลาเริ่มต้น",
+      "endTime": "เวลาสิ้นสุด",
+      "timeFormat": "รูปแบบ: m:ss.d หรือวินาที",
+      "outputDuration": "ระยะเวลาผลลัพธ์",
+      "duration": "ระยะเวลา",
+      "trim": "ตัด",
+      "trimming": "กำลังตัด...",
+      "download": "ดาวน์โหลด",
+      "newMedia": "ไฟล์ใหม่",
+      "result": "ผลการตัด",
+      "invalidFile": "กรุณาเลือกไฟล์วิดีโอหรือเสียงที่ถูกต้อง",
+      "invalidRange": "เวลาสิ้นสุดต้องมากกว่าเวลาเริ่มต้น"
+    },
+    "mediaMerger": {
+      "title": "รวมสื่อ",
+      "description": "รวมวิดีโอหรือเสียงหลายไฟล์เป็นหนึ่งเดียว",
+      "selectMedia": "ลากไฟล์มาที่นี่",
+      "supportedFormats": "รองรับไฟล์วิดีโอและเสียง",
+      "addFiles": "เพิ่มไฟล์",
+      "inputFiles": "ไฟล์นำเข้า",
+      "dragToReorder": "ลากเพื่อเรียงลำดับ",
+      "noFiles": "ไม่มีไฟล์",
+      "addFilesDesc": "เพิ่มวิดีโอหรือเสียงเพื่อรวม",
+      "outputFormat": "รูปแบบผลลัพธ์",
+      "merge": "รวม",
+      "merging": "กำลังรวม...",
+      "download": "ดาวน์โหลด",
+      "clear": "ล้าง",
+      "result": "ผลลัพธ์",
+      "invalidFile": "กรุณาเลือกไฟล์วิดีโอหรือเสียงที่ถูกต้อง",
+      "minFiles": "เพิ่มอย่างน้อย 2 ไฟล์เพื่อรวม"
+    },
+    "faceEnhancer": {
+      "title": "ปรับปรุงใบหน้า",
+      "description": "ปรับปรุงและกู้คืนใบหน้าในรูปภาพโดยใช้ AI",
+      "selectImage": "คลิกหรือลากรูปภาพมาที่นี่",
+      "modelsInfo": "ใช้โมเดล AI YOLO + GFPGAN",
+      "inputImage": "รูปภาพนำเข้า",
+      "selectImageWithFaces": "เลือกรูปภาพที่มีใบหน้าเพื่อปรับปรุง",
+      "enhance": "ปรับปรุงใบหน้า",
+      "enhancing": "กำลังปรับปรุงใบหน้า...",
+      "detecting": "กำลังตรวจจับใบหน้า...",
+      "downloading": "กำลังดาวน์โหลดโมเดล...",
+      "loading": "กำลังโหลดโมเดล...",
+      "processing": "กำลังประมวลผล...",
+      "download": "ดาวน์โหลด",
+      "newImage": "รูปภาพใหม่",
+      "result": "ผลลัพธ์ที่ปรับปรุงแล้ว",
+      "facesEnhanced": "ปรับปรุง {{count}} ใบหน้าแล้ว",
+      "noFacesFound": "ไม่พบใบหน้า",
+      "invalidFile": "กรุณาเลือกไฟล์รูปภาพที่ถูกต้อง",
+      "firstTimeDownload": "ครั้งแรก? โมเดลจะถูกดาวน์โหลด (~350MB)"
     }
   },
   "game": {

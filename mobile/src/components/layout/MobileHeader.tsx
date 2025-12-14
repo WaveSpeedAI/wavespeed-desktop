@@ -80,8 +80,8 @@ export function MobileHeader() {
     }
   }
 
-  // Show free tools button on main pages (not on free tools or settings pages)
-  const showFreeToolsIcon = !location.pathname.startsWith('/free-tools') && !location.pathname.startsWith('/settings')
+  // Show free tools button on main pages (not on free tools pages)
+  const showFreeToolsIcon = !location.pathname.startsWith('/free-tools')
 
   return (
     <header className="mobile-header">

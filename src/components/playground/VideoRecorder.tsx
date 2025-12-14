@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
-import { X, RotateCcw, Check, Loader2, Play, Pause, Video } from 'lucide-react'
+import { X, RotateCcw, Check, Loader2, Play, Pause, Video, Square } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface VideoRecorderProps {
@@ -32,6 +32,7 @@ export function VideoRecorder({ onRecord, onClose, disabled }: VideoRecorderProp
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment')
   const [, setAudioLevel] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [hasAudio, setHasAudio] = useState(true)
   const [currentTime, setCurrentTime] = useState(0)
   const [videoDuration, setVideoDuration] = useState(0)
 
@@ -94,8 +95,12 @@ export function VideoRecorder({ onRecord, onClose, disabled }: VideoRecorderProp
         streamRef.current = null
       }
 
+      // Try to get video with audio first, fall back to video only if audio fails
+      let stream: MediaStream | null = null
+      let audioAvailable = true
+
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
+        stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode,
             width: { ideal: 1920 },
@@ -103,61 +108,91 @@ export function VideoRecorder({ onRecord, onClose, disabled }: VideoRecorderProp
           },
           audio: true
         })
-
-        if (!mounted) {
-          // Component unmounted while waiting for permission
-          stream.getTracks().forEach(track => track.stop())
-          return
-        }
-
-        localStream = stream
-        streamRef.current = stream
-
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream
-          try {
-            await videoRef.current.play()
-          } catch (playErr) {
-            if (playErr instanceof Error && playErr.name === 'AbortError') {
-              return
+      } catch (audioErr) {
+        // Audio failed, try video only
+        console.warn('Audio capture failed, trying video only:', audioErr)
+        audioAvailable = false
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode,
+              width: { ideal: 1920 },
+              height: { ideal: 1080 }
+            },
+            audio: false
+          })
+        } catch (videoErr) {
+          // Both failed, handle the error
+          if (!mounted) return
+          console.error('Camera error:', videoErr)
+          if (videoErr instanceof Error) {
+            if (videoErr.name === 'NotAllowedError') {
+              setError(t('playground.capture.cameraPermissionDenied'))
+            } else if (videoErr.name === 'NotFoundError') {
+              setError(t('playground.capture.noCameraFound'))
+            } else {
+              setError(t('playground.capture.cameraError'))
             }
-            throw playErr
-          }
-        }
-
-        // Set up audio analyzer for waveform
-        const audioContext = new AudioContext()
-        localAudioContext = audioContext
-        audioContextRef.current = audioContext
-        // Ensure AudioContext is running (browsers may start it suspended)
-        if (audioContext.state === 'suspended') {
-          await audioContext.resume()
-        }
-        const source = audioContext.createMediaStreamSource(stream)
-        const analyser = audioContext.createAnalyser()
-        analyser.fftSize = 256
-        source.connect(analyser)
-        analyserRef.current = analyser
-      } catch (err) {
-        if (!mounted) return
-
-        console.error('Camera/mic error:', err)
-        if (err instanceof Error) {
-          if (err.name === 'NotAllowedError') {
-            setError(t('playground.capture.cameraPermissionDenied'))
-          } else if (err.name === 'NotFoundError') {
-            setError(t('playground.capture.noCameraFound'))
           } else {
             setError(t('playground.capture.cameraError'))
           }
-        } else {
-          setError(t('playground.capture.cameraError'))
-        }
-      } finally {
-        if (mounted) {
           setIsLoading(false)
+          return
         }
       }
+
+      if (!mounted) {
+        // Component unmounted while waiting for permission
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop())
+        }
+        return
+      }
+
+      if (!stream) {
+        setError(t('playground.capture.cameraError'))
+        setIsLoading(false)
+        return
+      }
+
+      localStream = stream
+      streamRef.current = stream
+      setHasAudio(audioAvailable)
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream
+        try {
+          await videoRef.current.play()
+        } catch (playErr) {
+          if (playErr instanceof Error && playErr.name === 'AbortError') {
+            return
+          }
+          throw playErr
+        }
+      }
+
+      // Set up audio analyzer for waveform (only if audio is available)
+      if (audioAvailable && stream.getAudioTracks().length > 0) {
+        try {
+          const audioContext = new AudioContext()
+          localAudioContext = audioContext
+          audioContextRef.current = audioContext
+          // Ensure AudioContext is running (browsers may start it suspended)
+          if (audioContext.state === 'suspended') {
+            await audioContext.resume()
+          }
+          const source = audioContext.createMediaStreamSource(stream)
+          const analyser = audioContext.createAnalyser()
+          analyser.fftSize = 256
+          source.connect(analyser)
+          analyserRef.current = analyser
+        } catch (audioSetupErr) {
+          console.warn('Audio analyzer setup failed:', audioSetupErr)
+          setHasAudio(false)
+        }
+      }
+
+      setIsLoading(false)
     }
 
     startCamera()
@@ -187,16 +222,16 @@ export function VideoRecorder({ onRecord, onClose, disabled }: VideoRecorderProp
     }
   }, [facingMode, t])
 
-  // Start waveform when recording starts
+  // Start waveform when recording starts (only if audio is available)
   useEffect(() => {
-    if (isRecording) {
+    if (isRecording && hasAudio && analyserRef.current) {
       // Small delay to ensure canvas is rendered
       const timeout = setTimeout(() => {
         drawWaveform()
       }, 50)
       return () => clearTimeout(timeout)
     }
-  }, [isRecording, drawWaveform])
+  }, [isRecording, hasAudio, drawWaveform])
 
   // Cleanup recorded URL on unmount
   useEffect(() => {
@@ -370,6 +405,14 @@ export function VideoRecorder({ onRecord, onClose, disabled }: VideoRecorderProp
 
   return (
     <div className="space-y-3">
+      {/* No audio warning */}
+      {!isLoading && !error && !hasAudio && !recordedUrl && (
+        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-3 py-2">
+          <p className="text-xs text-yellow-600 dark:text-yellow-400 text-center">
+            {t('playground.capture.noAudioWarning', 'Audio unavailable - video will be recorded without sound')}
+          </p>
+        </div>
+      )}
       <div className="relative rounded-lg overflow-hidden bg-black aspect-video">
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-muted">
@@ -446,15 +489,20 @@ export function VideoRecorder({ onRecord, onClose, disabled }: VideoRecorderProp
             <div className="absolute top-2 left-2 flex items-center gap-2 bg-black/50 rounded-full px-3 py-1">
               <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
               <span className="text-white text-sm font-mono">{formatDuration(duration)}</span>
+              {!hasAudio && (
+                <span className="text-yellow-400 text-xs ml-1">(No Audio)</span>
+              )}
             </div>
-            {/* Audio waveform overlay */}
-            <canvas
-              ref={canvasRef}
-              width={320}
-              height={40}
-              className="absolute bottom-2 left-2 right-2 h-8 rounded bg-black/30"
-              style={{ width: 'calc(100% - 16px)' }}
-            />
+            {/* Audio waveform overlay - only show if audio is available */}
+            {hasAudio && (
+              <canvas
+                ref={canvasRef}
+                width={320}
+                height={40}
+                className="absolute bottom-2 left-2 right-2 h-8 rounded bg-black/30"
+                style={{ width: 'calc(100% - 16px)' }}
+              />
+            )}
           </>
         )}
 
@@ -487,14 +535,18 @@ export function VideoRecorder({ onRecord, onClose, disabled }: VideoRecorderProp
               onClick={isRecording ? stopRecording : startRecording}
               disabled={isLoading || !!error || disabled}
               className={cn(
-                "h-12 w-12 rounded-full transition-colors text-white",
+                "h-14 w-14 rounded-full transition-all text-white border-4 border-white/30",
                 isRecording
                   ? "bg-red-500 hover:bg-red-600"
-                  : "bg-primary hover:bg-primary/90"
+                  : "bg-red-500 hover:bg-red-600"
               )}
               title={isRecording ? t('playground.capture.stopRecording') : t('playground.capture.startRecording')}
             >
-              {!isRecording && <Video className="h-5 w-5" />}
+              {isRecording ? (
+                <Square className="h-5 w-5 fill-white" />
+              ) : (
+                <div className="h-5 w-5 rounded-full bg-white" />
+              )}
             </Button>
             <div className="w-9" /> {/* Spacer for centering */}
           </>

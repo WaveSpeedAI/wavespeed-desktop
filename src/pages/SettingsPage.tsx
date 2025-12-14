@@ -211,6 +211,26 @@ export function SettingsPage() {
         name: 'Image Eraser (LaMa)',
         url: 'https://huggingface.co/opencv/inpainting_lama/resolve/main/inpainting_lama_2025jan.onnx',
         cacheName: 'lama-model-cache'
+      },
+      {
+        name: 'Face Enhancer (YOLO)',
+        url: 'https://huggingface.co/deepghs/yolo-face/resolve/main/yolov8n-face/model.onnx',
+        cacheName: 'face-enhancer-models'
+      },
+      {
+        name: 'Face Enhancer (GFPGAN)',
+        url: 'https://huggingface.co/facefusion/models-3.0.0/resolve/main/gfpgan_1.4.onnx',
+        cacheName: 'face-enhancer-models'
+      },
+      {
+        name: 'FFmpeg Core (JS)',
+        url: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm/ffmpeg-core.js',
+        cacheName: 'ffmpeg-wasm-cache'
+      },
+      {
+        name: 'FFmpeg Core (WASM)',
+        url: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm/ffmpeg-core.wasm',
+        cacheName: 'ffmpeg-wasm-cache'
       }
     ]
 

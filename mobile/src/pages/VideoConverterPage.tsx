@@ -21,8 +21,6 @@ interface ConversionResult {
 export function VideoConverterPage() {
   const navigate = useNavigate()
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const [inputVideo, setInputVideo] = useState<{ file: File; url: string } | null>(null)
   const [outputFormat, setOutputFormat] = useState<OutputFormat>('webm')
@@ -86,32 +84,38 @@ export function VideoConverterPage() {
   }, [inputVideo, result])
 
   const convertVideo = useCallback(async () => {
-    if (!inputVideo || !videoRef.current || !canvasRef.current) return
+    if (!inputVideo) return
 
     setIsConverting(true)
     setError(null)
     setProgress(0)
 
-    const video = videoRef.current
-    const canvas = canvasRef.current
-    const ctx = canvas.getContext('2d')!
-
     try {
-      // Wait for video to be ready
+      // Create video element for playback
+      const video = document.createElement('video')
+      video.muted = true
+      video.playsInline = true
+
+      // Create canvas for rendering
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')!
+
+      // Create audio context for capturing audio
+      const audioContext = new AudioContext()
+      const audioDestination = audioContext.createMediaStreamDestination()
+
+      // Wait for video metadata
       await new Promise<void>((resolve, reject) => {
         video.onloadedmetadata = () => resolve()
         video.onerror = () => reject(new Error('Failed to load video'))
         video.src = inputVideo.url
       })
 
-      // Set canvas size
+      // Set canvas size to match video
       canvas.width = video.videoWidth
       canvas.height = video.videoHeight
 
-      // Get video duration and fps
       const duration = video.duration
-      const fps = 30
-      const totalFrames = Math.ceil(duration * fps)
 
       // Try different codecs based on format
       const codecsToTry: { codec: VideoCodec; mimeType: string }[] = outputFormat === 'webm'
@@ -140,9 +144,15 @@ export function VideoConverterPage() {
         throw new Error('No supported video codec found')
       }
 
-      // Create MediaRecorder from canvas stream
-      const stream = canvas.captureStream(fps)
-      const recorder = new MediaRecorder(stream, {
+      // Create combined stream (video from canvas + audio from video)
+      const canvasStream = canvas.captureStream(30)
+      const combinedStream = new MediaStream([
+        ...canvasStream.getVideoTracks(),
+        ...audioDestination.stream.getAudioTracks()
+      ])
+
+      // Create MediaRecorder
+      const recorder = new MediaRecorder(combinedStream, {
         mimeType,
         videoBitsPerSecond: 5000000
       })
@@ -154,37 +164,64 @@ export function VideoConverterPage() {
         }
       }
 
-      // Start recording
-      recorder.start()
-
-      // Play video and draw frames
-      video.currentTime = 0
-      await new Promise<void>((resolve) => {
-        video.onseeked = () => resolve()
-      })
-
-      for (let frame = 0; frame < totalFrames; frame++) {
-        const time = frame / fps
-        video.currentTime = time
-
-        await new Promise<void>((resolve) => {
-          video.onseeked = () => resolve()
-        })
-
-        ctx.drawImage(video, 0, 0)
-        setProgress(Math.round((frame / totalFrames) * 100))
-
-        // Small delay to allow frame to be recorded
-        await new Promise((r) => setTimeout(r, 1000 / fps))
+      // Connect video audio to recorder
+      let audioSourceConnected = false
+      video.onplay = () => {
+        if (!audioSourceConnected) {
+          try {
+            const source = audioContext.createMediaElementSource(video)
+            source.connect(audioDestination)
+            audioSourceConnected = true
+          } catch {
+            // Already connected or no audio
+          }
+        }
       }
+
+      // Start recording
+      recorder.start(100)
+
+      // Draw frames to canvas in real-time
+      let animationId: number
+      const drawFrame = () => {
+        if (video.readyState >= 2) {
+          ctx.drawImage(video, 0, 0)
+        }
+
+        // Update progress
+        const currentProgress = (video.currentTime / duration) * 100
+        setProgress(Math.min(95, Math.round(currentProgress)))
+
+        if (!video.ended && !video.paused) {
+          animationId = requestAnimationFrame(drawFrame)
+        }
+      }
+
+      // Play video and start drawing
+      video.currentTime = 0
+      await video.play()
+      drawFrame()
+
+      // Wait for video to end
+      await new Promise<void>((resolve) => {
+        video.onended = () => {
+          cancelAnimationFrame(animationId)
+          resolve()
+        }
+      })
 
       // Stop recording
       recorder.stop()
 
-      // Wait for final data
+      // Wait for recorder to finish
       await new Promise<void>((resolve) => {
         recorder.onstop = () => resolve()
       })
+
+      // Cleanup
+      await audioContext.close()
+      video.remove()
+      canvas.remove()
 
       // Create result blob
       const resultBlob = new Blob(chunks, { type: mimeType })
@@ -270,7 +307,6 @@ export function VideoConverterPage() {
             <div className="space-y-4">
               <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
                 <video
-                  ref={videoRef}
                   src={inputVideo.url}
                   className="w-full h-full object-contain"
                   controls
@@ -385,9 +421,6 @@ export function VideoConverterPage() {
           </CardContent>
         </Card>
       )}
-
-      {/* Hidden canvas for processing */}
-      <canvas ref={canvasRef} className="hidden" />
     </div>
   )
 }

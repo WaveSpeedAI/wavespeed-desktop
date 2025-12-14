@@ -313,6 +313,7 @@
   "settings": {
     "title": "الإعدادات",
     "description": "تكوين تطبيق WaveSpeed Desktop",
+    "mobileDescription": "تكوين تطبيق WaveSpeed Mobile",
     "apiKey": {
       "title": "مفتاح API",
       "description": "أدخل مفتاح WaveSpeed API للوصول إلى النماذج",
@@ -414,7 +415,9 @@
     "about": {
       "title": "حول",
       "description": "WaveSpeed Desktop - ساحة تجربة نماذج الذكاء الاصطناعي",
+      "mobileDescription": "WaveSpeed Mobile - ساحة تجربة نماذج الذكاء الاصطناعي",
       "aboutText": "تطبيق سطح مكتب مفتوح المصدر لتشغيل نماذج الذكاء الاصطناعي مع WaveSpeed API.",
+      "mobileAboutText": "تطبيق جوال مفتوح المصدر لتشغيل نماذج الذكاء الاصطناعي مع WaveSpeed API.",
       "viewOnGitHub": "عرض على GitHub"
     }
   },
@@ -547,6 +550,94 @@
     "videoConverter": {
       "title": "محول الفيديو",
       "description": "تحويل مقاطع الفيديو بين التنسيقات"
+    },
+    "audioConverter": {
+      "title": "محول الصوت",
+      "description": "التحويل بين تنسيقات MP3 و WAV",
+      "selectAudio": "انقر أو اسحب ملف MP3/WAV هنا",
+      "supportedFormats": "تحويل MP3 ↔ WAV",
+      "converting": "جاري التحويل...",
+      "convert": "تحويل",
+      "download": "تنزيل",
+      "complete": "مكتمل",
+      "outputFormat": "تنسيق الإخراج",
+      "bitrate": "معدل البت",
+      "noFileSelected": "لم يتم تحديد ملف"
+    },
+    "imageConverter": {
+      "title": "محول الصور",
+      "description": "تحويل الصور إلى JPG أو PNG أو WebP",
+      "selectImage": "انقر أو اسحب صورة هنا",
+      "supportedFormats": "أي صورة → JPG/PNG/WebP",
+      "converting": "جاري التحويل...",
+      "convert": "تحويل",
+      "download": "تنزيل",
+      "complete": "مكتمل",
+      "outputFormat": "تنسيق الإخراج",
+      "quality": "الجودة",
+      "noFileSelected": "لم يتم تحديد ملف"
+    },
+    "mediaTrimmer": {
+      "title": "قص الوسائط",
+      "description": "قص مقاطع الفيديو والصوت للطول المطلوب",
+      "selectMedia": "اسحب ملف الوسائط هنا",
+      "supportedFormats": "يدعم ملفات الفيديو والصوت",
+      "inputMedia": "ملف الإدخال",
+      "selectMediaFile": "اختر ملفاً للقص",
+      "trimSettings": "إعدادات القص",
+      "selectRange": "اختر وقت البداية والنهاية",
+      "startTime": "وقت البداية",
+      "endTime": "وقت النهاية",
+      "timeFormat": "التنسيق: m:ss.d أو ثواني",
+      "outputDuration": "مدة الإخراج",
+      "duration": "المدة",
+      "trim": "قص",
+      "trimming": "جاري القص...",
+      "download": "تنزيل",
+      "newMedia": "ملف جديد",
+      "result": "نتيجة القص",
+      "invalidFile": "يرجى تحديد ملف فيديو أو صوت صالح",
+      "invalidRange": "يجب أن يكون وقت النهاية أكبر من وقت البداية"
+    },
+    "mediaMerger": {
+      "title": "دمج الوسائط",
+      "description": "دمج عدة مقاطع فيديو أو صوت في ملف واحد",
+      "selectMedia": "اسحب الملفات هنا",
+      "supportedFormats": "يدعم ملفات الفيديو والصوت",
+      "addFiles": "إضافة ملفات",
+      "inputFiles": "ملفات الإدخال",
+      "dragToReorder": "اسحب لإعادة الترتيب",
+      "noFiles": "لا توجد ملفات",
+      "addFilesDesc": "أضف فيديو أو صوت للدمج",
+      "outputFormat": "تنسيق الإخراج",
+      "merge": "دمج",
+      "merging": "جاري الدمج...",
+      "download": "تنزيل",
+      "clear": "مسح",
+      "result": "النتيجة",
+      "invalidFile": "يرجى تحديد ملفات فيديو أو صوت صالحة",
+      "minFiles": "أضف ملفين على الأقل للدمج"
+    },
+    "faceEnhancer": {
+      "title": "محسن الوجوه",
+      "description": "تحسين واستعادة الوجوه في الصور باستخدام الذكاء الاصطناعي",
+      "selectImage": "انقر أو اسحب صورة هنا",
+      "modelsInfo": "يستخدم نماذج YOLO + GFPGAN AI",
+      "inputImage": "صورة الإدخال",
+      "selectImageWithFaces": "اختر صورة بها وجوه لتحسينها",
+      "enhance": "تحسين الوجوه",
+      "enhancing": "جاري تحسين الوجوه...",
+      "detecting": "جاري الكشف عن الوجوه...",
+      "downloading": "جاري تنزيل النماذج...",
+      "loading": "جاري تحميل النماذج...",
+      "processing": "جاري المعالجة...",
+      "download": "تنزيل",
+      "newImage": "صورة جديدة",
+      "result": "النتيجة المحسنة",
+      "facesEnhanced": "تم تحسين {{count}} وجه",
+      "noFacesFound": "لم يتم العثور على وجوه",
+      "invalidFile": "يرجى تحديد ملف صورة صالح",
+      "firstTimeDownload": "أول مرة؟ سيتم تنزيل النماذج (~350 ميجابايت)"
     }
   },
   "game": {

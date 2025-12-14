@@ -313,6 +313,7 @@
   "settings": {
     "title": "Cài đặt",
     "description": "Cấu hình ứng dụng WaveSpeed Desktop",
+    "mobileDescription": "Cấu hình ứng dụng WaveSpeed Mobile",
     "apiKey": {
       "title": "Khóa API",
       "description": "Nhập khóa API WaveSpeed để truy cập các mô hình",
@@ -414,7 +415,9 @@
     "about": {
       "title": "Giới thiệu",
       "description": "WaveSpeed Desktop - Sân chơi mô hình AI",
+      "mobileDescription": "WaveSpeed Mobile - Sân chơi mô hình AI",
       "aboutText": "Ứng dụng desktop mã nguồn mở để chạy mô hình AI với WaveSpeed API.",
+      "mobileAboutText": "Ứng dụng di động mã nguồn mở để chạy mô hình AI với WaveSpeed API.",
       "viewOnGitHub": "Xem trên GitHub"
     }
   },
@@ -547,6 +550,94 @@
     "videoConverter": {
       "title": "Chuyển đổi Video",
       "description": "Chuyển đổi video giữa các định dạng"
+    },
+    "audioConverter": {
+      "title": "Chuyển đổi Âm thanh",
+      "description": "Chuyển đổi giữa định dạng MP3 và WAV",
+      "selectAudio": "Nhấp hoặc kéo tệp MP3/WAV vào đây",
+      "supportedFormats": "Chuyển đổi MP3 ↔ WAV",
+      "converting": "Đang chuyển đổi...",
+      "convert": "Chuyển đổi",
+      "download": "Tải xuống",
+      "complete": "Hoàn thành",
+      "outputFormat": "Định dạng đầu ra",
+      "bitrate": "Tốc độ bit",
+      "noFileSelected": "Chưa chọn tệp"
+    },
+    "imageConverter": {
+      "title": "Chuyển đổi Hình ảnh",
+      "description": "Chuyển đổi hình ảnh sang JPG, PNG hoặc WebP",
+      "selectImage": "Nhấp hoặc kéo hình ảnh vào đây",
+      "supportedFormats": "Bất kỳ hình ảnh → JPG/PNG/WebP",
+      "converting": "Đang chuyển đổi...",
+      "convert": "Chuyển đổi",
+      "download": "Tải xuống",
+      "complete": "Hoàn thành",
+      "outputFormat": "Định dạng đầu ra",
+      "quality": "Chất lượng",
+      "noFileSelected": "Chưa chọn tệp"
+    },
+    "mediaTrimmer": {
+      "title": "Cắt phương tiện",
+      "description": "Cắt video và âm thanh theo độ dài mong muốn",
+      "selectMedia": "Kéo tệp phương tiện vào đây",
+      "supportedFormats": "Hỗ trợ tệp video và âm thanh",
+      "inputMedia": "Phương tiện đầu vào",
+      "selectMediaFile": "Chọn tệp để cắt",
+      "trimSettings": "Cài đặt cắt",
+      "selectRange": "Chọn thời gian bắt đầu và kết thúc",
+      "startTime": "Thời gian bắt đầu",
+      "endTime": "Thời gian kết thúc",
+      "timeFormat": "Định dạng: m:ss.d hoặc giây",
+      "outputDuration": "Thời lượng đầu ra",
+      "duration": "Thời lượng",
+      "trim": "Cắt",
+      "trimming": "Đang cắt...",
+      "download": "Tải xuống",
+      "newMedia": "Tệp mới",
+      "result": "Kết quả cắt",
+      "invalidFile": "Vui lòng chọn tệp video hoặc âm thanh hợp lệ",
+      "invalidRange": "Thời gian kết thúc phải lớn hơn thời gian bắt đầu"
+    },
+    "mediaMerger": {
+      "title": "Ghép phương tiện",
+      "description": "Kết hợp nhiều video hoặc âm thanh thành một",
+      "selectMedia": "Kéo tệp vào đây",
+      "supportedFormats": "Hỗ trợ tệp video và âm thanh",
+      "addFiles": "Thêm tệp",
+      "inputFiles": "Tệp đầu vào",
+      "dragToReorder": "Kéo để sắp xếp lại",
+      "noFiles": "Không có tệp",
+      "addFilesDesc": "Thêm video hoặc âm thanh để ghép",
+      "outputFormat": "Định dạng đầu ra",
+      "merge": "Ghép",
+      "merging": "Đang ghép...",
+      "download": "Tải xuống",
+      "clear": "Xóa",
+      "result": "Kết quả",
+      "invalidFile": "Vui lòng chọn tệp video hoặc âm thanh hợp lệ",
+      "minFiles": "Thêm ít nhất 2 tệp để ghép"
+    },
+    "faceEnhancer": {
+      "title": "Nâng cao khuôn mặt",
+      "description": "Nâng cao và phục hồi khuôn mặt trong ảnh bằng AI",
+      "selectImage": "Nhấp hoặc kéo hình ảnh vào đây",
+      "modelsInfo": "Sử dụng mô hình AI YOLO + GFPGAN",
+      "inputImage": "Hình ảnh đầu vào",
+      "selectImageWithFaces": "Chọn hình ảnh có khuôn mặt để nâng cao",
+      "enhance": "Nâng cao khuôn mặt",
+      "enhancing": "Đang nâng cao khuôn mặt...",
+      "detecting": "Đang phát hiện khuôn mặt...",
+      "downloading": "Đang tải xuống mô hình...",
+      "loading": "Đang tải mô hình...",
+      "processing": "Đang xử lý...",
+      "download": "Tải xuống",
+      "newImage": "Hình ảnh mới",
+      "result": "Kết quả nâng cao",
+      "facesEnhanced": "Đã nâng cao {{count}} khuôn mặt",
+      "noFacesFound": "Không tìm thấy khuôn mặt",
+      "invalidFile": "Vui lòng chọn tệp hình ảnh hợp lệ",
+      "firstTimeDownload": "Lần đầu tiên? Mô hình sẽ được tải xuống (~350MB)"
     }
   },
   "game": {

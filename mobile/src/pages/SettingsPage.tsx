@@ -246,6 +246,9 @@ export function SettingsPage() {
 
   // Download all Free Tools models
   const handleDownloadModels = useCallback(async () => {
+    // Use UMD build of FFmpeg - more stable
+    const ffmpegBase = 'https://unpkg.com/@ffmpeg/core@0.12.4/dist/umd'
+
     // Define all models to download
     // Note: Upscaler models are bundled with npm packages, no download needed
     const models: Array<{
@@ -255,6 +258,20 @@ export function SettingsPage() {
       size: string
       type: 'direct' | 'worker'
     }> = [
+      {
+        name: 'FFmpeg Core (JS)',
+        url: `${ffmpegBase}/ffmpeg-core.js`,
+        cacheName: 'ffmpeg-wasm-cache',
+        size: '~150KB',
+        type: 'direct'
+      },
+      {
+        name: 'FFmpeg Core (WASM)',
+        url: `${ffmpegBase}/ffmpeg-core.wasm`,
+        cacheName: 'ffmpeg-wasm-cache',
+        size: '~24MB',
+        type: 'direct'
+      },
       {
         name: 'Background Remover',
         url: '', // Uses worker-based warm-up
@@ -619,7 +636,7 @@ export function SettingsPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold">{t('settings.title')}</h1>
         <p className="text-muted-foreground mt-2">
-          {t('settings.description')}
+          {t('settings.mobileDescription')}
         </p>
       </div>
 
@@ -1015,12 +1032,12 @@ export function SettingsPage() {
         <CardHeader>
           <CardTitle>{t('settings.about.title')}</CardTitle>
           <CardDescription>
-            {t('settings.about.description')}
+            {t('settings.about.mobileDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            {t('settings.about.aboutText')}
+            {t('settings.about.mobileAboutText')}
           </p>
           <Button
             variant="outline"

@@ -313,6 +313,7 @@
   "settings": {
     "title": "Tetapan",
     "description": "Konfigurasikan aplikasi WaveSpeed Desktop anda",
+    "mobileDescription": "Konfigurasikan aplikasi WaveSpeed Mobile anda",
     "apiKey": {
       "title": "Kunci API",
       "description": "Masukkan kunci API WaveSpeed anda untuk mengakses model",
@@ -414,7 +415,9 @@
     "about": {
       "title": "Tentang",
       "description": "WaveSpeed Desktop - Playground Model AI",
+      "mobileDescription": "WaveSpeed Mobile - Playground Model AI",
       "aboutText": "Aplikasi desktop sumber terbuka untuk menjalankan model AI dengan API WaveSpeed.",
+      "mobileAboutText": "Aplikasi mudah alih sumber terbuka untuk menjalankan model AI dengan API WaveSpeed.",
       "viewOnGitHub": "Lihat di GitHub"
     }
   },
@@ -547,6 +550,94 @@
     "videoConverter": {
       "title": "Penukar Video",
       "description": "Tukar video antara format"
+    },
+    "audioConverter": {
+      "title": "Penukar Audio",
+      "description": "Penukaran antara format MP3 dan WAV",
+      "selectAudio": "Klik atau seret fail MP3/WAV ke sini",
+      "supportedFormats": "Penukaran MP3 ↔ WAV",
+      "converting": "Menukar...",
+      "convert": "Tukar",
+      "download": "Muat turun",
+      "complete": "Selesai",
+      "outputFormat": "Format output",
+      "bitrate": "Kadar bit",
+      "noFileSelected": "Tiada fail dipilih"
+    },
+    "imageConverter": {
+      "title": "Penukar Imej",
+      "description": "Tukar imej ke JPG, PNG, atau WebP",
+      "selectImage": "Klik atau seret imej ke sini",
+      "supportedFormats": "Mana-mana imej → JPG/PNG/WebP",
+      "converting": "Menukar...",
+      "convert": "Tukar",
+      "download": "Muat turun",
+      "complete": "Selesai",
+      "outputFormat": "Format output",
+      "quality": "Kualiti",
+      "noFileSelected": "Tiada fail dipilih"
+    },
+    "mediaTrimmer": {
+      "title": "Pemangkas Media",
+      "description": "Pangkas video dan audio mengikut panjang yang dikehendaki",
+      "selectMedia": "Seret fail media ke sini",
+      "supportedFormats": "Menyokong fail video dan audio",
+      "inputMedia": "Media input",
+      "selectMediaFile": "Pilih fail untuk dipangkas",
+      "trimSettings": "Tetapan pangkas",
+      "selectRange": "Pilih masa mula dan tamat",
+      "startTime": "Masa mula",
+      "endTime": "Masa tamat",
+      "timeFormat": "Format: m:ss.d atau saat",
+      "outputDuration": "Tempoh output",
+      "duration": "Tempoh",
+      "trim": "Pangkas",
+      "trimming": "Memangkas...",
+      "download": "Muat turun",
+      "newMedia": "Fail baharu",
+      "result": "Hasil pangkasan",
+      "invalidFile": "Sila pilih fail video atau audio yang sah",
+      "invalidRange": "Masa tamat mesti lebih besar daripada masa mula"
+    },
+    "mediaMerger": {
+      "title": "Penggabung Media",
+      "description": "Gabungkan beberapa video atau audio menjadi satu",
+      "selectMedia": "Seret fail ke sini",
+      "supportedFormats": "Menyokong fail video dan audio",
+      "addFiles": "Tambah fail",
+      "inputFiles": "Fail input",
+      "dragToReorder": "Seret untuk menyusun semula",
+      "noFiles": "Tiada fail",
+      "addFilesDesc": "Tambah video atau audio untuk digabung",
+      "outputFormat": "Format output",
+      "merge": "Gabung",
+      "merging": "Menggabung...",
+      "download": "Muat turun",
+      "clear": "Kosongkan",
+      "result": "Hasil",
+      "invalidFile": "Sila pilih fail video atau audio yang sah",
+      "minFiles": "Tambah sekurang-kurangnya 2 fail untuk digabung"
+    },
+    "faceEnhancer": {
+      "title": "Penambah Baik Wajah",
+      "description": "Tambah baik dan pulihkan wajah dalam foto menggunakan AI",
+      "selectImage": "Klik atau seret imej ke sini",
+      "modelsInfo": "Menggunakan model AI YOLO + GFPGAN",
+      "inputImage": "Imej Input",
+      "selectImageWithFaces": "Pilih imej dengan wajah untuk ditambah baik",
+      "enhance": "Tambah Baik Wajah",
+      "enhancing": "Menambah baik wajah...",
+      "detecting": "Mengesan wajah...",
+      "downloading": "Memuat turun model...",
+      "loading": "Memuatkan model...",
+      "processing": "Memproses...",
+      "download": "Muat turun",
+      "newImage": "Imej Baharu",
+      "result": "Hasil Ditambah Baik",
+      "facesEnhanced": "{{count}} wajah ditambah baik",
+      "noFacesFound": "Tiada wajah dijumpai",
+      "invalidFile": "Sila pilih fail imej yang sah",
+      "firstTimeDownload": "Kali pertama? Model akan dimuat turun (~350MB)"
     }
   },
   "game": {

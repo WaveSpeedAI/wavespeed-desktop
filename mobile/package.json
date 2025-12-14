@@ -20,6 +20,7 @@
     "android:build:bundle": "npm run android:build && cd android && gradlew bundleRelease"
   },
   "dependencies": {
+    "@breezystack/lamejs": "^1.2.7",
     "@capacitor/android": "^6.2.0",
     "@capacitor/app": "^6.0.1",
     "@capacitor/browser": "^6.0.3",
@@ -31,6 +32,8 @@
     "@capacitor/share": "^6.0.2",
     "@capacitor/splash-screen": "^6.0.2",
     "@capacitor/status-bar": "^6.0.1",
+    "@ffmpeg/ffmpeg": "^0.12.10",
+    "@ffmpeg/util": "^0.12.1",
     "@huggingface/transformers": "3.0.2",
     "@imgly/background-removal": "^1.7.0",
     "@radix-ui/react-alert-dialog": "^1.1.15",

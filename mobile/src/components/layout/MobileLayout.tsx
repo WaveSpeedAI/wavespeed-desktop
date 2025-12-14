@@ -18,6 +18,11 @@ import { BackgroundRemoverPage } from '@/pages/BackgroundRemoverPage'
 import { ImageEraserPage } from '@/pages/ImageEraserPage'
 import { MobileSegmentAnythingPage } from '@mobile/pages/MobileSegmentAnythingPage'
 import { VideoConverterPage } from '@mobile/pages/VideoConverterPage'
+import { AudioConverterPage } from '@mobile/pages/AudioConverterPage'
+import { ImageConverterPage } from '@mobile/pages/ImageConverterPage'
+import { MediaTrimmerPage } from '@mobile/pages/MediaTrimmerPage'
+import { MediaMergerPage } from '@mobile/pages/MediaMergerPage'
+import { FaceEnhancerPage } from '@mobile/pages/FaceEnhancerPage'
 import { ErrorBoundary } from '@mobile/components/shared/ErrorBoundary'
 
 export function MobileLayout() {
@@ -38,10 +43,15 @@ export function MobileLayout() {
     const persistentPaths = [
       '/free-tools/video',
       '/free-tools/image',
+      '/free-tools/face-enhancer',
       '/free-tools/background-remover',
       '/free-tools/image-eraser',
       '/free-tools/segment-anything',
-      '/free-tools/video-converter'
+      '/free-tools/video-converter',
+      '/free-tools/audio-converter',
+      '/free-tools/image-converter',
+      '/free-tools/media-trimmer',
+      '/free-tools/media-merger'
     ]
     if (persistentPaths.includes(location.pathname)) {
       if (!visitedPages.has(location.pathname)) {
@@ -96,10 +106,15 @@ export function MobileLayout() {
   const freeToolsPaths = [
     '/free-tools/video',
     '/free-tools/image',
+    '/free-tools/face-enhancer',
     '/free-tools/background-remover',
     '/free-tools/image-eraser',
     '/free-tools/segment-anything',
-    '/free-tools/video-converter'
+    '/free-tools/video-converter',
+    '/free-tools/audio-converter',
+    '/free-tools/image-converter',
+    '/free-tools/media-trimmer',
+    '/free-tools/media-merger'
   ]
   const isFreeToolsPage = freeToolsPaths.includes(location.pathname)
 
@@ -249,6 +264,31 @@ export function MobileLayout() {
               {visitedPages.has('/free-tools/video-converter') && (
                 <div className={location.pathname === '/free-tools/video-converter' ? 'h-full overflow-auto' : 'hidden'}>
                   <ErrorBoundary><VideoConverterPage /></ErrorBoundary>
+                </div>
+              )}
+              {visitedPages.has('/free-tools/face-enhancer') && (
+                <div className={location.pathname === '/free-tools/face-enhancer' ? 'h-full overflow-auto' : 'hidden'}>
+                  <ErrorBoundary><FaceEnhancerPage /></ErrorBoundary>
+                </div>
+              )}
+              {visitedPages.has('/free-tools/audio-converter') && (
+                <div className={location.pathname === '/free-tools/audio-converter' ? 'h-full overflow-auto' : 'hidden'}>
+                  <ErrorBoundary><AudioConverterPage /></ErrorBoundary>
+                </div>
+              )}
+              {visitedPages.has('/free-tools/image-converter') && (
+                <div className={location.pathname === '/free-tools/image-converter' ? 'h-full overflow-auto' : 'hidden'}>
+                  <ErrorBoundary><ImageConverterPage /></ErrorBoundary>
+                </div>
+              )}
+              {visitedPages.has('/free-tools/media-trimmer') && (
+                <div className={location.pathname === '/free-tools/media-trimmer' ? 'h-full overflow-auto' : 'hidden'}>
+                  <ErrorBoundary><MediaTrimmerPage /></ErrorBoundary>
+                </div>
+              )}
+              {visitedPages.has('/free-tools/media-merger') && (
+                <div className={location.pathname === '/free-tools/media-merger' ? 'h-full overflow-auto' : 'hidden'}>
+                  <ErrorBoundary><MediaMergerPage /></ErrorBoundary>
                 </div>
               )}
             </>

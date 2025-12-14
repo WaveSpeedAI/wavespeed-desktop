@@ -184,7 +184,7 @@ self.onmessage = async (e: MessageEvent) => {
       }
 
       case 'merge': {
-        const { files, fileNames, outputFormat, outputExt, id } = payload as MergePayload
+        const { files, fileNames, outputFormat: _outputFormat, outputExt, id } = payload as MergePayload
         currentOperationId = id
 
         self.postMessage({ type: 'phase', payload: { phase: 'download', id } })
@@ -221,7 +221,7 @@ self.onmessage = async (e: MessageEvent) => {
       }
 
       case 'trim': {
-        const { file, fileName, startTime, endTime, outputFormat, outputExt, id } = payload as TrimPayload
+        const { file, fileName, startTime, endTime, outputFormat: _outputFormat, outputExt, id } = payload as TrimPayload
         currentOperationId = id
 
         self.postMessage({ type: 'phase', payload: { phase: 'download', id } })

@@ -1,5 +1,6 @@
-import { useState, useRef, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useRef, useCallback, useContext } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { PageResetContext } from '@/components/layout/Layout'
 import { useTranslation } from 'react-i18next'
 import { useFaceEnhancerWorker } from '@/hooks/useFaceEnhancerWorker'
 import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
@@ -38,6 +39,7 @@ import {
 import { cn } from '@/lib/utils'
 
 type ViewMode = 'sideBySide' | 'comparison'
+type ScaleType = '1x' | '2x' | '3x' | '4x'
 
 // Phase configuration for face enhancer
 const PHASES = [
@@ -49,6 +51,8 @@ const PHASES = [
 export function FaceEnhancerPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const location = useLocation()
+  const { resetPage } = useContext(PageResetContext)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const dragCounterRef = useRef(0)
@@ -62,9 +66,14 @@ export function FaceEnhancerPage() {
     height: number
   } | null>(null)
   const [faceCount, setFaceCount] = useState<number>(0)
+  const [scale, setScale] = useState<ScaleType>('1x')
   const [downloadFormat, setDownloadFormat] = useState<'png' | 'jpeg' | 'webp'>(
     'jpeg'
   )
+  const [enhancedSize, setEnhancedSize] = useState<{
+    width: number
+    height: number
+  } | null>(null)
   const [previewImage, setPreviewImage] = useState<string | null>(null)
   const [showBackWarning, setShowBackWarning] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>('sideBySide')
@@ -115,15 +124,17 @@ export function FaceEnhancerPage() {
       setShowBackWarning(true)
     } else {
       dispose()
+      resetPage(location.pathname)
       navigate('/free-tools')
     }
-  }, [isProcessing, dispose, navigate])
+  }, [isProcessing, dispose, resetPage, location.pathname, navigate])
 
   const handleConfirmBack = useCallback(() => {
     setShowBackWarning(false)
     dispose()
+    resetPage(location.pathname)
     navigate('/free-tools')
-  }, [dispose, navigate])
+  }, [dispose, resetPage, location.pathname, navigate])
 
   const handleFileSelect = useCallback(
     (file: File) => {
@@ -134,6 +145,7 @@ export function FaceEnhancerPage() {
         const dataUrl = e.target?.result as string
         setOriginalImage(dataUrl)
         setEnhancedImage(null)
+        setEnhancedSize(null)
         setFaceCount(0)
         resetProgress()
 
@@ -252,7 +264,7 @@ export function FaceEnhancerPage() {
       // Initialize models (cached after first download)
       await initModel()
 
-      // Create source image and get ImageData
+      // Create source image
       const img = new Image()
       await new Promise<void>((resolve, reject) => {
         img.onload = () => resolve()
@@ -260,18 +272,26 @@ export function FaceEnhancerPage() {
         img.src = originalImage
       })
 
-      // Draw to canvas to get ImageData
-      const tempCanvas = document.createElement('canvas')
-      tempCanvas.width = img.width
-      tempCanvas.height = img.height
-      const tempCtx = tempCanvas.getContext('2d')!
-      tempCtx.drawImage(img, 0, 0)
-      const imageData = tempCtx.getImageData(0, 0, img.width, img.height)
+      // Calculate output size based on scale
+      const scaleFactor = parseInt(scale)
+      const outputWidth = originalSize.width * scaleFactor
+      const outputHeight = originalSize.height * scaleFactor
 
-      // Enhance in worker
+      // Upscale image first (before face enhancement) for better face quality
+      const tempCanvas = document.createElement('canvas')
+      tempCanvas.width = outputWidth
+      tempCanvas.height = outputHeight
+      const tempCtx = tempCanvas.getContext('2d')!
+      tempCtx.imageSmoothingEnabled = true
+      tempCtx.imageSmoothingQuality = 'high'
+      tempCtx.drawImage(img, 0, 0, outputWidth, outputHeight)
+      const imageData = tempCtx.getImageData(0, 0, outputWidth, outputHeight)
+
+      // Enhance faces on the upscaled image
       const { dataUrl, faces } = await enhance(imageData)
 
       setFaceCount(faces)
+      setEnhancedSize({ width: outputWidth, height: outputHeight })
 
       if (faces === 0) {
         // No faces detected - show warning but still update
@@ -283,8 +303,8 @@ export function FaceEnhancerPage() {
 
       // Also draw to canvas for download format conversion
       const canvas = canvasRef.current
-      canvas.width = originalSize.width
-      canvas.height = originalSize.height
+      canvas.width = outputWidth
+      canvas.height = outputHeight
       const ctx = canvas.getContext('2d')!
       const resultImg = new Image()
       await new Promise<void>((resolve) => {
@@ -418,6 +438,22 @@ export function FaceEnhancerPage() {
               {t('freeTools.faceEnhancer.selectImage')}
             </Button>
 
+            <Select
+              value={scale}
+              onValueChange={(v) => setScale(v as ScaleType)}
+              disabled={isProcessing}
+            >
+              <SelectTrigger className="w-20">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1x">1x</SelectItem>
+                <SelectItem value="2x">2x</SelectItem>
+                <SelectItem value="3x">3x</SelectItem>
+                <SelectItem value="4x">4x</SelectItem>
+              </SelectContent>
+            </Select>
+
             <Button
               onClick={handleEnhance}
               disabled={isProcessing}
@@ -550,9 +586,9 @@ export function FaceEnhancerPage() {
                     <span className="text-sm font-medium">
                       {t('freeTools.faceEnhancer.enhanced')}
                     </span>
-                    {originalSize && enhancedImage && (
+                    {enhancedSize && enhancedImage && (
                       <span className="text-xs text-muted-foreground">
-                        {originalSize.width} x {originalSize.height}
+                        {enhancedSize.width} x {enhancedSize.height}
                       </span>
                     )}
                   </div>
@@ -603,6 +639,9 @@ export function FaceEnhancerPage() {
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     {originalSize && (
                       <span>{originalSize.width} x {originalSize.height}</span>
+                    )}
+                    {enhancedSize && enhancedSize.width !== originalSize?.width && (
+                      <span>→ {enhancedSize.width} x {enhancedSize.height}</span>
                     )}
                   </div>
                 </div>

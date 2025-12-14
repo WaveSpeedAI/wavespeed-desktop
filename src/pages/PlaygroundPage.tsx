@@ -37,7 +37,7 @@ export function PlaygroundPage() {
   const { modelId } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
-  const { models, fetchModels, isLoading: isLoadingModels } = useModelsStore()
+  const { models, fetchModels } = useModelsStore()
   const { isLoading: isLoadingApiKey, isValidated, loadApiKey, apiKey, hasAttemptedLoad } = useApiKeyStore()
   const {
     tabs,

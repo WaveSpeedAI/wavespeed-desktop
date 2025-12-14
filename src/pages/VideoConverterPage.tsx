@@ -1,5 +1,6 @@
-import { useState, useRef, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useRef, useCallback, useContext } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { PageResetContext } from '@/components/layout/Layout'
 import { useTranslation } from 'react-i18next'
 import { useFFmpegWorker } from '@/hooks/useFFmpegWorker'
 import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
@@ -49,6 +50,8 @@ const PHASES = [
 export function VideoConverterPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const location = useLocation()
+  const { resetPage } = useContext(PageResetContext)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const dragCounterRef = useRef(0)
@@ -108,14 +111,16 @@ export function VideoConverterPage() {
     if (isProcessing) {
       setShowBackWarning(true)
     } else {
+      resetPage(location.pathname)
       navigate('/free-tools')
     }
-  }, [isProcessing, navigate])
+  }, [isProcessing, resetPage, location.pathname, navigate])
 
   const handleConfirmBack = useCallback(() => {
     setShowBackWarning(false)
+    resetPage(location.pathname)
     navigate('/free-tools')
-  }, [navigate])
+  }, [resetPage, location.pathname, navigate])
 
   const handleFileSelect = useCallback(
     (file: File) => {

@@ -2,10 +2,15 @@
  * Face Enhancer Web Worker
  * Uses YOLO v8 for face detection and GFPGAN v1.4 for face enhancement
  * Both models run via ONNX Runtime (WebGPU with WASM fallback)
+ * Face parsing uses @huggingface/transformers pipeline
  */
 
 // @ts-expect-error - onnxruntime-web types not resolved due to package.json exports
 import * as ort from 'onnxruntime-web'
+import { pipeline, env, RawImage } from '@huggingface/transformers'
+
+// Configure transformers.js
+env.allowLocalModels = false
 
 // Configure WASM paths to use CDN
 const ORT_WASM_VERSION = '1.21.0'
@@ -35,6 +40,9 @@ const GFPGAN_MODEL_URL = 'https://huggingface.co/facefusion/models-3.0.0/resolve
 const YOLO_INPUT_SIZE = 640
 const GFPGAN_INPUT_SIZE = 512
 
+// Face region labels to include in mask (excludes background, hair, hat, neck, cloth, accessories)
+const FACE_LABELS = new Set(['skin', 'nose', 'eye_g', 'l_eye', 'r_eye', 'l_brow', 'r_brow', 'l_ear', 'r_ear', 'mouth', 'u_lip', 'l_lip'])
+
 // Detection thresholds
 const CONFIDENCE_THRESHOLD = 0.5
 const IOU_THRESHOLD = 0.45
@@ -45,6 +53,10 @@ const CACHE_NAME = 'face-enhancer-models'
 // ONNX sessions
 let yoloSession: ort.InferenceSession | null = null
 let gfpganSession: ort.InferenceSession | null = null
+
+// Face parsing segmenter (using transformers.js pipeline)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let segmenter: any = null
 
 interface FaceBox {
   x: number
@@ -471,15 +483,163 @@ async function enhanceFace(faceData: Float32Array): Promise<Float32Array> {
 }
 
 /**
- * Paste enhanced face back into original image with feathered blending
+ * Parse face to generate semantic segmentation mask using transformers.js pipeline
+ * Input: Face data as Float32Array (HWC, [0,1]), image dimensions, face box
+ * Output: 512x512 grayscale mask (0-255)
  */
-function pasteEnhancedFace(
+async function parseFace(
+  originalData: Float32Array,
+  imgW: number,
+  imgH: number,
+  faceBox: FaceBox,
+  outputSize: number = GFPGAN_INPUT_SIZE
+): Promise<Uint8Array> {
+  if (!segmenter) throw new Error('Face segmenter not initialized')
+
+  // Crop face with padding matching GFPGAN (30%)
+  const padding = 0.3
+  const expandW = faceBox.width * padding
+  const expandH = faceBox.height * padding
+
+  let cropX = faceBox.x - expandW
+  let cropY = faceBox.y - expandH
+  let cropW = faceBox.width + expandW * 2
+  let cropH = faceBox.height + expandH * 2
+
+  // Make square
+  const squareSize = Math.max(cropW, cropH)
+  cropX = cropX - (squareSize - cropW) / 2
+  cropY = cropY - (squareSize - cropH) / 2
+  cropW = squareSize
+  cropH = squareSize
+
+  // Clamp to image bounds
+  cropX = Math.max(0, cropX)
+  cropY = Math.max(0, cropY)
+  cropW = Math.min(cropW, imgW - cropX)
+  cropH = Math.min(cropH, imgH - cropY)
+
+  // Create cropped image as Uint8Array RGBA for RawImage
+  const cropSize = outputSize // Use output size directly
+  const rgbaData = new Uint8Array(cropSize * cropSize * 4)
+
+  for (let y = 0; y < cropSize; y++) {
+    for (let x = 0; x < cropSize; x++) {
+      // Map to crop coordinates
+      const srcX = cropX + (x / cropSize) * cropW
+      const srcY = cropY + (y / cropSize) * cropH
+
+      const x0 = Math.floor(srcX)
+      const y0 = Math.floor(srcY)
+      const x1 = Math.min(x0 + 1, imgW - 1)
+      const y1 = Math.min(y0 + 1, imgH - 1)
+
+      const xFrac = srcX - x0
+      const yFrac = srcY - y0
+
+      const outIdx = (y * cropSize + x) * 4
+
+      for (let c = 0; c < 3; c++) {
+        // Bilinear interpolation from HWC input [0,1]
+        const v00 = originalData[(y0 * imgW + x0) * 3 + c]
+        const v10 = originalData[(y0 * imgW + x1) * 3 + c]
+        const v01 = originalData[(y1 * imgW + x0) * 3 + c]
+        const v11 = originalData[(y1 * imgW + x1) * 3 + c]
+
+        const v0 = v00 * (1 - xFrac) + v10 * xFrac
+        const v1 = v01 * (1 - xFrac) + v11 * xFrac
+        const v = v0 * (1 - yFrac) + v1 * yFrac
+
+        // Convert [0,1] to [0,255]
+        rgbaData[outIdx + c] = Math.round(v * 255)
+      }
+      rgbaData[outIdx + 3] = 255 // Alpha
+    }
+  }
+
+  // Create RawImage directly from RGBA data
+  const image = new RawImage(rgbaData, cropSize, cropSize, 4)
+  const results = await segmenter(image)
+
+  // Combine face region masks
+  const mask = new Uint8Array(outputSize * outputSize)
+
+  for (const segment of results) {
+    // Handle labels that might have .png extension (e.g., 'skin.png' -> 'skin')
+    const label = segment.label.replace(/\.png$/i, '')
+    if (FACE_LABELS.has(label)) {
+      const segMask = segment.mask
+      const maskData = segMask.data as Uint8Array
+      const maskW = segMask.width
+      const maskH = segMask.height
+
+      for (let y = 0; y < outputSize; y++) {
+        for (let x = 0; x < outputSize; x++) {
+          const srcX = (x / outputSize) * maskW
+          const srcY = (y / outputSize) * maskH
+          const srcIdx = Math.floor(srcY) * maskW + Math.floor(srcX)
+
+          if (maskData[srcIdx] > 0) {
+            mask[y * outputSize + x] = 255
+          }
+        }
+      }
+    }
+  }
+
+  // Apply feathering to mask edges
+  const featheredMask = featherMask(mask, outputSize, 8)
+
+  return featheredMask
+}
+
+/**
+ * Apply feathering to mask edges for smoother blending
+ */
+function featherMask(mask: Uint8Array, size: number, radius: number): Uint8Array {
+  const result = new Uint8Array(mask)
+
+  // Simple box blur for feathering
+  for (let pass = 0; pass < 2; pass++) {
+    const temp = new Uint8Array(result)
+
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        let sum = 0
+        let count = 0
+
+        for (let dy = -radius; dy <= radius; dy++) {
+          for (let dx = -radius; dx <= radius; dx++) {
+            const nx = x + dx
+            const ny = y + dy
+
+            if (nx >= 0 && nx < size && ny >= 0 && ny < size) {
+              sum += temp[ny * size + nx]
+              count++
+            }
+          }
+        }
+
+        result[y * size + x] = Math.round(sum / count)
+      }
+    }
+  }
+
+  return result
+}
+
+/**
+ * Paste enhanced face back using semantic mask for blending
+ * Uses mask from face parsing for precise alpha blending
+ */
+function pasteEnhancedFaceWithMask(
   originalData: Float32Array,
   enhancedFace: Float32Array,
+  faceMask: Uint8Array,
   imgW: number,
   imgH: number,
   cropBox: { x: number; y: number; w: number; h: number },
-  featherSize: number = 16
+  edgeFeatherSize: number = 8
 ): Float32Array {
   const result = new Float32Array(originalData)
   const { x: cropX, y: cropY, w: cropW, h: cropH } = cropBox
@@ -488,7 +648,7 @@ function pasteEnhancedFace(
     for (let x = 0; x < imgW; x++) {
       // Check if pixel is in crop region
       if (x >= cropX && x < cropX + cropW && y >= cropY && y < cropY + cropH) {
-        // Map to enhanced face coordinates
+        // Map to enhanced face coordinates (512x512)
         const faceX = ((x - cropX) / cropW) * GFPGAN_INPUT_SIZE
         const faceY = ((y - cropY) / cropH) * GFPGAN_INPUT_SIZE
 
@@ -500,34 +660,49 @@ function pasteEnhancedFace(
         const xFrac = faceX - fx0
         const yFrac = faceY - fy0
 
-        // Calculate edge feather factor
+        // Get mask alpha from semantic segmentation (bilinear interpolation)
+        const m00 = faceMask[fy0 * GFPGAN_INPUT_SIZE + fx0]
+        const m10 = faceMask[fy0 * GFPGAN_INPUT_SIZE + fx1]
+        const m01 = faceMask[fy1 * GFPGAN_INPUT_SIZE + fx0]
+        const m11 = faceMask[fy1 * GFPGAN_INPUT_SIZE + fx1]
+
+        const m0 = m00 * (1 - xFrac) + m10 * xFrac
+        const m1 = m01 * (1 - xFrac) + m11 * xFrac
+        let maskAlpha = (m0 * (1 - yFrac) + m1 * yFrac) / 255
+
+        // Apply additional edge feathering at crop boundaries
         const distToLeft = x - cropX
         const distToRight = cropX + cropW - 1 - x
         const distToTop = y - cropY
         const distToBottom = cropY + cropH - 1 - y
         const minDist = Math.min(distToLeft, distToRight, distToTop, distToBottom)
-        const blendFactor = Math.min(1.0, minDist / featherSize)
+        const edgeFactor = Math.min(1.0, minDist / edgeFeatherSize)
 
-        for (let c = 0; c < 3; c++) {
-          // Bilinear interpolation from enhanced face (CHW format)
-          const v00 = enhancedFace[c * GFPGAN_INPUT_SIZE * GFPGAN_INPUT_SIZE + fy0 * GFPGAN_INPUT_SIZE + fx0]
-          const v10 = enhancedFace[c * GFPGAN_INPUT_SIZE * GFPGAN_INPUT_SIZE + fy0 * GFPGAN_INPUT_SIZE + fx1]
-          const v01 = enhancedFace[c * GFPGAN_INPUT_SIZE * GFPGAN_INPUT_SIZE + fy1 * GFPGAN_INPUT_SIZE + fx0]
-          const v11 = enhancedFace[c * GFPGAN_INPUT_SIZE * GFPGAN_INPUT_SIZE + fy1 * GFPGAN_INPUT_SIZE + fx1]
+        // Combine mask alpha with edge feathering
+        const blendFactor = maskAlpha * edgeFactor
 
-          const v0 = v00 * (1 - xFrac) + v10 * xFrac
-          const v1 = v01 * (1 - xFrac) + v11 * xFrac
-          let enhanced = v0 * (1 - yFrac) + v1 * yFrac
+        if (blendFactor > 0) {
+          for (let c = 0; c < 3; c++) {
+            // Bilinear interpolation from enhanced face (CHW format)
+            const v00 = enhancedFace[c * GFPGAN_INPUT_SIZE * GFPGAN_INPUT_SIZE + fy0 * GFPGAN_INPUT_SIZE + fx0]
+            const v10 = enhancedFace[c * GFPGAN_INPUT_SIZE * GFPGAN_INPUT_SIZE + fy0 * GFPGAN_INPUT_SIZE + fx1]
+            const v01 = enhancedFace[c * GFPGAN_INPUT_SIZE * GFPGAN_INPUT_SIZE + fy1 * GFPGAN_INPUT_SIZE + fx0]
+            const v11 = enhancedFace[c * GFPGAN_INPUT_SIZE * GFPGAN_INPUT_SIZE + fy1 * GFPGAN_INPUT_SIZE + fx1]
 
-          // Denormalize from [-1, 1] to [0, 1]
-          enhanced = (enhanced + 1) / 2
-          enhanced = Math.max(0, Math.min(1, enhanced))
+            const v0 = v00 * (1 - xFrac) + v10 * xFrac
+            const v1 = v01 * (1 - xFrac) + v11 * xFrac
+            let enhanced = v0 * (1 - yFrac) + v1 * yFrac
 
-          // Blend with original
-          const origIdx = (y * imgW + x) * 3 + c
-          const original = originalData[origIdx]
+            // Denormalize from [-1, 1] to [0, 1]
+            enhanced = (enhanced + 1) / 2
+            enhanced = Math.max(0, Math.min(1, enhanced))
 
-          result[origIdx] = original * (1 - blendFactor) + enhanced * blendFactor
+            // Blend with original using combined mask and edge factor
+            const origIdx = (y * imgW + x) * 3 + c
+            const original = originalData[origIdx]
+
+            result[origIdx] = original * (1 - blendFactor) + enhanced * blendFactor
+          }
         }
       }
     }
@@ -556,7 +731,7 @@ async function processImage(
   onProgress(20, faces.length)
 
   // Enhance each face
-  let result = new Float32Array(imageData)
+  let result: Float32Array = new Float32Array(imageData)
   const progressPerFace = 80 / faces.length
 
   for (let i = 0; i < faces.length; i++) {
@@ -572,11 +747,14 @@ async function processImage(
       0.3
     )
 
+    // Generate face mask using semantic segmentation (from original image with tighter crop)
+    const faceMask = await parseFace(imageData, width, height, face, GFPGAN_INPUT_SIZE)
+
     // Enhance face
     const enhancedFace = await enhanceFace(faceData)
 
-    // Paste back with blending
-    result = pasteEnhancedFace(result, enhancedFace, width, height, cropBox)
+    // Paste back with mask-based blending
+    result = pasteEnhancedFaceWithMask(result, enhancedFace, faceMask, width, height, cropBox)
 
     onProgress(20 + (i + 1) * progressPerFace, faces.length)
   }
@@ -605,8 +783,10 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
         const gfpganCached = await isModelCached(GFPGAN_MODEL_URL)
 
         let totalProgress = 0
-        const yoloWeight = 0.03 // ~3% for 12MB YOLO
-        const gfpganWeight = 0.97 // ~97% for 340MB GFPGAN
+        // Progress weights based on model sizes: YOLO ~12MB, GFPGAN ~340MB
+        // Face-parsing is handled by transformers.js which manages its own caching
+        const yoloWeight = 0.03 // ~3%
+        const gfpganWeight = 0.97 // ~97%
 
         // Download/load YOLO model
         if (!yoloCached) {
@@ -645,11 +825,17 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
           })
         }, timeout)
 
-        // Create sessions
+        // Create ONNX sessions
         self.postMessage({ type: 'phase', payload: { phase: 'loading', id: payload?.id } })
 
         yoloSession = await createSession(yoloBuffer)
         gfpganSession = await createSession(gfpganBuffer)
+
+        // Initialize face-parsing segmenter using transformers.js pipeline
+        // This will download/cache the model automatically on first use
+        segmenter = await pipeline('image-segmentation', 'Xenova/face-parsing', {
+          device: useWebGPU ? 'webgpu' : 'wasm'
+        })
 
         self.postMessage({ type: 'ready', payload: { id: payload?.id } })
       } catch (error) {
@@ -722,6 +908,7 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
     case 'dispose': {
       yoloSession = null
       gfpganSession = null
+      segmenter = null
       self.postMessage({ type: 'disposed' })
       break
     }

@@ -1,5 +1,6 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useRef, useCallback, useEffect, useContext } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { PageResetContext } from '@/components/layout/Layout'
 import { useTranslation } from 'react-i18next'
 import { useFFmpegWorker } from '@/hooks/useFFmpegWorker'
 import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
@@ -38,6 +39,8 @@ const PHASES = [
 export function MediaTrimmerPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const location = useLocation()
+  const { resetPage } = useContext(PageResetContext)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const mediaRef = useRef<HTMLVideoElement | HTMLAudioElement>(null)
   const dragCounterRef = useRef(0)
@@ -48,7 +51,8 @@ export function MediaTrimmerPage() {
   const [duration, setDuration] = useState<number>(0)
   const [startTime, setStartTime] = useState<number>(0)
   const [endTime, setEndTime] = useState<number>(0)
-  const [currentTime, setCurrentTime] = useState<number>(0)
+  const [_currentTime, setCurrentTime] = useState<number>(0)
+  const [_isPlaying, setIsPlaying] = useState(false)
   const [trimmedUrl, setTrimmedUrl] = useState<string | null>(null)
   const [trimmedBlob, setTrimmedBlob] = useState<Blob | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
@@ -94,14 +98,16 @@ export function MediaTrimmerPage() {
     if (isProcessing) {
       setShowBackWarning(true)
     } else {
+      resetPage(location.pathname)
       navigate('/free-tools')
     }
-  }, [isProcessing, navigate])
+  }, [isProcessing, resetPage, location.pathname, navigate])
 
   const handleConfirmBack = useCallback(() => {
     setShowBackWarning(false)
+    resetPage(location.pathname)
     navigate('/free-tools')
-  }, [navigate])
+  }, [resetPage, location.pathname, navigate])
 
   const handleFileSelect = useCallback(
     (file: File) => {

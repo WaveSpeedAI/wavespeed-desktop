@@ -1,5 +1,6 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useRef, useCallback, useEffect, useContext } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { PageResetContext } from '@/components/layout/Layout'
 import { useTranslation } from 'react-i18next'
 import { useImageEraserWorker } from '@/hooks/useImageEraserWorker'
 import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
@@ -66,6 +67,8 @@ const PHASES = [
 export function ImageEraserPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const location = useLocation()
+  const { resetPage } = useContext(PageResetContext)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const imageCanvasRef = useRef<HTMLCanvasElement>(null)
@@ -141,15 +144,17 @@ export function ImageEraserPage() {
       setShowBackWarning(true)
     } else {
       dispose()
+      resetPage(location.pathname)
       navigate('/free-tools')
     }
-  }, [isProcessing, dispose, navigate])
+  }, [isProcessing, dispose, resetPage, location.pathname, navigate])
 
   const handleConfirmBack = useCallback(() => {
     setShowBackWarning(false)
     dispose()
+    resetPage(location.pathname)
     navigate('/free-tools')
-  }, [dispose, navigate])
+  }, [dispose, resetPage, location.pathname, navigate])
 
   // Measure available container size on mount and window resize
   useEffect(() => {

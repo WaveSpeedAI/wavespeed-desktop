@@ -3,7 +3,7 @@ export type PhaseStatus = 'pending' | 'active' | 'completed' | 'error'
 export interface ProgressDetail {
   current?: number
   total?: number
-  unit?: 'bytes' | 'frames' | 'percent'
+  unit?: 'bytes' | 'frames' | 'percent' | 'seconds'
 }
 
 export interface ProcessingPhase {

@@ -129,7 +129,7 @@ export function FlappyBird({ onGameStart, onGameEnd, isTaskRunning, taskStatus, 
   const gameLoopRef = useRef<number | null>(null)
   const [gameState, setGameState] = useState<GameState>('idle')
   const gameStateRef = useRef<GameState>('idle')
-  const [score, setScore] = useState(0)
+  const [_score, setScore] = useState(0)
   const [highScore, setHighScore] = useState(() => {
     const saved = localStorage.getItem('flappybird_highscore')
     return saved ? parseInt(saved, 10) : 0

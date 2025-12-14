@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback, createContext } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Sidebar } from './Sidebar'
@@ -24,6 +24,11 @@ import { MediaTrimmerPage } from '@/pages/MediaTrimmerPage'
 import { MediaMergerPage } from '@/pages/MediaMergerPage'
 import { FaceEnhancerPage } from '@/pages/FaceEnhancerPage'
 
+// Context for resetting persistent pages (forces remount by changing key)
+export const PageResetContext = createContext<{ resetPage: (path: string) => void }>({
+  resetPage: () => {}
+})
+
 export function Layout() {
   const { t } = useTranslation()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -35,6 +40,15 @@ export function Layout() {
   const [visitedPages, setVisitedPages] = useState<Set<string>>(new Set())
   // Track the last visited free-tools sub-page for navigation
   const [lastFreeToolsPage, setLastFreeToolsPage] = useState<string | null>(null)
+
+  // Reset a persistent page by removing it from visitedPages (forces unmount)
+  const resetPage = useCallback((path: string) => {
+    setVisitedPages(prev => {
+      const next = new Set(prev)
+      next.delete(path)
+      return next
+    })
+  }, [])
 
   const { isValidated, loadApiKey, hasAttemptedLoad, isLoading: isLoadingApiKey } = useApiKeyStore()
   const [inputKey, setInputKey] = useState('')
@@ -234,6 +248,7 @@ export function Layout() {
   )
 
   return (
+    <PageResetContext.Provider value={{ resetPage }}>
     <TooltipProvider>
       <div className="flex h-screen overflow-hidden relative">
         {/* Abstract art background */}
@@ -300,7 +315,7 @@ export function Layout() {
               <div className={['/free-tools/video', '/free-tools/image', '/free-tools/face-enhancer', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/free-tools/video-converter', '/free-tools/audio-converter', '/free-tools/image-converter', '/free-tools/media-trimmer', '/free-tools/media-merger'].includes(location.pathname) ? 'hidden' : 'h-full overflow-auto'}>
                 <Outlet />
               </div>
-              {/* Persistent Free Tools pages - mounted once visited, then persist via CSS show/hide */}
+              {/* Persistent Free Tools pages - mounted once visited, removed from visitedPages forces unmount */}
               {visitedPages.has('/free-tools/video') && (
                 <div className={location.pathname === '/free-tools/video' ? 'h-full overflow-auto' : 'hidden'}>
                   <VideoEnhancerPage />
@@ -362,5 +377,6 @@ export function Layout() {
         <Toaster />
       </div>
     </TooltipProvider>
+    </PageResetContext.Provider>
   )
 }

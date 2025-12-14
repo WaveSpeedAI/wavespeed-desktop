@@ -42,6 +42,14 @@ export function Layout() {
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
 
+  // Reset login form when API key is cleared
+  useEffect(() => {
+    if (!isValidated) {
+      setInputKey('')
+      setError('')
+    }
+  }, [isValidated])
+
   // Track visits to persistent pages and last visited free-tools page
   useEffect(() => {
     const persistentPaths = ['/free-tools/video', '/free-tools/image', '/free-tools/face-enhancer', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/free-tools/video-converter', '/free-tools/audio-converter', '/free-tools/image-converter', '/free-tools/media-trimmer', '/free-tools/media-merger']
@@ -107,8 +115,8 @@ export function Layout() {
         localStorage.setItem('wavespeed_api_key', inputKey.trim())
       }
 
-      // Reload the API key state
-      await loadApiKey()
+      // Reload the API key state (force to bypass hasAttemptedLoad check)
+      await loadApiKey(true)
 
       toast({
         title: t('settings.apiKey.saved'),

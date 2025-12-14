@@ -10,7 +10,7 @@ interface ApiKeyState {
   isValidated: boolean
   hasAttemptedLoad: boolean
   setApiKey: (apiKey: string) => Promise<void>
-  loadApiKey: () => Promise<void>
+  loadApiKey: (force?: boolean) => Promise<void>
   validateApiKey: () => Promise<boolean>
 }
 
@@ -52,9 +52,9 @@ export const useApiKeyStore = create<ApiKeyState>((set, get) => ({
     await get().validateApiKey()
   },
 
-  loadApiKey: async () => {
-    // Skip if already attempted
-    if (get().hasAttemptedLoad) {
+  loadApiKey: async (force?: boolean) => {
+    // Skip if already attempted (unless forced)
+    if (get().hasAttemptedLoad && !force) {
       return
     }
     set({ isLoading: true, hasAttemptedLoad: true })

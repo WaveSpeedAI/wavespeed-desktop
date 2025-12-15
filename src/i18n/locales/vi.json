@@ -33,6 +33,7 @@
     "downloadFailed": "Tải xuống thất bại. Vui lòng kiểm tra kết nối mạng của bạn."
   },
   "nav": {
+    "home": "Trang chủ",
     "models": "Mô hình",
     "playground": "Sân chơi",
     "history": "Lịch sử",
@@ -41,6 +42,39 @@
     "freeTools": "Công cụ Miễn phí",
     "settings": "Cài đặt",
     "collapse": "Thu gọn"
+  },
+  "welcome": {
+    "tagline": "Công cụ Sáng tạo AI Trong Tầm Tay",
+    "explore": "Khám phá",
+    "getStarted": "Bắt đầu",
+    "tryFreeTools": "Dùng thử Công cụ Miễn phí",
+    "features": {
+      "models": {
+        "title": "Trình duyệt Mô hình",
+        "description": "Duyệt các mô hình AI để tạo hình ảnh, video và âm thanh"
+      },
+      "playground": {
+        "title": "Sân chơi",
+        "description": "Không gian làm việc đa tab để chạy mô hình với các tham số tùy chỉnh"
+      },
+      "templates": {
+        "title": "Mẫu",
+        "description": "Lưu và sử dụng lại các cấu hình yêu thích"
+      },
+      "history": {
+        "title": "Lịch sử",
+        "description": "Theo dõi và xem lại các dự đoán gần đây"
+      },
+      "assets": {
+        "title": "Tài sản của tôi",
+        "description": "Sắp xếp và quản lý các đầu ra đã tạo"
+      },
+      "freeTools": {
+        "title": "Công cụ Miễn phí",
+        "description": "Công cụ AI mạnh mẽ chạy cục bộ - không cần khóa API",
+        "badge": "Miễn phí"
+      }
+    }
   },
   "models": {
     "title": "Mô hình",
@@ -150,6 +184,40 @@
       "failedError": "Không thể tối ưu hóa prompt",
       "optimizing": "Đang tối ưu...",
       "optimize": "Tối ưu hóa"
+    },
+    "batch": {
+      "title": "Lô",
+      "enable": "Bật chế độ lô",
+      "disable": "Tắt chế độ lô",
+      "repeatCount": "Số lượng",
+      "randomizeSeed": "Seed ngẫu nhiên",
+      "stopOnError": "Dừng khi lỗi",
+      "runBatch": "Chạy lô ({{count}})",
+      "running": "Đang chạy {{current}}/{{total}}...",
+      "cancelling": "Đang hủy...",
+      "cancel": "Hủy",
+      "completed": "{{count}} hoàn thành",
+      "failed": "{{count}} thất bại",
+      "downloadAll": "Tải tất cả",
+      "saveAllToAssets": "Lưu tất cả",
+      "savedAll": "Đã lưu vào tài sản",
+      "savedAllDesc": "Đã lưu {{count}} đầu ra",
+      "saved": "Đã lưu",
+      "clearResults": "Xóa",
+      "results": "Kết quả",
+      "result": "Kết quả",
+      "inputDetails": "Chi tiết đầu vào",
+      "preview": "Xem trước",
+      "items": "mục",
+      "noPreview": "Không có xem trước",
+      "seedsGenerated": "Seed được tạo tự động",
+      "settings": "Cài đặt lô"
+    },
+    "flappyBird": {
+      "clickToStart": "Nhấp hoặc nhấn Space để bắt đầu trò chơi",
+      "viewResults": "Xem kết quả",
+      "playWhileWaiting": "Chơi trong khi chờ",
+      "quit": "Thoát"
     }
   },
   "history": {
@@ -370,6 +438,13 @@
       "clearedDesc": "Bộ nhớ đệm mô hình AI đã được xóa. Các mô hình sẽ được tải xuống lại khi cần.",
       "clearFailed": "Không thể xóa bộ nhớ đệm"
     },
+    "freeTools": {
+      "title": "Công cụ miễn phí",
+      "description": "Cấu hình cài đặt công cụ miễn phí",
+      "downloadTimeout": "Thời gian chờ tải xuống",
+      "downloadTimeoutDesc": "Thời gian chờ tối đa khi tải xuống các mô hình AI",
+      "minutes": "phút"
+    },
     "updates": {
       "title": "Cập nhật",
       "description": "Quản lý cập nhật ứng dụng",
@@ -461,6 +536,24 @@
       "comparison": "So sánh trượt",
       "dragToCompare": "Kéo để so sánh"
     },
+    "faceEnhancer": {
+      "title": "Cải thiện Khuôn mặt",
+      "description": "Cải thiện và phục hồi chất lượng khuôn mặt bằng AI",
+      "selectImage": "Chọn hình ảnh có khuôn mặt",
+      "orDragDrop": "hoặc kéo thả",
+      "enhance": "Cải thiện",
+      "download": "Tải xuống",
+      "processing": "Đang xử lý...",
+      "original": "Gốc",
+      "enhanced": "Đã cải thiện",
+      "sideBySide": "Cạnh nhau",
+      "comparison": "So sánh trượt",
+      "dragToCompare": "Kéo để so sánh",
+      "detecting": "Đang phát hiện khuôn mặt",
+      "enhancing": "Đang cải thiện khuôn mặt",
+      "noFaces": "Không phát hiện khuôn mặt trong hình ảnh",
+      "facesFound": "Phát hiện {{count}} khuôn mặt"
+    },
     "backgroundRemover": {
       "title": "Xóa Nền",
       "description": "Xóa nền hình ảnh tức thì bằng AI",
@@ -530,6 +623,89 @@
       "clearPointsTooltip": "Xóa tất cả điểm và quay lại chế độ xem trước khi di chuột",
       "cutMask": "Cắt Mặt nạ",
       "hint": "Nhấp chuột trái để bao gồm, nhấp chuột phải để loại trừ vùng"
+    },
+    "backWarning": {
+      "title": "Đang Xử Lý",
+      "description": "Một tác vụ đang được xử lý. Bạn có chắc chắn muốn quay lại? Điều này sẽ hủy thao tác hiện tại.",
+      "cancel": "Hủy",
+      "confirm": "Quay Lại"
+    },
+    "videoConverter": {
+      "title": "Video Converter",
+      "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
+      "selectVideo": "Select Video",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace video",
+      "supportedFormats": "Supports MP4, WebM, MOV, AVI, MKV",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "original": "Original",
+      "outputSettings": "Output Settings",
+      "format": "Format",
+      "quality": "Quality",
+      "resolution": "Resolution",
+      "convertedSize": "Converted Size"
+    },
+    "audioConverter": {
+      "title": "Audio Converter",
+      "description": "Convert audio between formats (MP3, AAC, FLAC, WAV)",
+      "selectAudio": "Select Audio",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace audio",
+      "supportedFormats": "Supports MP3, M4A, OGG, WAV, FLAC",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "converted": "Converted",
+      "playOriginal": "Play original",
+      "playConverted": "Play converted"
+    },
+    "imageConverter": {
+      "title": "Image Converter",
+      "description": "Convert images between formats (JPG, PNG, WebP, GIF)",
+      "selectImages": "Select Images",
+      "orDragDrop": "or drag and drop",
+      "dropToAdd": "Drop to add images",
+      "supportedFormats": "Supports JPG, PNG, WebP, GIF, BMP",
+      "addMore": "Add More",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "quality": "Quality",
+      "downloadAll": "Download All"
+    },
+    "mediaTrimmer": {
+      "title": "Media Trimmer",
+      "description": "Trim videos or audio to a specific duration",
+      "selectMedia": "Select Media",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace media",
+      "supportedFormats": "Supports video and audio files",
+      "trim": "Trim",
+      "trimming": "Trimming...",
+      "originalDuration": "Original",
+      "selectedDuration": "Selected",
+      "trimmedSize": "Trimmed Size",
+      "playingOriginal": "Playing original",
+      "playingTrimmed": "Playing trimmed"
+    },
+    "mediaMerger": {
+      "title": "Media Merger",
+      "description": "Merge multiple video or audio files into one",
+      "selectFiles": "Select Files",
+      "orDragDrop": "or drag and drop",
+      "dropToAdd": "Drop to add files",
+      "supportedFormats": "Supports video and audio files",
+      "addMore": "Add More",
+      "merge": "Merge",
+      "merging": "Merging...",
+      "merged": "Merged",
+      "totalDuration": "Total Duration",
+      "sameFormatNote": "Files must have the same format for lossless merging"
+    },
+    "ffmpeg": {
+      "loading": "Loading FFmpeg",
+      "converting": "Converting",
+      "merging": "Merging",
+      "trimming": "Trimming"
     }
   }
 }

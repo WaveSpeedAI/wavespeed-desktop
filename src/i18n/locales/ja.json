@@ -33,6 +33,7 @@
     "downloadFailed": "ダウンロードに失敗しました。ネットワーク接続を確認してください。"
   },
   "nav": {
+    "home": "ホーム",
     "models": "モデル",
     "playground": "プレイグラウンド",
     "history": "履歴",
@@ -41,6 +42,39 @@
     "freeTools": "無料ツール",
     "settings": "設定",
     "collapse": "折りたたむ"
+  },
+  "welcome": {
+    "tagline": "すぐに使えるAIクリエイティブツール",
+    "explore": "探索",
+    "getStarted": "始める",
+    "tryFreeTools": "無料ツールを試す",
+    "features": {
+      "models": {
+        "title": "モデルブラウザ",
+        "description": "画像、動画、音声生成用のAIモデルを閲覧"
+      },
+      "playground": {
+        "title": "プレイグラウンド",
+        "description": "カスタムパラメータでモデルを実行できるマルチタブワークスペース"
+      },
+      "templates": {
+        "title": "テンプレート",
+        "description": "お気に入りの設定を保存して再利用"
+      },
+      "history": {
+        "title": "履歴",
+        "description": "最近の予測を追跡・確認"
+      },
+      "assets": {
+        "title": "マイアセット",
+        "description": "生成した出力を整理・管理"
+      },
+      "freeTools": {
+        "title": "無料ツール",
+        "description": "ローカルで動作する強力なAIツール - APIキー不要",
+        "badge": "無料"
+      }
+    }
   },
   "models": {
     "title": "モデル",
@@ -150,6 +184,40 @@
       "failedError": "プロンプトの最適化に失敗しました",
       "optimizing": "最適化中...",
       "optimize": "最適化"
+    },
+    "flappyBird": {
+      "clickToStart": "クリックまたはスペースキーでゲーム開始",
+      "viewResults": "結果を見る",
+      "playWhileWaiting": "待っている間にプレイ",
+      "quit": "終了"
+    },
+    "batch": {
+      "title": "バッチ",
+      "enable": "バッチモードを有効化",
+      "disable": "バッチモードを無効化",
+      "repeatCount": "回数",
+      "randomizeSeed": "シードをランダム化",
+      "stopOnError": "エラー時に停止",
+      "runBatch": "バッチ実行 ({{count}})",
+      "running": "実行中 {{current}}/{{total}}...",
+      "cancelling": "キャンセル中...",
+      "cancel": "キャンセル",
+      "completed": "{{count}} 完了",
+      "failed": "{{count}} 失敗",
+      "downloadAll": "すべてダウンロード",
+      "saveAllToAssets": "すべて保存",
+      "savedAll": "アセットに保存しました",
+      "savedAllDesc": "{{count}} 個の出力を保存しました",
+      "saved": "保存済み",
+      "clearResults": "クリア",
+      "results": "結果",
+      "result": "結果",
+      "inputDetails": "入力詳細",
+      "preview": "プレビュー",
+      "items": "件",
+      "noPreview": "プレビューなし",
+      "seedsGenerated": "シードを自動生成しました",
+      "settings": "バッチ設定"
     }
   },
   "history": {
@@ -368,7 +436,14 @@
       "clear": "清除",
       "cleared": "缓存已清除",
       "clearedDesc": "AI模型缓存已清除。需要时将重新下载模型。",
-      "clearFailed": "清除缓存失败"
+      "clearFailed": "キャッシュのクリアに失敗しました"
+    },
+    "freeTools": {
+      "title": "無料ツール",
+      "description": "無料ツールの設定",
+      "downloadTimeout": "ダウンロードタイムアウト",
+      "downloadTimeoutDesc": "AIモデルのダウンロード最大待機時間",
+      "minutes": "分"
     },
     "updates": {
       "title": "アップデート",
@@ -461,6 +536,24 @@
       "comparison": "スライダー比較",
       "dragToCompare": "ドラッグして比較"
     },
+    "faceEnhancer": {
+      "title": "顔補正",
+      "description": "AIを使用して顔の画質を向上・修復",
+      "selectImage": "顔が含まれる画像を選択",
+      "orDragDrop": "またはドラッグ＆ドロップ",
+      "enhance": "補正",
+      "download": "ダウンロード",
+      "processing": "処理中...",
+      "original": "オリジナル",
+      "enhanced": "補正後",
+      "sideBySide": "並べて比較",
+      "comparison": "スライダー比較",
+      "dragToCompare": "ドラッグして比較",
+      "detecting": "顔を検出中",
+      "enhancing": "顔を補正中",
+      "noFaces": "画像内に顔が検出されませんでした",
+      "facesFound": "{{count}}個の顔を検出"
+    },
     "backgroundRemover": {
       "title": "背景削除",
       "description": "AIを使用して画像の背景を即座に削除",
@@ -530,6 +623,89 @@
       "finalizing": "最終処理中",
       "overall": "全体",
       "remaining": "残り"
+    },
+    "backWarning": {
+      "title": "処理中",
+      "description": "タスクは現在処理中です。戻りますか？現在の操作はキャンセルされます。",
+      "cancel": "キャンセル",
+      "confirm": "戻る"
+    },
+    "videoConverter": {
+      "title": "ビデオ変換",
+      "description": "動画形式を変換（MP4、WebM、MOV、AVI）",
+      "selectVideo": "動画を選択",
+      "orDragDrop": "またはドラッグ＆ドロップ",
+      "dropToReplace": "ドロップして動画を置換",
+      "supportedFormats": "MP4、WebM、MOV、AVI、MKVに対応",
+      "convert": "変換",
+      "converting": "変換中...",
+      "original": "オリジナル",
+      "outputSettings": "出力設定",
+      "format": "形式",
+      "quality": "品質",
+      "resolution": "解像度",
+      "convertedSize": "変換後サイズ"
+    },
+    "audioConverter": {
+      "title": "オーディオ変換",
+      "description": "音声形式を変換（MP3、AAC、FLAC、WAV）",
+      "selectAudio": "音声を選択",
+      "orDragDrop": "またはドラッグ＆ドロップ",
+      "dropToReplace": "ドロップして音声を置換",
+      "supportedFormats": "MP3、M4A、OGG、WAV、FLACに対応",
+      "convert": "変換",
+      "converting": "変換中...",
+      "converted": "変換済み",
+      "playOriginal": "オリジナルを再生",
+      "playConverted": "変換後を再生"
+    },
+    "imageConverter": {
+      "title": "画像変換",
+      "description": "画像形式を変換（JPG、PNG、WebP、GIF）",
+      "selectImages": "画像を選択",
+      "orDragDrop": "またはドラッグ＆ドロップ",
+      "dropToAdd": "ドロップして画像を追加",
+      "supportedFormats": "JPG、PNG、WebP、GIF、BMPに対応",
+      "addMore": "追加",
+      "convert": "変換",
+      "converting": "変換中...",
+      "quality": "品質",
+      "downloadAll": "すべてダウンロード"
+    },
+    "mediaTrimmer": {
+      "title": "メディアトリミング",
+      "description": "動画や音声を特定の長さに切り取り",
+      "selectMedia": "メディアを選択",
+      "orDragDrop": "またはドラッグ＆ドロップ",
+      "dropToReplace": "ドロップしてメディアを置換",
+      "supportedFormats": "動画と音声ファイルに対応",
+      "trim": "トリミング",
+      "trimming": "トリミング中...",
+      "originalDuration": "オリジナル",
+      "selectedDuration": "選択範囲",
+      "trimmedSize": "トリミング後サイズ",
+      "playingOriginal": "オリジナルを再生中",
+      "playingTrimmed": "トリミング後を再生中"
+    },
+    "mediaMerger": {
+      "title": "メディア結合",
+      "description": "複数の動画または音声ファイルを1つに結合",
+      "selectFiles": "ファイルを選択",
+      "orDragDrop": "またはドラッグ＆ドロップ",
+      "dropToAdd": "ドロップしてファイルを追加",
+      "supportedFormats": "動画と音声ファイルに対応",
+      "addMore": "追加",
+      "merge": "結合",
+      "merging": "結合中...",
+      "merged": "結合済み",
+      "totalDuration": "合計時間",
+      "sameFormatNote": "ロスレス結合には同じ形式のファイルが必要です"
+    },
+    "ffmpeg": {
+      "loading": "FFmpegを読み込み中",
+      "converting": "変換中",
+      "merging": "結合中",
+      "trimming": "トリミング中"
     }
   }
 }

@@ -53,15 +53,12 @@ export function detectAssetType(url: string): AssetType | null {
   return null
 }
 
-// Helper to generate filename
-function generateFileName(modelName: string, type: AssetType, url: string): string {
+// Helper to generate filename: model_predictionid_resultindex.ext
+function generateFileName(modelName: string, type: AssetType, url: string, predictionId?: string, resultIndex: number = 0): string {
   const slug = modelName.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase().replace(/-+/g, '-')
-  const date = new Date()
-  const dateStr = date.toISOString().split('T')[0]
-  const timeStr = date.toTimeString().split(' ')[0].replace(/:/g, '')
-  const index = Math.random().toString(36).substring(2, 6)
+  const id = predictionId || (Date.now().toString(36) + Math.random().toString(36).substring(2, 6))
   const ext = getExtensionFromUrl(url) || getDefaultExtension(type)
-  return `${slug}_${dateStr}_${timeStr}_${index}.${ext}`
+  return `${slug}_${id}_${resultIndex}.${ext}`
 }
 
 interface AssetsState {
@@ -133,7 +130,7 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
   },
 
   saveAsset: async (url, type, options) => {
-    const fileName = generateFileName(options.modelName, type, url)
+    const fileName = generateFileName(options.modelName, type, url, options.predictionId, options.resultIndex ?? 0)
 
     // Desktop mode: save file to disk
     if (window.electronAPI?.saveAsset) {

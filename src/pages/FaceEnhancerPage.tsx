@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useContext } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { PageResetContext } from '@/components/layout/Layout'
 import { useTranslation } from 'react-i18next'
-import { useUpscalerWorker } from '@/hooks/useUpscalerWorker'
+import { useFaceEnhancerWorker } from '@/hooks/useFaceEnhancerWorker'
 import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
 import { ProcessingProgress } from '@/components/shared/ProcessingProgress'
 import { Button } from '@/components/ui/button'
@@ -30,7 +30,7 @@ import {
   Upload,
   Download,
   Loader2,
-  ImageUp,
+  Sparkles,
   X,
   Columns2,
   SplitSquareHorizontal,
@@ -39,17 +39,16 @@ import {
 import { cn } from '@/lib/utils'
 
 type ViewMode = 'sideBySide' | 'comparison'
+type ScaleType = '1x' | '2x' | '3x' | '4x'
 
-type ModelType = 'slim' | 'medium' | 'thick'
-type ScaleType = '2x' | '3x' | '4x'
-
-// Phase configuration for image enhancer
+// Phase configuration for face enhancer
 const PHASES = [
-  { id: 'download', labelKey: 'freeTools.progress.downloading', weight: 0.1 },
-  { id: 'process', labelKey: 'freeTools.progress.processing', weight: 0.9 }
+  { id: 'download', labelKey: 'freeTools.progress.downloading', weight: 0.2 },
+  { id: 'detect', labelKey: 'freeTools.faceEnhancer.detecting', weight: 0.1 },
+  { id: 'enhance', labelKey: 'freeTools.faceEnhancer.enhancing', weight: 0.7 }
 ]
 
-export function ImageEnhancerPage() {
+export function FaceEnhancerPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
@@ -66,15 +65,15 @@ export function ImageEnhancerPage() {
     width: number
     height: number
   } | null>(null)
+  const [faceCount, setFaceCount] = useState<number>(0)
+  const [scale, setScale] = useState<ScaleType>('1x')
+  const [downloadFormat, setDownloadFormat] = useState<'png' | 'jpeg' | 'webp'>(
+    'jpeg'
+  )
   const [enhancedSize, setEnhancedSize] = useState<{
     width: number
     height: number
   } | null>(null)
-  const [model, setModel] = useState<ModelType>('slim')
-  const [scale, setScale] = useState<ScaleType>('2x')
-  const [downloadFormat, setDownloadFormat] = useState<'png' | 'jpeg' | 'webp'>(
-    'jpeg'
-  )
   const [previewImage, setPreviewImage] = useState<string | null>(null)
   const [showBackWarning, setShowBackWarning] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>('sideBySide')
@@ -94,18 +93,18 @@ export function ImageEnhancerPage() {
 
   const [error, setError] = useState<string | null>(null)
 
-  const { loadModel, upscale, dispose, hasFailed, retryWorker } = useUpscalerWorker({
+  const { initModel, enhance, dispose, hasFailed, retryWorker } = useFaceEnhancerWorker({
     onPhase: (phase) => {
-      // Start the corresponding phase when worker reports it
       if (phase === 'download') {
         startPhase('download')
-      } else if (phase === 'process') {
-        startPhase('process')
+      } else if (phase === 'detect') {
+        startPhase('detect')
+      } else if (phase === 'enhance') {
+        startPhase('enhance')
       }
     },
     onProgress: (phase, progressValue, detail) => {
-      // Update the phase that worker reports
-      const phaseId = phase === 'download' ? 'download' : 'process'
+      const phaseId = phase === 'download' ? 'download' : phase === 'detect' ? 'detect' : 'enhance'
       updatePhase(phaseId, progressValue, detail)
     },
     onError: (err) => {
@@ -147,6 +146,7 @@ export function ImageEnhancerPage() {
         setOriginalImage(dataUrl)
         setEnhancedImage(null)
         setEnhancedSize(null)
+        setFaceCount(0)
         resetProgress()
 
         // Get original dimensions
@@ -257,13 +257,14 @@ export function ImageEnhancerPage() {
     if (!originalImage || !originalSize || !canvasRef.current) return
 
     setIsProcessing(true)
-    resetAndStart('process')
+    setError(null)
+    resetAndStart('download')
 
     try {
-      // Load the selected model in worker (cached by browser after first download)
-      await loadModel(model, scale)
+      // Initialize models (cached after first download)
+      await initModel()
 
-      // Create source image and get ImageData
+      // Create source image
       const img = new Image()
       await new Promise<void>((resolve, reject) => {
         img.onload = () => resolve()
@@ -271,31 +272,39 @@ export function ImageEnhancerPage() {
         img.src = originalImage
       })
 
-      // Draw to canvas to get ImageData
+      // Calculate output size based on scale
+      const scaleFactor = parseInt(scale)
+      const outputWidth = originalSize.width * scaleFactor
+      const outputHeight = originalSize.height * scaleFactor
+
+      // Upscale image first (before face enhancement) for better face quality
       const tempCanvas = document.createElement('canvas')
-      tempCanvas.width = img.width
-      tempCanvas.height = img.height
+      tempCanvas.width = outputWidth
+      tempCanvas.height = outputHeight
       const tempCtx = tempCanvas.getContext('2d')!
-      tempCtx.drawImage(img, 0, 0)
-      const imageData = tempCtx.getImageData(0, 0, img.width, img.height)
+      tempCtx.imageSmoothingEnabled = true
+      tempCtx.imageSmoothingQuality = 'high'
+      tempCtx.drawImage(img, 0, 0, outputWidth, outputHeight)
+      const imageData = tempCtx.getImageData(0, 0, outputWidth, outputHeight)
 
-      // Upscale in worker
-      const upscaledDataUrl = await upscale(imageData)
+      // Enhance faces on the upscaled image
+      const { dataUrl, faces } = await enhance(imageData)
 
-      // Get scale multiplier
-      const scaleMultiplier = parseInt(scale.replace('x', ''))
+      setFaceCount(faces)
+      setEnhancedSize({ width: outputWidth, height: outputHeight })
+
+      if (faces === 0) {
+        // No faces detected - show warning but still update
+        setError(t('freeTools.faceEnhancer.noFaces'))
+      }
 
       // Set the enhanced image
-      setEnhancedImage(upscaledDataUrl)
-      setEnhancedSize({
-        width: originalSize.width * scaleMultiplier,
-        height: originalSize.height * scaleMultiplier
-      })
+      setEnhancedImage(dataUrl)
 
       // Also draw to canvas for download format conversion
       const canvas = canvasRef.current
-      canvas.width = originalSize.width * scaleMultiplier
-      canvas.height = originalSize.height * scaleMultiplier
+      canvas.width = outputWidth
+      canvas.height = outputHeight
       const ctx = canvas.getContext('2d')!
       const resultImg = new Image()
       await new Promise<void>((resolve) => {
@@ -303,12 +312,13 @@ export function ImageEnhancerPage() {
           ctx.drawImage(resultImg, 0, 0)
           resolve()
         }
-        resultImg.src = upscaledDataUrl
+        resultImg.src = dataUrl
       })
 
       completeAllPhases()
     } catch (error) {
       console.error('Enhancement failed:', error)
+      setError(error instanceof Error ? error.message : 'Enhancement failed')
     } finally {
       setIsProcessing(false)
       dispose()
@@ -326,7 +336,7 @@ export function ImageEnhancerPage() {
 
     const link = document.createElement('a')
     link.href = dataUrl
-    link.download = `enhanced-image-${Date.now()}.${downloadFormat}`
+    link.download = `enhanced-face-${Date.now()}.${downloadFormat}`
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -349,7 +359,7 @@ export function ImageEnhancerPage() {
           <div className="text-center">
             <Upload className="h-12 w-12 text-primary mx-auto mb-2" />
             <p className="text-lg font-medium">
-              {t('freeTools.imageEnhancer.orDragDrop')}
+              {t('freeTools.faceEnhancer.orDragDrop')}
             </p>
           </div>
         </div>
@@ -366,10 +376,10 @@ export function ImageEnhancerPage() {
         </Button>
         <div>
           <h1 className="text-2xl font-bold">
-            {t('freeTools.imageEnhancer.title')}
+            {t('freeTools.faceEnhancer.title')}
           </h1>
           <p className="text-muted-foreground text-sm">
-            {t('freeTools.imageEnhancer.description')}
+            {t('freeTools.faceEnhancer.description')}
           </p>
         </div>
       </div>
@@ -394,10 +404,10 @@ export function ImageEnhancerPage() {
               <Upload className="h-8 w-8 text-muted-foreground" />
             </div>
             <p className="text-lg font-medium">
-              {t('freeTools.imageEnhancer.selectImage')}
+              {t('freeTools.faceEnhancer.selectImage')}
             </p>
             <p className="text-sm text-muted-foreground">
-              {t('freeTools.imageEnhancer.orDragDrop')}
+              {t('freeTools.faceEnhancer.orDragDrop')}
             </p>
           </CardContent>
         </Card>
@@ -425,29 +435,8 @@ export function ImageEnhancerPage() {
               disabled={isProcessing}
             >
               <Upload className="h-4 w-4 mr-2" />
-              {t('freeTools.imageEnhancer.selectImage')}
+              {t('freeTools.faceEnhancer.selectImage')}
             </Button>
-
-            <Select
-              value={model}
-              onValueChange={(v) => setModel(v as ModelType)}
-              disabled={isProcessing}
-            >
-              <SelectTrigger className="w-36">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="slim">
-                  {t('freeTools.imageEnhancer.modelFast')}
-                </SelectItem>
-                <SelectItem value="medium">
-                  {t('freeTools.imageEnhancer.modelBalanced')}
-                </SelectItem>
-                <SelectItem value="thick">
-                  {t('freeTools.imageEnhancer.modelQuality')}
-                </SelectItem>
-              </SelectContent>
-            </Select>
 
             <Select
               value={scale}
@@ -458,6 +447,7 @@ export function ImageEnhancerPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="1x">1x</SelectItem>
                 <SelectItem value="2x">2x</SelectItem>
                 <SelectItem value="3x">3x</SelectItem>
                 <SelectItem value="4x">4x</SelectItem>
@@ -472,17 +462,24 @@ export function ImageEnhancerPage() {
               {isProcessing ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  {t('freeTools.imageEnhancer.processing')}
+                  {t('freeTools.faceEnhancer.processing')}
                 </>
               ) : (
                 <>
-                  <ImageUp className="h-4 w-4 mr-2" />
-                  {t('freeTools.imageEnhancer.enhance')}
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  {t('freeTools.faceEnhancer.enhance')}
                 </>
               )}
             </Button>
             {enhancedImage && (
               <>
+                {/* Face count badge */}
+                {faceCount > 0 && (
+                  <span className="text-sm text-muted-foreground px-2 py-1 bg-muted rounded">
+                    {t('freeTools.faceEnhancer.facesFound', { count: faceCount })}
+                  </span>
+                )}
+
                 {/* View mode toggle */}
                 <div className="flex rounded-md border">
                   <Button
@@ -490,7 +487,7 @@ export function ImageEnhancerPage() {
                     size="sm"
                     className="rounded-r-none border-0"
                     onClick={() => setViewMode('sideBySide')}
-                    title={t('freeTools.imageEnhancer.sideBySide')}
+                    title={t('freeTools.faceEnhancer.sideBySide')}
                   >
                     <Columns2 className="h-4 w-4" />
                   </Button>
@@ -499,7 +496,7 @@ export function ImageEnhancerPage() {
                     size="sm"
                     className="rounded-l-none border-0"
                     onClick={() => setViewMode('comparison')}
-                    title={t('freeTools.imageEnhancer.comparison')}
+                    title={t('freeTools.faceEnhancer.comparison')}
                   >
                     <SplitSquareHorizontal className="h-4 w-4" />
                   </Button>
@@ -522,7 +519,7 @@ export function ImageEnhancerPage() {
                 </Select>
                 <Button variant="outline" onClick={handleDownload}>
                   <Download className="h-4 w-4 mr-2" />
-                  {t('freeTools.imageEnhancer.download')}
+                  {t('freeTools.faceEnhancer.download')}
                 </Button>
               </>
             )}
@@ -547,6 +544,13 @@ export function ImageEnhancerPage() {
             </div>
           )}
 
+          {/* No faces warning (non-fatal) */}
+          {error && error === t('freeTools.faceEnhancer.noFaces') && !isProcessing && (
+            <div className="flex items-center justify-center gap-3 p-4 bg-warning/10 border border-warning/20 rounded-lg">
+              <span className="text-sm text-warning-foreground">{error}</span>
+            </div>
+          )}
+
           {/* Preview area */}
           {viewMode === 'sideBySide' || !enhancedImage ? (
             /* Side by side preview */
@@ -556,7 +560,7 @@ export function ImageEnhancerPage() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-sm font-medium">
-                      {t('freeTools.imageEnhancer.original')}
+                      {t('freeTools.faceEnhancer.original')}
                     </span>
                     {originalSize && (
                       <span className="text-xs text-muted-foreground">
@@ -580,9 +584,9 @@ export function ImageEnhancerPage() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-sm font-medium">
-                      {t('freeTools.imageEnhancer.enhanced')}
+                      {t('freeTools.faceEnhancer.enhanced')}
                     </span>
-                    {enhancedSize && (
+                    {enhancedSize && enhancedImage && (
                       <span className="text-xs text-muted-foreground">
                         {enhancedSize.width} x {enhancedSize.height}
                       </span>
@@ -602,7 +606,7 @@ export function ImageEnhancerPage() {
                           <>
                             <Loader2 className="h-8 w-8 animate-spin mb-2" />
                             <span className="text-sm">
-                              {t('freeTools.imageEnhancer.processing')}
+                              {t('freeTools.faceEnhancer.processing')}
                             </span>
                           </>
                         ) : (
@@ -621,24 +625,23 @@ export function ImageEnhancerPage() {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-4">
                     <span className="text-sm font-medium">
-                      {t('freeTools.imageEnhancer.original')}
+                      {t('freeTools.faceEnhancer.original')}
                     </span>
                     <span className="text-xs text-muted-foreground">←</span>
                     <span className="text-xs text-muted-foreground">
-                      {t('freeTools.imageEnhancer.dragToCompare')}
+                      {t('freeTools.faceEnhancer.dragToCompare')}
                     </span>
                     <span className="text-xs text-muted-foreground">→</span>
                     <span className="text-sm font-medium">
-                      {t('freeTools.imageEnhancer.enhanced')}
+                      {t('freeTools.faceEnhancer.enhanced')}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     {originalSize && (
                       <span>{originalSize.width} x {originalSize.height}</span>
                     )}
-                    <span>→</span>
-                    {enhancedSize && (
-                      <span>{enhancedSize.width} x {enhancedSize.height}</span>
+                    {enhancedSize && enhancedSize.width !== originalSize?.width && (
+                      <span>→ {enhancedSize.width} x {enhancedSize.height}</span>
                     )}
                   </div>
                 </div>
@@ -687,10 +690,10 @@ export function ImageEnhancerPage() {
 
                   {/* Labels */}
                   <div className="absolute bottom-3 left-3 px-2 py-1 bg-black/60 text-white text-xs rounded">
-                    {t('freeTools.imageEnhancer.original')}
+                    {t('freeTools.faceEnhancer.original')}
                   </div>
                   <div className="absolute bottom-3 right-3 px-2 py-1 bg-black/60 text-white text-xs rounded">
-                    {t('freeTools.imageEnhancer.enhanced')}
+                    {t('freeTools.faceEnhancer.enhanced')}
                   </div>
                 </div>
               </CardContent>

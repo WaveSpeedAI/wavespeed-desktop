@@ -36,7 +36,7 @@ wavespeed-desktop/
 │   ├── pages/            # Page components (ModelsPage, PlaygroundPage, FreeToolsPage, etc.)
 │   ├── stores/           # Zustand stores (apiKeyStore, modelsStore)
 │   ├── types/            # TypeScript type definitions
-│   └── workers/          # Web Workers (upscaler.worker.ts, backgroundRemover.worker.ts)
+│   └── workers/          # Web Workers (upscaler, backgroundRemover, imageEraser, faceEnhancer, segmentAnything, ffmpeg)
 ├── .github/workflows/    # GitHub Actions for CI/CD
 │   ├── build.yml         # Build on push/tag/PR
 │   └── nightly.yml       # Nightly builds
@@ -60,6 +60,8 @@ wavespeed-desktop/
 - **`src/components/playground/CameraCapture.tsx`**: Camera capture component for taking photos
 - **`src/components/playground/VideoRecorder.tsx`**: Video recording with audio waveform visualization
 - **`src/components/playground/AudioRecorder.tsx`**: Audio recording with waveform display and playback
+- **`src/components/playground/BatchControls.tsx`**: Batch mode dropdown UI with slider for repeat count (2-16)
+- **`src/components/playground/BatchOutputGrid.tsx`**: Grid display for batch prediction results with bulk actions
 - **`src/pages/TemplatesPage.tsx`**: Template management (browse, search, use, rename, delete)
 - **`src/pages/HistoryPage.tsx`**: Prediction history with detail dialog
 - **`src/pages/AssetsPage.tsx`**: Asset management with grid view, filters, tags, favorites, bulk operations
@@ -67,22 +69,34 @@ wavespeed-desktop/
 - **`src/pages/ImageEnhancerPage.tsx`**: Image upscaling with ESRGAN models (2x-4x)
 - **`src/pages/VideoEnhancerPage.tsx`**: Video upscaling frame-by-frame with progress and ETA
 - **`src/pages/BackgroundRemoverPage.tsx`**: Background removal displaying all 3 outputs (foreground, background, mask) simultaneously
+- **`src/pages/FaceEnhancerPage.tsx`**: Face enhancement using YOLO v8 for detection and GFPGAN v1.4 for restoration
 - **`src/pages/ImageEraserPage.tsx`**: Object removal using LaMa inpainting model with inline mask drawing and smart crop
 - **`src/pages/SegmentAnythingPage.tsx`**: Interactive object segmentation using SlimSAM model with point prompts
+- **`src/pages/VideoConverterPage.tsx`**: Video format conversion with codec and quality options using FFmpeg WASM
+- **`src/pages/AudioConverterPage.tsx`**: Audio format conversion with bitrate control using FFmpeg WASM
+- **`src/pages/ImageConverterPage.tsx`**: Batch image format conversion with quality settings using FFmpeg WASM
+- **`src/pages/MediaTrimmerPage.tsx`**: Video/audio trimming with start/end time selection using FFmpeg WASM
+- **`src/pages/MediaMergerPage.tsx`**: Merge multiple video/audio files using FFmpeg WASM
 - **`src/lib/schemaToForm.ts`**: Converts API schema to form field configurations
 - **`src/lib/lamaUtils.ts`**: Image/tensor conversion utilities for inpainting models (canvasToFloat32Array, maskCanvasToFloat32Array, tensorToCanvas)
 - **`src/lib/maskUtils.ts`**: Mask utility functions (flood fill, invert, video frame extraction)
 - **`src/types/progress.ts`**: Multi-phase progress types (PhaseStatus, ProcessingPhase, MultiPhaseProgress) and utility functions (formatBytes, formatTime)
+- **`src/types/batch.ts`**: Batch processing types (BatchConfig, BatchQueueItem, BatchState, BatchResult) and DEFAULT_BATCH_CONFIG
 - **`src/hooks/useUpscalerWorker.ts`**: Hook for managing upscaler Web Worker with phase/progress callbacks
 - **`src/hooks/useBackgroundRemoverWorker.ts`**: Hook for managing background remover Web Worker with removeBackgroundAll for batch processing
 - **`src/hooks/useImageEraserWorker.ts`**: Hook for managing image eraser Web Worker with LaMa model initialization and object removal
+- **`src/hooks/useFaceEnhancerWorker.ts`**: Hook for managing face enhancer Web Worker with YOLO detection and GFPGAN enhancement
 - **`src/hooks/useSegmentAnythingWorker.ts`**: Hook for managing SAM Web Worker with segmentImage and decodeMask methods
+- **`src/hooks/useFFmpegWorker.ts`**: Hook for managing FFmpeg Web Worker with convert, merge, trim, and getInfo methods
 - **`src/hooks/useMultiPhaseProgress.ts`**: Hook for multi-phase progress state management with weighted phases, ETA calculation
 - **`src/components/shared/ProcessingProgress.tsx`**: Compact single-row progress component with phase indicators, status, and ETA
 - **`src/workers/upscaler.worker.ts`**: Web Worker for GPU-free image/video upscaling with UpscalerJS
 - **`src/workers/backgroundRemover.worker.ts`**: Web Worker for background removal with @imgly/background-removal, supports processAll for batch output
-- **`src/workers/imageEraser.worker.ts`**: Web Worker for LaMa inpainting model (512x512, quantized) with onnxruntime-web WASM backend, smart crop around mask for better quality
+- **`src/workers/imageEraser.worker.ts`**: Web Worker for LaMa inpainting model (512x512, quantized) with onnxruntime-web, WebGPU with WASM fallback, smart crop around mask for better quality
+- **`src/workers/faceEnhancer.worker.ts`**: Web Worker for face enhancement using YOLO v8 (detection) + GFPGAN v1.4 (restoration) with onnxruntime-web, WebGPU with WASM fallback
 - **`src/workers/segmentAnything.worker.ts`**: Web Worker for Segment Anything (SlimSAM) model using @huggingface/transformers with WebGPU acceleration for interactive object segmentation
+- **`src/workers/ffmpeg.worker.ts`**: Web Worker for FFmpeg WASM operations (convert, merge, trim, getInfo) with progress reporting
+- **`src/lib/ffmpegFormats.ts`**: Format definitions for video, audio, and image conversion (codecs, extensions, quality presets)
 
 ## WaveSpeedAI API
 
@@ -198,10 +212,10 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - Language preference is stored in localStorage with key `i18next` and auto-detected from browser
 - Assets are auto-saved by default to `Documents/WaveSpeed/` with subdirectories for images, videos, audio, and text
 - Asset metadata is stored in `{userData}/assets-metadata.json` with tags, favorites, and file references
-- Asset file naming format: `{model-slug}_{YYYY-MM-DD}_{HHmmss}_{random}.{ext}`
+- Asset file naming format: `{model-slug}_{predictionId}_{resultindex}.{ext}` (e.g., `flux-schnell_pred-abc123_0.png`)
 - Layout.tsx handles unified API key login screen - pages don't need individual ApiKeyRequired checks
 - Settings page (`/settings`) is a public path accessible without API key
-- Free Tools pages (`/free-tools`, `/free-tools/image`, `/free-tools/video`, `/free-tools/background-remover`, `/free-tools/image-eraser`, `/free-tools/segment-anything`) are public paths accessible without API key
+- Free Tools pages are public paths accessible without API key: `/free-tools`, `/free-tools/image`, `/free-tools/video`, `/free-tools/background-remover`, `/free-tools/face-enhancer`, `/free-tools/image-eraser`, `/free-tools/segment-anything`, `/free-tools/video-converter`, `/free-tools/audio-converter`, `/free-tools/image-converter`, `/free-tools/media-trimmer`, `/free-tools/media-merger`
 - Free Tools feature uses UpscalerJS with ESRGAN models for image/video upscaling (slim/medium/thick quality options)
 - Video Enhancer processes frames at 30 FPS using WebM muxer with VP9 codec
 - Upscaler uses Web Worker to keep UI responsive during heavy processing
@@ -209,13 +223,18 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - Background Remover displays all 3 outputs simultaneously: foreground (transparent background), background (subject removed), and mask (grayscale segmentation)
 - Background Remover processes all outputs in a single batch via `removeBackgroundAll` (model cached after first call)
 - Background Remover auto-detects GPU (WebGPU) support and falls back to CPU
-- Image Eraser uses LaMa inpainting model (512x512 input, quantized) via onnxruntime-web WASM backend for object removal
+- Image Eraser uses LaMa inpainting model (512x512 input, quantized) via onnxruntime-web with WebGPU acceleration (falls back to WASM) for object removal
 - Image Eraser model is cached in browser Cache API after first download from Hugging Face (opencv/inpainting_lama repo)
 - Image Eraser uses smart crop (3x mask size, min 512x512) around masked area for better quality on large images
 - Image Eraser uses inline mask drawing (brush/eraser tools) with undo/redo support and feathered edge blending
+- Face Enhancer uses YOLO v8 nano-face (~12MB) for face detection and GFPGAN v1.4 (~340MB) for face restoration
+- Face Enhancer uses onnxruntime-web with WebGPU acceleration (falls back to WASM)
+- Face Enhancer crops faces with 1.3x padding, enhances at 512x512, then blends back with Gaussian feathered edges
+- Face Enhancer models are cached in browser Cache API after first download from Hugging Face
+- Free Tools pages support click-to-preview for both original and processed images via fullscreen dialog
 - Multi-phase progress system uses weighted phases to calculate overall progress (e.g., download: 30%, process: 70%)
 - ProcessingProgress component displays compact single-row UI: [phase dots] [spinner + label] [progress bar] [ETA] [%]
-- Progress phases are configured per-tool: BackgroundRemover (2 phases), ImageEnhancer (3 phases), VideoEnhancer (4 phases)
+- Progress phases are configured per-tool: BackgroundRemover (2 phases), ImageEnhancer (3 phases), VideoEnhancer (4 phases), FaceEnhancer (3 phases: download, detect, enhance)
 - Worker messages use standardized format: `{ type: 'phase' | 'progress', payload: { phase, progress, detail? } }`
 - MaskEditor component provides brush (draw), eraser, and bucket fill (flood fill) tools
 - Mask fields are detected by checking if field name is one of: "mask_image", "mask_image_url", "mask_images", "mask_image_urls"
@@ -229,3 +248,17 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - Segment Anything model is downloaded and cached by @huggingface/transformers on first use
 - Settings page displays account balance when authenticated, fetched via `apiClient.getBalance()` with refresh button
 - Balance is displayed in USD format ($X.XX) and auto-fetches when API key is validated
+- Batch processing allows running the same prediction 2-16 times with auto-randomized seeds for variations
+- Batch config is stored per-tab in playgroundStore: `batchConfig`, `batchState`, `batchResults`
+- Batch mode uses a slider UI in a dropdown menu attached to the Run button
+- When batch is enabled, Run button shows count (e.g., "Run (4)") and price is multiplied by repeat count
+- Batch results are displayed in a grid with thumbnails, click to expand full output
+- Batch outputs can be bulk downloaded or saved to assets via "Download All" / "Save All" buttons
+- Seed randomization generates unique seeds per batch item using base seed + index to ensure reproducibility
+- Segment Anything worker forces onnxruntime-web 1.21.0 WASM from CDN to avoid version mismatch with @huggingface/transformers bundled WASM
+- FFmpeg WASM tools use @ffmpeg/ffmpeg 0.12.x with ESM build loaded from jsdelivr CDN
+- FFmpeg worker supports convert, merge, trim, and getInfo operations with progress reporting
+- FFmpeg tools pages: VideoConverterPage, AudioConverterPage, ImageConverterPage, MediaTrimmerPage, MediaMergerPage
+- FFmpeg tools are public paths accessible without API key: `/free-tools/video-converter`, `/free-tools/audio-converter`, `/free-tools/image-converter`, `/free-tools/media-trimmer`, `/free-tools/media-merger`
+- FFmpeg format definitions in `src/lib/ffmpegFormats.ts` include VIDEO_FORMATS, AUDIO_FORMATS, IMAGE_FORMATS with codec mappings
+- @ffmpeg/ffmpeg and @ffmpeg/util are excluded from Vite's optimizeDeps to avoid bundling issues

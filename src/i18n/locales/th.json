@@ -33,6 +33,7 @@
     "downloadFailed": "ดาวน์โหลดล้มเหลว กรุณาตรวจสอบการเชื่อมต่อเครือข่ายของคุณ"
   },
   "nav": {
+    "home": "หน้าแรก",
     "models": "โมเดล",
     "playground": "สนามทดสอบ",
     "history": "ประวัติ",
@@ -41,6 +42,39 @@
     "freeTools": "เครื่องมือฟรี",
     "settings": "การตั้งค่า",
     "collapse": "ยุบ"
+  },
+  "welcome": {
+    "tagline": "เครื่องมือสร้างสรรค์ AI ที่ปลายนิ้วของคุณ",
+    "explore": "สำรวจ",
+    "getStarted": "เริ่มต้นใช้งาน",
+    "tryFreeTools": "ลองเครื่องมือฟรี",
+    "features": {
+      "models": {
+        "title": "เบราว์เซอร์โมเดล",
+        "description": "เรียกดูโมเดล AI สำหรับการสร้างภาพ วิดีโอ และเสียง"
+      },
+      "playground": {
+        "title": "สนามทดสอบ",
+        "description": "พื้นที่ทำงานหลายแท็บเพื่อเรียกใช้โมเดลด้วยพารามิเตอร์ที่กำหนดเอง"
+      },
+      "templates": {
+        "title": "เทมเพลต",
+        "description": "บันทึกและนำการกำหนดค่าที่ชื่นชอบมาใช้ซ้ำ"
+      },
+      "history": {
+        "title": "ประวัติ",
+        "description": "ติดตามและตรวจสอบการคาดการณ์ล่าสุดของคุณ"
+      },
+      "assets": {
+        "title": "ทรัพย์สินของฉัน",
+        "description": "จัดระเบียบและจัดการเอาต์พุตที่สร้างขึ้น"
+      },
+      "freeTools": {
+        "title": "เครื่องมือฟรี",
+        "description": "เครื่องมือ AI ที่ทรงพลังที่ทำงานในเครื่อง - ไม่ต้องใช้ API key",
+        "badge": "ฟรี"
+      }
+    }
   },
   "models": {
     "title": "โมเดล",
@@ -150,6 +184,40 @@
       "failedError": "ปรับแต่ง prompt ไม่สำเร็จ",
       "optimizing": "กำลังปรับแต่ง...",
       "optimize": "ปรับแต่ง"
+    },
+    "batch": {
+      "title": "แบตช์",
+      "enable": "เปิดใช้โหมดแบตช์",
+      "disable": "ปิดใช้โหมดแบตช์",
+      "repeatCount": "จำนวน",
+      "randomizeSeed": "Seed สุ่ม",
+      "stopOnError": "หยุดเมื่อเกิดข้อผิดพลาด",
+      "runBatch": "รันแบตช์ ({{count}})",
+      "running": "กำลังรัน {{current}}/{{total}}...",
+      "cancelling": "กำลังยกเลิก...",
+      "cancel": "ยกเลิก",
+      "completed": "{{count}} เสร็จสิ้น",
+      "failed": "{{count}} ล้มเหลว",
+      "downloadAll": "ดาวน์โหลดทั้งหมด",
+      "saveAllToAssets": "บันทึกทั้งหมด",
+      "savedAll": "บันทึกไปยังทรัพย์สินแล้ว",
+      "savedAllDesc": "บันทึก {{count}} ผลลัพธ์แล้ว",
+      "saved": "บันทึกแล้ว",
+      "clearResults": "ล้าง",
+      "results": "ผลลัพธ์",
+      "result": "ผลลัพธ์",
+      "inputDetails": "รายละเอียดอินพุต",
+      "preview": "ตัวอย่าง",
+      "items": "รายการ",
+      "noPreview": "ไม่มีตัวอย่าง",
+      "seedsGenerated": "สร้าง seed อัตโนมัติแล้ว",
+      "settings": "การตั้งค่าแบตช์"
+    },
+    "flappyBird": {
+      "clickToStart": "คลิกหรือกด Space เพื่อเริ่มเกม",
+      "viewResults": "ดูผลลัพธ์",
+      "playWhileWaiting": "เล่นขณะรอ",
+      "quit": "ออก"
     }
   },
   "history": {
@@ -370,6 +438,13 @@
       "clearedDesc": "แคชโมเดล AI ถูกล้างแล้ว โมเดลจะถูกดาวน์โหลดใหม่เมื่อจำเป็น",
       "clearFailed": "ล้างแคชไม่สำเร็จ"
     },
+    "freeTools": {
+      "title": "เครื่องมือฟรี",
+      "description": "กำหนดค่าการตั้งค่าเครื่องมือฟรี",
+      "downloadTimeout": "หมดเวลาดาวน์โหลด",
+      "downloadTimeoutDesc": "เวลารอสูงสุดเมื่อดาวน์โหลดโมเดล AI",
+      "minutes": "นาที"
+    },
     "updates": {
       "title": "การอัปเดต",
       "description": "จัดการการอัปเดตแอปพลิเคชัน",
@@ -461,6 +536,24 @@
       "comparison": "เปรียบเทียบแบบเลื่อน",
       "dragToCompare": "ลากเพื่อเปรียบเทียบ"
     },
+    "faceEnhancer": {
+      "title": "ปรับปรุงใบหน้า",
+      "description": "ปรับปรุงและฟื้นฟูคุณภาพใบหน้าด้วย AI",
+      "selectImage": "เลือกรูปภาพที่มีใบหน้า",
+      "orDragDrop": "หรือลากและวาง",
+      "enhance": "ปรับปรุง",
+      "download": "ดาวน์โหลด",
+      "processing": "กำลังประมวลผล...",
+      "original": "ต้นฉบับ",
+      "enhanced": "ปรับปรุงแล้ว",
+      "sideBySide": "เทียบข้างกัน",
+      "comparison": "เปรียบเทียบแบบเลื่อน",
+      "dragToCompare": "ลากเพื่อเปรียบเทียบ",
+      "detecting": "กำลังตรวจจับใบหน้า",
+      "enhancing": "กำลังปรับปรุงใบหน้า",
+      "noFaces": "ไม่พบใบหน้าในรูปภาพ",
+      "facesFound": "ตรวจพบ {{count}} ใบหน้า"
+    },
     "backgroundRemover": {
       "title": "ตัวลบพื้นหลัง",
       "description": "ลบพื้นหลังรูปภาพทันทีด้วย AI",
@@ -530,6 +623,89 @@
       "clearPointsTooltip": "ล้างจุดทั้งหมดและกลับไปยังโหมดดูตัวอย่างเมื่อวางเมาส์",
       "cutMask": "ตัดมาสก์",
       "hint": "คลิกซ้ายเพื่อรวม คลิกขวาเพื่อยกเว้นพื้นที่"
+    },
+    "backWarning": {
+      "title": "กำลังประมวลผล",
+      "description": "มีงานกำลังประมวลผลอยู่ คุณแน่ใจหรือไม่ว่าต้องการย้อนกลับ? การดำเนินการนี้จะยกเลิกการทำงานปัจจุบัน",
+      "cancel": "ยกเลิก",
+      "confirm": "ย้อนกลับ"
+    },
+    "videoConverter": {
+      "title": "Video Converter",
+      "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
+      "selectVideo": "Select Video",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace video",
+      "supportedFormats": "Supports MP4, WebM, MOV, AVI, MKV",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "original": "Original",
+      "outputSettings": "Output Settings",
+      "format": "Format",
+      "quality": "Quality",
+      "resolution": "Resolution",
+      "convertedSize": "Converted Size"
+    },
+    "audioConverter": {
+      "title": "Audio Converter",
+      "description": "Convert audio between formats (MP3, AAC, FLAC, WAV)",
+      "selectAudio": "Select Audio",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace audio",
+      "supportedFormats": "Supports MP3, M4A, OGG, WAV, FLAC",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "converted": "Converted",
+      "playOriginal": "Play original",
+      "playConverted": "Play converted"
+    },
+    "imageConverter": {
+      "title": "Image Converter",
+      "description": "Convert images between formats (JPG, PNG, WebP, GIF)",
+      "selectImages": "Select Images",
+      "orDragDrop": "or drag and drop",
+      "dropToAdd": "Drop to add images",
+      "supportedFormats": "Supports JPG, PNG, WebP, GIF, BMP",
+      "addMore": "Add More",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "quality": "Quality",
+      "downloadAll": "Download All"
+    },
+    "mediaTrimmer": {
+      "title": "Media Trimmer",
+      "description": "Trim videos or audio to a specific duration",
+      "selectMedia": "Select Media",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace media",
+      "supportedFormats": "Supports video and audio files",
+      "trim": "Trim",
+      "trimming": "Trimming...",
+      "originalDuration": "Original",
+      "selectedDuration": "Selected",
+      "trimmedSize": "Trimmed Size",
+      "playingOriginal": "Playing original",
+      "playingTrimmed": "Playing trimmed"
+    },
+    "mediaMerger": {
+      "title": "Media Merger",
+      "description": "Merge multiple video or audio files into one",
+      "selectFiles": "Select Files",
+      "orDragDrop": "or drag and drop",
+      "dropToAdd": "Drop to add files",
+      "supportedFormats": "Supports video and audio files",
+      "addMore": "Add More",
+      "merge": "Merge",
+      "merging": "Merging...",
+      "merged": "Merged",
+      "totalDuration": "Total Duration",
+      "sameFormatNote": "Files must have the same format for lossless merging"
+    },
+    "ffmpeg": {
+      "loading": "Loading FFmpeg",
+      "converting": "Converting",
+      "merging": "Merging",
+      "trimming": "Trimming"
     }
   }
 }

@@ -33,6 +33,7 @@
     "downloadFailed": "Falha no download. Por favor, verifique sua conexão de rede."
   },
   "nav": {
+    "home": "Início",
     "models": "Modelos",
     "playground": "Playground",
     "history": "Histórico",
@@ -41,6 +42,39 @@
     "freeTools": "Ferramentas Grátis",
     "settings": "Configurações",
     "collapse": "Recolher"
+  },
+  "welcome": {
+    "tagline": "Ferramentas Criativas de IA ao Seu Alcance",
+    "explore": "Explorar",
+    "getStarted": "Começar",
+    "tryFreeTools": "Experimente Ferramentas Grátis",
+    "features": {
+      "models": {
+        "title": "Navegador de Modelos",
+        "description": "Explore modelos de IA para geração de imagens, vídeos e áudio"
+      },
+      "playground": {
+        "title": "Playground",
+        "description": "Espaço de trabalho multi-abas para executar modelos com parâmetros personalizados"
+      },
+      "templates": {
+        "title": "Templates",
+        "description": "Salve e reutilize suas configurações favoritas"
+      },
+      "history": {
+        "title": "Histórico",
+        "description": "Acompanhe e revise suas previsões recentes"
+      },
+      "assets": {
+        "title": "Meus Recursos",
+        "description": "Organize e gerencie suas saídas geradas"
+      },
+      "freeTools": {
+        "title": "Ferramentas Grátis",
+        "description": "Ferramentas de IA poderosas que rodam localmente - sem necessidade de chave API",
+        "badge": "Grátis"
+      }
+    }
   },
   "models": {
     "title": "Modelos",
@@ -150,6 +184,40 @@
       "failedError": "Falha ao otimizar o prompt",
       "optimizing": "Otimizando...",
       "optimize": "Otimizar"
+    },
+    "flappyBird": {
+      "clickToStart": "Clique ou pressione Espaço para iniciar um jogo",
+      "viewResults": "Ver Resultados",
+      "playWhileWaiting": "Jogue enquanto espera",
+      "quit": "Sair"
+    },
+    "batch": {
+      "title": "Lote",
+      "enable": "Ativar modo lote",
+      "disable": "Desativar modo lote",
+      "repeatCount": "Quantidade",
+      "randomizeSeed": "Semente aleatória",
+      "stopOnError": "Parar em erro",
+      "runBatch": "Executar lote ({{count}})",
+      "running": "Executando {{current}}/{{total}}...",
+      "cancelling": "Cancelando...",
+      "cancel": "Cancelar",
+      "completed": "{{count}} concluídos",
+      "failed": "{{count}} falharam",
+      "downloadAll": "Baixar tudo",
+      "saveAllToAssets": "Salvar tudo",
+      "savedAll": "Salvo nos recursos",
+      "savedAllDesc": "{{count}} saídas salvas",
+      "saved": "Salvo",
+      "clearResults": "Limpar",
+      "results": "Resultados",
+      "result": "Resultado",
+      "inputDetails": "Detalhes da entrada",
+      "preview": "Prévia",
+      "items": "itens",
+      "noPreview": "Sem prévia",
+      "seedsGenerated": "Sementes geradas automaticamente",
+      "settings": "Configurações de lote"
     }
   },
   "history": {
@@ -370,6 +438,13 @@
       "clearedDesc": "O cache de modelos de IA foi limpo. Os modelos serão baixados novamente quando necessário.",
       "clearFailed": "Falha ao limpar o cache"
     },
+    "freeTools": {
+      "title": "Ferramentas Gratuitas",
+      "description": "Configurar definições das ferramentas gratuitas",
+      "downloadTimeout": "Tempo Limite de Download",
+      "downloadTimeoutDesc": "Tempo máximo de espera ao baixar modelos de IA",
+      "minutes": "minutos"
+    },
     "updates": {
       "title": "Atualizações",
       "description": "Gerenciar atualizações do aplicativo",
@@ -461,6 +536,24 @@
       "comparison": "Comparação deslizante",
       "dragToCompare": "Arraste para comparar"
     },
+    "faceEnhancer": {
+      "title": "Melhorador de Rostos",
+      "description": "Melhore e restaure a qualidade dos rostos usando IA",
+      "selectImage": "Selecione uma imagem com rostos",
+      "orDragDrop": "ou arraste e solte",
+      "enhance": "Melhorar",
+      "download": "Baixar",
+      "processing": "Processando...",
+      "original": "Original",
+      "enhanced": "Melhorado",
+      "sideBySide": "Lado a lado",
+      "comparison": "Comparação deslizante",
+      "dragToCompare": "Arraste para comparar",
+      "detecting": "Detectando rostos",
+      "enhancing": "Melhorando rostos",
+      "noFaces": "Nenhum rosto detectado na imagem",
+      "facesFound": "{{count}} rosto(s) detectado(s)"
+    },
     "backgroundRemover": {
       "title": "Removedor de Fundo",
       "description": "Remova fundos de imagens instantaneamente usando IA",
@@ -530,6 +623,89 @@
       "finalizing": "Finalizando",
       "overall": "Geral",
       "remaining": "restante"
+    },
+    "backWarning": {
+      "title": "Processamento em Andamento",
+      "description": "Uma tarefa está sendo processada. Tem certeza que deseja voltar? Isso cancelará a operação atual.",
+      "cancel": "Cancelar",
+      "confirm": "Voltar"
+    },
+    "videoConverter": {
+      "title": "Video Converter",
+      "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
+      "selectVideo": "Select Video",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace video",
+      "supportedFormats": "Supports MP4, WebM, MOV, AVI, MKV",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "original": "Original",
+      "outputSettings": "Output Settings",
+      "format": "Format",
+      "quality": "Quality",
+      "resolution": "Resolution",
+      "convertedSize": "Converted Size"
+    },
+    "audioConverter": {
+      "title": "Audio Converter",
+      "description": "Convert audio between formats (MP3, AAC, FLAC, WAV)",
+      "selectAudio": "Select Audio",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace audio",
+      "supportedFormats": "Supports MP3, M4A, OGG, WAV, FLAC",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "converted": "Converted",
+      "playOriginal": "Play original",
+      "playConverted": "Play converted"
+    },
+    "imageConverter": {
+      "title": "Image Converter",
+      "description": "Convert images between formats (JPG, PNG, WebP, GIF)",
+      "selectImages": "Select Images",
+      "orDragDrop": "or drag and drop",
+      "dropToAdd": "Drop to add images",
+      "supportedFormats": "Supports JPG, PNG, WebP, GIF, BMP",
+      "addMore": "Add More",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "quality": "Quality",
+      "downloadAll": "Download All"
+    },
+    "mediaTrimmer": {
+      "title": "Media Trimmer",
+      "description": "Trim videos or audio to a specific duration",
+      "selectMedia": "Select Media",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace media",
+      "supportedFormats": "Supports video and audio files",
+      "trim": "Trim",
+      "trimming": "Trimming...",
+      "originalDuration": "Original",
+      "selectedDuration": "Selected",
+      "trimmedSize": "Trimmed Size",
+      "playingOriginal": "Playing original",
+      "playingTrimmed": "Playing trimmed"
+    },
+    "mediaMerger": {
+      "title": "Media Merger",
+      "description": "Merge multiple video or audio files into one",
+      "selectFiles": "Select Files",
+      "orDragDrop": "or drag and drop",
+      "dropToAdd": "Drop to add files",
+      "supportedFormats": "Supports video and audio files",
+      "addMore": "Add More",
+      "merge": "Merge",
+      "merging": "Merging...",
+      "merged": "Merged",
+      "totalDuration": "Total Duration",
+      "sameFormatNote": "Files must have the same format for lossless merging"
+    },
+    "ffmpeg": {
+      "loading": "Loading FFmpeg",
+      "converting": "Converting",
+      "merging": "Merging",
+      "trimming": "Trimming"
     }
   }
 }

@@ -1,6 +1,6 @@
 /**
  * Image Eraser Web Worker
- * Uses LaMa inpainting model via ONNX Runtime (WASM only)
+ * Uses LaMa inpainting model via ONNX Runtime (WebGPU with WASM fallback)
  */
 
 // @ts-expect-error - onnxruntime-web types not resolved due to package.json exports
@@ -9,6 +9,9 @@ import * as ort from 'onnxruntime-web'
 // Configure WASM paths to use CDN (required for Vite bundling)
 const ORT_WASM_VERSION = '1.21.0'
 ort.env.wasm.wasmPaths = `https://cdn.jsdelivr.net/npm/onnxruntime-web@${ORT_WASM_VERSION}/dist/`
+
+// Track which backend is being used
+let useWebGPU = false
 
 // LaMa model from Hugging Face (quantized)
 const MODEL_URL =
@@ -27,18 +30,24 @@ interface WorkerMessage {
     width?: number
     height?: number
     id?: number
+    timeout?: number // in milliseconds
   }
 }
+
+// Default timeout (60 minutes)
+const DEFAULT_TIMEOUT = 3600000
 
 /**
  * Download model with progress tracking
  */
 async function downloadModel(
-  onProgress: (current: number, total: number) => void
+  url: string,
+  onProgress: (current: number, total: number) => void,
+  timeout: number = DEFAULT_TIMEOUT
 ): Promise<ArrayBuffer> {
   // Try to get from cache first
   const cache = await caches.open(CACHE_NAME)
-  const cachedResponse = await cache.match(MODEL_URL)
+  const cachedResponse = await cache.match(url)
 
   if (cachedResponse) {
     const buffer = await cachedResponse.arrayBuffer()
@@ -46,65 +55,102 @@ async function downloadModel(
     return buffer
   }
 
-  // Download with progress
-  const response = await fetch(MODEL_URL, {
-    headers: {
-      Origin: self.location.origin
-    }
-  })
+  // Download with progress and configurable timeout
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeout)
+  const timeoutSeconds = Math.round(timeout / 1000)
 
-  if (!response.ok) {
-    throw new Error(`Failed to download model: ${response.status}`)
-  }
-
-  const contentLength = response.headers.get('content-length')
-  const total = contentLength ? parseInt(contentLength, 10) : 0
-
-  const reader = response.body?.getReader()
-  if (!reader) {
-    throw new Error('Failed to get response reader')
-  }
-
-  const chunks: Uint8Array[] = []
-  let received = 0
-
-  while (true) {
-    const { done, value } = await reader.read()
-    if (done) break
-
-    chunks.push(value)
-    received += value.length
-    onProgress(received, total)
-  }
-
-  // Combine chunks
-  const buffer = new Uint8Array(received)
-  let position = 0
-  for (const chunk of chunks) {
-    buffer.set(chunk, position)
-    position += chunk.length
-  }
-
-  // Cache the model for future use
   try {
-    const cacheResponse = new Response(buffer.buffer, {
+    const response = await fetch(url, {
       headers: {
-        'Content-Type': 'application/octet-stream',
-        'Content-Length': buffer.byteLength.toString()
-      }
+        Origin: self.location.origin
+      },
+      signal: controller.signal
     })
-    await cache.put(MODEL_URL, cacheResponse)
-  } catch (e) {
-    console.warn('Failed to cache model:', e)
-  }
 
-  return buffer.buffer
+    if (!response.ok) {
+      throw new Error(`Failed to download model: ${response.status}`)
+    }
+
+    const contentLength = response.headers.get('content-length')
+    const total = contentLength ? parseInt(contentLength, 10) : 0
+
+    const reader = response.body?.getReader()
+    if (!reader) {
+      throw new Error('Failed to get response reader')
+    }
+
+    const chunks: Uint8Array[] = []
+    let received = 0
+
+    while (true) {
+      // Check if aborted during streaming
+      if (controller.signal.aborted) {
+        reader.cancel()
+        throw new Error(`Model download timed out after ${timeoutSeconds} seconds`)
+      }
+
+      const { done, value } = await reader.read()
+      if (done) break
+
+      chunks.push(value)
+      received += value.length
+      onProgress(received, total)
+    }
+
+    clearTimeout(timeoutId)
+
+    // Combine chunks
+    const buffer = new Uint8Array(received)
+    let position = 0
+    for (const chunk of chunks) {
+      buffer.set(chunk, position)
+      position += chunk.length
+    }
+
+    // Cache the model for future use
+    try {
+      const cacheResponse = new Response(buffer.buffer, {
+        headers: {
+          'Content-Type': 'application/octet-stream',
+          'Content-Length': buffer.byteLength.toString()
+        }
+      })
+      await cache.put(url, cacheResponse)
+    } catch (e) {
+      console.warn('Failed to cache model:', e)
+    }
+
+    return buffer.buffer
+  } catch (error) {
+    clearTimeout(timeoutId)
+    if ((error as Error).name === 'AbortError') {
+      throw new Error(`Model download timed out after ${timeoutSeconds} seconds`)
+    }
+    throw error
+  }
 }
 
 /**
- * Initialize ONNX session with WASM
+ * Initialize ONNX session with WebGPU (fallback to WASM)
  */
 async function initSession(modelBuffer: ArrayBuffer): Promise<void> {
+  // Try WebGPU first if available
+  if (useWebGPU) {
+    try {
+      session = await ort.InferenceSession.create(modelBuffer, {
+        executionProviders: ['webgpu'],
+        graphOptimizationLevel: 'all'
+      })
+      console.log('Using WebGPU backend')
+      return
+    } catch (e) {
+      console.warn('WebGPU session creation failed, falling back to WASM:', e)
+      useWebGPU = false
+    }
+  }
+
+  // Fallback to WASM
   session = await ort.InferenceSession.create(modelBuffer, {
     executionProviders: ['wasm'],
     graphOptimizationLevel: 'all',
@@ -476,6 +522,13 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
   switch (type) {
     case 'init': {
       try {
+        // Get timeout from payload
+        const timeout = payload?.timeout ?? DEFAULT_TIMEOUT
+
+        // Force WASM backend - WebGPU has kernel compatibility issues with LaMa model
+        useWebGPU = false
+        console.log('Image Eraser using WASM backend')
+
         // Check if model is cached first
         const cache = await caches.open(CACHE_NAME)
         const cachedResponse = await cache.match(MODEL_URL)
@@ -496,7 +549,7 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
             payload: { phase: 'download', id: payload?.id }
           })
 
-          modelBuffer = await downloadModel((current, total) => {
+          modelBuffer = await downloadModel(MODEL_URL, (current, total) => {
             self.postMessage({
               type: 'progress',
               payload: {
@@ -506,7 +559,7 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
                 id: payload?.id
               }
             })
-          })
+          }, timeout)
 
           // Phase: loading (after download)
           self.postMessage({

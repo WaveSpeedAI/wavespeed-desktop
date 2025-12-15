@@ -61,6 +61,10 @@ function formatDetail(detail: ProcessingPhase['detail']): string | null {
     return `${detail.current} / ${detail.total}`
   }
 
+  if (detail.unit === 'seconds') {
+    return `${detail.current}s / ${detail.total}s`
+  }
+
   return null
 }
 
@@ -115,7 +119,7 @@ export function ProcessingProgress({
               <Check className="h-3 w-3 text-primary" />
             )}
             {t(currentPhase.labelKey)}
-            {currentPhase.detail && (
+            {currentPhase.detail && formatDetail(currentPhase.detail) && (
               <span className="text-muted-foreground/60">
                 ({formatDetail(currentPhase.detail)})
               </span>

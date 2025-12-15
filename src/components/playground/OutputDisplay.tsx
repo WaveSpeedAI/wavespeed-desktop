@@ -14,8 +14,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { Download, ExternalLink, Copy, Check, AlertTriangle, X, Save, FolderHeart } from 'lucide-react'
+import { Download, ExternalLink, Copy, Check, AlertTriangle, X, Save, FolderHeart, Gamepad2 } from 'lucide-react'
 import { AudioPlayer } from '@/components/shared/AudioPlayer'
+import { FlappyBird } from './FlappyBird'
 import { toast } from '@/hooks/useToast'
 import { cn } from '@/lib/utils'
 
@@ -36,12 +37,40 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
   const [savingIndex, setSavingIndex] = useState<number | null>(null)
   const autoSavedRef = useRef<string | null>(null)
 
+  // Game state
+  const [isGameStarted, setIsGameStarted] = useState(false)
+  const [showGame, setShowGame] = useState(true)
+  const [gameEndedWithResults, setGameEndedWithResults] = useState(false)
+  const prevOutputsLengthRef = useRef(0)
+
   const { settings, loadSettings, saveAsset, hasAssetForPrediction } = useAssetsStore()
 
   // Load settings on mount
   useEffect(() => {
     loadSettings()
   }, [loadSettings])
+
+  // Track outputs length for other logic
+  useEffect(() => {
+    prevOutputsLengthRef.current = outputs.length
+  }, [outputs.length])
+
+  // Reset game state when outputs are cleared (new run starting)
+  useEffect(() => {
+    if (outputs.length === 0 && !isLoading && !error) {
+      setShowGame(true)
+      setGameEndedWithResults(false)
+    }
+  }, [outputs.length, isLoading, error])
+
+  const handleGameStart = useCallback(() => {
+    setIsGameStarted(true)
+  }, [])
+
+  const handleGameEnd = useCallback(() => {
+    // Game ended - don't auto-switch, let user view results via notification
+    setGameEndedWithResults(true)
+  }, [])
 
   // Auto-save outputs when prediction completes
   useEffect(() => {
@@ -71,7 +100,8 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
             modelId,
             modelName,
             predictionId: prediction.id,
-            originalUrl: output
+            originalUrl: output,
+            resultIndex: i
           })
           if (result) {
             setSavedIndexes(prev => new Set(prev).add(i))
@@ -117,7 +147,8 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
         modelId,
         modelName,
         predictionId: prediction?.id,
-        originalUrl: url
+        originalUrl: url,
+        resultIndex: index
       })
 
       if (result) {
@@ -174,21 +205,6 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
     window.open(url, '_blank')
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full gap-4">
-        <div className="relative">
-          <div className="w-16 h-16 border-4 border-muted rounded-full animate-pulse" />
-          <div className="absolute inset-0 w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-        </div>
-        <p className="text-muted-foreground">{t('playground.generating')}</p>
-        {prediction?.status && (
-          <Badge variant="secondary">{prediction.status}</Badge>
-        )}
-      </div>
-    )
-  }
-
   if (error) {
     // Try to parse JSON error for better display
     let errorMessage = error
@@ -224,17 +240,50 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
     )
   }
 
-  if (outputs.length === 0) {
+  // Show game when: no outputs, loading, or user toggled to game view
+  const showGameView = outputs.length === 0 || isLoading || (showGame && (gameEndedWithResults || isGameStarted))
+
+  if (showGameView) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground">
-        <p>{t('playground.noOutputs')}</p>
-        <p className="text-sm">{t('playground.configureAndRun')}</p>
+      <div className="relative h-full">
+        <FlappyBird
+          onGameStart={handleGameStart}
+          onGameEnd={handleGameEnd}
+          isTaskRunning={isLoading}
+          taskStatus={prediction?.status || t('playground.generating')}
+          idleMessage={outputs.length === 0 && !isLoading ? {
+            title: t('playground.noOutputs'),
+            subtitle: t('playground.configureAndRun')
+          } : undefined}
+          hasResults={outputs.length > 0 && !isLoading}
+          onViewResults={() => setShowGame(false)}
+        />
       </div>
     )
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col relative">
+      {/* Play game button - top left */}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-2 left-2 z-10 h-8 w-8 opacity-50 hover:opacity-100"
+            onClick={() => {
+              setShowGame(true)
+              setGameEndedWithResults(true)
+            }}
+          >
+            <Gamepad2 className="h-4 w-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          {t('playground.flappyBird.playWhileWaiting', 'Play while waiting')}
+        </TooltipContent>
+      </Tooltip>
+
       {/* Outputs - fill remaining space */}
       <div className="flex-1 min-h-0 flex flex-col gap-4">
         {outputs.map((output, index) => {

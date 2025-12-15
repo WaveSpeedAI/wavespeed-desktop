@@ -33,6 +33,7 @@
     "downloadFailed": "डाउनलोड विफल। कृपया अपना नेटवर्क कनेक्शन जांचें।"
   },
   "nav": {
+    "home": "होम",
     "models": "मॉडल",
     "playground": "प्लेग्राउंड",
     "history": "इतिहास",
@@ -41,6 +42,39 @@
     "freeTools": "मुफ्त उपकरण",
     "settings": "सेटिंग्स",
     "collapse": "संक्षिप्त करें"
+  },
+  "welcome": {
+    "tagline": "आपकी उंगलियों पर AI-संचालित रचनात्मक उपकरण",
+    "explore": "अन्वेषण करें",
+    "getStarted": "शुरू करें",
+    "tryFreeTools": "मुफ्त उपकरण आज़माएं",
+    "features": {
+      "models": {
+        "title": "मॉडल ब्राउज़र",
+        "description": "छवि, वीडियो और ऑडियो जनरेशन के लिए AI मॉडल ब्राउज़ करें"
+      },
+      "playground": {
+        "title": "प्लेग्राउंड",
+        "description": "कस्टम पैरामीटर के साथ मॉडल चलाने के लिए मल्टी-टैब वर्कस्पेस"
+      },
+      "templates": {
+        "title": "टेम्पलेट",
+        "description": "अपनी पसंदीदा कॉन्फ़िगरेशन सहेजें और पुन: उपयोग करें"
+      },
+      "history": {
+        "title": "इतिहास",
+        "description": "अपनी हाल की भविष्यवाणियों को ट्रैक और समीक्षा करें"
+      },
+      "assets": {
+        "title": "मेरी संपत्तियां",
+        "description": "अपने जनरेट किए गए आउटपुट को व्यवस्थित और प्रबंधित करें"
+      },
+      "freeTools": {
+        "title": "मुफ्त उपकरण",
+        "description": "शक्तिशाली AI उपकरण जो स्थानीय रूप से चलते हैं - API कुंजी की आवश्यकता नहीं",
+        "badge": "मुफ्त"
+      }
+    }
   },
   "models": {
     "title": "मॉडल",
@@ -150,6 +184,40 @@
       "failedError": "प्रॉम्प्ट ऑप्टिमाइज़ करने में विफल",
       "optimizing": "ऑप्टिमाइज़ हो रहा है...",
       "optimize": "ऑप्टिमाइज़ करें"
+    },
+    "flappyBird": {
+      "clickToStart": "गेम शुरू करने के लिए क्लिक करें या स्पेस दबाएं",
+      "viewResults": "परिणाम देखें",
+      "playWhileWaiting": "प्रतीक्षा करते समय खेलें",
+      "quit": "बाहर निकलें"
+    },
+    "batch": {
+      "title": "बैच",
+      "enable": "बैच मोड सक्षम करें",
+      "disable": "बैच मोड अक्षम करें",
+      "repeatCount": "संख्या",
+      "randomizeSeed": "रैंडम सीड",
+      "stopOnError": "त्रुटि पर रोकें",
+      "runBatch": "बैच चलाएं ({{count}})",
+      "running": "चल रहा है {{current}}/{{total}}...",
+      "cancelling": "रद्द हो रहा है...",
+      "cancel": "रद्द करें",
+      "completed": "{{count}} पूर्ण",
+      "failed": "{{count}} विफल",
+      "downloadAll": "सभी डाउनलोड करें",
+      "saveAllToAssets": "सभी सहेजें",
+      "savedAll": "संपत्ति में सहेजा गया",
+      "savedAllDesc": "{{count}} आउटपुट सहेजे गए",
+      "saved": "सहेजा गया",
+      "clearResults": "साफ़ करें",
+      "results": "परिणाम",
+      "result": "परिणाम",
+      "inputDetails": "इनपुट विवरण",
+      "preview": "पूर्वावलोकन",
+      "items": "आइटम",
+      "noPreview": "कोई पूर्वावलोकन नहीं",
+      "seedsGenerated": "सीड स्वचालित रूप से जनरेट किए गए",
+      "settings": "बैच सेटिंग्स"
     }
   },
   "history": {
@@ -370,6 +438,13 @@
       "clearedDesc": "AI मॉडल कैश साफ हो गया है। जरूरत पड़ने पर मॉडल फिर से डाउनलोड होंगे।",
       "clearFailed": "कैश साफ करने में विफल"
     },
+    "freeTools": {
+      "title": "मुफ्त उपकरण",
+      "description": "मुफ्त उपकरण सेटिंग्स कॉन्फ़िगर करें",
+      "downloadTimeout": "डाउनलोड टाइमआउट",
+      "downloadTimeoutDesc": "AI मॉडल डाउनलोड करते समय अधिकतम प्रतीक्षा समय",
+      "minutes": "मिनट"
+    },
     "updates": {
       "title": "अपडेट",
       "description": "एप्लिकेशन अपडेट प्रबंधित करें",
@@ -461,6 +536,24 @@
       "comparison": "स्लाइडर तुलना",
       "dragToCompare": "तुलना के लिए खींचें"
     },
+    "faceEnhancer": {
+      "title": "फेस एन्हांसर",
+      "description": "AI का उपयोग करके चेहरे की गुणवत्ता बढ़ाएं और पुनर्स्थापित करें",
+      "selectImage": "चेहरों वाली छवि चुनें",
+      "orDragDrop": "या ड्रैग और ड्रॉप करें",
+      "enhance": "बेहतर बनाएं",
+      "download": "डाउनलोड",
+      "processing": "प्रसंस्करण...",
+      "original": "मूल",
+      "enhanced": "बेहतर",
+      "sideBySide": "साथ-साथ",
+      "comparison": "स्लाइडर तुलना",
+      "dragToCompare": "तुलना के लिए खींचें",
+      "detecting": "चेहरे पहचान रहे हैं",
+      "enhancing": "चेहरे बेहतर बना रहे हैं",
+      "noFaces": "छवि में कोई चेहरा नहीं मिला",
+      "facesFound": "{{count}} चेहरे मिले"
+    },
     "backgroundRemover": {
       "title": "बैकग्राउंड रिमूवर",
       "description": "AI का उपयोग करके छवि पृष्ठभूमि तुरंत हटाएं",
@@ -530,6 +623,89 @@
       "finalizing": "अंतिम चरण",
       "overall": "समग्र",
       "remaining": "शेष"
+    },
+    "backWarning": {
+      "title": "प्रक्रिया जारी है",
+      "description": "एक कार्य वर्तमान में संसाधित हो रहा है। क्या आप वाकई वापस जाना चाहते हैं? यह वर्तमान ऑपरेशन को रद्द कर देगा।",
+      "cancel": "रद्द करें",
+      "confirm": "वापस जाएं"
+    },
+    "videoConverter": {
+      "title": "Video Converter",
+      "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
+      "selectVideo": "Select Video",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace video",
+      "supportedFormats": "Supports MP4, WebM, MOV, AVI, MKV",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "original": "Original",
+      "outputSettings": "Output Settings",
+      "format": "Format",
+      "quality": "Quality",
+      "resolution": "Resolution",
+      "convertedSize": "Converted Size"
+    },
+    "audioConverter": {
+      "title": "Audio Converter",
+      "description": "Convert audio between formats (MP3, AAC, FLAC, WAV)",
+      "selectAudio": "Select Audio",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace audio",
+      "supportedFormats": "Supports MP3, M4A, OGG, WAV, FLAC",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "converted": "Converted",
+      "playOriginal": "Play original",
+      "playConverted": "Play converted"
+    },
+    "imageConverter": {
+      "title": "Image Converter",
+      "description": "Convert images between formats (JPG, PNG, WebP, GIF)",
+      "selectImages": "Select Images",
+      "orDragDrop": "or drag and drop",
+      "dropToAdd": "Drop to add images",
+      "supportedFormats": "Supports JPG, PNG, WebP, GIF, BMP",
+      "addMore": "Add More",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "quality": "Quality",
+      "downloadAll": "Download All"
+    },
+    "mediaTrimmer": {
+      "title": "Media Trimmer",
+      "description": "Trim videos or audio to a specific duration",
+      "selectMedia": "Select Media",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace media",
+      "supportedFormats": "Supports video and audio files",
+      "trim": "Trim",
+      "trimming": "Trimming...",
+      "originalDuration": "Original",
+      "selectedDuration": "Selected",
+      "trimmedSize": "Trimmed Size",
+      "playingOriginal": "Playing original",
+      "playingTrimmed": "Playing trimmed"
+    },
+    "mediaMerger": {
+      "title": "Media Merger",
+      "description": "Merge multiple video or audio files into one",
+      "selectFiles": "Select Files",
+      "orDragDrop": "or drag and drop",
+      "dropToAdd": "Drop to add files",
+      "supportedFormats": "Supports video and audio files",
+      "addMore": "Add More",
+      "merge": "Merge",
+      "merging": "Merging...",
+      "merged": "Merged",
+      "totalDuration": "Total Duration",
+      "sameFormatNote": "Files must have the same format for lossless merging"
+    },
+    "ffmpeg": {
+      "loading": "Loading FFmpeg",
+      "converting": "Converting",
+      "merging": "Merging",
+      "trimming": "Trimming"
     }
   }
 }

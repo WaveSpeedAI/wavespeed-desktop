@@ -17,6 +17,6 @@ export default defineConfig({
     format: 'es'
   },
   optimizeDeps: {
-    exclude: ['@huggingface/transformers']
+    exclude: ['@huggingface/transformers', '@ffmpeg/ffmpeg', '@ffmpeg/util']
   }
 })

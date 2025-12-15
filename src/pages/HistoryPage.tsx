@@ -101,7 +101,7 @@ function VideoPreview({ src, enabled }: { src: string; enabled: boolean }) {
 
 export function HistoryPage() {
   const { t } = useTranslation()
-  const { isLoading: isLoadingApiKey, isValidated } = useApiKeyStore()
+  const { isLoading: isLoadingApiKey, isValidated, loadApiKey, hasAttemptedLoad } = useApiKeyStore()
   const [items, setItems] = useState<HistoryItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -140,6 +140,11 @@ export function HistoryPage() {
       setIsLoading(false)
     }
   }, [isValidated, page, pageSize, statusFilter])
+
+  // Load API key on mount
+  useEffect(() => {
+    loadApiKey()
+  }, [loadApiKey])
 
   useEffect(() => {
     fetchHistory()
@@ -194,7 +199,7 @@ export function HistoryPage() {
   }
 
   // Show loading state while API key is being loaded from storage
-  if (isLoadingApiKey) {
+  if (isLoadingApiKey || !hasAttemptedLoad) {
     return (
       <div className="flex h-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

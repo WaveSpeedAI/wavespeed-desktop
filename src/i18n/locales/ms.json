@@ -33,6 +33,7 @@
     "downloadFailed": "Muat turun gagal. Sila semak sambungan rangkaian anda."
   },
   "nav": {
+    "home": "Laman Utama",
     "models": "Model",
     "playground": "Playground",
     "history": "Sejarah",
@@ -41,6 +42,39 @@
     "freeTools": "Alat Percuma",
     "settings": "Tetapan",
     "collapse": "Kuncupkan"
+  },
+  "welcome": {
+    "tagline": "Alat Kreatif AI di Hujung Jari Anda",
+    "explore": "Terokai",
+    "getStarted": "Mula",
+    "tryFreeTools": "Cuba Alat Percuma",
+    "features": {
+      "models": {
+        "title": "Pelayar Model",
+        "description": "Layari model AI untuk penjanaan imej, video dan audio"
+      },
+      "playground": {
+        "title": "Playground",
+        "description": "Ruang kerja berbilang tab untuk menjalankan model dengan parameter tersuai"
+      },
+      "templates": {
+        "title": "Templat",
+        "description": "Simpan dan guna semula konfigurasi kegemaran anda"
+      },
+      "history": {
+        "title": "Sejarah",
+        "description": "Jejak dan semak ramalan terkini anda"
+      },
+      "assets": {
+        "title": "Aset Saya",
+        "description": "Susun dan urus output yang dijana"
+      },
+      "freeTools": {
+        "title": "Alat Percuma",
+        "description": "Alat AI yang berkuasa yang berjalan secara tempatan - tiada kunci API diperlukan",
+        "badge": "Percuma"
+      }
+    }
   },
   "models": {
     "title": "Model",
@@ -150,6 +184,40 @@
       "failedError": "Gagal mengoptimumkan prompt",
       "optimizing": "Mengoptimumkan...",
       "optimize": "Optimumkan"
+    },
+    "flappyBird": {
+      "clickToStart": "Klik atau tekan Ruang untuk memulakan permainan",
+      "viewResults": "Lihat Keputusan",
+      "playWhileWaiting": "Bermain semasa menunggu",
+      "quit": "Keluar"
+    },
+    "batch": {
+      "title": "Kelompok",
+      "enable": "Dayakan mod kelompok",
+      "disable": "Nyahdayakan mod kelompok",
+      "repeatCount": "Kuantiti",
+      "randomizeSeed": "Benih rawak",
+      "stopOnError": "Berhenti pada ralat",
+      "runBatch": "Jalankan kelompok ({{count}})",
+      "running": "Menjalankan {{current}}/{{total}}...",
+      "cancelling": "Membatalkan...",
+      "cancel": "Batal",
+      "completed": "{{count}} selesai",
+      "failed": "{{count}} gagal",
+      "downloadAll": "Muat turun semua",
+      "saveAllToAssets": "Simpan semua",
+      "savedAll": "Disimpan ke aset",
+      "savedAllDesc": "{{count}} output disimpan",
+      "saved": "Disimpan",
+      "clearResults": "Padam",
+      "results": "Keputusan",
+      "result": "Keputusan",
+      "inputDetails": "Butiran input",
+      "preview": "Pratonton",
+      "items": "item",
+      "noPreview": "Tiada pratonton",
+      "seedsGenerated": "Benih dijana secara automatik",
+      "settings": "Tetapan kelompok"
     }
   },
   "history": {
@@ -370,6 +438,13 @@
       "clearedDesc": "Cache model AI telah dipadam. Model akan dimuat turun semula apabila diperlukan.",
       "clearFailed": "Gagal memadam cache"
     },
+    "freeTools": {
+      "title": "Alat Percuma",
+      "description": "Konfigurasikan tetapan alat percuma",
+      "downloadTimeout": "Had Masa Muat Turun",
+      "downloadTimeoutDesc": "Masa menunggu maksimum semasa memuat turun model AI",
+      "minutes": "minit"
+    },
     "updates": {
       "title": "Kemaskini",
       "description": "Urus kemaskini aplikasi",
@@ -461,6 +536,24 @@
       "comparison": "Perbandingan gelongsor",
       "dragToCompare": "Seret untuk membandingkan"
     },
+    "faceEnhancer": {
+      "title": "Penambah Baik Wajah",
+      "description": "Tingkatkan dan pulihkan kualiti wajah menggunakan AI",
+      "selectImage": "Pilih imej dengan wajah",
+      "orDragDrop": "atau seret dan lepas",
+      "enhance": "Tingkatkan",
+      "download": "Muat Turun",
+      "processing": "Memproses...",
+      "original": "Asal",
+      "enhanced": "Ditingkatkan",
+      "sideBySide": "Bersebelahan",
+      "comparison": "Perbandingan gelongsor",
+      "dragToCompare": "Seret untuk membandingkan",
+      "detecting": "Mengesan wajah",
+      "enhancing": "Meningkatkan wajah",
+      "noFaces": "Tiada wajah dikesan dalam imej",
+      "facesFound": "{{count}} wajah dikesan"
+    },
     "backgroundRemover": {
       "title": "Penyingkir Latar Belakang",
       "description": "Buang latar belakang imej serta-merta menggunakan AI",
@@ -530,6 +623,89 @@
       "clearPointsTooltip": "Padam semua titik dan kembali ke mod pratonton tuding",
       "cutMask": "Potong Topeng",
       "hint": "Klik kiri untuk menyertakan, klik kanan untuk mengecualikan kawasan"
+    },
+    "backWarning": {
+      "title": "Pemprosesan Sedang Berjalan",
+      "description": "Satu tugas sedang diproses. Adakah anda pasti mahu kembali? Ini akan membatalkan operasi semasa.",
+      "cancel": "Batal",
+      "confirm": "Kembali"
+    },
+    "videoConverter": {
+      "title": "Video Converter",
+      "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
+      "selectVideo": "Select Video",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace video",
+      "supportedFormats": "Supports MP4, WebM, MOV, AVI, MKV",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "original": "Original",
+      "outputSettings": "Output Settings",
+      "format": "Format",
+      "quality": "Quality",
+      "resolution": "Resolution",
+      "convertedSize": "Converted Size"
+    },
+    "audioConverter": {
+      "title": "Audio Converter",
+      "description": "Convert audio between formats (MP3, AAC, FLAC, WAV)",
+      "selectAudio": "Select Audio",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace audio",
+      "supportedFormats": "Supports MP3, M4A, OGG, WAV, FLAC",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "converted": "Converted",
+      "playOriginal": "Play original",
+      "playConverted": "Play converted"
+    },
+    "imageConverter": {
+      "title": "Image Converter",
+      "description": "Convert images between formats (JPG, PNG, WebP, GIF)",
+      "selectImages": "Select Images",
+      "orDragDrop": "or drag and drop",
+      "dropToAdd": "Drop to add images",
+      "supportedFormats": "Supports JPG, PNG, WebP, GIF, BMP",
+      "addMore": "Add More",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "quality": "Quality",
+      "downloadAll": "Download All"
+    },
+    "mediaTrimmer": {
+      "title": "Media Trimmer",
+      "description": "Trim videos or audio to a specific duration",
+      "selectMedia": "Select Media",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace media",
+      "supportedFormats": "Supports video and audio files",
+      "trim": "Trim",
+      "trimming": "Trimming...",
+      "originalDuration": "Original",
+      "selectedDuration": "Selected",
+      "trimmedSize": "Trimmed Size",
+      "playingOriginal": "Playing original",
+      "playingTrimmed": "Playing trimmed"
+    },
+    "mediaMerger": {
+      "title": "Media Merger",
+      "description": "Merge multiple video or audio files into one",
+      "selectFiles": "Select Files",
+      "orDragDrop": "or drag and drop",
+      "dropToAdd": "Drop to add files",
+      "supportedFormats": "Supports video and audio files",
+      "addMore": "Add More",
+      "merge": "Merge",
+      "merging": "Merging...",
+      "merged": "Merged",
+      "totalDuration": "Total Duration",
+      "sameFormatNote": "Files must have the same format for lossless merging"
+    },
+    "ffmpeg": {
+      "loading": "Loading FFmpeg",
+      "converting": "Converting",
+      "merging": "Merging",
+      "trimming": "Trimming"
     }
   }
 }

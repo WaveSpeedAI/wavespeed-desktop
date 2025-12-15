@@ -33,6 +33,7 @@
     "downloadFailed": "Download fehlgeschlagen. Bitte überprüfen Sie Ihre Netzwerkverbindung."
   },
   "nav": {
+    "home": "Startseite",
     "models": "Modelle",
     "playground": "Playground",
     "history": "Verlauf",
@@ -41,6 +42,39 @@
     "freeTools": "Kostenlose Tools",
     "settings": "Einstellungen",
     "collapse": "Einklappen"
+  },
+  "welcome": {
+    "tagline": "KI-Kreativwerkzeuge direkt zur Hand",
+    "explore": "Erkunden",
+    "getStarted": "Loslegen",
+    "tryFreeTools": "Kostenlose Tools ausprobieren",
+    "features": {
+      "models": {
+        "title": "Modell-Browser",
+        "description": "Durchsuchen Sie KI-Modelle für Bild-, Video- und Audiogenerierung"
+      },
+      "playground": {
+        "title": "Playground",
+        "description": "Multi-Tab-Arbeitsbereich zum Ausführen von Modellen mit benutzerdefinierten Parametern"
+      },
+      "templates": {
+        "title": "Vorlagen",
+        "description": "Speichern und verwenden Sie Ihre Lieblingskonfigurationen wieder"
+      },
+      "history": {
+        "title": "Verlauf",
+        "description": "Verfolgen und überprüfen Sie Ihre letzten Vorhersagen"
+      },
+      "assets": {
+        "title": "Meine Assets",
+        "description": "Organisieren und verwalten Sie Ihre generierten Ausgaben"
+      },
+      "freeTools": {
+        "title": "Kostenlose Tools",
+        "description": "Leistungsstarke KI-Tools, die lokal laufen - kein API-Schlüssel erforderlich",
+        "badge": "Kostenlos"
+      }
+    }
   },
   "models": {
     "title": "Modelle",
@@ -150,6 +184,40 @@
       "failedError": "Prompt-Optimierung fehlgeschlagen",
       "optimizing": "Optimiere...",
       "optimize": "Optimieren"
+    },
+    "flappyBird": {
+      "clickToStart": "Klicken oder Leertaste drücken um ein Spiel zu starten",
+      "viewResults": "Ergebnisse Anzeigen",
+      "playWhileWaiting": "Spielen während du wartest",
+      "quit": "Beenden"
+    },
+    "batch": {
+      "title": "Stapel",
+      "enable": "Stapelmodus aktivieren",
+      "disable": "Stapelmodus deaktivieren",
+      "repeatCount": "Anzahl",
+      "randomizeSeed": "Zufälliger Seed",
+      "stopOnError": "Bei Fehler stoppen",
+      "runBatch": "Stapel ausführen ({{count}})",
+      "running": "Ausführung {{current}}/{{total}}...",
+      "cancelling": "Abbrechen...",
+      "cancel": "Abbrechen",
+      "completed": "{{count}} abgeschlossen",
+      "failed": "{{count}} fehlgeschlagen",
+      "downloadAll": "Alle herunterladen",
+      "saveAllToAssets": "Alle speichern",
+      "savedAll": "In Assets gespeichert",
+      "savedAllDesc": "{{count}} Ausgaben gespeichert",
+      "saved": "Gespeichert",
+      "clearResults": "Löschen",
+      "results": "Ergebnisse",
+      "result": "Ergebnis",
+      "inputDetails": "Eingabedetails",
+      "preview": "Vorschau",
+      "items": "Elemente",
+      "noPreview": "Keine Vorschau",
+      "seedsGenerated": "Seeds automatisch generiert",
+      "settings": "Stapeleinstellungen"
     }
   },
   "history": {
@@ -370,6 +438,13 @@
       "clearedDesc": "Der KI-Modell-Cache wurde geleert. Modelle werden bei Bedarf erneut heruntergeladen.",
       "clearFailed": "Cache konnte nicht geleert werden"
     },
+    "freeTools": {
+      "title": "Kostenlose Tools",
+      "description": "Einstellungen für kostenlose Tools konfigurieren",
+      "downloadTimeout": "Download-Timeout",
+      "downloadTimeoutDesc": "Maximale Wartezeit beim Herunterladen von KI-Modellen",
+      "minutes": "Minuten"
+    },
     "updates": {
       "title": "Updates",
       "description": "Anwendungsupdates verwalten",
@@ -461,6 +536,24 @@
       "comparison": "Schieberegler-Vergleich",
       "dragToCompare": "Zum Vergleichen ziehen"
     },
+    "faceEnhancer": {
+      "title": "Gesichtsverbesserung",
+      "description": "Verbessern und restaurieren Sie Gesichtsqualität mit KI",
+      "selectImage": "Bild mit Gesichtern auswählen",
+      "orDragDrop": "oder Drag & Drop",
+      "enhance": "Verbessern",
+      "download": "Herunterladen",
+      "processing": "Verarbeitung...",
+      "original": "Original",
+      "enhanced": "Verbessert",
+      "sideBySide": "Nebeneinander",
+      "comparison": "Schieberegler-Vergleich",
+      "dragToCompare": "Zum Vergleichen ziehen",
+      "detecting": "Gesichter erkennen",
+      "enhancing": "Gesichter verbessern",
+      "noFaces": "Keine Gesichter im Bild erkannt",
+      "facesFound": "{{count}} Gesicht(er) erkannt"
+    },
     "backgroundRemover": {
       "title": "Hintergrund-Entferner",
       "description": "Bildhintergründe sofort mit KI entfernen",
@@ -530,6 +623,89 @@
       "finalizing": "Fertigstellung",
       "overall": "Gesamt",
       "remaining": "verbleibend"
+    },
+    "backWarning": {
+      "title": "Verarbeitung läuft",
+      "description": "Eine Aufgabe wird gerade verarbeitet. Möchten Sie wirklich zurückgehen? Dies wird den aktuellen Vorgang abbrechen.",
+      "cancel": "Abbrechen",
+      "confirm": "Zurück"
+    },
+    "videoConverter": {
+      "title": "Video-Konverter",
+      "description": "Videos zwischen Formaten konvertieren (MP4, WebM, MOV, AVI)",
+      "selectVideo": "Video auswählen",
+      "orDragDrop": "oder per Drag & Drop",
+      "dropToReplace": "Ablegen zum Ersetzen des Videos",
+      "supportedFormats": "Unterstützt MP4, WebM, MOV, AVI, MKV",
+      "convert": "Konvertieren",
+      "converting": "Konvertierung...",
+      "original": "Original",
+      "outputSettings": "Ausgabeeinstellungen",
+      "format": "Format",
+      "quality": "Qualität",
+      "resolution": "Auflösung",
+      "convertedSize": "Konvertierte Größe"
+    },
+    "audioConverter": {
+      "title": "Audio-Konverter",
+      "description": "Audio zwischen Formaten konvertieren (MP3, AAC, FLAC, WAV)",
+      "selectAudio": "Audio auswählen",
+      "orDragDrop": "oder per Drag & Drop",
+      "dropToReplace": "Ablegen zum Ersetzen des Audios",
+      "supportedFormats": "Unterstützt MP3, M4A, OGG, WAV, FLAC",
+      "convert": "Konvertieren",
+      "converting": "Konvertierung...",
+      "converted": "Konvertiert",
+      "playOriginal": "Original abspielen",
+      "playConverted": "Konvertiert abspielen"
+    },
+    "imageConverter": {
+      "title": "Bild-Konverter",
+      "description": "Bilder zwischen Formaten konvertieren (JPG, PNG, WebP, GIF)",
+      "selectImages": "Bilder auswählen",
+      "orDragDrop": "oder per Drag & Drop",
+      "dropToAdd": "Ablegen zum Hinzufügen von Bildern",
+      "supportedFormats": "Unterstützt JPG, PNG, WebP, GIF, BMP",
+      "addMore": "Mehr hinzufügen",
+      "convert": "Konvertieren",
+      "converting": "Konvertierung...",
+      "quality": "Qualität",
+      "downloadAll": "Alle herunterladen"
+    },
+    "mediaTrimmer": {
+      "title": "Medien-Trimmer",
+      "description": "Videos oder Audio auf eine bestimmte Dauer zuschneiden",
+      "selectMedia": "Medium auswählen",
+      "orDragDrop": "oder per Drag & Drop",
+      "dropToReplace": "Ablegen zum Ersetzen des Mediums",
+      "supportedFormats": "Unterstützt Video- und Audiodateien",
+      "trim": "Zuschneiden",
+      "trimming": "Zuschneiden...",
+      "originalDuration": "Original",
+      "selectedDuration": "Ausgewählt",
+      "trimmedSize": "Zugeschnittene Größe",
+      "playingOriginal": "Original abspielen",
+      "playingTrimmed": "Zugeschnitten abspielen"
+    },
+    "mediaMerger": {
+      "title": "Medien-Zusammenführung",
+      "description": "Mehrere Video- oder Audiodateien zu einer zusammenführen",
+      "selectFiles": "Dateien auswählen",
+      "orDragDrop": "oder per Drag & Drop",
+      "dropToAdd": "Ablegen zum Hinzufügen von Dateien",
+      "supportedFormats": "Unterstützt Video- und Audiodateien",
+      "addMore": "Mehr hinzufügen",
+      "merge": "Zusammenführen",
+      "merging": "Zusammenführung...",
+      "merged": "Zusammengeführt",
+      "totalDuration": "Gesamtdauer",
+      "sameFormatNote": "Dateien müssen das gleiche Format für verlustfreie Zusammenführung haben"
+    },
+    "ffmpeg": {
+      "loading": "FFmpeg wird geladen",
+      "converting": "Konvertierung",
+      "merging": "Zusammenführung",
+      "trimming": "Zuschneiden"
     }
   }
 }

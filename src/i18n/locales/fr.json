@@ -33,6 +33,7 @@
     "downloadFailed": "Le téléchargement a échoué. Veuillez vérifier votre connexion réseau."
   },
   "nav": {
+    "home": "Accueil",
     "models": "Modèles",
     "playground": "Playground",
     "history": "Historique",
@@ -41,6 +42,39 @@
     "freeTools": "Outils Gratuits",
     "settings": "Paramètres",
     "collapse": "Réduire"
+  },
+  "welcome": {
+    "tagline": "Outils Créatifs IA à Portée de Main",
+    "explore": "Explorer",
+    "getStarted": "Commencer",
+    "tryFreeTools": "Essayer les Outils Gratuits",
+    "features": {
+      "models": {
+        "title": "Explorateur de Modèles",
+        "description": "Parcourez les modèles IA pour la génération d'images, vidéos et audio"
+      },
+      "playground": {
+        "title": "Playground",
+        "description": "Espace de travail multi-onglets pour exécuter des modèles avec des paramètres personnalisés"
+      },
+      "templates": {
+        "title": "Modèles",
+        "description": "Sauvegardez et réutilisez vos configurations préférées"
+      },
+      "history": {
+        "title": "Historique",
+        "description": "Suivez et consultez vos prédictions récentes"
+      },
+      "assets": {
+        "title": "Mes Ressources",
+        "description": "Organisez et gérez vos sorties générées"
+      },
+      "freeTools": {
+        "title": "Outils Gratuits",
+        "description": "Outils IA puissants qui fonctionnent localement - pas de clé API requise",
+        "badge": "Gratuit"
+      }
+    }
   },
   "models": {
     "title": "Modèles",
@@ -150,6 +184,40 @@
       "failedError": "Échec de l'optimisation du prompt",
       "optimizing": "Optimisation...",
       "optimize": "Optimiser"
+    },
+    "flappyBird": {
+      "clickToStart": "Cliquez ou appuyez sur Espace pour démarrer un jeu",
+      "viewResults": "Voir les Résultats",
+      "playWhileWaiting": "Jouer en attendant",
+      "quit": "Quitter"
+    },
+    "batch": {
+      "title": "Lot",
+      "enable": "Activer le mode lot",
+      "disable": "Désactiver le mode lot",
+      "repeatCount": "Quantité",
+      "randomizeSeed": "Graine aléatoire",
+      "stopOnError": "Arrêter sur erreur",
+      "runBatch": "Exécuter le lot ({{count}})",
+      "running": "Exécution {{current}}/{{total}}...",
+      "cancelling": "Annulation...",
+      "cancel": "Annuler",
+      "completed": "{{count}} terminés",
+      "failed": "{{count}} échoués",
+      "downloadAll": "Tout télécharger",
+      "saveAllToAssets": "Tout enregistrer",
+      "savedAll": "Enregistré dans les ressources",
+      "savedAllDesc": "{{count}} sorties enregistrées",
+      "saved": "Enregistré",
+      "clearResults": "Effacer",
+      "results": "Résultats",
+      "result": "Résultat",
+      "inputDetails": "Détails de l'entrée",
+      "preview": "Aperçu",
+      "items": "éléments",
+      "noPreview": "Pas d'aperçu",
+      "seedsGenerated": "Graines générées automatiquement",
+      "settings": "Paramètres de lot"
     }
   },
   "history": {
@@ -370,6 +438,13 @@
       "clearedDesc": "Le cache des modèles IA a été effacé. Les modèles seront retéléchargés si nécessaire.",
       "clearFailed": "Échec de l'effacement du cache"
     },
+    "freeTools": {
+      "title": "Outils Gratuits",
+      "description": "Configurer les paramètres des outils gratuits",
+      "downloadTimeout": "Délai de téléchargement",
+      "downloadTimeoutDesc": "Temps d'attente maximum pour le téléchargement des modèles IA",
+      "minutes": "minutes"
+    },
     "updates": {
       "title": "Mises à jour",
       "description": "Gérer les mises à jour de l'application",
@@ -461,6 +536,24 @@
       "comparison": "Comparaison par curseur",
       "dragToCompare": "Faites glisser pour comparer"
     },
+    "faceEnhancer": {
+      "title": "Amélioration des Visages",
+      "description": "Améliorez et restaurez la qualité des visages avec l'IA",
+      "selectImage": "Sélectionnez une image avec des visages",
+      "orDragDrop": "ou glissez-déposez",
+      "enhance": "Améliorer",
+      "download": "Télécharger",
+      "processing": "Traitement...",
+      "original": "Original",
+      "enhanced": "Amélioré",
+      "sideBySide": "Côte à côte",
+      "comparison": "Comparaison par curseur",
+      "dragToCompare": "Faites glisser pour comparer",
+      "detecting": "Détection des visages",
+      "enhancing": "Amélioration des visages",
+      "noFaces": "Aucun visage détecté dans l'image",
+      "facesFound": "{{count}} visage(s) détecté(s)"
+    },
     "backgroundRemover": {
       "title": "Suppresseur de Fond",
       "description": "Supprimez instantanément les fonds d'images avec l'IA",
@@ -530,6 +623,89 @@
       "finalizing": "Finalisation",
       "overall": "Général",
       "remaining": "restant"
+    },
+    "backWarning": {
+      "title": "Traitement en Cours",
+      "description": "Une tâche est en cours de traitement. Êtes-vous sûr de vouloir revenir? Cela annulera l'opération en cours.",
+      "cancel": "Annuler",
+      "confirm": "Revenir"
+    },
+    "videoConverter": {
+      "title": "Convertisseur Vidéo",
+      "description": "Convertir des vidéos entre formats (MP4, WebM, MOV, AVI)",
+      "selectVideo": "Sélectionner une Vidéo",
+      "orDragDrop": "ou glisser-déposer",
+      "dropToReplace": "Déposer pour remplacer la vidéo",
+      "supportedFormats": "Supporte MP4, WebM, MOV, AVI, MKV",
+      "convert": "Convertir",
+      "converting": "Conversion...",
+      "original": "Original",
+      "outputSettings": "Paramètres de Sortie",
+      "format": "Format",
+      "quality": "Qualité",
+      "resolution": "Résolution",
+      "convertedSize": "Taille Convertie"
+    },
+    "audioConverter": {
+      "title": "Convertisseur Audio",
+      "description": "Convertir de l'audio entre formats (MP3, AAC, FLAC, WAV)",
+      "selectAudio": "Sélectionner un Audio",
+      "orDragDrop": "ou glisser-déposer",
+      "dropToReplace": "Déposer pour remplacer l'audio",
+      "supportedFormats": "Supporte MP3, M4A, OGG, WAV, FLAC",
+      "convert": "Convertir",
+      "converting": "Conversion...",
+      "converted": "Converti",
+      "playOriginal": "Lire l'original",
+      "playConverted": "Lire le converti"
+    },
+    "imageConverter": {
+      "title": "Convertisseur d'Images",
+      "description": "Convertir des images entre formats (JPG, PNG, WebP, GIF)",
+      "selectImages": "Sélectionner des Images",
+      "orDragDrop": "ou glisser-déposer",
+      "dropToAdd": "Déposer pour ajouter des images",
+      "supportedFormats": "Supporte JPG, PNG, WebP, GIF, BMP",
+      "addMore": "Ajouter Plus",
+      "convert": "Convertir",
+      "converting": "Conversion...",
+      "quality": "Qualité",
+      "downloadAll": "Tout Télécharger"
+    },
+    "mediaTrimmer": {
+      "title": "Découpeur de Médias",
+      "description": "Découper des vidéos ou audio à une durée spécifique",
+      "selectMedia": "Sélectionner un Média",
+      "orDragDrop": "ou glisser-déposer",
+      "dropToReplace": "Déposer pour remplacer le média",
+      "supportedFormats": "Supporte les fichiers vidéo et audio",
+      "trim": "Découper",
+      "trimming": "Découpage...",
+      "originalDuration": "Original",
+      "selectedDuration": "Sélectionné",
+      "trimmedSize": "Taille Découpée",
+      "playingOriginal": "Lecture originale",
+      "playingTrimmed": "Lecture découpée"
+    },
+    "mediaMerger": {
+      "title": "Fusionneur de Médias",
+      "description": "Fusionner plusieurs fichiers vidéo ou audio en un seul",
+      "selectFiles": "Sélectionner des Fichiers",
+      "orDragDrop": "ou glisser-déposer",
+      "dropToAdd": "Déposer pour ajouter des fichiers",
+      "supportedFormats": "Supporte les fichiers vidéo et audio",
+      "addMore": "Ajouter Plus",
+      "merge": "Fusionner",
+      "merging": "Fusion...",
+      "merged": "Fusionné",
+      "totalDuration": "Durée Totale",
+      "sameFormatNote": "Les fichiers doivent avoir le même format pour une fusion sans perte"
+    },
+    "ffmpeg": {
+      "loading": "Chargement de FFmpeg",
+      "converting": "Conversion",
+      "merging": "Fusion",
+      "trimming": "Découpage"
     }
   }
 }

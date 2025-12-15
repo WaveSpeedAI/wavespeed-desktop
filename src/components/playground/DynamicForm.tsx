@@ -13,6 +13,7 @@ interface DynamicFormProps {
   onSetDefaults: (defaults: Record<string, unknown>) => void
   onFieldsChange?: (fields: FormFieldConfig[]) => void
   disabled?: boolean
+  onUploadingChange?: (isUploading: boolean) => void
 }
 
 export function DynamicForm({
@@ -22,7 +23,8 @@ export function DynamicForm({
   onChange,
   onSetDefaults,
   onFieldsChange,
-  disabled = false
+  disabled = false,
+  onUploadingChange
 }: DynamicFormProps) {
   // Track which hidden fields are enabled
   const [enabledHiddenFields, setEnabledHiddenFields] = useState<Set<string>>(new Set())
@@ -148,6 +150,7 @@ export function DynamicForm({
                       imageValue={field.name === 'prompt' ? (values['image'] as string) : undefined}
                       hideLabel
                       formValues={values}
+                      onUploadingChange={onUploadingChange}
                     />
                   </div>
                 )}
@@ -167,6 +170,7 @@ export function DynamicForm({
               modelType={model.type}
               imageValue={field.name === 'prompt' ? (values['image'] as string) : undefined}
               formValues={values}
+              onUploadingChange={onUploadingChange}
             />
           )
         })}

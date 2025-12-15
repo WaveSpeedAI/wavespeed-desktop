@@ -33,6 +33,7 @@ export interface AssetsSaveOptions {
   modelName: string
   predictionId?: string
   originalUrl?: string
+  resultIndex?: number
 }
 
 export interface AssetsSettings {

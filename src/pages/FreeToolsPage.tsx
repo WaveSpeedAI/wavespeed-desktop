@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Video, ImageUp, Eraser, Wand2, ArrowRight, MousePointer2 } from 'lucide-react'
+import { Video, ImageUp, Eraser, Wand2, ArrowRight, MousePointer2, FileVideo, FileAudio, FileImage, Scissors, Combine, Sparkles } from 'lucide-react'
 
 // Import tool demo images
 import videoEnhancerImg from '../../build/images/VideoEnhancer.jpeg'
@@ -10,6 +10,7 @@ import imageEnhancerImg from '../../build/images/ImageEnhancer.jpeg'
 import backgroundRemoverImg from '../../build/images/BackgroundRemover.jpeg'
 import imageEraserImg from '../../build/images/ImageEraser.jpeg'
 import SegmentAnythingImg from '../../build/images/SegmentAnything.png'
+import freeToolImg from '../../build/images/FreeTool.jpeg'
 
 export function FreeToolsPage() {
   const { t } = useTranslation()
@@ -32,6 +33,15 @@ export function FreeToolsPage() {
       descriptionKey: 'freeTools.imageEnhancer.description',
       route: '/free-tools/image',
       gradient: 'from-cyan-500/20 via-blue-500/10 to-transparent',
+      image: imageEnhancerImg
+    },
+    {
+      id: 'face-enhancer',
+      icon: Sparkles,
+      titleKey: 'freeTools.faceEnhancer.title',
+      descriptionKey: 'freeTools.faceEnhancer.description',
+      route: '/free-tools/face-enhancer',
+      gradient: 'from-rose-500/20 via-pink-500/10 to-transparent',
       image: imageEnhancerImg
     },
     {
@@ -60,6 +70,51 @@ export function FreeToolsPage() {
       route: '/free-tools/segment-anything',
       gradient: 'from-pink-500/20 via-rose-500/10 to-transparent',
       image: SegmentAnythingImg
+    },
+    {
+      id: 'video-converter',
+      icon: FileVideo,
+      titleKey: 'freeTools.videoConverter.title',
+      descriptionKey: 'freeTools.videoConverter.description',
+      route: '/free-tools/video-converter',
+      gradient: 'from-indigo-500/20 via-blue-500/10 to-transparent',
+      image: freeToolImg
+    },
+    {
+      id: 'audio-converter',
+      icon: FileAudio,
+      titleKey: 'freeTools.audioConverter.title',
+      descriptionKey: 'freeTools.audioConverter.description',
+      route: '/free-tools/audio-converter',
+      gradient: 'from-teal-500/20 via-cyan-500/10 to-transparent',
+      image: freeToolImg
+    },
+    {
+      id: 'image-converter',
+      icon: FileImage,
+      titleKey: 'freeTools.imageConverter.title',
+      descriptionKey: 'freeTools.imageConverter.description',
+      route: '/free-tools/image-converter',
+      gradient: 'from-amber-500/20 via-yellow-500/10 to-transparent',
+      image: freeToolImg
+    },
+    {
+      id: 'media-trimmer',
+      icon: Scissors,
+      titleKey: 'freeTools.mediaTrimmer.title',
+      descriptionKey: 'freeTools.mediaTrimmer.description',
+      route: '/free-tools/media-trimmer',
+      gradient: 'from-red-500/20 via-orange-500/10 to-transparent',
+      image: freeToolImg
+    },
+    {
+      id: 'media-merger',
+      icon: Combine,
+      titleKey: 'freeTools.mediaMerger.title',
+      descriptionKey: 'freeTools.mediaMerger.description',
+      route: '/free-tools/media-merger',
+      gradient: 'from-purple-500/20 via-fuchsia-500/10 to-transparent',
+      image: freeToolImg
     }
   ]
 
@@ -85,12 +140,16 @@ export function FreeToolsPage() {
             
             {/* Demo image */}
             <div className="px-4 pt-4 relative z-10">
-              <div className="h-32 rounded-lg overflow-hidden bg-muted">
-                <img 
-                  src={tool.image} 
-                  alt={t(tool.titleKey)}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
+              <div className="h-32 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+                {tool.image ? (
+                  <img
+                    src={tool.image}
+                    alt={t(tool.titleKey)}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                ) : (
+                  <tool.icon className="h-12 w-12 text-muted-foreground/30 group-hover:text-primary/50 transition-colors" />
+                )}
               </div>
             </div>
             

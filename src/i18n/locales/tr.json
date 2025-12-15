@@ -33,6 +33,7 @@
     "downloadFailed": "İndirme başarısız. Lütfen ağ bağlantınızı kontrol edin."
   },
   "nav": {
+    "home": "Ana Sayfa",
     "models": "Modeller",
     "playground": "Oyun Alanı",
     "history": "Geçmiş",
@@ -41,6 +42,39 @@
     "freeTools": "Ücretsiz Araçlar",
     "settings": "Ayarlar",
     "collapse": "Daralt"
+  },
+  "welcome": {
+    "tagline": "Parmaklarınızın Ucunda AI Destekli Yaratıcı Araçlar",
+    "explore": "Keşfet",
+    "getStarted": "Başla",
+    "tryFreeTools": "Ücretsiz Araçları Dene",
+    "features": {
+      "models": {
+        "title": "Model Tarayıcı",
+        "description": "Görüntü, video ve ses üretimi için AI modellerini keşfedin"
+      },
+      "playground": {
+        "title": "Oyun Alanı",
+        "description": "Özel parametrelerle modelleri çalıştırmak için çoklu sekme çalışma alanı"
+      },
+      "templates": {
+        "title": "Şablonlar",
+        "description": "Favori yapılandırmalarınızı kaydedin ve yeniden kullanın"
+      },
+      "history": {
+        "title": "Geçmiş",
+        "description": "Son tahminlerinizi takip edin ve inceleyin"
+      },
+      "assets": {
+        "title": "Varlıklarım",
+        "description": "Oluşturulan çıktılarınızı düzenleyin ve yönetin"
+      },
+      "freeTools": {
+        "title": "Ücretsiz Araçlar",
+        "description": "Yerel olarak çalışan güçlü AI araçları - API anahtarı gerekmez",
+        "badge": "Ücretsiz"
+      }
+    }
   },
   "models": {
     "title": "Modeller",
@@ -150,6 +184,40 @@
       "failedError": "İstem optimize edilemedi",
       "optimizing": "Optimize ediliyor...",
       "optimize": "Optimize Et"
+    },
+    "flappyBird": {
+      "clickToStart": "Oyun başlatmak için tıklayın veya Boşluk tuşuna basın",
+      "viewResults": "Sonuçları Gör",
+      "playWhileWaiting": "Beklerken oyna",
+      "quit": "Çık"
+    },
+    "batch": {
+      "title": "Toplu",
+      "enable": "Toplu modu etkinleştir",
+      "disable": "Toplu modu devre dışı bırak",
+      "repeatCount": "Miktar",
+      "randomizeSeed": "Rastgele tohum",
+      "stopOnError": "Hatada durdur",
+      "runBatch": "Toplu çalıştır ({{count}})",
+      "running": "Çalışıyor {{current}}/{{total}}...",
+      "cancelling": "İptal ediliyor...",
+      "cancel": "İptal",
+      "completed": "{{count}} tamamlandı",
+      "failed": "{{count}} başarısız",
+      "downloadAll": "Tümünü indir",
+      "saveAllToAssets": "Tümünü kaydet",
+      "savedAll": "Varlıklara kaydedildi",
+      "savedAllDesc": "{{count}} çıktı kaydedildi",
+      "saved": "Kaydedildi",
+      "clearResults": "Temizle",
+      "results": "Sonuçlar",
+      "result": "Sonuç",
+      "inputDetails": "Girdi detayları",
+      "preview": "Önizleme",
+      "items": "öğe",
+      "noPreview": "Önizleme yok",
+      "seedsGenerated": "Tohumlar otomatik oluşturuldu",
+      "settings": "Toplu ayarları"
     }
   },
   "history": {
@@ -370,6 +438,13 @@
       "clearedDesc": "AI model önbelleği temizlendi. Modeller gerektiğinde yeniden indirilecek.",
       "clearFailed": "Önbellek temizlenemedi"
     },
+    "freeTools": {
+      "title": "Ücretsiz Araçlar",
+      "description": "Ücretsiz araç ayarlarını yapılandır",
+      "downloadTimeout": "İndirme Zaman Aşımı",
+      "downloadTimeoutDesc": "AI modelleri indirirken maksimum bekleme süresi",
+      "minutes": "dakika"
+    },
     "updates": {
       "title": "Güncellemeler",
       "description": "Uygulama güncellemelerini yönetin",
@@ -461,6 +536,24 @@
       "comparison": "Kaydırmalı karşılaştırma",
       "dragToCompare": "Karşılaştırmak için sürükleyin"
     },
+    "faceEnhancer": {
+      "title": "Yüz Geliştirici",
+      "description": "Yapay zeka kullanarak yüz kalitesini iyileştirin ve onarın",
+      "selectImage": "Yüzlü bir görsel seçin",
+      "orDragDrop": "veya sürükle bırak",
+      "enhance": "Geliştir",
+      "download": "İndir",
+      "processing": "İşleniyor...",
+      "original": "Orijinal",
+      "enhanced": "Geliştirilmiş",
+      "sideBySide": "Yan yana",
+      "comparison": "Kaydırmalı karşılaştırma",
+      "dragToCompare": "Karşılaştırmak için sürükleyin",
+      "detecting": "Yüzler algılanıyor",
+      "enhancing": "Yüzler geliştiriliyor",
+      "noFaces": "Görselde yüz algılanmadı",
+      "facesFound": "{{count}} yüz algılandı"
+    },
     "backgroundRemover": {
       "title": "Arka Plan Kaldırıcı",
       "description": "Yapay zeka kullanarak görsel arka planlarını anında kaldırın",
@@ -530,6 +623,89 @@
       "finalizing": "Tamamlanıyor",
       "overall": "Genel",
       "remaining": "kaldı"
+    },
+    "backWarning": {
+      "title": "İşlem Devam Ediyor",
+      "description": "Bir görev şu anda işleniyor. Geri dönmek istediğinizden emin misiniz? Bu, mevcut işlemi iptal edecektir.",
+      "cancel": "İptal",
+      "confirm": "Geri Dön"
+    },
+    "videoConverter": {
+      "title": "Video Converter",
+      "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
+      "selectVideo": "Select Video",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace video",
+      "supportedFormats": "Supports MP4, WebM, MOV, AVI, MKV",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "original": "Original",
+      "outputSettings": "Output Settings",
+      "format": "Format",
+      "quality": "Quality",
+      "resolution": "Resolution",
+      "convertedSize": "Converted Size"
+    },
+    "audioConverter": {
+      "title": "Audio Converter",
+      "description": "Convert audio between formats (MP3, AAC, FLAC, WAV)",
+      "selectAudio": "Select Audio",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace audio",
+      "supportedFormats": "Supports MP3, M4A, OGG, WAV, FLAC",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "converted": "Converted",
+      "playOriginal": "Play original",
+      "playConverted": "Play converted"
+    },
+    "imageConverter": {
+      "title": "Image Converter",
+      "description": "Convert images between formats (JPG, PNG, WebP, GIF)",
+      "selectImages": "Select Images",
+      "orDragDrop": "or drag and drop",
+      "dropToAdd": "Drop to add images",
+      "supportedFormats": "Supports JPG, PNG, WebP, GIF, BMP",
+      "addMore": "Add More",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "quality": "Quality",
+      "downloadAll": "Download All"
+    },
+    "mediaTrimmer": {
+      "title": "Media Trimmer",
+      "description": "Trim videos or audio to a specific duration",
+      "selectMedia": "Select Media",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace media",
+      "supportedFormats": "Supports video and audio files",
+      "trim": "Trim",
+      "trimming": "Trimming...",
+      "originalDuration": "Original",
+      "selectedDuration": "Selected",
+      "trimmedSize": "Trimmed Size",
+      "playingOriginal": "Playing original",
+      "playingTrimmed": "Playing trimmed"
+    },
+    "mediaMerger": {
+      "title": "Media Merger",
+      "description": "Merge multiple video or audio files into one",
+      "selectFiles": "Select Files",
+      "orDragDrop": "or drag and drop",
+      "dropToAdd": "Drop to add files",
+      "supportedFormats": "Supports video and audio files",
+      "addMore": "Add More",
+      "merge": "Merge",
+      "merging": "Merging...",
+      "merged": "Merged",
+      "totalDuration": "Total Duration",
+      "sameFormatNote": "Files must have the same format for lossless merging"
+    },
+    "ffmpeg": {
+      "loading": "Loading FFmpeg",
+      "converting": "Converting",
+      "merging": "Merging",
+      "trimming": "Trimming"
     }
   }
 }

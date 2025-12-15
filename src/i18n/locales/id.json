@@ -33,6 +33,7 @@
     "downloadFailed": "Unduhan gagal. Silakan periksa koneksi jaringan Anda."
   },
   "nav": {
+    "home": "Beranda",
     "models": "Model",
     "playground": "Playground",
     "history": "Riwayat",
@@ -41,6 +42,39 @@
     "freeTools": "Alat Gratis",
     "settings": "Pengaturan",
     "collapse": "Ciutkan"
+  },
+  "welcome": {
+    "tagline": "Alat Kreatif AI di Ujung Jari Anda",
+    "explore": "Jelajahi",
+    "getStarted": "Mulai",
+    "tryFreeTools": "Coba Alat Gratis",
+    "features": {
+      "models": {
+        "title": "Browser Model",
+        "description": "Jelajahi model AI untuk pembuatan gambar, video, dan audio"
+      },
+      "playground": {
+        "title": "Playground",
+        "description": "Ruang kerja multi-tab untuk menjalankan model dengan parameter khusus"
+      },
+      "templates": {
+        "title": "Template",
+        "description": "Simpan dan gunakan kembali konfigurasi favorit Anda"
+      },
+      "history": {
+        "title": "Riwayat",
+        "description": "Lacak dan tinjau prediksi terbaru Anda"
+      },
+      "assets": {
+        "title": "Aset Saya",
+        "description": "Atur dan kelola output yang dihasilkan"
+      },
+      "freeTools": {
+        "title": "Alat Gratis",
+        "description": "Alat AI yang kuat yang berjalan secara lokal - tidak perlu kunci API",
+        "badge": "Gratis"
+      }
+    }
   },
   "models": {
     "title": "Model",
@@ -150,6 +184,40 @@
       "failedError": "Gagal mengoptimalkan prompt",
       "optimizing": "Mengoptimalkan...",
       "optimize": "Optimalkan"
+    },
+    "flappyBird": {
+      "clickToStart": "Klik atau tekan Spasi untuk memulai game",
+      "viewResults": "Lihat Hasil",
+      "playWhileWaiting": "Mainkan sambil menunggu",
+      "quit": "Keluar"
+    },
+    "batch": {
+      "title": "Batch",
+      "enable": "Aktifkan mode batch",
+      "disable": "Nonaktifkan mode batch",
+      "repeatCount": "Jumlah",
+      "randomizeSeed": "Seed acak",
+      "stopOnError": "Berhenti saat error",
+      "runBatch": "Jalankan batch ({{count}})",
+      "running": "Menjalankan {{current}}/{{total}}...",
+      "cancelling": "Membatalkan...",
+      "cancel": "Batal",
+      "completed": "{{count}} selesai",
+      "failed": "{{count}} gagal",
+      "downloadAll": "Unduh semua",
+      "saveAllToAssets": "Simpan semua",
+      "savedAll": "Disimpan ke aset",
+      "savedAllDesc": "{{count}} output disimpan",
+      "saved": "Disimpan",
+      "clearResults": "Hapus",
+      "results": "Hasil",
+      "result": "Hasil",
+      "inputDetails": "Detail input",
+      "preview": "Pratinjau",
+      "items": "item",
+      "noPreview": "Tidak ada pratinjau",
+      "seedsGenerated": "Seed dibuat secara otomatis",
+      "settings": "Pengaturan batch"
     }
   },
   "history": {
@@ -370,6 +438,13 @@
       "clearedDesc": "Cache model AI telah dihapus. Model akan diunduh ulang saat diperlukan.",
       "clearFailed": "Gagal menghapus cache"
     },
+    "freeTools": {
+      "title": "Alat Gratis",
+      "description": "Konfigurasi pengaturan alat gratis",
+      "downloadTimeout": "Batas Waktu Unduh",
+      "downloadTimeoutDesc": "Waktu tunggu maksimum saat mengunduh model AI",
+      "minutes": "menit"
+    },
     "updates": {
       "title": "Pembaruan",
       "description": "Kelola pembaruan aplikasi",
@@ -461,6 +536,24 @@
       "comparison": "Perbandingan geser",
       "dragToCompare": "Seret untuk membandingkan"
     },
+    "faceEnhancer": {
+      "title": "Peningkat Wajah",
+      "description": "Tingkatkan dan pulihkan kualitas wajah menggunakan AI",
+      "selectImage": "Pilih gambar dengan wajah",
+      "orDragDrop": "atau seret dan lepas",
+      "enhance": "Tingkatkan",
+      "download": "Unduh",
+      "processing": "Memproses...",
+      "original": "Asli",
+      "enhanced": "Ditingkatkan",
+      "sideBySide": "Berdampingan",
+      "comparison": "Perbandingan geser",
+      "dragToCompare": "Seret untuk membandingkan",
+      "detecting": "Mendeteksi wajah",
+      "enhancing": "Meningkatkan wajah",
+      "noFaces": "Tidak ada wajah terdeteksi dalam gambar",
+      "facesFound": "{{count}} wajah terdeteksi"
+    },
     "backgroundRemover": {
       "title": "Penghapus Latar Belakang",
       "description": "Hapus latar belakang gambar secara instan menggunakan AI",
@@ -516,6 +609,91 @@
       "finalizing": "Menyelesaikan",
       "overall": "Keseluruhan",
       "remaining": "tersisa"
+    },
+    "backWarning": {
+      "title": "Sedang Memproses",
+      "description": "Tugas sedang diproses. Yakin ingin kembali? Ini akan membatalkan operasi saat ini.",
+      "cancel": "Batal",
+      "confirm": "Kembali"
+    },
+    "videoConverter": {
+      "title": "Video Converter",
+      "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
+      "selectVideo": "Select Video",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace video",
+      "supportedFormats": "Supports MP4, WebM, MOV, AVI, MKV",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "original": "Original",
+      "outputSettings": "Output Settings",
+      "format": "Format",
+      "quality": "Quality",
+      "resolution": "Resolution",
+      "convertedSize": "Converted Size",
+      "converted": "Converted"
+    },
+    "audioConverter": {
+      "title": "Audio Converter",
+      "description": "Convert audio between formats (MP3, AAC, FLAC, WAV)",
+      "selectAudio": "Select Audio",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace audio",
+      "supportedFormats": "Supports MP3, M4A, OGG, WAV, FLAC",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "original": "Original",
+      "converted": "Converted",
+      "playOriginal": "Play original",
+      "playConverted": "Play converted"
+    },
+    "imageConverter": {
+      "title": "Image Converter",
+      "description": "Convert images between formats (JPG, PNG, WebP, GIF)",
+      "selectImages": "Select Images",
+      "orDragDrop": "or drag and drop",
+      "dropToAdd": "Drop to add images",
+      "supportedFormats": "Supports JPG, PNG, WebP, GIF, BMP",
+      "addMore": "Add More",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "quality": "Quality",
+      "downloadAll": "Download All"
+    },
+    "mediaTrimmer": {
+      "title": "Media Trimmer",
+      "description": "Trim videos or audio to a specific duration",
+      "selectMedia": "Select Media",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace media",
+      "supportedFormats": "Supports video and audio files",
+      "trim": "Trim",
+      "trimming": "Trimming...",
+      "originalDuration": "Original",
+      "selectedDuration": "Selected",
+      "trimmedSize": "Trimmed Size",
+      "playingOriginal": "Playing original",
+      "playingTrimmed": "Playing trimmed"
+    },
+    "mediaMerger": {
+      "title": "Media Merger",
+      "description": "Merge multiple video or audio files into one",
+      "selectFiles": "Select Files",
+      "orDragDrop": "or drag and drop",
+      "dropToAdd": "Drop to add files",
+      "supportedFormats": "Supports video and audio files",
+      "addMore": "Add More",
+      "merge": "Merge",
+      "merging": "Merging...",
+      "merged": "Merged",
+      "totalDuration": "Total Duration",
+      "sameFormatNote": "Files must have the same format for lossless merging"
+    },
+    "ffmpeg": {
+      "loading": "Loading FFmpeg",
+      "converting": "Converting",
+      "merging": "Merging",
+      "trimming": "Trimming"
     },
     "segmentAnything": {
       "title": "Segmentasi Apa Saja",

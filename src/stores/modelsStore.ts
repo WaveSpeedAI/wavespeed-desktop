@@ -38,7 +38,8 @@ interface ModelsState {
   sortOrder: SortOrder
   favorites: Set<string>
   showFavoritesOnly: boolean
-  fetchModels: () => Promise<void>
+  hasFetched: boolean
+  fetchModels: (force?: boolean) => Promise<void>
   setSearchQuery: (query: string) => void
   setSelectedType: (type: string | null) => void
   setSortBy: (sortBy: SortBy) => void
@@ -61,12 +62,17 @@ export const useModelsStore = create<ModelsState>((set, get) => ({
   sortOrder: 'desc',
   favorites: loadFavorites(),
   showFavoritesOnly: false,
+  hasFetched: false,
 
-  fetchModels: async () => {
+  fetchModels: async (force = false) => {
+    // Skip if already fetched (unless forced)
+    if (get().hasFetched && !force) {
+      return
+    }
     set({ isLoading: true, error: null })
     try {
       const models = await apiClient.listModels()
-      set({ models, isLoading: false })
+      set({ models, isLoading: false, hasFetched: true })
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'Failed to fetch models',

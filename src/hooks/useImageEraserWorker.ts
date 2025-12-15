@@ -1,5 +1,6 @@
 import { useRef, useCallback, useEffect } from 'react'
 import type { ProgressDetail } from '@/types/progress'
+import { getDownloadTimeoutMs } from '@/stores/settingsStore'
 
 interface WorkerMessage {
   type: 'phase' | 'progress' | 'ready' | 'result' | 'error' | 'disposed'
@@ -157,7 +158,10 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
 
       workerRef.current.postMessage({
         type: 'init',
-        payload: { id }
+        payload: {
+          id,
+          timeout: getDownloadTimeoutMs()
+        }
       })
     })
   }, [])

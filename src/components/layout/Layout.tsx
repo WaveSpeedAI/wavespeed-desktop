@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback, createContext } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Sidebar } from './Sidebar'
@@ -18,6 +18,17 @@ import { BackgroundRemoverPage } from '@/pages/BackgroundRemoverPage'
 import { ImageEraserPage } from '@/pages/ImageEraserPage'
 import { SegmentAnythingPage } from '@/pages/SegmentAnythingPage'
 import { ZImagePage } from '@/pages/ZImagePage'
+import { VideoConverterPage } from '@/pages/VideoConverterPage'
+import { AudioConverterPage } from '@/pages/AudioConverterPage'
+import { ImageConverterPage } from '@/pages/ImageConverterPage'
+import { MediaTrimmerPage } from '@/pages/MediaTrimmerPage'
+import { MediaMergerPage } from '@/pages/MediaMergerPage'
+import { FaceEnhancerPage } from '@/pages/FaceEnhancerPage'
+
+// Context for resetting persistent pages (forces remount by changing key)
+export const PageResetContext = createContext<{ resetPage: (path: string) => void }>({
+  resetPage: () => {}
+})
 
 export function Layout() {
   const { t } = useTranslation()
@@ -31,16 +42,32 @@ export function Layout() {
   // Track the last visited free-tools sub-page for navigation
   const [lastFreeToolsPage, setLastFreeToolsPage] = useState<string | null>(null)
 
-  const { apiKey: _apiKey, isLoading: isLoadingApiKey, isValidated, loadApiKey } = useApiKeyStore()
-  void _apiKey // Used for conditional rendering
+  // Reset a persistent page by removing it from visitedPages (forces unmount)
+  const resetPage = useCallback((path: string) => {
+    setVisitedPages(prev => {
+      const next = new Set(prev)
+      next.delete(path)
+      return next
+    })
+  }, [])
+
+  const { isValidated, loadApiKey, hasAttemptedLoad, isLoading: isLoadingApiKey } = useApiKeyStore()
   const [inputKey, setInputKey] = useState('')
   const [showKey, setShowKey] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
 
+  // Reset login form when API key is cleared
+  useEffect(() => {
+    if (!isValidated) {
+      setInputKey('')
+      setError('')
+    }
+  }, [isValidated])
+
   // Track visits to persistent pages and last visited free-tools page
   useEffect(() => {
-    const persistentPaths = ['/free-tools/video', '/free-tools/image', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/z-image']
+    const persistentPaths = ['/free-tools/video', '/free-tools/image', '/free-tools/face-enhancer', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/free-tools/video-converter', '/free-tools/audio-converter', '/free-tools/image-converter', '/free-tools/media-trimmer', '/free-tools/media-merger', '/z-image']
     if (persistentPaths.includes(location.pathname)) {
       // Track for lazy mounting
       if (!visitedPages.has(location.pathname)) {
@@ -58,9 +85,11 @@ export function Layout() {
   }, [location.pathname, visitedPages])
 
   // Pages that don't require API key
-  const publicPaths = ['/settings', '/templates', '/assets', '/free-tools', '/z-image']
+  const publicPaths = ['/', '/settings', '/templates', '/assets', '/free-tools', '/z-image']
   const isPublicPage = publicPaths.some(path =>
-    location.pathname === path || location.pathname.startsWith(path + '/')
+    path === '/'
+      ? location.pathname === '/'
+      : location.pathname === path || location.pathname.startsWith(path + '/')
   )
 
   // Listen for update availability on startup
@@ -103,8 +132,8 @@ export function Layout() {
         localStorage.setItem('wavespeed_api_key', inputKey.trim())
       }
 
-      // Reload the API key state
-      await loadApiKey()
+      // Reload the API key state (force to bypass hasAttemptedLoad check)
+      await loadApiKey(true)
 
       toast({
         title: t('settings.apiKey.saved'),
@@ -119,17 +148,9 @@ export function Layout() {
     }
   }
 
-  // Show loading state while API key is being loaded
-  if (isLoadingApiKey) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    )
-  }
-
   // Check if current page requires login (must have a validated API key)
-  const requiresLogin = !isValidated && !isPublicPage
+  // Only show login form after we've attempted to load the API key and finished loading
+  const requiresLogin = !isValidated && !isPublicPage && hasAttemptedLoad && !isLoadingApiKey
 
   // Login form content for protected pages
   const loginContent = (
@@ -230,6 +251,7 @@ export function Layout() {
   )
 
   return (
+    <PageResetContext.Provider value={{ resetPage }}>
     <TooltipProvider>
       <div className="flex h-screen overflow-hidden relative">
         {/* Abstract art background */}
@@ -293,10 +315,10 @@ export function Layout() {
           {requiresLogin ? loginContent : (
             <>
               {/* Regular routes via Outlet */}
-              <div className={location.pathname === '/free-tools/video' || location.pathname === '/free-tools/image' || location.pathname === '/free-tools/background-remover' || location.pathname === '/free-tools/image-eraser' || location.pathname === '/free-tools/segment-anything' || location.pathname === '/z-image' ? 'hidden' : 'h-full overflow-auto'}>
+              <div className={['/free-tools/video', '/free-tools/image', '/free-tools/face-enhancer', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/free-tools/video-converter', '/free-tools/audio-converter', '/free-tools/image-converter', '/free-tools/media-trimmer', '/free-tools/media-merger', '/z-image'].includes(location.pathname) ? 'hidden' : 'h-full overflow-auto'}>
                 <Outlet />
               </div>
-              {/* Persistent Free Tools pages - mounted once visited, then persist via CSS show/hide */}
+              {/* Persistent Free Tools pages - mounted once visited, removed from visitedPages forces unmount */}
               {visitedPages.has('/free-tools/video') && (
                 <div className={location.pathname === '/free-tools/video' ? 'h-full overflow-auto' : 'hidden'}>
                   <VideoEnhancerPage />
@@ -305,6 +327,11 @@ export function Layout() {
               {visitedPages.has('/free-tools/image') && (
                 <div className={location.pathname === '/free-tools/image' ? 'h-full overflow-auto' : 'hidden'}>
                   <ImageEnhancerPage />
+                </div>
+              )}
+              {visitedPages.has('/free-tools/face-enhancer') && (
+                <div className={location.pathname === '/free-tools/face-enhancer' ? 'h-full overflow-auto' : 'hidden'}>
+                  <FaceEnhancerPage />
                 </div>
               )}
               {visitedPages.has('/free-tools/background-remover') && (
@@ -328,11 +355,37 @@ export function Layout() {
                   <ZImagePage />
                 </div>
               )}
+              {visitedPages.has('/free-tools/video-converter') && (
+                <div className={location.pathname === '/free-tools/video-converter' ? 'h-full overflow-auto' : 'hidden'}>
+                  <VideoConverterPage />
+                </div>
+              )}
+              {visitedPages.has('/free-tools/audio-converter') && (
+                <div className={location.pathname === '/free-tools/audio-converter' ? 'h-full overflow-auto' : 'hidden'}>
+                  <AudioConverterPage />
+                </div>
+              )}
+              {visitedPages.has('/free-tools/image-converter') && (
+                <div className={location.pathname === '/free-tools/image-converter' ? 'h-full overflow-auto' : 'hidden'}>
+                  <ImageConverterPage />
+                </div>
+              )}
+              {visitedPages.has('/free-tools/media-trimmer') && (
+                <div className={location.pathname === '/free-tools/media-trimmer' ? 'h-full overflow-auto' : 'hidden'}>
+                  <MediaTrimmerPage />
+                </div>
+              )}
+              {visitedPages.has('/free-tools/media-merger') && (
+                <div className={location.pathname === '/free-tools/media-merger' ? 'h-full overflow-auto' : 'hidden'}>
+                  <MediaMergerPage />
+                </div>
+              )}
             </>
           )}
         </main>
         <Toaster />
       </div>
     </TooltipProvider>
+    </PageResetContext.Provider>
   )
 }

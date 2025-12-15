@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import { Layout } from '@/components/layout/Layout'
+import { WelcomePage } from '@/pages/WelcomePage'
 import { ModelsPage } from '@/pages/ModelsPage'
 import { PlaygroundPage } from '@/pages/PlaygroundPage'
 import { TemplatesPage } from '@/pages/TemplatesPage'
@@ -35,7 +36,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        <Route index element={<Navigate to="/models" replace />} />
+        <Route index element={<WelcomePage to="/models" replace />} />
         <Route path="models" element={<ModelsPage />} />
         <Route path="playground" element={<PlaygroundPage />} />
         <Route path="playground/*" element={<PlaygroundPage />} />

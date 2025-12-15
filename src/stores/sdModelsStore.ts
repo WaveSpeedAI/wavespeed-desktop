@@ -17,6 +17,13 @@ interface AuxiliaryModelStatus {
   }
 }
 
+export interface SDLogEntry {
+  id: number
+  type: 'stdout' | 'stderr'
+  message: string
+  timestamp: Date
+}
+
 interface SDModelsState {
   // State
   models: SDModel[]
@@ -28,7 +35,13 @@ interface SDModelsState {
   binaryStatus: AuxiliaryModelStatus
   vaeStatus: AuxiliaryModelStatus
   llmStatus: AuxiliaryModelStatus
+  modelDownloadStatus: AuxiliaryModelStatus  // Track main model (z-image-turbo) download
   isGenerating: boolean
+
+  // SD Process logs
+  sdLogs: SDLogEntry[]
+  addSdLog: (log: Omit<SDLogEntry, 'id'>) => void
+  clearSdLogs: () => void
 
   // Actions
   fetchModels: () => Promise<void>
@@ -43,6 +56,7 @@ interface SDModelsState {
   updateBinaryStatus: (status: Partial<AuxiliaryModelStatus>) => void
   updateVaeStatus: (status: Partial<AuxiliaryModelStatus>) => void
   updateLlmStatus: (status: Partial<AuxiliaryModelStatus>) => void
+  updateModelDownloadStatus: (status: Partial<AuxiliaryModelStatus>) => void
   setIsGenerating: (isGenerating: boolean) => void
   checkAuxiliaryModels: () => Promise<void>
 }
@@ -68,7 +82,11 @@ export const useSDModelsStore = create<SDModelsState>((set, get) => ({
   binaryStatus: { downloaded: false, downloading: false, progress: 0, error: null },
   vaeStatus: { downloaded: false, downloading: false, progress: 0, error: null },
   llmStatus: { downloaded: false, downloading: false, progress: 0, error: null },
+  modelDownloadStatus: { downloaded: false, downloading: false, progress: 0, error: null },
   isGenerating: false,
+
+  // SD Process logs initial state
+  sdLogs: [],
 
   /**
    * Fetch model list and check which ones are downloaded
@@ -170,8 +188,13 @@ export const useSDModelsStore = create<SDModelsState>((set, get) => ({
       const modelsDir = `${assetsDir}/../models/stable-diffusion`
       const destPath = `${modelsDir}/${model.name}`
 
+      console.log(`[Frontend] Starting download for model: ${model.name}`)
+      console.log(`[Frontend] Download URL: ${model.downloadUrl}`)
+      console.log(`[Frontend] Destination path: ${destPath}`)
+
       // Listen to download progress
       const removeListener = window.electronAPI.onSdDownloadProgress((data) => {
+        console.log(`[Frontend] Download progress: ${data.progress}%`, data)
         set((state) => ({
           models: state.models.map((m) =>
             m.id === modelId ? { ...m, downloadProgress: data.progress } : m
@@ -180,10 +203,12 @@ export const useSDModelsStore = create<SDModelsState>((set, get) => ({
       })
 
       // Start download
+      console.log(`[Frontend] Calling sdDownloadModel...`)
       const result = await window.electronAPI.sdDownloadModel(
         model.downloadUrl,
         destPath
       )
+      console.log(`[Frontend] Download result:`, result)
 
       // Remove progress listener
       removeListener()
@@ -379,6 +404,15 @@ export const useSDModelsStore = create<SDModelsState>((set, get) => ({
   },
 
   /**
+   * Update model download status
+   */
+  updateModelDownloadStatus: (status: Partial<AuxiliaryModelStatus>) => {
+    set((state) => ({
+      modelDownloadStatus: { ...state.modelDownloadStatus, ...status }
+    }))
+  },
+
+  /**
    * Set generating status
    */
   setIsGenerating: (isGenerating: boolean) => {
@@ -411,6 +445,33 @@ export const useSDModelsStore = create<SDModelsState>((set, get) => ({
     } catch (error) {
       console.error('Failed to check auxiliary models:', error)
     }
+  },
+
+  /**
+   * Add SD log entry
+   */
+  addSdLog: (log: Omit<SDLogEntry, 'id'>) => {
+    set((state) => {
+      const MAX_LOGS = 1000
+      const newLog: SDLogEntry = {
+        ...log,
+        id: state.sdLogs.length > 0 ? state.sdLogs[state.sdLogs.length - 1].id + 1 : 0
+      }
+
+      const updatedLogs = [...state.sdLogs, newLog]
+      // Keep only last MAX_LOGS entries
+      if (updatedLogs.length > MAX_LOGS) {
+        return { sdLogs: updatedLogs.slice(-MAX_LOGS) }
+      }
+      return { sdLogs: updatedLogs }
+    })
+  },
+
+  /**
+   * Clear SD logs
+   */
+  clearSdLogs: () => {
+    set({ sdLogs: [] })
   }
 }))
 

@@ -32,6 +32,8 @@ interface CacheItem {
   cacheName: string
   url: string
   size: number
+  type?: 'browser' | 'sd-model' | 'sd-auxiliary' // browser: browser cache, sd-model: SD models, sd-auxiliary: LLM/VAE
+  modelType?: 'llm' | 'vae' // for sd-auxiliary models
 }
 
 type UpdateChannel = 'stable' | 'nightly'
@@ -98,13 +100,14 @@ export function SettingsPage() {
     })
   }, [i18n, t])
 
-  // Load cache details (all caches with items)
+  // Load cache details (browser caches + SD models)
   const loadCacheDetails = useCallback(async () => {
     try {
-      const cacheNames = await caches.keys()
       const items: CacheItem[] = []
       let totalSize = 0
 
+      // 1. Load browser cache (Image Eraser, etc.)
+      const cacheNames = await caches.keys()
       for (const name of cacheNames) {
         const cache = await caches.open(name)
         const keys = await cache.keys()
@@ -115,16 +118,51 @@ export function SettingsPage() {
             items.push({
               cacheName: name,
               url: request.url,
-              size: blob.size
+              size: blob.size,
+              type: 'browser'
             })
             totalSize += blob.size
           }
         }
       }
 
+      // 2. Load SD auxiliary models (LLM, VAE)
+      if (window.electronAPI?.sdListAuxiliaryModels) {
+        const result = await window.electronAPI.sdListAuxiliaryModels()
+        if (result.success && result.models) {
+          for (const model of result.models) {
+            items.push({
+              cacheName: 'Z-Image Auxiliary',
+              url: model.path,
+              size: model.size,
+              type: 'sd-auxiliary',
+              modelType: model.type
+            })
+            totalSize += model.size
+          }
+        }
+      }
+
+      // 3. Load SD models
+      if (window.electronAPI?.sdListModels) {
+        const result = await window.electronAPI.sdListModels()
+        if (result.success && result.models) {
+          for (const model of result.models) {
+            items.push({
+              cacheName: 'Z-Image Models',
+              url: model.path,
+              size: model.size,
+              type: 'sd-model'
+            })
+            totalSize += model.size
+          }
+        }
+      }
+
       setCacheItems(items)
       setCacheSize(totalSize)
-    } catch {
+    } catch (error) {
+      console.error('Failed to load cache details:', error)
       setCacheItems([])
       setCacheSize(0)
     }
@@ -154,16 +192,40 @@ export function SettingsPage() {
   }, [isValidated, t])
 
   // Delete a single cache item
-  const handleDeleteCacheItem = useCallback(async (cacheName: string, url: string) => {
-    setIsDeletingItem(url)
+  const handleDeleteCacheItem = useCallback(async (item: CacheItem) => {
+    setIsDeletingItem(item.url)
     try {
-      const cache = await caches.open(cacheName)
-      await cache.delete(url)
+      if (item.type === 'browser') {
+        // Delete from browser cache
+        const cache = await caches.open(item.cacheName)
+        await cache.delete(item.url)
+      } else if (item.type === 'sd-auxiliary' && item.modelType) {
+        // Delete SD auxiliary model (LLM or VAE)
+        if (window.electronAPI?.sdDeleteAuxiliaryModel) {
+          const result = await window.electronAPI.sdDeleteAuxiliaryModel(item.modelType)
+          if (!result.success) {
+            throw new Error(result.error || 'Failed to delete model')
+          }
+        }
+      } else if (item.type === 'sd-model') {
+        // Delete SD model
+        if (window.electronAPI?.sdDeleteModel) {
+          const result = await window.electronAPI.sdDeleteModel(item.url)
+          if (!result.success) {
+            throw new Error(result.error || 'Failed to delete model')
+          }
+        }
+      }
+
       await loadCacheDetails()
-    } catch {
+      toast({
+        title: t('common.success'),
+        description: t('settings.cache.itemDeleted'),
+      })
+    } catch (error) {
       toast({
         title: t('common.error'),
-        description: t('settings.cache.clearFailed'),
+        description: (error as Error).message || t('settings.cache.clearFailed'),
         variant: 'destructive',
       })
     } finally {
@@ -202,15 +264,24 @@ export function SettingsPage() {
     return `${(bytes / 1024 / 1024).toFixed(1)} MB`
   }
 
-  // Get display name from URL
-  const getDisplayName = (url: string) => {
-    try {
-      const urlObj = new URL(url)
-      const path = urlObj.pathname
-      const filename = path.split('/').pop() || path
-      return filename.length > 40 ? filename.slice(0, 37) + '...' : filename
-    } catch {
-      return url.slice(0, 40)
+  // Get display name from cache item
+  const getDisplayName = (item: CacheItem) => {
+    if (item.type === 'sd-auxiliary') {
+      return item.modelType === 'llm' ? 'Qwen3-4B LLM (2.4 GB)' : 'Z-Image VAE (335 MB)'
+    } else if (item.type === 'sd-model') {
+      // Extract filename from path
+      const filename = item.url.split(/[\\/]/).pop() || item.url
+      return filename.replace('.gguf', '')
+    } else {
+      // Browser cache
+      try {
+        const urlObj = new URL(item.url)
+        const path = urlObj.pathname
+        const filename = path.split('/').pop() || path
+        return filename.length > 40 ? filename.slice(0, 37) + '...' : filename
+      } catch {
+        return item.url.slice(0, 40)
+      }
     }
   }
 
@@ -799,7 +870,7 @@ export function SettingsPage() {
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate" title={item.url}>
-                        {getDisplayName(item.url)}
+                        {getDisplayName(item)}
                       </p>
                       <p className="text-xs text-muted-foreground truncate" title={item.cacheName}>
                         {item.cacheName}
@@ -813,7 +884,7 @@ export function SettingsPage() {
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => handleDeleteCacheItem(item.cacheName, item.url)}
+                        onClick={() => handleDeleteCacheItem(item)}
                         disabled={isDeletingItem === item.url}
                       >
                         {isDeletingItem === item.url ? (

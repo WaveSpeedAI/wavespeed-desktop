@@ -43,8 +43,8 @@ export function validateGenerationParams(params: {
   }
 
   // Validate sampling steps
-  if (params.steps < 10 || params.steps > 50) {
-    return { valid: false, error: 'Sampling steps must be between 10-50' }
+  if (params.steps < 4 || params.steps > 50) {
+    return { valid: false, error: 'Sampling steps must be between 4-50' }
   }
 
   if (!Number.isInteger(params.steps)) {

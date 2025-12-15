@@ -136,6 +136,12 @@ const electronAPI = {
     ipcRenderer.invoke('sd-get-system-info'),
   sdCheckAuxiliaryModels: (): Promise<{ success: boolean; llmExists: boolean; vaeExists: boolean; llmPath: string; vaePath: string; error?: string }> =>
     ipcRenderer.invoke('sd-check-auxiliary-models'),
+  sdGetDownloadStatus: (): Promise<{ llm: { progress: number; receivedBytes: number; totalBytes: number } | null; vae: { progress: number; receivedBytes: number; totalBytes: number } | null }> =>
+    ipcRenderer.invoke('sd-get-download-status'),
+  sdListAuxiliaryModels: (): Promise<{ success: boolean; models?: Array<{ name: string; path: string; size: number; type: 'llm' | 'vae' }>; error?: string }> =>
+    ipcRenderer.invoke('sd-list-auxiliary-models'),
+  sdDeleteAuxiliaryModel: (type: 'llm' | 'vae'): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke('sd-delete-auxiliary-model', type),
   sdDownloadAuxiliaryModel: (type: 'llm' | 'vae', url: string): Promise<{ success: boolean; filePath?: string; error?: string }> =>
     ipcRenderer.invoke('sd-download-auxiliary-model', type, url),
   sdGenerateImage: (params: {
@@ -170,6 +176,11 @@ const electronAPI = {
     ipcRenderer.on('sd-progress', handler)
     return () => ipcRenderer.removeListener('sd-progress', handler)
   },
+  onSdLog: (callback: (data: { type: 'stdout' | 'stderr'; message: string }) => void): (() => void) => {
+    const handler = (_: unknown, data: unknown) => callback(data as { type: 'stdout' | 'stderr'; message: string })
+    ipcRenderer.on('sd-log', handler)
+    return () => ipcRenderer.removeListener('sd-log', handler)
+  },
   onSdDownloadProgress: (callback: (data: { phase: string; progress: number; detail?: unknown }) => void): (() => void) => {
     const handler = (_: unknown, data: unknown) => callback(data as { phase: string; progress: number; detail?: unknown })
     ipcRenderer.on('sd-download-progress', handler)
@@ -179,6 +190,16 @@ const electronAPI = {
     const handler = (_: unknown, data: unknown) => callback(data as { phase: string; progress: number; detail?: unknown })
     ipcRenderer.on('sd-binary-download-progress', handler)
     return () => ipcRenderer.removeListener('sd-binary-download-progress', handler)
+  },
+  onSdLlmDownloadProgress: (callback: (data: { phase: string; progress: number; detail?: unknown }) => void): (() => void) => {
+    const handler = (_: unknown, data: unknown) => callback(data as { phase: string; progress: number; detail?: unknown })
+    ipcRenderer.on('sd-llm-download-progress', handler)
+    return () => ipcRenderer.removeListener('sd-llm-download-progress', handler)
+  },
+  onSdVaeDownloadProgress: (callback: (data: { phase: string; progress: number; detail?: unknown }) => void): (() => void) => {
+    const handler = (_: unknown, data: unknown) => callback(data as { phase: string; progress: number; detail?: unknown })
+    ipcRenderer.on('sd-vae-download-progress', handler)
+    return () => ipcRenderer.removeListener('sd-vae-download-progress', handler)
   }
 }
 

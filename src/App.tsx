@@ -38,7 +38,7 @@ function App() {
         <Route index element={<Navigate to="/models" replace />} />
         <Route path="models" element={<ModelsPage />} />
         <Route path="playground" element={<PlaygroundPage />} />
-        <Route path="playground/:modelId" element={<PlaygroundPage />} />
+        <Route path="playground/*" element={<PlaygroundPage />} />
         <Route path="templates" element={<TemplatesPage />} />
         <Route path="history" element={<HistoryPage />} />
         <Route path="assets" element={<AssetsPage />} />

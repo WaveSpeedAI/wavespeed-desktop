@@ -7,14 +7,6 @@ import { useCallback, useRef, useEffect } from 'react'
 import type { GenerationParams } from '@/types/stable-diffusion'
 import { useSDModelsStore } from '@/stores/sdModelsStore'
 
-const CACHE_NAME = 'zimage-models-cache'
-
-// Global abort controllers to persist across component remounts
-const globalAbortControllers = {
-  llm: null as AbortController | null,
-  vae: null as AbortController | null
-}
-
 // Model URLs
 const MODELS = {
   llm: {
@@ -65,121 +57,71 @@ export function useZImage(options: UseZImageOptions = {}) {
     optionsRef.current = options
   }, [options])
 
-  // Listen for SD binary download progress
+  // Polling-based download status sync
+  // This ensures continuous status updates even when user switches pages
   useEffect(() => {
-    if (!window.electronAPI?.onSdBinaryDownloadProgress) return
-
-    const unsubscribe = window.electronAPI.onSdBinaryDownloadProgress((data) => {
-      const { phase, progress, detail } = data
-
-      // Convert bytes to MB for display
-      const convertedDetail = detail?.unit === 'bytes' ? {
-        current: Math.round((detail.current / 1024 / 1024) * 100) / 100,
-        total: Math.round((detail.total / 1024 / 1024) * 100) / 100,
-        unit: 'MB'
-      } : detail
-
-      // Update binary status progress and detail via store
-      updateBinaryStatus({ progress, detail: convertedDetail })
-
-      // Notify parent component using the latest options
-      if (optionsRef.current.onProgress) {
-        optionsRef.current.onProgress('download-binary', progress, convertedDetail)
-      }
-    })
-
-    return () => {
-      unsubscribe?.()
-    }
-  }, [updateBinaryStatus])
-
-  /**
-   * Download file with progress tracking and caching
-   */
-  const downloadFile = useCallback(
-    async (
-      url: string,
-      filename: string,
-      type: 'llm' | 'vae',
-      onProgress: (progress: number, loaded: number, total: number) => void
-    ): Promise<Blob> => {
-      // Check cache first
-      const cache = await caches.open(CACHE_NAME)
-      const cachedResponse = await cache.match(url)
-
-      if (cachedResponse) {
-        const blob = await cachedResponse.blob()
-        onProgress(100, blob.size, blob.size)
-        return blob
-      }
-
-      // Create new abort controller and store globally
-      const abortController = new AbortController()
-      globalAbortControllers[type] = abortController
-
+    const pollDownloadStatus = async () => {
       try {
-        const response = await fetch(url, {
-          signal: abortController.signal
-        })
+        // Query current download status from Electron
+        const downloadStatus = await window.electronAPI?.sdGetDownloadStatus()
 
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-        }
+        if (downloadStatus) {
+          // Update LLM status
+          if (downloadStatus.llm) {
+            const { progress, receivedBytes, totalBytes } = downloadStatus.llm
+            const detail = {
+              current: Math.round((receivedBytes / 1024 / 1024) * 100) / 100,
+              total: Math.round((totalBytes / 1024 / 1024) * 100) / 100,
+              unit: 'MB'
+            }
+            updateLlmStatus({ downloading: true, downloaded: false, progress, detail })
+            optionsRef.current.onProgress?.('download-llm', progress, detail)
+          } else if (llmStatus.downloading && !llmStatus.downloaded) {
+            // No active download - check if file exists
+            const result = await window.electronAPI?.sdCheckAuxiliaryModels()
+            if (result?.success && result.llmExists) {
+              updateLlmStatus({ downloaded: true, downloading: false, progress: 100 })
+            }
+          }
 
-        const reader = response.body?.getReader()
-        if (!reader) {
-          throw new Error('Response body is not readable')
-        }
-
-        const contentLength = parseInt(response.headers.get('content-length') || '0')
-        let receivedLength = 0
-        const chunks: Uint8Array[] = []
-        let lastProgressUpdate = 0
-
-        while (true) {
-          const { done, value } = await reader.read()
-
-          if (done) break
-
-          chunks.push(value)
-          receivedLength += value.length
-
-          // Throttle progress updates to every 500ms
-          const now = Date.now()
-          if (now - lastProgressUpdate > 500 || done) {
-            const progress = contentLength > 0 ? Math.round((receivedLength / contentLength) * 100) : 0
-            onProgress(progress, receivedLength, contentLength)
-            lastProgressUpdate = now
+          // Update VAE status
+          if (downloadStatus.vae) {
+            const { progress, receivedBytes, totalBytes } = downloadStatus.vae
+            const detail = {
+              current: Math.round((receivedBytes / 1024 / 1024) * 100) / 100,
+              total: Math.round((totalBytes / 1024 / 1024) * 100) / 100,
+              unit: 'MB'
+            }
+            updateVaeStatus({ downloading: true, downloaded: false, progress, detail })
+            optionsRef.current.onProgress?.('download-vae', progress, detail)
+          } else if (vaeStatus.downloading && !vaeStatus.downloaded) {
+            // No active download - check if file exists
+            const result = await window.electronAPI?.sdCheckAuxiliaryModels()
+            if (result?.success && result.vaeExists) {
+              updateVaeStatus({ downloaded: true, downloading: false, progress: 100 })
+            }
           }
         }
-
-        // Final progress update
-        const progress = contentLength > 0 ? 100 : 0
-        onProgress(progress, receivedLength, contentLength)
-
-        // Combine chunks
-        const blob = new Blob(chunks)
-
-        // Cache the response
-        await cache.put(url, new Response(blob))
-
-        // Clear global abort controller
-        globalAbortControllers[type] = null
-
-        return blob
       } catch (error) {
-        // Clear global abort controller
-        globalAbortControllers[type] = null
-
-        // Check if it's an abort error
-        if ((error as Error).name === 'AbortError') {
-          throw new Error('Download cancelled by user')
-        }
-        throw error
+        console.error('Failed to poll download status:', error)
       }
-    },
-    []
-  )
+    }
+
+    // Initial check
+    pollDownloadStatus()
+
+    // Start polling if any download is in progress
+    const shouldPoll = llmStatus.downloading || vaeStatus.downloading || binaryStatus.downloading
+
+    if (shouldPoll) {
+      const interval = setInterval(pollDownloadStatus, 500) // Poll every 500ms
+      return () => clearInterval(interval)
+    }
+  }, [llmStatus.downloading, vaeStatus.downloading, binaryStatus.downloading, llmStatus.downloaded, vaeStatus.downloaded, updateLlmStatus, updateVaeStatus])
+
+  // Note: IPC event listeners removed - using polling instead for reliability
+  // Polling ensures status updates continue even when user switches pages
+
 
   /**
    * Download LLM model
@@ -189,48 +131,26 @@ export function useZImage(options: UseZImageOptions = {}) {
     optionsRef.current.onPhase?.('download-llm')
 
     try {
-      const blob = await downloadFile(
-        MODELS.llm.url,
-        MODELS.llm.name,
-        'llm',
-        (progress, loaded, total) => {
-          const detail = {
-            current: Math.round((loaded / 1024 / 1024) * 100) / 100,
-            total: Math.round((total / 1024 / 1024) * 100) / 100,
-            unit: 'MB'
-          }
-          // Update store with progress and detail
-          updateLlmStatus({ progress, detail })
-          // Notify parent component using optionsRef to get latest callback
-          optionsRef.current.onProgress?.('download-llm', progress, detail)
-        }
-      )
-
-      // Save to file system via Electron
-      if (window.electronAPI?.sdSaveModelFromCache) {
-        const arrayBuffer = await blob.arrayBuffer()
-        const result = await window.electronAPI.sdSaveModelFromCache(
-          MODELS.llm.name,
-          new Uint8Array(arrayBuffer),
-          'llm'
-        )
-
-        if (!result.success) {
-          throw new Error(result.error || 'Failed to save LLM model')
-        }
-
-        const sizeMB = Math.round((blob.size / 1024 / 1024) * 100) / 100
-        const detail = { current: sizeMB, total: sizeMB, unit: 'MB' }
-        updateLlmStatus({ downloaded: true, downloading: false, progress: 100, error: null, detail })
-        optionsRef.current.onProgress?.('download-llm', 100, detail)
+      if (!window.electronAPI?.sdDownloadAuxiliaryModel) {
+        throw new Error('Electron API not available')
       }
+
+      // Use Electron's download API (supports resume automatically)
+      // Progress updates are handled by IPC event listeners
+      const result = await window.electronAPI.sdDownloadAuxiliaryModel('llm', MODELS.llm.url)
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to download LLM model')
+      }
+
+      // Download completed - status will be updated by IPC event listener when progress reaches 100%
     } catch (error) {
       const errorMsg = (error as Error).message
       updateLlmStatus({ downloaded: false, downloading: false, progress: 0, error: errorMsg })
       optionsRef.current.onError?.(errorMsg)
       throw error // Re-throw to stop the download chain
     }
-  }, [downloadFile, updateLlmStatus])
+  }, [updateLlmStatus])
 
   /**
    * Download VAE model
@@ -240,48 +160,26 @@ export function useZImage(options: UseZImageOptions = {}) {
     optionsRef.current.onPhase?.('download-vae')
 
     try {
-      const blob = await downloadFile(
-        MODELS.vae.url,
-        MODELS.vae.name,
-        'vae',
-        (progress, loaded, total) => {
-          const detail = {
-            current: Math.round((loaded / 1024 / 1024) * 100) / 100,
-            total: Math.round((total / 1024 / 1024) * 100) / 100,
-            unit: 'MB'
-          }
-          // Update store with progress and detail
-          updateVaeStatus({ progress, detail })
-          // Notify parent component using optionsRef to get latest callback
-          optionsRef.current.onProgress?.('download-vae', progress, detail)
-        }
-      )
-
-      // Save to file system via Electron
-      if (window.electronAPI?.sdSaveModelFromCache) {
-        const arrayBuffer = await blob.arrayBuffer()
-        const result = await window.electronAPI.sdSaveModelFromCache(
-          MODELS.vae.name,
-          new Uint8Array(arrayBuffer),
-          'vae'
-        )
-
-        if (!result.success) {
-          throw new Error(result.error || 'Failed to save VAE model')
-        }
-
-        const sizeMB = Math.round((blob.size / 1024 / 1024) * 100) / 100
-        const detail = { current: sizeMB, total: sizeMB, unit: 'MB' }
-        updateVaeStatus({ downloaded: true, downloading: false, progress: 100, error: null, detail })
-        optionsRef.current.onProgress?.('download-vae', 100, detail)
+      if (!window.electronAPI?.sdDownloadAuxiliaryModel) {
+        throw new Error('Electron API not available')
       }
+
+      // Use Electron's download API (supports resume automatically)
+      // Progress updates are handled by IPC event listeners
+      const result = await window.electronAPI.sdDownloadAuxiliaryModel('vae', MODELS.vae.url)
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to download VAE model')
+      }
+
+      // Download completed - status will be updated by IPC event listener when progress reaches 100%
     } catch (error) {
       const errorMsg = (error as Error).message
       updateVaeStatus({ downloaded: false, downloading: false, progress: 0, error: errorMsg })
       optionsRef.current.onError?.(errorMsg)
       throw error // Re-throw to stop the download chain
     }
-  }, [downloadFile, updateVaeStatus])
+  }, [updateVaeStatus])
 
   /**
    * Generate image
@@ -349,18 +247,13 @@ export function useZImage(options: UseZImageOptions = {}) {
 
   /**
    * Cancel download
+   * Note: Electron's download API handles cancellation automatically.
+   * If the download is interrupted, it can be resumed on the next attempt.
    */
   const cancelDownload = useCallback(() => {
-    // Cancel LLM download
-    if (globalAbortControllers.llm) {
-      globalAbortControllers.llm.abort()
-      globalAbortControllers.llm = null
-    }
-    // Cancel VAE download
-    if (globalAbortControllers.vae) {
-      globalAbortControllers.vae.abort()
-      globalAbortControllers.vae = null
-    }
+    // Electron downloads are managed by the main process
+    // Cancellation would require closing the app or manually deleting the partial file
+    console.log('Download cancellation: Please close the app to stop downloads')
   }, [])
 
   return {

@@ -143,6 +143,9 @@ export interface ElectronAPI {
   sdDownloadBinary: () => Promise<{ success: boolean; path?: string; error?: string }>
   sdCancelDownload: () => Promise<{ success: boolean; error?: string }>
   sdCheckAuxiliaryModels: () => Promise<{ success: boolean; llmExists: boolean; vaeExists: boolean; llmPath: string; vaePath: string; error?: string }>
+  sdGetDownloadStatus: () => Promise<{ llm: { progress: number; receivedBytes: number; totalBytes: number } | null; vae: { progress: number; receivedBytes: number; totalBytes: number } | null }>
+  sdListAuxiliaryModels: () => Promise<{ success: boolean; models?: Array<{ name: string; path: string; size: number; type: 'llm' | 'vae' }>; error?: string }>
+  sdDeleteAuxiliaryModel: (type: 'llm' | 'vae') => Promise<{ success: boolean; error?: string }>
   sdDownloadAuxiliaryModel: (type: 'llm' | 'vae', url: string) => Promise<{ success: boolean; filePath?: string; error?: string }>
   sdGenerateImage: (params: SDGenerationParams) => Promise<{ success: boolean; outputPath?: string; error?: string }>
   sdCancelGeneration: () => Promise<{ success: boolean; error?: string }>
@@ -152,8 +155,11 @@ export interface ElectronAPI {
   sdDeleteModel: (modelPath: string) => Promise<{ success: boolean; error?: string }>
   sdGetSystemInfo: () => Promise<{ platform: string; acceleration: string; supported: boolean }>
   onSdProgress: (callback: (data: SDProgressData) => void) => () => void
+  onSdLog: (callback: (data: { type: 'stdout' | 'stderr'; message: string }) => void) => () => void
   onSdDownloadProgress: (callback: (data: SDProgressData) => void) => () => void
   onSdBinaryDownloadProgress: (callback: (data: SDProgressData) => void) => () => void
+  onSdLlmDownloadProgress: (callback: (data: SDProgressData) => void) => () => void
+  onSdVaeDownloadProgress: (callback: (data: SDProgressData) => void) => () => void
 }
 
 declare global {

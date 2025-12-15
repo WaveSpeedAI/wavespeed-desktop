@@ -39,6 +39,7 @@
     "history": "历史记录",
     "templates": "模板",
     "assets": "我的资产",
+    "zImage": "Z-Image",
     "freeTools": "免费工具",
     "settings": "设置",
     "collapse": "收起"
@@ -68,6 +69,11 @@
       "assets": {
         "title": "我的资产",
         "description": "整理和管理生成的输出内容"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "本地 AI 图像生成 - 在您的设备上运行，无需 API",
+        "badge": "本地"
       },
       "freeTools": {
         "title": "免费工具",

@@ -143,7 +143,7 @@ export interface ElectronAPI {
   sdDownloadBinary: () => Promise<{ success: boolean; path?: string; error?: string }>
   sdCancelDownload: () => Promise<{ success: boolean; error?: string }>
   sdCheckAuxiliaryModels: () => Promise<{ success: boolean; llmExists: boolean; vaeExists: boolean; llmPath: string; vaePath: string; error?: string }>
-  sdGetDownloadStatus: () => Promise<{ llm: { progress: number; receivedBytes: number; totalBytes: number } | null; vae: { progress: number; receivedBytes: number; totalBytes: number } | null }>
+  sdGetDownloadStatus: () => Promise<{ llm: { progress: number; receivedBytes: number; totalBytes: number } | null; vae: { progress: number; receivedBytes: number; totalBytes: number } | null; binary: { progress: number; receivedBytes: number; totalBytes: number } | null }>
   sdListAuxiliaryModels: () => Promise<{ success: boolean; models?: Array<{ name: string; path: string; size: number; type: 'llm' | 'vae' }>; error?: string }>
   sdDeleteAuxiliaryModel: (type: 'llm' | 'vae') => Promise<{ success: boolean; error?: string }>
   sdDownloadAuxiliaryModel: (type: 'llm' | 'vae', url: string) => Promise<{ success: boolean; filePath?: string; error?: string }>
@@ -153,6 +153,9 @@ export interface ElectronAPI {
   sdDownloadModel: (url: string, destPath: string) => Promise<{ success: boolean; filePath?: string; error?: string }>
   sdListModels: () => Promise<{ success: boolean; models?: SDModelInfo[]; error?: string }>
   sdDeleteModel: (modelPath: string) => Promise<{ success: boolean; error?: string }>
+  sdGetBinaryPath: () => Promise<{ success: boolean; path?: string; error?: string }>
+  sdDeleteBinary: () => Promise<{ success: boolean; error?: string }>
+  getFileSize: (filePath: string) => Promise<number>
   sdGetSystemInfo: () => Promise<{ platform: string; acceleration: string; supported: boolean }>
   onSdProgress: (callback: (data: SDProgressData) => void) => () => void
   onSdLog: (callback: (data: { type: 'stdout' | 'stderr'; message: string }) => void) => () => void

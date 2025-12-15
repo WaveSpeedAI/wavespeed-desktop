@@ -39,6 +39,7 @@
     "history": "Sejarah",
     "templates": "Templat",
     "assets": "Aset Saya",
+    "zImage": "Z-Image",
     "freeTools": "Alat Percuma",
     "settings": "Tetapan",
     "collapse": "Kuncupkan"
@@ -68,6 +69,11 @@
       "assets": {
         "title": "Aset Saya",
         "description": "Susun dan urus output yang dijana"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "Penjanaan imej AI tempatan - berjalan pada peranti anda, tanpa API",
+        "badge": "Tempatan"
       },
       "freeTools": {
         "title": "Alat Percuma",
@@ -364,6 +370,100 @@
     "textPreviewUnavailable": "Pratonton teks tidak tersedia. Buka lokasi fail untuk melihat.",
     "loadPreviews": "Muat pratonton",
     "disablePreviews": "Lumpuhkan pratonton"
+  },
+  "zImage": {
+    "title": "Z-Image",
+    "description": "Penjanaan imej AI tempatan (model parameter 6B, berjalan pada peranti anda)",
+    "requiredModels": "Model yang Diperlukan",
+    "requiredModelsDesc": "Muat turun model LLM dan VAE (disimpan dalam cache penyemak imbas)",
+    "mainModel": "Model Utama",
+    "mainModelDesc": "Pilih model Z-Image-Turbo",
+    "llmModel": "Model LLM (Qwen3-4B, 2.4GB)",
+    "vaeModel": "Model VAE (FLUX, 335MB)",
+    "downloaded": "Dimuat turun",
+    "download": "Muat turun",
+    "downloading": "Memuat turun...",
+    "downloadProgress": "{{progress}}%",
+    "cancelDownload": "Batal Muat Turun",
+    "retryDownload": "Cuba Lagi Muat Turun",
+    "selectModel": "Pilih Model",
+    "chooseModel": "Pilih model...",
+    "modelDescription": "Penerangan model",
+    "generateImage": "Jana Imej",
+    "generating": "Menjana...",
+    "processing": "Memproses...",
+    "downloadingSd": "Memuat turun SD...",
+    "downloadingVae": "Memuat turun VAE...",
+    "downloadingLlm": "Memuat turun LLM...",
+    "downloadingZImage": "Memuat turun Z-Image...",
+    "downloadingModel": "Memuat turun Model...",
+    "stopGeneration": "Hentikan Penjanaan",
+    "generationCancelled": "Penjanaan dibatalkan",
+    "prompt": "Gesaan",
+    "promptPlaceholder": "Pemandangan cantik dengan gunung dan tasik",
+    "promptRequired": "Gesaan diperlukan",
+    "negativePrompt": "Gesaan Negatif",
+    "negativePromptPlaceholder": "kabur, kualiti rendah",
+    "width": "Lebar",
+    "height": "Tinggi",
+    "steps": "Langkah",
+    "cfgScale": "Skala CFG",
+    "seed": "Benih",
+    "randomSeed": "Rawak",
+    "autoRandomizeSeed": "Rawak benih secara automatik selepas penjanaan",
+    "onlineHint": "Terlalu lama? Cuba API dalam talian kami di Playground untuk penjanaan lebih pantas dengan pecutan GPU.",
+    "tryOnline": "Pergi ke Playground →",
+    "result": "Keputusan",
+    "generatedImage": "Imej yang dijana",
+    "noResult": "Belum ada imej dijana. Konfigurkan parameter dan klik Jana.",
+    "openInFolder": "Buka dalam Folder",
+    "selectModelFirst": "Pilih model terlebih dahulu",
+    "downloadModelFirst": "Muat turun model terlebih dahulu",
+    "downloadLlmFirst": "Muat turun model LLM terlebih dahulu",
+    "downloadVaeFirst": "Muat turun model VAE terlebih dahulu",
+    "settingUp": "Menyediakan...",
+    "binaryNotAvailable": "Binari tidak tersedia",
+    "generationFailed": "Penjanaan gagal",
+    "invalidParameters": "Parameter tidak sah",
+    "noOutputYet": "Belum ada output",
+    "configureAndGenerate": "Konfigurkan parameter dan klik Jana untuk mencipta imej",
+    "step": "Langkah",
+    "of": "daripada",
+    "acceleration": "Pecutan",
+    "modelStatus": "Status Model",
+    "cacheStatus": "Status Cache",
+    "downloadError": "Ralat muat turun",
+    "generationError": "Ralat penjanaan",
+    "configureParams": "Konfigurasi parameter penjanaan",
+    "stepProgress": "Langkah {{current}}/{{total}}",
+    "downloadModel": "Muat Turun Model",
+    "deleteModel": "Padam Model",
+    "autoDownloadHint": "Akan dimuat turun secara automatik semasa menjana ({{size}})",
+    "models": {
+      "q4k": {
+        "description": "Disyorkan: Inferens pantas dengan kualiti baik, ~2.5GB"
+      },
+      "q6k": {
+        "description": "Kualiti tinggi: Hasil terbaik, penjanaan lebih perlahan, ~3.5GB"
+      },
+      "q8": {
+        "description": "Kualiti tertinggi: Ketepatan maksimum, penjanaan lebih perlahan, ~4GB"
+      },
+      "q2k": {
+        "description": "Ringan: Penjanaan terpantas, kualiti lebih rendah, ~1.5GB"
+      }
+    },
+    "errors": {
+      "noModel": "Sila pilih model terlebih dahulu",
+      "modelNotDownloaded": "Sila muat turun model yang dipilih terlebih dahulu",
+      "llmNotDownloaded": "Sila muat turun model LLM terlebih dahulu",
+      "vaeNotDownloaded": "Sila muat turun model VAE terlebih dahulu",
+      "invalidParams": "Parameter tidak sah",
+      "generationFailed": "Penjanaan gagal",
+      "generationCancelled": "Muat turun/Penjanaan dibatalkan",
+      "downloadFailed": "Muat turun gagal. Klik 'Jana Imej' untuk cuba lagi.",
+      "deleteFailed": "Pemadaman gagal"
+    }
   },
   "settings": {
     "title": "Tetapan",

@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next'
 import { useFFmpegWorker } from '@/hooks/useFFmpegWorker'
 import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
 import { ProcessingProgress } from '@/components/shared/ProcessingProgress'
-import { IMAGE_FORMATS, getImageFormat, formatFileSize } from '@/lib/ffmpegFormats'
+import { IMAGE_FORMATS, getImageFormat } from '@/lib/ffmpegFormats'
+import { formatBytes } from '@/types/progress'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Slider } from '@/components/ui/slider'
@@ -496,7 +497,7 @@ export function ImageConverterPage() {
                         {image.file.name}
                       </p>
                       <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>{formatFileSize(image.file.size)}</span>
+                        <span>{formatBytes(image.file.size)}</span>
                         {image.size && (
                           <span>
                             {image.size.width}x{image.size.height}
@@ -505,7 +506,7 @@ export function ImageConverterPage() {
                       </div>
                       {converted && (
                         <p className="text-xs text-green-600 dark:text-green-400">
-                          → {formatFileSize(converted.blob.size)}
+                          → {formatBytes(converted.blob.size)}
                         </p>
                       )}
                     </div>

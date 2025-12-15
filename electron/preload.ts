@@ -136,7 +136,7 @@ const electronAPI = {
     ipcRenderer.invoke('sd-get-system-info'),
   sdCheckAuxiliaryModels: (): Promise<{ success: boolean; llmExists: boolean; vaeExists: boolean; llmPath: string; vaePath: string; error?: string }> =>
     ipcRenderer.invoke('sd-check-auxiliary-models'),
-  sdGetDownloadStatus: (): Promise<{ llm: { progress: number; receivedBytes: number; totalBytes: number } | null; vae: { progress: number; receivedBytes: number; totalBytes: number } | null }> =>
+  sdGetDownloadStatus: (): Promise<{ llm: { progress: number; receivedBytes: number; totalBytes: number } | null; vae: { progress: number; receivedBytes: number; totalBytes: number } | null; binary: { progress: number; receivedBytes: number; totalBytes: number } | null }> =>
     ipcRenderer.invoke('sd-get-download-status'),
   sdListAuxiliaryModels: (): Promise<{ success: boolean; models?: Array<{ name: string; path: string; size: number; type: 'llm' | 'vae' }>; error?: string }> =>
     ipcRenderer.invoke('sd-list-auxiliary-models'),
@@ -171,6 +171,10 @@ const electronAPI = {
   }> => ipcRenderer.invoke('sd-list-models'),
   sdDeleteModel: (modelPath: string): Promise<{ success: boolean; error?: string }> =>
     ipcRenderer.invoke('sd-delete-model', modelPath),
+  sdDeleteBinary: (): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke('sd-delete-binary'),
+  getFileSize: (filePath: string): Promise<number> =>
+    ipcRenderer.invoke('get-file-size', filePath),
   onSdProgress: (callback: (data: { phase: string; progress: number; detail?: unknown }) => void): (() => void) => {
     const handler = (_: unknown, data: unknown) => callback(data as { phase: string; progress: number; detail?: unknown })
     ipcRenderer.on('sd-progress', handler)

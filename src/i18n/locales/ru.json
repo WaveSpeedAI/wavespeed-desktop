@@ -39,6 +39,7 @@
     "history": "История",
     "templates": "Шаблоны",
     "assets": "Мои Активы",
+    "zImage": "Z-Image",
     "freeTools": "Бесплатные Инструменты",
     "settings": "Настройки",
     "collapse": "Свернуть"
@@ -68,6 +69,11 @@
       "assets": {
         "title": "Мои Активы",
         "description": "Организуйте и управляйте сгенерированными выводами"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "Локальная генерация изображений ИИ - работает на вашем устройстве, API не требуется",
+        "badge": "Локально"
       },
       "freeTools": {
         "title": "Бесплатные Инструменты",
@@ -364,6 +370,100 @@
     "textPreviewUnavailable": "Превью текста недоступно. Откройте расположение файла для просмотра.",
     "loadPreviews": "Загрузить превью",
     "disablePreviews": "Отключить превью"
+  },
+  "zImage": {
+    "title": "Z-Image",
+    "description": "Локальная генерация изображений ИИ (модель 6B параметров, работает на вашем устройстве)",
+    "requiredModels": "Необходимые Модели",
+    "requiredModelsDesc": "Загрузите модели LLM и VAE (кэшируются в браузере)",
+    "mainModel": "Основная Модель",
+    "mainModelDesc": "Выберите модель Z-Image-Turbo",
+    "llmModel": "Модель LLM (Qwen3-4B, 2,4 ГБ)",
+    "vaeModel": "Модель VAE (FLUX, 335 МБ)",
+    "downloaded": "Загружено",
+    "download": "Загрузить",
+    "downloading": "Загрузка...",
+    "downloadProgress": "{{progress}}%",
+    "cancelDownload": "Отменить Загрузку",
+    "retryDownload": "Повторить Загрузку",
+    "selectModel": "Выбрать Модель",
+    "chooseModel": "Выберите модель...",
+    "modelDescription": "Описание модели",
+    "generateImage": "Сгенерировать Изображение",
+    "generating": "Генерация...",
+    "processing": "Обработка...",
+    "downloadingSd": "Загрузка SD...",
+    "downloadingVae": "Загрузка VAE...",
+    "downloadingLlm": "Загрузка LLM...",
+    "downloadingZImage": "Загрузка Z-Image...",
+    "downloadingModel": "Загрузка Модели...",
+    "stopGeneration": "Остановить Генерацию",
+    "generationCancelled": "Генерация отменена",
+    "prompt": "Промпт",
+    "promptPlaceholder": "Красивый пейзаж с горами и озером",
+    "promptRequired": "Промпт обязателен",
+    "negativePrompt": "Негативный Промпт",
+    "negativePromptPlaceholder": "размытый, плохое качество",
+    "width": "Ширина",
+    "height": "Высота",
+    "steps": "Шаги",
+    "cfgScale": "CFG Масштаб",
+    "seed": "Сид",
+    "randomSeed": "Случайный",
+    "autoRandomizeSeed": "Автоматически рандомизировать сид после генерации",
+    "onlineHint": "Слишком долго? Попробуйте наш онлайн API в Playground для более быстрой генерации с ускорением GPU.",
+    "tryOnline": "Перейти в Playground →",
+    "result": "Результат",
+    "generatedImage": "Сгенерированное изображение",
+    "noResult": "Изображение ещё не сгенерировано. Настройте параметры и нажмите Сгенерировать.",
+    "openInFolder": "Открыть в Папке",
+    "selectModelFirst": "Выберите модель",
+    "downloadModelFirst": "Сначала загрузите модель",
+    "downloadLlmFirst": "Сначала загрузите модель LLM",
+    "downloadVaeFirst": "Сначала загрузите модель VAE",
+    "settingUp": "Настройка...",
+    "binaryNotAvailable": "Бинарный файл недоступен",
+    "generationFailed": "Генерация не удалась",
+    "invalidParameters": "Неверные параметры",
+    "noOutputYet": "Пока нет вывода",
+    "configureAndGenerate": "Настройте параметры и нажмите Сгенерировать для создания изображения",
+    "step": "Шаг",
+    "of": "из",
+    "acceleration": "Ускорение",
+    "modelStatus": "Статус Модели",
+    "cacheStatus": "Статус Кэша",
+    "downloadError": "Ошибка загрузки",
+    "generationError": "Ошибка генерации",
+    "configureParams": "Настроить параметры генерации",
+    "stepProgress": "Шаг {{current}}/{{total}}",
+    "downloadModel": "Загрузить Модель",
+    "deleteModel": "Удалить Модель",
+    "autoDownloadHint": "Будет загружено автоматически при генерации ({{size}})",
+    "models": {
+      "q4k": {
+        "description": "Рекомендуется: Быстрый вывод с хорошим качеством, ~2,5 ГБ"
+      },
+      "q6k": {
+        "description": "Высокое качество: Лучшие результаты, более медленная генерация, ~3,5 ГБ"
+      },
+      "q8": {
+        "description": "Максимальное качество: Максимальная точность, более медленная генерация, ~4 ГБ"
+      },
+      "q2k": {
+        "description": "Легкий: Самая быстрая генерация, более низкое качество, ~1,5 ГБ"
+      }
+    },
+    "errors": {
+      "noModel": "Пожалуйста, сначала выберите модель",
+      "modelNotDownloaded": "Пожалуйста, сначала загрузите выбранную модель",
+      "llmNotDownloaded": "Пожалуйста, сначала загрузите модель LLM",
+      "vaeNotDownloaded": "Пожалуйста, сначала загрузите модель VAE",
+      "invalidParams": "Неверные параметры",
+      "generationFailed": "Генерация не удалась",
+      "generationCancelled": "Загрузка/Генерация отменена",
+      "downloadFailed": "Загрузка не удалась. Нажмите 'Сгенерировать Изображение' для повтора.",
+      "deleteFailed": "Удаление не удалось"
+    }
   },
   "settings": {
     "title": "Настройки",

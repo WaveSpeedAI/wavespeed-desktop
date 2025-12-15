@@ -39,6 +39,7 @@
     "history": "履歴",
     "templates": "テンプレート",
     "assets": "マイアセット",
+    "zImage": "Z-Image",
     "freeTools": "無料ツール",
     "settings": "設定",
     "collapse": "折りたたむ"
@@ -68,6 +69,11 @@
       "assets": {
         "title": "マイアセット",
         "description": "生成した出力を整理・管理"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "ローカルAI画像生成 - デバイス上で実行、APIは不要",
+        "badge": "ローカル"
       },
       "freeTools": {
         "title": "無料ツール",
@@ -364,6 +370,100 @@
     "textPreviewUnavailable": "テキストプレビューは利用できません。ファイルの場所を開いて表示してください。",
     "loadPreviews": "プレビューを読み込む",
     "disablePreviews": "プレビューを無効にする"
+  },
+  "zImage": {
+    "title": "Z-Image",
+    "description": "ローカルAI画像生成（60億パラメータモデル、デバイス上で実行）",
+    "requiredModels": "必須モデル",
+    "requiredModelsDesc": "LLMとVAEモデルをダウンロード（ブラウザにキャッシュ）",
+    "mainModel": "メインモデル",
+    "mainModelDesc": "Z-Image-Turboモデルを選択",
+    "llmModel": "LLMモデル (Qwen3-4B, 2.4GB)",
+    "vaeModel": "VAEモデル (FLUX, 335MB)",
+    "downloaded": "ダウンロード済み",
+    "download": "ダウンロード",
+    "downloading": "ダウンロード中...",
+    "downloadProgress": "{{progress}}%",
+    "cancelDownload": "ダウンロードをキャンセル",
+    "retryDownload": "再ダウンロード",
+    "selectModel": "モデルを選択",
+    "chooseModel": "モデルを選択...",
+    "modelDescription": "モデルの説明",
+    "generateImage": "画像を生成",
+    "generating": "生成中...",
+    "processing": "処理中...",
+    "downloadingSd": "SDをダウンロード中...",
+    "downloadingVae": "VAEをダウンロード中...",
+    "downloadingLlm": "LLMをダウンロード中...",
+    "downloadingZImage": "Z-Imageをダウンロード中...",
+    "downloadingModel": "モデルをダウンロード中...",
+    "stopGeneration": "生成を停止",
+    "generationCancelled": "生成がキャンセルされました",
+    "prompt": "プロンプト",
+    "promptPlaceholder": "美しい山と湖のある風景",
+    "promptRequired": "プロンプトは必須です",
+    "negativePrompt": "ネガティブプロンプト",
+    "negativePromptPlaceholder": "ぼやけた、低品質",
+    "width": "幅",
+    "height": "高さ",
+    "steps": "ステップ数",
+    "cfgScale": "CFGスケール",
+    "seed": "シード",
+    "randomSeed": "ランダム",
+    "autoRandomizeSeed": "生成後に自動的にシードをランダム化",
+    "onlineHint": "時間がかかりすぎる場合は、プレイグラウンドのオンラインAPIをお試しください。GPUアクセラレーションでより高速に生成できます。",
+    "tryOnline": "プレイグラウンドへ →",
+    "result": "結果",
+    "generatedImage": "生成された画像",
+    "noResult": "まだ画像が生成されていません。パラメータを設定して生成をクリックしてください。",
+    "openInFolder": "フォルダで開く",
+    "selectModelFirst": "モデルを選択してください",
+    "downloadModelFirst": "最初にモデルをダウンロードしてください",
+    "downloadLlmFirst": "最初にLLMモデルをダウンロードしてください",
+    "downloadVaeFirst": "最初にVAEモデルをダウンロードしてください",
+    "settingUp": "セットアップ中...",
+    "binaryNotAvailable": "バイナリが利用できません",
+    "generationFailed": "生成に失敗しました",
+    "invalidParameters": "無効なパラメータ",
+    "noOutputYet": "まだ出力がありません",
+    "configureAndGenerate": "パラメータを設定して生成をクリックして画像を作成",
+    "step": "ステップ",
+    "of": "/",
+    "acceleration": "アクセラレーション",
+    "modelStatus": "モデルステータス",
+    "cacheStatus": "キャッシュステータス",
+    "downloadError": "ダウンロードエラー",
+    "generationError": "生成エラー",
+    "configureParams": "生成パラメータを設定",
+    "stepProgress": "ステップ {{current}}/{{total}}",
+    "downloadModel": "モデルをダウンロード",
+    "deleteModel": "モデルを削除",
+    "autoDownloadHint": "生成時に自動的にダウンロードされます ({{size}})",
+    "models": {
+      "q4k": {
+        "description": "推奨：高速な推論と良好な品質、約2.5GB"
+      },
+      "q6k": {
+        "description": "高品質：最高の結果、生成速度は遅い、約3.5GB"
+      },
+      "q8": {
+        "description": "最高品質：最大精度、生成速度は遅い、約4GB"
+      },
+      "q2k": {
+        "description": "軽量：最速生成、品質は低い、約1.5GB"
+      }
+    },
+    "errors": {
+      "noModel": "最初にモデルを選択してください",
+      "modelNotDownloaded": "最初に選択したモデルをダウンロードしてください",
+      "llmNotDownloaded": "最初にLLMモデルをダウンロードしてください",
+      "vaeNotDownloaded": "最初にVAEモデルをダウンロードしてください",
+      "invalidParams": "無効なパラメータ",
+      "generationFailed": "生成に失敗しました",
+      "generationCancelled": "ダウンロード/生成がキャンセルされました",
+      "downloadFailed": "ダウンロードに失敗しました。「画像を生成」をクリックして再試行してください。",
+      "deleteFailed": "削除に失敗しました"
+    }
   },
   "settings": {
     "title": "設定",

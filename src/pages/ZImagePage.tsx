@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeft, Zap, Download, AlertCircle, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -16,8 +15,79 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { useSDModelsStore, useSelectedModel } from '@/stores/sdModelsStore'
 import { useZImage } from '@/hooks/useZImage'
 import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
-import { validateGenerationParams, generateRandomSeed, formatFileSize } from '@/lib/sdUtils'
+import { formatBytes } from '@/types/progress'
 import { LogConsole } from '@/components/shared/LogConsole'
+import type { ValidationResult } from '@/types/stable-diffusion'
+
+// Local utility functions (moved from sdUtils.ts)
+function validateGenerationParams(params: {
+  prompt: string
+  negativePrompt?: string
+  width: number
+  height: number
+  steps: number
+  cfgScale: number
+  seed?: number
+}): ValidationResult {
+  // Validate prompt
+  if (params.prompt && params.prompt.length > 1000) {
+    return { valid: false, error: 'Prompt too long (max 1000 characters)' }
+  }
+
+  // Prevent command injection
+  const dangerousChars = /[;&|`$()]/
+  if (params.prompt && dangerousChars.test(params.prompt)) {
+    return { valid: false, error: 'Prompt contains invalid characters' }
+  }
+
+  if (params.negativePrompt && dangerousChars.test(params.negativePrompt)) {
+    return { valid: false, error: 'Negative prompt contains invalid characters' }
+  }
+
+  // Validate image dimensions
+  if (params.width % 64 !== 0 || params.height % 64 !== 0) {
+    return { valid: false, error: 'Width and height must be multiples of 64' }
+  }
+
+  if (params.width < 256 || params.width > 1024) {
+    return { valid: false, error: 'Width must be between 256-1024' }
+  }
+
+  if (params.height < 256 || params.height > 1024) {
+    return { valid: false, error: 'Height must be between 256-1024' }
+  }
+
+  // Validate sampling steps
+  if (params.steps < 4 || params.steps > 50) {
+    return { valid: false, error: 'Sampling steps must be between 4-50' }
+  }
+
+  if (!Number.isInteger(params.steps)) {
+    return { valid: false, error: 'Sampling steps must be an integer' }
+  }
+
+  // Validate CFG Scale
+  if (params.cfgScale < 1 || params.cfgScale > 20) {
+    return { valid: false, error: 'CFG Scale must be between 1-20' }
+  }
+
+  // Validate seed
+  if (params.seed !== undefined) {
+    if (!Number.isInteger(params.seed) || params.seed < 0) {
+      return { valid: false, error: 'Seed must be a non-negative integer' }
+    }
+
+    if (params.seed > 2147483647) {
+      return { valid: false, error: 'Seed value too large (max 2147483647)' }
+    }
+  }
+
+  return { valid: true }
+}
+
+function generateRandomSeed(): number {
+  return Math.floor(Math.random() * 2147483647)
+}
 
 const PHASES = [
   { id: 'download-sd', labelKey: 'Downloading SD', weight: 0.125 },
@@ -366,32 +436,71 @@ export function ZImagePage() {
 
     try {
       // 1. Auto-download SD binary if not downloaded
-      if (!binaryStatus.downloaded) {
+      // IMPORTANT: Always get FRESH status from store to avoid stale closure values
+      const currentBinaryStatus = useSDModelsStore.getState().binaryStatus
+      if (!currentBinaryStatus.downloaded && !currentBinaryStatus.downloading) {
+        console.log('[ZImagePage] SD Binary not downloaded, starting download...')
         await downloadBinary()
+
+        // Verify file exists after download
+        if (window.electronAPI?.sdGetBinaryPath) {
+          const result = await window.electronAPI.sdGetBinaryPath()
+          if (!result.success) {
+            throw new Error('SD binary download completed but file not found')
+          }
+          console.log('[ZImagePage] SD Binary verified at:', result.path)
+        }
+
         completePhase('download-sd')
         if (isCancelled) throw new Error('Cancelled')
       } else {
-        // Already downloaded - mark phase as complete immediately
+        console.log('[ZImagePage] SD Binary already downloaded, skipping')
         completePhase('download-sd')
       }
 
       // 2. Auto-download VAE if not downloaded
-      if (!vaeStatus.downloaded) {
+      // IMPORTANT: Get FRESH status from store (not closure value)
+      const currentVaeStatus = useSDModelsStore.getState().vaeStatus
+      if (!currentVaeStatus.downloaded && !currentVaeStatus.downloading) {
+        console.log('[ZImagePage] VAE not downloaded, starting download...')
         await downloadVae()
+
+        // Verify file exists after download
+        if (window.electronAPI?.sdCheckAuxiliaryModels) {
+          const result = await window.electronAPI.sdCheckAuxiliaryModels()
+          if (!result.success || !result.vaeExists) {
+            throw new Error('VAE download completed but file not found')
+          }
+          console.log('[ZImagePage] VAE verified at:', result.vaePath)
+        }
+
         completePhase('download-vae')
         if (isCancelled) throw new Error('Cancelled')
       } else {
-        // Already downloaded - mark phase as complete immediately
+        console.log('[ZImagePage] VAE already downloaded, skipping')
         completePhase('download-vae')
       }
 
       // 3. Auto-download LLM if not downloaded
-      if (!llmStatus.downloaded) {
+      // IMPORTANT: Get FRESH status from store (not closure value)
+      const currentLlmStatus = useSDModelsStore.getState().llmStatus
+      if (!currentLlmStatus.downloaded && !currentLlmStatus.downloading) {
+        console.log('[ZImagePage] LLM not downloaded, starting download...')
         await downloadLlm()
+
+        // Verify file exists after download
+        if (window.electronAPI?.sdCheckAuxiliaryModels) {
+          const result = await window.electronAPI.sdCheckAuxiliaryModels()
+          if (!result.success || !result.llmExists) {
+            throw new Error('LLM download completed but file not found')
+          }
+          console.log('[ZImagePage] LLM verified at:', result.llmPath)
+        }
+
         completePhase('download-llm')
         if (isCancelled) throw new Error('Cancelled')
       } else {
-        // Already downloaded - mark phase as complete immediately
+        console.log('[ZImagePage] LLM already downloaded, skipping')
         completePhase('download-llm')
       }
 
@@ -692,7 +801,7 @@ export function ZImagePage() {
                     <div className="flex items-center gap-2">
                       {model.isDownloaded && <Check className="h-4 w-4 text-green-500" />}
                       <span>{model.displayName}</span>
-                      {!model.isDownloaded && <span className="text-xs text-muted-foreground">({formatFileSize(model.size)})</span>}
+                      {!model.isDownloaded && <span className="text-xs text-muted-foreground">({formatBytes(model.size)})</span>}
                     </div>
                   </SelectItem>
                 ))}

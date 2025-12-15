@@ -8,6 +8,8 @@ import https from 'https'
 import http from 'http'
 import { pathToFileURL } from 'url'
 import AdmZip from 'adm-zip'
+import { Downloader } from './lib/Downloader'
+import { SDGenerator } from './lib/sdGenerator'
 
 // Linux-specific flags
 if (process.platform === 'linux') {
@@ -19,11 +21,16 @@ if (process.platform === 'linux') {
 const userDataPath = app.getPath('userData')
 const settingsPath = join(userDataPath, 'settings.json')
 
-// Global reference to active SD generation process
+// Global instances for SD operations
+const downloader = new Downloader()
+const sdGenerator = new SDGenerator()
+
+// Global reference to active SD generation process (deprecated - using sdGenerator)
 let activeSDProcess: ReturnType<typeof spawn> | null = null
 
 // Global reference to active SD binary download
 let activeSDDownloadItem: Electron.DownloadItem | null = null
+let sdBinaryCancelled = false // Flag to track if SD binary download was cancelled
 
 interface Settings {
   apiKey: string
@@ -636,6 +643,44 @@ ipcMain.handle('sd-get-binary-path', () => {
 })
 
 /**
+ * Check if macOS system supports Metal acceleration
+ */
+function checkMetalSupport(): boolean {
+  try {
+    // Check macOS version - Metal requires OS X 10.11 (El Capitan) or later
+    const osRelease = require('os').release()
+    const majorVersion = parseInt(osRelease.split('.')[0], 10)
+
+    // Darwin kernel version 15.x = OS X 10.11 (El Capitan)
+    // Metal was introduced in OS X 10.11
+    if (majorVersion < 15) {
+      console.log('[Metal Check] macOS version too old for Metal (Darwin kernel < 15)')
+      return false
+    }
+
+    // Check GPU capabilities using system_profiler
+    try {
+      const output = execSync('system_profiler SPDisplaysDataType', {
+        encoding: 'utf8',
+        timeout: 5000
+      })
+
+      // Check if output contains "Metal" support indication
+      const hasMetalSupport = output.toLowerCase().includes('metal')
+      console.log(`[Metal Check] Metal support detected: ${hasMetalSupport}`)
+      return hasMetalSupport
+    } catch (error) {
+      console.error('[Metal Check] Failed to run system_profiler:', error)
+      // If system_profiler fails but OS version is new enough, assume Metal is available
+      return majorVersion >= 15
+    }
+  } catch (error) {
+    console.error('[Metal Check] Failed to check Metal support:', error)
+    return false
+  }
+}
+
+/**
  * Get system information (platform and acceleration type)
  */
 ipcMain.handle('sd-get-system-info', () => {
@@ -644,8 +689,8 @@ ipcMain.handle('sd-get-system-info', () => {
   let acceleration = 'CPU'
 
   if (platform === 'darwin') {
-    // macOS always has Metal acceleration
-    acceleration = 'Metal'
+    // macOS: Check for Metal acceleration support
+    acceleration = checkMetalSupport() ? 'Metal' : 'CPU'
   } else if (platform === 'win32' || platform === 'linux') {
     // Check for NVIDIA GPU (CUDA support)
     try {
@@ -720,173 +765,41 @@ ipcMain.handle('sd-generate-image', async (event, params: {
 
     const binaryPath = join(basePath, `${platform}-${arch}`, binaryName)
 
-    if (!existsSync(binaryPath)) {
-      return {
-        success: false,
-        error: `Binary not found at: ${binaryPath}`
-      }
-    }
-
-    // Sanitize prompt (escape dangerous characters)
-    const sanitizePrompt = (text: string) => text.replace(/["`$\\]/g, '\\$&').trim()
-    const safePrompt = sanitizePrompt(params.prompt)
-    const safeNegPrompt = params.negativePrompt ? sanitizePrompt(params.negativePrompt) : ''
-
-    // Ensure output directory exists
-    const outputDir = dirname(params.outputPath)
-    if (!existsSync(outputDir)) {
-      mkdirSync(outputDir, { recursive: true })
-    }
-
-    // Build command arguments
-    const args = [
-      '--diffusion-model', params.modelPath,
-      '-p', safePrompt,
-      '-W', params.width.toString(),
-      '-H', params.height.toString(),
-      '--steps', params.steps.toString(),
-      '--cfg-scale', params.cfgScale.toString(),
-      '-o', params.outputPath,
-      '-v', // Verbose
-      '--offload-to-cpu', // Offload to CPU when needed
-      '--diffusion-fa' // Use Flash Attention
-    ]
-
-    // Add LLM (text encoder) if provided
-    if (params.llmPath && existsSync(params.llmPath)) {
-      args.push('--llm', params.llmPath)
-    }
-
-    // Add VAE if provided
-    if (params.vaePath && existsSync(params.vaePath)) {
-      args.push('--vae', params.vaePath)
-    }
-
-    if (safeNegPrompt) {
-      args.push('-n', safeNegPrompt)
-    }
-
-    if (params.seed !== undefined) {
-      args.push('--seed', params.seed.toString())
-    }
-
-    // Spawn child process
-    const childProcess = spawn(binaryPath, args, {
-      cwd: outputDir,
-      env: { ...process.env }
-    })
-
-    // Track active process for cancellation
-    activeSDProcess = childProcess
-
-    let stderrData = ''
-    let stdoutData = ''
-
-    // Listen to stdout and send logs
-    childProcess.stdout.on('data', (data) => {
-      const log = data.toString()
-      stdoutData += log
-
-      // Send log to frontend
-      event.sender.send('sd-log', {
-        type: 'stdout',
-        message: log
-      })
-
-      // Parse progress from stdout (some SD versions output here)
-      // Only match specific patterns to avoid false positives (like resolution 512/512)
-      let stepMatch = log.match(/(?:step|sampling):\s*(\d+)\/(\d+)/)
-      if (!stepMatch) {
-        // Match progress bar format: |===...===| 12/20 - time
-        stepMatch = log.match(/\|[=\s>-]+\|\s*(\d+)\/(\d+)\s*[-\s]/)
-      }
-
-      if (stepMatch) {
-        const current = parseInt(stepMatch[1], 10)
-        const total = parseInt(stepMatch[2], 10)
-        // Validate: reasonable step range and current <= total
-        if (total >= 4 && total <= 200 && current > 0 && current <= total) {
-          const progress = Math.round((current / total) * 100)
-          event.sender.send('sd-progress', {
-            phase: 'generate',
-            progress,
-            detail: { current, total, unit: 'steps' }
-          })
-        }
-      }
-    })
-
-    // Listen to stderr and parse progress
-    childProcess.stderr.on('data', (data) => {
-      const log = data.toString()
-      stderrData += log
-
-      // Send log to frontend
-      event.sender.send('sd-log', {
-        type: 'stderr',
-        message: log
-      })
-
-      // Parse progress from stderr
-      // Only match specific patterns to avoid false positives (like resolution 512/512)
-      // 1. "step: 12/20" or "sampling: 18/20"
-      // 2. "|==================================================| 12/12 - 7.28s/it"
-      let stepMatch = log.match(/(?:step|sampling):\s*(\d+)\/(\d+)/)
-      if (!stepMatch) {
-        // Match progress bar format: |===...===| 12/20 - time
-        // Must have dash or space after the numbers to avoid matching resolution
-        stepMatch = log.match(/\|[=\s>-]+\|\s*(\d+)\/(\d+)\s*[-\s]/)
-      }
-
-      if (stepMatch) {
-        const current = parseInt(stepMatch[1], 10)
-        const total = parseInt(stepMatch[2], 10)
-        // Validate: reasonable step range (4-200) and current > 0 and current <= total
-        if (total >= 4 && total <= 200 && current > 0 && current <= total) {
-          const progress = Math.round((current / total) * 100)
-
-          // Send progress update
-          event.sender.send('sd-progress', {
-            phase: 'generate',
-            progress,
-            detail: { current, total, unit: 'steps' }
-          })
-        }
-      }
-    })
-
-    // Wait for process to end
-    return new Promise((resolve) => {
-      childProcess.on('close', (code) => {
-        activeSDProcess = null
-
-        if (code === 0 && existsSync(params.outputPath)) {
-          resolve({
-            success: true,
-            outputPath: params.outputPath
-          })
-        } else {
-          // Extract error information
-          const errorLines = stderrData.split('\n').filter(line => line.trim())
-          const errorMsg = errorLines.length > 0
-            ? errorLines[errorLines.length - 1]
-            : `Process exited with code ${code}`
-
-          resolve({
-            success: false,
-            error: errorMsg
-          })
-        }
-      })
-
-      childProcess.on('error', (err) => {
-        activeSDProcess = null
-        resolve({
-          success: false,
-          error: err.message
+    // Use SDGenerator class for image generation
+    const result = await sdGenerator.generate({
+      binaryPath,
+      modelPath: params.modelPath,
+      llmPath: params.llmPath,
+      vaePath: params.vaePath,
+      prompt: params.prompt,
+      negativePrompt: params.negativePrompt,
+      width: params.width,
+      height: params.height,
+      steps: params.steps,
+      cfgScale: params.cfgScale,
+      seed: params.seed,
+      outputPath: params.outputPath,
+      onProgress: (progress) => {
+        // Send progress to frontend
+        event.sender.send('sd-progress', {
+          phase: progress.phase,
+          progress: progress.progress,
+          detail: progress.detail
         })
-      })
+      },
+      onLog: (log) => {
+        // Send logs to frontend
+        event.sender.send('sd-log', {
+          type: log.type,
+          message: log.message
+        })
+      }
     })
+
+    // Also track via legacy activeSDProcess for backward compatibility
+    // (This will be set/cleared by SDGenerator internally)
+
+    return result
   } catch (error) {
     return {
       success: false,
@@ -905,568 +818,30 @@ ipcMain.handle('sd-download-model', async (event, url: string, destPath: string)
   console.log(`[SD Model Download] Dest: ${destPath}`)
   console.log(`======================================\n`)
 
-  // Cancel any existing model download
-  if (activeRequests.model) {
-    console.log('[SD Model Download] Cancelling previous model download')
-    activeRequests.model.cancelled = true
-    activeRequests.model.request.destroy()
-    if (activeRequests.model.fileStream) {
-      activeRequests.model.fileStream.close()
-    }
-    delete activeRequests.model
-  }
+  // Use Downloader class for model downloads
+  const MIN_VALID_SIZE = 500 * 1024 * 1024 // 500MB (Z-Image models are >= 1.5GB)
 
-  const maxRetries = 3
-  let lastError = ''
-
-  // make sure dest dir exists
-  const destDir = dirname(destPath)
-  if (!existsSync(destDir)) {
-    console.log(`[SD Model Download] Creating directory: ${destDir}`)
-    mkdirSync(destDir, { recursive: true })
-  }
-
-  const partPath = destPath + '.part'
-
-  console.log(`[SD Model Download] Final path: ${destPath}`)
-  console.log(`[SD Model Download] Temp path: ${partPath}`)
-
-  // Check if final file already exists
-  if (existsSync(destPath)) {
-    const stats = statSync(destPath)
-    const fileSizeMB = Math.round(stats.size / 1024 / 1024)
-    console.log(`[SD Model Download] Found existing file: ${fileSizeMB}MB`)
-
-    // IMPORTANT: Validate file size to detect incomplete downloads
-    // All Z-Image models are >= 1.5GB, if file is < 500MB it's likely incomplete
-    const MIN_VALID_SIZE = 500 * 1024 * 1024 // 500MB
-
-    if (stats.size < MIN_VALID_SIZE) {
-      console.warn(`[SD Model Download] File is too small (${fileSizeMB}MB < 500MB), likely incomplete from previous download`)
-      console.warn(`[SD Model Download] Deleting incomplete file and restarting download...`)
-      unlinkSync(destPath)
-    } else {
-      console.log(`[SD Model Download] File size looks valid (${fileSizeMB}MB), skipping download`)
-      return {
-        success: true,
-        filePath: destPath
+  const result = await downloader.download({
+    url,
+    destPath,
+    minValidSize: MIN_VALID_SIZE,
+    maxRetries: 3,
+    timeout: 30000,
+    onProgress: (progress) => {
+      // Send progress updates to renderer
+      if (mainWindow) {
+        mainWindow.webContents.send('sd-download-progress', {
+          phase: 'download-model',
+          progress: progress.progress,
+          detail: progress.detail
+        })
       }
     }
-  }
+  })
 
-  // Check for partial download
-  let startByte = 0
-  if (existsSync(partPath)) {
-    const stats = statSync(partPath)
-    startByte = stats.size
-    console.log(`[SD Model Download] Found partial download: ${Math.round(startByte / 1024 / 1024)}MB`)
-    console.log(`[SD Model Download] Will resume from ${Math.round(startByte / 1024 / 1024)}MB`)
-  } else {
-    console.log(`[SD Model Download] No partial download found, starting fresh`)
-  }
-
-  // Attempt download with retries
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      const result = await attemptDownloadWithResume(event, url, partPath, destPath, startByte, attempt)
-      if (result.success) {
-        return result
-      }
-      lastError = result.error || 'Unknown error'
-
-      // CRITICAL: If user cancelled, don't retry - return immediately
-      if (lastError.includes('cancelled by user')) {
-        console.log('[SD Model Download] User cancelled download, stopping retry attempts')
-        return {
-          success: false,
-          error: lastError
-        }
-      }
-
-      // If not the last attempt, wait before retrying
-      if (attempt < maxRetries) {
-        const waitTime = attempt * 2000 // 2s, 4s, 6s
-        console.log(`[SD Model Download] Retry ${attempt + 1}/${maxRetries} in ${waitTime / 1000}s...`)
-        await new Promise(resolve => setTimeout(resolve, waitTime))
-
-        // Update startByte for resume
-        if (existsSync(partPath)) {
-          startByte = statSync(partPath).size
-        }
-      }
-    } catch (error) {
-      lastError = (error as Error).message
-      console.error(`[SD Model Download] Attempt ${attempt} failed:`, lastError)
-
-      // CRITICAL: If user cancelled, don't retry - return immediately
-      if (lastError.includes('cancelled by user')) {
-        console.log('[SD Model Download] User cancelled download, stopping retry attempts')
-        return {
-          success: false,
-          error: lastError
-        }
-      }
-
-      // If not the last attempt, wait before retrying
-      if (attempt < maxRetries) {
-        const waitTime = attempt * 2000
-        await new Promise(resolve => setTimeout(resolve, waitTime))
-
-        // Update startByte for resume
-        if (existsSync(partPath)) {
-          startByte = statSync(partPath).size
-        }
-      }
-    }
-  }
-
-  // All retries failed
-  return {
-    success: false,
-    error: `Download failed after ${maxRetries} attempts: ${lastError}`
-  }
+  return result
 })
 
-/**
- * Attempt download with resume support using HTTP Range requests
- */
-function attemptDownloadWithResume(
-  event: Electron.IpcMainInvokeEvent,
-  url: string,
-  partPath: string,
-  destPath: string,
-  startByte: number,
-  attempt: number
-): Promise<{ success: boolean; filePath?: string; error?: string }> {
-  return new Promise((resolve) => {
-    // Use follow-redirects for automatic redirect handling
-    const { https } = require('follow-redirects')
-    const { createWriteStream, renameSync, existsSync, unlinkSync } = require('fs')
-
-    console.log(`[SD Model Download] Attempt ${attempt}: Starting download from:`, url)
-
-    // Parse URL
-    const urlObj = new URL(url)
-
-    // Check for proxy settings from environment variables
-    const proxyUrl = process.env.HTTPS_PROXY || process.env.https_proxy ||
-                    process.env.HTTP_PROXY || process.env.http_proxy
-
-    const options: any = {
-      hostname: urlObj.hostname,
-      path: urlObj.pathname + urlObj.search,
-      headers: startByte > 0 ? {
-        'Range': `bytes=${startByte}-`,
-        'User-Agent': 'Mozilla/5.0'
-      } : {
-        'User-Agent': 'Mozilla/5.0'
-      },
-      maxRedirects: 5,  // Allow up to 5 redirects
-      timeout: 30000    // 30 second connection timeout
-    }
-
-    // Use proxy if configured
-    if (proxyUrl) {
-      const { HttpsProxyAgent } = require('https-proxy-agent')
-      options.agent = new HttpsProxyAgent(proxyUrl)
-      console.log(`[SD Model Download] Using proxy: ${proxyUrl}`)
-    }
-
-    console.log(`[SD Model Download] Connecting to ${urlObj.hostname}...`)
-    if (startByte > 0) {
-      console.log(`[SD Model Download] Requesting resume from byte ${startByte} (${Math.round(startByte / 1024 / 1024)}MB)`)
-    }
-
-    let inactivityTimer: NodeJS.Timeout | null = null
-    let fileStream: any = null
-
-    // Reset inactivity timer - only triggers if no data received for 2 minutes
-    const resetInactivityTimer = () => {
-      if (inactivityTimer) {
-        clearTimeout(inactivityTimer)
-      }
-      inactivityTimer = setTimeout(() => {
-        console.error('[SD Model Download] Download stalled (no data received for 2 minutes)')
-        if (fileStream) fileStream.close()
-        resolve({
-          success: false,
-          error: 'Download stalled (no data received for 2 minutes)'
-        })
-      }, 120000) // 2 minutes of inactivity
-    }
-
-    const request = https.get(options, (response: any) => {
-      console.log(`[SD Model Download] Connected! Response status: ${response.statusCode}`)
-      if (response.responseUrl) {
-        console.log(`[SD Model Download] Final URL after redirects: ${response.responseUrl}`)
-      }
-
-      // Check for valid response (200 for new download, 206 for resumed download)
-      if (response.statusCode !== 200 && response.statusCode !== 206) {
-        if (inactivityTimer) clearTimeout(inactivityTimer)
-        delete activeRequests.model
-        resolve({
-          success: false,
-          error: `Server responded with status ${response.statusCode}`
-        })
-        return
-      }
-
-      // CRITICAL: Check if server supports resume
-      if (startByte > 0 && response.statusCode === 200) {
-        console.warn('[SD Model Download] WARNING: Server does NOT support Range requests!')
-        console.warn('[SD Model Download] Server returned 200 instead of 206, will restart download from 0')
-        console.warn('[SD Model Download] Deleting .part file and restarting...')
-        // Server doesn't support resume, need to delete partial file and restart
-        if (existsSync(partPath)) {
-          unlinkSync(partPath)
-        }
-        startByte = 0  // Reset to 0
-      }
-
-      // Get total size from headers
-      let totalBytes = 0
-      if (response.statusCode === 206 && response.headers['content-range']) {
-        // Parse content-range: "bytes 0-1023/1024"
-        const match = response.headers['content-range'].match(/bytes \d+-\d+\/(\d+)/)
-        if (match) {
-          totalBytes = parseInt(match[1], 10)
-        }
-        console.log(`[SD Model Download] ✓ Server supports resume! Content-Range: ${response.headers['content-range']}`)
-      } else if (response.headers['content-length']) {
-        const contentLength = parseInt(response.headers['content-length'], 10)
-        totalBytes = startByte > 0 ? startByte + contentLength : contentLength
-      }
-
-      console.log(`[SD Model Download] Total size: ${Math.round(totalBytes / 1024 / 1024)}MB`)
-      console.log(`[SD Model Download] Starting from: ${Math.round(startByte / 1024 / 1024)}MB (${startByte > 0 ? 'RESUME' : 'NEW'})`)
-
-      // Open .part file for appending (if resuming) or writing (if new)
-      const writeMode = startByte > 0 ? 'a' : 'w'
-      console.log(`[SD Model Download] Writing to: ${partPath}`)
-      console.log(`[SD Model Download] File write mode: ${writeMode} (${writeMode === 'a' ? 'append' : 'overwrite'})`)
-      fileStream = createWriteStream(partPath, { flags: writeMode })
-
-      let receivedBytes = startByte
-      let lastProgressUpdate = Date.now()
-      let lastFlushTime = Date.now()
-
-      // Save request and fileStream for cancellation
-      activeRequests.model = {
-        request,
-        cancelled: false,
-        fileStream
-      }
-
-      // Start inactivity monitoring
-      resetInactivityTimer()
-
-      console.log('[SD Model Download] Starting to receive data...')
-
-      // Track progress
-      response.on('data', (chunk: Buffer) => {
-        // Check if download was cancelled
-        if (activeRequests.model?.cancelled) {
-          console.log('[SD Model Download] Download cancelled by user')
-          fileStream.close()
-          if (inactivityTimer) clearTimeout(inactivityTimer)
-          delete activeRequests.model
-          resolve({
-            success: false,
-            error: 'Download cancelled by user'
-          })
-          return
-        }
-
-        receivedBytes += chunk.length
-
-        // Reset inactivity timer on each data chunk
-        resetInactivityTimer()
-
-        // Throttle progress updates to every 500ms
-        const now = Date.now()
-        if (now - lastProgressUpdate > 500 || receivedBytes === totalBytes) {
-          const progress = totalBytes > 0 ? Math.round((receivedBytes / totalBytes) * 100) : 0
-
-          console.log(`[SD Model Download] Progress: ${receivedBytes} / ${totalBytes} bytes (${progress}%)`)
-
-          event.sender.send('sd-download-progress', {
-            phase: 'download',
-            progress,
-            detail: { current: receivedBytes, total: totalBytes, unit: 'bytes' }
-          })
-          lastProgressUpdate = now
-        }
-
-        // Flush to disk every 5 seconds to ensure data is saved even if process is killed
-        const timeSinceLastFlush = now - lastFlushTime
-        if (timeSinceLastFlush >= 5000) {
-          fileStream.write('', () => {
-            // Force flush to disk
-            if (fileStream.fd) {
-              require('fs').fsync(fileStream.fd, (err: any) => {
-                if (err) console.error('[SD Model Download] Flush error:', err)
-              })
-            }
-          })
-          lastFlushTime = now
-        }
-      })
-
-      response.on('error', (err: Error) => {
-        if (fileStream) fileStream.close()
-        if (inactivityTimer) clearTimeout(inactivityTimer)
-        console.error('[SD Model Download] Response error:', err.message)
-        delete activeRequests.model
-        resolve({
-          success: false,
-          error: `Response error: ${err.message}`
-        })
-      })
-
-      response.pipe(fileStream)
-
-      fileStream.on('finish', () => {
-        fileStream.close()
-        if (inactivityTimer) clearTimeout(inactivityTimer)
-
-        // CRITICAL: Check if download was cancelled
-        if (activeRequests.model?.cancelled) {
-          console.log('[SD Model Download] Download was cancelled, NOT renaming .part file')
-          console.log(`[SD Model Download] Partial file saved at: ${partPath} (${Math.round(receivedBytes / 1024 / 1024)}MB)`)
-          delete activeRequests.model
-          resolve({
-            success: false,
-            error: 'Download cancelled by user'
-          })
-          return
-        }
-
-        console.log(`[SD Model Download] Download completed, received ${Math.round(receivedBytes / 1024 / 1024)}MB`)
-
-        // Rename .part file to final filename
-        try {
-          console.log(`[SD Model Download] Renaming ${partPath} -> ${destPath}`)
-          renameSync(partPath, destPath)
-          console.log(`[SD Model Download] File successfully saved to ${destPath}`)
-
-          // Send 100% progress
-          event.sender.send('sd-download-progress', {
-            phase: 'download',
-            progress: 100,
-            detail: { current: totalBytes, total: totalBytes, unit: 'bytes' }
-          })
-
-          // Clear active request
-          delete activeRequests.model
-
-          resolve({
-            success: true,
-            filePath: destPath
-          })
-        } catch (error) {
-          console.error('[SD Model Download] Failed to rename file:', error)
-          delete activeRequests.model
-          resolve({
-            success: false,
-            error: `Failed to rename file: ${(error as Error).message}`
-          })
-        }
-      })
-
-      fileStream.on('error', (err: Error) => {
-        fileStream.close()
-        if (inactivityTimer) clearTimeout(inactivityTimer)
-        console.error('[SD Model Download] File write error:', err.message)
-        delete activeRequests.model
-        resolve({
-          success: false,
-          error: `File write error: ${err.message}`
-        })
-      })
-    })
-
-    request.on('error', (err: Error) => {
-      if (fileStream) fileStream.close()
-      if (inactivityTimer) clearTimeout(inactivityTimer)
-      console.error('[SD Model Download] Request error:', err.message)
-      delete activeRequests.model
-      resolve({
-        success: false,
-        error: `Request error: ${err.message}`
-      })
-    })
-
-    request.on('timeout', () => {
-      request.destroy()
-      if (fileStream) fileStream.close()
-      if (inactivityTimer) clearTimeout(inactivityTimer)
-      console.error('[SD Model Download] Connection timeout')
-      delete activeRequests.model
-      resolve({
-        success: false,
-        error: 'Connection timeout'
-      })
-    })
-  })
-}
-
-/**
- * Attempt single download (OLD VERSION - keeping for reference)
- */
-function attemptDownload(
-  event: Electron.IpcMainInvokeEvent,
-  url: string,
-  destPath: string,
-  _attempt: number
-): Promise<{ success: boolean; filePath?: string; error?: string }> {
-  return new Promise((resolve) => {
-    const downloadFile = (downloadUrl: string) => {
-      const file = createWriteStream(destPath)
-      const protocol = downloadUrl.startsWith('https') ? https : http
-      let inactivityTimer: NodeJS.Timeout | null = null
-
-      // Reset inactivity timer - only triggers if no data received for 2 minutes
-      const resetInactivityTimer = () => {
-        if (inactivityTimer) {
-          clearTimeout(inactivityTimer)
-        }
-        inactivityTimer = setTimeout(() => {
-          request.destroy()
-          file.close()
-          if (existsSync(destPath)) {
-            unlinkSync(destPath)
-          }
-          resolve({
-            success: false,
-            error: 'Download stalled (no data received for 2 minutes)'
-          })
-        }, 120000) // 2 minutes of inactivity
-      }
-
-      const request = protocol.get(downloadUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0',
-          'Connection': 'keep-alive'
-        },
-        timeout: 30000 // 30 second connection timeout
-      }, (response) => {
-        // Handle redirects
-        if (response.statusCode === 301 || response.statusCode === 302) {
-          const redirectUrl = response.headers.location
-          if (redirectUrl) {
-            file.close()
-            if (inactivityTimer) clearTimeout(inactivityTimer)
-            downloadFile(redirectUrl)
-            return
-          }
-        }
-
-        // Check for successful response
-        if (response.statusCode !== 200) {
-          file.close()
-          if (existsSync(destPath)) {
-            unlinkSync(destPath)
-          }
-          if (inactivityTimer) clearTimeout(inactivityTimer)
-          resolve({
-            success: false,
-            error: `HTTP ${response.statusCode}: ${response.statusMessage}`
-          })
-          return
-        }
-
-        const totalBytes = parseInt(response.headers['content-length'] || '0', 10)
-        let downloadedBytes = 0
-        let lastProgressUpdate = Date.now()
-
-        // Start inactivity monitoring
-        resetInactivityTimer()
-
-        response.on('data', (chunk) => {
-          downloadedBytes += chunk.length
-
-          // Reset inactivity timer on each data chunk
-          resetInactivityTimer()
-
-          // Throttle progress updates to every 500ms
-          const now = Date.now()
-          if (now - lastProgressUpdate > 500 || downloadedBytes === totalBytes) {
-            const progress = totalBytes > 0 ? Math.round((downloadedBytes / totalBytes) * 100) : 0
-            event.sender.send('sd-download-progress', {
-              phase: 'download',
-              progress,
-              detail: { current: downloadedBytes, total: totalBytes, unit: 'bytes' }
-            })
-            lastProgressUpdate = now
-          }
-        })
-
-        response.on('error', (err) => {
-          file.close()
-          if (existsSync(destPath)) {
-            unlinkSync(destPath)
-          }
-          if (inactivityTimer) clearTimeout(inactivityTimer)
-          resolve({
-            success: false,
-            error: `Response error: ${err.message}`
-          })
-        })
-
-        response.pipe(file)
-
-        file.on('finish', () => {
-          file.close()
-          if (inactivityTimer) clearTimeout(inactivityTimer)
-          resolve({
-            success: true,
-            filePath: destPath
-          })
-        })
-
-        file.on('error', (err) => {
-          file.close()
-          if (existsSync(destPath)) {
-            unlinkSync(destPath)
-          }
-          if (inactivityTimer) clearTimeout(inactivityTimer)
-          resolve({
-            success: false,
-            error: `File write error: ${err.message}`
-          })
-        })
-      })
-
-      request.on('error', (err) => {
-        file.close()
-        if (existsSync(destPath)) {
-          unlinkSync(destPath)
-        }
-        if (inactivityTimer) clearTimeout(inactivityTimer)
-        resolve({
-          success: false,
-          error: `Request error: ${err.message}`
-        })
-      })
-
-      request.on('timeout', () => {
-        request.destroy()
-        file.close()
-        if (existsSync(destPath)) {
-          unlinkSync(destPath)
-        }
-        if (inactivityTimer) clearTimeout(inactivityTimer)
-        resolve({
-          success: false,
-          error: 'Connection timeout'
-        })
-      })
-    }
-
-    downloadFile(url)
-  })
-}
 
 /**
  * list models
@@ -1520,6 +895,40 @@ ipcMain.handle('sd-delete-model', (_, modelPath: string) => {
 })
 
 /**
+ * Get file size
+ */
+ipcMain.handle('get-file-size', (_, filePath: string) => {
+  try {
+    if (existsSync(filePath)) {
+      const stats = statSync(filePath)
+      return stats.size
+    }
+    return 0
+  } catch (error) {
+    console.error('Failed to get file size:', error)
+    return 0
+  }
+})
+
+/**
+ * Delete SD binary
+ */
+ipcMain.handle('sd-delete-binary', () => {
+  try {
+    const binaryPath = getSDPath()
+    if (existsSync(binaryPath)) {
+      unlinkSync(binaryPath)
+    }
+    return { success: true }
+  } catch (error) {
+    return {
+      success: false,
+      error: (error as Error).message
+    }
+  }
+})
+
+/**
  * Get auxiliary models directory
  */
 function getAuxiliaryModelsDir(): string {
@@ -1531,6 +940,7 @@ function getAuxiliaryModelsDir(): string {
 const activeDownloads: {
   llm?: { progress: number; receivedBytes: number; totalBytes: number }
   vae?: { progress: number; receivedBytes: number; totalBytes: number }
+  binary?: { progress: number; receivedBytes: number; totalBytes: number }
 } = {}
 
 // Track active HTTP requests for cancellation
@@ -1565,12 +975,13 @@ ipcMain.handle('sd-check-auxiliary-models', () => {
 })
 
 /**
- * Get current download status for auxiliary models
+ * Get current download status for auxiliary models and binary
  */
 ipcMain.handle('sd-get-download-status', () => {
   return {
     llm: activeDownloads.llm || null,
-    vae: activeDownloads.vae || null
+    vae: activeDownloads.vae || null,
+    binary: activeDownloads.binary || null
   }
 })
 
@@ -1649,18 +1060,6 @@ ipcMain.handle('sd-delete-auxiliary-model', (_, type: 'llm' | 'vae') => {
  */
 ipcMain.handle('sd-download-auxiliary-model', async (event, type: 'llm' | 'vae', url: string) => {
   try {
-    // Cancel any existing download for this type
-    if (activeRequests[type]) {
-      console.log(`[Auxiliary Download] Cancelling previous ${type} download`)
-      activeRequests[type].cancelled = true
-      activeRequests[type].request.destroy()
-      if (activeRequests[type].fileStream) {
-        activeRequests[type].fileStream.close()
-      }
-      delete activeRequests[type]
-      delete activeDownloads[type]
-    }
-
     const auxDir = getAuxiliaryModelsDir()
     if (!existsSync(auxDir)) {
       mkdirSync(auxDir, { recursive: true })
@@ -1670,295 +1069,61 @@ ipcMain.handle('sd-download-auxiliary-model', async (event, type: 'llm' | 'vae',
       ? 'Qwen3-4B-Instruct-2507-UD-Q4_K_XL.gguf'
       : 'ae.safetensors'
     const destPath = join(auxDir, fileName)
-    const partPath = destPath + '.part'  // Temporary file for downloading
     const expectedSize = type === 'llm' ? 2400000000 : 335000000 // LLM: 2.4GB, VAE: 335MB
 
-    console.log(`[Auxiliary Download] ${type} Final path: ${destPath}`)
-    console.log(`[Auxiliary Download] ${type} Temp path: ${partPath}`)
-    console.log(`[Auxiliary Download] ${type} Expected size: ${Math.round(expectedSize / 1024 / 1024)}MB`)
+    console.log(`[Auxiliary Download] ${type} downloading to: ${destPath}`)
+    console.log(`[Auxiliary Download] ${type} expected size: ${Math.round(expectedSize / 1024 / 1024)}MB`)
 
-    // Check if final file already exists and is complete
-    if (existsSync(destPath)) {
-      const stats = statSync(destPath)
-      console.log(`[Auxiliary Download] ${type} Found complete file: ${Math.round(stats.size / 1024 / 1024)}MB`)
-
-      // Validate file size (allow 5% tolerance)
-      const sizeOk = stats.size >= expectedSize * 0.95
-
-      if (sizeOk) {
-        console.log(`[Auxiliary Download] ${type} File is complete, skipping download`)
-
-        // Broadcast 100% progress to ALL windows to notify UI
-        const completionData = {
-          phase: `download-${type}`,
-          progress: 100,
-          detail: {
-            current: stats.size,
-            total: stats.size,
-            unit: 'bytes'
+    // Use Downloader class for auxiliary model downloads
+    const result = await downloader.download({
+      url,
+      destPath,
+      minValidSize: expectedSize * 0.95, // Allow 5% tolerance
+      maxRetries: 3,
+      timeout: 30000,
+      onProgress: (progress) => {
+        // Update global download state for polling
+        if (type === 'llm') {
+          activeDownloads.llm = {
+            progress: progress.progress,
+            receivedBytes: progress.receivedBytes,
+            totalBytes: progress.totalBytes
+          }
+        } else if (type === 'vae') {
+          activeDownloads.vae = {
+            progress: progress.progress,
+            receivedBytes: progress.receivedBytes,
+            totalBytes: progress.totalBytes
           }
         }
 
+        // Broadcast progress to ALL windows
         BrowserWindow.getAllWindows().forEach((win) => {
-          win.webContents.send(`sd-${type}-download-progress`, completionData)
-        })
-
-        // Clear global state
-        delete activeDownloads[type]
-
-        return {
-          success: true,
-          filePath: destPath
-        }
-      } else {
-        console.log(`[Auxiliary Download] ${type} Complete file is corrupted (wrong size), deleting...`)
-        unlinkSync(destPath)
-      }
-    }
-
-    // Check for partial download (.part file)
-    let startByte = 0
-    if (existsSync(partPath)) {
-      const stats = statSync(partPath)
-      startByte = stats.size
-      console.log(`[Auxiliary Download] ${type} Found partial download: ${Math.round(startByte / 1024 / 1024)}MB`)
-      console.log(`[Auxiliary Download] ${type} Will resume from ${Math.round(startByte / 1024 / 1024)}MB`)
-    } else {
-      console.log(`[Auxiliary Download] ${type} No partial download found, starting fresh`)
-    }
-
-    // Use HTTP Range requests for proper resume support
-    console.log(`[Auxiliary Download] Starting download ${type} from:`, url)
-
-    return new Promise((resolve, reject) => {
-      // Use follow-redirects for automatic redirect handling
-      const { https } = require('follow-redirects')
-      const { createWriteStream, renameSync } = require('fs')
-
-      // Parse URL
-      const urlObj = new URL(url)
-
-      // Check for proxy settings from environment variables
-      const proxyUrl = process.env.HTTPS_PROXY || process.env.https_proxy ||
-                      process.env.HTTP_PROXY || process.env.http_proxy
-
-      const options: any = {
-        hostname: urlObj.hostname,
-        path: urlObj.pathname + urlObj.search,
-        headers: startByte > 0 ? {
-          'Range': `bytes=${startByte}-`,
-          'User-Agent': 'Mozilla/5.0'
-        } : {
-          'User-Agent': 'Mozilla/5.0'
-        },
-        maxRedirects: 5  // Allow up to 5 redirects
-      }
-
-      // Use proxy if configured
-      if (proxyUrl) {
-        const { HttpsProxyAgent } = require('https-proxy-agent')
-        options.agent = new HttpsProxyAgent(proxyUrl)
-        console.log(`[Auxiliary Download] ${type} Using proxy: ${proxyUrl}`)
-      }
-
-      console.log(`[Auxiliary Download] ${type} Connecting to ${urlObj.hostname}...`)
-      console.log(`[Auxiliary Download] ${type} Request headers:`, options.headers)
-
-      const request = https.get(options, (response: any) => {
-
-        console.log(`[Auxiliary Download] ${type} Connected! Response status: ${response.statusCode}`)
-        console.log(`[Auxiliary Download] ${type} Final URL after redirects: ${response.responseUrl}`)
-
-        // Check for valid response (200 for new download, 206 for resumed download)
-        if (response.statusCode !== 200 && response.statusCode !== 206) {
-          delete activeDownloads[type]
-          delete activeRequests[type]
-          resolve({
-            success: false,
-            error: `Server responded with status ${response.statusCode}`
-          })
-          return
-        }
-
-        // CRITICAL: Check if server supports resume
-        if (startByte > 0 && response.statusCode === 200) {
-          console.warn(`[Auxiliary Download] ${type} WARNING: Server does NOT support Range requests!`)
-          console.warn(`[Auxiliary Download] ${type} Server returned 200 instead of 206, will restart download from 0`)
-          console.warn(`[Auxiliary Download] ${type} Deleting .part file and restarting...`)
-          // Server doesn't support resume, need to delete partial file and restart
-          if (existsSync(partPath)) {
-            unlinkSync(partPath)
-          }
-          startByte = 0  // Reset to 0
-        }
-
-        // Get total size from headers
-        let totalBytes = expectedSize
-        if (response.statusCode === 206 && response.headers['content-range']) {
-          // Parse content-range: "bytes 0-1023/1024"
-          const match = response.headers['content-range'].match(/bytes \d+-\d+\/(\d+)/)
-          if (match) {
-            totalBytes = parseInt(match[1], 10)
-          }
-          console.log(`[Auxiliary Download] ${type} ✓ Server supports resume! Content-Range: ${response.headers['content-range']}`)
-        } else if (response.headers['content-length']) {
-          const contentLength = parseInt(response.headers['content-length'], 10)
-          totalBytes = startByte > 0 ? startByte + contentLength : contentLength
-        }
-
-        console.log(`[Auxiliary Download] ${type} Total size: ${Math.round(totalBytes / 1024 / 1024)}MB`)
-        console.log(`[Auxiliary Download] ${type} Starting from: ${Math.round(startByte / 1024 / 1024)}MB (${startByte > 0 ? 'RESUME' : 'NEW'})`)
-
-        // Open .part file for appending (if resuming) or writing (if new)
-        const writeMode = startByte > 0 ? 'a' : 'w'
-        console.log(`[Auxiliary Download] ${type} Writing to: ${partPath}`)
-        console.log(`[Auxiliary Download] ${type} File write mode: ${writeMode} (${writeMode === 'a' ? 'append' : 'overwrite'})`)
-        const fileStream = createWriteStream(partPath, { flags: writeMode })
-
-        let receivedBytes = startByte
-        let lastBroadcastTime = Date.now()
-        let lastBroadcastBytes = startByte
-        let lastFlushTime = Date.now()
-
-        // Save request and fileStream for cancellation (before setting up event handlers)
-        activeRequests[type] = {
-          request,
-          cancelled: false,
-          fileStream
-        }
-
-        console.log(`[Auxiliary Download] ${type} Starting to receive data...`)
-
-        // Track progress
-        response.on('data', (chunk: Buffer) => {
-          receivedBytes += chunk.length
-          const progress = totalBytes > 0 ? Math.round((receivedBytes / totalBytes) * 100) : 0
-
-          // Update global state on every chunk
-          activeDownloads[type] = { progress, receivedBytes, totalBytes }
-
-          // Broadcast progress to ALL windows (throttle to every 500ms or every 1MB)
-          const now = Date.now()
-          const bytesSinceLastBroadcast = receivedBytes - lastBroadcastBytes
-          const timeSinceLastBroadcast = now - lastBroadcastTime
-
-          if (bytesSinceLastBroadcast >= 1048576 || timeSinceLastBroadcast >= 500) {
-            console.log(`[Auxiliary Download] ${type} Progress: ${receivedBytes} / ${totalBytes} bytes (${progress}%)`)
-
-            const progressData = {
-              phase: `download-${type}`,
-              progress,
-              detail: { current: receivedBytes, total: totalBytes, unit: 'bytes' }
-            }
-
-            BrowserWindow.getAllWindows().forEach((win) => {
-              win.webContents.send(`sd-${type}-download-progress`, progressData)
-            })
-
-            lastBroadcastTime = now
-            lastBroadcastBytes = receivedBytes
-          }
-
-          // Flush to disk every 5 seconds to ensure data is saved even if process is killed
-          const timeSinceLastFlush = now - lastFlushTime
-          if (timeSinceLastFlush >= 5000) {
-            fileStream.write('', () => {
-              // Force flush to disk
-              if (fileStream.fd) {
-                require('fs').fsync(fileStream.fd, (err: any) => {
-                  if (err) console.error(`[Auxiliary Download] ${type} Flush error:`, err)
-                })
-              }
-            })
-            lastFlushTime = now
-          }
-        })
-
-        // Pipe response to file
-        response.pipe(fileStream)
-
-        fileStream.on('finish', () => {
-          fileStream.close()
-          console.log(`[Auxiliary Download] ${type} Download completed, received ${Math.round(receivedBytes / 1024 / 1024)}MB`)
-
-          // Rename .part file to final filename
-          try {
-            console.log(`[Auxiliary Download] ${type} Renaming ${partPath} -> ${destPath}`)
-            renameSync(partPath, destPath)
-            console.log(`[Auxiliary Download] ${type} File successfully saved to ${destPath}`)
-          } catch (error) {
-            console.error(`[Auxiliary Download] ${type} Failed to rename file:`, error)
-            delete activeDownloads[type]
-            delete activeRequests[type]
-            resolve({
-              success: false,
-              error: `Failed to rename file: ${(error as Error).message}`
-            })
-            return
-          }
-
-          // Broadcast 100% progress to ALL windows
-          const completionData = {
+          win.webContents.send(`sd-${type}-download-progress`, {
             phase: `download-${type}`,
-            progress: 100,
-            detail: {
-              current: totalBytes,
-              total: totalBytes,
-              unit: 'bytes'
-            }
-          }
-
-          BrowserWindow.getAllWindows().forEach((win) => {
-            win.webContents.send(`sd-${type}-download-progress`, completionData)
-          })
-
-          // Clear global state
-          delete activeDownloads[type]
-          delete activeRequests[type]
-
-          resolve({
-            success: true,
-            filePath: destPath
+            progress: progress.progress,
+            detail: progress.detail
           })
         })
-
-        fileStream.on('error', (error: Error) => {
-          console.error(`[Auxiliary Download] ${type} file write error:`, error)
-          fileStream.close()
-
-          // Don't delete partial file - allow resume
-          // Clear global state
-          delete activeDownloads[type]
-          delete activeRequests[type]
-
-          resolve({
-            success: false,
-            error: `File write error: ${error.message}`
-          })
-        })
-      })
-
-      request.on('error', (error: Error) => {
-        console.error(`[Auxiliary Download] ${type} download error:`, error)
-
-        // Don't delete partial file - allow resume
-        // Clear global state
-        delete activeDownloads[type]
-        delete activeRequests[type]
-
-        resolve({
-          success: false,
-          error: `Download error: ${error.message} - you can retry to resume from ${Math.round(startByte / 1024 / 1024)}MB`
-        })
-      })
-
-      request.end()
+      }
     })
-  } catch (error) {
-    // Clear global state
-    delete activeDownloads[type]
-    delete activeRequests[type]
 
+    // Clear download state after completion (success or failure)
+    if (type === 'llm') {
+      delete activeDownloads.llm
+    } else if (type === 'vae') {
+      delete activeDownloads.vae
+    }
+
+    return result
+  } catch (error) {
+    console.error(`[Auxiliary Download] ${type} error:`, error)
+    // Clear download state on error
+    if (type === 'llm') {
+      delete activeDownloads.llm
+    } else if (type === 'vae') {
+      delete activeDownloads.vae
+    }
     return {
       success: false,
       error: (error as Error).message
@@ -1974,6 +1139,9 @@ ipcMain.handle('sd-download-binary', async (event) => {
   const SHORT_VERSION = '43a70e8'
   const macOSVersion = '15.7.2' // Fixed version as only 15.7.2 is available
 
+  // Reset cancel flag at start of download
+  sdBinaryCancelled = false
+
   try {
     const platform = process.platform
     const arch = process.arch
@@ -1982,8 +1150,18 @@ ipcMain.handle('sd-download-binary', async (event) => {
     let downloadUrl = ''
 
     if (platform === 'darwin') {
-      // macOS: Use custom Metal-enabled build
-      downloadUrl = 'https://d1q70pf5vjeyhc.wavespeed.ai/media/archives/1765804301239005334_mKJRPNLJ.zip'
+      // macOS: Check for Metal support and download appropriate build
+      const hasMetalSupport = checkMetalSupport()
+
+      if (hasMetalSupport) {
+        // Use Metal-enabled build for Macs with Metal support
+        console.log('[SD Download] Using Metal-enabled build for macOS')
+        downloadUrl = 'https://d1q70pf5vjeyhc.wavespeed.ai/media/archives/1765804301239005334_mKJRPNLJ.zip'
+      } else {
+        // Use CPU-only build from GitHub releases for older Macs
+        console.log('[SD Download] Metal not supported, using CPU-only build for macOS')
+        downloadUrl = `https://github.com/leejet/stable-diffusion.cpp/releases/download/${RELEASE_TAG}/sd-master-${SHORT_VERSION}-bin-macOS-x64.zip`
+      }
     } else {
       // Windows/Linux: Use official GitHub releases
       let platformStr = ''
@@ -2051,6 +1229,9 @@ ipcMain.handle('sd-download-binary', async (event) => {
 
               console.log(`[SD Download] Progress: ${receivedBytes} / ${totalBytes} bytes (${progress}%)`)
 
+              // Update global download state for polling
+              activeDownloads.binary = { progress, receivedBytes, totalBytes }
+
               event.sender.send('sd-binary-download-progress', {
                 phase: 'download',
                 progress,
@@ -2067,6 +1248,22 @@ ipcMain.handle('sd-download-binary', async (event) => {
 
           if (state === 'completed') {
             console.log('[SD Download] Download completed')
+
+            // CRITICAL: Check if download was cancelled during completion
+            if (sdBinaryCancelled) {
+              console.log('[SD Download] Download was cancelled, NOT extracting')
+              // Clean up zip file
+              if (existsSync(zipPath)) {
+                unlinkSync(zipPath)
+              }
+              // Clear download state
+              delete activeDownloads.binary
+              resolve({
+                success: false,
+                error: 'Download cancelled'
+              })
+              return
+            }
 
             // Send 100% download progress first
             event.sender.send('sd-binary-download-progress', {
@@ -2086,15 +1283,54 @@ ipcMain.handle('sd-download-binary', async (event) => {
               detail: {}
             })
 
+            // CRITICAL: Check if cancelled before extraction
+            if (sdBinaryCancelled) {
+              console.log('[SD Download] Download was cancelled before extraction, aborting')
+              // Clean up zip file
+              if (existsSync(zipPath)) {
+                unlinkSync(zipPath)
+              }
+              // Clear download state
+              delete activeDownloads.binary
+              resolve({
+                success: false,
+                error: 'Download cancelled'
+              })
+              return
+            }
+
             try {
               const zip = new AdmZip(zipPath)
               zip.extractAllTo(binaryDir, true)
               console.log('[SD Download] Extraction completed')
+
+              // CRITICAL: Check if cancelled after extraction
+              if (sdBinaryCancelled) {
+                console.log('[SD Download] Download was cancelled during extraction, cleaning up')
+                // Clean up extracted files
+                if (existsSync(binaryDir)) {
+                  const { rmSync } = require('fs')
+                  rmSync(binaryDir, { recursive: true, force: true })
+                }
+                // Clean up zip file
+                if (existsSync(zipPath)) {
+                  unlinkSync(zipPath)
+                }
+                // Clear download state
+                delete activeDownloads.binary
+                resolve({
+                  success: false,
+                  error: 'Download cancelled'
+                })
+                return
+              }
             } catch (error) {
               // Clean up
               if (existsSync(zipPath)) {
                 unlinkSync(zipPath)
               }
+              // Clear download state
+              delete activeDownloads.binary
               resolve({
                 success: false,
                 error: `Failed to extract binary: ${(error as Error).message}`
@@ -2160,6 +1396,9 @@ ipcMain.handle('sd-download-binary', async (event) => {
 
             console.log('[SD Download] Installation completed')
 
+            // Clear download state
+            delete activeDownloads.binary
+
             resolve({
               success: true,
               path: binaryPath
@@ -2170,6 +1409,8 @@ ipcMain.handle('sd-download-binary', async (event) => {
             if (existsSync(zipPath)) {
               unlinkSync(zipPath)
             }
+            // Clear download state
+            delete activeDownloads.binary
             resolve({
               success: false,
               error: 'Download cancelled'
@@ -2180,6 +1421,8 @@ ipcMain.handle('sd-download-binary', async (event) => {
             if (existsSync(zipPath)) {
               unlinkSync(zipPath)
             }
+            // Clear download state
+            delete activeDownloads.binary
             resolve({
               success: false,
               error: `Download ${state}`
@@ -2201,56 +1444,28 @@ ipcMain.handle('sd-download-binary', async (event) => {
  */
 ipcMain.handle('sd-cancel-download', async () => {
   try {
-    let cancelled = false
+    console.log('[SD Download] Cancelling all downloads')
 
-    // Cancel SD binary download
+    // Cancel SD binary download (legacy Electron downloader)
     if (activeSDDownloadItem && !activeSDDownloadItem.isPaused()) {
-      console.log('[SD Download] Cancelling binary download')
+      console.log('[SD Download] Cancelling binary download (Electron downloader)')
+      sdBinaryCancelled = true
       activeSDDownloadItem.cancel()
       activeSDDownloadItem = null
-      cancelled = true
     }
 
-    // Cancel LLM download
-    if (activeRequests.llm) {
-      console.log('[SD Download] Cancelling LLM download')
-      activeRequests.llm.cancelled = true
-      activeRequests.llm.request.destroy()
-      if (activeRequests.llm.fileStream) {
-        activeRequests.llm.fileStream.close()
-      }
-      delete activeRequests.llm
-      delete activeDownloads.llm
-      cancelled = true
-    }
+    // Cancel all Downloader class downloads (model, LLM, VAE)
+    downloader.cancelAll()
 
-    // Cancel VAE download
-    if (activeRequests.vae) {
-      console.log('[SD Download] Cancelling VAE download')
-      activeRequests.vae.cancelled = true
-      activeRequests.vae.request.destroy()
-      if (activeRequests.vae.fileStream) {
-        activeRequests.vae.fileStream.close()
-      }
-      delete activeRequests.vae
-      delete activeDownloads.vae
-      cancelled = true
-    }
+    // Clear legacy activeRequests and activeDownloads
+    delete activeRequests.llm
+    delete activeRequests.vae
+    delete activeRequests.model
+    delete activeDownloads.llm
+    delete activeDownloads.vae
+    delete activeDownloads.binary
 
-    // Cancel model download
-    if (activeRequests.model) {
-      console.log('[SD Download] Cancelling model download')
-      activeRequests.model.cancelled = true
-      activeRequests.model.request.destroy()
-      if (activeRequests.model.fileStream) {
-        activeRequests.model.fileStream.close()
-      }
-      // IMPORTANT: Don't delete immediately - let the finish/error handlers clean up
-      // Otherwise the cancelled flag won't be accessible in the finish event
-      cancelled = true
-    }
-
-    return { success: true, cancelled }
+    return { success: true, cancelled: true }
   } catch (error) {
     return {
       success: false,
@@ -2264,13 +1479,18 @@ ipcMain.handle('sd-cancel-download', async () => {
  */
 ipcMain.handle('sd-cancel-generation', async () => {
   try {
+    console.log('[SD Generation] Cancelling generation')
+
+    // Cancel via SDGenerator class
+    const cancelled = sdGenerator.cancel()
+
+    // Also cancel legacy activeSDProcess if exists
     if (activeSDProcess) {
-      console.log('[SD Generation] Cancelling generation')
       activeSDProcess.kill('SIGTERM')
       activeSDProcess = null
-      return { success: true }
     }
-    return { success: true }
+
+    return { success: true, cancelled }
   } catch (error) {
     return {
       success: false,

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useAssetsStore } from '@/stores/assetsStore'
+import { formatBytes } from '@/types/progress'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -138,13 +139,6 @@ function AssetTypeIcon({ type, className }: { type: AssetType; className?: strin
     case 'json':
       return <FileText className={className} />
   }
-}
-
-// Format file size
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
 // Format date
@@ -714,7 +708,7 @@ export function AssetsPage() {
                         {asset.modelName}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {formatDate(asset.createdAt)} · {formatFileSize(asset.fileSize)}
+                        {formatDate(asset.createdAt)} · {formatBytes(asset.fileSize)}
                       </p>
                     </div>
 

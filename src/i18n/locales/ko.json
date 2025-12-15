@@ -39,6 +39,7 @@
     "history": "기록",
     "templates": "템플릿",
     "assets": "내 에셋",
+    "zImage": "Z-Image",
     "freeTools": "무료 도구",
     "settings": "설정",
     "collapse": "접기"
@@ -68,6 +69,11 @@
       "assets": {
         "title": "내 에셋",
         "description": "생성된 출력물 정리 및 관리"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "로컬 AI 이미지 생성 - 기기에서 실행, API 불필요",
+        "badge": "로컬"
       },
       "freeTools": {
         "title": "무료 도구",
@@ -364,6 +370,100 @@
     "textPreviewUnavailable": "텍스트 미리보기를 사용할 수 없습니다. 보려면 파일 위치를 여세요.",
     "loadPreviews": "미리보기 로드",
     "disablePreviews": "미리보기 비활성화"
+  },
+  "zImage": {
+    "title": "Z-Image",
+    "description": "로컬 AI 이미지 생성 (60억 파라미터 모델, 기기에서 실행)",
+    "requiredModels": "필수 모델",
+    "requiredModelsDesc": "LLM 및 VAE 모델 다운로드 (브라우저에 캐시됨)",
+    "mainModel": "메인 모델",
+    "mainModelDesc": "Z-Image-Turbo 모델 선택",
+    "llmModel": "LLM 모델 (Qwen3-4B, 2.4GB)",
+    "vaeModel": "VAE 모델 (FLUX, 335MB)",
+    "downloaded": "다운로드됨",
+    "download": "다운로드",
+    "downloading": "다운로드 중...",
+    "downloadProgress": "{{progress}}%",
+    "cancelDownload": "다운로드 취소",
+    "retryDownload": "다운로드 재시도",
+    "selectModel": "모델 선택",
+    "chooseModel": "모델 선택...",
+    "modelDescription": "모델 설명",
+    "generateImage": "이미지 생성",
+    "generating": "생성 중...",
+    "processing": "처리 중...",
+    "downloadingSd": "SD 다운로드 중...",
+    "downloadingVae": "VAE 다운로드 중...",
+    "downloadingLlm": "LLM 다운로드 중...",
+    "downloadingZImage": "Z-Image 다운로드 중...",
+    "downloadingModel": "모델 다운로드 중...",
+    "stopGeneration": "생성 중지",
+    "generationCancelled": "생성이 취소되었습니다",
+    "prompt": "프롬프트",
+    "promptPlaceholder": "산과 호수가 있는 아름다운 풍경",
+    "promptRequired": "프롬프트는 필수입니다",
+    "negativePrompt": "네거티브 프롬프트",
+    "negativePromptPlaceholder": "흐릿한, 저화질",
+    "width": "너비",
+    "height": "높이",
+    "steps": "스텝",
+    "cfgScale": "CFG 스케일",
+    "seed": "시드",
+    "randomSeed": "랜덤",
+    "autoRandomizeSeed": "생성 후 자동으로 시드 랜덤화",
+    "onlineHint": "너무 오래 걸리나요? 플레이그라운드의 온라인 API를 사용해 보세요. GPU 가속으로 더 빠른 생성이 가능합니다.",
+    "tryOnline": "플레이그라운드로 이동 →",
+    "result": "결과",
+    "generatedImage": "생성된 이미지",
+    "noResult": "아직 이미지가 생성되지 않았습니다. 매개변수를 구성하고 생성을 클릭하세요.",
+    "openInFolder": "폴더에서 열기",
+    "selectModelFirst": "먼저 모델을 선택하세요",
+    "downloadModelFirst": "먼저 모델을 다운로드하세요",
+    "downloadLlmFirst": "먼저 LLM 모델을 다운로드하세요",
+    "downloadVaeFirst": "먼저 VAE 모델을 다운로드하세요",
+    "settingUp": "설정 중...",
+    "binaryNotAvailable": "바이너리를 사용할 수 없습니다",
+    "generationFailed": "생성 실패",
+    "invalidParameters": "잘못된 매개변수",
+    "noOutputYet": "아직 출력이 없습니다",
+    "configureAndGenerate": "매개변수를 구성하고 생성을 클릭하여 이미지 생성",
+    "step": "스텝",
+    "of": "/",
+    "acceleration": "가속",
+    "modelStatus": "모델 상태",
+    "cacheStatus": "캐시 상태",
+    "downloadError": "다운로드 오류",
+    "generationError": "생성 오류",
+    "configureParams": "생성 매개변수 구성",
+    "stepProgress": "스텝 {{current}}/{{total}}",
+    "downloadModel": "모델 다운로드",
+    "deleteModel": "모델 삭제",
+    "autoDownloadHint": "생성 시 자동으로 다운로드됩니다 ({{size}})",
+    "models": {
+      "q4k": {
+        "description": "권장: 빠른 추론과 좋은 품질, 약 2.5GB"
+      },
+      "q6k": {
+        "description": "고품질: 최고의 결과, 느린 생성, 약 3.5GB"
+      },
+      "q8": {
+        "description": "최고 품질: 최대 정밀도, 느린 생성, 약 4GB"
+      },
+      "q2k": {
+        "description": "경량: 가장 빠른 생성, 낮은 품질, 약 1.5GB"
+      }
+    },
+    "errors": {
+      "noModel": "먼저 모델을 선택하세요",
+      "modelNotDownloaded": "먼저 선택한 모델을 다운로드하세요",
+      "llmNotDownloaded": "먼저 LLM 모델을 다운로드하세요",
+      "vaeNotDownloaded": "먼저 VAE 모델을 다운로드하세요",
+      "invalidParams": "잘못된 매개변수",
+      "generationFailed": "생성 실패",
+      "generationCancelled": "다운로드/생성이 취소되었습니다",
+      "downloadFailed": "다운로드 실패. '이미지 생성'을 클릭하여 재시도하세요.",
+      "deleteFailed": "삭제 실패"
+    }
   },
   "settings": {
     "title": "설정",

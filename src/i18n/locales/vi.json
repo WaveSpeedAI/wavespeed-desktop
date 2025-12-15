@@ -39,6 +39,7 @@
     "history": "Lịch sử",
     "templates": "Mẫu",
     "assets": "Tài sản của tôi",
+    "zImage": "Z-Image",
     "freeTools": "Công cụ Miễn phí",
     "settings": "Cài đặt",
     "collapse": "Thu gọn"
@@ -68,6 +69,11 @@
       "assets": {
         "title": "Tài sản của tôi",
         "description": "Sắp xếp và quản lý các đầu ra đã tạo"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "Tạo ảnh AI cục bộ - chạy trên thiết bị của bạn, không cần API",
+        "badge": "Cục bộ"
       },
       "freeTools": {
         "title": "Công cụ Miễn phí",
@@ -364,6 +370,100 @@
     "textPreviewUnavailable": "Không có xem trước văn bản. Mở vị trí tệp để xem.",
     "loadPreviews": "Tải xem trước",
     "disablePreviews": "Tắt xem trước"
+  },
+  "zImage": {
+    "title": "Z-Image",
+    "description": "Tạo ảnh AI cục bộ (mô hình 6B tham số, chạy trên thiết bị của bạn)",
+    "requiredModels": "Các Mô Hình Cần Thiết",
+    "requiredModelsDesc": "Tải xuống mô hình LLM và VAE (được lưu trong bộ nhớ cache trình duyệt)",
+    "mainModel": "Mô Hình Chính",
+    "mainModelDesc": "Chọn mô hình Z-Image-Turbo",
+    "llmModel": "Mô hình LLM (Qwen3-4B, 2.4GB)",
+    "vaeModel": "Mô hình VAE (FLUX, 335MB)",
+    "downloaded": "Đã tải xuống",
+    "download": "Tải xuống",
+    "downloading": "Đang tải xuống...",
+    "downloadProgress": "{{progress}}%",
+    "cancelDownload": "Hủy Tải Xuống",
+    "retryDownload": "Thử Lại Tải Xuống",
+    "selectModel": "Chọn Mô Hình",
+    "chooseModel": "Chọn một mô hình...",
+    "modelDescription": "Mô tả mô hình",
+    "generateImage": "Tạo Ảnh",
+    "generating": "Đang tạo...",
+    "processing": "Đang xử lý...",
+    "downloadingSd": "Đang tải xuống SD...",
+    "downloadingVae": "Đang tải xuống VAE...",
+    "downloadingLlm": "Đang tải xuống LLM...",
+    "downloadingZImage": "Đang tải xuống Z-Image...",
+    "downloadingModel": "Đang tải xuống Mô hình...",
+    "stopGeneration": "Dừng Tạo",
+    "generationCancelled": "Đã hủy tạo",
+    "prompt": "Lời nhắc",
+    "promptPlaceholder": "Một phong cảnh đẹp với núi và hồ",
+    "promptRequired": "Yêu cầu lời nhắc",
+    "negativePrompt": "Lời Nhắc Tiêu Cực",
+    "negativePromptPlaceholder": "mờ, chất lượng kém",
+    "width": "Chiều rộng",
+    "height": "Chiều cao",
+    "steps": "Các bước",
+    "cfgScale": "Thang đo CFG",
+    "seed": "Hạt giống",
+    "randomSeed": "Ngẫu nhiên",
+    "autoRandomizeSeed": "Tự động ngẫu nhiên hóa hạt giống sau khi tạo",
+    "onlineHint": "Mất quá nhiều thời gian? Hãy thử API trực tuyến của chúng tôi trong Playground để tạo nhanh hơn với tăng tốc GPU.",
+    "tryOnline": "Đi đến Playground →",
+    "result": "Kết quả",
+    "generatedImage": "Hình ảnh đã tạo",
+    "noResult": "Chưa tạo hình ảnh nào. Định cấu hình tham số và nhấp vào Tạo.",
+    "openInFolder": "Mở trong Thư mục",
+    "selectModelFirst": "Chọn mô hình trước",
+    "downloadModelFirst": "Tải xuống mô hình trước",
+    "downloadLlmFirst": "Tải xuống mô hình LLM trước",
+    "downloadVaeFirst": "Tải xuống mô hình VAE trước",
+    "settingUp": "Đang thiết lập...",
+    "binaryNotAvailable": "Tệp nhị phân không khả dụng",
+    "generationFailed": "Tạo thất bại",
+    "invalidParameters": "Tham số không hợp lệ",
+    "noOutputYet": "Chưa có đầu ra",
+    "configureAndGenerate": "Định cấu hình tham số và nhấp vào Tạo để tạo hình ảnh",
+    "step": "Bước",
+    "of": "của",
+    "acceleration": "Tăng tốc",
+    "modelStatus": "Trạng Thái Mô Hình",
+    "cacheStatus": "Trạng Thái Bộ Nhớ Cache",
+    "downloadError": "Lỗi tải xuống",
+    "generationError": "Lỗi tạo",
+    "configureParams": "Định cấu hình tham số tạo",
+    "stepProgress": "Bước {{current}}/{{total}}",
+    "downloadModel": "Tải Xuống Mô Hình",
+    "deleteModel": "Xóa Mô Hình",
+    "autoDownloadHint": "Sẽ tự động tải xuống khi tạo ({{size}})",
+    "models": {
+      "q4k": {
+        "description": "Được đề xuất: Suy luận nhanh với chất lượng tốt, ~2.5GB"
+      },
+      "q6k": {
+        "description": "Chất lượng cao: Kết quả tốt nhất, tạo chậm hơn, ~3.5GB"
+      },
+      "q8": {
+        "description": "Chất lượng cao nhất: Độ chính xác tối đa, tạo chậm hơn, ~4GB"
+      },
+      "q2k": {
+        "description": "Nhẹ: Tạo nhanh nhất, chất lượng thấp hơn, ~1.5GB"
+      }
+    },
+    "errors": {
+      "noModel": "Vui lòng chọn mô hình trước",
+      "modelNotDownloaded": "Vui lòng tải xuống mô hình đã chọn trước",
+      "llmNotDownloaded": "Vui lòng tải xuống mô hình LLM trước",
+      "vaeNotDownloaded": "Vui lòng tải xuống mô hình VAE trước",
+      "invalidParams": "Tham số không hợp lệ",
+      "generationFailed": "Tạo thất bại",
+      "generationCancelled": "Đã hủy tải xuống/tạo",
+      "downloadFailed": "Tải xuống thất bại. Nhấp vào 'Tạo Ảnh' để thử lại.",
+      "deleteFailed": "Xóa thất bại"
+    }
   },
   "settings": {
     "title": "Cài đặt",

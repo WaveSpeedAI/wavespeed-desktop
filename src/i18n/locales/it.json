@@ -39,6 +39,7 @@
     "history": "Cronologia",
     "templates": "Template",
     "assets": "I Miei Asset",
+    "zImage": "Z-Image",
     "freeTools": "Strumenti Gratuiti",
     "settings": "Impostazioni",
     "collapse": "Comprimi"
@@ -68,6 +69,11 @@
       "assets": {
         "title": "I Miei Asset",
         "description": "Organizza e gestisci i tuoi output generati"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "Generazione di immagini AI locale - funziona sul tuo dispositivo, senza API",
+        "badge": "Locale"
       },
       "freeTools": {
         "title": "Strumenti Gratuiti",
@@ -364,6 +370,100 @@
     "textPreviewUnavailable": "Anteprima testo non disponibile. Apri la posizione del file per visualizzare.",
     "loadPreviews": "Carica anteprime",
     "disablePreviews": "Disabilita anteprime"
+  },
+  "zImage": {
+    "title": "Z-Image",
+    "description": "Generazione di immagini AI locale (modello da 6B parametri, funziona sul tuo dispositivo)",
+    "requiredModels": "Modelli Richiesti",
+    "requiredModelsDesc": "Scarica modelli LLM e VAE (memorizzati nella cache del browser)",
+    "mainModel": "Modello Principale",
+    "mainModelDesc": "Seleziona un modello Z-Image-Turbo",
+    "llmModel": "Modello LLM (Qwen3-4B, 2,4 GB)",
+    "vaeModel": "Modello VAE (FLUX, 335 MB)",
+    "downloaded": "Scaricato",
+    "download": "Scarica",
+    "downloading": "Scaricamento...",
+    "downloadProgress": "{{progress}}%",
+    "cancelDownload": "Annulla Download",
+    "retryDownload": "Riprova Download",
+    "selectModel": "Seleziona Modello",
+    "chooseModel": "Scegli un modello...",
+    "modelDescription": "Descrizione del modello",
+    "generateImage": "Genera Immagine",
+    "generating": "Generazione...",
+    "processing": "Elaborazione...",
+    "downloadingSd": "Scaricamento SD...",
+    "downloadingVae": "Scaricamento VAE...",
+    "downloadingLlm": "Scaricamento LLM...",
+    "downloadingZImage": "Scaricamento Z-Image...",
+    "downloadingModel": "Scaricamento Modello...",
+    "stopGeneration": "Ferma Generazione",
+    "generationCancelled": "Generazione annullata",
+    "prompt": "Prompt",
+    "promptPlaceholder": "Un bellissimo paesaggio con montagne e lago",
+    "promptRequired": "Il prompt è obbligatorio",
+    "negativePrompt": "Prompt Negativo",
+    "negativePromptPlaceholder": "sfocato, bassa qualità",
+    "width": "Larghezza",
+    "height": "Altezza",
+    "steps": "Passaggi",
+    "cfgScale": "Scala CFG",
+    "seed": "Seed",
+    "randomSeed": "Casuale",
+    "autoRandomizeSeed": "Randomizza automaticamente il seed dopo la generazione",
+    "onlineHint": "Ci vuole troppo tempo? Prova la nostra API online in Playground per una generazione più veloce con accelerazione GPU.",
+    "tryOnline": "Vai al Playground →",
+    "result": "Risultato",
+    "generatedImage": "Immagine generata",
+    "noResult": "Nessuna immagine generata ancora. Configura i parametri e clicca su Genera.",
+    "openInFolder": "Apri nella Cartella",
+    "selectModelFirst": "Seleziona un modello",
+    "downloadModelFirst": "Scarica prima il modello",
+    "downloadLlmFirst": "Scarica prima il modello LLM",
+    "downloadVaeFirst": "Scarica prima il modello VAE",
+    "settingUp": "Configurazione...",
+    "binaryNotAvailable": "Binario non disponibile",
+    "generationFailed": "Generazione fallita",
+    "invalidParameters": "Parametri non validi",
+    "noOutputYet": "Nessun output ancora",
+    "configureAndGenerate": "Configura i parametri e clicca su Genera per creare un'immagine",
+    "step": "Passaggio",
+    "of": "di",
+    "acceleration": "Accelerazione",
+    "modelStatus": "Stato del Modello",
+    "cacheStatus": "Stato della Cache",
+    "downloadError": "Errore di download",
+    "generationError": "Errore di generazione",
+    "configureParams": "Configura parametri di generazione",
+    "stepProgress": "Passaggio {{current}}/{{total}}",
+    "downloadModel": "Scarica Modello",
+    "deleteModel": "Elimina Modello",
+    "autoDownloadHint": "Sarà scaricato automaticamente durante la generazione ({{size}})",
+    "models": {
+      "q4k": {
+        "description": "Consigliato: Inferenza veloce con buona qualità, ~2,5 GB"
+      },
+      "q6k": {
+        "description": "Alta qualità: Migliori risultati, generazione più lenta, ~3,5 GB"
+      },
+      "q8": {
+        "description": "Qualità massima: Massima precisione, generazione più lenta, ~4 GB"
+      },
+      "q2k": {
+        "description": "Leggero: Generazione più veloce, qualità inferiore, ~1,5 GB"
+      }
+    },
+    "errors": {
+      "noModel": "Seleziona prima un modello",
+      "modelNotDownloaded": "Scarica prima il modello selezionato",
+      "llmNotDownloaded": "Scarica prima il modello LLM",
+      "vaeNotDownloaded": "Scarica prima il modello VAE",
+      "invalidParams": "Parametri non validi",
+      "generationFailed": "Generazione fallita",
+      "generationCancelled": "Download/Generazione annullato",
+      "downloadFailed": "Download fallito. Clicca su 'Genera Immagine' per riprovare.",
+      "deleteFailed": "Eliminazione fallita"
+    }
   },
   "settings": {
     "title": "Impostazioni",

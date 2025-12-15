@@ -39,6 +39,7 @@
     "history": "इतिहास",
     "templates": "टेम्पलेट",
     "assets": "मेरी संपत्तियां",
+    "zImage": "Z-Image",
     "freeTools": "मुफ्त उपकरण",
     "settings": "सेटिंग्स",
     "collapse": "संक्षिप्त करें"
@@ -68,6 +69,11 @@
       "assets": {
         "title": "मेरी संपत्तियां",
         "description": "अपने जनरेट किए गए आउटपुट को व्यवस्थित और प्रबंधित करें"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "स्थानीय AI छवि निर्माण - आपके डिवाइस पर चलता है, API की आवश्यकता नहीं",
+        "badge": "स्थानीय"
       },
       "freeTools": {
         "title": "मुफ्त उपकरण",
@@ -364,6 +370,100 @@
     "textPreviewUnavailable": "पाठ प्रीव्यू उपलब्ध नहीं। देखने के लिए फ़ाइल स्थान खोलें।",
     "loadPreviews": "प्रीव्यू लोड करें",
     "disablePreviews": "प्रीव्यू अक्षम करें"
+  },
+  "zImage": {
+    "title": "Z-Image",
+    "description": "स्थानीय AI छवि निर्माण (6B पैरामीटर मॉडल, आपके डिवाइस पर चलता है)",
+    "requiredModels": "आवश्यक मॉडल",
+    "requiredModelsDesc": "LLM और VAE मॉडल डाउनलोड करें (ब्राउज़र में कैश किया गया)",
+    "mainModel": "मुख्य मॉडल",
+    "mainModelDesc": "Z-Image-Turbo मॉडल चुनें",
+    "llmModel": "LLM मॉडल (Qwen3-4B, 2.4GB)",
+    "vaeModel": "VAE मॉडल (FLUX, 335MB)",
+    "downloaded": "डाउनलोड किया गया",
+    "download": "डाउनलोड",
+    "downloading": "डाउनलोड हो रहा है...",
+    "downloadProgress": "{{progress}}%",
+    "cancelDownload": "डाउनलोड रद्द करें",
+    "retryDownload": "डाउनलोड पुनः प्रयास करें",
+    "selectModel": "मॉडल चुनें",
+    "chooseModel": "एक मॉडल चुनें...",
+    "modelDescription": "मॉडल विवरण",
+    "generateImage": "छवि बनाएं",
+    "generating": "बना रहा है...",
+    "processing": "प्रोसेस हो रहा है...",
+    "downloadingSd": "SD डाउनलोड हो रहा है...",
+    "downloadingVae": "VAE डाउनलोड हो रहा है...",
+    "downloadingLlm": "LLM डाउनलोड हो रहा है...",
+    "downloadingZImage": "Z-Image डाउनलोड हो रहा है...",
+    "downloadingModel": "मॉडल डाउनलोड हो रहा है...",
+    "stopGeneration": "निर्माण रोकें",
+    "generationCancelled": "निर्माण रद्द किया गया",
+    "prompt": "प्रॉम्प्ट",
+    "promptPlaceholder": "पहाड़ों और झील के साथ एक सुंदर परिदृश्य",
+    "promptRequired": "प्रॉम्प्ट आवश्यक है",
+    "negativePrompt": "नकारात्मक प्रॉम्प्ट",
+    "negativePromptPlaceholder": "धुंधला, खराब गुणवत्ता",
+    "width": "चौड़ाई",
+    "height": "ऊंचाई",
+    "steps": "कदम",
+    "cfgScale": "CFG स्केल",
+    "seed": "सीड",
+    "randomSeed": "यादृच्छिक",
+    "autoRandomizeSeed": "निर्माण के बाद स्वचालित रूप से सीड यादृच्छिक करें",
+    "onlineHint": "बहुत समय लग रहा है? तेज़ GPU त्वरित निर्माण के लिए Playground में हमारे ऑनलाइन API का प्रयास करें।",
+    "tryOnline": "Playground पर जाएं →",
+    "result": "परिणाम",
+    "generatedImage": "बनाई गई छवि",
+    "noResult": "अभी तक कोई छवि नहीं बनाई गई। पैरामीटर कॉन्फ़िगर करें और बनाएं पर क्लिक करें।",
+    "openInFolder": "फ़ोल्डर में खोलें",
+    "selectModelFirst": "पहले एक मॉडल चुनें",
+    "downloadModelFirst": "पहले मॉडल डाउनलोड करें",
+    "downloadLlmFirst": "पहले LLM मॉडल डाउनलोड करें",
+    "downloadVaeFirst": "पहले VAE मॉडल डाउनलोड करें",
+    "settingUp": "सेटअप हो रहा है...",
+    "binaryNotAvailable": "बाइनरी उपलब्ध नहीं है",
+    "generationFailed": "निर्माण विफल",
+    "invalidParameters": "अमान्य पैरामीटर",
+    "noOutputYet": "अभी तक कोई आउटपुट नहीं",
+    "configureAndGenerate": "छवि बनाने के लिए पैरामीटर कॉन्फ़िगर करें और बनाएं पर क्लिक करें",
+    "step": "कदम",
+    "of": "का",
+    "acceleration": "त्वरण",
+    "modelStatus": "मॉडल स्थिति",
+    "cacheStatus": "कैश स्थिति",
+    "downloadError": "डाउनलोड त्रुटि",
+    "generationError": "निर्माण त्रुटि",
+    "configureParams": "निर्माण पैरामीटर कॉन्फ़िगर करें",
+    "stepProgress": "कदम {{current}}/{{total}}",
+    "downloadModel": "मॉडल डाउनलोड करें",
+    "deleteModel": "मॉडल हटाएं",
+    "autoDownloadHint": "निर्माण के दौरान स्वचालित रूप से डाउनलोड होगा ({{size}})",
+    "models": {
+      "q4k": {
+        "description": "अनुशंसित: अच्छी गुणवत्ता के साथ तेज़ अनुमान, ~2.5GB"
+      },
+      "q6k": {
+        "description": "उच्च गुणवत्ता: सर्वोत्तम परिणाम, धीमी निर्माण, ~3.5GB"
+      },
+      "q8": {
+        "description": "उच्चतम गुणवत्ता: अधिकतम सटीकता, धीमी निर्माण, ~4GB"
+      },
+      "q2k": {
+        "description": "हल्का: सबसे तेज़ निर्माण, कम गुणवत्ता, ~1.5GB"
+      }
+    },
+    "errors": {
+      "noModel": "कृपया पहले एक मॉडल चुनें",
+      "modelNotDownloaded": "कृपया पहले चयनित मॉडल डाउनलोड करें",
+      "llmNotDownloaded": "कृपया पहले LLM मॉडल डाउनलोड करें",
+      "vaeNotDownloaded": "कृपया पहले VAE मॉडल डाउनलोड करें",
+      "invalidParams": "अमान्य पैरामीटर",
+      "generationFailed": "निर्माण विफल",
+      "generationCancelled": "डाउनलोड/निर्माण रद्द किया गया",
+      "downloadFailed": "डाउनलोड विफल। पुनः प्रयास के लिए 'छवि बनाएं' पर क्लिक करें।",
+      "deleteFailed": "हटाना विफल"
+    }
   },
   "settings": {
     "title": "सेटिंग्स",

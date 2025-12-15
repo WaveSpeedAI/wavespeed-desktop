@@ -101,6 +101,24 @@ export function useZImage(options: UseZImageOptions = {}) {
               updateVaeStatus({ downloaded: true, downloading: false, progress: 100 })
             }
           }
+
+          // Update Binary status
+          if (downloadStatus.binary) {
+            const { progress, receivedBytes, totalBytes } = downloadStatus.binary
+            const detail = {
+              current: Math.round((receivedBytes / 1024 / 1024) * 100) / 100,
+              total: Math.round((totalBytes / 1024 / 1024) * 100) / 100,
+              unit: 'MB'
+            }
+            updateBinaryStatus({ downloading: true, downloaded: false, progress, detail })
+            optionsRef.current.onProgress?.('download-sd', progress, detail)
+          } else if (binaryStatus.downloading && !binaryStatus.downloaded) {
+            // No active download - check if file exists
+            const result = await window.electronAPI?.sdGetBinaryPath()
+            if (result?.success && result.path) {
+              updateBinaryStatus({ downloaded: true, downloading: false, progress: 100 })
+            }
+          }
         }
       } catch (error) {
         console.error('Failed to poll download status:', error)
@@ -127,25 +145,45 @@ export function useZImage(options: UseZImageOptions = {}) {
    * Download LLM model
    */
   const downloadLlm = useCallback(async () => {
-    updateLlmStatus({ downloaded: false, downloading: true, progress: 0, error: null })
-    optionsRef.current.onPhase?.('download-llm')
-
     try {
       if (!window.electronAPI?.sdDownloadAuxiliaryModel) {
         throw new Error('Electron API not available')
       }
 
+      // Check if file already exists before starting download
+      const checkResult = await window.electronAPI.sdCheckAuxiliaryModels()
+      if (checkResult.success && checkResult.llmExists) {
+        console.log('[useZImage] LLM already exists, skipping download')
+        updateLlmStatus({ downloaded: true, downloading: false, progress: 100, error: null })
+        optionsRef.current.onProgress?.('download-llm', 100, { current: 100, total: 100, unit: 'percent' })
+        return
+      }
+
+      // Start download
+      updateLlmStatus({ downloaded: false, downloading: true, progress: 0, error: null })
+      optionsRef.current.onPhase?.('download-llm')
+      console.log('[useZImage] Starting LLM download...')
+
       // Use Electron's download API (supports resume automatically)
-      // Progress updates are handled by IPC event listeners
+      // Progress updates are handled by polling in the useEffect above
       const result = await window.electronAPI.sdDownloadAuxiliaryModel('llm', MODELS.llm.url)
 
       if (!result.success) {
         throw new Error(result.error || 'Failed to download LLM model')
       }
 
-      // Download completed - status will be updated by IPC event listener when progress reaches 100%
+      // Download completed - verify file exists before marking as downloaded
+      const verifyResult = await window.electronAPI.sdCheckAuxiliaryModels()
+      if (!verifyResult.success || !verifyResult.llmExists) {
+        throw new Error('LLM download completed but file verification failed')
+      }
+
+      console.log('[useZImage] LLM download completed and verified successfully')
+      updateLlmStatus({ downloaded: true, downloading: false, progress: 100, error: null })
+      optionsRef.current.onProgress?.('download-llm', 100, { current: 100, total: 100, unit: 'percent' })
     } catch (error) {
       const errorMsg = (error as Error).message
+      console.error('[useZImage] LLM download failed:', errorMsg)
       updateLlmStatus({ downloaded: false, downloading: false, progress: 0, error: errorMsg })
       optionsRef.current.onError?.(errorMsg)
       throw error // Re-throw to stop the download chain
@@ -156,25 +194,45 @@ export function useZImage(options: UseZImageOptions = {}) {
    * Download VAE model
    */
   const downloadVae = useCallback(async () => {
-    updateVaeStatus({ downloaded: false, downloading: true, progress: 0, error: null })
-    optionsRef.current.onPhase?.('download-vae')
-
     try {
       if (!window.electronAPI?.sdDownloadAuxiliaryModel) {
         throw new Error('Electron API not available')
       }
 
+      // Check if file already exists before starting download
+      const checkResult = await window.electronAPI.sdCheckAuxiliaryModels()
+      if (checkResult.success && checkResult.vaeExists) {
+        console.log('[useZImage] VAE already exists, skipping download')
+        updateVaeStatus({ downloaded: true, downloading: false, progress: 100, error: null })
+        optionsRef.current.onProgress?.('download-vae', 100, { current: 100, total: 100, unit: 'percent' })
+        return
+      }
+
+      // Start download
+      updateVaeStatus({ downloaded: false, downloading: true, progress: 0, error: null })
+      optionsRef.current.onPhase?.('download-vae')
+      console.log('[useZImage] Starting VAE download...')
+
       // Use Electron's download API (supports resume automatically)
-      // Progress updates are handled by IPC event listeners
+      // Progress updates are handled by polling in the useEffect above
       const result = await window.electronAPI.sdDownloadAuxiliaryModel('vae', MODELS.vae.url)
 
       if (!result.success) {
         throw new Error(result.error || 'Failed to download VAE model')
       }
 
-      // Download completed - status will be updated by IPC event listener when progress reaches 100%
+      // Download completed - verify file exists before marking as downloaded
+      const verifyResult = await window.electronAPI.sdCheckAuxiliaryModels()
+      if (!verifyResult.success || !verifyResult.vaeExists) {
+        throw new Error('VAE download completed but file verification failed')
+      }
+
+      console.log('[useZImage] VAE download completed and verified successfully')
+      updateVaeStatus({ downloaded: true, downloading: false, progress: 100, error: null })
+      optionsRef.current.onProgress?.('download-vae', 100, { current: 100, total: 100, unit: 'percent' })
     } catch (error) {
       const errorMsg = (error as Error).message
+      console.error('[useZImage] VAE download failed:', errorMsg)
       updateVaeStatus({ downloaded: false, downloading: false, progress: 0, error: errorMsg })
       optionsRef.current.onError?.(errorMsg)
       throw error // Re-throw to stop the download chain
@@ -219,13 +277,25 @@ export function useZImage(options: UseZImageOptions = {}) {
    * Download SD binary
    */
   const downloadBinary = useCallback(async () => {
-    updateBinaryStatus({ downloaded: false, downloading: true, progress: 0, error: null })
-    optionsRef.current.onPhase?.('download-binary')
-
     try {
       if (!window.electronAPI?.sdDownloadBinary) {
         throw new Error('Electron API not available')
       }
+
+      // Check if file already exists before starting download
+      const checkResult = await window.electronAPI.sdGetBinaryPath()
+      if (checkResult.success && checkResult.path) {
+        console.log('[useZImage] SD Binary already exists, skipping download')
+        const detail = { current: 100, total: 100, unit: 'percent' }
+        updateBinaryStatus({ downloaded: true, downloading: false, progress: 100, error: null, detail })
+        optionsRef.current.onProgress?.('download-binary', 100, detail)
+        return
+      }
+
+      // Start download
+      updateBinaryStatus({ downloaded: false, downloading: true, progress: 0, error: null })
+      optionsRef.current.onPhase?.('download-binary')
+      console.log('[useZImage] Starting SD Binary download...')
 
       const result = await window.electronAPI.sdDownloadBinary()
 
@@ -233,12 +303,19 @@ export function useZImage(options: UseZImageOptions = {}) {
         throw new Error(result.error || 'Failed to download SD binary')
       }
 
-      // Update to 100% and notify parent
+      // Download completed - verify file exists before marking as downloaded
+      const verifyResult = await window.electronAPI.sdGetBinaryPath()
+      if (!verifyResult.success || !verifyResult.path) {
+        throw new Error('SD binary download completed but file verification failed')
+      }
+
+      console.log('[useZImage] SD Binary download completed and verified successfully')
       const detail = { current: 100, total: 100, unit: 'percent' }
       updateBinaryStatus({ downloaded: true, downloading: false, progress: 100, error: null, detail })
       optionsRef.current.onProgress?.('download-binary', 100, detail)
     } catch (error) {
       const errorMsg = (error as Error).message
+      console.error('[useZImage] SD Binary download failed:', errorMsg)
       updateBinaryStatus({ downloaded: false, downloading: false, progress: 0, error: errorMsg })
       optionsRef.current.onError?.(errorMsg)
       throw error // Re-throw to stop the download chain

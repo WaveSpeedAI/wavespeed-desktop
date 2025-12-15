@@ -3,7 +3,7 @@
 import { create } from 'zustand'
 import type { SDModel } from '@/types/stable-diffusion'
 import { PREDEFINED_MODELS } from '@/types/stable-diffusion'
-import { formatFileSize } from '@/lib/sdUtils'
+import { formatBytes } from '@/types/progress'
 
 interface AuxiliaryModelStatus {
   downloaded: boolean
@@ -511,6 +511,6 @@ export function useHasDownloadingModel(): boolean {
  * Helper function: Format model display information
  */
 export function formatModelDisplay(model: SDModel): string {
-  const sizeStr = formatFileSize(model.size)
+  const sizeStr = formatBytes(model.size)
   return `${model.displayName} (${model.quantization}, ${sizeStr})`
 }

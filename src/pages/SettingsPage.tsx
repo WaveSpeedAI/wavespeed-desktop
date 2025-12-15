@@ -33,7 +33,7 @@ interface CacheItem {
   cacheName: string
   url: string
   size: number
-  type?: 'browser' | 'sd-model' | 'sd-auxiliary' // browser: browser cache, sd-model: SD models, sd-auxiliary: LLM/VAE
+  type?: 'browser' | 'sd-model' | 'sd-auxiliary' | 'sd-binary' // browser: browser cache, sd-model: SD models, sd-auxiliary: LLM/VAE, sd-binary: SD binary
   modelType?: 'llm' | 'vae' // for sd-auxiliary models
 }
 
@@ -161,6 +161,28 @@ export function SettingsPage() {
         }
       }
 
+      // 4. Load SD binary
+      if (window.electronAPI?.sdGetBinaryPath) {
+        const result = await window.electronAPI.sdGetBinaryPath()
+        if (result.success && result.path) {
+          try {
+            // Use Node.js fs to get binary size
+            if (window.electronAPI?.getFileSize) {
+              const size = await window.electronAPI.getFileSize(result.path)
+              items.push({
+                cacheName: 'Z-Image Binary',
+                url: result.path,
+                size: size,
+                type: 'sd-binary'
+              })
+              totalSize += size
+            }
+          } catch (error) {
+            console.error('Failed to get SD binary size:', error)
+          }
+        }
+      }
+
       setCacheItems(items)
       setCacheSize(totalSize)
     } catch (error) {
@@ -217,6 +239,14 @@ export function SettingsPage() {
             throw new Error(result.error || 'Failed to delete model')
           }
         }
+      } else if (item.type === 'sd-binary') {
+        // Delete SD binary
+        if (window.electronAPI?.sdDeleteBinary) {
+          const result = await window.electronAPI.sdDeleteBinary()
+          if (!result.success) {
+            throw new Error(result.error || 'Failed to delete binary')
+          }
+        }
       }
 
       await loadCacheDetails()
@@ -239,8 +269,33 @@ export function SettingsPage() {
   const handleClearCache = useCallback(async () => {
     setIsClearingCache(true)
     try {
+      // 1. Clear browser caches
       const cacheNames = await caches.keys()
       await Promise.all(cacheNames.map((name) => caches.delete(name)))
+
+      // 2. Clear SD auxiliary models (LLM, VAE)
+      if (window.electronAPI?.sdDeleteAuxiliaryModel) {
+        await window.electronAPI.sdDeleteAuxiliaryModel('llm').catch(console.error)
+        await window.electronAPI.sdDeleteAuxiliaryModel('vae').catch(console.error)
+      }
+
+      // 3. Clear SD models
+      if (window.electronAPI?.sdListModels && window.electronAPI?.sdDeleteModel) {
+        const result = await window.electronAPI.sdListModels()
+        if (result.success && result.models) {
+          await Promise.all(
+            result.models.map((model) =>
+              window.electronAPI!.sdDeleteModel(model.path).catch(console.error)
+            )
+          )
+        }
+      }
+
+      // 4. Clear SD binary
+      if (window.electronAPI?.sdDeleteBinary) {
+        await window.electronAPI.sdDeleteBinary().catch(console.error)
+      }
+
       setCacheSize(0)
       setCacheItems([])
       setShowCacheDialog(false)
@@ -274,6 +329,9 @@ export function SettingsPage() {
       // Extract filename from path
       const filename = item.url.split(/[\\/]/).pop() || item.url
       return filename.replace('.gguf', '')
+    } else if (item.type === 'sd-binary') {
+      // SD binary
+      return 'stable-diffusion (SD Binary)'
     } else {
       // Browser cache
       try {

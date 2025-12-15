@@ -70,6 +70,37 @@ export interface UpdateCheckResult {
   message?: string
 }
 
+export interface SDGenerationParams {
+  modelPath: string
+  llmPath?: string
+  vaePath?: string
+  prompt: string
+  negativePrompt?: string
+  width: number
+  height: number
+  steps: number
+  cfgScale: number
+  seed?: number
+  outputPath: string
+}
+
+export interface SDProgressData {
+  phase: string
+  progress: number
+  detail?: {
+    current?: number
+    total?: number
+    unit?: 'bytes' | 'steps' | 'percent'
+  }
+}
+
+export interface SDModelInfo {
+  name: string
+  path: string
+  size: number
+  createdAt: string
+}
+
 export interface ElectronAPI {
   getApiKey: () => Promise<string>
   setApiKey: (apiKey: string) => Promise<boolean>
@@ -106,6 +137,23 @@ export interface ElectronAPI {
   openFileLocation: (filePath: string) => Promise<DeleteAssetResult>
   checkFileExists: (filePath: string) => Promise<boolean>
   openAssetsFolder: () => Promise<{ success: boolean; error?: string }>
+
+  // Stable Diffusion APIs
+  sdGetBinaryPath: () => Promise<{ success: boolean; path?: string; error?: string }>
+  sdDownloadBinary: () => Promise<{ success: boolean; path?: string; error?: string }>
+  sdCancelDownload: () => Promise<{ success: boolean; error?: string }>
+  sdCheckAuxiliaryModels: () => Promise<{ success: boolean; llmExists: boolean; vaeExists: boolean; llmPath: string; vaePath: string; error?: string }>
+  sdDownloadAuxiliaryModel: (type: 'llm' | 'vae', url: string) => Promise<{ success: boolean; filePath?: string; error?: string }>
+  sdGenerateImage: (params: SDGenerationParams) => Promise<{ success: boolean; outputPath?: string; error?: string }>
+  sdCancelGeneration: () => Promise<{ success: boolean; error?: string }>
+  sdSaveModelFromCache: (filename: string, data: Uint8Array, type: 'model' | 'llm' | 'vae') => Promise<{ success: boolean; filePath?: string; error?: string }>
+  sdDownloadModel: (url: string, destPath: string) => Promise<{ success: boolean; filePath?: string; error?: string }>
+  sdListModels: () => Promise<{ success: boolean; models?: SDModelInfo[]; error?: string }>
+  sdDeleteModel: (modelPath: string) => Promise<{ success: boolean; error?: string }>
+  sdGetSystemInfo: () => Promise<{ platform: string; acceleration: string; supported: boolean }>
+  onSdProgress: (callback: (data: SDProgressData) => void) => () => void
+  onSdDownloadProgress: (callback: (data: SDProgressData) => void) => () => void
+  onSdBinaryDownloadProgress: (callback: (data: SDProgressData) => void) => () => void
 }
 
 declare global {

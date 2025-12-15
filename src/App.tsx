@@ -8,6 +8,7 @@ import { HistoryPage } from '@/pages/HistoryPage'
 import { AssetsPage } from '@/pages/AssetsPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { FreeToolsPage } from '@/pages/FreeToolsPage'
+import { ZImagePage } from '@/pages/ZImagePage'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
 import { useModelsStore } from '@/stores/modelsStore'
 import { useThemeStore } from '@/stores/themeStore'
@@ -41,6 +42,7 @@ function App() {
         <Route path="templates" element={<TemplatesPage />} />
         <Route path="history" element={<HistoryPage />} />
         <Route path="assets" element={<AssetsPage />} />
+        <Route path="z-image" element={<ZImagePage />} />
         <Route path="free-tools" element={<FreeToolsPage />} />
         {/* Free tools pages are rendered persistently in Layout */}
         <Route path="free-tools/video" element={<PersistentPagePlaceholder />} />

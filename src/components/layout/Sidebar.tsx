@@ -60,6 +60,11 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage }: SidebarProps
       icon: FolderHeart
     },
     {
+      titleKey: 'nav.zImage',
+      href: '/z-image',
+      icon: Zap
+    },
+    {
       titleKey: 'nav.freeTools',
       href: '/free-tools',
       icon: Sparkles,

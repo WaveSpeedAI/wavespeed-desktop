@@ -123,7 +123,63 @@ const electronAPI = {
     ipcRenderer.invoke('open-file-location', filePath),
   checkFileExists: (filePath: string): Promise<boolean> => ipcRenderer.invoke('check-file-exists', filePath),
   openAssetsFolder: (): Promise<{ success: boolean; error?: string }> =>
-    ipcRenderer.invoke('open-assets-folder')
+    ipcRenderer.invoke('open-assets-folder'),
+
+  // Stable Diffusion APIs
+  sdGetBinaryPath: (): Promise<{ success: boolean; path?: string; error?: string }> =>
+    ipcRenderer.invoke('sd-get-binary-path'),
+  sdDownloadBinary: (): Promise<{ success: boolean; path?: string; error?: string }> =>
+    ipcRenderer.invoke('sd-download-binary'),
+  sdCancelDownload: (): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke('sd-cancel-download'),
+  sdGetSystemInfo: (): Promise<{ platform: string; acceleration: string; supported: boolean }> =>
+    ipcRenderer.invoke('sd-get-system-info'),
+  sdCheckAuxiliaryModels: (): Promise<{ success: boolean; llmExists: boolean; vaeExists: boolean; llmPath: string; vaePath: string; error?: string }> =>
+    ipcRenderer.invoke('sd-check-auxiliary-models'),
+  sdDownloadAuxiliaryModel: (type: 'llm' | 'vae', url: string): Promise<{ success: boolean; filePath?: string; error?: string }> =>
+    ipcRenderer.invoke('sd-download-auxiliary-model', type, url),
+  sdGenerateImage: (params: {
+    modelPath: string
+    llmPath?: string
+    vaePath?: string
+    prompt: string
+    negativePrompt?: string
+    width: number
+    height: number
+    steps: number
+    cfgScale: number
+    seed?: number
+    outputPath: string
+  }): Promise<{ success: boolean; outputPath?: string; error?: string }> =>
+    ipcRenderer.invoke('sd-generate-image', params),
+  sdCancelGeneration: (): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke('sd-cancel-generation'),
+  sdSaveModelFromCache: (filename: string, data: Uint8Array, type: 'model' | 'llm' | 'vae'): Promise<{ success: boolean; filePath?: string; error?: string }> =>
+    ipcRenderer.invoke('sd-save-model-from-cache', filename, data, type),
+  sdDownloadModel: (url: string, destPath: string): Promise<{ success: boolean; filePath?: string; error?: string }> =>
+    ipcRenderer.invoke('sd-download-model', url, destPath),
+  sdListModels: (): Promise<{
+    success: boolean
+    models?: Array<{ name: string; path: string; size: number; createdAt: string }>
+    error?: string
+  }> => ipcRenderer.invoke('sd-list-models'),
+  sdDeleteModel: (modelPath: string): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke('sd-delete-model', modelPath),
+  onSdProgress: (callback: (data: { phase: string; progress: number; detail?: unknown }) => void): (() => void) => {
+    const handler = (_: unknown, data: unknown) => callback(data as { phase: string; progress: number; detail?: unknown })
+    ipcRenderer.on('sd-progress', handler)
+    return () => ipcRenderer.removeListener('sd-progress', handler)
+  },
+  onSdDownloadProgress: (callback: (data: { phase: string; progress: number; detail?: unknown }) => void): (() => void) => {
+    const handler = (_: unknown, data: unknown) => callback(data as { phase: string; progress: number; detail?: unknown })
+    ipcRenderer.on('sd-download-progress', handler)
+    return () => ipcRenderer.removeListener('sd-download-progress', handler)
+  },
+  onSdBinaryDownloadProgress: (callback: (data: { phase: string; progress: number; detail?: unknown }) => void): (() => void) => {
+    const handler = (_: unknown, data: unknown) => callback(data as { phase: string; progress: number; detail?: unknown })
+    ipcRenderer.on('sd-binary-download-progress', handler)
+    return () => ipcRenderer.removeListener('sd-binary-download-progress', handler)
+  }
 }
 
 if (process.contextIsolated) {

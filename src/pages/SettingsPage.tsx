@@ -57,6 +57,11 @@ export function SettingsPage() {
   const [showKey, setShowKey] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
+  // Sync inputKey when apiKey loads from storage
+  useEffect(() => {
+    setInputKey(apiKey)
+  }, [apiKey])
+
   // Balance state
   const [balance, setBalance] = useState<number | null>(null)
   const [isLoadingBalance, setIsLoadingBalance] = useState(false)

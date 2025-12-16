@@ -51,11 +51,16 @@ export function Layout() {
     })
   }, [])
 
-  const { isValidated, loadApiKey, hasAttemptedLoad, isLoading: isLoadingApiKey } = useApiKeyStore()
+  const { isValidated, isValidating, loadApiKey, hasAttemptedLoad, isLoading: isLoadingApiKey } = useApiKeyStore()
   const [inputKey, setInputKey] = useState('')
   const [showKey, setShowKey] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState('')
+
+  // Load API key on app startup
+  useEffect(() => {
+    loadApiKey()
+  }, [loadApiKey])
 
   // Reset login form when API key is cleared
   useEffect(() => {
@@ -149,8 +154,8 @@ export function Layout() {
   }
 
   // Check if current page requires login (must have a validated API key)
-  // Only show login form after we've attempted to load the API key and finished loading
-  const requiresLogin = !isValidated && !isPublicPage && hasAttemptedLoad && !isLoadingApiKey
+  // Only show login form after we've attempted to load the API key and finished loading/validating
+  const requiresLogin = !isValidated && !isPublicPage && hasAttemptedLoad && !isLoadingApiKey && !isValidating
 
   // Login form content for protected pages
   const loginContent = (

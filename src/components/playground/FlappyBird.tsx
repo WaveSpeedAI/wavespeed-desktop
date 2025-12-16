@@ -33,9 +33,11 @@ interface Pipe {
 
 type GameState = 'idle' | 'playing' | 'gameover'
 
-const GRAVITY = 0.4
+// Physics values calibrated for 60fps, scaled by delta time
+const TARGET_FPS = 60
+const GRAVITY = 0.4 * TARGET_FPS
 const JUMP_STRENGTH = -7
-const PIPE_SPEED = 3
+const PIPE_SPEED = 3 * TARGET_FPS
 const PIPE_GAP = 140
 const PIPE_WIDTH = 52
 const PIPE_SPACING = 200
@@ -169,6 +171,7 @@ export function FlappyBird({ onGameStart, onGameEnd, onGameQuit, isTaskRunning, 
   const scoreRef = useRef(0)
   const flapTimeRef = useRef(0) // Track when last flap happened
   const scrollOffsetRef = useRef(0) // Track background scroll
+  const lastFrameTimeRef = useRef(0) // Track last frame time for delta time
 
   const resetGame = useCallback(() => {
     birdRef.current = {
@@ -474,7 +477,15 @@ export function FlappyBird({ onGameStart, onGameEnd, onGameQuit, isTaskRunning, 
     // Disable image smoothing for crisp pixels
     ctx.imageSmoothingEnabled = false
 
-    const gameLoop = () => {
+    const gameLoop = (timestamp: number) => {
+      // Initialize timestamp on first frame
+      if (lastFrameTimeRef.current === 0) {
+        lastFrameTimeRef.current = timestamp
+      }
+      // Calculate delta time (capped to prevent huge jumps)
+      const deltaTime = Math.min((timestamp - lastFrameTimeRef.current) / 1000, 0.1)
+      lastFrameTimeRef.current = timestamp
+
       const bird = birdRef.current
       const pipes = pipesRef.current
       const currentGameState = gameStateRef.current
@@ -482,15 +493,15 @@ export function FlappyBird({ onGameStart, onGameEnd, onGameQuit, isTaskRunning, 
 
       // Update scroll offset when playing
       if (currentGameState === 'playing') {
-        scrollOffsetRef.current += PIPE_SPEED
+        scrollOffsetRef.current += PIPE_SPEED * deltaTime
       }
 
       // Draw background (with parallax scrolling)
       drawBackground(ctx, canvas.width, canvas.height, isDark, scrollOffsetRef.current)
 
       if (currentGameState === 'playing') {
-        // Update bird
-        bird.velocity += GRAVITY
+        // Update bird with delta time
+        bird.velocity += GRAVITY * deltaTime
         bird.y += bird.velocity
 
         // Generate pipes
@@ -503,9 +514,9 @@ export function FlappyBird({ onGameStart, onGameEnd, onGameQuit, isTaskRunning, 
 
         let gameEnded = false
 
-        // Update pipes
+        // Update pipes with delta time
         for (let i = pipes.length - 1; i >= 0; i--) {
-          pipes[i].x -= PIPE_SPEED
+          pipes[i].x -= PIPE_SPEED * deltaTime
 
           if (pipes[i].x + PIPE_WIDTH < 0) {
             pipes.splice(i, 1)
@@ -644,10 +655,9 @@ export function FlappyBird({ onGameStart, onGameEnd, onGameQuit, isTaskRunning, 
       {/* Idle state overlay - blends into background */}
       {gameState === 'idle' && (
         <div
-          className="absolute inset-0 flex flex-col items-center justify-center cursor-pointer"
-          onClick={handleCanvasClick}
+          className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
         >
-          <div className="text-center space-y-2 pointer-events-none" style={{ marginTop: '-30px' }}>
+          <div className="text-center space-y-2" style={{ marginTop: '-30px' }}>
             {isTaskRunning && (
               <div className="flex items-center justify-center gap-2 mb-4">
                 <span className="relative flex h-3 w-3">

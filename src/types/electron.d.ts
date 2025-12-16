@@ -140,17 +140,12 @@ export interface ElectronAPI {
 
   // Stable Diffusion APIs
   sdGetBinaryPath: () => Promise<{ success: boolean; path?: string; error?: string }>
-  sdDownloadBinary: () => Promise<{ success: boolean; path?: string; error?: string }>
-  sdCancelDownload: () => Promise<{ success: boolean; error?: string }>
   sdCheckAuxiliaryModels: () => Promise<{ success: boolean; llmExists: boolean; vaeExists: boolean; llmPath: string; vaePath: string; error?: string }>
-  sdGetDownloadStatus: () => Promise<{ llm: { progress: number; receivedBytes: number; totalBytes: number } | null; vae: { progress: number; receivedBytes: number; totalBytes: number } | null; binary: { progress: number; receivedBytes: number; totalBytes: number } | null }>
   sdListAuxiliaryModels: () => Promise<{ success: boolean; models?: Array<{ name: string; path: string; size: number; type: 'llm' | 'vae' }>; error?: string }>
   sdDeleteAuxiliaryModel: (type: 'llm' | 'vae') => Promise<{ success: boolean; error?: string }>
-  sdDownloadAuxiliaryModel: (type: 'llm' | 'vae', url: string) => Promise<{ success: boolean; filePath?: string; error?: string }>
   sdGenerateImage: (params: SDGenerationParams) => Promise<{ success: boolean; outputPath?: string; error?: string }>
   sdCancelGeneration: () => Promise<{ success: boolean; error?: string }>
   sdSaveModelFromCache: (filename: string, data: Uint8Array, type: 'model' | 'llm' | 'vae') => Promise<{ success: boolean; filePath?: string; error?: string }>
-  sdDownloadModel: (url: string, destPath: string) => Promise<{ success: boolean; filePath?: string; error?: string }>
   sdListModels: () => Promise<{ success: boolean; models?: SDModelInfo[]; error?: string }>
   sdDeleteModel: (modelPath: string) => Promise<{ success: boolean; error?: string }>
   sdGetBinaryPath: () => Promise<{ success: boolean; path?: string; error?: string }>
@@ -163,6 +158,17 @@ export interface ElectronAPI {
   onSdBinaryDownloadProgress: (callback: (data: SDProgressData) => void) => () => void
   onSdLlmDownloadProgress: (callback: (data: SDProgressData) => void) => () => void
   onSdVaeDownloadProgress: (callback: (data: SDProgressData) => void) => () => void
+
+  // File operations for chunked downloads
+  fileGetSize: (filePath: string) => Promise<{ success: boolean; size?: number; error?: string }>
+  fileAppendChunk: (filePath: string, chunk: ArrayBuffer) => Promise<{ success: boolean; error?: string }>
+  fileRename: (oldPath: string, newPath: string) => Promise<{ success: boolean; error?: string }>
+  fileDelete: (filePath: string) => Promise<{ success: boolean; error?: string }>
+
+  // SD download path helpers for chunked downloads
+  sdGetBinaryDownloadPath: () => Promise<{ success: boolean; path?: string; error?: string }>
+  sdGetAuxiliaryModelDownloadPath: (type: 'llm' | 'vae') => Promise<{ success: boolean; path?: string; error?: string }>
+  sdGetModelsDir: () => Promise<{ success: boolean; path?: string; error?: string }>
 }
 
 declare global {

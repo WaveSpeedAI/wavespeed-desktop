@@ -7,8 +7,6 @@ import { spawn, execSync } from 'child_process'
 import https from 'https'
 import http from 'http'
 import { pathToFileURL } from 'url'
-import AdmZip from 'adm-zip'
-import { Downloader } from './lib/Downloader'
 import { SDGenerator } from './lib/sdGenerator'
 
 // Linux-specific flags
@@ -22,15 +20,10 @@ const userDataPath = app.getPath('userData')
 const settingsPath = join(userDataPath, 'settings.json')
 
 // Global instances for SD operations
-const downloader = new Downloader()
 const sdGenerator = new SDGenerator()
 
 // Global reference to active SD generation process (deprecated - using sdGenerator)
 let activeSDProcess: ReturnType<typeof spawn> | null = null
-
-// Global reference to active SD binary download
-let activeSDDownloadItem: Electron.DownloadItem | null = null
-let sdBinaryCancelled = false // Flag to track if SD binary download was cancelled
 
 interface Settings {
   apiKey: string
@@ -462,6 +455,68 @@ ipcMain.handle('open-file-location', async (_, filePath: string) => {
   return { success: false, error: 'File not found' }
 })
 
+/**
+ * File operations for chunked downloads from Worker/Renderer
+ */
+ipcMain.handle('file-get-size', (_, filePath: string) => {
+  try {
+    if (existsSync(filePath)) {
+      return { success: true, size: statSync(filePath).size }
+    }
+    return { success: true, size: 0 }
+  } catch (error) {
+    return { success: false, error: (error as Error).message }
+  }
+})
+
+ipcMain.handle('file-append-chunk', (_, filePath: string, chunk: ArrayBuffer) => {
+  try {
+    const dir = dirname(filePath)
+    if (!existsSync(dir)) {
+      mkdirSync(dir, { recursive: true })
+    }
+
+    const buffer = Buffer.from(chunk)
+
+    // Append to file (create if not exists)
+    if (existsSync(filePath)) {
+      const fd = require('fs').openSync(filePath, 'a')
+      require('fs').writeSync(fd, buffer)
+      require('fs').closeSync(fd)
+    } else {
+      writeFileSync(filePath, buffer)
+    }
+
+    return { success: true }
+  } catch (error) {
+    return { success: false, error: (error as Error).message }
+  }
+})
+
+ipcMain.handle('file-rename', (_, oldPath: string, newPath: string) => {
+  try {
+    if (existsSync(oldPath)) {
+      require('fs').renameSync(oldPath, newPath)
+      return { success: true }
+    }
+    return { success: false, error: 'File not found' }
+  } catch (error) {
+    return { success: false, error: (error as Error).message }
+  }
+})
+
+ipcMain.handle('file-delete', (_, filePath: string) => {
+  try {
+    if (existsSync(filePath)) {
+      unlinkSync(filePath)
+      return { success: true }
+    }
+    return { success: true } // Already deleted
+  } catch (error) {
+    return { success: false, error: (error as Error).message }
+  }
+})
+
 ipcMain.handle('check-file-exists', (_, filePath: string) => {
   return existsSync(filePath)
 })
@@ -477,6 +532,71 @@ ipcMain.handle('open-assets-folder', async () => {
 
   const result = await shell.openPath(assetsDir)
   return { success: !result, error: result || undefined }
+})
+
+// SD download path helpers for chunked downloads
+ipcMain.handle('sd-get-binary-download-path', () => {
+  try {
+    const platform = process.platform
+    const arch = process.arch
+    let binaryName = 'sd'
+
+    if (platform === 'win32') {
+      binaryName = 'sd.exe'
+    } else if (platform === 'darwin') {
+      // Check for Metal support
+      const metalSupported = checkMetalSupport()
+      binaryName = metalSupported ? 'sd-metal' : 'sd'
+    }
+
+    const binaryDir = join(app.getPath('userData'), 'sd-bin')
+    const binaryPath = join(binaryDir, binaryName)
+
+    // Ensure directory exists
+    if (!existsSync(binaryDir)) {
+      mkdirSync(binaryDir, { recursive: true })
+    }
+
+    return { success: true, path: binaryPath }
+  } catch (error) {
+    return { success: false, error: (error as Error).message }
+  }
+})
+
+ipcMain.handle('sd-get-auxiliary-model-download-path', (_, type: 'llm' | 'vae') => {
+  try {
+    const auxDir = getAuxiliaryModelsDir()
+
+    // Ensure directory exists
+    if (!existsSync(auxDir)) {
+      mkdirSync(auxDir, { recursive: true })
+    }
+
+    const filename = type === 'llm'
+      ? 'Qwen3-4B-Instruct-2507-UD-Q4_K_XL.gguf'
+      : 'ae.safetensors'
+
+    const filePath = join(auxDir, filename)
+
+    return { success: true, path: filePath }
+  } catch (error) {
+    return { success: false, error: (error as Error).message }
+  }
+})
+
+ipcMain.handle('sd-get-models-dir', () => {
+  try {
+    const modelsDir = getModelsDir()
+
+    // Ensure directory exists
+    if (!existsSync(modelsDir)) {
+      mkdirSync(modelsDir, { recursive: true })
+    }
+
+    return { success: true, path: modelsDir }
+  } catch (error) {
+    return { success: false, error: (error as Error).message }
+  }
 })
 
 // Auto-updater state
@@ -809,41 +929,6 @@ ipcMain.handle('sd-generate-image', async (event, params: {
 })
 
 /**
- * download model with retry logic and resume support
- */
-ipcMain.handle('sd-download-model', async (event, url: string, destPath: string) => {
-  console.log(`\n======================================`)
-  console.log(`[SD Model Download] *** HANDLER CALLED ***`)
-  console.log(`[SD Model Download] URL: ${url}`)
-  console.log(`[SD Model Download] Dest: ${destPath}`)
-  console.log(`======================================\n`)
-
-  // Use Downloader class for model downloads
-  const MIN_VALID_SIZE = 500 * 1024 * 1024 // 500MB (Z-Image models are >= 1.5GB)
-
-  const result = await downloader.download({
-    url,
-    destPath,
-    minValidSize: MIN_VALID_SIZE,
-    maxRetries: 3,
-    timeout: 30000,
-    onProgress: (progress) => {
-      // Send progress updates to renderer
-      if (mainWindow) {
-        mainWindow.webContents.send('sd-download-progress', {
-          phase: 'download-model',
-          progress: progress.progress,
-          detail: progress.detail
-        })
-      }
-    }
-  })
-
-  return result
-})
-
-
-/**
  * list models
  */
 ipcMain.handle('sd-list-models', () => {
@@ -936,19 +1021,6 @@ function getAuxiliaryModelsDir(): string {
   return join(assetsDir, '../models/stable-diffusion/auxiliary')
 }
 
-// Global download state tracking
-const activeDownloads: {
-  llm?: { progress: number; receivedBytes: number; totalBytes: number }
-  vae?: { progress: number; receivedBytes: number; totalBytes: number }
-  binary?: { progress: number; receivedBytes: number; totalBytes: number }
-} = {}
-
-// Track active HTTP requests for cancellation
-const activeRequests: {
-  llm?: { request: any; cancelled: boolean; fileStream?: any }
-  vae?: { request: any; cancelled: boolean; fileStream?: any }
-  model?: { request: any; cancelled: boolean; fileStream?: any }
-} = {}
 
 /**
  * Check if auxiliary models exist
@@ -971,17 +1043,6 @@ ipcMain.handle('sd-check-auxiliary-models', () => {
       success: false,
       error: (error as Error).message
     }
-  }
-})
-
-/**
- * Get current download status for auxiliary models and binary
- */
-ipcMain.handle('sd-get-download-status', () => {
-  return {
-    llm: activeDownloads.llm || null,
-    vae: activeDownloads.vae || null,
-    binary: activeDownloads.binary || null
   }
 })
 
@@ -1055,424 +1116,7 @@ ipcMain.handle('sd-delete-auxiliary-model', (_, type: 'llm' | 'vae') => {
   }
 })
 
-/**
- * Download auxiliary model (LLM or VAE) with resume support using HTTP Range requests
- */
-ipcMain.handle('sd-download-auxiliary-model', async (event, type: 'llm' | 'vae', url: string) => {
-  try {
-    const auxDir = getAuxiliaryModelsDir()
-    if (!existsSync(auxDir)) {
-      mkdirSync(auxDir, { recursive: true })
-    }
 
-    const fileName = type === 'llm'
-      ? 'Qwen3-4B-Instruct-2507-UD-Q4_K_XL.gguf'
-      : 'ae.safetensors'
-    const destPath = join(auxDir, fileName)
-    const expectedSize = type === 'llm' ? 2400000000 : 335000000 // LLM: 2.4GB, VAE: 335MB
-
-    console.log(`[Auxiliary Download] ${type} downloading to: ${destPath}`)
-    console.log(`[Auxiliary Download] ${type} expected size: ${Math.round(expectedSize / 1024 / 1024)}MB`)
-
-    // Use Downloader class for auxiliary model downloads
-    const result = await downloader.download({
-      url,
-      destPath,
-      minValidSize: expectedSize * 0.95, // Allow 5% tolerance
-      maxRetries: 3,
-      timeout: 30000,
-      onProgress: (progress) => {
-        // Update global download state for polling
-        if (type === 'llm') {
-          activeDownloads.llm = {
-            progress: progress.progress,
-            receivedBytes: progress.receivedBytes,
-            totalBytes: progress.totalBytes
-          }
-        } else if (type === 'vae') {
-          activeDownloads.vae = {
-            progress: progress.progress,
-            receivedBytes: progress.receivedBytes,
-            totalBytes: progress.totalBytes
-          }
-        }
-
-        // Broadcast progress to ALL windows
-        BrowserWindow.getAllWindows().forEach((win) => {
-          win.webContents.send(`sd-${type}-download-progress`, {
-            phase: `download-${type}`,
-            progress: progress.progress,
-            detail: progress.detail
-          })
-        })
-      }
-    })
-
-    // Clear download state after completion (success or failure)
-    if (type === 'llm') {
-      delete activeDownloads.llm
-    } else if (type === 'vae') {
-      delete activeDownloads.vae
-    }
-
-    return result
-  } catch (error) {
-    console.error(`[Auxiliary Download] ${type} error:`, error)
-    // Clear download state on error
-    if (type === 'llm') {
-      delete activeDownloads.llm
-    } else if (type === 'vae') {
-      delete activeDownloads.vae
-    }
-    return {
-      success: false,
-      error: (error as Error).message
-    }
-  }
-})
-
-/**
- * Download and install stable-diffusion binary
- */
-ipcMain.handle('sd-download-binary', async (event) => {
-  const RELEASE_TAG = 'master-417-43a70e8'
-  const SHORT_VERSION = '43a70e8'
-  const macOSVersion = '15.7.2' // Fixed version as only 15.7.2 is available
-
-  // Reset cancel flag at start of download
-  sdBinaryCancelled = false
-
-  try {
-    const platform = process.platform
-    const arch = process.arch
-
-    // Determine download URL based on platform
-    let downloadUrl = ''
-
-    if (platform === 'darwin') {
-      // macOS: Check for Metal support and download appropriate build
-      const hasMetalSupport = checkMetalSupport()
-
-      if (hasMetalSupport) {
-        // Use Metal-enabled build for Macs with Metal support
-        console.log('[SD Download] Using Metal-enabled build for macOS')
-        downloadUrl = 'https://d1q70pf5vjeyhc.wavespeed.ai/media/archives/1765804301239005334_mKJRPNLJ.zip'
-      } else {
-        // Use CPU-only build from GitHub releases for older Macs
-        console.log('[SD Download] Metal not supported, using CPU-only build for macOS')
-        downloadUrl = `https://github.com/leejet/stable-diffusion.cpp/releases/download/${RELEASE_TAG}/sd-master-${SHORT_VERSION}-bin-macOS-x64.zip`
-      }
-    } else {
-      // Windows/Linux: Use official GitHub releases
-      let platformStr = ''
-      if (platform === 'win32' && arch === 'x64') {
-        platformStr = 'Windows-x64'
-      } else if (platform === 'linux' && arch === 'x64') {
-        platformStr = 'Ubuntu-x64'
-      } else {
-        return {
-          success: false,
-          error: `Unsupported platform: ${platform}-${arch}`
-        }
-      }
-      downloadUrl = `https://github.com/leejet/stable-diffusion.cpp/releases/download/${RELEASE_TAG}/sd-master-${SHORT_VERSION}-bin-${platformStr}.zip`
-    }
-
-    // Determine binary directory
-    const basePath = is.dev
-      ? join(__dirname, '../../resources/bin/stable-diffusion')
-      : join(process.resourcesPath, 'bin/stable-diffusion')
-
-    const binaryDir = join(basePath, `${platform}-${arch}`)
-    const binaryName = platform === 'win32' ? 'sd.exe' : 'sd'
-    const binaryPath = join(binaryDir, binaryName)
-    const zipPath = join(binaryDir, 'sd.zip')
-
-    // Check if binary already exists
-    if (existsSync(binaryPath)) {
-      console.log('[SD Download] Binary already exists, skipping download')
-      return {
-        success: true,
-        path: binaryPath
-      }
-    }
-
-    // Create directory
-    if (!existsSync(binaryDir)) {
-      mkdirSync(binaryDir, { recursive: true })
-    }
-
-    // Use Electron's session download for more reliable large file downloads
-    console.log('[SD Download] Downloading from:', downloadUrl)
-
-    return new Promise((resolve) => {
-      // Start download using Electron's session API
-      event.sender.downloadURL(downloadUrl)
-
-      let currentDownloadItem: Electron.DownloadItem | null = null
-
-      // Listen for download start
-      event.sender.session.once('will-download', (_, item) => {
-        currentDownloadItem = item
-        activeSDDownloadItem = item
-
-        // Set save path
-        item.setSavePath(zipPath)
-
-        // Track progress
-        item.on('updated', (_, state) => {
-          if (state === 'progressing') {
-            if (!item.isPaused()) {
-              const receivedBytes = item.getReceivedBytes()
-              const totalBytes = item.getTotalBytes()
-              const progress = totalBytes > 0 ? Math.round((receivedBytes / totalBytes) * 100) : 0
-
-              console.log(`[SD Download] Progress: ${receivedBytes} / ${totalBytes} bytes (${progress}%)`)
-
-              // Update global download state for polling
-              activeDownloads.binary = { progress, receivedBytes, totalBytes }
-
-              event.sender.send('sd-binary-download-progress', {
-                phase: 'download',
-                progress,
-                detail: { current: receivedBytes, total: totalBytes, unit: 'bytes' }
-              })
-            }
-          }
-        })
-
-        // Handle completion
-        item.once('done', async (_, state) => {
-          activeSDDownloadItem = null
-          currentDownloadItem = null
-
-          if (state === 'completed') {
-            console.log('[SD Download] Download completed')
-
-            // CRITICAL: Check if download was cancelled during completion
-            if (sdBinaryCancelled) {
-              console.log('[SD Download] Download was cancelled, NOT extracting')
-              // Clean up zip file
-              if (existsSync(zipPath)) {
-                unlinkSync(zipPath)
-              }
-              // Clear download state
-              delete activeDownloads.binary
-              resolve({
-                success: false,
-                error: 'Download cancelled'
-              })
-              return
-            }
-
-            // Send 100% download progress first
-            event.sender.send('sd-binary-download-progress', {
-              phase: 'download',
-              progress: 100,
-              detail: {
-                current: item.getTotalBytes(),
-                total: item.getTotalBytes(),
-                unit: 'bytes'
-              }
-            })
-
-            // Extract zip
-            event.sender.send('sd-binary-download-progress', {
-              phase: 'extract',
-              progress: 95,
-              detail: {}
-            })
-
-            // CRITICAL: Check if cancelled before extraction
-            if (sdBinaryCancelled) {
-              console.log('[SD Download] Download was cancelled before extraction, aborting')
-              // Clean up zip file
-              if (existsSync(zipPath)) {
-                unlinkSync(zipPath)
-              }
-              // Clear download state
-              delete activeDownloads.binary
-              resolve({
-                success: false,
-                error: 'Download cancelled'
-              })
-              return
-            }
-
-            try {
-              const zip = new AdmZip(zipPath)
-              zip.extractAllTo(binaryDir, true)
-              console.log('[SD Download] Extraction completed')
-
-              // CRITICAL: Check if cancelled after extraction
-              if (sdBinaryCancelled) {
-                console.log('[SD Download] Download was cancelled during extraction, cleaning up')
-                // Clean up extracted files
-                if (existsSync(binaryDir)) {
-                  const { rmSync } = require('fs')
-                  rmSync(binaryDir, { recursive: true, force: true })
-                }
-                // Clean up zip file
-                if (existsSync(zipPath)) {
-                  unlinkSync(zipPath)
-                }
-                // Clear download state
-                delete activeDownloads.binary
-                resolve({
-                  success: false,
-                  error: 'Download cancelled'
-                })
-                return
-              }
-            } catch (error) {
-              // Clean up
-              if (existsSync(zipPath)) {
-                unlinkSync(zipPath)
-              }
-              // Clear download state
-              delete activeDownloads.binary
-              resolve({
-                success: false,
-                error: `Failed to extract binary: ${(error as Error).message}`
-              })
-              return
-            }
-
-            // Set executable permissions (Unix-like systems)
-            const binaryName = platform === 'win32' ? 'sd.exe' : 'sd'
-            const binaryPath = join(binaryDir, binaryName)
-
-            if (existsSync(binaryPath) && platform !== 'win32') {
-              try {
-                chmodSync(binaryPath, 0o755) // rwxr-xr-x
-              } catch (error) {
-                // Non-fatal, continue
-                console.warn('Failed to set executable permissions:', error)
-              }
-
-              // Remove macOS quarantine attribute to prevent security warning
-              if (platform === 'darwin') {
-                try {
-                  execSync(`xattr -d com.apple.quarantine "${binaryPath}" 2>/dev/null || true`, { stdio: 'ignore' })
-                  // Also remove quarantine from the dylib if it exists
-                  const dylibPath = join(binaryDir, 'libstable-diffusion.dylib')
-                  if (existsSync(dylibPath)) {
-                    execSync(`xattr -d com.apple.quarantine "${dylibPath}" 2>/dev/null || true`, { stdio: 'ignore' })
-                  }
-
-                  // Fix dylib rpath for macOS to use @executable_path
-                  try {
-                    execSync(`cd "${binaryDir}" && install_name_tool -add_rpath @executable_path "${binaryPath}" 2>/dev/null || true`, { stdio: 'ignore' })
-                  } catch (error) {
-                    // Non-fatal, continue
-                    console.warn('Failed to fix dylib rpath:', error)
-                  }
-                } catch (error) {
-                  // Non-fatal, continue
-                  console.warn('Failed to remove quarantine attribute:', error)
-                }
-              }
-            }
-
-            // Clean up zip file
-            if (existsSync(zipPath)) {
-              unlinkSync(zipPath)
-            }
-
-            // Verify binary exists
-            if (!existsSync(binaryPath)) {
-              resolve({
-                success: false,
-                error: `Binary not found after extraction: ${binaryPath}`
-              })
-              return
-            }
-
-            event.sender.send('sd-binary-download-progress', {
-              phase: 'complete',
-              progress: 100,
-              detail: {}
-            })
-
-            console.log('[SD Download] Installation completed')
-
-            // Clear download state
-            delete activeDownloads.binary
-
-            resolve({
-              success: true,
-              path: binaryPath
-            })
-          } else if (state === 'cancelled') {
-            console.log('[SD Download] Download cancelled')
-            // Clean up partial download
-            if (existsSync(zipPath)) {
-              unlinkSync(zipPath)
-            }
-            // Clear download state
-            delete activeDownloads.binary
-            resolve({
-              success: false,
-              error: 'Download cancelled'
-            })
-          } else {
-            console.log('[SD Download] Download failed:', state)
-            // Clean up partial download
-            if (existsSync(zipPath)) {
-              unlinkSync(zipPath)
-            }
-            // Clear download state
-            delete activeDownloads.binary
-            resolve({
-              success: false,
-              error: `Download ${state}`
-            })
-          }
-        })
-      })
-    })
-  } catch (error) {
-    return {
-      success: false,
-      error: (error as Error).message
-    }
-  }
-})
-
-/**
- * Cancel SD binary download and auxiliary models download
- */
-ipcMain.handle('sd-cancel-download', async () => {
-  try {
-    console.log('[SD Download] Cancelling all downloads')
-
-    // Cancel SD binary download (legacy Electron downloader)
-    if (activeSDDownloadItem && !activeSDDownloadItem.isPaused()) {
-      console.log('[SD Download] Cancelling binary download (Electron downloader)')
-      sdBinaryCancelled = true
-      activeSDDownloadItem.cancel()
-      activeSDDownloadItem = null
-    }
-
-    // Cancel all Downloader class downloads (model, LLM, VAE)
-    downloader.cancelAll()
-
-    // Clear legacy activeRequests and activeDownloads
-    delete activeRequests.llm
-    delete activeRequests.vae
-    delete activeRequests.model
-    delete activeDownloads.llm
-    delete activeDownloads.vae
-    delete activeDownloads.binary
-
-    return { success: true, cancelled: true }
-  } catch (error) {
-    return {
-      success: false,
-      error: (error as Error).message
-    }
-  }
-})
 
 /**
  * Cancel SD image generation

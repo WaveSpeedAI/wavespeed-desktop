@@ -3,18 +3,14 @@
 import { create } from 'zustand'
 import type { SDModel } from '@/types/stable-diffusion'
 import { PREDEFINED_MODELS } from '@/types/stable-diffusion'
-import { formatBytes } from '@/types/progress'
+import { formatBytes, type ProgressDetail } from '@/types/progress'
 
 interface AuxiliaryModelStatus {
   downloaded: boolean
   downloading: boolean
   progress: number
   error: string | null
-  detail?: {
-    current?: number
-    total?: number
-    unit?: string
-  }
+  detail?: ProgressDetail
 }
 
 export interface SDLogEntry {
@@ -45,8 +41,6 @@ interface SDModelsState {
 
   // Actions
   fetchModels: () => Promise<void>
-  downloadModel: (modelId: string) => Promise<void>
-  deleteModel: (modelId: string) => Promise<void>
   selectModel: (modelId: string) => void
   importCustomModel: (filePath: string) => Promise<void>
   setError: (error: string | null) => void
@@ -144,163 +138,6 @@ export const useSDModelsStore = create<SDModelsState>((set, get) => ({
         error: (error as Error).message,
         isLoading: false
       })
-    }
-  },
-
-  /**
-   * Download model
-   */
-  downloadModel: async (modelId: string) => {
-    const model = get().models.find((m) => m.id === modelId)
-
-    if (!model) {
-      set({ error: 'Model does not exist' })
-      return
-    }
-
-    if (model.isDownloaded) {
-      set({ error: 'Model already downloaded' })
-      return
-    }
-
-    if (model.isDownloading) {
-      set({ error: 'Model is currently downloading' })
-      return
-    }
-
-    // Mark as downloading and clear any previous failure
-    set((state) => ({
-      models: state.models.map((m) =>
-        m.id === modelId
-          ? { ...m, isDownloading: true, downloadProgress: 0, downloadFailed: false }
-          : m
-      ),
-      error: null
-    }))
-
-    try {
-      if (!window.electronAPI?.sdDownloadModel) {
-        throw new Error('Electron API not available')
-      }
-
-      // Get default assets directory
-      const assetsDir = await window.electronAPI.getDefaultAssetsDirectory()
-      const modelsDir = `${assetsDir}/../models/stable-diffusion`
-      const destPath = `${modelsDir}/${model.name}`
-
-      console.log(`[Frontend] Starting download for model: ${model.name}`)
-      console.log(`[Frontend] Download URL: ${model.downloadUrl}`)
-      console.log(`[Frontend] Destination path: ${destPath}`)
-
-      // Listen to download progress
-      const removeListener = window.electronAPI.onSdDownloadProgress((data) => {
-        console.log(`[Frontend] Download progress: ${data.progress}%`, data)
-        set((state) => ({
-          models: state.models.map((m) =>
-            m.id === modelId ? { ...m, downloadProgress: data.progress } : m
-          )
-        }))
-      })
-
-      // Start download
-      console.log(`[Frontend] Calling sdDownloadModel...`)
-      const result = await window.electronAPI.sdDownloadModel(
-        model.downloadUrl,
-        destPath
-      )
-      console.log(`[Frontend] Download result:`, result)
-
-      // Remove progress listener
-      removeListener()
-
-      if (!result.success) {
-        throw new Error(result.error || 'Download failed')
-      }
-
-      // Update model state
-      set((state) => ({
-        models: state.models.map((m) =>
-          m.id === modelId
-            ? {
-                ...m,
-                isDownloaded: true,
-                isDownloading: false,
-                downloadProgress: 100,
-                localPath: result.filePath
-              }
-            : m
-        )
-      }))
-
-      // If this is the first downloaded model, auto-select it
-      if (!get().selectedModelId || get().selectedModelId === modelId) {
-        set({ selectedModelId: modelId })
-      }
-    } catch (error) {
-      console.error('Failed to download model:', error)
-
-      // Mark download as failed
-      set((state) => ({
-        models: state.models.map((m) =>
-          m.id === modelId
-            ? { ...m, isDownloading: false, downloadProgress: 0, downloadFailed: true }
-            : m
-        ),
-        error: `Download failed: ${(error as Error).message}`
-      }))
-    }
-  },
-
-  /**
-   * Delete model
-   */
-  deleteModel: async (modelId: string) => {
-    const model = get().models.find((m) => m.id === modelId)
-
-    if (!model) {
-      set({ error: 'Model does not exist' })
-      return
-    }
-
-    if (!model.isDownloaded || !model.localPath) {
-      set({ error: 'Model not downloaded' })
-      return
-    }
-
-    try {
-      if (!window.electronAPI?.sdDeleteModel) {
-        throw new Error('Electron API not available')
-      }
-
-      const result = await window.electronAPI.sdDeleteModel(model.localPath)
-
-      if (!result.success) {
-        throw new Error(result.error || 'Delete failed')
-      }
-
-      // Update model state
-      set((state) => ({
-        models: state.models.map((m) =>
-          m.id === modelId
-            ? {
-                ...m,
-                isDownloaded: false,
-                localPath: undefined,
-                downloadProgress: 0
-              }
-            : m
-        )
-      }))
-
-      // If deleted model was selected, clear selection
-      if (get().selectedModelId === modelId) {
-        // Try to select first downloaded model
-        const firstDownloaded = get().models.find((m) => m.isDownloaded)
-        set({ selectedModelId: firstDownloaded?.id || null })
-      }
-    } catch (error) {
-      console.error('Failed to delete model:', error)
-      set({ error: `Delete failed: ${(error as Error).message}` })
     }
   },
 

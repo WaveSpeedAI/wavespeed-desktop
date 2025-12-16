@@ -128,22 +128,14 @@ const electronAPI = {
   // Stable Diffusion APIs
   sdGetBinaryPath: (): Promise<{ success: boolean; path?: string; error?: string }> =>
     ipcRenderer.invoke('sd-get-binary-path'),
-  sdDownloadBinary: (): Promise<{ success: boolean; path?: string; error?: string }> =>
-    ipcRenderer.invoke('sd-download-binary'),
-  sdCancelDownload: (): Promise<{ success: boolean; error?: string }> =>
-    ipcRenderer.invoke('sd-cancel-download'),
   sdGetSystemInfo: (): Promise<{ platform: string; acceleration: string; supported: boolean }> =>
     ipcRenderer.invoke('sd-get-system-info'),
   sdCheckAuxiliaryModels: (): Promise<{ success: boolean; llmExists: boolean; vaeExists: boolean; llmPath: string; vaePath: string; error?: string }> =>
     ipcRenderer.invoke('sd-check-auxiliary-models'),
-  sdGetDownloadStatus: (): Promise<{ llm: { progress: number; receivedBytes: number; totalBytes: number } | null; vae: { progress: number; receivedBytes: number; totalBytes: number } | null; binary: { progress: number; receivedBytes: number; totalBytes: number } | null }> =>
-    ipcRenderer.invoke('sd-get-download-status'),
   sdListAuxiliaryModels: (): Promise<{ success: boolean; models?: Array<{ name: string; path: string; size: number; type: 'llm' | 'vae' }>; error?: string }> =>
     ipcRenderer.invoke('sd-list-auxiliary-models'),
   sdDeleteAuxiliaryModel: (type: 'llm' | 'vae'): Promise<{ success: boolean; error?: string }> =>
     ipcRenderer.invoke('sd-delete-auxiliary-model', type),
-  sdDownloadAuxiliaryModel: (type: 'llm' | 'vae', url: string): Promise<{ success: boolean; filePath?: string; error?: string }> =>
-    ipcRenderer.invoke('sd-download-auxiliary-model', type, url),
   sdGenerateImage: (params: {
     modelPath: string
     llmPath?: string
@@ -162,8 +154,6 @@ const electronAPI = {
     ipcRenderer.invoke('sd-cancel-generation'),
   sdSaveModelFromCache: (filename: string, data: Uint8Array, type: 'model' | 'llm' | 'vae'): Promise<{ success: boolean; filePath?: string; error?: string }> =>
     ipcRenderer.invoke('sd-save-model-from-cache', filename, data, type),
-  sdDownloadModel: (url: string, destPath: string): Promise<{ success: boolean; filePath?: string; error?: string }> =>
-    ipcRenderer.invoke('sd-download-model', url, destPath),
   sdListModels: (): Promise<{
     success: boolean
     models?: Array<{ name: string; path: string; size: number; createdAt: string }>
@@ -204,7 +194,25 @@ const electronAPI = {
     const handler = (_: unknown, data: unknown) => callback(data as { phase: string; progress: number; detail?: unknown })
     ipcRenderer.on('sd-vae-download-progress', handler)
     return () => ipcRenderer.removeListener('sd-vae-download-progress', handler)
-  }
+  },
+
+  // File operations for chunked downloads
+  fileGetSize: (filePath: string): Promise<{ success: boolean; size?: number; error?: string }> =>
+    ipcRenderer.invoke('file-get-size', filePath),
+  fileAppendChunk: (filePath: string, chunk: ArrayBuffer): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke('file-append-chunk', filePath, chunk),
+  fileRename: (oldPath: string, newPath: string): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke('file-rename', oldPath, newPath),
+  fileDelete: (filePath: string): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke('file-delete', filePath),
+
+  // SD download path helpers for chunked downloads
+  sdGetBinaryDownloadPath: (): Promise<{ success: boolean; path?: string; error?: string }> =>
+    ipcRenderer.invoke('sd-get-binary-download-path'),
+  sdGetAuxiliaryModelDownloadPath: (type: 'llm' | 'vae'): Promise<{ success: boolean; path?: string; error?: string }> =>
+    ipcRenderer.invoke('sd-get-auxiliary-model-download-path', type),
+  sdGetModelsDir: (): Promise<{ success: boolean; path?: string; error?: string }> =>
+    ipcRenderer.invoke('sd-get-models-dir')
 }
 
 if (process.contextIsolated) {

@@ -1,6 +1,6 @@
 // Z-Image: Local AI Image Generation
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeft, Zap, Download, AlertCircle, Check } from 'lucide-react'
@@ -18,6 +18,7 @@ import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
 import { formatBytes } from '@/types/progress'
 import { LogConsole } from '@/components/shared/LogConsole'
 import type { ValidationResult } from '@/types/stable-diffusion'
+import { ChunkedDownloader } from '@/lib/chunkedDownloader'
 
 // Local utility functions (moved from sdUtils.ts)
 function validateGenerationParams(params: {
@@ -119,7 +120,6 @@ export function ZImagePage() {
   const [autoRandomizeSeed, setAutoRandomizeSeed] = useState(true) // Default to true
   const [isCancelled, setIsCancelled] = useState(false)
   const [showOnlineHint, setShowOnlineHint] = useState(false)
-  const progressListenerRef = useRef<(() => void) | null>(null)
   const hasSetDefaultSteps = useRef(false) // Track if default steps have been set
   const generationStartTimeRef = useRef<number>(0)
   const onlineHintTimerRef = useRef<NodeJS.Timeout | null>(null)
@@ -163,14 +163,17 @@ export function ZImagePage() {
     },
     onProgress: (phase, prog, detail) => {
       // Only update phase progress, store is already updated by useEffect in useZImage
+      // Type assertion: detail from useZImage is already ProgressDetail
+      const progressDetail = detail as { current?: number; total?: number; unit?: 'bytes' | 'frames' | 'percent' | 'steps' | 'seconds' } | undefined
+
       if (phase === 'download-binary') {
-        updatePhase('download-sd', prog, detail)
+        updatePhase('download-sd', prog, progressDetail)
       } else if (phase === 'download-vae') {
-        updatePhase('download-vae', prog, detail)
+        updatePhase('download-vae', prog, progressDetail)
       } else if (phase === 'download-llm') {
-        updatePhase('download-llm', prog, detail)
+        updatePhase('download-llm', prog, progressDetail)
       } else {
-        updatePhase(phase, prog, detail)
+        updatePhase(phase, prog, progressDetail)
       }
     },
     onError: (err) => setError(err)
@@ -267,16 +270,16 @@ export function ZImagePage() {
         // Restore current downloading phase (only if actively downloading with progress)
         if (binaryStatus.downloading && !binaryStatus.downloaded && binaryStatus.progress > 0) {
           console.log('[ZImagePage] Restoring SD binary download phase')
-          updatePhase('download-sd', binaryStatus.progress, binaryStatus.detail || {})
+          updatePhase('download-sd', binaryStatus.progress, binaryStatus.detail)
         } else if (vaeStatus.downloading && !vaeStatus.downloaded && vaeStatus.progress > 0) {
           console.log('[ZImagePage] Restoring VAE download phase')
-          updatePhase('download-vae', vaeStatus.progress, vaeStatus.detail || {})
+          updatePhase('download-vae', vaeStatus.progress, vaeStatus.detail)
         } else if (llmStatus.downloading && !llmStatus.downloaded && llmStatus.progress > 0) {
           console.log('[ZImagePage] Restoring LLM download phase')
-          updatePhase('download-llm', llmStatus.progress, llmStatus.detail || {})
+          updatePhase('download-llm', llmStatus.progress, llmStatus.detail)
         } else if (modelDownloadStatus.downloading && !modelDownloadStatus.downloaded && modelDownloadStatus.progress > 0) {
           console.log('[ZImagePage] Restoring model download phase')
-          updatePhase('download-model', modelDownloadStatus.progress, modelDownloadStatus.detail || {})
+          updatePhase('download-model', modelDownloadStatus.progress, modelDownloadStatus.detail)
         } else if (!hasActiveDownloadWithProgress) {
           // All downloads are completed, must be in generation phase
           console.log('[ZImagePage] All downloads completed, entering generation phase')
@@ -293,85 +296,6 @@ export function ZImagePage() {
   }, [])
 
   // Note: Polling removed - useZImage hook now handles all progress updates via its own polling mechanism
-
-  // Download model file with Browser Cache API (consistent with imageEraser)
-  const downloadModelFile = useCallback(async (
-    url: string,
-    filename: string,
-    onProgress?: (percent: number, loaded: number, total: number) => void
-  ): Promise<Blob> => {
-    const cache = await caches.open('zimage-models-cache')
-    const cachedResponse = await cache.match(url)
-
-    if (cachedResponse) {
-      const blob = await cachedResponse.blob()
-      onProgress?.(100, blob.size, blob.size)
-      return blob
-    }
-
-    // Download with retry logic for large files
-    let lastError: Error | null = null
-    const maxRetries = 5
-
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        const response = await fetch(url, {
-          headers: {
-            'Origin': window.location.origin
-          }
-        })
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-        }
-
-        const contentLength = parseInt(response.headers.get('content-length') || '0')
-        const reader = response.body?.getReader()
-
-        if (!reader) {
-          throw new Error('Response body is not readable')
-        }
-
-        const chunks: Uint8Array[] = []
-        let receivedLength = 0
-
-        while (true) {
-          const { done, value } = await reader.read()
-          if (done) break
-
-          chunks.push(value)
-          receivedLength += value.length
-
-          const progressPercent = contentLength > 0 ? Math.round((receivedLength / contentLength) * 100) : 0
-          onProgress?.(progressPercent, receivedLength, contentLength)
-        }
-
-        // Combine chunks into blob
-        const blob = new Blob(chunks)
-
-        // Cache the response
-        try {
-          await cache.put(url, new Response(blob))
-        } catch (cacheError) {
-          console.warn('Failed to cache model:', cacheError)
-        }
-
-        return blob
-
-      } catch (error) {
-        lastError = error as Error
-        console.warn(`Download attempt ${attempt}/${maxRetries} failed:`, lastError.message)
-
-        // Wait before retry with exponential backoff
-        if (attempt < maxRetries) {
-          const delay = Math.pow(2, attempt) * 1000 // 2s, 4s, 8s, 16s
-          await new Promise(resolve => setTimeout(resolve, delay))
-        }
-      }
-    }
-
-    throw lastError || new Error('Download failed after all retries')
-  }, [])
 
   // Handle generation with auto-download
   const handleGenerate = async () => {
@@ -508,45 +432,42 @@ export function ZImagePage() {
       if (!selectedModel.isDownloaded) {
         startPhase('download-model')
 
-        // Use Electron IPC download with resume support (instead of browser fetch)
-        if (!window.electronAPI?.sdDownloadModel) {
-          throw new Error('Electron API not available')
-        }
-
-        console.log(`[ZImagePage] Starting model download via Electron IPC`)
+        console.log(`[ZImagePage] Starting model download via ChunkedDownloader`)
         console.log(`[ZImagePage] Model: ${selectedModel.name}`)
         console.log(`[ZImagePage] URL: ${selectedModel.downloadUrl}`)
 
         // Get destination path
-        const assetsDir = await window.electronAPI.getDefaultAssetsDirectory()
-        const modelsDir = `${assetsDir}/../models/stable-diffusion`
-        const destPath = `${modelsDir}/${selectedModel.name}`
+        const modelsResult = await window.electronAPI?.sdGetModelsDir()
+        if (!modelsResult?.success || !modelsResult.path) {
+          throw new Error('Failed to get models directory')
+        }
 
+        const destPath = `${modelsResult.path}/${selectedModel.name}`
         console.log(`[ZImagePage] Destination: ${destPath}`)
 
         // Mark model download as in progress in store
         updateModelDownloadStatus({ downloading: true, downloaded: false, progress: 0, error: null })
 
-        // Listen to download progress
-        progressListenerRef.current = window.electronAPI.onSdDownloadProgress((data) => {
-          console.log(`[ZImagePage] Download progress: ${data.progress}%`, data)
-          const detail = data.detail ? {
-            current: Math.round((data.detail.current as number) / 1024 / 1024 * 100) / 100,
-            total: Math.round((data.detail.total as number) / 1024 / 1024 * 100) / 100,
-            unit: 'MB'
-          } : undefined
-
-          // Update both UI phase and store status
-          updatePhase('download-model', data.progress, detail)
-          updateModelDownloadStatus({ downloading: true, progress: data.progress, detail })
-        })
-
         try {
-          // Download via Electron (supports resume)
-          const result = await window.electronAPI.sdDownloadModel(
-            selectedModel.downloadUrl,
-            destPath
-          )
+          // Download via ChunkedDownloader
+          const downloader = new ChunkedDownloader()
+          const result = await downloader.download({
+            url: selectedModel.downloadUrl,
+            destPath,
+            onProgress: (progress) => {
+              console.log(`[ZImagePage] Download progress: ${progress.progress}%`)
+
+              // Update both UI phase and store status
+              updatePhase('download-model', progress.progress, progress.detail)
+              updateModelDownloadStatus({
+                downloading: true,
+                progress: progress.progress,
+                detail: progress.detail
+              })
+            },
+            chunkSize: 10 * 1024 * 1024, // 10MB chunks
+            minValidSize: 500 * 1024 * 1024 // At least 500MB
+          })
 
           console.log(`[ZImagePage] Download result:`, result)
 
@@ -570,12 +491,15 @@ export function ZImagePage() {
           console.log(`[ZImagePage] Fetching models to update state...`)
           await fetchModels()
           console.log(`[ZImagePage] Models fetched`)
-        } finally {
-          // Always remove progress listener
-          if (progressListenerRef.current) {
-            progressListenerRef.current()
-            progressListenerRef.current = null
-          }
+        } catch (downloadError) {
+          // Mark download as failed in store
+          updateModelDownloadStatus({
+            downloading: false,
+            downloaded: false,
+            progress: 0,
+            error: (downloadError as Error).message
+          })
+          throw downloadError
         }
 
         if (isCancelled) throw new Error('Cancelled')
@@ -742,24 +666,8 @@ export function ZImagePage() {
     updateLlmStatus({ downloading: false, progress: 0, detail: undefined })
     updateModelDownloadStatus({ downloading: false, progress: 0, detail: undefined })
 
-    // Remove model download progress listener
-    if (progressListenerRef.current) {
-      console.log('[ZImagePage] Removing model download progress listener')
-      progressListenerRef.current()
-      progressListenerRef.current = null
-    }
-
-    // Cancel any ongoing downloads (browser-side)
+    // Cancel any ongoing downloads
     cancelDownload()
-
-    // Cancel SD binary download (Electron-side)
-    if (window.electronAPI?.sdCancelDownload) {
-      try {
-        await window.electronAPI.sdCancelDownload()
-      } catch (err) {
-        console.error('Failed to cancel SD download:', err)
-      }
-    }
 
     // Cancel image generation
     if (window.electronAPI?.sdCancelGeneration) {

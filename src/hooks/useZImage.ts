@@ -221,20 +221,37 @@ export function useZImage(options: UseZImageOptions = {}) {
 
       const { platform, acceleration } = systemInfo
 
+      console.log(`[useZImage] System info - Platform: ${platform}, Acceleration: ${acceleration}`)
+
       // Determine download URL based on platform and acceleration
       let url = ''
-      const baseUrl = 'https://github.com/leejet/stable-diffusion.cpp/releases/download/master-e731000'
+      const githubBaseUrl = 'https://github.com/leejet/stable-diffusion.cpp/releases/download/master-418-200cb6f'
 
       if (platform === 'win32') {
-        url = `${baseUrl}/sd-master-e731000-bin-win-avx2.zip`
+        // Windows: Use CUDA version if available, otherwise AVX2
+        if (acceleration === 'CUDA') {
+          console.log('[useZImage] CUDA detected! Using CUDA version')
+          url = `${githubBaseUrl}/sd-master-200cb6f-bin-win-cuda12-x64.zip`
+        } else {
+          console.log('[useZImage] CUDA not detected, using AVX2 version')
+          url = `${githubBaseUrl}/sd-master-200cb6f-bin-win-avx2-x64.zip`
+        }
       } else if (platform === 'darwin') {
-        url = acceleration === 'metal'
-          ? `${baseUrl}/sd-master-e731000-bin-macos-arm64.zip`
-          : `${baseUrl}/sd-master-e731000-bin-macos-x64.zip`
+        if (acceleration === 'metal') {
+          // Metal-enabled Mac: Use wavespeed CDN
+          console.log('[useZImage] Metal detected! Using wavespeed CDN')
+          url = 'https://d1q70pf5vjeyhc.wavespeed.ai/media/archives/1765804301239005334_mKJRPNLJ.zip'
+        } else {
+          // Non-Metal Mac (CPU): Use wavespeed CDN
+          console.log('[useZImage] Metal not detected, using wavespeed CDN (CPU version)')
+          url = 'https://d1q70pf5vjeyhc.wavespeed.ai/media/archives/1765906291556700257_Hlfdbjhf.zip'
+        }
       } else {
         // Linux
-        url = `${baseUrl}/sd-master-e731000-bin-ubuntu-x64.zip`
+        url = `${githubBaseUrl}/sd-master-200cb6f-bin-ubuntu-x64.zip`
       }
+
+      console.log(`[useZImage] Download URL: ${url}`)
 
       // Start download
       updateBinaryStatus({ downloaded: false, downloading: true, progress: 0, error: null })
@@ -245,9 +262,10 @@ export function useZImage(options: UseZImageOptions = {}) {
       const downloader = new ChunkedDownloader()
       downloadersRef.current.binary = downloader
 
+      const zipPath = pathResult.path + '.zip'
       const result = await downloader.download({
         url,
-        destPath: pathResult.path + '.zip', // Download as zip first
+        destPath: zipPath,
         onProgress: (progress) => {
           updateBinaryStatus({ downloading: true, downloaded: false, progress: progress.progress, detail: progress.detail })
           optionsRef.current.onProgress?.('download-binary', progress.progress, progress.detail)
@@ -263,9 +281,15 @@ export function useZImage(options: UseZImageOptions = {}) {
         throw new Error(result.error || 'Failed to download SD binary')
       }
 
-      // TODO: Extract zip file and move binary to final location
-      // For now, just mark as downloaded
-      console.log('[useZImage] SD Binary download completed and verified successfully')
+      console.log('[useZImage] Download completed, extracting zip file...')
+
+      // Extract zip file
+      const extractResult = await window.electronAPI?.sdExtractBinary(zipPath, pathResult.path)
+      if (!extractResult?.success) {
+        throw new Error(extractResult?.error || 'Failed to extract SD binary')
+      }
+
+      console.log('[useZImage] SD Binary extracted and verified successfully')
       const detail: ProgressDetail = { current: 100, total: 100, unit: 'percent' }
       updateBinaryStatus({ downloaded: true, downloading: false, progress: 100, error: null, detail })
       optionsRef.current.onProgress?.('download-binary', 100, detail)
@@ -298,10 +322,8 @@ export function useZImage(options: UseZImageOptions = {}) {
         throw new Error('Failed to check models')
       }
 
-      // Generate output path
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-      const assetsDir = await window.electronAPI.getDefaultAssetsDirectory()
-      const outputPath = `${assetsDir}/zimage_${timestamp}.png`
+      // Generate output path using electron API to ensure correct path separators on all platforms
+      const outputPath = await window.electronAPI.getZImageOutputPath()
 
       const result = await window.electronAPI.sdGenerateImage({
         ...params,

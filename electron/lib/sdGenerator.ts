@@ -24,6 +24,8 @@ export interface GenerationOptions {
   steps: number
   cfgScale: number
   seed?: number
+  samplingMethod?: string
+  scheduler?: string
   outputPath: string
   onProgress?: (progress: GenerationProgress) => void
   onLog?: (log: LogMessage) => void
@@ -69,6 +71,8 @@ export class SDGenerator {
       steps,
       cfgScale,
       seed,
+      samplingMethod,
+      scheduler,
       outputPath,
       onProgress,
       onLog
@@ -130,6 +134,14 @@ export class SDGenerator {
 
     if (seed !== undefined) {
       args.push('--seed', seed.toString())
+    }
+
+    if (samplingMethod) {
+      args.push('--sampling-method', samplingMethod)
+    }
+
+    if (scheduler) {
+      args.push('--scheduler', scheduler)
     }
 
     console.log('[SDGenerator] Spawning SD process:', binaryPath)

@@ -118,6 +118,8 @@ export interface ElectronAPI {
 
   // Auto-updater APIs
   getAppVersion: () => Promise<string>
+  getLogFilePath: () => Promise<string>
+  openLogDirectory: () => Promise<{ success: boolean; path: string }>
   checkForUpdates: () => Promise<UpdateCheckResult>
   downloadUpdate: () => Promise<{ status: string; message?: string }>
   installUpdate: () => void
@@ -128,6 +130,7 @@ export interface ElectronAPI {
   getAssetsSettings: () => Promise<AssetsSettings>
   setAssetsSettings: (settings: Partial<AssetsSettings>) => Promise<boolean>
   getDefaultAssetsDirectory: () => Promise<string>
+  getZImageOutputPath: () => Promise<string>
   selectDirectory: () => Promise<SelectDirectoryResult>
   saveAsset: (url: string, type: string, fileName: string, subDir: string) => Promise<SaveAssetResult>
   deleteAsset: (filePath: string) => Promise<DeleteAssetResult>
@@ -169,6 +172,7 @@ export interface ElectronAPI {
   sdGetBinaryDownloadPath: () => Promise<{ success: boolean; path?: string; error?: string }>
   sdGetAuxiliaryModelDownloadPath: (type: 'llm' | 'vae') => Promise<{ success: boolean; path?: string; error?: string }>
   sdGetModelsDir: () => Promise<{ success: boolean; path?: string; error?: string }>
+  sdExtractBinary: (zipPath: string, destPath: string) => Promise<{ success: boolean; path?: string; error?: string }>
 }
 
 declare global {

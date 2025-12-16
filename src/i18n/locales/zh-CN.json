@@ -408,6 +408,8 @@
     "height": "高度",
     "steps": "步数",
     "cfgScale": "CFG 比例",
+    "samplingMethod": "采样方法",
+    "scheduler": "调度器",
     "seed": "种子",
     "randomSeed": "随机",
     "autoRandomizeSeed": "生成后自动随机化种子",

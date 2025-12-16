@@ -92,6 +92,9 @@ const electronAPI = {
 
   // Auto-updater APIs
   getAppVersion: (): Promise<string> => ipcRenderer.invoke('get-app-version'),
+  getLogFilePath: (): Promise<string> => ipcRenderer.invoke('get-log-file-path'),
+  openLogDirectory: (): Promise<{ success: boolean; path: string }> =>
+    ipcRenderer.invoke('open-log-directory'),
   checkForUpdates: (): Promise<UpdateCheckResult> => ipcRenderer.invoke('check-for-updates'),
   downloadUpdate: (): Promise<{ status: string; message?: string }> => ipcRenderer.invoke('download-update'),
   installUpdate: (): void => {
@@ -110,6 +113,7 @@ const electronAPI = {
   setAssetsSettings: (settings: Partial<AssetsSettings>): Promise<boolean> =>
     ipcRenderer.invoke('set-assets-settings', settings),
   getDefaultAssetsDirectory: (): Promise<string> => ipcRenderer.invoke('get-default-assets-directory'),
+  getZImageOutputPath: (): Promise<string> => ipcRenderer.invoke('get-zimage-output-path'),
   selectDirectory: (): Promise<SelectDirectoryResult> => ipcRenderer.invoke('select-directory'),
   saveAsset: (url: string, type: string, fileName: string, subDir: string): Promise<SaveAssetResult> =>
     ipcRenderer.invoke('save-asset', url, type, fileName, subDir),
@@ -212,7 +216,9 @@ const electronAPI = {
   sdGetAuxiliaryModelDownloadPath: (type: 'llm' | 'vae'): Promise<{ success: boolean; path?: string; error?: string }> =>
     ipcRenderer.invoke('sd-get-auxiliary-model-download-path', type),
   sdGetModelsDir: (): Promise<{ success: boolean; path?: string; error?: string }> =>
-    ipcRenderer.invoke('sd-get-models-dir')
+    ipcRenderer.invoke('sd-get-models-dir'),
+  sdExtractBinary: (zipPath: string, destPath: string): Promise<{ success: boolean; path?: string; error?: string }> =>
+    ipcRenderer.invoke('sd-extract-binary', zipPath, destPath)
 }
 
 if (process.contextIsolated) {

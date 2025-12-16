@@ -31,6 +31,37 @@ export interface SDModel {
 }
 
 /**
+ * Sampling methods
+ */
+export type SamplingMethod =
+  | 'euler'
+  | 'euler_a'
+  | 'heun'
+  | 'dpm2'
+  | 'dpm++2s_a'
+  | 'dpm++2m'
+  | 'dpm++2mv2'
+  | 'ipndm'
+  | 'ipndm_v'
+  | 'lcm'
+  | 'ddim_trailing'
+  | 'tcd'
+
+/**
+ * Scheduler types
+ */
+export type Scheduler =
+  | 'discrete'
+  | 'karras'
+  | 'exponential'
+  | 'ays'
+  | 'gits'
+  | 'smoothstep'
+  | 'sgm_uniform'
+  | 'simple'
+  | 'lcm'
+
+/**
  * Image generation parameters
  */
 export interface GenerationParams {
@@ -54,6 +85,10 @@ export interface GenerationParams {
   cfgScale: number
   /** Random seed (optional, for reproducibility) */
   seed?: number
+  /** Sampling method */
+  samplingMethod?: SamplingMethod
+  /** Scheduler */
+  scheduler?: Scheduler
   /** Output path */
   outputPath: string
 }

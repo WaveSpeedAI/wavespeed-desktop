@@ -408,6 +408,8 @@
     "height": "Height",
     "steps": "Steps",
     "cfgScale": "CFG Scale",
+    "samplingMethod": "Sampling Method",
+    "scheduler": "Scheduler",
     "seed": "Seed",
     "randomSeed": "Random",
     "autoRandomizeSeed": "Auto-randomize seed after generation",

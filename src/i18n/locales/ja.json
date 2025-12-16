@@ -408,6 +408,8 @@
     "height": "高さ",
     "steps": "ステップ数",
     "cfgScale": "CFGスケール",
+    "samplingMethod": "サンプリング方法",
+    "scheduler": "スケジューラー",
     "seed": "シード",
     "randomSeed": "ランダム",
     "autoRandomizeSeed": "生成後に自動的にシードをランダム化",

@@ -1,6 +1,7 @@
 import { app, BrowserWindow, shell, ipcMain, dialog, Menu, clipboard, protocol, net } from 'electron'
-import { join, dirname } from 'path'
-import { existsSync, readFileSync, writeFileSync, mkdirSync, createWriteStream, unlinkSync, statSync, readdirSync, chmodSync } from 'fs'
+import { join, dirname, normalize, isAbsolute, resolve } from 'path'
+import { existsSync, readFileSync, writeFileSync, mkdirSync, createWriteStream, unlinkSync, statSync, readdirSync, renameSync } from 'fs'
+import AdmZip from 'adm-zip'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { autoUpdater, UpdateInfo } from 'electron-updater'
 import { spawn, execSync } from 'child_process'
@@ -8,12 +9,37 @@ import https from 'https'
 import http from 'http'
 import { pathToFileURL } from 'url'
 import { SDGenerator } from './lib/sdGenerator'
+import log from 'electron-log'
 
 // Linux-specific flags
 if (process.platform === 'linux') {
   app.commandLine.appendSwitch('no-sandbox')
   app.commandLine.appendSwitch('disable-gpu-sandbox')
 }
+
+// Configure electron-log
+// Log files location:
+// - Windows: %USERPROFILE%\AppData\Roaming\wavespeed-desktop\logs\main.log
+// - macOS: ~/Library/Logs/wavespeed-desktop/main.log
+// - Linux: ~/.config/wavespeed-desktop/logs/main.log
+log.transports.file.level = 'info'
+log.transports.console.level = is.dev ? 'debug' : 'info'
+log.info('='.repeat(80))
+log.info('Application starting...')
+log.info('Version:', app.getVersion())
+log.info('Platform:', process.platform, process.arch)
+log.info('Electron:', process.versions.electron)
+log.info('Chrome:', process.versions.chrome)
+log.info('Node:', process.versions.node)
+log.info('Log file:', log.transports.file.getFile().path)
+log.info('='.repeat(80))
+
+// Override console methods to use electron-log
+console.log = log.log.bind(log)
+console.info = log.info.bind(log)
+console.warn = log.warn.bind(log)
+console.error = log.error.bind(log)
+console.debug = log.debug.bind(log)
 
 // Settings storage
 const userDataPath = app.getPath('userData')
@@ -24,6 +50,11 @@ const sdGenerator = new SDGenerator()
 
 // Global reference to active SD generation process (deprecated - using sdGenerator)
 let activeSDProcess: ReturnType<typeof spawn> | null = null
+
+// Cache for system info to avoid repeated checks
+let systemInfoCache: { platform: string; acceleration: string; supported: boolean } | null = null
+let metalSupportCache: boolean | null = null
+let binaryPathLoggedOnce = false
 
 interface Settings {
   apiKey: string
@@ -102,7 +133,8 @@ function createWindow(): void {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
       contextIsolation: true,
-      nodeIntegration: false
+      nodeIntegration: false,
+      webSecurity: !is.dev // Disable web security in dev mode to bypass CORS
     }
   })
 
@@ -346,6 +378,13 @@ ipcMain.handle('get-default-assets-directory', () => {
   return defaultAssetsDirectory
 })
 
+ipcMain.handle('get-zimage-output-path', () => {
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+  const settings = loadSettings()
+  const assetsDir = settings.assetsDirectory || defaultAssetsDirectory
+  return join(assetsDir, `zimage_${timestamp}.png`)
+})
+
 ipcMain.handle('select-directory', async () => {
   const focusedWindow = BrowserWindow.getFocusedWindow()
   if (!focusedWindow) return { success: false, error: 'No focused window' }
@@ -538,16 +577,7 @@ ipcMain.handle('open-assets-folder', async () => {
 ipcMain.handle('sd-get-binary-download-path', () => {
   try {
     const platform = process.platform
-    const arch = process.arch
-    let binaryName = 'sd'
-
-    if (platform === 'win32') {
-      binaryName = 'sd.exe'
-    } else if (platform === 'darwin') {
-      // Check for Metal support
-      const metalSupported = checkMetalSupport()
-      binaryName = metalSupported ? 'sd-metal' : 'sd'
-    }
+    const binaryName = platform === 'win32' ? 'sd.exe' : 'sd'
 
     const binaryDir = join(app.getPath('userData'), 'sd-bin')
     const binaryPath = join(binaryDir, binaryName)
@@ -595,6 +625,224 @@ ipcMain.handle('sd-get-models-dir', () => {
 
     return { success: true, path: modelsDir }
   } catch (error) {
+    return { success: false, error: (error as Error).message }
+  }
+})
+
+/**
+ * Extract zip file and copy all contents to destination directory
+ * Supports both old (sd) and new (sd-cli) binary names
+ */
+ipcMain.handle('sd-extract-binary', (_, zipPath: string, destPath: string) => {
+  try {
+    console.log('[SD Extract] Extracting:', zipPath)
+    console.log('[SD Extract] Destination:', destPath)
+
+    if (!existsSync(zipPath)) {
+      throw new Error(`Zip file not found: ${zipPath}`)
+    }
+
+    const zip = new AdmZip(zipPath)
+    const tempExtractDir = join(dirname(zipPath), 'temp-extract')
+
+    // Extract to temp directory
+    zip.extractAllTo(tempExtractDir, true)
+    console.log('[SD Extract] Extracted to temp directory:', tempExtractDir)
+
+    // Find the binary file (sd, sd.exe, sd-cli, or sd-cli.exe)
+    const possibleNames = process.platform === 'win32'
+      ? ['sd.exe', 'sd-cli.exe']
+      : ['sd', 'sd-cli']
+
+    let binaryPath: string | null = null
+    let actualBinaryName: string | null = null
+
+    const findBinary = (dir: string): { path: string; name: string } | null => {
+      const files = readdirSync(dir, { withFileTypes: true })
+      for (const file of files) {
+        const fullPath = join(dir, file.name)
+        if (file.isDirectory()) {
+          const found = findBinary(fullPath)
+          if (found) return found
+        } else if (possibleNames.includes(file.name)) {
+          return { path: fullPath, name: file.name }
+        }
+      }
+      return null
+    }
+
+    const found = findBinary(tempExtractDir)
+    if (!found) {
+      throw new Error(`Binary not found in extracted files. Looked for: ${possibleNames.join(', ')}`)
+    }
+
+    binaryPath = found.path
+    actualBinaryName = found.name
+    console.log('[SD Extract] Found binary:', binaryPath)
+
+    // Get the directory containing the binary
+    const binaryDir = dirname(binaryPath)
+    console.log('[SD Extract] Binary directory:', binaryDir)
+
+    // Ensure destination directory exists
+    const destDir = dirname(destPath)
+    if (!existsSync(destDir)) {
+      mkdirSync(destDir, { recursive: true })
+    }
+
+    // Copy all files from binary directory to destination directory
+    const copyDirContents = (srcDir: string, dstDir: string) => {
+      const files = readdirSync(srcDir, { withFileTypes: true })
+      for (const file of files) {
+        const srcPath = join(srcDir, file.name)
+        const dstPath = join(dstDir, file.name)
+
+        if (file.isDirectory()) {
+          if (!existsSync(dstPath)) {
+            mkdirSync(dstPath, { recursive: true })
+          }
+          copyDirContents(srcPath, dstPath)
+        } else {
+          // Copy file
+          if (existsSync(dstPath)) {
+            unlinkSync(dstPath)
+          }
+          require('fs').copyFileSync(srcPath, dstPath)
+          console.log('[SD Extract] Copied:', file.name)
+        }
+      }
+    }
+
+    console.log('[SD Extract] Copying all files to:', destDir)
+    copyDirContents(binaryDir, destDir)
+
+    // If binary is sd-cli, create sd symlink/copy for compatibility
+    const targetBinaryName = process.platform === 'win32' ? 'sd.exe' : 'sd'
+    const finalBinaryPath = join(destDir, targetBinaryName)
+
+    if (actualBinaryName.startsWith('sd-cli')) {
+      const sdCliPath = join(destDir, actualBinaryName)
+      if (existsSync(sdCliPath) && !existsSync(finalBinaryPath)) {
+        // Create a copy with the old name for compatibility
+        require('fs').copyFileSync(sdCliPath, finalBinaryPath)
+        console.log(`[SD Extract] Created ${targetBinaryName} copy for compatibility`)
+      }
+    }
+
+    // Make executables on Unix
+    if (process.platform !== 'win32') {
+      const files = readdirSync(destDir)
+      for (const file of files) {
+        const filePath = join(destDir, file)
+        if (statSync(filePath).isFile()) {
+          try {
+            execSync(`chmod +x "${filePath}"`)
+          } catch (err) {
+            // Ignore chmod errors for non-executable files
+          }
+        }
+      }
+      console.log('[SD Extract] Made files executable')
+
+      // macOS: Fix rpath and dynamic library paths
+      if (process.platform === 'darwin') {
+        try {
+          console.log('[SD Extract] Fixing macOS dynamic library paths...')
+
+          // Find all dylib files
+          const dylibFiles = readdirSync(destDir).filter(f => f.endsWith('.dylib'))
+
+          // Fix binary files
+          const binaryFiles = [targetBinaryName, actualBinaryName].filter(name => name && name !== null)
+          for (const binaryFile of binaryFiles) {
+            const binaryFullPath = join(destDir, binaryFile)
+            if (existsSync(binaryFullPath)) {
+              try {
+                // Delete existing rpaths pointing to build directories
+                try {
+                  execSync(`install_name_tool -delete_rpath "/Users/runner/work/stable-diffusion.cpp/stable-diffusion.cpp/build/bin" "${binaryFullPath}" 2>/dev/null || true`, { stdio: 'ignore' })
+                } catch (e) {
+                  // Ignore if rpath doesn't exist
+                }
+
+                // Add @executable_path to rpath
+                try {
+                  execSync(`install_name_tool -add_rpath "@executable_path" "${binaryFullPath}" 2>/dev/null || true`, { stdio: 'ignore' })
+                } catch (e) {
+                  // Ignore if rpath already exists
+                }
+
+                // Update references to dylib files to use @executable_path
+                for (const dylibFile of dylibFiles) {
+                  try {
+                    execSync(`install_name_tool -change "/Users/runner/work/stable-diffusion.cpp/stable-diffusion.cpp/build/bin/${dylibFile}" "@executable_path/${dylibFile}" "${binaryFullPath}" 2>/dev/null || true`, { stdio: 'ignore' })
+                  } catch (e) {
+                    // Ignore if reference doesn't exist
+                  }
+                }
+
+                console.log(`[SD Extract] Fixed rpath for ${binaryFile}`)
+              } catch (err) {
+                console.warn(`[SD Extract] Could not fully fix rpath for ${binaryFile}:`, (err as Error).message)
+              }
+            }
+          }
+
+          // Fix dylib files themselves
+          for (const dylibFile of dylibFiles) {
+            const dylibFullPath = join(destDir, dylibFile)
+            try {
+              // Update the dylib's install name to use @rpath
+              execSync(`install_name_tool -id "@rpath/${dylibFile}" "${dylibFullPath}" 2>/dev/null || true`, { stdio: 'ignore' })
+
+              // Update references to other dylibs
+              for (const otherDylib of dylibFiles) {
+                if (otherDylib !== dylibFile) {
+                  try {
+                    execSync(`install_name_tool -change "/Users/runner/work/stable-diffusion.cpp/stable-diffusion.cpp/build/bin/${otherDylib}" "@rpath/${otherDylib}" "${dylibFullPath}" 2>/dev/null || true`, { stdio: 'ignore' })
+                  } catch (e) {
+                    // Ignore
+                  }
+                }
+              }
+
+              console.log(`[SD Extract] Fixed install name for ${dylibFile}`)
+            } catch (err) {
+              console.warn(`[SD Extract] Could not fix install name for ${dylibFile}:`, (err as Error).message)
+            }
+          }
+
+          console.log('[SD Extract] macOS library path fixes completed')
+        } catch (err) {
+          console.warn('[SD Extract] Failed to fix macOS library paths:', (err as Error).message)
+        }
+      }
+    }
+
+    // Clean up
+    const cleanupDir = (dir: string) => {
+      if (existsSync(dir)) {
+        const files = readdirSync(dir, { withFileTypes: true })
+        for (const file of files) {
+          const fullPath = join(dir, file.name)
+          if (file.isDirectory()) {
+            cleanupDir(fullPath)
+          } else {
+            unlinkSync(fullPath)
+          }
+        }
+        require('fs').rmdirSync(dir)
+      }
+    }
+    cleanupDir(tempExtractDir)
+    if (existsSync(zipPath)) {
+      unlinkSync(zipPath)
+    }
+    console.log('[SD Extract] Cleanup completed')
+
+    return { success: true, path: finalBinaryPath }
+  } catch (error) {
+    console.error('[SD Extract] Error:', error)
     return { success: false, error: (error as Error).message }
   }
 })
@@ -699,6 +947,17 @@ ipcMain.handle('get-app-version', () => {
   return app.getVersion()
 })
 
+ipcMain.handle('get-log-file-path', () => {
+  return log.transports.file.getFile().path
+})
+
+ipcMain.handle('open-log-directory', () => {
+  const logPath = log.transports.file.getFile().path
+  const logDir = dirname(logPath)
+  shell.openPath(logDir)
+  return { success: true, path: logDir }
+})
+
 ipcMain.handle('set-update-channel', (_, channel: 'stable' | 'nightly') => {
   saveSettings({ updateChannel: channel })
   // Reconfigure updater with new channel
@@ -729,30 +988,45 @@ ipcMain.handle('set-update-channel', (_, channel: 'stable' | 'nightly') => {
 
 /**
  * Get stable-diffusion binary path
+ * Checks multiple locations in priority order:
+ * 1. Downloaded binary in userData/sd-bin
+ * 2. Pre-compiled binary in resources directory
  */
 ipcMain.handle('sd-get-binary-path', () => {
   try {
     const platform = process.platform
-    const arch = process.arch
-    const binaryName = platform === 'win32' ? 'sd.exe' : 'sd'
 
-    // Use different paths for development and production modes
+    // Priority 1: Check downloaded binary in userData
+    const userDataBinaryDir = join(app.getPath('userData'), 'sd-bin')
+    const binaryName = platform === 'win32' ? 'sd.exe' : 'sd'
+    const userDataBinaryPath = join(userDataBinaryDir, binaryName)
+
+    if (existsSync(userDataBinaryPath)) {
+      if (!binaryPathLoggedOnce) {
+        console.log('[SD] Using downloaded binary:', userDataBinaryPath)
+        binaryPathLoggedOnce = true
+      }
+      return { success: true, path: userDataBinaryPath }
+    }
+
+    // Priority 2: Check pre-compiled binary in resources
     const basePath = is.dev
       ? join(__dirname, '../../resources/bin/stable-diffusion')
       : join(process.resourcesPath, 'bin/stable-diffusion')
 
-    const binaryPath = join(basePath, `${platform}-${arch}`, binaryName)
-
-    if (!existsSync(binaryPath)) {
-      return {
-        success: false,
-        error: `Binary not found at: ${binaryPath}`
+    const resourceBinaryPath = join(basePath, binaryName)
+    if (existsSync(resourceBinaryPath)) {
+      if (!binaryPathLoggedOnce) {
+        console.log('[SD] Using pre-compiled binary:', resourceBinaryPath)
+        binaryPathLoggedOnce = true
       }
+      return { success: true, path: resourceBinaryPath }
     }
 
+    // Binary not found in any location
     return {
-      success: true,
-      path: binaryPath
+      success: false,
+      error: `Binary not found. Checked: ${userDataBinaryPath}, ${resourceBinaryPath}`
     }
   } catch (error) {
     return {
@@ -763,9 +1037,14 @@ ipcMain.handle('sd-get-binary-path', () => {
 })
 
 /**
- * Check if macOS system supports Metal acceleration
+ * Check if macOS system supports Metal acceleration (cached)
  */
 function checkMetalSupport(): boolean {
+  // Return cached result if available
+  if (metalSupportCache !== null) {
+    return metalSupportCache
+  }
+
   try {
     // Check macOS version - Metal requires OS X 10.11 (El Capitan) or later
     const osRelease = require('os').release()
@@ -775,6 +1054,7 @@ function checkMetalSupport(): boolean {
     // Metal was introduced in OS X 10.11
     if (majorVersion < 15) {
       console.log('[Metal Check] macOS version too old for Metal (Darwin kernel < 15)')
+      metalSupportCache = false
       return false
     }
 
@@ -788,29 +1068,37 @@ function checkMetalSupport(): boolean {
       // Check if output contains "Metal" support indication
       const hasMetalSupport = output.toLowerCase().includes('metal')
       console.log(`[Metal Check] Metal support detected: ${hasMetalSupport}`)
+      metalSupportCache = hasMetalSupport
       return hasMetalSupport
     } catch (error) {
       console.error('[Metal Check] Failed to run system_profiler:', error)
       // If system_profiler fails but OS version is new enough, assume Metal is available
-      return majorVersion >= 15
+      metalSupportCache = majorVersion >= 15
+      return metalSupportCache
     }
   } catch (error) {
     console.error('[Metal Check] Failed to check Metal support:', error)
+    metalSupportCache = false
     return false
   }
 }
 
 /**
- * Get system information (platform and acceleration type)
+ * Get system information (platform and acceleration type) - cached
  */
 ipcMain.handle('sd-get-system-info', () => {
+  // Return cached result if available
+  if (systemInfoCache !== null) {
+    return systemInfoCache
+  }
+
   const platform = process.platform
 
   let acceleration = 'CPU'
 
   if (platform === 'darwin') {
     // macOS: Check for Metal acceleration support
-    acceleration = checkMetalSupport() ? 'Metal' : 'CPU'
+    acceleration = checkMetalSupport() ? 'metal' : 'CPU'
   } else if (platform === 'win32' || platform === 'linux') {
     // Check for NVIDIA GPU (CUDA support)
     try {
@@ -850,11 +1138,14 @@ ipcMain.handle('sd-get-system-info', () => {
 
   console.log(`[System Info] Platform: ${platform}, Acceleration: ${acceleration}`)
 
-  return {
+  // Cache the result
+  systemInfoCache = {
     platform,
     acceleration,
     supported: true
   }
+
+  return systemInfoCache
 })
 
 /**
@@ -871,19 +1162,42 @@ ipcMain.handle('sd-generate-image', async (event, params: {
   steps: number
   cfgScale: number
   seed?: number
+  samplingMethod?: string
+  scheduler?: string
   outputPath: string
 }) => {
   try {
-    // Get binary path
+    // Get binary path using the same logic as sd-get-binary-path
     const platform = process.platform
     const arch = process.arch
+    const userDataBinaryDir = join(app.getPath('userData'), 'sd-bin')
     const binaryName = platform === 'win32' ? 'sd.exe' : 'sd'
 
-    const basePath = is.dev
-      ? join(__dirname, '../../resources/bin/stable-diffusion')
-      : join(process.resourcesPath, 'bin/stable-diffusion')
+    let binaryPath: string | null = null
 
-    const binaryPath = join(basePath, `${platform}-${arch}`, binaryName)
+    // Priority 1: Check downloaded binary in userData
+    const userDataBinaryPath = join(userDataBinaryDir, binaryName)
+    if (existsSync(userDataBinaryPath)) {
+      binaryPath = userDataBinaryPath
+      console.log('[SD Generate] Using downloaded binary:', binaryPath)
+    }
+
+    // Priority 2: Check pre-compiled binary in resources
+    if (!binaryPath) {
+      const basePath = is.dev
+        ? join(__dirname, '../../resources/bin/stable-diffusion')
+        : join(process.resourcesPath, 'bin/stable-diffusion')
+
+      const resourceBinaryPath = join(basePath, `${platform}-${arch}`, binaryName)
+      if (existsSync(resourceBinaryPath)) {
+        binaryPath = resourceBinaryPath
+        console.log('[SD Generate] Using pre-compiled binary:', binaryPath)
+      }
+    }
+
+    if (!binaryPath) {
+      throw new Error('SD binary not found. Please download it first.')
+    }
 
     // Use SDGenerator class for image generation
     const result = await sdGenerator.generate({
@@ -898,6 +1212,8 @@ ipcMain.handle('sd-generate-image', async (event, params: {
       steps: params.steps,
       cfgScale: params.cfgScale,
       seed: params.seed,
+      samplingMethod: params.samplingMethod,
+      scheduler: params.scheduler,
       outputPath: params.outputPath,
       onProgress: (progress) => {
         // Send progress to frontend
@@ -933,7 +1249,7 @@ ipcMain.handle('sd-generate-image', async (event, params: {
  */
 ipcMain.handle('sd-list-models', () => {
   try {
-    const modelsDir = join(userDataPath, 'models', 'stable-diffusion')
+    const modelsDir = getModelsDir()
 
     if (!existsSync(modelsDir)) {
       return { success: true, models: [] }
@@ -1000,7 +1316,16 @@ ipcMain.handle('get-file-size', (_, filePath: string) => {
  */
 ipcMain.handle('sd-delete-binary', () => {
   try {
-    const binaryPath = getSDPath()
+    const platform = process.platform
+    const arch = process.arch
+    const binaryName = platform === 'win32' ? 'sd.exe' : 'sd'
+
+    const basePath = is.dev
+      ? join(__dirname, '../../resources/bin/stable-diffusion')
+      : join(process.resourcesPath, 'bin/stable-diffusion')
+
+    const binaryPath = join(basePath, `${platform}-${arch}`, binaryName)
+
     if (existsSync(binaryPath)) {
       unlinkSync(binaryPath)
     }
@@ -1014,11 +1339,18 @@ ipcMain.handle('sd-delete-binary', () => {
 })
 
 /**
+ * Get main models directory (for z-image-turbo models)
+ * Uses userData directory to keep models alongside sd-bin
+ */
+function getModelsDir(): string {
+  return join(app.getPath('userData'), 'models', 'stable-diffusion')
+}
+
+/**
  * Get auxiliary models directory
  */
 function getAuxiliaryModelsDir(): string {
-  const assetsDir = join(app.getPath('documents'), 'WaveSpeed')
-  return join(assetsDir, '../models/stable-diffusion/auxiliary')
+  return join(getModelsDir(), 'auxiliary')
 }
 
 
@@ -1152,7 +1484,7 @@ ipcMain.handle('sd-save-model-from-cache', async (_, fileName: string, data: Uin
 
     if (type === 'model') {
       // Main model goes to models directory
-      const modelsDir = join(userDataPath, 'models', 'stable-diffusion')
+      const modelsDir = getModelsDir()
       if (!existsSync(modelsDir)) {
         mkdirSync(modelsDir, { recursive: true })
       }

@@ -254,7 +254,7 @@ export class ChunkedDownloader {
           // Flush remaining buffer
           if (bufferSize > 0) {
             const chunk = this.mergeBuffers(buffer, bufferSize)
-            const appendResult = await window.electronAPI?.fileAppendChunk(params.partPath, chunk.buffer)
+            const appendResult = await window.electronAPI?.fileAppendChunk(params.partPath, chunk.buffer as ArrayBuffer)
             if (!appendResult?.success) {
               return { success: false, error: `Failed to write chunk: ${appendResult?.error}` }
             }
@@ -279,9 +279,9 @@ export class ChunkedDownloader {
               progress,
               phase: 'download',
               detail: {
-                current: Math.round((receivedBytes / 1024 / 1024) * 100) / 100,
-                total: Math.round((totalBytes / 1024 / 1024) * 100) / 100,
-                unit: 'MB'
+                current: receivedBytes,
+                total: totalBytes,
+                unit: 'bytes'
               }
             })
           }
@@ -291,7 +291,7 @@ export class ChunkedDownloader {
         // Write to file when buffer reaches chunk size
         if (bufferSize >= params.chunkSize) {
           const chunk = this.mergeBuffers(buffer, bufferSize)
-          const appendResult = await window.electronAPI?.fileAppendChunk(params.partPath, chunk.buffer)
+          const appendResult = await window.electronAPI?.fileAppendChunk(params.partPath, chunk.buffer as ArrayBuffer)
 
           if (!appendResult?.success) {
             return { success: false, error: `Failed to write chunk: ${appendResult?.error}` }
@@ -325,9 +325,9 @@ export class ChunkedDownloader {
           progress: 100,
           phase: 'download',
           detail: {
-            current: Math.round((totalBytes / 1024 / 1024) * 100) / 100,
-            total: Math.round((totalBytes / 1024 / 1024) * 100) / 100,
-            unit: 'MB'
+            current: totalBytes,
+            total: totalBytes,
+            unit: 'bytes'
           }
         })
       }

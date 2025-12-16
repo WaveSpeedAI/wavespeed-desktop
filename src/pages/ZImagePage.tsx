@@ -50,12 +50,12 @@ function validateGenerationParams(params: {
     return { valid: false, error: 'Width and height must be multiples of 64' }
   }
 
-  if (params.width < 256 || params.width > 1024) {
-    return { valid: false, error: 'Width must be between 256-1024' }
+  if (params.width < 256 || params.width > 1536) {
+    return { valid: false, error: 'Width must be between 256-1536' }
   }
 
-  if (params.height < 256 || params.height > 1024) {
-    return { valid: false, error: 'Height must be between 256-1024' }
+  if (params.height < 256 || params.height > 1536) {
+    return { valid: false, error: 'Height must be between 256-1536' }
   }
 
   // Validate sampling steps
@@ -114,7 +114,10 @@ export function ZImagePage() {
   const [steps, setSteps] = useState(8) // Default to CPU (8 steps), will be updated based on hardware
   const [cfgScale, setCfgScale] = useState(1)
   const [seed, setSeed] = useState<number>(generateRandomSeed())
+  const [samplingMethod, setSamplingMethod] = useState<string>('euler')
+  const [scheduler, setScheduler] = useState<string>('simple')
   const [generatedImage, setGeneratedImage] = useState<string | null>(null)
+  const [generatedImagePath, setGeneratedImagePath] = useState<string | null>(null) // Original file path
   const [error, setError] = useState<string | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const [autoRandomizeSeed, setAutoRandomizeSeed] = useState(true) // Default to true
@@ -123,6 +126,7 @@ export function ZImagePage() {
   const hasSetDefaultSteps = useRef(false) // Track if default steps have been set
   const generationStartTimeRef = useRef<number>(0)
   const onlineHintTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const modelDownloaderRef = useRef<ChunkedDownloader | null>(null) // Track model downloader for cancellation
 
   // Stores & Hooks
   const {
@@ -301,6 +305,7 @@ export function ZImagePage() {
   const handleGenerate = async () => {
     setError(null)
     setGeneratedImage(null)
+    setGeneratedImagePath(null)
     setIsCancelled(false) // Reset cancel flag
 
     // Validate
@@ -451,6 +456,8 @@ export function ZImagePage() {
         try {
           // Download via ChunkedDownloader
           const downloader = new ChunkedDownloader()
+          modelDownloaderRef.current = downloader // Track for cancellation
+
           const result = await downloader.download({
             url: selectedModel.downloadUrl,
             destPath,
@@ -468,6 +475,9 @@ export function ZImagePage() {
             chunkSize: 10 * 1024 * 1024, // 10MB chunks
             minValidSize: 500 * 1024 * 1024 // At least 500MB
           })
+
+          // Clear reference after download completes
+          modelDownloaderRef.current = null
 
           console.log(`[ZImagePage] Download result:`, result)
 
@@ -492,6 +502,9 @@ export function ZImagePage() {
           await fetchModels()
           console.log(`[ZImagePage] Models fetched`)
         } catch (downloadError) {
+          // Clear reference on error
+          modelDownloaderRef.current = null
+
           // Mark download as failed in store
           updateModelDownloadStatus({
             downloading: false,
@@ -587,14 +600,22 @@ export function ZImagePage() {
         height,
         steps,
         cfgScale,
-        seed
+        seed,
+        samplingMethod: samplingMethod as any,
+        scheduler: scheduler as any
       })
 
       console.log('[ZImagePage] Generation result:', result)
 
       if (result.success && result.outputPath) {
         console.log('[ZImagePage] Generation successful! Output path:', result.outputPath)
-        setGeneratedImage(`local-asset://${result.outputPath}`)
+
+        // Use encodeURIComponent like AssetsPage (works on both Mac and Windows)
+        const imageUrl = `local-asset://${encodeURIComponent(result.outputPath)}`
+        console.log('[ZImagePage] Image URL:', imageUrl)
+
+        setGeneratedImage(imageUrl)
+        setGeneratedImagePath(result.outputPath)
         complete()
 
         // Clean up downloading states after successful generation
@@ -668,6 +689,13 @@ export function ZImagePage() {
 
     // Cancel any ongoing downloads
     cancelDownload()
+
+    // Cancel model download
+    if (modelDownloaderRef.current) {
+      console.log('[ZImagePage] Cancelling model download')
+      modelDownloaderRef.current.cancel()
+      modelDownloaderRef.current = null
+    }
 
     // Cancel image generation
     if (window.electronAPI?.sdCancelGeneration) {
@@ -757,7 +785,7 @@ export function ZImagePage() {
                   value={width}
                   onChange={(e) => setWidth(Number(e.target.value))}
                   min={256}
-                  max={1024}
+                  max={1536}
                   step={64}
                 />
               </div>
@@ -769,7 +797,7 @@ export function ZImagePage() {
                   value={height}
                   onChange={(e) => setHeight(Number(e.target.value))}
                   min={256}
-                  max={1024}
+                  max={1536}
                   step={64}
                 />
               </div>
@@ -795,6 +823,51 @@ export function ZImagePage() {
                   max={20}
                   step={0.5}
                 />
+              </div>
+            </div>
+
+            {/* Sampling Method & Scheduler */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="samplingMethod" className="text-xs">{t('zImage.samplingMethod')}</Label>
+                <Select value={samplingMethod} onValueChange={setSamplingMethod}>
+                  <SelectTrigger id="samplingMethod">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="euler">Euler</SelectItem>
+                    <SelectItem value="euler_a">Euler A</SelectItem>
+                    <SelectItem value="heun">Heun</SelectItem>
+                    <SelectItem value="dpm2">DPM2</SelectItem>
+                    <SelectItem value="dpm++2s_a">DPM++ 2S A</SelectItem>
+                    <SelectItem value="dpm++2m">DPM++ 2M</SelectItem>
+                    <SelectItem value="dpm++2mv2">DPM++ 2M V2</SelectItem>
+                    <SelectItem value="ipndm">IPNDM</SelectItem>
+                    <SelectItem value="ipndm_v">IPNDM V</SelectItem>
+                    <SelectItem value="lcm">LCM</SelectItem>
+                    <SelectItem value="ddim_trailing">DDIM Trailing</SelectItem>
+                    <SelectItem value="tcd">TCD</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="scheduler" className="text-xs">{t('zImage.scheduler')}</Label>
+                <Select value={scheduler} onValueChange={setScheduler}>
+                  <SelectTrigger id="scheduler">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="simple">Simple</SelectItem>
+                    <SelectItem value="discrete">Discrete</SelectItem>
+                    <SelectItem value="karras">Karras</SelectItem>
+                    <SelectItem value="exponential">Exponential</SelectItem>
+                    <SelectItem value="ays">AYS</SelectItem>
+                    <SelectItem value="gits">GITS</SelectItem>
+                    <SelectItem value="smoothstep">Smoothstep</SelectItem>
+                    <SelectItem value="sgm_uniform">SGM Uniform</SelectItem>
+                    <SelectItem value="lcm">LCM</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -905,7 +978,10 @@ export function ZImagePage() {
                     <div className="text-xs text-muted-foreground">
                       {isDownloadPhase ? (
                         <>
-                          {currentPhase.detail.current} / {currentPhase.detail.total} {currentPhase.detail.unit || 'MB'}
+                          {currentPhase.detail.unit === 'bytes'
+                            ? `${formatBytes(currentPhase.detail.current || 0)} / ${formatBytes(currentPhase.detail.total || 0)}`
+                            : `${currentPhase.detail.current} / ${currentPhase.detail.total} ${currentPhase.detail.unit || ''}`
+                          }
                         </>
                       ) : currentPhase.detail.current && currentPhase.detail.total ? (
                         t('zImage.stepProgress', {
@@ -964,6 +1040,13 @@ export function ZImagePage() {
                     src={generatedImage}
                     alt={t('zImage.generatedImage')}
                     className="w-full h-full object-contain rounded-lg shadow-lg"
+                    onLoad={() => {
+                      console.log('[ZImagePage] Image loaded successfully:', generatedImage)
+                    }}
+                    onError={(e) => {
+                      console.error('[ZImagePage] Image failed to load:', generatedImage)
+                      console.error('[ZImagePage] Error event:', e)
+                    }}
                   />
                 </div>
                 {/* Action Button - Fixed at bottom */}
@@ -971,9 +1054,8 @@ export function ZImagePage() {
                   className="w-full flex-shrink-0"
                   variant="outline"
                   onClick={() => {
-                    if (generatedImage) {
-                      const path = generatedImage.replace('local-asset://', '')
-                      window.electronAPI.openFileLocation(path)
+                    if (generatedImagePath) {
+                      window.electronAPI.openFileLocation(generatedImagePath)
                     }
                   }}
                 >

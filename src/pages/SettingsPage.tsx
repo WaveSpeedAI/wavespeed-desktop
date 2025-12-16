@@ -26,7 +26,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { toast } from '@/hooks/useToast'
-import { Eye, EyeOff, Check, Loader2, Monitor, Moon, Sun, Download, RefreshCw, Rocket, AlertCircle, Shield, Github, Globe, FolderOpen, Trash2, Database, ChevronRight, X, Clock } from 'lucide-react'
+import { Eye, EyeOff, Check, Loader2, Monitor, Moon, Sun, Download, RefreshCw, Rocket, AlertCircle, Shield, Github, Globe, FolderOpen, FileText, Trash2, Database, ChevronRight, X, Clock } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 
 interface CacheItem {
@@ -1101,6 +1101,59 @@ export function SettingsPage() {
             </Button>
 
             {renderUpdateStatus()}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Debug & Logs Section */}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Debug & Logs</CardTitle>
+          <CardDescription>
+            View application logs for troubleshooting
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Application logs are automatically saved to help diagnose issues. You can view the log file or open the logs directory.
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  if (window.electronAPI) {
+                    const logPath = await window.electronAPI.getLogFilePath()
+                    navigator.clipboard.writeText(logPath)
+                    toast({
+                      title: 'Log path copied',
+                      description: 'Log file path has been copied to clipboard'
+                    })
+                  }
+                }}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                Copy Log Path
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  if (window.electronAPI) {
+                    await window.electronAPI.openLogDirectory()
+                  }
+                }}
+              >
+                <FolderOpen className="mr-2 h-4 w-4" />
+                Open Logs Folder
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Windows: <code className="text-xs bg-muted px-1 py-0.5 rounded">%APPDATA%\wavespeed-desktop\logs\main.log</code><br />
+              macOS: <code className="text-xs bg-muted px-1 py-0.5 rounded">~/Library/Logs/wavespeed-desktop/main.log</code><br />
+              Linux: <code className="text-xs bg-muted px-1 py-0.5 rounded">~/.config/wavespeed-desktop/logs/main.log</code>
+            </p>
           </div>
         </CardContent>
       </Card>

@@ -285,12 +285,13 @@ export function SettingsPage() {
       }
 
       // 3. Clear SD models
-      if (window.electronAPI?.sdListModels && window.electronAPI?.sdDeleteModel) {
-        const result = await window.electronAPI.sdListModels()
+      const electronApi = window.electronAPI
+      if (electronApi?.sdListModels && electronApi?.sdDeleteModel) {
+        const result = await electronApi.sdListModels()
         if (result.success && result.models) {
           await Promise.all(
             result.models.map((model) =>
-              window.electronAPI!.sdDeleteModel(model.path).catch(console.error)
+              electronApi.sdDeleteModel(model.path).catch(console.error)
             )
           )
         }

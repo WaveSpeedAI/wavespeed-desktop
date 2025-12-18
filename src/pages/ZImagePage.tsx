@@ -316,6 +316,12 @@ export function ZImagePage() {
     setGeneratedImagePath(null)
     setIsCancelled(false) // Reset cancel flag
 
+    // Check if running in browser mode (no Electron APIs)
+    if (!electronAvailable) {
+      setError(t('zImage.errors.desktopRequired', 'This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.'))
+      return
+    }
+
     // Validate
     if (!selectedModel) {
       setError(t('zImage.errors.noModel'))
@@ -728,25 +734,7 @@ export function ZImagePage() {
         </div>
       </div>
 
-      {/* Desktop App Required Message */}
-      {!electronAvailable && (
-        <div className="flex-1 flex items-center justify-center p-8">
-          <div className="text-center max-w-md">
-            <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-xl font-semibold mb-2">{t('zImage.desktopRequired', 'Desktop App Required')}</h2>
-            <p className="text-muted-foreground mb-4">
-              {t('zImage.desktopRequiredDesc', 'Z-Image runs AI models locally on your computer. Please download the desktop app to use this feature.')}
-            </p>
-            <Button onClick={() => navigate('/playground/wavespeed-ai/z-image/turbo')}>
-              <Zap className="mr-2 h-4 w-4" />
-              {t('zImage.tryOnline', 'Try Online Version')}
-            </Button>
-          </div>
-        </div>
-      )}
-
       {/* Content - Two Column Layout */}
-      {electronAvailable && (
       <div className="flex flex-1 overflow-hidden">
         {/* Left Panel - Configuration */}
         <div className="w-[420px] flex flex-col border-r bg-muted/30">
@@ -1102,7 +1090,6 @@ export function ZImagePage() {
           </div>
         </div>
       </div>
-      )}
     </div>
   )
 }

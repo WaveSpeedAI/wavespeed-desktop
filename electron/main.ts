@@ -1,6 +1,6 @@
 import { app, BrowserWindow, shell, ipcMain, dialog, Menu, clipboard, protocol, net } from 'electron'
-import { join, dirname, normalize, isAbsolute, resolve } from 'path'
-import { existsSync, readFileSync, writeFileSync, mkdirSync, createWriteStream, unlinkSync, statSync, readdirSync, renameSync } from 'fs'
+import { join, dirname } from 'path'
+import { existsSync, readFileSync, writeFileSync, mkdirSync, createWriteStream, unlinkSync, statSync, readdirSync } from 'fs'
 import AdmZip from 'adm-zip'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { autoUpdater, UpdateInfo } from 'electron-updater'

@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 
 // Compact aspect ratio icon
 function AspectIcon({ ratio }: { ratio: string }) {

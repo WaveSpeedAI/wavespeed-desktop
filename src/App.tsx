@@ -36,7 +36,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        <Route index element={<WelcomePage to="/models" replace />} />
+        <Route index element={<WelcomePage />} />
         <Route path="models" element={<ModelsPage />} />
         <Route path="playground" element={<PlaygroundPage />} />
         <Route path="playground/*" element={<PlaygroundPage />} />

@@ -1,8 +1,32 @@
 import axios, { AxiosInstance, AxiosError } from 'axios'
 import type { Model, ModelsResponse } from '@/types/model'
 import type { PredictionResult, PredictionResponse, HistoryResponse, UploadResponse } from '@/types/prediction'
+import packageJson from '../../package.json'
 
 const BASE_URL = 'https://api.wavespeed.ai'
+
+// Get app version from package.json
+const version = packageJson.version
+
+// Detect operating system
+function getOperatingSystem(): string {
+  const userAgent = navigator.userAgent.toLowerCase()
+
+  // Check for specific operating systems
+  if (userAgent.includes('mac os x') || userAgent.includes('macintosh')) {
+    return 'macos'
+  } else if (userAgent.includes('windows') || userAgent.includes('win64') || userAgent.includes('win32')) {
+    return 'windows'
+  } else if (userAgent.includes('android')) {
+    return 'android'
+  } else if (userAgent.includes('iphone') || userAgent.includes('ipad') || userAgent.includes('ipod')) {
+    return 'ios'
+  } else if (userAgent.includes('linux')) {
+    return 'linux'
+  }
+
+  return 'unknown'
+}
 
 // Custom error class with detailed information
 export class APIError extends Error {
@@ -104,9 +128,9 @@ class WaveSpeedClient {
       timeout: 60000, // 60 second timeout for connection and read
       headers: {
         'Content-Type': 'application/json',
-        // 'X-Client-Name': 'wavespeed-desktop',
-        // 'X-Client-Version': version,
-        // 'X-Client-OS': getOperatingSystem()
+        'X-Client-Name': 'wavespeed-desktop',
+        'X-Client-Version': version,
+        'X-Client-OS': getOperatingSystem()
       }
     })
 

@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { apiClient } from '@/api/client'
 import type { Model } from '@/types/model'
 import { fuzzySearch } from '@/lib/fuzzySearch'
+import { createZImageModel } from '@/lib/zImageModel'
 
 export type SortBy = 'name' | 'price' | 'type' | 'sort_order'
 export type SortOrder = 'asc' | 'desc'
@@ -71,12 +72,19 @@ export const useModelsStore = create<ModelsState>((set, get) => ({
     }
     set({ isLoading: true, error: null })
     try {
-      const models = await apiClient.listModels()
+      const apiModels = await apiClient.listModels()
+      // Add ZImage local model to the list
+      const zImageModel = createZImageModel()
+      const models = [zImageModel, ...apiModels]
       set({ models, isLoading: false, hasFetched: true })
     } catch (error) {
+      // Even if API fails, still add ZImage model (works offline)
+      const zImageModel = createZImageModel()
       set({
+        models: [zImageModel],
         error: error instanceof Error ? error.message : 'Failed to fetch models',
-        isLoading: false
+        isLoading: false,
+        hasFetched: true
       })
     }
   },

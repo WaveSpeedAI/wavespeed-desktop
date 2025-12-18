@@ -5,6 +5,9 @@ import type { PredictionResult } from '@/types/prediction'
 import type { FormFieldConfig } from '@/lib/schemaToForm'
 import type { BatchConfig, BatchState, BatchResult } from '@/types/batch'
 import { DEFAULT_BATCH_CONFIG } from '@/types/batch'
+import { isZImageModel, ZIMAGE_DEFAULT_PROMPT, ZIMAGE_DEFAULT_NEGATIVE_PROMPT } from '@/lib/zImageModel'
+import { useSDModelsStore } from '@/stores/sdModelsStore'
+import { PREDEFINED_MODELS } from '@/types/stable-diffusion'
 
 interface PlaygroundTab {
   id: string
@@ -63,6 +66,122 @@ function isEmpty(value: unknown): boolean {
   if (value === undefined || value === null || value === '') return true
   if (Array.isArray(value) && value.length === 0) return true
   return false
+}
+
+/**
+ * Run ZImage generation locally via Electron APIs
+ */
+async function runZImageLocally(
+  input: Record<string, unknown>,
+  tabId: string | null,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  set: any
+): Promise<PredictionResult | null> {
+  // Check if Electron APIs are available
+  if (!window.electronAPI?.sdGenerateImage) {
+    set((state: PlaygroundState) => ({
+      tabs: state.tabs.map(tab =>
+        tab.id === tabId
+          ? { ...tab, error: 'This feature requires the desktop app. Please download WaveSpeed Desktop.', isRunning: false }
+          : tab
+      )
+    }))
+    return null
+  }
+
+  try {
+    // Get selected SD model info
+    const sdModelId = input.model as string || 'z-image-turbo-q4-k'
+    const sdModel = PREDEFINED_MODELS.find(m => m.id === sdModelId)
+
+    if (!sdModel) {
+      throw new Error('Selected model not found')
+    }
+
+    // Check if model is downloaded
+    const sdStore = useSDModelsStore.getState()
+    await sdStore.fetchModels()
+    const modelState = sdStore.models.find(m => m.id === sdModelId)
+
+    if (!modelState?.isDownloaded || !modelState.localPath) {
+      throw new Error(`Model "${sdModel.displayName}" is not downloaded. Please download it first from the Z-Image page.`)
+    }
+
+    // Check auxiliary models
+    await sdStore.checkAuxiliaryModels()
+    const { binaryStatus, vaeStatus, llmStatus } = useSDModelsStore.getState()
+
+    if (!binaryStatus.downloaded) {
+      throw new Error('SD binary not downloaded. Please visit the Z-Image page to download required files.')
+    }
+    if (!vaeStatus.downloaded) {
+      throw new Error('VAE model not downloaded. Please visit the Z-Image page to download required files.')
+    }
+    if (!llmStatus.downloaded) {
+      throw new Error('LLM model not downloaded. Please visit the Z-Image page to download required files.')
+    }
+
+    // Use defaults for empty prompts
+    const prompt = (input.prompt as string)?.trim() || ZIMAGE_DEFAULT_PROMPT
+    const negativePrompt = (input.negative_prompt as string)?.trim() || ZIMAGE_DEFAULT_NEGATIVE_PROMPT
+
+    // Generate seed if -1 or not provided
+    let seed = input.seed as number
+    if (seed === undefined || seed === -1) {
+      seed = Math.floor(Math.random() * 2147483647)
+    }
+
+    // Get auxiliary model paths
+    const modelsInfo = await window.electronAPI.sdCheckAuxiliaryModels()
+    if (!modelsInfo.success) {
+      throw new Error('Failed to check auxiliary models')
+    }
+
+    // Generate output path
+    const outputPath = await window.electronAPI.getZImageOutputPath()
+
+    // Call local generation
+    const result = await window.electronAPI.sdGenerateImage({
+      modelPath: modelState.localPath,
+      llmPath: modelsInfo.llmPath,
+      vaePath: modelsInfo.vaePath,
+      prompt,
+      negativePrompt,
+      width: (input.width as number) || 512,
+      height: (input.height as number) || 512,
+      steps: (input.steps as number) || 8,
+      cfgScale: (input.cfg_scale as number) || 1,
+      seed,
+      samplingMethod: (input.sampling_method as string) || 'euler',
+      scheduler: (input.scheduler as string) || 'simple',
+      outputPath
+    })
+
+    if (!result.success || !result.outputPath) {
+      throw new Error(result.error || 'Generation failed')
+    }
+
+    // Convert local path to displayable URL
+    const imageUrl = `local-asset://${encodeURIComponent(result.outputPath)}`
+
+    // Return result in PredictionResult format
+    return {
+      id: `local-${Date.now()}`,
+      model: 'local/z-image/turbo',
+      status: 'completed',
+      outputs: [imageUrl],
+      created_at: new Date().toISOString()
+    }
+  } catch (error) {
+    set((state: PlaygroundState) => ({
+      tabs: state.tabs.map(tab =>
+        tab.id === tabId
+          ? { ...tab, error: error instanceof Error ? error.message : 'Local generation failed', isRunning: false }
+          : tab
+      )
+    }))
+    return null
+  }
 }
 
 function createEmptyTab(id: string, model?: Model): PlaygroundTab {
@@ -275,6 +394,27 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
         if (value !== '' && value !== undefined && value !== null) {
           cleanedInput[key] = value
         }
+      }
+
+      // Check if this is a ZImage local model
+      if (isZImageModel(selectedModel.model_id)) {
+        // Handle ZImage local generation
+        const result = await runZImageLocally(cleanedInput, tabId, set)
+        if (result) {
+          set(state => ({
+            tabs: state.tabs.map(tab =>
+              tab.id === tabId
+                ? {
+                    ...tab,
+                    currentPrediction: result,
+                    outputs: result.outputs || [],
+                    isRunning: false
+                  }
+                : tab
+            )
+          }))
+        }
+        return
       }
 
       const result = await apiClient.run(selectedModel.model_id, cleanedInput, {

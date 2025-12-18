@@ -81,6 +81,8 @@ export interface SDGenerationParams {
   steps: number
   cfgScale: number
   seed?: number
+  samplingMethod?: string
+  scheduler?: string
   outputPath: string
 }
 

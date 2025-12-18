@@ -79,7 +79,7 @@ function createZImageSchema() {
         description: 'Image dimensions',
         minimum: 256,
         maximum: 1536,
-        default: '512*512'
+        default: '1024*1024'
       },
       steps: {
         type: 'integer',

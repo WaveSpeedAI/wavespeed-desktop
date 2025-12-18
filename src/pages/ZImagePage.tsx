@@ -227,10 +227,10 @@ export function ZImagePage() {
       }
 
       // Parse size field (format: "width*height")
-      const sizeStr = (formValues.size as string) || '512*512'
+      const sizeStr = (formValues.size as string) || '1024*1024'
       const sizeParts = sizeStr.split('*')
-      const width = parseInt(sizeParts[0], 10) || 512
-      const height = parseInt(sizeParts[1], 10) || 512
+      const width = parseInt(sizeParts[0], 10) || 1024
+      const height = parseInt(sizeParts[1], 10) || 1024
 
       const result = await generateZImage({
         modelPath,

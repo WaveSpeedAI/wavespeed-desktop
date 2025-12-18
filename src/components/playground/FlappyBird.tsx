@@ -33,11 +33,11 @@ interface Pipe {
 
 type GameState = 'idle' | 'playing' | 'gameover'
 
-// Physics values calibrated for 60fps, scaled by delta time
+// Physics values in pixels per second (FPS-independent)
 const TARGET_FPS = 60
-const GRAVITY = 0.4 * TARGET_FPS
-const JUMP_STRENGTH = -7
-const PIPE_SPEED = 3 * TARGET_FPS
+const GRAVITY = 0.4 * TARGET_FPS * TARGET_FPS  // pixels/sec²
+const JUMP_STRENGTH = -7 * TARGET_FPS           // pixels/sec
+const PIPE_SPEED = 3 * TARGET_FPS               // pixels/sec
 const PIPE_GAP = 140
 const PIPE_WIDTH = 52
 const PIPE_SPACING = 200
@@ -500,9 +500,9 @@ export function FlappyBird({ onGameStart, onGameEnd, onGameQuit, isTaskRunning, 
       drawBackground(ctx, canvas.width, canvas.height, isDark, scrollOffsetRef.current)
 
       if (currentGameState === 'playing') {
-        // Update bird with delta time
+        // Update bird with delta time (FPS-independent physics)
         bird.velocity += GRAVITY * deltaTime
-        bird.y += bird.velocity
+        bird.y += bird.velocity * deltaTime
 
         // Generate pipes
         if (pipes.length === 0 || pipes[pipes.length - 1].x < canvas.width - PIPE_SPACING) {
@@ -558,7 +558,7 @@ export function FlappyBird({ onGameStart, onGameEnd, onGameQuit, isTaskRunning, 
       if (currentGameState !== 'idle') {
         ctx.save()
         ctx.translate(bird.x + bird.width / 2, bird.y + bird.height / 2)
-        const rotation = Math.min(Math.max(bird.velocity * 3, -25), 70) * Math.PI / 180
+        const rotation = Math.min(Math.max(bird.velocity / TARGET_FPS * 3, -25), 70) * Math.PI / 180
         ctx.rotate(rotation)
         drawPixelBird(ctx, 0, 0, isDark)
         ctx.restore()

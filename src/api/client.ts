@@ -8,21 +8,32 @@ const BASE_URL = 'https://api.wavespeed.ai'
 // Get app version from package.json
 const version = packageJson.version
 
-// Detect operating system
+// Detect operating system - works in Electron, browser, and Node.js
 function getOperatingSystem(): string {
-  const userAgent = navigator.userAgent.toLowerCase()
+  // Try Node.js/Electron process.platform first (most reliable)
+  if (typeof process !== 'undefined' && process.platform) {
+    return process.platform // 'darwin', 'win32', 'linux', etc.
+  }
 
-  // Check for specific operating systems
-  if (userAgent.includes('mac os x') || userAgent.includes('macintosh')) {
-    return 'macos'
-  } else if (userAgent.includes('windows') || userAgent.includes('win64') || userAgent.includes('win32')) {
-    return 'windows'
-  } else if (userAgent.includes('android')) {
-    return 'android'
-  } else if (userAgent.includes('iphone') || userAgent.includes('ipad') || userAgent.includes('ipod')) {
-    return 'ios'
-  } else if (userAgent.includes('linux')) {
-    return 'linux'
+  // Fall back to user agent parsing (browser environment)
+  if (typeof navigator !== 'undefined' && navigator.userAgent) {
+    const userAgent = navigator.userAgent.toLowerCase()
+
+    if (userAgent.includes('mac os x') || userAgent.includes('macintosh')) {
+      return 'darwin'
+    } else if (userAgent.includes('windows') || userAgent.includes('win64') || userAgent.includes('win32')) {
+      return 'win32'
+    } else if (userAgent.includes('android')) {
+      return 'android'
+    } else if (userAgent.includes('iphone') || userAgent.includes('ipad') || userAgent.includes('ipod')) {
+      return 'ios'
+    } else if (userAgent.includes('cros')) {
+      return 'chromeos'
+    } else if (userAgent.includes('linux')) {
+      return 'linux'
+    } else if (userAgent.includes('freebsd')) {
+      return 'freebsd'
+    }
   }
 
   return 'unknown'

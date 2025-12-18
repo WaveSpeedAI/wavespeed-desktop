@@ -57,7 +57,7 @@ function createZImageSchema() {
       model: {
         type: 'string',
         title: 'Model',
-        description: 'Select a local SD model to use for generation',
+        description: 'Select a local Z-Image model to use for generation',
         enum: modelOptions,
         default: 'z-image-turbo-q4-k'
       },
@@ -73,25 +73,13 @@ function createZImageSchema() {
         description: 'Describe what you want to avoid',
         default: ''
       },
-      width: {
-        type: 'integer',
-        title: 'Width',
-        description: 'Image width (must be multiple of 64)',
+      size: {
+        type: 'string',
+        title: 'Size',
+        description: 'Image dimensions',
         minimum: 256,
         maximum: 1536,
-        step: 64,
-        default: 512,
-        'x-ui-component': 'slider' as const
-      },
-      height: {
-        type: 'integer',
-        title: 'Height',
-        description: 'Image height (must be multiple of 64)',
-        minimum: 256,
-        maximum: 1536,
-        step: 64,
-        default: 512,
-        'x-ui-component': 'slider' as const
+        default: '512*512'
       },
       steps: {
         type: 'integer',
@@ -115,10 +103,7 @@ function createZImageSchema() {
       seed: {
         type: 'integer',
         title: 'Seed',
-        description: 'Random seed for reproducibility (-1 for random)',
-        minimum: -1,
-        maximum: 2147483647,
-        default: -1
+        description: 'Random seed for reproducibility (leave empty for random)'
       },
       sampling_method: {
         type: 'string',
@@ -140,13 +125,12 @@ function createZImageSchema() {
       'model',
       'prompt',
       'negative_prompt',
-      'width',
-      'height',
+      'size',
       'steps',
       'cfg_scale',
-      'seed',
       'sampling_method',
-      'scheduler'
+      'scheduler',
+      'seed'
     ]
   }
 }

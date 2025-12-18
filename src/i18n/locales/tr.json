@@ -373,97 +373,31 @@
   },
   "zImage": {
     "title": "Z-Image",
-    "description": "Yerel AI görüntü oluşturma (6B parametre modeli, cihazınızda çalışır)",
-    "requiredModels": "Gerekli Modeller",
-    "requiredModelsDesc": "LLM ve VAE modellerini indirin (tarayıcıda önbelleğe alınır)",
-    "mainModel": "Ana Model",
-    "mainModelDesc": "Bir Z-Image-Turbo modeli seçin",
-    "llmModel": "LLM Modeli (Qwen3-4B, 2,4 GB)",
-    "vaeModel": "VAE Modeli (FLUX, 335 MB)",
-    "downloaded": "İndirildi",
-    "download": "İndir",
-    "downloading": "İndiriliyor...",
-    "downloadProgress": "{{progress}}%",
-    "cancelDownload": "İndirmeyi İptal Et",
-    "retryDownload": "İndirmeyi Yeniden Dene",
-    "selectModel": "Model Seç",
-    "chooseModel": "Bir model seçin...",
-    "modelDescription": "Model açıklaması",
-    "generateImage": "Görüntü Oluştur",
+    "subtitle": "Z-Image'i yerel olarak ücretsiz çalıştırın",
+    "generateImage": "Oluştur",
     "generating": "Oluşturuluyor...",
-    "processing": "İşleniyor...",
     "downloadingSd": "SD indiriliyor...",
     "downloadingVae": "VAE indiriliyor...",
     "downloadingLlm": "LLM indiriliyor...",
-    "downloadingZImage": "Z-Image indiriliyor...",
-    "downloadingModel": "Model indiriliyor...",
-    "stopGeneration": "Oluşturmayı Durdur",
-    "generationCancelled": "Oluşturma iptal edildi",
-    "prompt": "İstem",
-    "promptPlaceholder": "Dağlar ve göl olan güzel bir manzara",
-    "promptRequired": "İstem gereklidir",
-    "negativePrompt": "Negatif İstem",
-    "negativePromptPlaceholder": "bulanık, kötü kalite",
-    "width": "Genişlik",
-    "height": "Yükseklik",
-    "steps": "Adımlar",
-    "cfgScale": "CFG Ölçeği",
-    "samplingMethod": "Örnekleme Yöntemi",
-    "scheduler": "Zamanlayıcı",    "seed": "Tohum",
-    "randomSeed": "Rastgele",
-    "autoRandomizeSeed": "Oluşturma sonrası tohumunu otomatik rastgeleleştir",
-    "onlineHint": "Çok mu uzun sürüyor? GPU hızlandırmalı daha hızlı oluşturma için Playground'daki çevrimiçi API'mizi deneyin.",
-    "tryOnline": "Playground'a Git →",
-    "result": "Sonuç",
-    "generatedImage": "Oluşturulan görüntü",
-    "noResult": "Henüz görüntü oluşturulmadı. Parametreleri yapılandırın ve Oluştur'a tıklayın.",
-    "openInFolder": "Klasörde Aç",
-    "selectModelFirst": "Bir model seçin",
-    "downloadModelFirst": "Önce modeli indirin",
-    "downloadLlmFirst": "Önce LLM modelini indirin",
-    "downloadVaeFirst": "Önce VAE modelini indirin",
-    "settingUp": "Kuruluyor...",
-    "binaryNotAvailable": "İkili dosya mevcut değil",
-    "generationFailed": "Oluşturma başarısız",
-    "invalidParameters": "Geçersiz parametreler",
-    "noOutputYet": "Henüz çıktı yok",
-    "configureAndGenerate": "Görüntü oluşturmak için parametreleri yapılandırın ve Oluştur'a tıklayın",
-    "step": "Adım",
-    "of": "/",
-    "acceleration": "Hızlandırma",
-    "modelStatus": "Model Durumu",
-    "cacheStatus": "Önbellek Durumu",
-    "downloadError": "İndirme hatası",
-    "generationError": "Oluşturma hatası",
-    "configureParams": "Oluşturma parametrelerini yapılandır",
-    "stepProgress": "Adım {{current}}/{{total}}",
-    "downloadModel": "Model İndir",
-    "deleteModel": "Modeli Sil",
-    "autoDownloadHint": "Oluşturma sırasında otomatik olarak indirilecek ({{size}})",
+    "downloadingZImage": "Model indiriliyor...",
+    "stopGeneration": "Durdur",
     "models": {
       "q4k": {
-        "description": "Önerilen: İyi kalitede hızlı çıkarım, ~2,5 GB"
+        "description": "Önerilen: İyi kalitede hızlı çıkarım, ~2,5GB"
       },
       "q6k": {
-        "description": "Yüksek kalite: En iyi sonuçlar, daha yavaş oluşturma, ~3,5 GB"
+        "description": "Yüksek kalite: En iyi sonuçlar, daha yavaş oluşturma, ~3,5GB"
       },
       "q8": {
-        "description": "En yüksek kalite: Maksimum hassasiyet, daha yavaş oluşturma, ~4 GB"
+        "description": "En yüksek kalite: Maksimum hassasiyet, daha yavaş oluşturma, ~4GB"
       },
       "q2k": {
-        "description": "Hafif: En hızlı oluşturma, daha düşük kalite, ~1,5 GB"
+        "description": "Hafif: En hızlı oluşturma, daha düşük kalite, ~1,5GB"
       }
     },
     "errors": {
-      "noModel": "Lütfen önce bir model seçin",
-      "modelNotDownloaded": "Lütfen önce seçili modeli indirin",
-      "llmNotDownloaded": "Lütfen önce LLM modelini indirin",
-      "vaeNotDownloaded": "Lütfen önce VAE modelini indirin",
-      "invalidParams": "Geçersiz parametreler",
-      "generationFailed": "Oluşturma başarısız",
-      "generationCancelled": "İndirme/Oluşturma iptal edildi",
-      "downloadFailed": "İndirme başarısız. Yeniden denemek için 'Görüntü Oluştur'a tıklayın.",
-      "deleteFailed": "Silme başarısız"
+      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "generationCancelled": "Oluşturma iptal edildi"
     }
   },
   "settings": {

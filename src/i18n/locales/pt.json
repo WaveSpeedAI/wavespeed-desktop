@@ -373,97 +373,31 @@
   },
   "zImage": {
     "title": "Z-Image",
-    "description": "Geração de imagens IA local (modelo de 6B parâmetros, executa no seu dispositivo)",
-    "requiredModels": "Modelos Necessários",
-    "requiredModelsDesc": "Baixar modelos LLM e VAE (armazenados em cache no navegador)",
-    "mainModel": "Modelo Principal",
-    "mainModelDesc": "Selecione um modelo Z-Image-Turbo",
-    "llmModel": "Modelo LLM (Qwen3-4B, 2,4 GB)",
-    "vaeModel": "Modelo VAE (FLUX, 335 MB)",
-    "downloaded": "Baixado",
-    "download": "Baixar",
-    "downloading": "Baixando...",
-    "downloadProgress": "{{progress}}%",
-    "cancelDownload": "Cancelar Download",
-    "retryDownload": "Tentar Novamente",
-    "selectModel": "Selecionar Modelo",
-    "chooseModel": "Escolha um modelo...",
-    "modelDescription": "Descrição do modelo",
-    "generateImage": "Gerar Imagem",
+    "subtitle": "Execute o Z-Image localmente de graça",
+    "generateImage": "Gerar",
     "generating": "Gerando...",
-    "processing": "Processando...",
     "downloadingSd": "Baixando SD...",
     "downloadingVae": "Baixando VAE...",
     "downloadingLlm": "Baixando LLM...",
-    "downloadingZImage": "Baixando Z-Image...",
-    "downloadingModel": "Baixando Modelo...",
-    "stopGeneration": "Parar Geração",
-    "generationCancelled": "Geração cancelada",
-    "prompt": "Prompt",
-    "promptPlaceholder": "Uma bela paisagem com montanhas e lago",
-    "promptRequired": "O prompt é obrigatório",
-    "negativePrompt": "Prompt Negativo",
-    "negativePromptPlaceholder": "desfocado, má qualidade",
-    "width": "Largura",
-    "height": "Altura",
-    "steps": "Passos",
-    "cfgScale": "Escala CFG",
-    "samplingMethod": "Método de Amostragem",
-    "scheduler": "Agendador",    "seed": "Semente",
-    "randomSeed": "Aleatório",
-    "autoRandomizeSeed": "Randomizar semente automaticamente após geração",
-    "onlineHint": "Demorando muito? Experimente nossa API online no Playground para geração mais rápida com aceleração GPU.",
-    "tryOnline": "Ir para Playground →",
-    "result": "Resultado",
-    "generatedImage": "Imagem gerada",
-    "noResult": "Nenhuma imagem gerada ainda. Configure os parâmetros e clique em Gerar.",
-    "openInFolder": "Abrir na Pasta",
-    "selectModelFirst": "Selecione um modelo",
-    "downloadModelFirst": "Baixe o modelo primeiro",
-    "downloadLlmFirst": "Baixe o modelo LLM primeiro",
-    "downloadVaeFirst": "Baixe o modelo VAE primeiro",
-    "settingUp": "Configurando...",
-    "binaryNotAvailable": "Binário não disponível",
-    "generationFailed": "Geração falhou",
-    "invalidParameters": "Parâmetros inválidos",
-    "noOutputYet": "Ainda sem saída",
-    "configureAndGenerate": "Configure os parâmetros e clique em Gerar para criar uma imagem",
-    "step": "Passo",
-    "of": "de",
-    "acceleration": "Aceleração",
-    "modelStatus": "Status do Modelo",
-    "cacheStatus": "Status do Cache",
-    "downloadError": "Erro de download",
-    "generationError": "Erro de geração",
-    "configureParams": "Configurar parâmetros de geração",
-    "stepProgress": "Passo {{current}}/{{total}}",
-    "downloadModel": "Baixar Modelo",
-    "deleteModel": "Excluir Modelo",
-    "autoDownloadHint": "Será baixado automaticamente ao gerar ({{size}})",
+    "downloadingZImage": "Baixando modelo...",
+    "stopGeneration": "Parar",
     "models": {
       "q4k": {
-        "description": "Recomendado: Inferência rápida com boa qualidade, ~2,5 GB"
+        "description": "Recomendado: Inferência rápida com boa qualidade, ~2,5GB"
       },
       "q6k": {
-        "description": "Alta qualidade: Melhores resultados, geração mais lenta, ~3,5 GB"
+        "description": "Alta qualidade: Melhores resultados, geração mais lenta, ~3,5GB"
       },
       "q8": {
-        "description": "Qualidade máxima: Máxima precisão, geração mais lenta, ~4 GB"
+        "description": "Qualidade máxima: Máxima precisão, geração mais lenta, ~4GB"
       },
       "q2k": {
-        "description": "Leve: Geração mais rápida, qualidade inferior, ~1,5 GB"
+        "description": "Leve: Geração mais rápida, qualidade inferior, ~1,5GB"
       }
     },
     "errors": {
-      "noModel": "Selecione um modelo primeiro",
-      "modelNotDownloaded": "Baixe o modelo selecionado primeiro",
-      "llmNotDownloaded": "Baixe o modelo LLM primeiro",
-      "vaeNotDownloaded": "Baixe o modelo VAE primeiro",
-      "invalidParams": "Parâmetros inválidos",
-      "generationFailed": "Geração falhou",
-      "generationCancelled": "Download/Geração cancelado",
-      "downloadFailed": "Download falhou. Clique em 'Gerar Imagem' para tentar novamente.",
-      "deleteFailed": "Exclusão falhou"
+      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "generationCancelled": "Geração cancelada"
     }
   },
   "settings": {

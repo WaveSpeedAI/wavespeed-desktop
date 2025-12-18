@@ -86,13 +86,15 @@ export const useSDModelsStore = create<SDModelsState>((set, get) => ({
    * Fetch model list and check which ones are downloaded
    */
   fetchModels: async () => {
+    // Check if Electron API is available - silently return in browser mode
+    if (!window.electronAPI?.sdListModels) {
+      set({ isLoading: false })
+      return
+    }
+
     set({ isLoading: true, error: null })
 
     try {
-      // Check if Electron API is available
-      if (!window.electronAPI?.sdListModels) {
-        throw new Error('Electron API not available')
-      }
 
       // Get downloaded models list
       const result = await window.electronAPI.sdListModels()
@@ -160,10 +162,13 @@ export const useSDModelsStore = create<SDModelsState>((set, get) => ({
    * Import custom model
    */
   importCustomModel: async (filePath: string) => {
+    // Check if Electron API is available - silently return in browser mode
+    if (!window.electronAPI?.sdListModels) {
+      set({ error: 'This feature requires the desktop app' })
+      return
+    }
+
     try {
-      if (!window.electronAPI?.sdListModels) {
-        throw new Error('Electron API not available')
-      }
 
       // Validate file is .gguf format
       if (!filePath.toLowerCase().endsWith('.gguf')) {

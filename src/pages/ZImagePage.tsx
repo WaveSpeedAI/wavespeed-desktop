@@ -102,9 +102,17 @@ const PHASES = [
 const DEFAULT_PROMPT = 'Portrait of a beautiful woman with elegant features, professional fashion photography, studio lighting, soft focus background, glamorous makeup, flowing hair, confident pose, haute couture dress, sophisticated aesthetic, photorealistic, high detail, 8k quality'
 const DEFAULT_NEGATIVE_PROMPT = 'blurry, bad quality, low resolution, watermark, distorted, ugly, deformed, extra limbs, poorly drawn, bad anatomy'
 
+// Check if running in Electron environment
+function isElectronAvailable(): boolean {
+  return typeof window !== 'undefined' && !!window.electronAPI?.sdListModels
+}
+
 export function ZImagePage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+
+  // Check if Electron APIs are available
+  const electronAvailable = isElectronAvailable()
 
   // State
   const [prompt, setPrompt] = useState('')
@@ -720,7 +728,25 @@ export function ZImagePage() {
         </div>
       </div>
 
+      {/* Desktop App Required Message */}
+      {!electronAvailable && (
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="text-center max-w-md">
+            <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <h2 className="text-xl font-semibold mb-2">{t('zImage.desktopRequired', 'Desktop App Required')}</h2>
+            <p className="text-muted-foreground mb-4">
+              {t('zImage.desktopRequiredDesc', 'Z-Image runs AI models locally on your computer. Please download the desktop app to use this feature.')}
+            </p>
+            <Button onClick={() => navigate('/playground/wavespeed-ai/z-image/turbo')}>
+              <Zap className="mr-2 h-4 w-4" />
+              {t('zImage.tryOnline', 'Try Online Version')}
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Content - Two Column Layout */}
+      {electronAvailable && (
       <div className="flex flex-1 overflow-hidden">
         {/* Left Panel - Configuration */}
         <div className="w-[420px] flex flex-col border-r bg-muted/30">
@@ -1076,6 +1102,7 @@ export function ZImagePage() {
           </div>
         </div>
       </div>
+      )}
     </div>
   )
 }

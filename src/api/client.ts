@@ -1,8 +1,43 @@
 import axios, { AxiosInstance, AxiosError } from 'axios'
 import type { Model, ModelsResponse } from '@/types/model'
 import type { PredictionResult, PredictionResponse, HistoryResponse, UploadResponse } from '@/types/prediction'
+import packageJson from '../../package.json'
 
 const BASE_URL = 'https://api.wavespeed.ai'
+
+// Get app version from package.json
+const version = packageJson.version
+
+// Detect operating system - works in Electron, browser, and Node.js
+function getOperatingSystem(): string {
+  // Try Node.js/Electron process.platform first (most reliable)
+  if (typeof process !== 'undefined' && process.platform) {
+    return process.platform // 'darwin', 'win32', 'linux', etc.
+  }
+
+  // Fall back to user agent parsing (browser environment)
+  if (typeof navigator !== 'undefined' && navigator.userAgent) {
+    const userAgent = navigator.userAgent.toLowerCase()
+
+    if (userAgent.includes('mac os x') || userAgent.includes('macintosh')) {
+      return 'darwin'
+    } else if (userAgent.includes('windows') || userAgent.includes('win64') || userAgent.includes('win32')) {
+      return 'win32'
+    } else if (userAgent.includes('android')) {
+      return 'android'
+    } else if (userAgent.includes('iphone') || userAgent.includes('ipad') || userAgent.includes('ipod')) {
+      return 'ios'
+    } else if (userAgent.includes('cros')) {
+      return 'chromeos'
+    } else if (userAgent.includes('linux')) {
+      return 'linux'
+    } else if (userAgent.includes('freebsd')) {
+      return 'freebsd'
+    }
+  }
+
+  return 'unknown'
+}
 
 // Custom error class with detailed information
 export class APIError extends Error {
@@ -104,9 +139,9 @@ class WaveSpeedClient {
       timeout: 60000, // 60 second timeout for connection and read
       headers: {
         'Content-Type': 'application/json',
-        // 'X-Client-Name': 'wavespeed-desktop',
-        // 'X-Client-Version': version,
-        // 'X-Client-OS': getOperatingSystem()
+        'X-Client-Name': 'wavespeed-desktop',
+        'X-Client-Version': version,
+        'X-Client-OS': getOperatingSystem()
       }
     })
 

@@ -860,16 +860,16 @@ export function SettingsPage() {
 
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>{t('settings.freeTools.title')}</CardTitle>
+          <CardTitle>{t('settings.downloads.title')}</CardTitle>
           <CardDescription>
-            {t('settings.freeTools.description')}
+            {t('settings.downloads.description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-muted-foreground" />
-              <Label>{t('settings.freeTools.downloadTimeout')}</Label>
+              <Label>{t('settings.downloads.downloadTimeout')}</Label>
             </div>
             <div className="flex items-center gap-3">
               <Select
@@ -880,17 +880,17 @@ export function SettingsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="120">2 {t('settings.freeTools.minutes')}</SelectItem>
-                  <SelectItem value="300">5 {t('settings.freeTools.minutes')}</SelectItem>
-                  <SelectItem value="600">10 {t('settings.freeTools.minutes')}</SelectItem>
-                  <SelectItem value="900">15 {t('settings.freeTools.minutes')}</SelectItem>
-                  <SelectItem value="1800">30 {t('settings.freeTools.minutes')}</SelectItem>
-                  <SelectItem value="3600">60 {t('settings.freeTools.minutes')}</SelectItem>
+                  <SelectItem value="120">2 {t('settings.downloads.minutes')}</SelectItem>
+                  <SelectItem value="300">5 {t('settings.downloads.minutes')}</SelectItem>
+                  <SelectItem value="600">10 {t('settings.downloads.minutes')}</SelectItem>
+                  <SelectItem value="900">15 {t('settings.downloads.minutes')}</SelectItem>
+                  <SelectItem value="1800">30 {t('settings.downloads.minutes')}</SelectItem>
+                  <SelectItem value="3600">60 {t('settings.downloads.minutes')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <p className="text-xs text-muted-foreground">
-              {t('settings.freeTools.downloadTimeoutDesc')}
+              {t('settings.downloads.downloadTimeoutDesc')}
             </p>
           </div>
         </CardContent>

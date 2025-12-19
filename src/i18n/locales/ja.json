@@ -478,9 +478,9 @@
       "zImageModels": "Z-Image モデル",
       "zImageBinary": "Z-Image バイナリ"
     },
-    "freeTools": {
-      "title": "無料ツール",
-      "description": "無料ツールの設定",
+    "downloads": {
+      "title": "ダウンロード",
+      "description": "AIモデルのダウンロード設定",
       "downloadTimeout": "ダウンロードタイムアウト",
       "downloadTimeoutDesc": "AIモデルのダウンロード最大待機時間",
       "minutes": "分"

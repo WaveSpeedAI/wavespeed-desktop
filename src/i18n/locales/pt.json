@@ -478,9 +478,9 @@
       "zImageModels": "Modelos do Z-Image",
       "zImageBinary": "Binário do Z-Image"
     },
-    "freeTools": {
-      "title": "Ferramentas Gratuitas",
-      "description": "Configurar definições das ferramentas gratuitas",
+    "downloads": {
+      "title": "Downloads",
+      "description": "Configurar downloads de modelos de IA",
       "downloadTimeout": "Tempo Limite de Download",
       "downloadTimeoutDesc": "Tempo máximo de espera ao baixar modelos de IA",
       "minutes": "minutos"

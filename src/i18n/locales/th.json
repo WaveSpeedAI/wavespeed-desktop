@@ -478,9 +478,9 @@
       "zImageModels": "โมเดล Z-Image",
       "zImageBinary": "ไบนารี Z-Image"
     },
-    "freeTools": {
-      "title": "เครื่องมือฟรี",
-      "description": "กำหนดค่าการตั้งค่าเครื่องมือฟรี",
+    "downloads": {
+      "title": "ดาวน์โหลด",
+      "description": "ตั้งค่าการดาวน์โหลดโมเดล AI",
       "downloadTimeout": "หมดเวลาดาวน์โหลด",
       "downloadTimeoutDesc": "เวลารอสูงสุดเมื่อดาวน์โหลดโมเดล AI",
       "minutes": "นาที"

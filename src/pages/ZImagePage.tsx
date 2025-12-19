@@ -10,6 +10,7 @@ import { DynamicForm } from '@/components/playground/DynamicForm'
 import { OutputDisplay } from '@/components/playground/OutputDisplay'
 import { LogConsole } from '@/components/shared/LogConsole'
 import { useSDModelsStore } from '@/stores/sdModelsStore'
+import { getDownloadTimeoutMs } from '@/stores/settingsStore'
 import { useZImage } from '@/hooks/useZImage'
 import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
 import { createZImageModel, ZIMAGE_DEFAULT_NEGATIVE_PROMPT } from '@/lib/zImageModel'
@@ -58,6 +59,7 @@ export function ZImagePage() {
   const [error, setError] = useState<string | null>(null)
   const [prediction, setPrediction] = useState<PredictionResult | null>(null)
   const [outputs, setOutputs] = useState<string[]>([])
+  const [usedSeed, setUsedSeed] = useState<number | null>(null)
   const [metalWarning, setMetalWarning] = useState<string | null>(null)
   const [accelerationInfo, setAccelerationInfo] = useState<{ platform: string; arch: string; acceleration: string } | null>(null)
 
@@ -193,6 +195,7 @@ export function ZImagePage() {
     setError(null)
     setPrediction(null)
     setOutputs([])
+    setUsedSeed(null)
     setMetalWarning(null)
     isCancelledRef.current = false
     setValidationErrors({})
@@ -265,7 +268,8 @@ export function ZImagePage() {
             updateModelDownloadStatus({ progress: prog.progress, detail: prog.detail })
           },
           chunkSize: 10 * 1024 * 1024,
-          minValidSize: 500 * 1024 * 1024
+          minValidSize: 500 * 1024 * 1024,
+          timeout: getDownloadTimeoutMs()
         })
 
         modelDownloaderRef.current = null
@@ -343,12 +347,7 @@ export function ZImagePage() {
         created_at: new Date().toISOString()
       })
       setOutputs([imageUrl])
-
-      // Randomize seed for next run
-      setZImageFormValues({
-        ...zImageFormValues,
-        seed: Math.floor(Math.random() * 2147483647)
-      })
+      setUsedSeed(seed)
 
     } catch (err) {
       const msg = (err as Error).message
@@ -516,7 +515,7 @@ export function ZImagePage() {
         </div>
 
         {/* Right Panel - Output */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 flex flex-col">
           <OutputDisplay
             prediction={prediction}
             outputs={outputs}
@@ -525,6 +524,11 @@ export function ZImagePage() {
             modelId="local/z-image"
             modelName="Z-Image (Local)"
           />
+          {usedSeed !== null && outputs.length > 0 && (
+            <div className="px-4 py-2 border-t bg-muted/30 text-sm text-muted-foreground">
+              Seed: <span className="font-mono select-all">{usedSeed}</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

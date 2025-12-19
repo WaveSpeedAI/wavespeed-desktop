@@ -478,9 +478,9 @@
       "zImageModels": "Z-Image modelleri",
       "zImageBinary": "Z-Image ikili dosyası"
     },
-    "freeTools": {
-      "title": "Ücretsiz Araçlar",
-      "description": "Ücretsiz araç ayarlarını yapılandır",
+    "downloads": {
+      "title": "İndirmeler",
+      "description": "AI model indirme ayarları",
       "downloadTimeout": "İndirme Zaman Aşımı",
       "downloadTimeoutDesc": "AI modelleri indirirken maksimum bekleme süresi",
       "minutes": "dakika"

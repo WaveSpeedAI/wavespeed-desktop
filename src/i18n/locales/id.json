@@ -478,9 +478,9 @@
       "zImageModels": "Model Z-Image",
       "zImageBinary": "Biner Z-Image"
     },
-    "freeTools": {
-      "title": "Alat Gratis",
-      "description": "Konfigurasi pengaturan alat gratis",
+    "downloads": {
+      "title": "Unduhan",
+      "description": "Konfigurasi unduhan model AI",
       "downloadTimeout": "Batas Waktu Unduh",
       "downloadTimeoutDesc": "Waktu tunggu maksimum saat mengunduh model AI",
       "minutes": "menit"

@@ -478,9 +478,9 @@
       "zImageModels": "نماذج Z-Image",
       "zImageBinary": "ملف Z-Image الثنائي"
     },
-    "freeTools": {
-      "title": "أدوات مجانية",
-      "description": "تكوين إعدادات الأدوات المجانية",
+    "downloads": {
+      "title": "التنزيلات",
+      "description": "إعدادات تنزيل نماذج الذكاء الاصطناعي",
       "downloadTimeout": "مهلة التنزيل",
       "downloadTimeoutDesc": "الحد الأقصى لوقت الانتظار عند تنزيل نماذج الذكاء الاصطناعي",
       "minutes": "دقائق"

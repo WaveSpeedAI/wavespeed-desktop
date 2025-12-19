@@ -478,9 +478,9 @@
       "zImageModels": "Mô hình Z-Image",
       "zImageBinary": "Tệp nhị phân Z-Image"
     },
-    "freeTools": {
-      "title": "Công cụ miễn phí",
-      "description": "Cấu hình cài đặt công cụ miễn phí",
+    "downloads": {
+      "title": "Tải xuống",
+      "description": "Cấu hình tải xuống mô hình AI",
       "downloadTimeout": "Thời gian chờ tải xuống",
       "downloadTimeoutDesc": "Thời gian chờ tối đa khi tải xuống các mô hình AI",
       "minutes": "phút"

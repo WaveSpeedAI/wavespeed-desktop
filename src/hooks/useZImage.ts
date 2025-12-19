@@ -12,6 +12,7 @@ import { useCallback, useRef, useEffect } from 'react'
 import type { GenerationParams } from '@/types/stable-diffusion'
 import { useSDModelsStore } from '@/stores/sdModelsStore'
 import { ChunkedDownloader } from '@/lib/chunkedDownloader'
+import { getDownloadTimeoutMs } from '@/stores/settingsStore'
 import type { ProgressDetail } from '@/types/progress'
 
 // Model URLs
@@ -93,7 +94,8 @@ export function useZImage(options: UseZImageOptions = {}) {
           optionsRef.current.onProgress?.('download-llm', progress.progress, progress.detail)
         },
         chunkSize: 10 * 1024 * 1024, // 10MB chunks
-        minValidSize: MODELS.llm.size * 0.95 // Allow 5% tolerance
+        minValidSize: MODELS.llm.size * 0.95, // Allow 5% tolerance
+        timeout: getDownloadTimeoutMs()
       })
 
       // Clear downloader reference
@@ -161,7 +163,8 @@ export function useZImage(options: UseZImageOptions = {}) {
           optionsRef.current.onProgress?.('download-vae', progress.progress, progress.detail)
         },
         chunkSize: 10 * 1024 * 1024, // 10MB chunks
-        minValidSize: MODELS.vae.size * 0.95 // Allow 5% tolerance
+        minValidSize: MODELS.vae.size * 0.95, // Allow 5% tolerance
+        timeout: getDownloadTimeoutMs()
       })
 
       // Clear downloader reference
@@ -260,7 +263,8 @@ export function useZImage(options: UseZImageOptions = {}) {
           optionsRef.current.onProgress?.('download-binary', progress.progress, progress.detail)
         },
         chunkSize: 10 * 1024 * 1024, // 10MB chunks
-        minValidSize: 1024 * 1024 // At least 1MB
+        minValidSize: 1024 * 1024, // At least 1MB
+        timeout: getDownloadTimeoutMs()
       })
 
       // Clear downloader reference

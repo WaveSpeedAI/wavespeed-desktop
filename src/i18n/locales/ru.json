@@ -478,9 +478,9 @@
       "zImageModels": "Модели Z-Image",
       "zImageBinary": "Бинарный файл Z-Image"
     },
-    "freeTools": {
-      "title": "Бесплатные инструменты",
-      "description": "Настройки бесплатных инструментов",
+    "downloads": {
+      "title": "Загрузки",
+      "description": "Настройки загрузки моделей ИИ",
       "downloadTimeout": "Таймаут загрузки",
       "downloadTimeoutDesc": "Максимальное время ожидания загрузки моделей ИИ",
       "minutes": "минут"

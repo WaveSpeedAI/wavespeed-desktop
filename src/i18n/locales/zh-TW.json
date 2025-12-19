@@ -478,9 +478,9 @@
       "zImageModels": "Z-Image 模型",
       "zImageBinary": "Z-Image 二進位"
     },
-    "freeTools": {
-      "title": "免費工具",
-      "description": "配置免費工具設定",
+    "downloads": {
+      "title": "下載",
+      "description": "配置AI模型下載設定",
       "downloadTimeout": "下載超時",
       "downloadTimeoutDesc": "下載AI模型的最大等待時間",
       "minutes": "分鐘"

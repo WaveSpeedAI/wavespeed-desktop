@@ -478,9 +478,9 @@
       "zImageModels": "Z-Image-Modelle",
       "zImageBinary": "Z-Image-Binärdatei"
     },
-    "freeTools": {
-      "title": "Kostenlose Tools",
-      "description": "Einstellungen für kostenlose Tools konfigurieren",
+    "downloads": {
+      "title": "Downloads",
+      "description": "Download-Einstellungen für KI-Modelle",
       "downloadTimeout": "Download-Timeout",
       "downloadTimeoutDesc": "Maximale Wartezeit beim Herunterladen von KI-Modellen",
       "minutes": "Minuten"

@@ -478,9 +478,9 @@
       "zImageModels": "Z-Image मॉडल",
       "zImageBinary": "Z-Image बाइनरी"
     },
-    "freeTools": {
-      "title": "मुफ्त उपकरण",
-      "description": "मुफ्त उपकरण सेटिंग्स कॉन्फ़िगर करें",
+    "downloads": {
+      "title": "डाउनलोड",
+      "description": "AI मॉडल डाउनलोड सेटिंग्स",
       "downloadTimeout": "डाउनलोड टाइमआउट",
       "downloadTimeoutDesc": "AI मॉडल डाउनलोड करते समय अधिकतम प्रतीक्षा समय",
       "minutes": "मिनट"

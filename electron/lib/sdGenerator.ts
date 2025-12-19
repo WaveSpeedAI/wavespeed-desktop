@@ -178,7 +178,7 @@ export class SDGenerator {
       if (progressInfo && onProgress) {
         onProgress({
           phase: 'generate',
-          progress: progressInfo.progress,
+          progress: Math.min(progressInfo.progress, 100) * 0.9,
           detail: {
             current: progressInfo.current,
             total: progressInfo.total,
@@ -206,7 +206,7 @@ export class SDGenerator {
       if (progressInfo && onProgress) {
         onProgress({
           phase: 'generate',
-          progress: progressInfo.progress,
+          progress: Math.min(progressInfo.progress, 100) * 0.9,
           detail: {
             current: progressInfo.current,
             total: progressInfo.total,
@@ -233,6 +233,12 @@ export class SDGenerator {
 
         if (code === 0 && existsSync(outputPath)) {
           console.log('[SDGenerator] Generation successful')
+          if (onProgress) {
+            onProgress({
+              phase: 'generate',
+              progress: 100
+            })
+          }
           resolve({
             success: true,
             outputPath: outputPath

@@ -225,30 +225,19 @@ export function useZImage(options: UseZImageOptions = {}) {
 
       // Determine download URL based on platform and acceleration
       let url = ''
-      const githubBaseUrl = 'https://github.com/leejet/stable-diffusion.cpp/releases/download/master-418-200cb6f'
+      const githubBaseUrl = 'https://github.com/WaveSpeedAI/stable-diffusion.cpp/releases/download/master-433-700a797'
 
       if (platform === 'win32') {
-        // Windows: Use CUDA version if available, otherwise AVX2
-        if (acceleration === 'CUDA') {
-          console.log('[useZImage] CUDA detected! Using CUDA version')
-          url = `${githubBaseUrl}/sd-master-200cb6f-bin-win-cuda12-x64.zip`
-        } else {
-          console.log('[useZImage] CUDA not detected, using AVX2 version')
-          url = `${githubBaseUrl}/sd-master-200cb6f-bin-win-avx2-x64.zip`
-        }
+        // Windows: Use Vulkan build from WaveSpeed release
+        console.log('[useZImage] Using Windows Vulkan build from WaveSpeed release')
+        url = `${githubBaseUrl}/sd-master-700a797-bin-win-vulkan-x64.zip`
       } else if (platform === 'darwin') {
-        if (acceleration === 'metal') {
-          // Metal-enabled Mac: Use wavespeed CDN
-          console.log('[useZImage] Metal detected! Using wavespeed CDN')
-          url = 'https://d1q70pf5vjeyhc.wavespeed.ai/media/archives/1765804301239005334_mKJRPNLJ.zip'
-        } else {
-          // Non-Metal Mac (CPU): Use wavespeed CDN
-          console.log('[useZImage] Metal not detected, using wavespeed CDN (CPU version)')
-          url = 'https://d1q70pf5vjeyhc.wavespeed.ai/media/archives/1765906291556700257_Hlfdbjhf.zip'
-        }
+        // macOS: Use Metal build from WaveSpeed release
+        console.log('[useZImage] Using macOS Metal build from WaveSpeed release')
+        url = `${githubBaseUrl}/sd-master-700a797-bin-Darwin-macOS-15.7.2-arm64-metal.zip`
       } else {
-        // Linux
-        url = `${githubBaseUrl}/sd-master-200cb6f-bin-ubuntu-x64.zip`
+        // Linux: Use AVX512 build from WaveSpeed release
+        url = `${githubBaseUrl}/sd-master-700a797-bin-Linux-Ubuntu-24.04-x86_64-avx512.zip`
       }
 
       console.log(`[useZImage] Download URL: ${url}`)

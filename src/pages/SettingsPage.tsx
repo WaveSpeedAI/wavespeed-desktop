@@ -139,7 +139,7 @@ export function SettingsPage() {
         if (result.success && result.models) {
           for (const model of result.models) {
             items.push({
-              cacheName: 'Z-Image Auxiliary',
+              cacheName: 'z-image-auxiliary',
               url: model.path,
               size: model.size,
               type: 'sd-auxiliary',
@@ -156,7 +156,7 @@ export function SettingsPage() {
         if (result.success && result.models) {
           for (const model of result.models) {
             items.push({
-              cacheName: 'Z-Image Models',
+              cacheName: 'z-image-models',
               url: model.path,
               size: model.size,
               type: 'sd-model'
@@ -175,7 +175,7 @@ export function SettingsPage() {
             if (window.electronAPI?.getFileSize) {
               const size = await window.electronAPI.getFileSize(result.path)
               items.push({
-                cacheName: 'Z-Image Binary',
+                cacheName: 'z-image-binary',
                 url: result.path,
                 size: size,
                 type: 'sd-binary'

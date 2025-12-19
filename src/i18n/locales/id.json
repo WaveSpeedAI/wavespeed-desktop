@@ -418,6 +418,7 @@
       "invalidDesc": "Kunci API tidak dapat divalidasi. Silakan periksa dan coba lagi.",
       "cleared": "Kunci API dihapus",
       "clearedDesc": "Kunci API Anda telah dihapus.",
+      "itemDeleted": "Cache item deleted",
       "error": "Error",
       "errorDesc": "Gagal menyimpan kunci API."
     },
@@ -471,7 +472,11 @@
       "clear": "Hapus",
       "cleared": "Cache dihapus",
       "clearedDesc": "Cache model AI telah dihapus. Model akan diunduh ulang saat diperlukan.",
-      "clearFailed": "Gagal menghapus cache"
+      "itemDeleted": "Item cache dihapus",
+      "clearFailed": "Gagal menghapus cache",
+      "zImageAuxiliary": "Model tambahan Z-Image",
+      "zImageModels": "Model Z-Image",
+      "zImageBinary": "Biner Z-Image"
     },
     "freeTools": {
       "title": "Alat Gratis",

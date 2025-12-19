@@ -418,6 +418,7 @@
       "invalidDesc": "無法驗證 API 金鑰。請檢查後重試。",
       "cleared": "API 金鑰已清除",
       "clearedDesc": "您的 API 金鑰已被移除。",
+      "itemDeleted": "Cache item deleted",
       "error": "錯誤",
       "errorDesc": "儲存 API 金鑰失敗。"
     },
@@ -471,7 +472,11 @@
       "clear": "清除",
       "cleared": "缓存已清除",
       "clearedDesc": "AI模型缓存已清除。需要时将重新下载模型。",
-      "clearFailed": "清除快取失敗"
+      "itemDeleted": "快取項目已刪除",
+      "clearFailed": "清除快取失敗",
+      "zImageAuxiliary": "Z-Image 輔助模型",
+      "zImageModels": "Z-Image 模型",
+      "zImageBinary": "Z-Image 二進位"
     },
     "freeTools": {
       "title": "免費工具",

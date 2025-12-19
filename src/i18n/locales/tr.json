@@ -418,6 +418,7 @@
       "invalidDesc": "API anahtarı doğrulanamadı. Lütfen kontrol edip tekrar deneyin.",
       "cleared": "API anahtarı silindi",
       "clearedDesc": "API anahtarınız kaldırıldı.",
+      "itemDeleted": "Cache item deleted",
       "error": "Hata",
       "errorDesc": "API anahtarı kaydedilemedi."
     },
@@ -471,7 +472,11 @@
       "clear": "Temizle",
       "cleared": "Önbellek temizlendi",
       "clearedDesc": "AI model önbelleği temizlendi. Modeller gerektiğinde yeniden indirilecek.",
-      "clearFailed": "Önbellek temizlenemedi"
+      "itemDeleted": "Önbellek öğesi silindi",
+      "clearFailed": "Önbellek temizlenemedi",
+      "zImageAuxiliary": "Z-Image yardımcı modeller",
+      "zImageModels": "Z-Image modelleri",
+      "zImageBinary": "Z-Image ikili dosyası"
     },
     "freeTools": {
       "title": "Ücretsiz Araçlar",

@@ -418,6 +418,7 @@
       "invalidDesc": "Не удалось проверить API-ключ. Проверьте и попробуйте снова.",
       "cleared": "API-ключ удалён",
       "clearedDesc": "Ваш API-ключ был удалён.",
+      "itemDeleted": "Cache item deleted",
       "error": "Ошибка",
       "errorDesc": "Не удалось сохранить API-ключ."
     },
@@ -471,7 +472,11 @@
       "clear": "Очистить",
       "cleared": "Кэш очищен",
       "clearedDesc": "Кэш моделей ИИ очищен. Модели будут загружены повторно при необходимости.",
-      "clearFailed": "Не удалось очистить кэш"
+      "itemDeleted": "Элемент кэша удалён",
+      "clearFailed": "Не удалось очистить кэш",
+      "zImageAuxiliary": "Вспомогательные модели Z-Image",
+      "zImageModels": "Модели Z-Image",
+      "zImageBinary": "Бинарный файл Z-Image"
     },
     "freeTools": {
       "title": "Бесплатные инструменты",

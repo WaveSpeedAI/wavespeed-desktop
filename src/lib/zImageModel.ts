@@ -84,10 +84,10 @@ function createZImageSchema() {
       steps: {
         type: 'integer',
         title: 'Steps',
-        description: 'Number of sampling steps (4-50)',
-        minimum: 4,
+        description: 'Number of sampling steps (1-50)',
+        minimum: 1,
         maximum: 50,
-        default: 8,
+        default: 4,
         'x-ui-component': 'slider' as const
       },
       cfg_scale: {
@@ -96,7 +96,7 @@ function createZImageSchema() {
         description: 'Classifier-free guidance scale (1-20)',
         minimum: 1,
         maximum: 20,
-        step: 0.5,
+        step: 0.01,
         default: 1,
         'x-ui-component': 'slider' as const
       },
@@ -120,7 +120,7 @@ function createZImageSchema() {
         default: 'simple'
       }
     },
-    required: ['model'],
+    required: ['model', 'prompt'],
     'x-order-properties': [
       'model',
       'prompt',

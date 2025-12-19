@@ -418,6 +418,7 @@
       "invalidDesc": "无法验证 API 密钥。请检查后重试。",
       "cleared": "API 密钥已清除",
       "clearedDesc": "您的 API 密钥已被移除。",
+      "itemDeleted": "Cache item deleted",
       "error": "错误",
       "errorDesc": "保存 API 密钥失败。"
     },
@@ -471,7 +472,11 @@
       "clear": "清除",
       "cleared": "缓存已清除",
       "clearedDesc": "AI模型缓存已清除。需要时将重新下载模型。",
-      "clearFailed": "清除缓存失败"
+      "itemDeleted": "缓存项已删除",
+      "clearFailed": "清除缓存失败",
+      "zImageAuxiliary": "Z-Image 辅助模型",
+      "zImageModels": "Z-Image 模型",
+      "zImageBinary": "Z-Image 二进制"
     },
     "freeTools": {
       "title": "免费工具",

@@ -418,6 +418,7 @@
       "invalidDesc": "ไม่สามารถตรวจสอบคีย์ API ได้ กรุณาตรวจสอบและลองอีกครั้ง",
       "cleared": "ล้างคีย์ API แล้ว",
       "clearedDesc": "คีย์ API ของคุณถูกลบแล้ว",
+      "itemDeleted": "Cache item deleted",
       "error": "ข้อผิดพลาด",
       "errorDesc": "ไม่สามารถบันทึกคีย์ API ได้"
     },
@@ -471,7 +472,11 @@
       "clear": "ล้าง",
       "cleared": "ล้างแคชแล้ว",
       "clearedDesc": "แคชโมเดล AI ถูกล้างแล้ว โมเดลจะถูกดาวน์โหลดใหม่เมื่อจำเป็น",
-      "clearFailed": "ล้างแคชไม่สำเร็จ"
+      "itemDeleted": "ลบรายการแคชแล้ว",
+      "clearFailed": "ล้างแคชไม่สำเร็จ",
+      "zImageAuxiliary": "โมเดลเสริม Z-Image",
+      "zImageModels": "โมเดล Z-Image",
+      "zImageBinary": "ไบนารี Z-Image"
     },
     "freeTools": {
       "title": "เครื่องมือฟรี",

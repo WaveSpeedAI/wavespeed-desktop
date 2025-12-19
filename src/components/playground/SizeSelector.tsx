@@ -80,6 +80,8 @@ function generatePresets(min: number, max: number) {
 export function SizeSelector({ value, onChange, disabled, min = 256, max = 1536 }: SizeSelectorProps) {
   const [width, setWidth] = useState(1024)
   const [height, setHeight] = useState(1024)
+  const [widthInput, setWidthInput] = useState('1024')
+  const [heightInput, setHeightInput] = useState('1024')
 
   // Parse value into width/height
   useEffect(() => {
@@ -91,30 +93,40 @@ export function SizeSelector({ value, onChange, disabled, min = 256, max = 1536 
         if (!isNaN(w) && !isNaN(h)) {
           setWidth(w)
           setHeight(h)
+          setWidthInput(String(w))
+          setHeightInput(String(h))
         }
       }
     }
   }, [value])
 
+  const clamp = (n: number) => Math.min(max, Math.max(min, n))
+
   const handleWidthChange = (w: number) => {
     setWidth(w)
+    setWidthInput(String(w))
     onChange(`${w}*${height}`)
   }
 
   const handleHeightChange = (h: number) => {
     setHeight(h)
+    setHeightInput(String(h))
     onChange(`${width}*${h}`)
   }
 
   const handlePreset = (w: number, h: number) => {
     setWidth(w)
     setHeight(h)
+    setWidthInput(String(w))
+    setHeightInput(String(h))
     onChange(`${w}*${h}`)
   }
 
   const handleSwap = () => {
     setWidth(height)
     setHeight(width)
+    setWidthInput(String(height))
+    setHeightInput(String(width))
     onChange(`${height}*${width}`)
   }
 
@@ -150,8 +162,25 @@ export function SizeSelector({ value, onChange, disabled, min = 256, max = 1536 
           <Label className="text-xs text-muted-foreground">Width</Label>
           <Input
             type="number"
-            value={width}
-            onChange={(e) => handleWidthChange(parseInt(e.target.value, 10) || min)}
+            value={widthInput}
+            onChange={(e) => {
+              const next = e.target.value
+              setWidthInput(next)
+              if (next === '') return
+              const parsed = parseInt(next, 10)
+              if (Number.isNaN(parsed)) return
+              handleWidthChange(parsed)
+            }}
+            onBlur={() => {
+              if (widthInput === '') {
+                handleWidthChange(min)
+                return
+              }
+              const parsed = parseInt(widthInput, 10)
+              if (!Number.isNaN(parsed)) {
+                handleWidthChange(clamp(parsed))
+              }
+            }}
             min={min}
             max={max}
             step={64}
@@ -191,8 +220,25 @@ export function SizeSelector({ value, onChange, disabled, min = 256, max = 1536 
           <Label className="text-xs text-muted-foreground">Height</Label>
           <Input
             type="number"
-            value={height}
-            onChange={(e) => handleHeightChange(parseInt(e.target.value, 10) || min)}
+            value={heightInput}
+            onChange={(e) => {
+              const next = e.target.value
+              setHeightInput(next)
+              if (next === '') return
+              const parsed = parseInt(next, 10)
+              if (Number.isNaN(parsed)) return
+              handleHeightChange(parsed)
+            }}
+            onBlur={() => {
+              if (heightInput === '') {
+                handleHeightChange(min)
+                return
+              }
+              const parsed = parseInt(heightInput, 10)
+              if (!Number.isNaN(parsed)) {
+                handleHeightChange(clamp(parsed))
+              }
+            }}
             min={min}
             max={max}
             step={64}

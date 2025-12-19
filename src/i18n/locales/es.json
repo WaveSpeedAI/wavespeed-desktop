@@ -418,6 +418,7 @@
       "invalidDesc": "No se pudo validar la clave API. Por favor verifica e intenta de nuevo.",
       "cleared": "Clave API eliminada",
       "clearedDesc": "Tu clave API ha sido eliminada.",
+      "itemDeleted": "Cache item deleted",
       "error": "Error",
       "errorDesc": "Error al guardar la clave API."
     },
@@ -471,7 +472,11 @@
       "clear": "Limpiar",
       "cleared": "Caché limpiada",
       "clearedDesc": "La caché de modelos de IA ha sido limpiada. Los modelos se descargarán nuevamente cuando sea necesario.",
-      "clearFailed": "Error al limpiar la caché"
+      "itemDeleted": "Elemento de caché eliminado",
+      "clearFailed": "Error al limpiar la caché",
+      "zImageAuxiliary": "Modelos auxiliares de Z-Image",
+      "zImageModels": "Modelos de Z-Image",
+      "zImageBinary": "Binario de Z-Image"
     },
     "freeTools": {
       "title": "Herramientas Gratuitas",

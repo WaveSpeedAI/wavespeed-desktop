@@ -266,23 +266,34 @@ export class SDGenerator {
     total: number
     progress: number
   } | null {
-    // Match "step: X/Y" or "sampling: X/Y"
-    let stepMatch = log.match(/(?:step|sampling):\s*(\d+)\/(\d+)/)
+    // Strip ANSI escape codes and scan the most recent lines for progress
+    const cleaned = log.replace(/\x1b\[[0-9;]*[A-Za-z]/g, '')
+    const lines = cleaned.split(/[\r\n]+/).filter(Boolean).reverse()
 
-    if (!stepMatch) {
-      // Match progress bar format: |===...===| 12/20 - time
-      // Must have dash or space after the numbers to avoid matching resolution
-      stepMatch = log.match(/\|[=\s>-]+\|\s*(\d+)\/(\d+)\s*[-\s]/)
-    }
+    for (const line of lines) {
+      // Match "step: X/Y" or "sampling: X/Y"
+      let stepMatch = line.match(/(?:step|sampling):\s*(\d+)\/(\d+)/)
 
-    if (stepMatch) {
-      const current = parseInt(stepMatch[1], 10)
-      const total = parseInt(stepMatch[2], 10)
+      if (!stepMatch) {
+        // Match progress bar format: |===...===| 12/20 - time
+        // Must have dash or space after the numbers to avoid matching resolution
+        stepMatch = line.match(/\|[=\s>-]+\|\s*(\d+)\/(\d+)\s*[-\s]/)
+      }
 
-      // Validate: reasonable step range (4-200) and current > 0 and current <= total
-      if (total >= 4 && total <= 200 && current > 0 && current <= total) {
-        const progress = Math.round((current / total) * 100)
-        return { current, total, progress }
+      if (!stepMatch) {
+        // Match tqdm-style output: "  3/20 [00:00<00:01, 3.45it/s]"
+        stepMatch = line.match(/\b(\d+)\s*\/\s*(\d+)\b.*(?:it\/s|s\/it|\])/)
+      }
+
+      if (stepMatch) {
+        const current = parseInt(stepMatch[1], 10)
+        const total = parseInt(stepMatch[2], 10)
+
+        // Validate: reasonable step range and current > 0 and current <= total
+        if (total >= 1 && total <= 512 && current > 0 && current <= total) {
+          const progress = Math.round((current / total) * 100)
+          return { current, total, progress }
+        }
       }
     }
 

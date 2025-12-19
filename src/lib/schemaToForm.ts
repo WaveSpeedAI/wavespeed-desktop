@@ -17,6 +17,56 @@ export interface FormFieldConfig {
   hidden?: boolean  // x-hidden fields are optional and hidden by default
 }
 
+export function validateFormValues(fields: FormFieldConfig[], values: Record<string, unknown>): Record<string, string> {
+  const errors: Record<string, string> = {}
+
+  for (const field of fields) {
+    const value = values[field.name]
+    const isEmpty =
+      value === undefined ||
+      value === null ||
+      value === '' ||
+      (Array.isArray(value) && value.length === 0)
+
+    if (field.required && isEmpty) {
+      errors[field.name] = `${field.label} is required`
+      continue
+    }
+
+    if (isEmpty) continue
+
+    if (field.type === 'number' || field.type === 'slider') {
+      const num = Number(value)
+      if (Number.isNaN(num)) {
+        errors[field.name] = `${field.label} must be a number`
+        continue
+      }
+      if (field.min !== undefined && num < field.min) {
+        errors[field.name] = `${field.label} must be at least ${field.min}`
+      } else if (field.max !== undefined && num > field.max) {
+        errors[field.name] = `${field.label} must be at most ${field.max}`
+      }
+    }
+
+    if (field.type === 'size') {
+      const raw = String(value)
+      const parts = raw.split('*')
+      const w = Number(parts[0])
+      const h = Number(parts[1])
+      if (parts.length !== 2 || Number.isNaN(w) || Number.isNaN(h)) {
+        errors[field.name] = `${field.label} must be in the format WIDTH*HEIGHT`
+      } else if (
+        (field.min !== undefined && (w < field.min || h < field.min)) ||
+        (field.max !== undefined && (w > field.max || h > field.max))
+      ) {
+        errors[field.name] = `${field.label} must be between ${field.min} and ${field.max}`
+      }
+    }
+  }
+
+  return errors
+}
+
 // Detect file input type based on field name patterns
 function detectFileType(name: string): { accept: string; type: 'file' | 'file-array' } | null {
   const lowerName = name.toLowerCase()

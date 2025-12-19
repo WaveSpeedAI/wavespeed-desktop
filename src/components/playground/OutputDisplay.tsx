@@ -447,7 +447,11 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
 }
 
 function isUrl(str: string): boolean {
-  return str.startsWith('http://') || str.startsWith('https://')
+  return (
+    str.startsWith('http://') ||
+    str.startsWith('https://') ||
+    str.startsWith('local-asset://')
+  )
 }
 
 function isImageUrl(url: string): boolean {

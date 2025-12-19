@@ -418,6 +418,7 @@
       "invalidDesc": "API कुंजी सत्यापित नहीं की जा सकी। कृपया जांचें और पुनः प्रयास करें।",
       "cleared": "API कुंजी साफ़ की गई",
       "clearedDesc": "आपकी API कुंजी हटा दी गई है।",
+      "itemDeleted": "Cache item deleted",
       "error": "त्रुटि",
       "errorDesc": "API कुंजी सहेजने में विफल।"
     },
@@ -471,7 +472,11 @@
       "clear": "साफ करें",
       "cleared": "कैश साफ हो गया",
       "clearedDesc": "AI मॉडल कैश साफ हो गया है। जरूरत पड़ने पर मॉडल फिर से डाउनलोड होंगे।",
-      "clearFailed": "कैश साफ करने में विफल"
+      "itemDeleted": "कैश आइटम हटाया गया",
+      "clearFailed": "कैश साफ करने में विफल",
+      "zImageAuxiliary": "Z-Image सहायक मॉडल",
+      "zImageModels": "Z-Image मॉडल",
+      "zImageBinary": "Z-Image बाइनरी"
     },
     "freeTools": {
       "title": "मुफ्त उपकरण",

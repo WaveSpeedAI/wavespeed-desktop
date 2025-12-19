@@ -418,6 +418,7 @@
       "invalidDesc": "APIキーを検証できませんでした。確認して再試行してください。",
       "cleared": "APIキーをクリアしました",
       "clearedDesc": "APIキーが削除されました。",
+      "itemDeleted": "Cache item deleted",
       "error": "エラー",
       "errorDesc": "APIキーの保存に失敗しました。"
     },
@@ -471,7 +472,11 @@
       "clear": "清除",
       "cleared": "缓存已清除",
       "clearedDesc": "AI模型缓存已清除。需要时将重新下载模型。",
-      "clearFailed": "キャッシュのクリアに失敗しました"
+      "itemDeleted": "キャッシュ項目を削除しました",
+      "clearFailed": "キャッシュのクリアに失敗しました",
+      "zImageAuxiliary": "Z-Image 補助モデル",
+      "zImageModels": "Z-Image モデル",
+      "zImageBinary": "Z-Image バイナリ"
     },
     "freeTools": {
       "title": "無料ツール",

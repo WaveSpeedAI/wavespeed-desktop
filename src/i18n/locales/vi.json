@@ -418,6 +418,7 @@
       "invalidDesc": "Không thể xác thực khóa API. Vui lòng kiểm tra và thử lại.",
       "cleared": "Đã xóa khóa API",
       "clearedDesc": "Khóa API của bạn đã được xóa.",
+      "itemDeleted": "Cache item deleted",
       "error": "Lỗi",
       "errorDesc": "Không thể lưu khóa API."
     },
@@ -471,7 +472,11 @@
       "clear": "Xóa",
       "cleared": "Đã xóa bộ nhớ đệm",
       "clearedDesc": "Bộ nhớ đệm mô hình AI đã được xóa. Các mô hình sẽ được tải xuống lại khi cần.",
-      "clearFailed": "Không thể xóa bộ nhớ đệm"
+      "itemDeleted": "Đã xóa mục bộ nhớ đệm",
+      "clearFailed": "Không thể xóa bộ nhớ đệm",
+      "zImageAuxiliary": "Mô hình phụ trợ Z-Image",
+      "zImageModels": "Mô hình Z-Image",
+      "zImageBinary": "Tệp nhị phân Z-Image"
     },
     "freeTools": {
       "title": "Công cụ miễn phí",

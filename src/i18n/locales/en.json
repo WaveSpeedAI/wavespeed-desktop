@@ -418,6 +418,7 @@
       "invalidDesc": "The API key could not be validated. Please check and try again.",
       "cleared": "API Key cleared",
       "clearedDesc": "Your API key has been removed.",
+      "itemDeleted": "Cache item deleted",
       "error": "Error",
       "errorDesc": "Failed to save API key."
     },
@@ -471,7 +472,11 @@
       "clear": "Clear",
       "cleared": "Cache cleared",
       "clearedDesc": "AI model cache has been cleared. Models will be re-downloaded when needed.",
-      "clearFailed": "Failed to clear cache"
+      "itemDeleted": "Cache item deleted",
+      "clearFailed": "Failed to clear cache",
+      "zImageAuxiliary": "Z-Image Auxiliary",
+      "zImageModels": "Z-Image Models",
+      "zImageBinary": "Z-Image Binary"
     },
     "freeTools": {
       "title": "Free Tools",

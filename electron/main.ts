@@ -861,6 +861,17 @@ function sendUpdateStatus(status: string, data?: Record<string, unknown>) {
 }
 
 function setupAutoUpdater() {
+  if (is.dev) {
+    return
+  }
+
+  const updateConfigPath = (autoUpdater as typeof autoUpdater & { appUpdateConfigPath?: string }).appUpdateConfigPath
+    ?? join(process.resourcesPath, 'app-update.yml')
+  if (!existsSync(updateConfigPath)) {
+    console.warn('[AutoUpdater] app-update.yml not found, skipping auto-updater setup:', updateConfigPath)
+    return
+  }
+
   const settings = loadSettings()
   const channel = settings.updateChannel || 'stable'
 
@@ -1093,6 +1104,7 @@ ipcMain.handle('sd-get-system-info', () => {
   }
 
   const platform = process.platform
+  const arch = process.arch
 
   let acceleration = 'CPU'
 
@@ -1141,6 +1153,7 @@ ipcMain.handle('sd-get-system-info', () => {
   // Cache the result
   systemInfoCache = {
     platform,
+    arch,
     acceleration,
     supported: true
   }
@@ -1320,6 +1333,14 @@ ipcMain.handle('sd-delete-binary', () => {
     const arch = process.arch
     const binaryName = platform === 'win32' ? 'sd.exe' : 'sd'
 
+    // Delete downloaded binary in userData (cache)
+    const userDataBinaryDir = join(app.getPath('userData'), 'sd-bin')
+    const userDataBinaryPath = join(userDataBinaryDir, binaryName)
+    if (existsSync(userDataBinaryPath)) {
+      unlinkSync(userDataBinaryPath)
+    }
+
+    // Delete pre-compiled binary in resources (if present)
     const basePath = is.dev
       ? join(__dirname, '../../resources/bin/stable-diffusion')
       : join(process.resourcesPath, 'bin/stable-diffusion')

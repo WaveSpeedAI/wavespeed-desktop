@@ -1,6 +1,6 @@
 // Z-Image: Local AI Image Generation using Playground components
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Zap, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -8,10 +8,12 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Progress } from '@/components/ui/progress'
 import { DynamicForm } from '@/components/playground/DynamicForm'
 import { OutputDisplay } from '@/components/playground/OutputDisplay'
+import { LogConsole } from '@/components/shared/LogConsole'
 import { useSDModelsStore } from '@/stores/sdModelsStore'
 import { useZImage } from '@/hooks/useZImage'
 import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
-import { createZImageModel, ZIMAGE_DEFAULT_PROMPT, ZIMAGE_DEFAULT_NEGATIVE_PROMPT } from '@/lib/zImageModel'
+import { createZImageModel, ZIMAGE_DEFAULT_NEGATIVE_PROMPT } from '@/lib/zImageModel'
+import { schemaToFormFields, validateFormValues } from '@/lib/schemaToForm'
 import { PREDEFINED_MODELS } from '@/types/stable-diffusion'
 import { ChunkedDownloader } from '@/lib/chunkedDownloader'
 import { formatBytes } from '@/types/progress'
@@ -38,6 +40,16 @@ export function ZImagePage() {
 
   // Create ZImage model for DynamicForm
   const [zImageModel] = useState(() => createZImageModel())
+  const zImageFields = useMemo(() => {
+    const apiSchemas = (zImageModel.api_schema as { api_schemas?: Array<{ type: string; request_schema?: { properties?: Record<string, unknown>; required?: string[]; 'x-order-properties'?: string[] } }> })?.api_schemas
+    const requestSchema = apiSchemas?.find(s => s.type === 'model_run')?.request_schema
+    if (!requestSchema?.properties) return []
+    return schemaToFormFields(
+      requestSchema.properties as Record<string, import('@/types/model').SchemaProperty>,
+      requestSchema.required || [],
+      requestSchema['x-order-properties']
+    )
+  }, [zImageModel])
 
   // Form state
   const [formValues, setFormValues] = useState<Record<string, unknown>>({})
@@ -48,6 +60,8 @@ export function ZImagePage() {
   const [error, setError] = useState<string | null>(null)
   const [prediction, setPrediction] = useState<PredictionResult | null>(null)
   const [outputs, setOutputs] = useState<string[]>([])
+  const [metalWarning, setMetalWarning] = useState<string | null>(null)
+  const [accelerationInfo, setAccelerationInfo] = useState<{ platform: string; arch: string; acceleration: string } | null>(null)
 
   // Stores
   const {
@@ -104,6 +118,61 @@ export function ZImagePage() {
     }
   }, [electronAvailable, fetchSDModels, checkAuxiliaryModels])
 
+  // Detect hardware acceleration for local generation
+  useEffect(() => {
+    let active = true
+    if (!electronAvailable || !window.electronAPI?.sdGetSystemInfo) {
+      return
+    }
+
+    window.electronAPI.sdGetSystemInfo().then((info) => {
+      if (!active || !info) return
+      setAccelerationInfo({ platform: info.platform, arch: info.arch, acceleration: info.acceleration })
+    }).catch(() => {
+      // Ignore acceleration detection failures
+    })
+
+    return () => {
+      active = false
+    }
+  }, [electronAvailable])
+
+  // Listen for generation progress from sd.cpp
+  useEffect(() => {
+    if (!electronAvailable || !window.electronAPI?.onSdProgress) {
+      return
+    }
+
+    const unsubscribe = window.electronAPI.onSdProgress((data) => {
+      if (data.phase !== 'generate') return
+      const detail = data.detail as ProgressDetail | undefined
+      updatePhase('generate', data.progress, detail)
+    })
+
+    return () => {
+      unsubscribe()
+    }
+  }, [electronAvailable, updatePhase])
+
+  // Listen for Metal fallback errors during generation
+  useEffect(() => {
+    if (!electronAvailable || !isGenerating || !window.electronAPI?.onSdLog) {
+      return
+    }
+
+    const removeListener = window.electronAPI.onSdLog((data) => {
+      if (metalWarning) return
+      const msg = data.message || ''
+      if (/ggml_metal_init: error|ggml_backend_metal_init: error|failed to create command queue/i.test(msg)) {
+        setMetalWarning(t('zImage.warnings.metalFallback', 'Metal initialization failed, falling back to CPU. Generation will be much slower.'))
+      }
+    })
+
+    return () => {
+      removeListener()
+    }
+  }, [electronAvailable, isGenerating, metalWarning, t])
+
   // Form handlers
   const handleFormChange = useCallback((key: string, value: unknown) => {
     setFormValues(prev => ({ ...prev, [key]: value }))
@@ -121,7 +190,9 @@ export function ZImagePage() {
     setError(null)
     setPrediction(null)
     setOutputs([])
+    setMetalWarning(null)
     isCancelledRef.current = false
+    setValidationErrors({})
 
     // Check Electron availability
     if (!electronAvailable) {
@@ -218,7 +289,15 @@ export function ZImagePage() {
       // 5. Generate image using useZImage hook
       startPhase('generate')
 
-      const prompt = ((formValues.prompt as string) || '').trim() || ZIMAGE_DEFAULT_PROMPT
+      const validation = validateFormValues(zImageFields, formValues)
+      if (Object.keys(validation).length > 0) {
+        setValidationErrors(validation)
+        reset()
+        setIsGenerating(false)
+        return
+      }
+
+      const prompt = ((formValues.prompt as string) || '').trim()
       const negativePrompt = ((formValues.negative_prompt as string) || '').trim() || ZIMAGE_DEFAULT_NEGATIVE_PROMPT
 
       let seed = formValues.seed as number
@@ -226,11 +305,12 @@ export function ZImagePage() {
         seed = Math.floor(Math.random() * 2147483647)
       }
 
-      // Parse size field (format: "width*height")
       const sizeStr = (formValues.size as string) || '1024*1024'
       const sizeParts = sizeStr.split('*')
       const width = parseInt(sizeParts[0], 10) || 1024
       const height = parseInt(sizeParts[1], 10) || 1024
+      const steps = (formValues.steps as number) || 4
+      const cfgScale = (formValues.cfg_scale as number) || 1
 
       const result = await generateZImage({
         modelPath,
@@ -238,8 +318,8 @@ export function ZImagePage() {
         negativePrompt,
         width,
         height,
-        steps: (formValues.steps as number) || 8,
-        cfgScale: (formValues.cfg_scale as number) || 1,
+        steps,
+        cfgScale,
         seed,
         samplingMethod: ((formValues.sampling_method as string) || 'euler') as SamplingMethod,
         scheduler: ((formValues.scheduler as string) || 'simple') as Scheduler
@@ -308,6 +388,59 @@ export function ZImagePage() {
         {/* Left Panel - Form */}
         <div className="w-[420px] flex flex-col border-r bg-muted/30">
           <div className="flex-1 overflow-hidden p-4">
+            {accelerationInfo?.platform === 'darwin' && accelerationInfo.arch !== 'arm64' && (
+              <Alert variant="destructive" className="mb-3">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="text-sm">
+                  {t('zImage.tips.intelMacUnsupported', 'Local Z-Image is only supported on Apple Silicon Macs.')}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {accelerationInfo?.platform === 'linux' && accelerationInfo.arch !== 'x64' && (
+              <Alert variant="destructive" className="mb-3">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="text-sm">
+                  {t('zImage.tips.linuxArmUnsupported', 'Linux ARM is not supported for local Z-Image.')}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {accelerationInfo?.platform === 'win32' && accelerationInfo.arch !== 'x64' && (
+              <Alert variant="destructive" className="mb-3">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="text-sm">
+                  {t('zImage.tips.windowsArmUnsupported', 'Windows ARM is not supported for local Z-Image.')}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {accelerationInfo?.platform === 'linux' && accelerationInfo.arch === 'x64' && (
+              <Alert className="mb-3">
+                <AlertCircle className="h-4 w-4 text-yellow-500" />
+                <AlertDescription className="text-sm">
+                  {t('zImage.tips.linuxCpuOnly', 'Local Z-Image runs on CPU only on Linux. It may be slow—reduce steps or image size.')}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {accelerationInfo?.platform === 'win32' && accelerationInfo.arch === 'x64' && (
+              <Alert className="mb-3">
+                <AlertCircle className="h-4 w-4 text-yellow-500" />
+                <AlertDescription className="text-sm">
+                  {t('zImage.tips.windowsVulkanRequired', 'Local Z-Image on Windows requires Vulkan-capable GPU drivers. If unavailable, generation will be slow or may fail.')}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {accelerationInfo?.platform === 'darwin' && accelerationInfo.arch === 'arm64' && accelerationInfo.acceleration === 'CPU' && (
+              <Alert className="mb-3">
+                <AlertCircle className="h-4 w-4 text-yellow-500" />
+                <AlertDescription className="text-sm">
+                  {t('zImage.tips.slowWithoutMetal', 'Metal acceleration is not available. Generation will run on CPU and may be slow—reduce steps or image size.')}
+                </AlertDescription>
+              </Alert>
+            )}
             <DynamicForm
               model={zImageModel}
               values={formValues}
@@ -325,6 +458,13 @@ export function ZImagePage() {
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription className="text-sm">{error}</AlertDescription>
+              </Alert>
+            )}
+
+            {metalWarning && (
+              <Alert>
+                <AlertCircle className="h-4 w-4 text-yellow-500" />
+                <AlertDescription className="text-sm">{metalWarning}</AlertDescription>
               </Alert>
             )}
 
@@ -364,6 +504,8 @@ export function ZImagePage() {
                 {t('zImage.generateImage', 'Generate')}
               </Button>
             )}
+
+            <LogConsole isGenerating={isGenerating} />
           </div>
         </div>
 

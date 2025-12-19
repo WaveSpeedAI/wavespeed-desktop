@@ -132,7 +132,7 @@ const electronAPI = {
   // Stable Diffusion APIs
   sdGetBinaryPath: (): Promise<{ success: boolean; path?: string; error?: string }> =>
     ipcRenderer.invoke('sd-get-binary-path'),
-  sdGetSystemInfo: (): Promise<{ platform: string; acceleration: string; supported: boolean }> =>
+  sdGetSystemInfo: (): Promise<{ platform: string; arch: string; acceleration: string; supported: boolean }> =>
     ipcRenderer.invoke('sd-get-system-info'),
   sdCheckAuxiliaryModels: (): Promise<{ success: boolean; llmExists: boolean; vaeExists: boolean; llmPath: string; vaePath: string; error?: string }> =>
     ipcRenderer.invoke('sd-check-auxiliary-models'),

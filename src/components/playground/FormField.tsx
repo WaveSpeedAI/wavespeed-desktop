@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { FormFieldConfig } from '@/lib/schemaToForm'
 import { Input } from '@/components/ui/input'
@@ -41,6 +42,42 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
   const { t } = useTranslation()
   // Check if this is a seed field
   const isSeedField = field.name.toLowerCase() === 'seed'
+  const isNumericField = field.type === 'number' || field.type === 'slider'
+  const numericFallback =
+    value !== undefined && value !== null
+      ? Number(value)
+      : (field.default as number | undefined) ?? field.min ?? 0
+  const [numericInput, setNumericInput] = useState(isNumericField ? String(numericFallback) : '')
+
+  useEffect(() => {
+    if (!isNumericField) return
+    const next =
+      value !== undefined && value !== null
+        ? Number(value)
+        : (field.default as number | undefined) ?? field.min ?? 0
+    setNumericInput(String(next))
+  }, [isNumericField, value, field.default, field.min])
+
+  const clampNumeric = (n: number) => {
+    let next = n
+    if (field.min !== undefined) next = Math.max(field.min, next)
+    if (field.max !== undefined) next = Math.min(field.max, next)
+    return next
+  }
+
+  const commitNumeric = (raw: string) => {
+    if (raw.trim() === '' || Number.isNaN(Number(raw))) {
+      const fallback = (field.default as number | undefined) ?? field.min ?? 0
+      onChange(fallback)
+      setNumericInput(String(fallback))
+      return
+    }
+
+    const parsed = Number(raw)
+    const clamped = clampNumeric(parsed)
+    onChange(clamped)
+    setNumericInput(String(clamped))
+  }
 
   const renderInput = () => {
     switch (field.type) {
@@ -78,7 +115,10 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
             <div className="flex items-center gap-3">
               <Slider
                 value={[currentValue]}
-                onValueChange={([v]) => onChange(v)}
+                onValueChange={([v]) => {
+                  onChange(v)
+                  setNumericInput(String(v))
+                }}
                 min={field.min}
                 max={field.max}
                 step={field.step ?? 1}
@@ -88,15 +128,14 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
               <Input
                 id={field.name}
                 type="number"
-                value={currentValue}
+                value={numericInput}
                 onChange={(e) => {
                   const val = e.target.value
-                  if (val === '') {
-                    onChange(field.default)
-                  } else {
-                    onChange(Number(val))
-                  }
+                  setNumericInput(val)
+                  if (val === '' || Number.isNaN(Number(val))) return
+                  onChange(Number(val))
                 }}
+                onBlur={() => commitNumeric(numericInput)}
                 min={field.min}
                 max={field.max}
                 step={field.step}
@@ -112,15 +151,14 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
             <Input
               id={field.name}
               type="number"
-              value={value !== undefined && value !== null ? String(value) : ''}
+              value={numericInput}
               onChange={(e) => {
                 const val = e.target.value
-                if (val === '') {
-                  onChange(field.default)
-                } else {
-                  onChange(Number(val))
-                }
+                setNumericInput(val)
+                if (val === '' || Number.isNaN(Number(val))) return
+                onChange(Number(val))
               }}
+              onBlur={() => commitNumeric(numericInput)}
               min={field.min}
               max={field.max}
               step={field.step}
@@ -135,7 +173,11 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
                     type="button"
                     variant="outline"
                     size="icon"
-                    onClick={() => onChange(generateRandomSeed())}
+                    onClick={() => {
+                      const next = generateRandomSeed()
+                      onChange(next)
+                      setNumericInput(String(next))
+                    }}
                     disabled={disabled}
                   >
                     <Dices className="h-4 w-4" />
@@ -157,7 +199,10 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
             <div className="flex items-center gap-3">
               <Slider
                 value={[currentValue]}
-                onValueChange={([v]) => onChange(v)}
+                onValueChange={([v]) => {
+                  onChange(v)
+                  setNumericInput(String(v))
+                }}
                 min={field.min ?? 0}
                 max={field.max ?? 100}
                 step={field.step ?? 1}
@@ -166,8 +211,14 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
               />
               <Input
                 type="number"
-                value={currentValue}
-                onChange={(e) => onChange(Number(e.target.value))}
+                value={numericInput}
+                onChange={(e) => {
+                  const val = e.target.value
+                  setNumericInput(val)
+                  if (val === '' || Number.isNaN(Number(val))) return
+                  onChange(Number(val))
+                }}
+                onBlur={() => commitNumeric(numericInput)}
                 min={field.min}
                 max={field.max}
                 step={field.step}

@@ -418,6 +418,7 @@
       "invalidDesc": "API 키를 확인할 수 없습니다. 확인 후 다시 시도하세요.",
       "cleared": "API 키 삭제됨",
       "clearedDesc": "API 키가 제거되었습니다.",
+      "itemDeleted": "Cache item deleted",
       "error": "오류",
       "errorDesc": "API 키 저장에 실패했습니다."
     },
@@ -471,7 +472,11 @@
       "clear": "清除",
       "cleared": "缓存已清除",
       "clearedDesc": "AI模型缓存已清除。需要时将重新下载模型。",
-      "clearFailed": "캐시 삭제 실패"
+      "itemDeleted": "캐시 항목이 삭제되었습니다",
+      "clearFailed": "캐시 삭제 실패",
+      "zImageAuxiliary": "Z-Image 보조 모델",
+      "zImageModels": "Z-Image 모델",
+      "zImageBinary": "Z-Image 바이너리"
     },
     "freeTools": {
       "title": "무료 도구",

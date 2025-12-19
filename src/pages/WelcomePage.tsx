@@ -50,10 +50,10 @@ function FeatureCard({ icon, title, description, gradient, shapeGradient, href, 
       )} />
 
       {/* Content */}
-      <div className="relative z-10 p-4">
-        <div className="flex items-start justify-between mb-3">
+      <div className="relative z-10 p-3">
+        <div className="flex items-start justify-between mb-2">
           <div className={cn(
-            "p-2.5 rounded-lg bg-gradient-to-br",
+            "p-2 rounded-lg bg-gradient-to-br",
             shapeGradient
           )}>
             {icon}
@@ -64,8 +64,8 @@ function FeatureCard({ icon, title, description, gradient, shapeGradient, href, 
             </span>
           )}
         </div>
-        <h3 className="text-base font-semibold mb-1.5">{title}</h3>
-        <p className="text-sm text-muted-foreground mb-3">{description}</p>
+        <h3 className="text-base font-semibold mb-1">{title}</h3>
+        <p className="text-sm text-muted-foreground mb-2">{description}</p>
         <div className="flex items-center text-sm font-medium text-primary opacity-0 translate-x-[-8px] transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0">
           {t('welcome.explore')} <ArrowRight className="ml-1 h-4 w-4" />
         </div>
@@ -143,26 +143,26 @@ export function WelcomePage() {
   return (
     <div className="min-h-full flex flex-col">
       {/* Hero Section */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-6">
-        <div className="text-center mb-8">
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-4">
+        <div className="text-center mb-5">
           {/* Logo and Title */}
-          <div className="flex items-center justify-center gap-2.5 mb-3">
+          <div className="flex items-center justify-center gap-2 mb-2">
             <div className="relative">
               <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full animate-pulse" />
-              <Sparkles className="relative h-10 w-10 text-primary" />
+              <Sparkles className="relative h-9 w-9 text-primary" />
             </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
               WaveSpeed Desktop
             </h1>
           </div>
-          <p className="text-lg text-muted-foreground max-w-lg mx-auto">
+          <p className="text-base text-muted-foreground max-w-lg mx-auto">
             {t('welcome.tagline')}
           </p>
         </div>
 
         {/* Feature Cards Grid */}
-        <div className="w-full max-w-5xl mx-auto mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="w-full max-w-5xl mx-auto mb-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
             {features.map((feature) => (
               <FeatureCard key={feature.href} {...feature} />
             ))}
@@ -170,7 +170,7 @@ export function WelcomePage() {
         </div>
 
         {/* CTA Buttons */}
-        <div className="flex flex-wrap items-center justify-center gap-3">
+        <div className="flex flex-wrap items-center justify-center gap-2.5">
           <Button
             size="default"
             onClick={() => navigate('/models')}
@@ -192,7 +192,7 @@ export function WelcomePage() {
       </div>
 
       {/* Footer */}
-      <div className="text-center py-4 text-sm text-muted-foreground">
+      <div className="text-center py-3 text-sm text-muted-foreground">
         <a
           href="https://wavespeed.ai"
           target="_blank"

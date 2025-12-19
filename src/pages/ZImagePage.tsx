@@ -52,11 +52,9 @@ export function ZImagePage() {
   }, [zImageModel])
 
   // Form state
-  const [formValues, setFormValues] = useState<Record<string, unknown>>({})
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
 
   // Generation state
-  const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [prediction, setPrediction] = useState<PredictionResult | null>(null)
   const [outputs, setOutputs] = useState<string[]>([])
@@ -71,7 +69,12 @@ export function ZImagePage() {
     vaeStatus,
     llmStatus,
     updateModelDownloadStatus,
-    checkAuxiliaryModels
+    checkAuxiliaryModels,
+    zImageFormValues,
+    setZImageFormValue,
+    setZImageFormValues,
+    isGenerating,
+    setIsGenerating
   } = useSDModelsStore()
 
   // Progress tracking
@@ -175,15 +178,15 @@ export function ZImagePage() {
 
   // Form handlers
   const handleFormChange = useCallback((key: string, value: unknown) => {
-    setFormValues(prev => ({ ...prev, [key]: value }))
+    setZImageFormValue(key, value)
     if (validationErrors[key]) {
       setValidationErrors(prev => ({ ...prev, [key]: '' }))
     }
-  }, [validationErrors])
+  }, [setZImageFormValue, validationErrors])
 
   const handleSetDefaults = useCallback((defaults: Record<string, unknown>) => {
-    setFormValues(defaults)
-  }, [])
+    setZImageFormValues(defaults)
+  }, [setZImageFormValues])
 
   // Main generation handler
   const handleGenerate = async () => {
@@ -201,7 +204,7 @@ export function ZImagePage() {
     }
 
     // Get selected SD model
-    const sdModelId = (formValues.model as string) || 'z-image-turbo-q4-k'
+    const sdModelId = (zImageFormValues.model as string) || 'z-image-turbo-q4-k'
     const sdModel = PREDEFINED_MODELS.find(m => m.id === sdModelId)
     const sdModelState = sdModels.find(m => m.id === sdModelId)
 
@@ -289,7 +292,7 @@ export function ZImagePage() {
       // 5. Generate image using useZImage hook
       startPhase('generate')
 
-      const validation = validateFormValues(zImageFields, formValues)
+      const validation = validateFormValues(zImageFields, zImageFormValues)
       if (Object.keys(validation).length > 0) {
         setValidationErrors(validation)
         reset()
@@ -297,20 +300,20 @@ export function ZImagePage() {
         return
       }
 
-      const prompt = ((formValues.prompt as string) || '').trim()
-      const negativePrompt = ((formValues.negative_prompt as string) || '').trim() || ZIMAGE_DEFAULT_NEGATIVE_PROMPT
+      const prompt = ((zImageFormValues.prompt as string) || '').trim()
+      const negativePrompt = ((zImageFormValues.negative_prompt as string) || '').trim() || ZIMAGE_DEFAULT_NEGATIVE_PROMPT
 
-      let seed = formValues.seed as number
+      let seed = zImageFormValues.seed as number
       if (seed === undefined || seed === -1) {
         seed = Math.floor(Math.random() * 2147483647)
       }
 
-      const sizeStr = (formValues.size as string) || '1024*1024'
+      const sizeStr = (zImageFormValues.size as string) || '1024*1024'
       const sizeParts = sizeStr.split('*')
       const width = parseInt(sizeParts[0], 10) || 1024
       const height = parseInt(sizeParts[1], 10) || 1024
-      const steps = (formValues.steps as number) || 4
-      const cfgScale = (formValues.cfg_scale as number) || 1
+      const steps = (zImageFormValues.steps as number) || 4
+      const cfgScale = (zImageFormValues.cfg_scale as number) || 1
 
       const result = await generateZImage({
         modelPath,
@@ -321,8 +324,8 @@ export function ZImagePage() {
         steps,
         cfgScale,
         seed,
-        samplingMethod: ((formValues.sampling_method as string) || 'euler') as SamplingMethod,
-        scheduler: ((formValues.scheduler as string) || 'simple') as Scheduler
+        samplingMethod: ((zImageFormValues.sampling_method as string) || 'euler') as SamplingMethod,
+        scheduler: ((zImageFormValues.scheduler as string) || 'simple') as Scheduler
       })
 
       if (!result.success || !result.outputPath) {
@@ -342,7 +345,10 @@ export function ZImagePage() {
       setOutputs([imageUrl])
 
       // Randomize seed for next run
-      setFormValues(prev => ({ ...prev, seed: Math.floor(Math.random() * 2147483647) }))
+      setZImageFormValues({
+        ...zImageFormValues,
+        seed: Math.floor(Math.random() * 2147483647)
+      })
 
     } catch (err) {
       const msg = (err as Error).message
@@ -443,7 +449,7 @@ export function ZImagePage() {
             )}
             <DynamicForm
               model={zImageModel}
-              values={formValues}
+              values={zImageFormValues}
               validationErrors={validationErrors}
               onChange={handleFormChange}
               onSetDefaults={handleSetDefaults}

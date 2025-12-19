@@ -39,6 +39,11 @@ interface SDModelsState {
   addSdLog: (log: Omit<SDLogEntry, 'id'>) => void
   clearSdLogs: () => void
 
+  // Z-Image form state (persist across navigation)
+  zImageFormValues: Record<string, unknown>
+  setZImageFormValue: (key: string, value: unknown) => void
+  setZImageFormValues: (values: Record<string, unknown>) => void
+
   // Actions
   fetchModels: () => Promise<void>
   selectModel: (modelId: string) => void
@@ -81,6 +86,20 @@ export const useSDModelsStore = create<SDModelsState>((set, get) => ({
 
   // SD Process logs initial state
   sdLogs: [],
+
+  // Z-Image form state initial
+  zImageFormValues: {},
+  setZImageFormValue: (key: string, value: unknown) => {
+    set((state) => ({
+      zImageFormValues: {
+        ...state.zImageFormValues,
+        [key]: value
+      }
+    }))
+  },
+  setZImageFormValues: (values: Record<string, unknown>) => {
+    set({ zImageFormValues: values })
+  },
 
   /**
    * Fetch model list and check which ones are downloaded

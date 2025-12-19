@@ -54,6 +54,7 @@ export interface GenerationResult {
 
 export class SDGenerator {
   private activeProcess: ChildProcess | null = null
+  private isCancelling = false
 
   /**
    * Generate an image using stable-diffusion.cpp binary
@@ -217,8 +218,18 @@ export class SDGenerator {
 
     // Wait for process to end
     return new Promise((resolve) => {
-      childProcess.on('close', (code) => {
+      childProcess.on('close', (code, signal) => {
         this.activeProcess = null
+        const wasCancelled = this.isCancelling || signal === 'SIGTERM' || signal === 'SIGINT'
+        this.isCancelling = false
+
+        if (wasCancelled) {
+          resolve({
+            success: false,
+            error: 'Cancelled'
+          })
+          return
+        }
 
         if (code === 0 && existsSync(outputPath)) {
           console.log('[SDGenerator] Generation successful')
@@ -232,7 +243,7 @@ export class SDGenerator {
           const errorMsg =
             errorLines.length > 0
               ? errorLines[errorLines.length - 1]
-              : `Process exited with code ${code}`
+              : `Process exited with code ${code ?? 'unknown'}`
 
           console.error('[SDGenerator] Generation failed:', errorMsg)
           resolve({
@@ -306,6 +317,7 @@ export class SDGenerator {
   cancel(): boolean {
     if (this.activeProcess) {
       console.log('[SDGenerator] Cancelling generation')
+      this.isCancelling = true
       this.activeProcess.kill('SIGTERM')
       this.activeProcess = null
       return true

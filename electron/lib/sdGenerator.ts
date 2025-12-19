@@ -176,9 +176,10 @@ export class SDGenerator {
       // Parse progress from stdout (some SD versions output here)
       const progressInfo = this.parseProgress(log)
       if (progressInfo && onProgress) {
+        const scaledProgress = 10 + Math.min(progressInfo.progress, 100) * 0.9
         onProgress({
           phase: 'generate',
-          progress: Math.min(progressInfo.progress, 100) * 0.9,
+          progress: Math.min(scaledProgress, 99),
           detail: {
             current: progressInfo.current,
             total: progressInfo.total,
@@ -204,9 +205,10 @@ export class SDGenerator {
       // Parse progress from stderr
       const progressInfo = this.parseProgress(log)
       if (progressInfo && onProgress) {
+        const scaledProgress = 10 + Math.min(progressInfo.progress, 100) * 0.9
         onProgress({
           phase: 'generate',
-          progress: Math.min(progressInfo.progress, 100) * 0.9,
+          progress: Math.min(scaledProgress, 99),
           detail: {
             current: progressInfo.current,
             total: progressInfo.total,

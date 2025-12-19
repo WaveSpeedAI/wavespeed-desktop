@@ -79,7 +79,7 @@ export function LogConsole({ isGenerating }: LogConsoleProps) {
         <div className="flex items-center gap-2">
           <Terminal className="w-3.5 h-3.5 text-muted-foreground" />
           <span className="font-medium text-xs">
-            SD Process Logs
+            Generation Logs
             {sdLogs.length > 0 && (
               <span className="ml-2 text-xs text-muted-foreground">
                 ({sdLogs.length})

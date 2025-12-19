@@ -2,7 +2,8 @@
 
 A cross-platform desktop application for running AI models from [WaveSpeedAI](https://wavespeed.ai).
 
-![Playground Screenshot](https://github.com/user-attachments/assets/cef45169-99f0-46dc-99d4-eb0433d28387)
+![Playground Screenshot](https://github.com/user-attachments/assets/904a3ff8-c302-4b84-851b-34a76486c891)
+![Z-Image Screenshot](https://github.com/user-attachments/assets/f2eabfb1-a613-4b01-9f84-a5ae5fd07638)
 
 ## Features
 
@@ -26,6 +27,7 @@ A cross-platform desktop application for running AI models from [WaveSpeedAI](ht
   - **Image Converter**: Batch convert images between formats (JPG, PNG, WebP, GIF, BMP) with quality settings
   - **Media Trimmer**: Trim video/audio files by selecting start and end times
   - **Media Merger**: Merge multiple video/audio files into one
+- **Z-Image (Local)**: Run local image generation via stable-diffusion.cpp with model/aux downloads, progress, and logs
 - **Multi-Phase Progress**: Compact progress bars with phase indicators, real-time status, and ETA for all Free Tools
 - **History**: View your recent predictions (last 24 hours) with detailed view, download, and copy prediction ID
 - **My Assets**: Save, browse, and manage generated outputs (images, videos, audio) with tags, favorites, and search

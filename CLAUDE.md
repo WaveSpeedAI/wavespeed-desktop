@@ -6,6 +6,8 @@ This file provides guidance for Claude Code when working with this repository.
 
 WaveSpeed Desktop is an Electron-based cross-platform desktop application that provides a playground interface for [WaveSpeedAI](https://wavespeed.ai) models. It allows users to browse models, run predictions, view their history, and manage saved assets.
 
+Z-Image is the local image generation flow backed by stable-diffusion.cpp with model and auxiliary downloads, progress reporting, and log streaming.
+
 ## Tech Stack
 
 - **Electron** with **electron-vite** for the desktop framework
@@ -66,6 +68,10 @@ wavespeed-desktop/
 - **`src/pages/HistoryPage.tsx`**: Prediction history with detail dialog
 - **`src/pages/AssetsPage.tsx`**: Asset management with grid view, filters, tags, favorites, bulk operations
 - **`src/pages/FreeToolsPage.tsx`**: Hub page for free AI tools (no API key required)
+- **`src/pages/ZImagePage.tsx`**: Local Z-Image generation UI (download steps, progress, logs, output)
+- **`src/hooks/useZImage.ts`**: Z-Image download + generation hook (binary/model selection and download URLs)
+- **`electron/lib/sdGenerator.ts`**: Stable-diffusion.cpp wrapper (spawn, progress parsing, cancellation)
+- **`electron/main.ts`**: SD IPC handlers (binary path, download, extraction, system info, generation)
 - **`src/pages/ImageEnhancerPage.tsx`**: Image upscaling with ESRGAN models (2x-4x)
 - **`src/pages/VideoEnhancerPage.tsx`**: Video upscaling frame-by-frame with progress and ETA
 - **`src/pages/BackgroundRemoverPage.tsx`**: Background removal displaying all 3 outputs (foreground, background, mask) simultaneously

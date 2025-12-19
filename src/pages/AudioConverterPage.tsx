@@ -9,9 +9,9 @@ import {
   AUDIO_FORMATS,
   AUDIO_BITRATES,
   getAudioFormat,
-  formatFileSize,
   formatDuration
 } from '@/lib/ffmpegFormats'
+import { formatBytes } from '@/types/progress'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -399,7 +399,7 @@ export function AudioConverterPage() {
                     {t('freeTools.audioConverter.original')}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    {formatFileSize(audioFile.size)} • {formatDuration(audioDuration || 0)}
+                    {formatBytes(audioFile.size)} • {formatDuration(audioDuration || 0)}
                   </span>
                 </div>
                 <div className="text-sm text-muted-foreground mb-2 truncate">
@@ -423,7 +423,7 @@ export function AudioConverterPage() {
                   </span>
                   {convertedBlob && (
                     <span className="text-xs text-green-600 dark:text-green-400">
-                      {formatFileSize(convertedBlob.size)}
+                      {formatBytes(convertedBlob.size)}
                     </span>
                   )}
                 </div>

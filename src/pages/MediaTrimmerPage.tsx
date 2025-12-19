@@ -6,7 +6,8 @@ import { useFFmpegWorker } from '@/hooks/useFFmpegWorker'
 import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
 import { ProcessingProgress } from '@/components/shared/ProcessingProgress'
 import { TimeRangeSlider } from '@/components/ffmpeg/TimeRangeSlider'
-import { getMediaType, formatFileSize, formatDuration } from '@/lib/ffmpegFormats'
+import { getMediaType, formatDuration } from '@/lib/ffmpegFormats'
+import { formatBytes } from '@/types/progress'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -393,7 +394,7 @@ export function MediaTrimmerPage() {
                     <div className="flex-1 min-w-0">
                       <div className="font-medium truncate">{mediaFile.name}</div>
                       <div className="text-sm text-muted-foreground">
-                        {formatFileSize(mediaFile.size)}
+                        {formatBytes(mediaFile.size)}
                       </div>
                     </div>
                   </div>
@@ -432,7 +433,7 @@ export function MediaTrimmerPage() {
                   <div>
                     <span className="text-muted-foreground">{t('freeTools.mediaTrimmer.trimmedSize')}: </span>
                     <span className="font-medium text-green-600 dark:text-green-400">
-                      {formatFileSize(trimmedBlob.size)}
+                      {formatBytes(trimmedBlob.size)}
                     </span>
                   </div>
                 )}

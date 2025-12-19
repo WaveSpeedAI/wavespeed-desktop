@@ -39,6 +39,7 @@
     "history": "Verlauf",
     "templates": "Vorlagen",
     "assets": "Meine Assets",
+    "zImage": "Z-Image",
     "freeTools": "Kostenlose Tools",
     "settings": "Einstellungen",
     "collapse": "Einklappen"
@@ -68,6 +69,11 @@
       "assets": {
         "title": "Meine Assets",
         "description": "Organisieren und verwalten Sie Ihre generierten Ausgaben"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "Lokale KI-Bildgenerierung - läuft auf Ihrem Gerät, keine API erforderlich",
+        "badge": "Lokal"
       },
       "freeTools": {
         "title": "Kostenlose Tools",
@@ -365,6 +371,35 @@
     "loadPreviews": "Vorschauen laden",
     "disablePreviews": "Vorschauen deaktivieren"
   },
+  "zImage": {
+    "title": "Z-Image",
+    "subtitle": "Z-Image lokal kostenlos ausführen",
+    "generateImage": "Generieren",
+    "generating": "Generierung...",
+    "downloadingSd": "SD wird heruntergeladen...",
+    "downloadingVae": "VAE wird heruntergeladen...",
+    "downloadingLlm": "LLM wird heruntergeladen...",
+    "downloadingZImage": "Modell wird heruntergeladen...",
+    "stopGeneration": "Stoppen",
+    "models": {
+      "q4k": {
+        "description": "Empfohlen: Schnelle Inferenz mit guter Qualität, ~2,5GB"
+      },
+      "q6k": {
+        "description": "Hohe Qualität: Beste Ergebnisse, langsamere Generierung, ~3,5GB"
+      },
+      "q8": {
+        "description": "Höchste Qualität: Maximale Präzision, langsamere Generierung, ~4GB"
+      },
+      "q2k": {
+        "description": "Leichtgewichtig: Schnellste Generierung, geringere Qualität, ~1,5GB"
+      }
+    },
+    "errors": {
+      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "generationCancelled": "Generierung abgebrochen"
+    }
+  },
   "settings": {
     "title": "Einstellungen",
     "description": "Ihre WaveSpeed Desktop-Anwendung konfigurieren",
@@ -383,6 +418,7 @@
       "invalidDesc": "Der API-Schlüssel konnte nicht validiert werden. Bitte überprüfen und erneut versuchen.",
       "cleared": "API-Schlüssel gelöscht",
       "clearedDesc": "Ihr API-Schlüssel wurde entfernt.",
+      "itemDeleted": "Cache item deleted",
       "error": "Fehler",
       "errorDesc": "Fehler beim Speichern des API-Schlüssels."
     },
@@ -436,7 +472,11 @@
       "clear": "Leeren",
       "cleared": "Cache geleert",
       "clearedDesc": "Der KI-Modell-Cache wurde geleert. Modelle werden bei Bedarf erneut heruntergeladen.",
-      "clearFailed": "Cache konnte nicht geleert werden"
+      "itemDeleted": "Cache-Element gelöscht",
+      "clearFailed": "Cache konnte nicht geleert werden",
+      "zImageAuxiliary": "Z-Image-Hilfsmodelle",
+      "zImageModels": "Z-Image-Modelle",
+      "zImageBinary": "Z-Image-Binärdatei"
     },
     "freeTools": {
       "title": "Kostenlose Tools",

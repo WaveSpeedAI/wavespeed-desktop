@@ -39,6 +39,7 @@
     "history": "السجل",
     "templates": "القوالب",
     "assets": "أصولي",
+    "zImage": "Z-Image",
     "freeTools": "أدوات مجانية",
     "settings": "الإعدادات",
     "collapse": "طي"
@@ -68,6 +69,11 @@
       "assets": {
         "title": "أصولي",
         "description": "نظم وأدر مخرجاتك المنشأة"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "توليد صور الذكاء الاصطناعي المحلي - يعمل على جهازك، لا يتطلب API",
+        "badge": "محلي"
       },
       "freeTools": {
         "title": "أدوات مجانية",
@@ -365,6 +371,35 @@
     "loadPreviews": "تحميل المعاينات",
     "disablePreviews": "تعطيل المعاينات"
   },
+  "zImage": {
+    "title": "Z-Image",
+    "subtitle": "قم بتشغيل Z-Image محليًا مجانًا",
+    "generateImage": "إنشاء",
+    "generating": "جاري الإنشاء...",
+    "downloadingSd": "جاري تنزيل SD...",
+    "downloadingVae": "جاري تنزيل VAE...",
+    "downloadingLlm": "جاري تنزيل LLM...",
+    "downloadingZImage": "جاري تنزيل النموذج...",
+    "stopGeneration": "إيقاف",
+    "models": {
+      "q4k": {
+        "description": "موصى به: استدلال سريع مع جودة جيدة، ~2.5 جيجابايت"
+      },
+      "q6k": {
+        "description": "جودة عالية: أفضل النتائج، إنشاء أبطأ، ~3.5 جيجابايت"
+      },
+      "q8": {
+        "description": "أعلى جودة: أقصى دقة، إنشاء أبطأ، ~4 جيجابايت"
+      },
+      "q2k": {
+        "description": "خفيف: أسرع إنشاء، جودة أقل، ~1.5 جيجابايت"
+      }
+    },
+    "errors": {
+      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "generationCancelled": "تم إلغاء الإنشاء"
+    }
+  },
   "settings": {
     "title": "الإعدادات",
     "description": "تكوين تطبيق WaveSpeed Desktop",
@@ -383,6 +418,7 @@
       "invalidDesc": "تعذر التحقق من مفتاح API. يرجى التحقق والمحاولة مرة أخرى.",
       "cleared": "تم مسح مفتاح API",
       "clearedDesc": "تمت إزالة مفتاح API الخاص بك.",
+      "itemDeleted": "Cache item deleted",
       "error": "خطأ",
       "errorDesc": "فشل حفظ مفتاح API."
     },
@@ -436,7 +472,11 @@
       "clear": "مسح",
       "cleared": "تم مسح ذاكرة التخزين المؤقت",
       "clearedDesc": "تم مسح ذاكرة التخزين المؤقت لنماذج الذكاء الاصطناعي. سيتم إعادة تنزيل النماذج عند الحاجة.",
-      "clearFailed": "فشل في مسح ذاكرة التخزين المؤقت"
+      "itemDeleted": "تم حذف عنصر التخزين المؤقت",
+      "clearFailed": "فشل في مسح ذاكرة التخزين المؤقت",
+      "zImageAuxiliary": "نماذج Z-Image المساعدة",
+      "zImageModels": "نماذج Z-Image",
+      "zImageBinary": "ملف Z-Image الثنائي"
     },
     "freeTools": {
       "title": "أدوات مجانية",

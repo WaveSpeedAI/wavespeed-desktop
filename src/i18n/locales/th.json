@@ -39,6 +39,7 @@
     "history": "ประวัติ",
     "templates": "เทมเพลต",
     "assets": "ทรัพย์สินของฉัน",
+    "zImage": "Z-Image",
     "freeTools": "เครื่องมือฟรี",
     "settings": "การตั้งค่า",
     "collapse": "ยุบ"
@@ -68,6 +69,11 @@
       "assets": {
         "title": "ทรัพย์สินของฉัน",
         "description": "จัดระเบียบและจัดการเอาต์พุตที่สร้างขึ้น"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "การสร้างภาพ AI ในเครื่อง - ทำงานบนอุปกรณ์ของคุณ ไม่ต้องใช้ API",
+        "badge": "ในเครื่อง"
       },
       "freeTools": {
         "title": "เครื่องมือฟรี",
@@ -365,6 +371,35 @@
     "loadPreviews": "โหลดตัวอย่าง",
     "disablePreviews": "ปิดใช้งานตัวอย่าง"
   },
+  "zImage": {
+    "title": "Z-Image",
+    "subtitle": "รัน Z-Image ในเครื่องฟรี",
+    "generateImage": "สร้าง",
+    "generating": "กำลังสร้าง...",
+    "downloadingSd": "กำลังดาวน์โหลด SD...",
+    "downloadingVae": "กำลังดาวน์โหลด VAE...",
+    "downloadingLlm": "กำลังดาวน์โหลด LLM...",
+    "downloadingZImage": "กำลังดาวน์โหลดโมเดล...",
+    "stopGeneration": "หยุด",
+    "models": {
+      "q4k": {
+        "description": "แนะนำ: การอนุมานที่รวดเร็วด้วยคุณภาพดี, ~2.5GB"
+      },
+      "q6k": {
+        "description": "คุณภาพสูง: ผลลัพธ์ที่ดีที่สุด, การสร้างช้าลง, ~3.5GB"
+      },
+      "q8": {
+        "description": "คุณภาพสูงสุด: ความแม่นยำสูงสุด, การสร้างช้าลง, ~4GB"
+      },
+      "q2k": {
+        "description": "เบา: การสร้างเร็วที่สุด, คุณภาพต่ำกว่า, ~1.5GB"
+      }
+    },
+    "errors": {
+      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "generationCancelled": "ยกเลิกการสร้างแล้ว"
+    }
+  },
   "settings": {
     "title": "การตั้งค่า",
     "description": "กำหนดค่าแอปพลิเคชัน WaveSpeed Desktop",
@@ -383,6 +418,7 @@
       "invalidDesc": "ไม่สามารถตรวจสอบคีย์ API ได้ กรุณาตรวจสอบและลองอีกครั้ง",
       "cleared": "ล้างคีย์ API แล้ว",
       "clearedDesc": "คีย์ API ของคุณถูกลบแล้ว",
+      "itemDeleted": "Cache item deleted",
       "error": "ข้อผิดพลาด",
       "errorDesc": "ไม่สามารถบันทึกคีย์ API ได้"
     },
@@ -436,7 +472,11 @@
       "clear": "ล้าง",
       "cleared": "ล้างแคชแล้ว",
       "clearedDesc": "แคชโมเดล AI ถูกล้างแล้ว โมเดลจะถูกดาวน์โหลดใหม่เมื่อจำเป็น",
-      "clearFailed": "ล้างแคชไม่สำเร็จ"
+      "itemDeleted": "ลบรายการแคชแล้ว",
+      "clearFailed": "ล้างแคชไม่สำเร็จ",
+      "zImageAuxiliary": "โมเดลเสริม Z-Image",
+      "zImageModels": "โมเดล Z-Image",
+      "zImageBinary": "ไบนารี Z-Image"
     },
     "freeTools": {
       "title": "เครื่องมือฟรี",

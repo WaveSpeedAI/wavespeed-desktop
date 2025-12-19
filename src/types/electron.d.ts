@@ -70,6 +70,39 @@ export interface UpdateCheckResult {
   message?: string
 }
 
+export interface SDGenerationParams {
+  modelPath: string
+  llmPath?: string
+  vaePath?: string
+  prompt: string
+  negativePrompt?: string
+  width: number
+  height: number
+  steps: number
+  cfgScale: number
+  seed?: number
+  samplingMethod?: string
+  scheduler?: string
+  outputPath: string
+}
+
+export interface SDProgressData {
+  phase: string
+  progress: number
+  detail?: {
+    current?: number
+    total?: number
+    unit?: 'bytes' | 'steps' | 'percent'
+  }
+}
+
+export interface SDModelInfo {
+  name: string
+  path: string
+  size: number
+  createdAt: string
+}
+
 export interface ElectronAPI {
   getApiKey: () => Promise<string>
   setApiKey: (apiKey: string) => Promise<boolean>
@@ -87,6 +120,8 @@ export interface ElectronAPI {
 
   // Auto-updater APIs
   getAppVersion: () => Promise<string>
+  getLogFilePath: () => Promise<string>
+  openLogDirectory: () => Promise<{ success: boolean; path: string }>
   checkForUpdates: () => Promise<UpdateCheckResult>
   downloadUpdate: () => Promise<{ status: string; message?: string }>
   installUpdate: () => void
@@ -97,6 +132,7 @@ export interface ElectronAPI {
   getAssetsSettings: () => Promise<AssetsSettings>
   setAssetsSettings: (settings: Partial<AssetsSettings>) => Promise<boolean>
   getDefaultAssetsDirectory: () => Promise<string>
+  getZImageOutputPath: () => Promise<string>
   selectDirectory: () => Promise<SelectDirectoryResult>
   saveAsset: (url: string, type: string, fileName: string, subDir: string) => Promise<SaveAssetResult>
   deleteAsset: (filePath: string) => Promise<DeleteAssetResult>
@@ -106,6 +142,39 @@ export interface ElectronAPI {
   openFileLocation: (filePath: string) => Promise<DeleteAssetResult>
   checkFileExists: (filePath: string) => Promise<boolean>
   openAssetsFolder: () => Promise<{ success: boolean; error?: string }>
+
+  // Stable Diffusion APIs
+  sdGetBinaryPath: () => Promise<{ success: boolean; path?: string; error?: string }>
+  sdCheckAuxiliaryModels: () => Promise<{ success: boolean; llmExists: boolean; vaeExists: boolean; llmPath: string; vaePath: string; error?: string }>
+  sdListAuxiliaryModels: () => Promise<{ success: boolean; models?: Array<{ name: string; path: string; size: number; type: 'llm' | 'vae' }>; error?: string }>
+  sdDeleteAuxiliaryModel: (type: 'llm' | 'vae') => Promise<{ success: boolean; error?: string }>
+  sdGenerateImage: (params: SDGenerationParams) => Promise<{ success: boolean; outputPath?: string; error?: string }>
+  sdCancelGeneration: () => Promise<{ success: boolean; error?: string }>
+  sdSaveModelFromCache: (filename: string, data: Uint8Array, type: 'model' | 'llm' | 'vae') => Promise<{ success: boolean; filePath?: string; error?: string }>
+  sdListModels: () => Promise<{ success: boolean; models?: SDModelInfo[]; error?: string }>
+  sdDeleteModel: (modelPath: string) => Promise<{ success: boolean; error?: string }>
+  sdGetBinaryPath: () => Promise<{ success: boolean; path?: string; error?: string }>
+  sdDeleteBinary: () => Promise<{ success: boolean; error?: string }>
+  getFileSize: (filePath: string) => Promise<number>
+  sdGetSystemInfo: () => Promise<{ platform: string; arch: string; acceleration: string; supported: boolean }>
+  onSdProgress: (callback: (data: SDProgressData) => void) => () => void
+  onSdLog: (callback: (data: { type: 'stdout' | 'stderr'; message: string }) => void) => () => void
+  onSdDownloadProgress: (callback: (data: SDProgressData) => void) => () => void
+  onSdBinaryDownloadProgress: (callback: (data: SDProgressData) => void) => () => void
+  onSdLlmDownloadProgress: (callback: (data: SDProgressData) => void) => () => void
+  onSdVaeDownloadProgress: (callback: (data: SDProgressData) => void) => () => void
+
+  // File operations for chunked downloads
+  fileGetSize: (filePath: string) => Promise<{ success: boolean; size?: number; error?: string }>
+  fileAppendChunk: (filePath: string, chunk: ArrayBuffer) => Promise<{ success: boolean; error?: string }>
+  fileRename: (oldPath: string, newPath: string) => Promise<{ success: boolean; error?: string }>
+  fileDelete: (filePath: string) => Promise<{ success: boolean; error?: string }>
+
+  // SD download path helpers for chunked downloads
+  sdGetBinaryDownloadPath: () => Promise<{ success: boolean; path?: string; error?: string }>
+  sdGetAuxiliaryModelDownloadPath: (type: 'llm' | 'vae') => Promise<{ success: boolean; path?: string; error?: string }>
+  sdGetModelsDir: () => Promise<{ success: boolean; path?: string; error?: string }>
+  sdExtractBinary: (zipPath: string, destPath: string) => Promise<{ success: boolean; path?: string; error?: string }>
 }
 
 declare global {

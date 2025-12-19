@@ -39,6 +39,7 @@
     "history": "Historial",
     "templates": "Plantillas",
     "assets": "Mis Recursos",
+    "zImage": "Z-Image",
     "freeTools": "Herramientas Gratis",
     "settings": "Configuración",
     "collapse": "Contraer"
@@ -68,6 +69,11 @@
       "assets": {
         "title": "Mis Recursos",
         "description": "Organiza y gestiona tus salidas generadas"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "Generación de imágenes IA local - se ejecuta en tu dispositivo, sin API",
+        "badge": "Local"
       },
       "freeTools": {
         "title": "Herramientas Gratis",
@@ -365,6 +371,35 @@
     "loadPreviews": "Cargar vistas previas",
     "disablePreviews": "Deshabilitar vistas previas"
   },
+  "zImage": {
+    "title": "Z-Image",
+    "subtitle": "Ejecuta Z-Image localmente gratis",
+    "generateImage": "Generar",
+    "generating": "Generando...",
+    "downloadingSd": "Descargando SD...",
+    "downloadingVae": "Descargando VAE...",
+    "downloadingLlm": "Descargando LLM...",
+    "downloadingZImage": "Descargando modelo...",
+    "stopGeneration": "Detener",
+    "models": {
+      "q4k": {
+        "description": "Recomendado: Inferencia rápida con buena calidad, ~2.5GB"
+      },
+      "q6k": {
+        "description": "Alta calidad: Mejores resultados, generación más lenta, ~3.5GB"
+      },
+      "q8": {
+        "description": "Máxima calidad: Máxima precisión, generación más lenta, ~4GB"
+      },
+      "q2k": {
+        "description": "Ligero: Generación más rápida, menor calidad, ~1.5GB"
+      }
+    },
+    "errors": {
+      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "generationCancelled": "Generación cancelada"
+    }
+  },
   "settings": {
     "title": "Configuración",
     "description": "Configura tu aplicación WaveSpeed Desktop",
@@ -383,6 +418,7 @@
       "invalidDesc": "No se pudo validar la clave API. Por favor verifica e intenta de nuevo.",
       "cleared": "Clave API eliminada",
       "clearedDesc": "Tu clave API ha sido eliminada.",
+      "itemDeleted": "Cache item deleted",
       "error": "Error",
       "errorDesc": "Error al guardar la clave API."
     },
@@ -436,7 +472,11 @@
       "clear": "Limpiar",
       "cleared": "Caché limpiada",
       "clearedDesc": "La caché de modelos de IA ha sido limpiada. Los modelos se descargarán nuevamente cuando sea necesario.",
-      "clearFailed": "Error al limpiar la caché"
+      "itemDeleted": "Elemento de caché eliminado",
+      "clearFailed": "Error al limpiar la caché",
+      "zImageAuxiliary": "Modelos auxiliares de Z-Image",
+      "zImageModels": "Modelos de Z-Image",
+      "zImageBinary": "Binario de Z-Image"
     },
     "freeTools": {
       "title": "Herramientas Gratuitas",

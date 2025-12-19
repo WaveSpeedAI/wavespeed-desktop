@@ -39,6 +39,7 @@
     "history": "इतिहास",
     "templates": "टेम्पलेट",
     "assets": "मेरी संपत्तियां",
+    "zImage": "Z-Image",
     "freeTools": "मुफ्त उपकरण",
     "settings": "सेटिंग्स",
     "collapse": "संक्षिप्त करें"
@@ -68,6 +69,11 @@
       "assets": {
         "title": "मेरी संपत्तियां",
         "description": "अपने जनरेट किए गए आउटपुट को व्यवस्थित और प्रबंधित करें"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "स्थानीय AI छवि निर्माण - आपके डिवाइस पर चलता है, API की आवश्यकता नहीं",
+        "badge": "स्थानीय"
       },
       "freeTools": {
         "title": "मुफ्त उपकरण",
@@ -365,6 +371,35 @@
     "loadPreviews": "प्रीव्यू लोड करें",
     "disablePreviews": "प्रीव्यू अक्षम करें"
   },
+  "zImage": {
+    "title": "Z-Image",
+    "subtitle": "Z-Image को स्थानीय रूप से मुफ्त में चलाएं",
+    "generateImage": "जनरेट करें",
+    "generating": "जनरेट हो रहा है...",
+    "downloadingSd": "SD डाउनलोड हो रहा है...",
+    "downloadingVae": "VAE डाउनलोड हो रहा है...",
+    "downloadingLlm": "LLM डाउनलोड हो रहा है...",
+    "downloadingZImage": "मॉडल डाउनलोड हो रहा है...",
+    "stopGeneration": "रोकें",
+    "models": {
+      "q4k": {
+        "description": "अनुशंसित: अच्छी गुणवत्ता के साथ तेज़ इन्फरेंस, ~2.5GB"
+      },
+      "q6k": {
+        "description": "उच्च गुणवत्ता: सर्वोत्तम परिणाम, धीमी जनरेशन, ~3.5GB"
+      },
+      "q8": {
+        "description": "उच्चतम गुणवत्ता: अधिकतम सटीकता, धीमी जनरेशन, ~4GB"
+      },
+      "q2k": {
+        "description": "हल्का: सबसे तेज़ जनरेशन, कम गुणवत्ता, ~1.5GB"
+      }
+    },
+    "errors": {
+      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "generationCancelled": "जनरेशन रद्द की गई"
+    }
+  },
   "settings": {
     "title": "सेटिंग्स",
     "description": "अपना WaveSpeed Desktop एप्लिकेशन कॉन्फ़िगर करें",
@@ -383,6 +418,7 @@
       "invalidDesc": "API कुंजी सत्यापित नहीं की जा सकी। कृपया जांचें और पुनः प्रयास करें।",
       "cleared": "API कुंजी साफ़ की गई",
       "clearedDesc": "आपकी API कुंजी हटा दी गई है।",
+      "itemDeleted": "Cache item deleted",
       "error": "त्रुटि",
       "errorDesc": "API कुंजी सहेजने में विफल।"
     },
@@ -436,7 +472,11 @@
       "clear": "साफ करें",
       "cleared": "कैश साफ हो गया",
       "clearedDesc": "AI मॉडल कैश साफ हो गया है। जरूरत पड़ने पर मॉडल फिर से डाउनलोड होंगे।",
-      "clearFailed": "कैश साफ करने में विफल"
+      "itemDeleted": "कैश आइटम हटाया गया",
+      "clearFailed": "कैश साफ करने में विफल",
+      "zImageAuxiliary": "Z-Image सहायक मॉडल",
+      "zImageModels": "Z-Image मॉडल",
+      "zImageBinary": "Z-Image बाइनरी"
     },
     "freeTools": {
       "title": "मुफ्त उपकरण",

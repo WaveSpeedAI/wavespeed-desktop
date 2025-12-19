@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next'
 import { useFFmpegWorker } from '@/hooks/useFFmpegWorker'
 import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
 import { ProcessingProgress } from '@/components/shared/ProcessingProgress'
-import { getMediaType, formatFileSize, formatDuration } from '@/lib/ffmpegFormats'
+import { getMediaType, formatDuration } from '@/lib/ffmpegFormats'
+import { formatBytes } from '@/types/progress'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -459,7 +460,7 @@ export function MediaMergerPage() {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{item.file.name}</p>
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span>{formatFileSize(item.file.size)}</span>
+                        <span>{formatBytes(item.file.size)}</span>
                         {item.duration && <span>{formatDuration(item.duration)}</span>}
                       </div>
                     </div>
@@ -517,7 +518,7 @@ export function MediaMergerPage() {
                       {t('freeTools.mediaMerger.merged')}
                     </span>
                     <span className="text-sm text-muted-foreground">
-                      {formatFileSize(mergedBlob.size)}
+                      {formatBytes(mergedBlob.size)}
                     </span>
                   </div>
 

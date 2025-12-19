@@ -39,6 +39,7 @@
     "history": "기록",
     "templates": "템플릿",
     "assets": "내 에셋",
+    "zImage": "Z-Image",
     "freeTools": "무료 도구",
     "settings": "설정",
     "collapse": "접기"
@@ -68,6 +69,11 @@
       "assets": {
         "title": "내 에셋",
         "description": "생성된 출력물 정리 및 관리"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "로컬 AI 이미지 생성 - 기기에서 실행, API 불필요",
+        "badge": "로컬"
       },
       "freeTools": {
         "title": "무료 도구",
@@ -365,6 +371,35 @@
     "loadPreviews": "미리보기 로드",
     "disablePreviews": "미리보기 비활성화"
   },
+  "zImage": {
+    "title": "Z-Image",
+    "subtitle": "Z-Image를 로컬에서 무료로 실행",
+    "generateImage": "생성",
+    "generating": "생성 중...",
+    "downloadingSd": "SD 다운로드 중...",
+    "downloadingVae": "VAE 다운로드 중...",
+    "downloadingLlm": "LLM 다운로드 중...",
+    "downloadingZImage": "모델 다운로드 중...",
+    "stopGeneration": "중지",
+    "models": {
+      "q4k": {
+        "description": "권장: 빠른 추론과 좋은 품질, 약 2.5GB"
+      },
+      "q6k": {
+        "description": "고품질: 최고의 결과, 느린 생성, 약 3.5GB"
+      },
+      "q8": {
+        "description": "최고 품질: 최대 정밀도, 느린 생성, 약 4GB"
+      },
+      "q2k": {
+        "description": "경량: 가장 빠른 생성, 낮은 품질, 약 1.5GB"
+      }
+    },
+    "errors": {
+      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "generationCancelled": "생성이 취소되었습니다"
+    }
+  },
   "settings": {
     "title": "설정",
     "description": "WaveSpeed Desktop 애플리케이션 구성",
@@ -383,6 +418,7 @@
       "invalidDesc": "API 키를 확인할 수 없습니다. 확인 후 다시 시도하세요.",
       "cleared": "API 키 삭제됨",
       "clearedDesc": "API 키가 제거되었습니다.",
+      "itemDeleted": "Cache item deleted",
       "error": "오류",
       "errorDesc": "API 키 저장에 실패했습니다."
     },
@@ -436,7 +472,11 @@
       "clear": "清除",
       "cleared": "缓存已清除",
       "clearedDesc": "AI模型缓存已清除。需要时将重新下载模型。",
-      "clearFailed": "캐시 삭제 실패"
+      "itemDeleted": "캐시 항목이 삭제되었습니다",
+      "clearFailed": "캐시 삭제 실패",
+      "zImageAuxiliary": "Z-Image 보조 모델",
+      "zImageModels": "Z-Image 모델",
+      "zImageBinary": "Z-Image 바이너리"
     },
     "freeTools": {
       "title": "무료 도구",

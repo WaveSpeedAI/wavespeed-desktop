@@ -34,7 +34,9 @@ import { toast } from '@/hooks/useToast'
 
 export function PlaygroundPage() {
   const { t } = useTranslation()
-  const { modelId } = useParams()
+  const params = useParams()
+  // Support both old format (playground/:modelId) and new format (playground/*)
+  const modelId = params['*'] || params.modelId
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
   const { models, fetchModels } = useModelsStore()
@@ -174,8 +176,13 @@ export function PlaygroundPage() {
     if (models.length > 0 && tabs.length === 0 && !initialTabCreatedRef.current) {
       initialTabCreatedRef.current = true
       if (modelId) {
-        // With modelId: create tab with that model
-        const decodedId = decodeURIComponent(modelId)
+        // Try to decode, but use original if decoding fails (for paths with slashes)
+        let decodedId = modelId
+        try {
+          decodedId = decodeURIComponent(modelId)
+        } catch {
+          // Use original modelId if decoding fails
+        }
         const model = models.find(m => m.model_id === decodedId)
         createTab(model)
       } else {
@@ -188,7 +195,13 @@ export function PlaygroundPage() {
   // Set model from URL param when navigating
   useEffect(() => {
     if (modelId && models.length > 0 && activeTab) {
-      const decodedId = decodeURIComponent(modelId)
+      // Try to decode, but use original if decoding fails (for paths with slashes)
+      let decodedId = modelId
+      try {
+        decodedId = decodeURIComponent(modelId)
+      } catch {
+        // Use original modelId if decoding fails
+      }
       const model = models.find(m => m.model_id === decodedId)
       if (model && activeTab.selectedModel?.model_id !== decodedId) {
         setSelectedModel(model)
@@ -200,7 +213,8 @@ export function PlaygroundPage() {
     const model = models.find(m => m.model_id === modelId)
     if (model) {
       setSelectedModel(model)
-      navigate(`/playground/${encodeURIComponent(modelId)}`)
+      // Use modelId directly in path (supports slashes in model IDs like wavespeed-ai/z-image/turbo)
+      navigate(`/playground/${modelId}`)
     }
   }
 

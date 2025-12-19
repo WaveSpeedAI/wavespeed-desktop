@@ -39,6 +39,7 @@
     "history": "История",
     "templates": "Шаблоны",
     "assets": "Мои Активы",
+    "zImage": "Z-Image",
     "freeTools": "Бесплатные Инструменты",
     "settings": "Настройки",
     "collapse": "Свернуть"
@@ -68,6 +69,11 @@
       "assets": {
         "title": "Мои Активы",
         "description": "Организуйте и управляйте сгенерированными выводами"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "Локальная генерация изображений ИИ - работает на вашем устройстве, API не требуется",
+        "badge": "Локально"
       },
       "freeTools": {
         "title": "Бесплатные Инструменты",
@@ -365,6 +371,35 @@
     "loadPreviews": "Загрузить превью",
     "disablePreviews": "Отключить превью"
   },
+  "zImage": {
+    "title": "Z-Image",
+    "subtitle": "Запустите Z-Image локально бесплатно",
+    "generateImage": "Генерировать",
+    "generating": "Генерация...",
+    "downloadingSd": "Загрузка SD...",
+    "downloadingVae": "Загрузка VAE...",
+    "downloadingLlm": "Загрузка LLM...",
+    "downloadingZImage": "Загрузка модели...",
+    "stopGeneration": "Остановить",
+    "models": {
+      "q4k": {
+        "description": "Рекомендуется: Быстрый вывод с хорошим качеством, ~2,5ГБ"
+      },
+      "q6k": {
+        "description": "Высокое качество: Лучшие результаты, более медленная генерация, ~3,5ГБ"
+      },
+      "q8": {
+        "description": "Максимальное качество: Максимальная точность, более медленная генерация, ~4ГБ"
+      },
+      "q2k": {
+        "description": "Легковесный: Самая быстрая генерация, более низкое качество, ~1,5ГБ"
+      }
+    },
+    "errors": {
+      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "generationCancelled": "Генерация отменена"
+    }
+  },
   "settings": {
     "title": "Настройки",
     "description": "Настройка приложения WaveSpeed Desktop",
@@ -383,6 +418,7 @@
       "invalidDesc": "Не удалось проверить API-ключ. Проверьте и попробуйте снова.",
       "cleared": "API-ключ удалён",
       "clearedDesc": "Ваш API-ключ был удалён.",
+      "itemDeleted": "Cache item deleted",
       "error": "Ошибка",
       "errorDesc": "Не удалось сохранить API-ключ."
     },
@@ -436,7 +472,11 @@
       "clear": "Очистить",
       "cleared": "Кэш очищен",
       "clearedDesc": "Кэш моделей ИИ очищен. Модели будут загружены повторно при необходимости.",
-      "clearFailed": "Не удалось очистить кэш"
+      "itemDeleted": "Элемент кэша удалён",
+      "clearFailed": "Не удалось очистить кэш",
+      "zImageAuxiliary": "Вспомогательные модели Z-Image",
+      "zImageModels": "Модели Z-Image",
+      "zImageBinary": "Бинарный файл Z-Image"
     },
     "freeTools": {
       "title": "Бесплатные инструменты",

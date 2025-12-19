@@ -17,6 +17,7 @@ import { ImageEnhancerPage } from '@/pages/ImageEnhancerPage'
 import { BackgroundRemoverPage } from '@/pages/BackgroundRemoverPage'
 import { ImageEraserPage } from '@/pages/ImageEraserPage'
 import { SegmentAnythingPage } from '@/pages/SegmentAnythingPage'
+import { ZImagePage } from '@/pages/ZImagePage'
 import { VideoConverterPage } from '@/pages/VideoConverterPage'
 import { AudioConverterPage } from '@/pages/AudioConverterPage'
 import { ImageConverterPage } from '@/pages/ImageConverterPage'
@@ -71,14 +72,16 @@ export function Layout() {
 
   // Track visits to persistent pages and last visited free-tools page
   useEffect(() => {
-    const persistentPaths = ['/free-tools/video', '/free-tools/image', '/free-tools/face-enhancer', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/free-tools/video-converter', '/free-tools/audio-converter', '/free-tools/image-converter', '/free-tools/media-trimmer', '/free-tools/media-merger']
+    const persistentPaths = ['/free-tools/video', '/free-tools/image', '/free-tools/face-enhancer', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/free-tools/video-converter', '/free-tools/audio-converter', '/free-tools/image-converter', '/free-tools/media-trimmer', '/free-tools/media-merger', '/z-image']
     if (persistentPaths.includes(location.pathname)) {
       // Track for lazy mounting
       if (!visitedPages.has(location.pathname)) {
         setVisitedPages(prev => new Set(prev).add(location.pathname))
       }
-      // Track last visited for sidebar navigation
-      setLastFreeToolsPage(location.pathname)
+      // Track last visited for sidebar navigation (only for free-tools sub-pages)
+      if (location.pathname.startsWith('/free-tools/')) {
+        setLastFreeToolsPage(location.pathname)
+      }
     } else if (location.pathname === '/free-tools') {
       // Clear last visited page when on main Free Tools page
       // So clicking sidebar will return to main page, not sub-page
@@ -87,7 +90,7 @@ export function Layout() {
   }, [location.pathname, visitedPages])
 
   // Pages that don't require API key
-  const publicPaths = ['/', '/settings', '/templates', '/assets', '/free-tools']
+  const publicPaths = ['/', '/settings', '/templates', '/assets', '/free-tools', '/z-image']
   const isPublicPage = publicPaths.some(path =>
     path === '/'
       ? location.pathname === '/'
@@ -317,7 +320,7 @@ export function Layout() {
           {requiresLogin ? loginContent : (
             <>
               {/* Regular routes via Outlet */}
-              <div className={['/free-tools/video', '/free-tools/image', '/free-tools/face-enhancer', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/free-tools/video-converter', '/free-tools/audio-converter', '/free-tools/image-converter', '/free-tools/media-trimmer', '/free-tools/media-merger'].includes(location.pathname) ? 'hidden' : 'h-full overflow-auto'}>
+              <div className={['/free-tools/video', '/free-tools/image', '/free-tools/face-enhancer', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/free-tools/video-converter', '/free-tools/audio-converter', '/free-tools/image-converter', '/free-tools/media-trimmer', '/free-tools/media-merger', '/z-image'].includes(location.pathname) ? 'hidden' : 'h-full overflow-auto'}>
                 <Outlet />
               </div>
               {/* Persistent Free Tools pages - mounted once visited, removed from visitedPages forces unmount */}
@@ -349,6 +352,12 @@ export function Layout() {
               {visitedPages.has('/free-tools/segment-anything') && (
                 <div className={location.pathname === '/free-tools/segment-anything' ? 'h-full overflow-auto' : 'hidden'}>
                   <SegmentAnythingPage />
+                </div>
+              )}
+              {/* Persistent Z-Image page - mounted once visited, then persist via CSS show/hide */}
+              {visitedPages.has('/z-image') && (
+                <div className={location.pathname === '/z-image' ? 'h-full overflow-auto' : 'hidden'}>
+                  <ZImagePage />
                 </div>
               )}
               {visitedPages.has('/free-tools/video-converter') && (

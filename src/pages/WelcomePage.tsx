@@ -8,6 +8,7 @@ import {
   History,
   FolderHeart,
   Wand2,
+  Zap,
   ArrowRight,
   Sparkles
 } from 'lucide-react'
@@ -49,22 +50,22 @@ function FeatureCard({ icon, title, description, gradient, shapeGradient, href, 
       )} />
 
       {/* Content */}
-      <div className="relative z-10 p-6">
-        <div className="flex items-start justify-between mb-4">
+      <div className="relative z-10 p-3">
+        <div className="flex items-start justify-between mb-2">
           <div className={cn(
-            "p-3 rounded-xl bg-gradient-to-br",
+            "p-2 rounded-lg bg-gradient-to-br",
             shapeGradient
           )}>
             {icon}
           </div>
           {badge && (
-            <span className="px-2 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary">
+            <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-primary/10 text-primary">
               {badge}
             </span>
           )}
         </div>
-        <h3 className="text-lg font-semibold mb-2">{title}</h3>
-        <p className="text-sm text-muted-foreground mb-4">{description}</p>
+        <h3 className="text-base font-semibold mb-1">{title}</h3>
+        <p className="text-sm text-muted-foreground mb-2">{description}</p>
         <div className="flex items-center text-sm font-medium text-primary opacity-0 translate-x-[-8px] transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0">
           {t('welcome.explore')} <ArrowRight className="ml-1 h-4 w-4" />
         </div>
@@ -120,6 +121,15 @@ export function WelcomePage() {
       href: '/assets'
     },
     {
+      icon: <Zap className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />,
+      title: t('welcome.features.zImage.title'),
+      description: t('welcome.features.zImage.description'),
+      gradient: 'bg-gradient-to-br from-yellow-500/40 via-amber-500/20 to-transparent',
+      shapeGradient: 'from-yellow-500/40 to-amber-500/30',
+      href: '/z-image',
+      badge: t('welcome.features.zImage.badge')
+    },
+    {
       icon: <Wand2 className="h-6 w-6 text-orange-600 dark:text-orange-400" />,
       title: t('welcome.features.freeTools.title'),
       description: t('welcome.features.freeTools.description'),
@@ -133,26 +143,26 @@ export function WelcomePage() {
   return (
     <div className="min-h-full flex flex-col">
       {/* Hero Section */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
-        <div className="text-center mb-12">
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-4">
+        <div className="text-center mb-5">
           {/* Logo and Title */}
-          <div className="flex items-center justify-center gap-3 mb-4">
+          <div className="flex items-center justify-center gap-2 mb-2">
             <div className="relative">
               <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full animate-pulse" />
-              <Sparkles className="relative h-12 w-12 text-primary" />
+              <Sparkles className="relative h-9 w-9 text-primary" />
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
               WaveSpeed Desktop
             </h1>
           </div>
-          <p className="text-xl text-muted-foreground max-w-lg mx-auto">
+          <p className="text-base text-muted-foreground max-w-lg mx-auto">
             {t('welcome.tagline')}
           </p>
         </div>
 
         {/* Feature Cards Grid */}
-        <div className="w-full max-w-5xl mx-auto mb-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="w-full max-w-5xl mx-auto mb-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
             {features.map((feature) => (
               <FeatureCard key={feature.href} {...feature} />
             ))}
@@ -160,9 +170,9 @@ export function WelcomePage() {
         </div>
 
         {/* CTA Buttons */}
-        <div className="flex flex-wrap items-center justify-center gap-4">
+        <div className="flex flex-wrap items-center justify-center gap-2.5">
           <Button
-            size="lg"
+            size="default"
             onClick={() => navigate('/models')}
             className="gap-2"
           >
@@ -170,7 +180,7 @@ export function WelcomePage() {
             <ArrowRight className="h-4 w-4" />
           </Button>
           <Button
-            size="lg"
+            size="default"
             variant="outline"
             onClick={() => navigate('/free-tools')}
             className="gap-2"
@@ -182,7 +192,7 @@ export function WelcomePage() {
       </div>
 
       {/* Footer */}
-      <div className="text-center py-6 text-sm text-muted-foreground">
+      <div className="text-center py-3 text-sm text-muted-foreground">
         <a
           href="https://wavespeed.ai"
           target="_blank"

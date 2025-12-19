@@ -39,6 +39,7 @@
     "history": "Sejarah",
     "templates": "Templat",
     "assets": "Aset Saya",
+    "zImage": "Z-Image",
     "freeTools": "Alat Percuma",
     "settings": "Tetapan",
     "collapse": "Kuncupkan"
@@ -68,6 +69,11 @@
       "assets": {
         "title": "Aset Saya",
         "description": "Susun dan urus output yang dijana"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "Penjanaan imej AI tempatan - berjalan pada peranti anda, tanpa API",
+        "badge": "Tempatan"
       },
       "freeTools": {
         "title": "Alat Percuma",
@@ -365,6 +371,35 @@
     "loadPreviews": "Muat pratonton",
     "disablePreviews": "Lumpuhkan pratonton"
   },
+  "zImage": {
+    "title": "Z-Image",
+    "subtitle": "Jalankan Z-Image secara tempatan percuma",
+    "generateImage": "Jana",
+    "generating": "Menjana...",
+    "downloadingSd": "Memuat turun SD...",
+    "downloadingVae": "Memuat turun VAE...",
+    "downloadingLlm": "Memuat turun LLM...",
+    "downloadingZImage": "Memuat turun Model...",
+    "stopGeneration": "Hentikan",
+    "models": {
+      "q4k": {
+        "description": "Disyorkan: Inferens pantas dengan kualiti baik, ~2.5GB"
+      },
+      "q6k": {
+        "description": "Kualiti tinggi: Hasil terbaik, penjanaan lebih perlahan, ~3.5GB"
+      },
+      "q8": {
+        "description": "Kualiti tertinggi: Ketepatan maksimum, penjanaan lebih perlahan, ~4GB"
+      },
+      "q2k": {
+        "description": "Ringan: Penjanaan terpantas, kualiti lebih rendah, ~1.5GB"
+      }
+    },
+    "errors": {
+      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "generationCancelled": "Penjanaan dibatalkan"
+    }
+  },
   "settings": {
     "title": "Tetapan",
     "description": "Konfigurasikan aplikasi WaveSpeed Desktop anda",
@@ -383,6 +418,7 @@
       "invalidDesc": "Kunci API tidak dapat disahkan. Sila semak dan cuba lagi.",
       "cleared": "Kunci API dikosongkan",
       "clearedDesc": "Kunci API anda telah dibuang.",
+      "itemDeleted": "Cache item deleted",
       "error": "Ralat",
       "errorDesc": "Gagal menyimpan kunci API."
     },
@@ -436,7 +472,11 @@
       "clear": "Padam",
       "cleared": "Cache dipadam",
       "clearedDesc": "Cache model AI telah dipadam. Model akan dimuat turun semula apabila diperlukan.",
-      "clearFailed": "Gagal memadam cache"
+      "itemDeleted": "Item cache dipadam",
+      "clearFailed": "Gagal memadam cache",
+      "zImageAuxiliary": "Model tambahan Z-Image",
+      "zImageModels": "Model Z-Image",
+      "zImageBinary": "Binari Z-Image"
     },
     "freeTools": {
       "title": "Alat Percuma",

@@ -9,9 +9,9 @@ import {
   VIDEO_FORMATS,
   QUALITY_PRESETS,
   RESOLUTION_PRESETS,
-  getVideoFormat,
-  formatFileSize
+  getVideoFormat
 } from '@/lib/ffmpegFormats'
+import { formatBytes } from '@/types/progress'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -419,7 +419,7 @@ export function VideoConverterPage() {
                   </span>
                   {videoInfo && (
                     <span className="text-xs text-muted-foreground">
-                      {videoInfo.width}x{videoInfo.height} • {formatFileSize(videoFile.size)}
+                      {videoInfo.width}x{videoInfo.height} • {formatBytes(videoFile.size)}
                     </span>
                   )}
                 </div>
@@ -444,7 +444,7 @@ export function VideoConverterPage() {
                   </span>
                   {convertedBlob && (
                     <span className="text-xs text-green-600 dark:text-green-400">
-                      {formatFileSize(convertedBlob.size)}
+                      {formatBytes(convertedBlob.size)}
                     </span>
                   )}
                 </div>

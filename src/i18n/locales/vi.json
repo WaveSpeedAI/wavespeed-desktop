@@ -39,6 +39,7 @@
     "history": "Lịch sử",
     "templates": "Mẫu",
     "assets": "Tài sản của tôi",
+    "zImage": "Z-Image",
     "freeTools": "Công cụ Miễn phí",
     "settings": "Cài đặt",
     "collapse": "Thu gọn"
@@ -68,6 +69,11 @@
       "assets": {
         "title": "Tài sản của tôi",
         "description": "Sắp xếp và quản lý các đầu ra đã tạo"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "Tạo ảnh AI cục bộ - chạy trên thiết bị của bạn, không cần API",
+        "badge": "Cục bộ"
       },
       "freeTools": {
         "title": "Công cụ Miễn phí",
@@ -365,6 +371,35 @@
     "loadPreviews": "Tải xem trước",
     "disablePreviews": "Tắt xem trước"
   },
+  "zImage": {
+    "title": "Z-Image",
+    "subtitle": "Chạy Z-Image cục bộ miễn phí",
+    "generateImage": "Tạo",
+    "generating": "Đang tạo...",
+    "downloadingSd": "Đang tải xuống SD...",
+    "downloadingVae": "Đang tải xuống VAE...",
+    "downloadingLlm": "Đang tải xuống LLM...",
+    "downloadingZImage": "Đang tải xuống Mô hình...",
+    "stopGeneration": "Dừng",
+    "models": {
+      "q4k": {
+        "description": "Được đề xuất: Suy luận nhanh với chất lượng tốt, ~2.5GB"
+      },
+      "q6k": {
+        "description": "Chất lượng cao: Kết quả tốt nhất, tạo chậm hơn, ~3.5GB"
+      },
+      "q8": {
+        "description": "Chất lượng cao nhất: Độ chính xác tối đa, tạo chậm hơn, ~4GB"
+      },
+      "q2k": {
+        "description": "Nhẹ: Tạo nhanh nhất, chất lượng thấp hơn, ~1.5GB"
+      }
+    },
+    "errors": {
+      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "generationCancelled": "Đã hủy tạo"
+    }
+  },
   "settings": {
     "title": "Cài đặt",
     "description": "Cấu hình ứng dụng WaveSpeed Desktop",
@@ -383,6 +418,7 @@
       "invalidDesc": "Không thể xác thực khóa API. Vui lòng kiểm tra và thử lại.",
       "cleared": "Đã xóa khóa API",
       "clearedDesc": "Khóa API của bạn đã được xóa.",
+      "itemDeleted": "Cache item deleted",
       "error": "Lỗi",
       "errorDesc": "Không thể lưu khóa API."
     },
@@ -436,7 +472,11 @@
       "clear": "Xóa",
       "cleared": "Đã xóa bộ nhớ đệm",
       "clearedDesc": "Bộ nhớ đệm mô hình AI đã được xóa. Các mô hình sẽ được tải xuống lại khi cần.",
-      "clearFailed": "Không thể xóa bộ nhớ đệm"
+      "itemDeleted": "Đã xóa mục bộ nhớ đệm",
+      "clearFailed": "Không thể xóa bộ nhớ đệm",
+      "zImageAuxiliary": "Mô hình phụ trợ Z-Image",
+      "zImageModels": "Mô hình Z-Image",
+      "zImageBinary": "Tệp nhị phân Z-Image"
     },
     "freeTools": {
       "title": "Công cụ miễn phí",

@@ -39,6 +39,7 @@
     "history": "历史记录",
     "templates": "模板",
     "assets": "我的资产",
+    "zImage": "Z-Image",
     "freeTools": "免费工具",
     "settings": "设置",
     "collapse": "收起"
@@ -68,6 +69,11 @@
       "assets": {
         "title": "我的资产",
         "description": "整理和管理生成的输出内容"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "本地 AI 图像生成 - 在您的设备上运行，无需 API",
+        "badge": "本地"
       },
       "freeTools": {
         "title": "免费工具",
@@ -365,6 +371,35 @@
     "loadPreviews": "加载预览",
     "disablePreviews": "禁用预览"
   },
+  "zImage": {
+    "title": "Z-Image",
+    "subtitle": "本地免费运行 Z-Image",
+    "generateImage": "生成",
+    "generating": "生成中...",
+    "downloadingSd": "下载 SD 中...",
+    "downloadingVae": "下载 VAE 中...",
+    "downloadingLlm": "下载 LLM 中...",
+    "downloadingZImage": "下载模型中...",
+    "stopGeneration": "停止",
+    "models": {
+      "q4k": {
+        "description": "推荐：快速推理，质量良好，约 2.5GB"
+      },
+      "q6k": {
+        "description": "高质量：最佳效果，速度较慢，约 3.5GB"
+      },
+      "q8": {
+        "description": "最高质量：最大精度，速度较慢，约 4GB"
+      },
+      "q2k": {
+        "description": "轻量级：最快生成，质量较低，约 1.5GB"
+      }
+    },
+    "errors": {
+      "desktopRequired": "此功能需要桌面应用。请下载 WaveSpeed Desktop 或尝试在线版本。",
+      "generationCancelled": "生成已取消"
+    }
+  },
   "settings": {
     "title": "设置",
     "description": "配置您的 WaveSpeed Desktop 应用程序",
@@ -383,6 +418,7 @@
       "invalidDesc": "无法验证 API 密钥。请检查后重试。",
       "cleared": "API 密钥已清除",
       "clearedDesc": "您的 API 密钥已被移除。",
+      "itemDeleted": "Cache item deleted",
       "error": "错误",
       "errorDesc": "保存 API 密钥失败。"
     },
@@ -436,7 +472,11 @@
       "clear": "清除",
       "cleared": "缓存已清除",
       "clearedDesc": "AI模型缓存已清除。需要时将重新下载模型。",
-      "clearFailed": "清除缓存失败"
+      "itemDeleted": "缓存项已删除",
+      "clearFailed": "清除缓存失败",
+      "zImageAuxiliary": "Z-Image 辅助模型",
+      "zImageModels": "Z-Image 模型",
+      "zImageBinary": "Z-Image 二进制"
     },
     "freeTools": {
       "title": "免费工具",

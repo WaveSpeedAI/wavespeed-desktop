@@ -39,6 +39,7 @@
     "history": "History",
     "templates": "Templates",
     "assets": "My Assets",
+    "zImage": "Z-Image",
     "freeTools": "Free Tools",
     "settings": "Settings",
     "collapse": "Collapse"
@@ -68,6 +69,11 @@
       "assets": {
         "title": "My Assets",
         "description": "Organize and manage your generated outputs"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "Local AI image generation - runs on your device, no API needed",
+        "badge": "Local"
       },
       "freeTools": {
         "title": "Free Tools",
@@ -365,6 +371,35 @@
     "loadPreviews": "Load previews",
     "disablePreviews": "Disable previews"
   },
+  "zImage": {
+    "title": "Z-Image",
+    "subtitle": "Run Z-Image locally for free",
+    "generateImage": "Generate",
+    "generating": "Generating...",
+    "downloadingSd": "Downloading SD...",
+    "downloadingVae": "Downloading VAE...",
+    "downloadingLlm": "Downloading LLM...",
+    "downloadingZImage": "Downloading Model...",
+    "stopGeneration": "Stop",
+    "models": {
+      "q4k": {
+        "description": "Recommended: Fast inference with good quality, ~2.5GB"
+      },
+      "q6k": {
+        "description": "High quality: Best results, slower generation, ~3.5GB"
+      },
+      "q8": {
+        "description": "Highest quality: Maximum precision, slower generation, ~4GB"
+      },
+      "q2k": {
+        "description": "Lightweight: Fastest generation, lower quality, ~1.5GB"
+      }
+    },
+    "errors": {
+      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "generationCancelled": "Generation cancelled"
+    }
+  },
   "settings": {
     "title": "Settings",
     "description": "Configure your WaveSpeed Desktop application",
@@ -383,6 +418,7 @@
       "invalidDesc": "The API key could not be validated. Please check and try again.",
       "cleared": "API Key cleared",
       "clearedDesc": "Your API key has been removed.",
+      "itemDeleted": "Cache item deleted",
       "error": "Error",
       "errorDesc": "Failed to save API key."
     },
@@ -436,7 +472,11 @@
       "clear": "Clear",
       "cleared": "Cache cleared",
       "clearedDesc": "AI model cache has been cleared. Models will be re-downloaded when needed.",
-      "clearFailed": "Failed to clear cache"
+      "itemDeleted": "Cache item deleted",
+      "clearFailed": "Failed to clear cache",
+      "zImageAuxiliary": "Z-Image Auxiliary",
+      "zImageModels": "Z-Image Models",
+      "zImageBinary": "Z-Image Binary"
     },
     "freeTools": {
       "title": "Free Tools",

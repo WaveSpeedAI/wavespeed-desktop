@@ -39,6 +39,7 @@
     "history": "履歴",
     "templates": "テンプレート",
     "assets": "マイアセット",
+    "zImage": "Z-Image",
     "freeTools": "無料ツール",
     "settings": "設定",
     "collapse": "折りたたむ"
@@ -68,6 +69,11 @@
       "assets": {
         "title": "マイアセット",
         "description": "生成した出力を整理・管理"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "ローカルAI画像生成 - デバイス上で実行、APIは不要",
+        "badge": "ローカル"
       },
       "freeTools": {
         "title": "無料ツール",
@@ -365,6 +371,35 @@
     "loadPreviews": "プレビューを読み込む",
     "disablePreviews": "プレビューを無効にする"
   },
+  "zImage": {
+    "title": "Z-Image",
+    "subtitle": "Z-Image をローカルで無料で実行",
+    "generateImage": "生成",
+    "generating": "生成中...",
+    "downloadingSd": "SDをダウンロード中...",
+    "downloadingVae": "VAEをダウンロード中...",
+    "downloadingLlm": "LLMをダウンロード中...",
+    "downloadingZImage": "モデルをダウンロード中...",
+    "stopGeneration": "停止",
+    "models": {
+      "q4k": {
+        "description": "推奨：高速な推論と良好な品質、約2.5GB"
+      },
+      "q6k": {
+        "description": "高品質：最高の結果、生成速度は遅い、約3.5GB"
+      },
+      "q8": {
+        "description": "最高品質：最大精度、生成速度は遅い、約4GB"
+      },
+      "q2k": {
+        "description": "軽量：最速生成、品質は低い、約1.5GB"
+      }
+    },
+    "errors": {
+      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "generationCancelled": "生成がキャンセルされました"
+    }
+  },
   "settings": {
     "title": "設定",
     "description": "WaveSpeed Desktopアプリケーションの設定",
@@ -383,6 +418,7 @@
       "invalidDesc": "APIキーを検証できませんでした。確認して再試行してください。",
       "cleared": "APIキーをクリアしました",
       "clearedDesc": "APIキーが削除されました。",
+      "itemDeleted": "Cache item deleted",
       "error": "エラー",
       "errorDesc": "APIキーの保存に失敗しました。"
     },
@@ -436,7 +472,11 @@
       "clear": "清除",
       "cleared": "缓存已清除",
       "clearedDesc": "AI模型缓存已清除。需要时将重新下载模型。",
-      "clearFailed": "キャッシュのクリアに失敗しました"
+      "itemDeleted": "キャッシュ項目を削除しました",
+      "clearFailed": "キャッシュのクリアに失敗しました",
+      "zImageAuxiliary": "Z-Image 補助モデル",
+      "zImageModels": "Z-Image モデル",
+      "zImageBinary": "Z-Image バイナリ"
     },
     "freeTools": {
       "title": "無料ツール",

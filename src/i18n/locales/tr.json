@@ -39,6 +39,7 @@
     "history": "Geçmiş",
     "templates": "Şablonlar",
     "assets": "Varlıklarım",
+    "zImage": "Z-Image",
     "freeTools": "Ücretsiz Araçlar",
     "settings": "Ayarlar",
     "collapse": "Daralt"
@@ -68,6 +69,11 @@
       "assets": {
         "title": "Varlıklarım",
         "description": "Oluşturulan çıktılarınızı düzenleyin ve yönetin"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "Yerel AI g��rüntü oluşturma - cihazınızda çalışır, API gerekmez",
+        "badge": "Yerel"
       },
       "freeTools": {
         "title": "Ücretsiz Araçlar",
@@ -365,6 +371,35 @@
     "loadPreviews": "Önizlemeleri yükle",
     "disablePreviews": "Önizlemeleri devre dışı bırak"
   },
+  "zImage": {
+    "title": "Z-Image",
+    "subtitle": "Z-Image'i yerel olarak ücretsiz çalıştırın",
+    "generateImage": "Oluştur",
+    "generating": "Oluşturuluyor...",
+    "downloadingSd": "SD indiriliyor...",
+    "downloadingVae": "VAE indiriliyor...",
+    "downloadingLlm": "LLM indiriliyor...",
+    "downloadingZImage": "Model indiriliyor...",
+    "stopGeneration": "Durdur",
+    "models": {
+      "q4k": {
+        "description": "Önerilen: İyi kalitede hızlı çıkarım, ~2,5GB"
+      },
+      "q6k": {
+        "description": "Yüksek kalite: En iyi sonuçlar, daha yavaş oluşturma, ~3,5GB"
+      },
+      "q8": {
+        "description": "En yüksek kalite: Maksimum hassasiyet, daha yavaş oluşturma, ~4GB"
+      },
+      "q2k": {
+        "description": "Hafif: En hızlı oluşturma, daha düşük kalite, ~1,5GB"
+      }
+    },
+    "errors": {
+      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "generationCancelled": "Oluşturma iptal edildi"
+    }
+  },
   "settings": {
     "title": "Ayarlar",
     "description": "WaveSpeed Desktop uygulamanızı yapılandırın",
@@ -383,6 +418,7 @@
       "invalidDesc": "API anahtarı doğrulanamadı. Lütfen kontrol edip tekrar deneyin.",
       "cleared": "API anahtarı silindi",
       "clearedDesc": "API anahtarınız kaldırıldı.",
+      "itemDeleted": "Cache item deleted",
       "error": "Hata",
       "errorDesc": "API anahtarı kaydedilemedi."
     },
@@ -436,7 +472,11 @@
       "clear": "Temizle",
       "cleared": "Önbellek temizlendi",
       "clearedDesc": "AI model önbelleği temizlendi. Modeller gerektiğinde yeniden indirilecek.",
-      "clearFailed": "Önbellek temizlenemedi"
+      "itemDeleted": "Önbellek öğesi silindi",
+      "clearFailed": "Önbellek temizlenemedi",
+      "zImageAuxiliary": "Z-Image yardımcı modeller",
+      "zImageModels": "Z-Image modelleri",
+      "zImageBinary": "Z-Image ikili dosyası"
     },
     "freeTools": {
       "title": "Ücretsiz Araçlar",

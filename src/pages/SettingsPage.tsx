@@ -26,13 +26,15 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { toast } from '@/hooks/useToast'
-import { Eye, EyeOff, Check, Loader2, Monitor, Moon, Sun, Download, RefreshCw, Rocket, AlertCircle, Shield, Github, Globe, FolderOpen, Trash2, Database, ChevronRight, X, Clock } from 'lucide-react'
+import { Eye, EyeOff, Check, Loader2, Monitor, Moon, Sun, Download, RefreshCw, Rocket, AlertCircle, Shield, Github, Globe, FolderOpen, FileText, Trash2, Database, ChevronRight, X, Clock } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 
 interface CacheItem {
   cacheName: string
   url: string
   size: number
+  type?: 'browser' | 'sd-model' | 'sd-auxiliary' | 'sd-binary' // browser: browser cache, sd-model: SD models, sd-auxiliary: LLM/VAE, sd-binary: SD binary
+  modelType?: 'llm' | 'vae' // for sd-auxiliary models
 }
 
 type UpdateChannel = 'stable' | 'nightly'
@@ -105,13 +107,14 @@ export function SettingsPage() {
     })
   }, [i18n, t])
 
-  // Load cache details (all caches with items)
+  // Load cache details (browser caches + SD models)
   const loadCacheDetails = useCallback(async () => {
     try {
-      const cacheNames = await caches.keys()
       const items: CacheItem[] = []
       let totalSize = 0
 
+      // 1. Load browser cache (Image Eraser, etc.)
+      const cacheNames = await caches.keys()
       for (const name of cacheNames) {
         const cache = await caches.open(name)
         const keys = await cache.keys()
@@ -122,16 +125,73 @@ export function SettingsPage() {
             items.push({
               cacheName: name,
               url: request.url,
-              size: blob.size
+              size: blob.size,
+              type: 'browser'
             })
             totalSize += blob.size
           }
         }
       }
 
+      // 2. Load SD auxiliary models (LLM, VAE)
+      if (window.electronAPI?.sdListAuxiliaryModels) {
+        const result = await window.electronAPI.sdListAuxiliaryModels()
+        if (result.success && result.models) {
+          for (const model of result.models) {
+            items.push({
+              cacheName: 'z-image-auxiliary',
+              url: model.path,
+              size: model.size,
+              type: 'sd-auxiliary',
+              modelType: model.type
+            })
+            totalSize += model.size
+          }
+        }
+      }
+
+      // 3. Load SD models
+      if (window.electronAPI?.sdListModels) {
+        const result = await window.electronAPI.sdListModels()
+        if (result.success && result.models) {
+          for (const model of result.models) {
+            items.push({
+              cacheName: 'z-image-models',
+              url: model.path,
+              size: model.size,
+              type: 'sd-model'
+            })
+            totalSize += model.size
+          }
+        }
+      }
+
+      // 4. Load SD binary
+      if (window.electronAPI?.sdGetBinaryPath) {
+        const result = await window.electronAPI.sdGetBinaryPath()
+        if (result.success && result.path) {
+          try {
+            // Use Node.js fs to get binary size
+            if (window.electronAPI?.getFileSize) {
+              const size = await window.electronAPI.getFileSize(result.path)
+              items.push({
+                cacheName: 'z-image-binary',
+                url: result.path,
+                size: size,
+                type: 'sd-binary'
+              })
+              totalSize += size
+            }
+          } catch (error) {
+            console.error('Failed to get SD binary size:', error)
+          }
+        }
+      }
+
       setCacheItems(items)
       setCacheSize(totalSize)
-    } catch {
+    } catch (error) {
+      console.error('Failed to load cache details:', error)
       setCacheItems([])
       setCacheSize(0)
     }
@@ -161,16 +221,48 @@ export function SettingsPage() {
   }, [isValidated, t])
 
   // Delete a single cache item
-  const handleDeleteCacheItem = useCallback(async (cacheName: string, url: string) => {
-    setIsDeletingItem(url)
+  const handleDeleteCacheItem = useCallback(async (item: CacheItem) => {
+    setIsDeletingItem(item.url)
     try {
-      const cache = await caches.open(cacheName)
-      await cache.delete(url)
+      if (item.type === 'browser') {
+        // Delete from browser cache
+        const cache = await caches.open(item.cacheName)
+        await cache.delete(item.url)
+      } else if (item.type === 'sd-auxiliary' && item.modelType) {
+        // Delete SD auxiliary model (LLM or VAE)
+        if (window.electronAPI?.sdDeleteAuxiliaryModel) {
+          const result = await window.electronAPI.sdDeleteAuxiliaryModel(item.modelType)
+          if (!result.success) {
+            throw new Error(result.error || 'Failed to delete model')
+          }
+        }
+      } else if (item.type === 'sd-model') {
+        // Delete SD model
+        if (window.electronAPI?.sdDeleteModel) {
+          const result = await window.electronAPI.sdDeleteModel(item.url)
+          if (!result.success) {
+            throw new Error(result.error || 'Failed to delete model')
+          }
+        }
+      } else if (item.type === 'sd-binary') {
+        // Delete SD binary
+        if (window.electronAPI?.sdDeleteBinary) {
+          const result = await window.electronAPI.sdDeleteBinary()
+          if (!result.success) {
+            throw new Error(result.error || 'Failed to delete binary')
+          }
+        }
+      }
+
       await loadCacheDetails()
-    } catch {
+      toast({
+        title: t('common.success'),
+        description: t('settings.cache.itemDeleted'),
+      })
+    } catch (error) {
       toast({
         title: t('common.error'),
-        description: t('settings.cache.clearFailed'),
+        description: (error as Error).message || t('settings.cache.clearFailed'),
         variant: 'destructive',
       })
     } finally {
@@ -182,8 +274,34 @@ export function SettingsPage() {
   const handleClearCache = useCallback(async () => {
     setIsClearingCache(true)
     try {
+      // 1. Clear browser caches
       const cacheNames = await caches.keys()
       await Promise.all(cacheNames.map((name) => caches.delete(name)))
+
+      // 2. Clear SD auxiliary models (LLM, VAE)
+      if (window.electronAPI?.sdDeleteAuxiliaryModel) {
+        await window.electronAPI.sdDeleteAuxiliaryModel('llm').catch(console.error)
+        await window.electronAPI.sdDeleteAuxiliaryModel('vae').catch(console.error)
+      }
+
+      // 3. Clear SD models
+      const electronApi = window.electronAPI
+      if (electronApi?.sdListModels && electronApi?.sdDeleteModel) {
+        const result = await electronApi.sdListModels()
+        if (result.success && result.models) {
+          await Promise.all(
+            result.models.map((model) =>
+              electronApi.sdDeleteModel(model.path).catch(console.error)
+            )
+          )
+        }
+      }
+
+      // 4. Clear SD binary
+      if (window.electronAPI?.sdDeleteBinary) {
+        await window.electronAPI.sdDeleteBinary().catch(console.error)
+      }
+
       setCacheSize(0)
       setCacheItems([])
       setShowCacheDialog(false)
@@ -209,15 +327,27 @@ export function SettingsPage() {
     return `${(bytes / 1024 / 1024).toFixed(1)} MB`
   }
 
-  // Get display name from URL
-  const getDisplayName = (url: string) => {
-    try {
-      const urlObj = new URL(url)
-      const path = urlObj.pathname
-      const filename = path.split('/').pop() || path
-      return filename.length > 40 ? filename.slice(0, 37) + '...' : filename
-    } catch {
-      return url.slice(0, 40)
+  // Get display name from cache item
+  const getDisplayName = (item: CacheItem) => {
+    if (item.type === 'sd-auxiliary') {
+      return item.modelType === 'llm' ? 'Qwen3-4B LLM (2.4 GB)' : 'Z-Image VAE (335 MB)'
+    } else if (item.type === 'sd-model') {
+      // Extract filename from path
+      const filename = item.url.split(/[\\/]/).pop() || item.url
+      return filename.replace('.gguf', '')
+    } else if (item.type === 'sd-binary') {
+      // SD binary
+      return 'stable-diffusion (SD Binary)'
+    } else {
+      // Browser cache
+      try {
+        const urlObj = new URL(item.url)
+        const path = urlObj.pathname
+        const filename = path.split('/').pop() || path
+        return filename.length > 40 ? filename.slice(0, 37) + '...' : filename
+      } catch {
+        return item.url.slice(0, 40)
+      }
     }
   }
 
@@ -846,7 +976,7 @@ export function SettingsPage() {
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate" title={item.url}>
-                        {getDisplayName(item.url)}
+                        {getDisplayName(item)}
                       </p>
                       <p className="text-xs text-muted-foreground truncate" title={item.cacheName}>
                         {item.cacheName}
@@ -860,7 +990,7 @@ export function SettingsPage() {
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => handleDeleteCacheItem(item.cacheName, item.url)}
+                        onClick={() => handleDeleteCacheItem(item)}
                         disabled={isDeletingItem === item.url}
                       >
                         {isDeletingItem === item.url ? (
@@ -972,6 +1102,59 @@ export function SettingsPage() {
             </Button>
 
             {renderUpdateStatus()}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Debug & Logs Section */}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Debug & Logs</CardTitle>
+          <CardDescription>
+            View application logs for troubleshooting
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Application logs are automatically saved to help diagnose issues. You can view the log file or open the logs directory.
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  if (window.electronAPI) {
+                    const logPath = await window.electronAPI.getLogFilePath()
+                    navigator.clipboard.writeText(logPath)
+                    toast({
+                      title: 'Log path copied',
+                      description: 'Log file path has been copied to clipboard'
+                    })
+                  }
+                }}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                Copy Log Path
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  if (window.electronAPI) {
+                    await window.electronAPI.openLogDirectory()
+                  }
+                }}
+              >
+                <FolderOpen className="mr-2 h-4 w-4" />
+                Open Logs Folder
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Windows: <code className="text-xs bg-muted px-1 py-0.5 rounded">%APPDATA%\wavespeed-desktop\logs\main.log</code><br />
+              macOS: <code className="text-xs bg-muted px-1 py-0.5 rounded">~/Library/Logs/wavespeed-desktop/main.log</code><br />
+              Linux: <code className="text-xs bg-muted px-1 py-0.5 rounded">~/.config/wavespeed-desktop/logs/main.log</code>
+            </p>
           </div>
         </CardContent>
       </Card>

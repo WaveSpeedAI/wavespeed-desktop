@@ -43,20 +43,30 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
   // Check if this is a seed field
   const isSeedField = field.name.toLowerCase() === 'seed'
   const isNumericField = field.type === 'number' || field.type === 'slider'
+  const isNumberField = field.type === 'number'
+  const allowEmptyNumber = isNumberField && !field.required && field.default === undefined
   const numericFallback =
     value !== undefined && value !== null
       ? Number(value)
       : (field.default as number | undefined) ?? field.min ?? 0
-  const [numericInput, setNumericInput] = useState(isNumericField ? String(numericFallback) : '')
+  const [numericInput, setNumericInput] = useState(() => {
+    if (!isNumericField) return ''
+    if (allowEmptyNumber && (value === undefined || value === null)) return ''
+    return String(numericFallback)
+  })
 
   useEffect(() => {
     if (!isNumericField) return
+    if (allowEmptyNumber && (value === undefined || value === null)) {
+      setNumericInput('')
+      return
+    }
     const next =
       value !== undefined && value !== null
         ? Number(value)
         : (field.default as number | undefined) ?? field.min ?? 0
     setNumericInput(String(next))
-  }, [isNumericField, value, field.default, field.min])
+  }, [isNumericField, value, field.default, field.min, allowEmptyNumber])
 
   const clampNumeric = (n: number) => {
     let next = n
@@ -67,6 +77,11 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
 
   const commitNumeric = (raw: string) => {
     if (raw.trim() === '' || Number.isNaN(Number(raw))) {
+      if (allowEmptyNumber) {
+        onChange(undefined)
+        setNumericInput('')
+        return
+      }
       const fallback = (field.default as number | undefined) ?? field.min ?? 0
       onChange(fallback)
       setNumericInput(String(fallback))
@@ -132,7 +147,10 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
                 onChange={(e) => {
                   const val = e.target.value
                   setNumericInput(val)
-                  if (val === '' || Number.isNaN(Number(val))) return
+                  if (val === '' || Number.isNaN(Number(val))) {
+                    if (allowEmptyNumber) onChange(undefined)
+                    return
+                  }
                   onChange(Number(val))
                 }}
                 onBlur={() => commitNumeric(numericInput)}
@@ -155,7 +173,10 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
               onChange={(e) => {
                 const val = e.target.value
                 setNumericInput(val)
-                if (val === '' || Number.isNaN(Number(val))) return
+                if (val === '' || Number.isNaN(Number(val))) {
+                  if (allowEmptyNumber) onChange(undefined)
+                  return
+                }
                 onChange(Number(val))
               }}
               onBlur={() => commitNumeric(numericInput)}

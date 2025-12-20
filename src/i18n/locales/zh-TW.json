@@ -398,6 +398,14 @@
     "errors": {
       "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
       "generationCancelled": "生成已取消"
+    },
+    "tips": {
+      "intelMacUnsupported": "本地 Z-Image 僅支援 Apple Silicon 的 Mac。",
+      "linuxArmUnsupported": "Linux ARM 不支援本地 Z-Image。",
+      "windowsArmUnsupported": "Windows ARM 不支援本地 Z-Image。",
+      "linuxCpuOnly": "Linux 上本地 Z-Image 僅使用 CPU。可能較慢—請減少步數或影像尺寸。",
+      "windowsVulkanRequired": "Windows 上本地 Z-Image 需要支援 Vulkan 的 GPU 驅動程式。若不可用，生成可能較慢或失敗。",
+      "slowWithoutMetal": "Metal 加速不可用。生成將使用 CPU，可能較慢—請減少步數或影像尺寸。"
     }
   },
   "settings": {

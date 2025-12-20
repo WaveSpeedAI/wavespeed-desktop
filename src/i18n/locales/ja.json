@@ -398,6 +398,14 @@
     "errors": {
       "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
       "generationCancelled": "生成がキャンセルされました"
+    },
+    "tips": {
+      "intelMacUnsupported": "ローカルのZ-ImageはApple Silicon搭載Macのみ対応です。",
+      "linuxArmUnsupported": "Linux ARMはローカルZ-Imageに未対応です。",
+      "windowsArmUnsupported": "Windows ARMはローカルZ-Imageに未対応です。",
+      "linuxCpuOnly": "LinuxではローカルZ-ImageはCPUのみで動作します。遅くなる可能性があります—ステップ数や画像サイズを減らしてください。",
+      "windowsVulkanRequired": "WindowsのローカルZ-ImageはVulkan対応GPUドライバーが必要です。利用できない場合、生成が遅いか失敗することがあります。",
+      "slowWithoutMetal": "Metalアクセラレーションは利用できません。生成はCPUで実行され、遅くなる可能性があります—ステップ数や画像サイズを減らしてください。"
     }
   },
   "settings": {

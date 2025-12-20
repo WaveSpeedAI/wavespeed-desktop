@@ -144,6 +144,7 @@ const electronAPI = {
     modelPath: string
     llmPath?: string
     vaePath?: string
+    lowVramMode?: boolean
     prompt: string
     negativePrompt?: string
     width: number

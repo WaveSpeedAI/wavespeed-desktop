@@ -17,6 +17,7 @@ export interface GenerationOptions {
   modelPath: string
   llmPath?: string
   vaePath?: string
+  clipOnCpu?: boolean
   prompt: string
   negativePrompt?: string
   width: number
@@ -75,6 +76,7 @@ export class SDGenerator {
       samplingMethod,
       scheduler,
       outputPath,
+      clipOnCpu,
       onProgress,
       onLog
     } = options
@@ -119,6 +121,10 @@ export class SDGenerator {
       '--diffusion-fa' // Use Flash Attention
     ]
 
+    if (clipOnCpu) {
+      args.push('--clip-on-cpu')
+    }
+
     // Add LLM (text encoder) if provided
     if (llmPath && existsSync(llmPath)) {
       args.push('--llm', llmPath)
@@ -146,7 +152,7 @@ export class SDGenerator {
     }
 
     console.log('[SDGenerator] Spawning SD process:', binaryPath)
-    console.log('[SDGenerator] Arguments:', args.join(' '))
+    console.log('[SDGenerator] Arguments:', JSON.stringify(args))
 
     // Spawn child process
     const childProcess = spawn(binaryPath, args, {

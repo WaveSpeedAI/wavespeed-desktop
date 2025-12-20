@@ -398,6 +398,14 @@
     "errors": {
       "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
       "generationCancelled": "Penjanaan dibatalkan"
+    },
+    "tips": {
+      "intelMacUnsupported": "Z-Image tempatan hanya disokong pada Mac Apple Silicon.",
+      "linuxArmUnsupported": "Linux ARM tidak disokong untuk Z-Image tempatan.",
+      "windowsArmUnsupported": "Windows ARM tidak disokong untuk Z-Image tempatan.",
+      "linuxCpuOnly": "Z-Image tempatan hanya berjalan pada CPU di Linux. Ia mungkin perlahan—kurangkan langkah atau saiz imej.",
+      "windowsVulkanRequired": "Z-Image tempatan di Windows memerlukan pemacu GPU yang menyokong Vulkan. Jika tiada, penjanaan mungkin perlahan atau gagal.",
+      "slowWithoutMetal": "Pecutan Metal tidak tersedia. Penjanaan akan berjalan pada CPU dan mungkin perlahan—kurangkan langkah atau saiz imej."
     }
   },
   "settings": {

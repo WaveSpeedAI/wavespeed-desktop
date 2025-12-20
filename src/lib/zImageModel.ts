@@ -100,6 +100,12 @@ function createZImageSchema() {
         default: 1,
         'x-ui-component': 'slider' as const
       },
+      low_vram_mode: {
+        type: 'boolean',
+        title: 'Enable low VRAM mode',
+        description: 'Keep CLIP on CPU to reduce VRAM usage',
+        default: false
+      },
       seed: {
         type: 'integer',
         title: 'Seed',
@@ -130,6 +136,7 @@ function createZImageSchema() {
       'cfg_scale',
       'sampling_method',
       'scheduler',
+      'low_vram_mode',
       'seed'
     ]
   }

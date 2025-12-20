@@ -398,6 +398,14 @@
     "errors": {
       "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
       "generationCancelled": "Генерация отменена"
+    },
+    "tips": {
+      "intelMacUnsupported": "Локальный Z-Image поддерживается только на Mac с Apple Silicon.",
+      "linuxArmUnsupported": "Linux ARM не поддерживается для локального Z-Image.",
+      "windowsArmUnsupported": "Windows ARM не поддерживается для локального Z-Image.",
+      "linuxCpuOnly": "Локальный Z-Image на Linux работает только на CPU. Это может быть медленно — уменьшите шаги или размер изображения.",
+      "windowsVulkanRequired": "Локальный Z-Image на Windows требует драйверов GPU с поддержкой Vulkan. Если их нет, генерация может быть медленной или завершиться ошибкой.",
+      "slowWithoutMetal": "Ускорение Metal недоступно. Генерация будет выполняться на CPU и может быть медленной — уменьшите шаги или размер изображения."
     }
   },
   "settings": {

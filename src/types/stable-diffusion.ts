@@ -71,6 +71,8 @@ export interface GenerationParams {
   llmPath?: string
   /** VAE path */
   vaePath?: string
+  /** Enable low VRAM mode (CLIP on CPU) */
+  lowVramMode?: boolean
   /** Positive prompt */
   prompt: string
   /** Negative prompt */

@@ -318,6 +318,7 @@ export function ZImagePage() {
       const height = parseInt(sizeParts[1], 10) || 1024
       const steps = (zImageFormValues.steps as number) || 4
       const cfgScale = (zImageFormValues.cfg_scale as number) || 1
+      const lowVramMode = Boolean(zImageFormValues.low_vram_mode)
 
       const result = await generateZImage({
         modelPath,
@@ -328,6 +329,7 @@ export function ZImagePage() {
         steps,
         cfgScale,
         seed,
+        lowVramMode,
         samplingMethod: ((zImageFormValues.sampling_method as string) || 'euler') as SamplingMethod,
         scheduler: ((zImageFormValues.scheduler as string) || 'simple') as Scheduler
       })
@@ -385,7 +387,7 @@ export function ZImagePage() {
           <Zap className="h-5 w-5" />
           <h1 className="text-xl font-semibold">{t('zImage.title')}</h1>
         </div>
-        <span className="text-sm text-muted-foreground">{t('zImage.subtitle', 'Run Z-Image locally for free')}</span>
+        <span className="text-sm text-muted-foreground">{t('zImage.subtitle')}</span>
       </div>
 
       {/* Content - Two Column Layout */}
@@ -397,7 +399,7 @@ export function ZImagePage() {
               <Alert variant="destructive" className="mb-3">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription className="text-sm">
-                  {t('zImage.tips.intelMacUnsupported', 'Local Z-Image is only supported on Apple Silicon Macs.')}
+                  {t('zImage.tips.intelMacUnsupported')}
                 </AlertDescription>
               </Alert>
             )}
@@ -406,7 +408,7 @@ export function ZImagePage() {
               <Alert variant="destructive" className="mb-3">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription className="text-sm">
-                  {t('zImage.tips.linuxArmUnsupported', 'Linux ARM is not supported for local Z-Image.')}
+                  {t('zImage.tips.linuxArmUnsupported')}
                 </AlertDescription>
               </Alert>
             )}
@@ -415,7 +417,7 @@ export function ZImagePage() {
               <Alert variant="destructive" className="mb-3">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription className="text-sm">
-                  {t('zImage.tips.windowsArmUnsupported', 'Windows ARM is not supported for local Z-Image.')}
+                  {t('zImage.tips.windowsArmUnsupported')}
                 </AlertDescription>
               </Alert>
             )}
@@ -424,7 +426,7 @@ export function ZImagePage() {
               <Alert className="mb-3">
                 <AlertCircle className="h-4 w-4 text-yellow-500" />
                 <AlertDescription className="text-sm">
-                  {t('zImage.tips.linuxCpuOnly', 'Local Z-Image runs on CPU only on Linux. It may be slow—reduce steps or image size.')}
+                  {t('zImage.tips.linuxCpuOnly')}
                 </AlertDescription>
               </Alert>
             )}
@@ -433,7 +435,7 @@ export function ZImagePage() {
               <Alert className="mb-3">
                 <AlertCircle className="h-4 w-4 text-yellow-500" />
                 <AlertDescription className="text-sm">
-                  {t('zImage.tips.windowsVulkanRequired', 'Local Z-Image on Windows requires Vulkan-capable GPU drivers. If unavailable, generation will be slow or may fail.')}
+                  {t('zImage.tips.windowsVulkanRequired')}
                 </AlertDescription>
               </Alert>
             )}
@@ -442,7 +444,7 @@ export function ZImagePage() {
               <Alert className="mb-3">
                 <AlertCircle className="h-4 w-4 text-yellow-500" />
                 <AlertDescription className="text-sm">
-                  {t('zImage.tips.slowWithoutMetal', 'Metal acceleration is not available. Generation will run on CPU and may be slow—reduce steps or image size.')}
+                  {t('zImage.tips.slowWithoutMetal')}
                 </AlertDescription>
               </Alert>
             )}
@@ -478,11 +480,11 @@ export function ZImagePage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
                   <span>
-                    {currentPhase.id === 'download-sd' && t('zImage.downloadingSd', 'Downloading SD')}
-                    {currentPhase.id === 'download-vae' && t('zImage.downloadingVae', 'Downloading VAE')}
-                    {currentPhase.id === 'download-llm' && t('zImage.downloadingLlm', 'Downloading LLM')}
-                    {currentPhase.id === 'download-model' && t('zImage.downloadingZImage', 'Downloading Model')}
-                    {currentPhase.id === 'generate' && t('zImage.generating', 'Generating')}
+                    {currentPhase.id === 'download-sd' && t('zImage.downloadingSd')}
+                    {currentPhase.id === 'download-vae' && t('zImage.downloadingVae')}
+                    {currentPhase.id === 'download-llm' && t('zImage.downloadingLlm')}
+                    {currentPhase.id === 'download-model' && t('zImage.downloadingZImage')}
+                    {currentPhase.id === 'generate' && t('zImage.generating')}
                   </span>
                   <span>{Math.round(currentPhase.progress || 0)}%</span>
                 </div>
@@ -498,7 +500,7 @@ export function ZImagePage() {
             {/* Generate Button */}
             {isGenerating ? (
               <Button className="w-full" variant="destructive" onClick={handleCancel}>
-                {t('zImage.stopGeneration', 'Stop')}
+                {t('zImage.stopGeneration')}
               </Button>
             ) : (
               <Button
@@ -506,7 +508,7 @@ export function ZImagePage() {
                 onClick={handleGenerate}
               >
                 <Zap className="mr-2 h-4 w-4" />
-                {t('zImage.generateImage', 'Generate')}
+                {t('zImage.generateImage')}
               </Button>
             )}
 

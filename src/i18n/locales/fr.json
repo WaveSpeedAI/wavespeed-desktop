@@ -398,6 +398,14 @@
     "errors": {
       "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
       "generationCancelled": "Génération annulée"
+    },
+    "tips": {
+      "intelMacUnsupported": "Z-Image local est uniquement pris en charge sur les Mac Apple Silicon.",
+      "linuxArmUnsupported": "Linux ARM n’est pas pris en charge pour Z-Image local.",
+      "windowsArmUnsupported": "Windows ARM n’est pas pris en charge pour Z-Image local.",
+      "linuxCpuOnly": "Z-Image local fonctionne uniquement sur CPU sous Linux. Cela peut être lent—réduisez les étapes ou la taille de l’image.",
+      "windowsVulkanRequired": "Z-Image local sous Windows nécessite des pilotes GPU compatibles Vulkan. S’ils ne sont pas disponibles, la génération peut être lente ou échouer.",
+      "slowWithoutMetal": "L’accélération Metal n’est pas disponible. La génération s’exécutera sur CPU et peut être lente—réduisez les étapes ou la taille de l’image."
     }
   },
   "settings": {

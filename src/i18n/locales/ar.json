@@ -398,6 +398,14 @@
     "errors": {
       "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
       "generationCancelled": "تم إلغاء الإنشاء"
+    },
+    "tips": {
+      "intelMacUnsupported": "مدعوم Z-Image المحلي فقط على أجهزة Mac بمعالجات Apple Silicon.",
+      "linuxArmUnsupported": "Linux ARM غير مدعوم لـ Z-Image المحلي.",
+      "windowsArmUnsupported": "Windows ARM غير مدعوم لـ Z-Image المحلي.",
+      "linuxCpuOnly": "Z-Image المحلي يعمل على المعالج فقط على Linux. قد يكون بطيئًا—قلّل الخطوات أو حجم الصورة.",
+      "windowsVulkanRequired": "Z-Image المحلي على Windows يتطلب تعريفات GPU تدعم Vulkan. إن لم تتوفر فقد يكون التوليد بطيئًا أو يفشل.",
+      "slowWithoutMetal": "تسريع Metal غير متوفر. سيعمل التوليد على المعالج وقد يكون بطيئًا—قلّل الخطوات أو حجم الصورة."
     }
   },
   "settings": {

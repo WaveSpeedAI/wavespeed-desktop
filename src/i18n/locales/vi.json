@@ -398,6 +398,14 @@
     "errors": {
       "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
       "generationCancelled": "Đã hủy tạo"
+    },
+    "tips": {
+      "intelMacUnsupported": "Z-Image cục bộ chỉ hỗ trợ trên Mac Apple Silicon.",
+      "linuxArmUnsupported": "Linux ARM không được hỗ trợ cho Z-Image cục bộ.",
+      "windowsArmUnsupported": "Windows ARM không được hỗ trợ cho Z-Image cục bộ.",
+      "linuxCpuOnly": "Z-Image cục bộ trên Linux chỉ chạy bằng CPU. Có thể chậm—giảm số bước hoặc kích thước ảnh.",
+      "windowsVulkanRequired": "Z-Image cục bộ trên Windows yêu cầu trình điều khiển GPU hỗ trợ Vulkan. Nếu không có, quá trình tạo có thể chậm hoặc thất bại.",
+      "slowWithoutMetal": "Không có tăng tốc Metal. Quá trình tạo sẽ chạy trên CPU và có thể chậm—giảm số bước hoặc kích thước ảnh."
     }
   },
   "settings": {

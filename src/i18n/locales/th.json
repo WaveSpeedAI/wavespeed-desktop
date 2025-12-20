@@ -398,6 +398,14 @@
     "errors": {
       "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
       "generationCancelled": "ยกเลิกการสร้างแล้ว"
+    },
+    "tips": {
+      "intelMacUnsupported": "Z-Image แบบโลคอลรองรับเฉพาะ Mac ที่ใช้ Apple Silicon เท่านั้น",
+      "linuxArmUnsupported": "Linux ARM ไม่รองรับสำหรับ Z-Image แบบโลคอล",
+      "windowsArmUnsupported": "Windows ARM ไม่รองรับสำหรับ Z-Image แบบโลคอล",
+      "linuxCpuOnly": "Z-Image แบบโลคอลบน Linux ทำงานด้วย CPU เท่านั้น อาจช้า—ลดจำนวนสเต็ปหรือขนาดภาพ",
+      "windowsVulkanRequired": "Z-Image แบบโลคอลบน Windows ต้องใช้ไดรเวอร์ GPU ที่รองรับ Vulkan หากไม่มี การสร้างอาจช้าหรือล้มเหลว",
+      "slowWithoutMetal": "ไม่รองรับการเร่งด้วย Metal การสร้างจะทำงานบน CPU และอาจช้า—ลดจำนวนสเต็ปหรือขนาดภาพ"
     }
   },
   "settings": {

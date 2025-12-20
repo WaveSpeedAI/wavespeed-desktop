@@ -56,6 +56,63 @@ let systemInfoCache: { platform: string; acceleration: string; supported: boolea
 let metalSupportCache: boolean | null = null
 let binaryPathLoggedOnce = false
 
+function parseMaxNumberFromOutput(output: string): number | null {
+  const values = output
+    .split(/\r?\n/)
+    .map((line) => parseInt(line.replace(/[^\d]/g, '').trim(), 10))
+    .filter((value) => Number.isFinite(value) && value > 0)
+
+  if (values.length === 0) {
+    return null
+  }
+
+  return Math.max(...values)
+}
+
+function getNvidiaVramMb(): number | null {
+  try {
+    const output = execSync(
+      'nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits',
+      { encoding: 'utf8', timeout: 3000 }
+    )
+    return parseMaxNumberFromOutput(output)
+  } catch (error) {
+    return null
+  }
+}
+
+function getWindowsGpuVramMb(): number | null {
+  try {
+    const output = execSync(
+      'powershell -NoProfile -Command "Get-CimInstance Win32_VideoController | Select-Object -ExpandProperty AdapterRAM"',
+      { encoding: 'utf8', timeout: 3000 }
+    )
+    const bytes = parseMaxNumberFromOutput(output)
+    if (!bytes) return null
+    return Math.round(bytes / (1024 * 1024))
+  } catch (error) {
+    try {
+      const output = execSync(
+        'wmic path win32_VideoController get AdapterRAM',
+        { encoding: 'utf8', timeout: 3000 }
+      )
+      const bytes = parseMaxNumberFromOutput(output)
+      if (!bytes) return null
+      return Math.round(bytes / (1024 * 1024))
+    } catch (err) {
+      return null
+    }
+  }
+}
+
+function getGpuVramMb(): number | null {
+  if (process.platform !== 'win32') {
+    return null
+  }
+
+  return getNvidiaVramMb() ?? getWindowsGpuVramMb()
+}
+
 interface Settings {
   apiKey: string
   theme: 'light' | 'dark' | 'system'
@@ -1168,6 +1225,7 @@ ipcMain.handle('sd-generate-image', async (event, params: {
   modelPath: string
   llmPath?: string
   vaePath?: string
+  lowVramMode?: boolean
   prompt: string
   negativePrompt?: string
   width: number
@@ -1212,12 +1270,29 @@ ipcMain.handle('sd-generate-image', async (event, params: {
       throw new Error('SD binary not found. Please download it first.')
     }
 
+    const vramMb = getGpuVramMb()
+    const lowVramMode = Boolean(params.lowVramMode)
+    const useCpuOffload = lowVramMode || (vramMb !== null && vramMb < 16000)
+
+    if (vramMb !== null) {
+      console.log(`[SD Generate] Detected GPU VRAM: ${vramMb} MB`)
+    } else {
+      console.log('[SD Generate] GPU VRAM detection unavailable')
+    }
+
+    if (lowVramMode) {
+      console.log('[SD Generate] Enabling low VRAM mode from UI setting')
+    } else if (useCpuOffload) {
+      console.log('[SD Generate] Enabling CLIP CPU offload for low VRAM GPU')
+    }
+
     // Use SDGenerator class for image generation
     const result = await sdGenerator.generate({
       binaryPath,
       modelPath: params.modelPath,
       llmPath: params.llmPath,
       vaePath: params.vaePath,
+      clipOnCpu: useCpuOffload,
       prompt: params.prompt,
       negativePrompt: params.negativePrompt,
       width: params.width,

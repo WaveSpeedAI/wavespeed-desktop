@@ -1,8 +1,24 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { X, RotateCcw, Check, Loader2, Camera } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+type AspectRatio = '16:9' | '4:3' | '1:1' | '9:16'
+
+const ASPECT_RATIO_CONFIG: Record<AspectRatio, { width: number; height: number; class: string }> = {
+  '16:9': { width: 1920, height: 1080, class: 'aspect-[16/9]' },
+  '4:3': { width: 1440, height: 1080, class: 'aspect-[4/3]' },
+  '1:1': { width: 1080, height: 1080, class: 'aspect-[1/1]' },
+  '9:16': { width: 1080, height: 1920, class: 'aspect-[9/16]' },
+}
 
 interface CameraCaptureProps {
   onCapture: (blob: Blob) => void
@@ -20,6 +36,7 @@ export function CameraCapture({ onCapture, onClose, disabled }: CameraCapturePro
   const [error, setError] = useState<string | null>(null)
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment')
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9')
 
   useEffect(() => {
     let mounted = true
@@ -35,11 +52,12 @@ export function CameraCapture({ onCapture, onClose, disabled }: CameraCapturePro
       }
 
       try {
+        const config = ASPECT_RATIO_CONFIG[aspectRatio]
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode,
-            width: { ideal: 1920 },
-            height: { ideal: 1080 }
+            width: { ideal: config.width },
+            height: { ideal: config.height }
           },
           audio: false
         })
@@ -95,7 +113,7 @@ export function CameraCapture({ onCapture, onClose, disabled }: CameraCapturePro
         streamRef.current = null
       }
     }
-  }, [facingMode, t])
+  }, [facingMode, aspectRatio, t])
 
   const switchCamera = () => {
     setFacingMode(prev => prev === 'user' ? 'environment' : 'user')
@@ -146,9 +164,11 @@ export function CameraCapture({ onCapture, onClose, disabled }: CameraCapturePro
     onClose()
   }
 
+  const aspectConfig = ASPECT_RATIO_CONFIG[aspectRatio]
+
   return (
     <div className="space-y-3">
-      <div className="relative rounded-lg overflow-hidden bg-black aspect-video">
+      <div className={cn("relative rounded-lg overflow-hidden bg-black max-h-80 mx-auto", aspectConfig.class)}>
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-muted">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -219,7 +239,21 @@ export function CameraCapture({ onCapture, onClose, disabled }: CameraCapturePro
             >
               <Camera className="h-5 w-5" />
             </Button>
-            <div className="w-9" /> {/* Spacer for centering */}
+            <Select
+              value={aspectRatio}
+              onValueChange={(value) => setAspectRatio(value as AspectRatio)}
+              disabled={isLoading || !!error || disabled}
+            >
+              <SelectTrigger className="w-20 h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="16:9">16:9</SelectItem>
+                <SelectItem value="4:3">4:3</SelectItem>
+                <SelectItem value="1:1">1:1</SelectItem>
+                <SelectItem value="9:16">9:16</SelectItem>
+              </SelectContent>
+            </Select>
           </>
         ) : (
           <>

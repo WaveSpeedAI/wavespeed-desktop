@@ -92,6 +92,9 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
         const output = outputs[i]
         if (typeof output !== 'string') continue
 
+        // Skip local assets - they're already saved (e.g., Z-Image outputs)
+        if (output.startsWith('local-asset://')) continue
+
         const assetType = detectAssetType(output)
         if (!assetType) continue
 

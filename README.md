@@ -19,6 +19,7 @@ A cross-platform desktop application for running AI models from [WaveSpeedAI](ht
   - **Image Enhancer**: Upscale images 2x-4x with ESRGAN models (slim, medium, thick quality options)
   - **Video Enhancer**: Frame-by-frame video upscaling with real-time progress and ETA
   - **Face Enhancer**: Enhance and restore face quality using YOLO v8 for detection and GFPGAN v1.4 for enhancement (WebGPU accelerated)
+  - **Face Swapper**: Swap faces between images using InsightFace models (SCRFD detection, ArcFace embedding, Inswapper) with optional GFPGAN enhancement
   - **Background Remover**: Remove image backgrounds instantly using AI, displaying foreground, background, and mask outputs simultaneously with individual download buttons
   - **Image Eraser**: Remove unwanted objects from images using LaMa inpainting model with smart crop and blend (WebGPU accelerated)
   - **Segment Anything**: Interactive object segmentation with point prompts using SlimSAM model

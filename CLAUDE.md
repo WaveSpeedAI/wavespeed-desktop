@@ -78,6 +78,7 @@ wavespeed-desktop/
 - **`src/pages/FaceEnhancerPage.tsx`**: Face enhancement using YOLO v8 for detection and GFPGAN v1.4 for restoration
 - **`src/pages/ImageEraserPage.tsx`**: Object removal using LaMa inpainting model with inline mask drawing and smart crop
 - **`src/pages/SegmentAnythingPage.tsx`**: Interactive object segmentation using SlimSAM model with point prompts
+- **`src/pages/FaceSwapperPage.tsx`**: Face swapping with source/target selection, multi-face support, and revert functionality
 - **`src/pages/VideoConverterPage.tsx`**: Video format conversion with codec and quality options using FFmpeg WASM
 - **`src/pages/AudioConverterPage.tsx`**: Audio format conversion with bitrate control using FFmpeg WASM
 - **`src/pages/ImageConverterPage.tsx`**: Batch image format conversion with quality settings using FFmpeg WASM
@@ -101,6 +102,8 @@ wavespeed-desktop/
 - **`src/workers/imageEraser.worker.ts`**: Web Worker for LaMa inpainting model (512x512, quantized) with onnxruntime-web, WebGPU with WASM fallback, smart crop around mask for better quality
 - **`src/workers/faceEnhancer.worker.ts`**: Web Worker for face enhancement using YOLO v8 (detection) + GFPGAN v1.4 (restoration) with onnxruntime-web, WebGPU with WASM fallback
 - **`src/workers/segmentAnything.worker.ts`**: Web Worker for Segment Anything (SlimSAM) model using @huggingface/transformers with WebGPU acceleration for interactive object segmentation
+- **`src/workers/faceSwapper.worker.ts`**: Web Worker for face swapping using InsightFace models (SCRFD det_10g, ArcFace w600k, Inswapper 128, EMAP) with optional GFPGAN enhancement
+- **`src/hooks/useFaceSwapperWorker.ts`**: Hook for managing face swapper Web Worker with detectFaces, swapFaces, and dispose methods
 - **`src/workers/ffmpeg.worker.ts`**: Web Worker for FFmpeg WASM operations (convert, merge, trim, getInfo) with progress reporting
 - **`src/lib/ffmpegFormats.ts`**: Format definitions for video, audio, and image conversion (codecs, extensions, quality presets)
 
@@ -221,7 +224,7 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - Asset file naming format: `{model-slug}_{predictionId}_{resultindex}.{ext}` (e.g., `flux-schnell_pred-abc123_0.png`)
 - Layout.tsx handles unified API key login screen - pages don't need individual ApiKeyRequired checks
 - Settings page (`/settings`) is a public path accessible without API key
-- Free Tools pages are public paths accessible without API key: `/free-tools`, `/free-tools/image`, `/free-tools/video`, `/free-tools/background-remover`, `/free-tools/face-enhancer`, `/free-tools/image-eraser`, `/free-tools/segment-anything`, `/free-tools/video-converter`, `/free-tools/audio-converter`, `/free-tools/image-converter`, `/free-tools/media-trimmer`, `/free-tools/media-merger`
+- Free Tools pages are public paths accessible without API key: `/free-tools`, `/free-tools/image`, `/free-tools/video`, `/free-tools/background-remover`, `/free-tools/face-enhancer`, `/free-tools/face-swapper`, `/free-tools/image-eraser`, `/free-tools/segment-anything`, `/free-tools/video-converter`, `/free-tools/audio-converter`, `/free-tools/image-converter`, `/free-tools/media-trimmer`, `/free-tools/media-merger`
 - Free Tools feature uses UpscalerJS with ESRGAN models for image/video upscaling (slim/medium/thick quality options)
 - Video Enhancer processes frames at 30 FPS using WebM muxer with VP9 codec
 - Upscaler uses Web Worker to keep UI responsive during heavy processing
@@ -268,3 +271,13 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - FFmpeg tools are public paths accessible without API key: `/free-tools/video-converter`, `/free-tools/audio-converter`, `/free-tools/image-converter`, `/free-tools/media-trimmer`, `/free-tools/media-merger`
 - FFmpeg format definitions in `src/lib/ffmpegFormats.ts` include VIDEO_FORMATS, AUDIO_FORMATS, IMAGE_FORMATS with codec mappings
 - @ffmpeg/ffmpeg and @ffmpeg/util are excluded from Vite's optimizeDeps to avoid bundling issues
+- Face Swapper uses InsightFace models: SCRFD det_10g (~17MB) for detection, ArcFace w600k (~174MB) for embedding, Inswapper 128 (~554MB full precision) for swapping
+- Face Swapper uses corner-aligned anchors (not center-aligned) for SCRFD detection to ensure accurate bounding boxes
+- Face Swapper supports multi-face swapping: select target face, upload source, swap, repeat for other faces
+- Face Swapper tracks swap history per face allowing individual revert to original
+- Face Swapper uses Umeyama similarity transform with SVD for robust face alignment
+- Face Swapper applies EMAP matrix transformation to ArcFace embeddings before Inswapper
+- Face Swapper optional GFPGAN enhancement runs after swap for improved face quality
+- Face Swapper uses 10% padding for face cropping (configurable in worker)
+- Face Swapper models are cached in browser Cache API after first download from Hugging Face
+- OutputDisplay limits image/video upscaling to 2x natural size to prevent pixelation on small outputs

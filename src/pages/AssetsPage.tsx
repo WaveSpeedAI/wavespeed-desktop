@@ -169,6 +169,7 @@ export function AssetsPage() {
   const {
     assets,
     isLoaded,
+    isLoading,
     settings,
     loadAssets,
     loadSettings,
@@ -179,7 +180,6 @@ export function AssetsPage() {
     getAllTags,
     getAllModels,
     openAssetLocation,
-    validateAssets,
   } = useAssetsStore()
 
   // Filter state
@@ -213,13 +213,6 @@ export function AssetsPage() {
     loadAssets()
     loadSettings()
   }, [loadAssets, loadSettings])
-
-  // Validate assets on load (remove orphaned entries)
-  useEffect(() => {
-    if (isLoaded) {
-      validateAssets()
-    }
-  }, [isLoaded, validateAssets])
 
   // Debounce search
   useEffect(() => {
@@ -401,7 +394,7 @@ export function AssetsPage() {
     }
   }, [])
 
-  if (!isLoaded) {
+  if (isLoading || !isLoaded) {
     return (
       <div className="flex h-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

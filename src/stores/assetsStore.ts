@@ -61,9 +61,37 @@ function generateFileName(modelName: string, type: AssetType, url: string, predi
   return `${slug}_${id}_${resultIndex}.${ext}`
 }
 
+// Helper to extract model name from filename
+// Formats: "flux-schnell_abc123_0.png" -> "Flux Schnell"
+//          "local_zimage_2024-12-21.png" -> "Z-Image (Local)"
+function extractModelName(fileName: string): string {
+  // Handle local_ prefix (Z-Image local generation)
+  if (fileName.startsWith('local_')) {
+    const parts = fileName.split('_')
+    if (parts.length >= 2) {
+      // "local_zimage_..." -> "Z-Image (Local)"
+      const type = parts[1].toLowerCase()
+      if (type === 'zimage') return 'Z-Image (Local)'
+      return `${type.charAt(0).toUpperCase() + type.slice(1)} (Local)`
+    }
+    return 'Local Generation'
+  }
+
+  const parts = fileName.split('_')
+  if (parts.length > 0) {
+    // Convert slug back to readable name (e.g., "flux-schnell" -> "Flux Schnell")
+    return parts[0]
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
+  }
+  return 'Unknown Model'
+}
+
 interface AssetsState {
   assets: AssetMetadata[]
   isLoaded: boolean
+  isLoading: boolean
   settings: AssetsSettings
 
   // Data loading
@@ -98,22 +126,74 @@ interface AssetsState {
 export const useAssetsStore = create<AssetsState>((set, get) => ({
   assets: [],
   isLoaded: false,
+  isLoading: false,
   settings: {
     autoSaveAssets: true,
     assetsDirectory: ''
   },
 
   loadAssets: async () => {
-    if (window.electronAPI?.getAssetsMetadata) {
-      const metadata = await window.electronAPI.getAssetsMetadata()
-      set({ assets: metadata as AssetMetadata[], isLoaded: true })
-    } else {
-      // Browser fallback - limited functionality
-      const stored = localStorage.getItem(METADATA_STORAGE_KEY)
-      set({
-        assets: stored ? JSON.parse(stored) : [],
-        isLoaded: true
-      })
+    // Prevent duplicate loading
+    if (get().isLoading) return
+
+    set({ isLoading: true })
+
+    try {
+      if (window.electronAPI?.scanAssetsDirectory) {
+        // Scan actual files on disk (async, non-blocking)
+        const [files, existingMetadata] = await Promise.all([
+          window.electronAPI.scanAssetsDirectory(),
+          window.electronAPI.getAssetsMetadata?.() || Promise.resolve([])
+        ])
+
+        // Process in next tick to avoid blocking UI
+        await new Promise(resolve => setTimeout(resolve, 0))
+
+        const metadataByPath = new Map(existingMetadata.map(m => [m.filePath, m]))
+
+        // Build asset list from actual files, enriching with metadata if available
+        const assets: AssetMetadata[] = files.map(file => {
+          const existing = metadataByPath.get(file.filePath)
+          if (existing) {
+            // Use existing metadata but update file size (in case it changed)
+            return { ...existing, fileSize: file.fileSize }
+          }
+          // Create new metadata from file info
+          return {
+            id: generateId(),
+            filePath: file.filePath,
+            fileName: file.fileName,
+            type: file.type,
+            modelId: 'unknown',
+            modelName: extractModelName(file.fileName),
+            createdAt: file.createdAt,
+            fileSize: file.fileSize,
+            tags: [],
+            favorite: false
+          }
+        })
+
+        // Sort by creation date (newest first)
+        assets.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
+        set({ assets, isLoaded: true, isLoading: false })
+
+        // Save merged metadata in background (don't await)
+        if (window.electronAPI?.saveAssetsMetadata) {
+          window.electronAPI.saveAssetsMetadata(assets as Parameters<typeof window.electronAPI.saveAssetsMetadata>[0])
+        }
+      } else {
+        // Browser fallback - limited functionality
+        const stored = localStorage.getItem(METADATA_STORAGE_KEY)
+        set({
+          assets: stored ? JSON.parse(stored) : [],
+          isLoaded: true,
+          isLoading: false
+        })
+      }
+    } catch (error) {
+      console.error('Failed to load assets:', error)
+      set({ isLoaded: true, isLoading: false })
     }
   },
 
@@ -423,23 +503,7 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
   },
 
   validateAssets: async () => {
-    if (!window.electronAPI?.checkFileExists) return
-
-    const { assets } = get()
-    const validAssets: AssetMetadata[] = []
-
-    for (const asset of assets) {
-      const exists = await window.electronAPI.checkFileExists(asset.filePath)
-      if (exists) {
-        validAssets.push(asset)
-      }
-    }
-
-    if (validAssets.length !== assets.length) {
-      set({ assets: validAssets })
-      if (window.electronAPI?.saveAssetsMetadata) {
-        window.electronAPI.saveAssetsMetadata(validAssets as Parameters<typeof window.electronAPI.saveAssetsMetadata>[0])
-      }
-    }
+    // No-op: assets are now loaded directly from disk scan, so validation is not needed
+    // The loadAssets function scans actual files and merges with metadata
   }
 }))

@@ -128,6 +128,13 @@ const electronAPI = {
   checkFileExists: (filePath: string): Promise<boolean> => ipcRenderer.invoke('check-file-exists', filePath),
   openAssetsFolder: (): Promise<{ success: boolean; error?: string }> =>
     ipcRenderer.invoke('open-assets-folder'),
+  scanAssetsDirectory: (): Promise<Array<{
+    filePath: string
+    fileName: string
+    type: 'image' | 'video' | 'audio' | 'text'
+    fileSize: number
+    createdAt: string
+  }>> => ipcRenderer.invoke('scan-assets-directory'),
 
   // Stable Diffusion APIs
   sdGetBinaryPath: (): Promise<{ success: boolean; path?: string; error?: string }> =>

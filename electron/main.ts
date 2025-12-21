@@ -1,6 +1,7 @@
 import { app, BrowserWindow, shell, ipcMain, dialog, Menu, clipboard, protocol, net } from 'electron'
 import { join, dirname } from 'path'
 import { existsSync, readFileSync, writeFileSync, mkdirSync, createWriteStream, unlinkSync, statSync, readdirSync, copyFileSync } from 'fs'
+import { readdir, stat } from 'fs/promises'
 import AdmZip from 'adm-zip'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { autoUpdater, UpdateInfo } from 'electron-updater'
@@ -662,6 +663,63 @@ ipcMain.handle('open-assets-folder', async () => {
 
   const result = await shell.openPath(assetsDir)
   return { success: !result, error: result || undefined }
+})
+
+// Scan assets directory and return all files found (async for non-blocking)
+ipcMain.handle('scan-assets-directory', async () => {
+  const settings = loadSettings()
+  const assetsDir = settings.assetsDirectory || defaultAssetsDirectory
+
+  const subDirs = ['images', 'videos', 'audio', 'text']
+  const files: Array<{
+    filePath: string
+    fileName: string
+    type: 'image' | 'video' | 'audio' | 'text'
+    fileSize: number
+    createdAt: string
+  }> = []
+
+  const typeMap: Record<string, 'image' | 'video' | 'audio' | 'text'> = {
+    images: 'image',
+    videos: 'video',
+    audio: 'audio',
+    text: 'text'
+  }
+
+  // Process directories in parallel for better performance
+  await Promise.all(subDirs.map(async (subDir) => {
+    const dirPath = join(assetsDir, subDir)
+    if (!existsSync(dirPath)) return
+
+    try {
+      const entries = await readdir(dirPath)
+      // Process files in parallel batches
+      const filePromises = entries.map(async (entry) => {
+        const filePath = join(dirPath, entry)
+        try {
+          const stats = await stat(filePath)
+          if (stats.isFile()) {
+            return {
+              filePath,
+              fileName: entry,
+              type: typeMap[subDir],
+              fileSize: stats.size,
+              createdAt: stats.birthtime.toISOString()
+            }
+          }
+        } catch {
+          // Skip files we can't stat
+        }
+        return null
+      })
+      const results = await Promise.all(filePromises)
+      files.push(...results.filter((f): f is NonNullable<typeof f> => f !== null))
+    } catch {
+      // Skip directories we can't read
+    }
+  }))
+
+  return files
 })
 
 // SD download path helpers for chunked downloads

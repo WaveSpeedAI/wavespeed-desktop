@@ -143,6 +143,13 @@ export interface ElectronAPI {
   openFileLocation: (filePath: string) => Promise<DeleteAssetResult>
   checkFileExists: (filePath: string) => Promise<boolean>
   openAssetsFolder: () => Promise<{ success: boolean; error?: string }>
+  scanAssetsDirectory: () => Promise<Array<{
+    filePath: string
+    fileName: string
+    type: 'image' | 'video' | 'audio' | 'text'
+    fileSize: number
+    createdAt: string
+  }>>
 
   // Stable Diffusion APIs
   sdGetBinaryPath: () => Promise<{ success: boolean; path?: string; error?: string }>

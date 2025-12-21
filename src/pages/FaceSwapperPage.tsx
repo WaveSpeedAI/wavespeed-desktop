@@ -217,7 +217,6 @@ export function FaceSwapperPage() {
       setSourceImage(dataUrl)
       setSourceFaces([])
       setSelectedSourceFaceIndex(null)
-      setResultImage(null)
       resetProgress()
 
       // Get dimensions
@@ -1211,7 +1210,7 @@ export function FaceSwapperPage() {
                       </span>
                     </div>
                     <div className="bg-muted rounded-lg overflow-hidden flex items-center justify-center p-2 min-h-[180px]">
-                      {resultImage ? (
+                      {resultImage && selectedTargetFaceIndex !== null && swappedFaces.has(selectedTargetFaceIndex) ? (
                         <canvas
                           ref={(canvas) => {
                             if (!canvas || !resultImage || selectedTargetFaceIndex === null) return

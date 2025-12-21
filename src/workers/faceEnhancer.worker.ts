@@ -5,7 +5,6 @@
  * Face parsing uses @huggingface/transformers pipeline
  */
 
-// @ts-expect-error - onnxruntime-web types not resolved due to package.json exports
 import * as ort from 'onnxruntime-web'
 import { pipeline, env, RawImage } from '@huggingface/transformers'
 import { FACE_LABELS, featherMask } from '@/lib/faceParsingUtils'
@@ -737,6 +736,13 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
   switch (type) {
     case 'init': {
       try {
+        // Reuse existing sessions if already initialized
+        if (yoloSession && gfpganSession && segmenter) {
+          console.log('Face Enhancer models already loaded, reusing sessions')
+          self.postMessage({ type: 'ready', payload: { id: payload?.id } })
+          break
+        }
+
         // Get timeout from payload
         const timeout = payload?.timeout ?? DEFAULT_TIMEOUT
 
@@ -872,9 +878,23 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
     }
 
     case 'dispose': {
-      yoloSession = null
-      gfpganSession = null
-      segmenter = null
+      // Properly release ONNX sessions to free GPU/WASM memory
+      try {
+        if (yoloSession) {
+          await yoloSession.release()
+          yoloSession = null
+        }
+        if (gfpganSession) {
+          await gfpganSession.release()
+          gfpganSession = null
+        }
+        if (segmenter && typeof segmenter.dispose === 'function') {
+          await segmenter.dispose()
+        }
+        segmenter = null
+      } catch (e) {
+        console.warn('Error disposing sessions:', e)
+      }
       self.postMessage({ type: 'disposed' })
       break
     }

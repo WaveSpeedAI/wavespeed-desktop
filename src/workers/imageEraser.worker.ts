@@ -3,7 +3,6 @@
  * Uses LaMa inpainting model via ONNX Runtime (WebGPU with WASM fallback)
  */
 
-// @ts-expect-error - onnxruntime-web types not resolved due to package.json exports
 import * as ort from 'onnxruntime-web'
 
 // Configure WASM paths to use CDN (required for Vite bundling)
@@ -525,6 +524,13 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
   switch (type) {
     case 'init': {
       try {
+        // Reuse existing session if already initialized
+        if (session) {
+          console.log('Image Eraser model already loaded, reusing session')
+          self.postMessage({ type: 'ready', payload: { id: payload?.id } })
+          break
+        }
+
         // Get timeout from payload
         const timeout = payload?.timeout ?? DEFAULT_TIMEOUT
 
@@ -658,8 +664,14 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
     }
 
     case 'dispose': {
-      if (session) {
-        session = null
+      // Properly release ONNX session to free WASM memory
+      try {
+        if (session) {
+          await session.release()
+          session = null
+        }
+      } catch (e) {
+        console.warn('Error disposing session:', e)
       }
       self.postMessage({ type: 'disposed' })
       break

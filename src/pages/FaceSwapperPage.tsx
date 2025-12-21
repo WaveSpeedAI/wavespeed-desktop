@@ -34,7 +34,9 @@ import {
   Loader2,
   ArrowLeftRight,
   X,
-  RefreshCw
+  RefreshCw,
+  Undo2,
+  Maximize2
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -94,6 +96,11 @@ export function FaceSwapperPage() {
   const [isDetecting, setIsDetecting] = useState(false)
   const [enableEnhancement, setEnableEnhancement] = useState(true)
   const [resultImage, setResultImage] = useState<string | null>(null)
+
+  // Track swapped faces and their history for reverting
+  const [swappedFaces, setSwappedFaces] = useState<Set<number>>(new Set())
+  // Map of faceIndex -> resultImage before that face was swapped
+  const [swapHistory, setSwapHistory] = useState<Map<number, string | null>>(new Map())
 
   // UI state
   const [downloadFormat, setDownloadFormat] = useState<'png' | 'jpeg' | 'webp'>('jpeg')
@@ -268,6 +275,8 @@ export function FaceSwapperPage() {
       setSourceFaces([])
       setSelectedSourceFaceIndex(null)
       setResultImage(null)
+      setSwappedFaces(new Set())
+      setSwapHistory(new Map())
       resetProgress()
 
       // Get dimensions
@@ -772,6 +781,10 @@ export function FaceSwapperPage() {
           box: face.box
         }))
 
+      // Save current state to history before swapping (for revert)
+      const prevResult = resultImage
+      const faceIdx = selectedTargetFaceIndex!
+
       // Swap faces
       const { dataUrl } = await swapFaces({
         sourceImage: sourceImageData,
@@ -779,6 +792,19 @@ export function FaceSwapperPage() {
         targetImage: targetImageData,
         targetFaces: selectedFaces
       })
+
+      // Update history - store the state before this swap
+      setSwapHistory(prev => {
+        const newHistory = new Map(prev)
+        // Only store if this face hasn't been swapped before
+        if (!prev.has(faceIdx)) {
+          newHistory.set(faceIdx, prevResult)
+        }
+        return newHistory
+      })
+
+      // Mark face as swapped
+      setSwappedFaces(prev => new Set(prev).add(faceIdx))
 
       setResultImage(dataUrl)
 
@@ -818,6 +844,31 @@ export function FaceSwapperPage() {
     }
     img.src = resultImage
   }
+
+  // Revert a swapped face back to original
+  const handleRevert = useCallback((faceIndex: number) => {
+    if (!swappedFaces.has(faceIndex)) return
+
+    // Get the result image before this face was swapped
+    const prevResult = swapHistory.get(faceIndex)
+
+    // Restore to previous state (null means original target image)
+    setResultImage(prevResult ?? null)
+
+    // Remove from swapped faces
+    setSwappedFaces(prev => {
+      const newSet = new Set(prev)
+      newSet.delete(faceIndex)
+      return newSet
+    })
+
+    // Remove from history
+    setSwapHistory(prev => {
+      const newHistory = new Map(prev)
+      newHistory.delete(faceIndex)
+      return newHistory
+    })
+  }, [swappedFaces, swapHistory])
 
   return (
     <div className="p-8 relative">
@@ -918,18 +969,32 @@ export function FaceSwapperPage() {
                     </span>
                   )}
                   {targetImage && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 text-xs"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        targetInputRef.current?.click()
-                      }}
-                    >
-                      <Upload className="h-3 w-3 mr-1" />
-                      {t('freeTools.faceSwapper.change')}
-                    </Button>
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setPreviewImage(resultImage || targetImage)
+                        }}
+                        title={t('assets.preview')}
+                      >
+                        <Maximize2 className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 text-xs"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          targetInputRef.current?.click()
+                        }}
+                      >
+                        <Upload className="h-3 w-3 mr-1" />
+                        {t('freeTools.faceSwapper.change')}
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>
@@ -1180,9 +1245,21 @@ export function FaceSwapperPage() {
                         </div>
                       )}
                     </div>
-                    {resultImage && (
-                      <div className="text-center text-xs text-muted-foreground mt-1">
-                        {t('freeTools.faceSwapper.swapped')}
+                    {selectedTargetFaceIndex !== null && swappedFaces.has(selectedTargetFaceIndex) && (
+                      <div className="flex items-center justify-center gap-2 mt-1">
+                        <span className="text-xs text-muted-foreground">
+                          {t('freeTools.faceSwapper.swapped')}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-xs"
+                          onClick={() => handleRevert(selectedTargetFaceIndex)}
+                          disabled={isProcessing}
+                        >
+                          <Undo2 className="h-3 w-3 mr-1" />
+                          {t('freeTools.faceSwapper.revert')}
+                        </Button>
                       </div>
                     )}
                   </div>

@@ -998,135 +998,12 @@ export function FaceSwapperPage() {
           </Card>
         </div>
 
-        {/* Right: Working area - shows when face is selected */}
-        {selectedTargetFaceIndex !== null && targetImage && (
+        {/* Right: Working area - always reserve space when target image exists */}
+        {targetImage && (
           <div className="flex-1 min-w-[400px]">
+            {selectedTargetFaceIndex !== null ? (
             <Card className="border-2 border-muted">
               <CardContent className="p-4 space-y-4">
-                {/* Target and Swapped face previews side by side */}
-                <div className="flex gap-4">
-                  {/* Target face (original) */}
-                  <div className="flex-1">
-                    <div className="mb-2">
-                      <span className="text-sm font-medium">
-                        {t('freeTools.faceSwapper.targetFace')}
-                      </span>
-                    </div>
-                    <div className="bg-muted rounded-lg overflow-hidden flex items-center justify-center p-2 min-h-[130px]">
-                      <canvas
-                        ref={(canvas) => {
-                          if (!canvas || !targetImage || selectedTargetFaceIndex === null) return
-                          const face = targetFaces[selectedTargetFaceIndex]
-                          if (!face) return
-                          const img = new Image()
-                          img.onload = () => {
-                            const padding = 0.3
-                            const padX = face.box.width * padding
-                            const padY = face.box.height * padding
-                            const cropX = Math.max(0, face.box.x - padX)
-                            const cropY = Math.max(0, face.box.y - padY)
-                            const cropW = Math.min(img.width - cropX, face.box.width + padX * 2)
-                            const cropH = Math.min(img.height - cropY, face.box.height + padY * 2)
-
-                            const maxSize = 100
-                            const scale = Math.min(maxSize / cropW, maxSize / cropH, 1)
-                            canvas.width = cropW * scale
-                            canvas.height = cropH * scale
-
-                            const ctx = canvas.getContext('2d')!
-                            ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, canvas.width, canvas.height)
-                          }
-                          // Always use original target image
-                          img.src = originalTargetImage || targetImage
-                        }}
-                        className="mx-auto rounded"
-                      />
-                    </div>
-                    <div className="text-center text-xs text-muted-foreground mt-1">
-                      Face #{selectedTargetFaceIndex + 1}
-                    </div>
-                  </div>
-
-                  {/* Swapped face (result) */}
-                  <div className="flex-1">
-                    <div className="mb-2">
-                      <span className="text-sm font-medium">
-                        {t('freeTools.faceSwapper.swappedFace')}
-                      </span>
-                    </div>
-                    <div className="bg-muted rounded-lg overflow-hidden flex items-center justify-center p-2 min-h-[130px]">
-                      {resultImage ? (
-                        <canvas
-                          ref={(canvas) => {
-                            if (!canvas || !resultImage || selectedTargetFaceIndex === null) return
-                            const face = targetFaces[selectedTargetFaceIndex]
-                            if (!face) return
-                            const img = new Image()
-                            img.onload = () => {
-                              const padding = 0.3
-                              const padX = face.box.width * padding
-                              const padY = face.box.height * padding
-                              const cropX = Math.max(0, face.box.x - padX)
-                              const cropY = Math.max(0, face.box.y - padY)
-                              const cropW = Math.min(img.width - cropX, face.box.width + padX * 2)
-                              const cropH = Math.min(img.height - cropY, face.box.height + padY * 2)
-
-                              const maxSize = 100
-                              const scale = Math.min(maxSize / cropW, maxSize / cropH, 1)
-                              canvas.width = cropW * scale
-                              canvas.height = cropH * scale
-
-                              const ctx = canvas.getContext('2d')!
-                              ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, canvas.width, canvas.height)
-                            }
-                            img.src = resultImage
-                          }}
-                          className="mx-auto rounded"
-                        />
-                      ) : (
-                        <div className="text-xs text-muted-foreground text-center px-2">
-                          {t('freeTools.faceSwapper.swappedFacePlaceholder')}
-                        </div>
-                      )}
-                    </div>
-                    {resultImage && (
-                      <div className="text-center text-xs text-muted-foreground mt-1">
-                        {t('freeTools.faceSwapper.swapped')}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Enhancement toggle */}
-                <div className="flex items-center justify-between p-2 bg-muted rounded-lg">
-                  <Label htmlFor="enhance-panel" className="text-xs">{t('freeTools.faceSwapper.enhanceFace')}</Label>
-                  <Switch
-                    id="enhance-panel"
-                    checked={enableEnhancement}
-                    onCheckedChange={setEnableEnhancement}
-                    disabled={isProcessing}
-                  />
-                </div>
-
-                {/* Swap button */}
-                <Button
-                  className="w-full"
-                  onClick={handleSwap}
-                  disabled={!sourceImage || selectedSourceFaceIndex === null || isProcessing}
-                >
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      {t('freeTools.faceSwapper.swapping')}
-                    </>
-                  ) : (
-                    <>
-                      <ArrowLeftRight className="h-4 w-4 mr-2" />
-                      {t('freeTools.faceSwapper.swap')}
-                    </>
-                  )}
-                </Button>
-
                 {/* Source image upload with drag and drop */}
                 <div>
                   <div className="text-sm font-medium mb-2">{t('freeTools.faceSwapper.sourceFace')}</div>
@@ -1186,8 +1063,137 @@ export function FaceSwapperPage() {
                     )}
                   </div>
                 </div>
+
+                {/* Enhancement toggle and Swap button */}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
+                    <Switch
+                      id="enhance-panel"
+                      checked={enableEnhancement}
+                      onCheckedChange={setEnableEnhancement}
+                      disabled={isProcessing}
+                    />
+                    <Label htmlFor="enhance-panel" className="text-xs whitespace-nowrap">{t('freeTools.faceSwapper.enhanceFace')}</Label>
+                  </div>
+                  <Button
+                    className="flex-1"
+                    onClick={handleSwap}
+                    disabled={!sourceImage || selectedSourceFaceIndex === null || isProcessing}
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        {t('freeTools.faceSwapper.swapping')}
+                      </>
+                    ) : (
+                      <>
+                        <ArrowLeftRight className="h-4 w-4 mr-2" />
+                        {t('freeTools.faceSwapper.swap')}
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+                {/* Target and Swapped face previews side by side */}
+                <div className="flex gap-4">
+                  {/* Target face (original) */}
+                  <div className="flex-1">
+                    <div className="mb-2">
+                      <span className="text-sm font-medium">
+                        {t('freeTools.faceSwapper.targetFace')}
+                      </span>
+                    </div>
+                    <div className="bg-muted rounded-lg overflow-hidden flex items-center justify-center p-2 min-h-[180px]">
+                      <canvas
+                        ref={(canvas) => {
+                          if (!canvas || !targetImage || selectedTargetFaceIndex === null) return
+                          const face = targetFaces[selectedTargetFaceIndex]
+                          if (!face) return
+                          const img = new Image()
+                          img.onload = () => {
+                            const padding = 0.3
+                            const padX = face.box.width * padding
+                            const padY = face.box.height * padding
+                            const cropX = Math.max(0, face.box.x - padX)
+                            const cropY = Math.max(0, face.box.y - padY)
+                            const cropW = Math.min(img.width - cropX, face.box.width + padX * 2)
+                            const cropH = Math.min(img.height - cropY, face.box.height + padY * 2)
+
+                            const maxSize = 160
+                            const scale = Math.min(maxSize / cropW, maxSize / cropH, 1)
+                            canvas.width = cropW * scale
+                            canvas.height = cropH * scale
+
+                            const ctx = canvas.getContext('2d')!
+                            ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, canvas.width, canvas.height)
+                          }
+                          // Always use original target image
+                          img.src = originalTargetImage || targetImage
+                        }}
+                        className="mx-auto rounded"
+                      />
+                    </div>
+                    <div className="text-center text-xs text-muted-foreground mt-1">
+                      Face #{selectedTargetFaceIndex + 1}
+                    </div>
+                  </div>
+
+                  {/* Swapped face (result) */}
+                  <div className="flex-1">
+                    <div className="mb-2">
+                      <span className="text-sm font-medium">
+                        {t('freeTools.faceSwapper.swappedFace')}
+                      </span>
+                    </div>
+                    <div className="bg-muted rounded-lg overflow-hidden flex items-center justify-center p-2 min-h-[180px]">
+                      {resultImage ? (
+                        <canvas
+                          ref={(canvas) => {
+                            if (!canvas || !resultImage || selectedTargetFaceIndex === null) return
+                            const face = targetFaces[selectedTargetFaceIndex]
+                            if (!face) return
+                            const img = new Image()
+                            img.onload = () => {
+                              const padding = 0.3
+                              const padX = face.box.width * padding
+                              const padY = face.box.height * padding
+                              const cropX = Math.max(0, face.box.x - padX)
+                              const cropY = Math.max(0, face.box.y - padY)
+                              const cropW = Math.min(img.width - cropX, face.box.width + padX * 2)
+                              const cropH = Math.min(img.height - cropY, face.box.height + padY * 2)
+
+                              const maxSize = 160
+                              const scale = Math.min(maxSize / cropW, maxSize / cropH, 1)
+                              canvas.width = cropW * scale
+                              canvas.height = cropH * scale
+
+                              const ctx = canvas.getContext('2d')!
+                              ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, canvas.width, canvas.height)
+                            }
+                            img.src = resultImage
+                          }}
+                          className="mx-auto rounded"
+                        />
+                      ) : (
+                        <div className="text-xs text-muted-foreground text-center px-2">
+                          {t('freeTools.faceSwapper.swappedFacePlaceholder')}
+                        </div>
+                      )}
+                    </div>
+                    {resultImage && (
+                      <div className="text-center text-xs text-muted-foreground mt-1">
+                        {t('freeTools.faceSwapper.swapped')}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </CardContent>
             </Card>
+            ) : (
+              <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
+                {t('freeTools.faceSwapper.clickFaceToSwap')}
+              </div>
+            )}
           </div>
         )}
       </div>

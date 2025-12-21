@@ -469,9 +469,9 @@ async function detectFacesWithLandmarks(
       const anchorY = Math.floor(anchorIdx / fmSize)
       const anchorX = anchorIdx % fmSize
 
-      // Anchor center in input image coordinates
-      const anchorCenterX = (anchorX + 0.5) * stride
-      const anchorCenterY = (anchorY + 0.5) * stride
+      // Anchor position in input image coordinates (corner-aligned for det_10g)
+      const anchorCenterX = anchorX * stride
+      const anchorCenterY = anchorY * stride
 
       // Decode bbox: distances from anchor center
       const bboxOffset = i * 4

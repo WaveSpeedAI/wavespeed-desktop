@@ -26,10 +26,9 @@ interface OutputDisplayProps {
   error: string | null
   isLoading: boolean
   modelId?: string
-  modelName?: string
 }
 
-export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, modelName }: OutputDisplayProps) {
+export function OutputDisplay({ prediction, outputs, error, isLoading, modelId }: OutputDisplayProps) {
   const { t } = useTranslation()
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
   const [fullscreenMedia, setFullscreenMedia] = useState<{ url: string; type: 'image' | 'video' } | null>(null)
@@ -74,7 +73,7 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
 
   // Auto-save outputs when prediction completes
   useEffect(() => {
-    if (!settings.autoSaveAssets || !modelId || !modelName || outputs.length === 0) return
+    if (!settings.autoSaveAssets || !modelId || outputs.length === 0) return
     if (!prediction?.id || autoSavedRef.current === prediction.id) return
 
     // Check if assets already exist for this prediction (prevents duplicate saves on remount)
@@ -101,7 +100,6 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
         try {
           const result = await saveAsset(output, assetType, {
             modelId,
-            modelName,
             predictionId: prediction.id,
             originalUrl: output,
             resultIndex: i
@@ -122,7 +120,7 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
     }
 
     saveOutputs()
-  }, [outputs, prediction?.id, modelId, modelName, settings.autoSaveAssets, saveAsset, hasAssetForPrediction, t])
+  }, [outputs, prediction?.id, modelId, settings.autoSaveAssets, saveAsset, hasAssetForPrediction, t])
 
   // Reset saved indexes when outputs change (new prediction)
   useEffect(() => {
@@ -132,7 +130,7 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
   }, [prediction?.id])
 
   const handleSaveToAssets = useCallback(async (url: string, index: number) => {
-    if (!modelId || !modelName) return
+    if (!modelId) return
 
     const assetType = detectAssetType(url)
     if (!assetType) {
@@ -148,7 +146,6 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
     try {
       const result = await saveAsset(url, assetType, {
         modelId,
-        modelName,
         predictionId: prediction?.id,
         originalUrl: url,
         resultIndex: index
@@ -176,7 +173,7 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
     } finally {
       setSavingIndex(null)
     }
-  }, [modelId, modelName, prediction?.id, saveAsset, t])
+  }, [modelId, prediction?.id, saveAsset, t])
 
   const handleDownload = async (url: string, index: number) => {
     const extension = getExtensionFromUrl(url) || 'png'

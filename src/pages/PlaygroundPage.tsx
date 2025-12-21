@@ -488,7 +488,6 @@ export function PlaygroundPage() {
                 <BatchOutputGrid
                   results={activeTab.batchResults}
                   modelId={activeTab.selectedModel?.model_id}
-                  modelName={activeTab.selectedModel?.name}
                   onClear={clearBatchResults}
                   isRunning={activeTab.batchState?.isRunning}
                   totalCount={activeTab.batchState?.queue.length}
@@ -499,7 +498,6 @@ export function PlaygroundPage() {
                 <BatchOutputGrid
                   results={[]}
                   modelId={activeTab.selectedModel?.model_id}
-                  modelName={activeTab.selectedModel?.name}
                   onClear={() => {}}
                   isRunning={false}
                   totalCount={batchPreviewInputs.length}
@@ -519,7 +517,6 @@ export function PlaygroundPage() {
                   error={activeTab.error}
                   isLoading={activeTab.isRunning}
                   modelId={activeTab.selectedModel?.model_id}
-                  modelName={activeTab.selectedModel?.name}
                 />
               )}
             </div>

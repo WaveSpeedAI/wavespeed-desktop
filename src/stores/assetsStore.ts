@@ -54,38 +54,37 @@ export function detectAssetType(url: string): AssetType | null {
 }
 
 // Helper to generate filename: model_predictionid_resultindex.ext
-function generateFileName(modelName: string, type: AssetType, url: string, predictionId?: string, resultIndex: number = 0): string {
-  const slug = modelName.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase().replace(/-+/g, '-')
+function generateFileName(modelId: string, type: AssetType, url: string, predictionId?: string, resultIndex: number = 0): string {
+  // Replace / with _, other special chars with -, then clean up
+  const slug = modelId.replace(/\//g, '_').replace(/[^a-zA-Z0-9_]/g, '-').toLowerCase().replace(/-+/g, '-')
   const id = predictionId || (Date.now().toString(36) + Math.random().toString(36).substring(2, 6))
   const ext = getExtensionFromUrl(url) || getDefaultExtension(type)
   return `${slug}_${id}_${resultIndex}.${ext}`
 }
 
-// Helper to extract model name from filename
-// Formats: "flux-schnell_abc123_0.png" -> "Flux Schnell"
-//          "local_zimage_2024-12-21.png" -> "Z-Image (Local)"
-function extractModelName(fileName: string): string {
-  // Handle local_ prefix (Z-Image local generation)
-  if (fileName.startsWith('local_')) {
-    const parts = fileName.split('_')
-    if (parts.length >= 2) {
-      // "local_zimage_..." -> "Z-Image (Local)"
-      const type = parts[1].toLowerCase()
-      if (type === 'zimage') return 'Z-Image (Local)'
-      return `${type.charAt(0).toUpperCase() + type.slice(1)} (Local)`
-    }
-    return 'Local Generation'
+// Helper to extract model ID from filename
+// Format: "{model-slug}_{predictionId}_{resultIndex}.{ext}"
+// where model-slug has / replaced with _
+// Examples: "wavespeed-ai_flux-schnell_abc123_0.png" -> "wavespeed-ai/flux-schnell"
+//           "google_nano-banana-pro_edit_abc123_0.png" -> "google/nano-banana-pro/edit"
+//           "local_z-image_2024-12-21_0.png" -> "local/z-image"
+function extractModelId(fileName: string): string {
+  // Remove extension
+  const nameWithoutExt = fileName.replace(/\.[^.]+$/, '')
+  const parts = nameWithoutExt.split('_')
+
+  // Need at least 3 parts: model (1+), predictionId, resultIndex
+  if (parts.length >= 3) {
+    // Last part is resultIndex, second to last is predictionId
+    // Everything before is the model slug (joined with /)
+    const modelParts = parts.slice(0, -2)
+    return modelParts.join('/')
   }
 
-  const parts = fileName.split('_')
-  if (parts.length > 0) {
-    // Convert slug back to readable name (e.g., "flux-schnell" -> "Flux Schnell")
+  if (parts.length > 0 && parts[0]) {
     return parts[0]
-      .split('-')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ')
   }
-  return 'Unknown Model'
+  return 'unknown'
 }
 
 interface AssetsState {
@@ -110,7 +109,7 @@ interface AssetsState {
 
   // Tag operations
   getAllTags: () => string[]
-  getAllModels: () => { modelId: string; modelName: string }[]
+  getAllModels: () => string[]
 
   // Settings
   setAutoSave: (enabled: boolean) => Promise<void>
@@ -164,8 +163,7 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
             filePath: file.filePath,
             fileName: file.fileName,
             type: file.type,
-            modelId: 'unknown',
-            modelName: extractModelName(file.fileName),
+            modelId: extractModelId(file.fileName),
             createdAt: file.createdAt,
             fileSize: file.fileSize,
             tags: [],
@@ -211,7 +209,7 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
   },
 
   saveAsset: async (url, type, options) => {
-    const fileName = generateFileName(options.modelName, type, url, options.predictionId, options.resultIndex ?? 0)
+    const fileName = generateFileName(options.modelId, type, url, options.predictionId, options.resultIndex ?? 0)
 
     // Desktop mode: save file to disk
     if (window.electronAPI?.saveAsset) {
@@ -225,7 +223,6 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
           fileName,
           type,
           modelId: options.modelId,
-          modelName: options.modelName,
           createdAt: new Date().toISOString(),
           fileSize: result.fileSize || 0,
           tags: [],
@@ -254,7 +251,6 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
       fileName,
       type,
       modelId: options.modelId,
-      modelName: options.modelName,
       createdAt: new Date().toISOString(),
       fileSize: 0,
       tags: [],
@@ -292,7 +288,6 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
       fileName,
       type,
       modelId: options.modelId,
-      modelName: options.modelName,
       createdAt: new Date().toISOString(),
       fileSize,
       tags: [],
@@ -417,7 +412,7 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
       const search = filter.search.toLowerCase()
       filtered = filtered.filter(a =>
         a.fileName.toLowerCase().includes(search) ||
-        a.modelName.toLowerCase().includes(search) ||
+        a.modelId.toLowerCase().includes(search) ||
         a.tags.some(t => t.toLowerCase().includes(search))
       )
     }
@@ -455,16 +450,9 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
 
   getAllModels: () => {
     const { assets } = get()
-    const modelsMap = new Map<string, string>()
-    assets.forEach(a => {
-      if (!modelsMap.has(a.modelId)) {
-        modelsMap.set(a.modelId, a.modelName)
-      }
-    })
-    return Array.from(modelsMap.entries()).map(([modelId, modelName]) => ({
-      modelId,
-      modelName
-    }))
+    const modelIds = new Set<string>()
+    assets.forEach(a => modelIds.add(a.modelId))
+    return Array.from(modelIds).sort()
   },
 
   setAutoSave: async (enabled) => {

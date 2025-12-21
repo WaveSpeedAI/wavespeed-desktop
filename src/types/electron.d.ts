@@ -40,7 +40,6 @@ export interface AssetMetadataElectron {
   fileName: string
   type: 'image' | 'video' | 'audio' | 'text' | 'json'
   modelId: string
-  modelName: string
   createdAt: string
   fileSize: number
   tags: string[]

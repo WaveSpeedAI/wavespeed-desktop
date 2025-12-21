@@ -459,7 +459,7 @@ ipcMain.handle('get-zimage-output-path', () => {
   if (!existsSync(imagesDir)) {
     mkdirSync(imagesDir, { recursive: true })
   }
-  return join(imagesDir, `local_zimage_${timestamp}.png`)
+  return join(imagesDir, `local_z-image_${timestamp}.png`)
 })
 
 ipcMain.handle('select-directory', async () => {

@@ -24,7 +24,6 @@ import type { BatchResult, BatchQueueItem } from '@/types/batch'
 interface BatchOutputGridProps {
   results: BatchResult[]
   modelId?: string
-  modelName?: string
   onClear: () => void
   className?: string
   isRunning?: boolean
@@ -56,7 +55,6 @@ function getExtensionFromUrl(url: string): string | null {
 export function BatchOutputGrid({
   results,
   modelId,
-  modelName,
   onClear,
   className,
   isRunning,
@@ -81,7 +79,7 @@ export function BatchOutputGrid({
 
   // Auto-save results as they complete
   useEffect(() => {
-    if (!settings.autoSaveAssets || !modelId || !modelName) return
+    if (!settings.autoSaveAssets || !modelId) return
 
     const saveNewResults = async () => {
       let newSaveCount = 0
@@ -112,7 +110,6 @@ export function BatchOutputGrid({
             // Each batch item has unique predictionId, so just use outputIndex
             const saveResult = await saveAsset(output, assetType, {
               modelId,
-              modelName,
               predictionId: result.prediction?.id,
               originalUrl: output,
               resultIndex: outputIndex
@@ -136,7 +133,7 @@ export function BatchOutputGrid({
     }
 
     saveNewResults()
-  }, [results, modelId, modelName, settings.autoSaveAssets, saveAsset, hasAssetForPrediction, isRunning, t])
+  }, [results, modelId, settings.autoSaveAssets, saveAsset, hasAssetForPrediction, isRunning, t])
 
   // Reset auto-saved tracking when results are cleared
   useEffect(() => {
@@ -172,7 +169,7 @@ export function BatchOutputGrid({
   }
 
   const handleSaveAll = useCallback(async () => {
-    if (!modelId || !modelName) return
+    if (!modelId) return
 
     setSavingAll(true)
     let savedCount = 0
@@ -191,7 +188,6 @@ export function BatchOutputGrid({
           // Each batch item has unique predictionId, so just use outputIndex
           const saveResult = await saveAsset(output, assetType, {
             modelId,
-            modelName,
             predictionId: result.prediction?.id,
             originalUrl: output,
             resultIndex: outputIndex
@@ -211,7 +207,7 @@ export function BatchOutputGrid({
       title: t('playground.batch.savedAll'),
       description: t('playground.batch.savedAllDesc', { count: savedCount }),
     })
-  }, [modelId, modelName, results, saveAsset, t])
+  }, [modelId, results, saveAsset, t])
 
   const handleCopy = async (url: string, index: number) => {
     try {

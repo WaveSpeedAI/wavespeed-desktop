@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
 import { useAssetsStore } from '@/stores/assetsStore'
 import { formatBytes } from '@/types/progress'
 import { Button } from '@/components/ui/button'
@@ -60,7 +59,6 @@ import {
   Tag,
   X,
   Filter,
-  Settings,
   CheckSquare,
   Square,
   Plus,
@@ -165,14 +163,11 @@ function getAssetUrl(asset: AssetMetadata): string {
 
 export function AssetsPage() {
   const { t } = useTranslation()
-  const navigate = useNavigate()
   const {
     assets,
     isLoaded,
     isLoading,
-    settings,
     loadAssets,
-    loadSettings,
     deleteAsset,
     deleteAssets,
     updateAsset,
@@ -203,7 +198,7 @@ export function AssetsPage() {
 
   // Pagination state
   const [page, setPage] = useState(1)
-  const pageSize = 20
+  const pageSize = 50
 
   // Preview toggle
   const [loadPreviews, setLoadPreviews] = useState(true)
@@ -211,8 +206,7 @@ export function AssetsPage() {
   // Load assets on mount
   useEffect(() => {
     loadAssets()
-    loadSettings()
-  }, [loadAssets, loadSettings])
+  }, [loadAssets])
 
   // Debounce search
   useEffect(() => {
@@ -384,9 +378,6 @@ export function AssetsPage() {
     await updateAsset(asset.id, { tags: asset.tags.filter(t => t !== tag) })
   }, [updateAsset])
 
-  const handleGoToSettings = useCallback(() => {
-    navigate('/settings')
-  }, [navigate])
 
   const handleOpenAssetsFolder = useCallback(async () => {
     if (window.electronAPI?.openAssetsFolder) {
@@ -484,10 +475,6 @@ export function AssetsPage() {
                     {t('assets.openFolder')}
                   </Button>
                 )}
-                <Button variant="outline" size="sm" onClick={handleGoToSettings}>
-                  <Settings className="mr-2 h-4 w-4" />
-                  {t('assets.settings')}
-                </Button>
               </>
             )}
           </div>
@@ -585,9 +572,9 @@ export function AssetsPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t('assets.allModels')}</SelectItem>
-                    {allModels.map((model) => (
-                      <SelectItem key={model.modelId} value={model.modelId}>
-                        {model.modelName}
+                    {allModels.map((modelId) => (
+                      <SelectItem key={modelId} value={modelId}>
+                        {modelId}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -624,12 +611,6 @@ export function AssetsPage() {
                 ? t('assets.noAssetsDesc')
                 : t('assets.noMatchingAssets')}
             </p>
-            {assets.length === 0 && !settings.autoSaveAssets && (
-              <Button onClick={handleGoToSettings}>
-                <Settings className="mr-2 h-4 w-4" />
-                {t('assets.enableAutoSave')}
-              </Button>
-            )}
           </div>
         ) : (
           <div className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -697,8 +678,8 @@ export function AssetsPage() {
                       <p className="text-sm font-medium truncate" title={asset.fileName}>
                         {asset.fileName}
                       </p>
-                      <p className="text-xs text-muted-foreground truncate" title={asset.modelName}>
-                        {asset.modelName}
+                      <p className="text-xs text-muted-foreground truncate" title={asset.modelId}>
+                        {asset.modelId}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {formatDate(asset.createdAt)} · {formatBytes(asset.fileSize)}
@@ -805,7 +786,7 @@ export function AssetsPage() {
           <DialogHeader>
             <DialogTitle>{previewAsset?.fileName}</DialogTitle>
             <DialogDescription>
-              {previewAsset?.modelName} · {previewAsset && formatDate(previewAsset.createdAt)}
+              {previewAsset?.modelId} · {previewAsset && formatDate(previewAsset.createdAt)}
             </DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-auto">

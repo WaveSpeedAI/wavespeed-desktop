@@ -8,7 +8,6 @@ export interface AssetMetadata {
   fileName: string
   type: AssetType
   modelId: string
-  modelName: string
   createdAt: string
   fileSize: number
   tags: string[]
@@ -30,7 +29,6 @@ export interface AssetsFilter {
 
 export interface AssetsSaveOptions {
   modelId: string
-  modelName: string
   predictionId?: string
   originalUrl?: string
   resultIndex?: number

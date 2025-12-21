@@ -359,7 +359,6 @@ export function ZImagePage() {
       // Auto-register to assets
       await registerLocalAsset(result.outputPath, 'image', {
         modelId: 'local/z-image',
-        modelName: 'Z-Image (Local)',
         predictionId,
         originalUrl: imageUrl,
         resultIndex: 0
@@ -538,7 +537,6 @@ export function ZImagePage() {
             error={null}
             isLoading={isGenerating}
             modelId="local/z-image"
-            modelName="Z-Image (Local)"
           />
           {usedSeed !== null && outputs.length > 0 && (
             <div className="px-4 py-2 border-t bg-muted/30 text-sm text-muted-foreground">

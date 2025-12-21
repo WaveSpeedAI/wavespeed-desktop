@@ -145,7 +145,8 @@ async function initSession(modelBuffer: ArrayBuffer): Promise<void> {
       console.log('Using WebGPU backend')
       return
     } catch (e) {
-      console.warn('WebGPU session creation failed, falling back to WASM:', e)
+      const errorMsg = e instanceof Error ? e.message : String(e)
+      console.warn(`WebGPU session creation failed, falling back to WASM. Reason: ${errorMsg}`)
       useWebGPU = false
     }
   }
@@ -473,14 +474,16 @@ async function removeArea(
     MODEL_SIZE
   ])
 
-  // Run inference
+  // Run inference - use actual input/output names from model
+  const inputNames = session.inputNames
   const feeds: Record<string, ort.Tensor> = {
-    image: imageTensor,
-    mask: maskTensor
+    [inputNames[0]]: imageTensor,
+    [inputNames[1]]: maskTensor
   }
 
   const results = await session.run(feeds)
-  const rawOutput = results['output'].data as Float32Array
+  const outputName = session.outputNames[0]
+  const rawOutput = results[outputName].data as Float32Array
 
   // Model outputs 0-255 range, convert to 0-1
   const output = new Float32Array(rawOutput.length)

@@ -1,6 +1,6 @@
 import { app, BrowserWindow, shell, ipcMain, dialog, Menu, clipboard, protocol, net } from 'electron'
 import { join, dirname } from 'path'
-import { existsSync, readFileSync, writeFileSync, mkdirSync, createWriteStream, unlinkSync, statSync, readdirSync } from 'fs'
+import { existsSync, readFileSync, writeFileSync, mkdirSync, createWriteStream, unlinkSync, statSync, readdirSync, copyFileSync } from 'fs'
 import AdmZip from 'adm-zip'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { autoUpdater, UpdateInfo } from 'electron-updater'
@@ -52,7 +52,7 @@ const sdGenerator = new SDGenerator()
 let activeSDProcess: ReturnType<typeof spawn> | null = null
 
 // Cache for system info to avoid repeated checks
-let systemInfoCache: { platform: string; acceleration: string; supported: boolean } | null = null
+let systemInfoCache: { platform: string; arch: string; acceleration: string; supported: boolean } | null = null
 let metalSupportCache: boolean | null = null
 let binaryPathLoggedOnce = false
 
@@ -358,12 +358,26 @@ ipcMain.handle('download-file', async (_, url: string, defaultFilename: string) 
     return { success: false, canceled: true }
   }
 
-  // Download the file
+  // Handle local-asset:// URLs (Z-Image local outputs)
+  if (url.startsWith('local-asset://')) {
+    try {
+      const localPath = decodeURIComponent(url.replace('local-asset://', ''))
+      if (!existsSync(localPath)) {
+        return { success: false, error: 'Source file not found' }
+      }
+      copyFileSync(localPath, result.filePath)
+      return { success: true, filePath: result.filePath }
+    } catch (err) {
+      return { success: false, error: (err as Error).message }
+    }
+  }
+
+  // Download the file from http/https
   return new Promise((resolve) => {
-    const protocol = url.startsWith('https') ? https : http
+    const httpProtocol = url.startsWith('https') ? https : http
     const file = createWriteStream(result.filePath!)
 
-    protocol.get(url, (response) => {
+    httpProtocol.get(url, (response) => {
       // Handle redirects
       if (response.statusCode === 301 || response.statusCode === 302) {
         const redirectUrl = response.headers.location
@@ -439,7 +453,12 @@ ipcMain.handle('get-zimage-output-path', () => {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
   const settings = loadSettings()
   const assetsDir = settings.assetsDirectory || defaultAssetsDirectory
-  return join(assetsDir, `zimage_${timestamp}.png`)
+  const imagesDir = join(assetsDir, 'images')
+  // Ensure images subdirectory exists
+  if (!existsSync(imagesDir)) {
+    mkdirSync(imagesDir, { recursive: true })
+  }
+  return join(imagesDir, `local_zimage_${timestamp}.png`)
 })
 
 ipcMain.handle('select-directory', async () => {
@@ -470,9 +489,24 @@ ipcMain.handle('save-asset', async (_, url: string, _type: string, fileName: str
 
   const filePath = join(targetDir, fileName)
 
-  // Download file
+  // Handle local-asset:// URLs (Z-Image local outputs)
+  if (url.startsWith('local-asset://')) {
+    try {
+      const localPath = decodeURIComponent(url.replace('local-asset://', ''))
+      if (!existsSync(localPath)) {
+        return { success: false, error: 'Source file not found' }
+      }
+      copyFileSync(localPath, filePath)
+      const stats = statSync(filePath)
+      return { success: true, filePath, fileSize: stats.size }
+    } catch (err) {
+      return { success: false, error: (err as Error).message }
+    }
+  }
+
+  // Download file from http/https
   return new Promise((resolve) => {
-    const protocol = url.startsWith('https') ? https : http
+    const httpProtocol = url.startsWith('https') ? https : http
     const file = createWriteStream(filePath)
 
     const handleResponse = (response: http.IncomingMessage) => {
@@ -502,7 +536,7 @@ ipcMain.handle('save-asset', async (_, url: string, _type: string, fileName: str
       })
     }
 
-    protocol.get(url, handleResponse).on('error', (err) => {
+    httpProtocol.get(url, handleResponse).on('error', (err) => {
       resolve({ success: false, error: err.message })
     })
   })

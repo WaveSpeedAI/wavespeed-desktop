@@ -51,6 +51,7 @@ function App() {
         <Route path="free-tools/background-remover" element={<PersistentPagePlaceholder />} />
         <Route path="free-tools/image-eraser" element={<PersistentPagePlaceholder />} />
         <Route path="free-tools/face-enhancer" element={<PersistentPagePlaceholder />} />
+        <Route path="free-tools/face-swapper" element={<PersistentPagePlaceholder />} />
         <Route path="free-tools/segment-anything" element={<PersistentPagePlaceholder />} />
         <Route path="free-tools/video-converter" element={<PersistentPagePlaceholder />} />
         <Route path="free-tools/audio-converter" element={<PersistentPagePlaceholder />} />

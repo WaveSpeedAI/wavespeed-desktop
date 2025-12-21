@@ -10,6 +10,7 @@ import { DynamicForm } from '@/components/playground/DynamicForm'
 import { OutputDisplay } from '@/components/playground/OutputDisplay'
 import { LogConsole } from '@/components/shared/LogConsole'
 import { useSDModelsStore } from '@/stores/sdModelsStore'
+import { useAssetsStore } from '@/stores/assetsStore'
 import { getDownloadTimeoutMs } from '@/stores/settingsStore'
 import { useZImage } from '@/hooks/useZImage'
 import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
@@ -78,6 +79,9 @@ export function ZImagePage() {
     isGenerating,
     setIsGenerating
   } = useSDModelsStore()
+
+  // Assets store for auto-registration
+  const { registerLocalAsset } = useAssetsStore()
 
   // Progress tracking
   const { progress, startPhase, updatePhase, completePhase, complete, reset } = useMultiPhaseProgress({ phases: PHASES })
@@ -339,10 +343,11 @@ export function ZImagePage() {
       }
 
       const imageUrl = `local-asset://${encodeURIComponent(result.outputPath)}`
+      const predictionId = `local-${Date.now()}`
 
       complete()
       setPrediction({
-        id: `local-${Date.now()}`,
+        id: predictionId,
         model: 'local/z-image',
         status: 'completed',
         outputs: [imageUrl],
@@ -350,6 +355,15 @@ export function ZImagePage() {
       })
       setOutputs([imageUrl])
       setUsedSeed(seed)
+
+      // Auto-register to assets
+      await registerLocalAsset(result.outputPath, 'image', {
+        modelId: 'local/z-image',
+        modelName: 'Z-Image (Local)',
+        predictionId,
+        originalUrl: imageUrl,
+        resultIndex: 0
+      })
 
     } catch (err) {
       const msg = (err as Error).message

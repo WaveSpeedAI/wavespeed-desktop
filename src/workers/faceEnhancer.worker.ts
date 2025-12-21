@@ -8,6 +8,7 @@
 // @ts-expect-error - onnxruntime-web types not resolved due to package.json exports
 import * as ort from 'onnxruntime-web'
 import { pipeline, env, RawImage } from '@huggingface/transformers'
+import { FACE_LABELS, featherMask } from '@/lib/faceParsingUtils'
 
 // Configure transformers.js
 env.allowLocalModels = false
@@ -39,9 +40,6 @@ const GFPGAN_MODEL_URL = 'https://huggingface.co/facefusion/models-3.0.0/resolve
 // Model sizes
 const YOLO_INPUT_SIZE = 640
 const GFPGAN_INPUT_SIZE = 512
-
-// Face region labels to include in mask (excludes background, hair, hat, neck, cloth, accessories)
-const FACE_LABELS = new Set(['skin', 'nose', 'eye_g', 'l_eye', 'r_eye', 'l_brow', 'r_brow', 'l_ear', 'r_ear', 'mouth', 'u_lip', 'l_lip'])
 
 // Detection thresholds
 const CONFIDENCE_THRESHOLD = 0.5
@@ -193,7 +191,8 @@ async function createSession(modelBuffer: ArrayBuffer): Promise<ort.InferenceSes
         graphOptimizationLevel: 'all'
       })
     } catch (e) {
-      console.warn('WebGPU session creation failed, falling back to WASM:', e)
+      const errorMsg = e instanceof Error ? e.message : String(e)
+      console.warn(`WebGPU session creation failed, falling back to WASM. Reason: ${errorMsg}`)
       useWebGPU = false
     }
   }
@@ -380,8 +379,9 @@ async function detectFaces(
   // Create tensor
   const inputTensor = new ort.Tensor('float32', data, [1, 3, YOLO_INPUT_SIZE, YOLO_INPUT_SIZE])
 
-  // Run inference
-  const results = await yoloSession.run({ images: inputTensor })
+  // Run inference - use actual input name from model
+  const inputName = yoloSession.inputNames[0]
+  const results = await yoloSession.run({ [inputName]: inputTensor })
 
   // Get output - YOLOv8 uses 'output0' as output name
   const outputName = Object.keys(results)[0]
@@ -400,7 +400,7 @@ function cropAndResizeFace(
   imgH: number,
   box: FaceBox,
   targetSize: number,
-  padding: number = 0.3
+  padding: number = 0.2
 ): { data: Float32Array; cropBox: { x: number; y: number; w: number; h: number } } {
   // Expand box with padding
   const expandW = box.width * padding
@@ -472,8 +472,9 @@ async function enhanceFace(faceData: Float32Array): Promise<Float32Array> {
   // Create tensor
   const inputTensor = new ort.Tensor('float32', faceData, [1, 3, GFPGAN_INPUT_SIZE, GFPGAN_INPUT_SIZE])
 
-  // Run inference
-  const results = await gfpganSession.run({ input: inputTensor })
+  // Run inference - use actual input name from model
+  const inputName = gfpganSession.inputNames[0]
+  const results = await gfpganSession.run({ [inputName]: inputTensor })
 
   // Get output
   const outputName = Object.keys(results)[0]
@@ -496,8 +497,8 @@ async function parseFace(
 ): Promise<Uint8Array> {
   if (!segmenter) throw new Error('Face segmenter not initialized')
 
-  // Crop face with padding matching GFPGAN (30%)
-  const padding = 0.3
+  // Crop face with padding (10%)
+  const padding = 0.1
   const expandW = faceBox.width * padding
   const expandH = faceBox.height * padding
 
@@ -591,41 +592,6 @@ async function parseFace(
   const featheredMask = featherMask(mask, outputSize, 8)
 
   return featheredMask
-}
-
-/**
- * Apply feathering to mask edges for smoother blending
- */
-function featherMask(mask: Uint8Array, size: number, radius: number): Uint8Array {
-  const result = new Uint8Array(mask)
-
-  // Simple box blur for feathering
-  for (let pass = 0; pass < 2; pass++) {
-    const temp = new Uint8Array(result)
-
-    for (let y = 0; y < size; y++) {
-      for (let x = 0; x < size; x++) {
-        let sum = 0
-        let count = 0
-
-        for (let dy = -radius; dy <= radius; dy++) {
-          for (let dx = -radius; dx <= radius; dx++) {
-            const nx = x + dx
-            const ny = y + dy
-
-            if (nx >= 0 && nx < size && ny >= 0 && ny < size) {
-              sum += temp[ny * size + nx]
-              count++
-            }
-          }
-        }
-
-        result[y * size + x] = Math.round(sum / count)
-      }
-    }
-  }
-
-  return result
 }
 
 /**

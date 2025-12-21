@@ -72,6 +72,7 @@ interface AssetsState {
 
   // Asset operations
   saveAsset: (url: string, type: AssetType, options: AssetsSaveOptions) => Promise<AssetMetadata | null>
+  registerLocalAsset: (filePath: string, type: AssetType, options: AssetsSaveOptions) => Promise<AssetMetadata | null>
   deleteAsset: (id: string) => Promise<boolean>
   deleteAssets: (ids: string[]) => Promise<number>
   updateAsset: (id: string, updates: Partial<Pick<AssetMetadata, 'tags' | 'favorite'>>) => Promise<void>
@@ -185,6 +186,48 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
     set(state => {
       const newAssets = [metadata, ...state.assets]
       localStorage.setItem(METADATA_STORAGE_KEY, JSON.stringify(newAssets))
+      return { assets: newAssets }
+    })
+
+    return metadata
+  },
+
+  registerLocalAsset: async (filePath, type, options) => {
+    // Extract filename from path
+    const fileName = filePath.split(/[/\\]/).pop() || 'unknown'
+
+    // Get file size if in Electron
+    let fileSize = 0
+    if (window.electronAPI?.checkFileExists) {
+      const exists = await window.electronAPI.checkFileExists(filePath)
+      if (!exists) {
+        console.error('File does not exist:', filePath)
+        return null
+      }
+    }
+
+    const metadata: AssetMetadata = {
+      id: generateId(),
+      filePath,
+      fileName,
+      type,
+      modelId: options.modelId,
+      modelName: options.modelName,
+      createdAt: new Date().toISOString(),
+      fileSize,
+      tags: [],
+      favorite: false,
+      predictionId: options.predictionId,
+      originalUrl: options.originalUrl
+    }
+
+    set(state => {
+      const newAssets = [metadata, ...state.assets]
+      if (window.electronAPI?.saveAssetsMetadata) {
+        window.electronAPI.saveAssetsMetadata(newAssets as Parameters<typeof window.electronAPI.saveAssetsMetadata>[0])
+      } else {
+        localStorage.setItem(METADATA_STORAGE_KEY, JSON.stringify(newAssets))
+      }
       return { assets: newAssets }
     })
 

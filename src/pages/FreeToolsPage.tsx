@@ -2,11 +2,13 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Video, ImageUp, Eraser, Wand2, ArrowRight, MousePointer2, FileVideo, FileAudio, FileImage, Scissors, Combine, Sparkles } from 'lucide-react'
+import { Video, ImageUp, Eraser, Wand2, ArrowRight, MousePointer2, FileVideo, FileAudio, FileImage, Scissors, Combine, Sparkles, ArrowLeftRight } from 'lucide-react'
 
 // Import tool demo images
 import videoEnhancerImg from '../../build/images/VideoEnhancer.jpeg'
 import imageEnhancerImg from '../../build/images/ImageEnhancer.jpeg'
+import faceEnhancerImg from '../../build/images/FaceEnhancer.jpeg'
+import faceSwapperImg from '../../build/images/FaceSwapper.jpeg'
 import backgroundRemoverImg from '../../build/images/BackgroundRemover.jpeg'
 import imageEraserImg from '../../build/images/ImageEraser.jpeg'
 import SegmentAnythingImg from '../../build/images/SegmentAnything.png'
@@ -42,7 +44,16 @@ export function FreeToolsPage() {
       descriptionKey: 'freeTools.faceEnhancer.description',
       route: '/free-tools/face-enhancer',
       gradient: 'from-rose-500/20 via-pink-500/10 to-transparent',
-      image: imageEnhancerImg
+      image: faceEnhancerImg
+    },
+    {
+      id: 'face-swapper',
+      icon: ArrowLeftRight,
+      titleKey: 'freeTools.faceSwapper.title',
+      descriptionKey: 'freeTools.faceSwapper.description',
+      route: '/free-tools/face-swapper',
+      gradient: 'from-amber-500/20 via-orange-500/10 to-transparent',
+      image: faceSwapperImg
     },
     {
       id: 'background-remover',

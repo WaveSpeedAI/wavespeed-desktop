@@ -539,7 +539,7 @@ export function ImageEnhancerPage() {
           {/* Error with retry button */}
           {error && hasFailed() && !isProcessing && (
             <div className="flex items-center justify-center gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-              <span className="text-sm text-destructive">{t('common.downloadFailed')}</span>
+              <span className="text-sm text-destructive">{error}</span>
               <Button variant="outline" size="sm" onClick={handleRetry}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 {t('common.retry')}
@@ -564,11 +564,11 @@ export function ImageEnhancerPage() {
                       </span>
                     )}
                   </div>
-                  <div className="relative aspect-video bg-muted rounded-lg overflow-hidden flex items-center justify-center">
+                  <div className="relative bg-muted rounded-lg">
                     <img
                       src={originalImage}
                       alt="Original"
-                      className="max-w-full max-h-full object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                      className="w-full max-h-[70vh] object-contain cursor-pointer hover:opacity-90 transition-opacity"
                       onClick={() => setPreviewImage(originalImage)}
                     />
                   </div>
@@ -588,16 +588,16 @@ export function ImageEnhancerPage() {
                       </span>
                     )}
                   </div>
-                  <div className="relative aspect-video bg-muted rounded-lg overflow-hidden flex items-center justify-center">
+                  <div className="relative bg-muted rounded-lg min-h-[200px] flex items-center justify-center">
                     {enhancedImage ? (
                       <img
                         src={enhancedImage}
                         alt="Enhanced"
-                        className="max-w-full max-h-full object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                        className="w-full max-h-[70vh] object-contain cursor-pointer hover:opacity-90 transition-opacity"
                         onClick={() => setPreviewImage(enhancedImage)}
                       />
                     ) : (
-                      <div className="flex flex-col items-center justify-center text-muted-foreground">
+                      <div className="flex flex-col items-center justify-center text-muted-foreground py-16">
                         {isProcessing ? (
                           <>
                             <Loader2 className="h-8 w-8 animate-spin mb-2" />
@@ -644,7 +644,7 @@ export function ImageEnhancerPage() {
                 </div>
                 <div
                   ref={comparisonRef}
-                  className="relative aspect-video bg-muted rounded-lg overflow-hidden cursor-ew-resize select-none"
+                  className="relative bg-muted rounded-lg overflow-hidden cursor-ew-resize select-none"
                   onMouseDown={handleSliderMouseDown}
                   onTouchStart={handleSliderTouchStart}
                 >
@@ -652,7 +652,7 @@ export function ImageEnhancerPage() {
                   <img
                     src={enhancedImage}
                     alt="Enhanced"
-                    className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                    className="w-full max-h-[70vh] object-contain pointer-events-none"
                     draggable={false}
                   />
 
@@ -660,7 +660,7 @@ export function ImageEnhancerPage() {
                   <img
                     src={originalImage}
                     alt="Original"
-                    className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                    className="absolute inset-0 w-full max-h-[70vh] object-contain pointer-events-none"
                     style={{
                       clipPath: `inset(0 ${100 - sliderPosition}% 0 0)`
                     }}

@@ -24,6 +24,7 @@ import { ImageConverterPage } from '@/pages/ImageConverterPage'
 import { MediaTrimmerPage } from '@/pages/MediaTrimmerPage'
 import { MediaMergerPage } from '@/pages/MediaMergerPage'
 import { FaceEnhancerPage } from '@/pages/FaceEnhancerPage'
+import { FaceSwapperPage } from '@/pages/FaceSwapperPage'
 
 // Context for resetting persistent pages (forces remount by changing key)
 export const PageResetContext = createContext<{ resetPage: (path: string) => void }>({
@@ -72,7 +73,7 @@ export function Layout() {
 
   // Track visits to persistent pages and last visited free-tools page
   useEffect(() => {
-    const persistentPaths = ['/free-tools/video', '/free-tools/image', '/free-tools/face-enhancer', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/free-tools/video-converter', '/free-tools/audio-converter', '/free-tools/image-converter', '/free-tools/media-trimmer', '/free-tools/media-merger', '/z-image']
+    const persistentPaths = ['/free-tools/video', '/free-tools/image', '/free-tools/face-enhancer', '/free-tools/face-swapper', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/free-tools/video-converter', '/free-tools/audio-converter', '/free-tools/image-converter', '/free-tools/media-trimmer', '/free-tools/media-merger', '/z-image']
     if (persistentPaths.includes(location.pathname)) {
       // Track for lazy mounting
       if (!visitedPages.has(location.pathname)) {
@@ -320,7 +321,7 @@ export function Layout() {
           {requiresLogin ? loginContent : (
             <>
               {/* Regular routes via Outlet */}
-              <div className={['/free-tools/video', '/free-tools/image', '/free-tools/face-enhancer', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/free-tools/video-converter', '/free-tools/audio-converter', '/free-tools/image-converter', '/free-tools/media-trimmer', '/free-tools/media-merger', '/z-image'].includes(location.pathname) ? 'hidden' : 'h-full overflow-auto'}>
+              <div className={['/free-tools/video', '/free-tools/image', '/free-tools/face-enhancer', '/free-tools/face-swapper', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/free-tools/video-converter', '/free-tools/audio-converter', '/free-tools/image-converter', '/free-tools/media-trimmer', '/free-tools/media-merger', '/z-image'].includes(location.pathname) ? 'hidden' : 'h-full overflow-auto'}>
                 <Outlet />
               </div>
               {/* Persistent Free Tools pages - mounted once visited, removed from visitedPages forces unmount */}
@@ -337,6 +338,11 @@ export function Layout() {
               {visitedPages.has('/free-tools/face-enhancer') && (
                 <div className={location.pathname === '/free-tools/face-enhancer' ? 'h-full overflow-auto' : 'hidden'}>
                   <FaceEnhancerPage />
+                </div>
+              )}
+              {visitedPages.has('/free-tools/face-swapper') && (
+                <div className={location.pathname === '/free-tools/face-swapper' ? 'h-full overflow-auto' : 'hidden'}>
+                  <FaceSwapperPage />
                 </div>
               )}
               {visitedPages.has('/free-tools/background-remover') && (

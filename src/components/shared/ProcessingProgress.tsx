@@ -140,8 +140,8 @@ export function ProcessingProgress({
           {showEta && eta && isActive && (
             <span className="text-muted-foreground/60">~{eta}</span>
           )}
-          <span className="font-medium w-8 text-right">
-            {Math.round(showOverall && phases.length > 1 ? overallProgress : currentPhase?.progress || 0)}%
+          <span className="font-medium w-12 text-right">
+            {(showOverall && phases.length > 1 ? overallProgress : currentPhase?.progress || 0).toFixed(1)}%
           </span>
         </div>
       </div>

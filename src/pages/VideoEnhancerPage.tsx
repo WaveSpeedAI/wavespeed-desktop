@@ -584,7 +584,7 @@ export function VideoEnhancerPage() {
           {/* Error with retry button */}
           {error && hasFailed() && !isProcessing && (
             <div className="flex items-center justify-center gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-              <span className="text-sm text-destructive">{t('common.downloadFailed')}</span>
+              <span className="text-sm text-destructive">{error}</span>
               <Button variant="outline" size="sm" onClick={handleRetry}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 {t('common.retry')}

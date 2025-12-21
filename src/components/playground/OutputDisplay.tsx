@@ -304,8 +304,15 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
                   src={outputStr}
                   alt={`Output ${index + 1}`}
                   className="max-w-full max-h-full object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                  style={{ maxWidth: 'min(100%, var(--max-w, 100%))', maxHeight: 'min(100%, var(--max-h, 100%))' }}
                   loading="lazy"
                   onClick={() => setFullscreenMedia({ url: outputStr, type: 'image' })}
+                  onLoad={(e) => {
+                    const img = e.currentTarget
+                    // Limit upscaling to 2x natural size
+                    img.style.setProperty('--max-w', `${img.naturalWidth * 2}px`)
+                    img.style.setProperty('--max-h', `${img.naturalHeight * 2}px`)
+                  }}
                 />
               )}
 
@@ -314,7 +321,14 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
                   src={outputStr}
                   controls
                   className="max-w-full max-h-full object-contain"
+                  style={{ maxWidth: 'min(100%, var(--max-w, 100%))', maxHeight: 'min(100%, var(--max-h, 100%))' }}
                   preload="metadata"
+                  onLoadedMetadata={(e) => {
+                    const video = e.currentTarget
+                    // Limit upscaling to 2x natural size
+                    video.style.setProperty('--max-w', `${video.videoWidth * 2}px`)
+                    video.style.setProperty('--max-h', `${video.videoHeight * 2}px`)
+                  }}
                 />
               )}
 

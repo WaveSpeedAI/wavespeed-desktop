@@ -640,7 +640,7 @@ function estimateSimilarityTransform(
   // 5. SVD of 2x2 covariance matrix
   const { U, S, V } = svd2x2(h00, h01, h10, h11)
 
-  // 6. Compute rotation R = V * U^T, handling reflection
+  // 6. Compute rotation R = U * D * V^T, handling reflection
   // Determinant of U and V
   const detU = U[0][0] * U[1][1] - U[0][1] * U[1][0]
   const detV = V[0][0] * V[1][1] - V[0][1] * V[1][0]
@@ -648,18 +648,19 @@ function estimateSimilarityTransform(
   // Create sign matrix D for reflection handling
   const d = detU * detV < 0 ? -1 : 1
 
-  // R = V * D * U^T where D = diag(1, d)
-  // V * D:
-  const vd00 = V[0][0]
-  const vd01 = V[0][1] * d
-  const vd10 = V[1][0]
-  const vd11 = V[1][1] * d
+  // R = U * D * V^T where D = diag(1, d)
+  // U * D:
+  const ud00 = U[0][0]
+  const ud01 = U[0][1] * d
+  const ud10 = U[1][0]
+  const ud11 = U[1][1] * d
 
-  // (V * D) * U^T:
-  const r00 = vd00 * U[0][0] + vd01 * U[0][1]
-  const r01 = vd00 * U[1][0] + vd01 * U[1][1]
-  const r10 = vd10 * U[0][0] + vd11 * U[0][1]
-  const r11 = vd10 * U[1][0] + vd11 * U[1][1]
+  // (U * D) * V^T where V^T[k][j] = V[j][k]:
+  // R[i][j] = sum_k UD[i][k] * V[j][k]
+  const r00 = ud00 * V[0][0] + ud01 * V[0][1]
+  const r01 = ud00 * V[1][0] + ud01 * V[1][1]
+  const r10 = ud10 * V[0][0] + ud11 * V[0][1]
+  const r11 = ud10 * V[1][0] + ud11 * V[1][1]
 
   // 7. Compute scale: c = trace(D * S) / variance_src
   const traceDS = S[0] + d * S[1]

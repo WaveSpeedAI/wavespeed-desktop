@@ -206,7 +206,15 @@ function createWindow(): void {
     mainWindow.on('close', (event) => {
       if (!(app as typeof app & { isQuitting?: boolean }).isQuitting) {
         event.preventDefault()
-        mainWindow?.hide()
+        if (mainWindow?.isFullScreen()) {
+          const targetWindow = mainWindow
+          targetWindow.once('leave-full-screen', () => {
+            targetWindow.hide()
+          })
+          targetWindow.setFullScreen(false)
+        } else {
+          mainWindow?.hide()
+        }
       }
     })
   }

@@ -166,6 +166,8 @@ export function useUpscalerWorker(options: UseUpscalerWorkerOptions = {}) {
 
   const dispose = useCallback(() => {
     workerRef.current?.postMessage({ type: 'dispose' })
+    workerRef.current?.terminate()
+    workerRef.current = null
   }, [])
 
   const hasFailed = useCallback(() => hasFailedRef.current, [])

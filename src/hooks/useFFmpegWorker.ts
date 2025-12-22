@@ -320,6 +320,8 @@ export function useFFmpegWorker(options: UseFFmpegWorkerOptions = {}) {
   // Dispose worker
   const dispose = useCallback(() => {
     workerRef.current?.postMessage({ type: 'dispose' })
+    workerRef.current?.terminate()
+    workerRef.current = null
   }, [])
 
   const hasFailed = useCallback(() => hasFailedRef.current, [])

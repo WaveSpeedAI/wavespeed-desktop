@@ -10,6 +10,16 @@
 import * as ort from 'onnxruntime-web'
 import { pipeline, env, RawImage } from '@huggingface/transformers'
 import { FACE_LABELS, featherMask } from '@/lib/faceParsingUtils'
+import {
+  initWebGPU,
+  isWebGPUAvailable,
+  gaussianBlur,
+  boxBlur,
+  erodeMask,
+  dilateMask,
+  colorMatch,
+  disposeWebGPU
+} from './webgpuCompute'
 
 // Configure transformers.js
 env.allowLocalModels = false
@@ -72,6 +82,9 @@ let det10gSession: ort.InferenceSession | null = null
 let arcfaceSession: ort.InferenceSession | null = null
 let inswapperSession: ort.InferenceSession | null = null
 let gfpganSession: ort.InferenceSession | null = null
+
+// Track enhancement preference (persists across init calls)
+let enhancementEnabled = false
 
 // Face parsing segmenter (using transformers.js pipeline)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -854,72 +867,37 @@ async function swapFace(
 }
 
 /**
- * Parse aligned face to generate semantic segmentation mask
- * Uses affine transform matrix to warp image to face space before parsing
- * This ensures the mask coordinates match the face swap transformation
+ * Parse an already-aligned face (e.g., the swapped face output)
+ * Input: CHW format, [0,1] range, already at outputSize x outputSize
  */
-async function parseFaceAligned(
-  originalData: Float32Array,
-  imgW: number,
-  imgH: number,
-  matrix: number[],
-  outputSize: number = INSWAPPER_INPUT_SIZE
+async function parseSwappedFace(
+  alignedFace: Float32Array,
+  faceSize: number
 ): Promise<Uint8Array> {
   if (!segmenter) throw new Error('Face segmenter not initialized')
 
-  // Invert the matrix to map from face space to original image
-  const invMatrix = invertAffineMatrix(matrix)
+  // Convert CHW [0,1] to RGBA Uint8Array for RawImage
+  const rgbaData = new Uint8Array(faceSize * faceSize * 4)
 
-  // Create aligned face image as Uint8Array RGBA for RawImage
-  const rgbaData = new Uint8Array(outputSize * outputSize * 4)
+  for (let y = 0; y < faceSize; y++) {
+    for (let x = 0; x < faceSize; x++) {
+      const outIdx = (y * faceSize + x) * 4
 
-  for (let y = 0; y < outputSize; y++) {
-    for (let x = 0; x < outputSize; x++) {
-      // Map face coordinates to original image coordinates using inverse matrix
-      const srcX = invMatrix[0] * x + invMatrix[1] * y + invMatrix[2]
-      const srcY = invMatrix[3] * x + invMatrix[4] * y + invMatrix[5]
-
-      const outIdx = (y * outputSize + x) * 4
-
-      // Bilinear interpolation
-      const x0 = Math.floor(srcX)
-      const y0 = Math.floor(srcY)
-      const x1 = Math.min(x0 + 1, imgW - 1)
-      const y1 = Math.min(y0 + 1, imgH - 1)
-
-      if (x0 >= 0 && x0 < imgW && y0 >= 0 && y0 < imgH) {
-        const xFrac = srcX - x0
-        const yFrac = srcY - y0
-
-        for (let c = 0; c < 3; c++) {
-          const v00 = originalData[(y0 * imgW + x0) * 3 + c]
-          const v10 = originalData[(y0 * imgW + Math.min(x1, imgW - 1)) * 3 + c]
-          const v01 = originalData[(Math.min(y1, imgH - 1) * imgW + x0) * 3 + c]
-          const v11 = originalData[(Math.min(y1, imgH - 1) * imgW + Math.min(x1, imgW - 1)) * 3 + c]
-
-          const v0 = v00 * (1 - xFrac) + v10 * xFrac
-          const v1 = v01 * (1 - xFrac) + v11 * xFrac
-          const v = v0 * (1 - yFrac) + v1 * yFrac
-
-          rgbaData[outIdx + c] = Math.round(v * 255)
-        }
-        rgbaData[outIdx + 3] = 255
-      } else {
-        // Out of bounds - black
-        rgbaData[outIdx] = 0
-        rgbaData[outIdx + 1] = 0
-        rgbaData[outIdx + 2] = 0
-        rgbaData[outIdx + 3] = 255
+      for (let c = 0; c < 3; c++) {
+        // CHW format: channel * H * W + y * W + x
+        const srcIdx = c * faceSize * faceSize + y * faceSize + x
+        rgbaData[outIdx + c] = Math.round(Math.max(0, Math.min(1, alignedFace[srcIdx])) * 255)
       }
+      rgbaData[outIdx + 3] = 255
     }
   }
 
   // Create RawImage and run segmentation
-  const image = new RawImage(rgbaData, outputSize, outputSize, 4)
+  const image = new RawImage(rgbaData, faceSize, faceSize, 4)
   const results = await segmenter(image)
 
   // Combine face region masks
-  const mask = new Uint8Array(outputSize * outputSize)
+  const mask = new Uint8Array(faceSize * faceSize)
 
   for (const segment of results) {
     const label = segment.label.replace(/\.png$/i, '')
@@ -929,22 +907,33 @@ async function parseFaceAligned(
       const maskW = segMask.width
       const maskH = segMask.height
 
-      for (let y = 0; y < outputSize; y++) {
-        for (let x = 0; x < outputSize; x++) {
-          const srcX = (x / outputSize) * maskW
-          const srcY = (y / outputSize) * maskH
+      for (let y = 0; y < faceSize; y++) {
+        for (let x = 0; x < faceSize; x++) {
+          const srcX = (x / faceSize) * maskW
+          const srcY = (y / faceSize) * maskH
           const srcIdx = Math.floor(srcY) * maskW + Math.floor(srcX)
 
           if (maskData[srcIdx] > 0) {
-            mask[y * outputSize + x] = 255
+            mask[y * faceSize + x] = 255
           }
         }
       }
     }
   }
 
+  // Erode mask to shrink face region (prevents source hair bleed-through)
+  const maskFloat = new Float32Array(mask.length)
+  for (let i = 0; i < mask.length; i++) {
+    maskFloat[i] = mask[i]
+  }
+  const erodedMask = await erodeMask(maskFloat, faceSize, faceSize, 7)
+  const erodedUint8 = new Uint8Array(mask.length)
+  for (let i = 0; i < mask.length; i++) {
+    erodedUint8[i] = Math.max(0, Math.round(erodedMask[i]))
+  }
+
   // Apply feathering to mask edges
-  const featheredMask = featherMask(mask, outputSize, 8)
+  const featheredMask = featherMask(erodedUint8, faceSize, 4)
 
   return featheredMask
 }
@@ -1055,122 +1044,6 @@ async function parseFaceCrop(
 }
 
 /**
- * Erode a grayscale mask with a square kernel
- */
-function erodeMask(mask: Float32Array, w: number, h: number, kernelSize: number): Float32Array {
-  const result = new Float32Array(w * h)
-  const half = Math.floor(kernelSize / 2)
-
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      let minVal = 255
-      for (let ky = -half; ky <= half; ky++) {
-        for (let kx = -half; kx <= half; kx++) {
-          const ny = Math.max(0, Math.min(h - 1, y + ky))
-          const nx = Math.max(0, Math.min(w - 1, x + kx))
-          minVal = Math.min(minVal, mask[ny * w + nx])
-        }
-      }
-      result[y * w + x] = minVal
-    }
-  }
-  return result
-}
-
-/**
- * Dilate a grayscale mask with a square kernel
- */
-function dilateMask(mask: Float32Array, w: number, h: number, kernelSize: number): Float32Array {
-  const result = new Float32Array(w * h)
-  const half = Math.floor(kernelSize / 2)
-
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      let maxVal = 0
-      for (let ky = -half; ky <= half; ky++) {
-        for (let kx = -half; kx <= half; kx++) {
-          const ny = Math.max(0, Math.min(h - 1, y + ky))
-          const nx = Math.max(0, Math.min(w - 1, x + kx))
-          maxVal = Math.max(maxVal, mask[ny * w + nx])
-        }
-      }
-      result[y * w + x] = maxVal
-    }
-  }
-  return result
-}
-
-/**
- * Gaussian blur a grayscale mask
- */
-function gaussianBlur(mask: Float32Array, w: number, h: number, kernelSize: number): Float32Array {
-  const result = new Float32Array(w * h)
-  const half = Math.floor(kernelSize / 2)
-  const sigma = kernelSize / 6
-
-  // Build Gaussian kernel
-  const kernel: number[] = []
-  let sum = 0
-  for (let i = -half; i <= half; i++) {
-    const val = Math.exp(-(i * i) / (2 * sigma * sigma))
-    kernel.push(val)
-    sum += val
-  }
-  for (let i = 0; i < kernel.length; i++) kernel[i] /= sum
-
-  // Horizontal pass
-  const temp = new Float32Array(w * h)
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      let val = 0
-      for (let k = -half; k <= half; k++) {
-        const nx = Math.max(0, Math.min(w - 1, x + k))
-        val += mask[y * w + nx] * kernel[k + half]
-      }
-      temp[y * w + x] = val
-    }
-  }
-
-  // Vertical pass
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      let val = 0
-      for (let k = -half; k <= half; k++) {
-        const ny = Math.max(0, Math.min(h - 1, y + k))
-        val += temp[ny * w + x] * kernel[k + half]
-      }
-      result[y * w + x] = val
-    }
-  }
-
-  return result
-}
-
-/**
- * Box blur a grayscale mask (faster than Gaussian)
- */
-function boxBlur(mask: Float32Array, w: number, h: number, kernelSize: number): Float32Array {
-  const result = new Float32Array(w * h)
-  const half = Math.floor(kernelSize / 2)
-  const area = kernelSize * kernelSize
-
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      let sum = 0
-      for (let ky = -half; ky <= half; ky++) {
-        for (let kx = -half; kx <= half; kx++) {
-          const ny = Math.max(0, Math.min(h - 1, y + ky))
-          const nx = Math.max(0, Math.min(w - 1, x + kx))
-          sum += mask[ny * w + nx]
-        }
-      }
-      result[y * w + x] = sum / area
-    }
-  }
-  return result
-}
-
-/**
  * Inverse warp and blend swapped face back to original image
  * Follows the official InsightFace blending pipeline:
  * 1. Compute difference map between fake and aligned original
@@ -1178,8 +1051,9 @@ function boxBlur(mask: Float32Array, w: number, h: number, kernelSize: number): 
  * 3. Apply morphological operations (erosion, dilation)
  * 4. Gaussian blur for smooth transitions
  * 5. Alpha blend (only within valid face region to avoid affecting other faces)
+ * Uses WebGPU compute shaders when available for 10-50x speedup
  */
-function inverseWarpAndBlend(
+async function inverseWarpAndBlend(
   originalImage: Float32Array,
   imgW: number,
   imgH: number,
@@ -1187,8 +1061,74 @@ function inverseWarpAndBlend(
   alignedOriginal: Float32Array,  // CHW format, [0,1] range (aligned target face)
   matrix: number[],
   faceMask: Uint8Array  // Face parsing mask in aligned space
-): Float32Array {
+): Promise<Float32Array> {
   const faceSize = INSWAPPER_INPUT_SIZE
+
+  // Step 0: Compute bounding box of the face in image space
+  // Transform corners of the face region using inverse matrix
+  const invMatrix = invertAffineMatrix(matrix)
+  const corners = [
+    [0, 0], [faceSize, 0], [faceSize, faceSize], [0, faceSize]
+  ]
+  let minX = imgW, maxX = 0, minY = imgH, maxY = 0
+  for (const [fx, fy] of corners) {
+    const ix = invMatrix[0] * fx + invMatrix[1] * fy + invMatrix[2]
+    const iy = invMatrix[3] * fx + invMatrix[4] * fy + invMatrix[5]
+    minX = Math.min(minX, ix)
+    maxX = Math.max(maxX, ix)
+    minY = Math.min(minY, iy)
+    maxY = Math.max(maxY, iy)
+  }
+
+  // Add margin for blur kernels (adaptive based on face size)
+  const faceW = maxX - minX
+  const faceH = maxY - minY
+  const faceSizeEst = Math.sqrt(faceW * faceH)
+  const maxBlurK = Math.max(Math.floor(faceSizeEst / 10), 10) + Math.floor(faceSizeEst / 20) + 15
+
+  // Clamp bounds to image dimensions with margin
+  const bx0 = Math.max(0, Math.floor(minX) - maxBlurK)
+  const by0 = Math.max(0, Math.floor(minY) - maxBlurK)
+  const bx1 = Math.min(imgW, Math.ceil(maxX) + maxBlurK)
+  const by1 = Math.min(imgH, Math.ceil(maxY) + maxBlurK)
+  const bw = bx1 - bx0
+  const bh = by1 - by0
+
+  // Step 0.5: Color matching - adjust swapped face colors to match target
+  // Calculate mean color within face mask for both images
+  const swappedMean = [0, 0, 0]
+  const originalMean = [0, 0, 0]
+  let maskCount = 0
+
+  for (let y = 0; y < faceSize; y++) {
+    for (let x = 0; x < faceSize; x++) {
+      if (faceMask[y * faceSize + x] > 128) {
+        maskCount++
+        for (let c = 0; c < 3; c++) {
+          const idx = c * faceSize * faceSize + y * faceSize + x
+          swappedMean[c] += swappedFace[idx]
+          originalMean[c] += alignedOriginal[idx]
+        }
+      }
+    }
+  }
+
+  if (maskCount > 0) {
+    for (let c = 0; c < 3; c++) {
+      swappedMean[c] /= maskCount
+      originalMean[c] /= maskCount
+    }
+
+    // Apply color shift to swapped face (simple mean transfer)
+    const colorShift: [number, number, number] = [
+      originalMean[0] - swappedMean[0],
+      originalMean[1] - swappedMean[1],
+      originalMean[2] - swappedMean[2]
+    ]
+
+    // Create color-matched swapped face (auto-fallback to CPU if GPU unavailable)
+    swappedFace = await colorMatch(swappedFace, colorShift, faceSize)
+  }
 
   // Step 1: Compute difference map in aligned space |fake - original|
   const diffMap = new Float32Array(faceSize * faceSize)
@@ -1212,14 +1152,16 @@ function inverseWarpAndBlend(
     }
   }
 
-  // Step 2: Inverse warp fake face, white mask, and diff map to full image
-  const fakeWarped = new Float32Array(imgW * imgH * 3)
-  const whiteMask = new Float32Array(imgW * imgH)
-  const faceRegion = new Uint8Array(imgW * imgH)  // Track where valid face data exists
-  const diffWarped = new Float32Array(imgW * imgH)
+  // Step 2: Inverse warp fake face, white mask, and diff map (bounded region only)
+  const fakeWarped = new Float32Array(bw * bh * 3)
+  const whiteMask = new Float32Array(bw * bh)
+  const faceRegion = new Uint8Array(bw * bh)
+  const diffWarped = new Float32Array(bw * bh)
 
-  for (let y = 0; y < imgH; y++) {
-    for (let x = 0; x < imgW; x++) {
+  for (let by = 0; by < bh; by++) {
+    const y = by + by0
+    for (let bx = 0; bx < bw; bx++) {
+      const x = bx + bx0
       // Transform to face coordinates
       const faceX = matrix[0] * x + matrix[1] * y + matrix[2]
       const faceY = matrix[3] * x + matrix[4] * y + matrix[5]
@@ -1240,14 +1182,11 @@ function inverseWarpAndBlend(
           const v11 = swappedFace[c * faceSize * faceSize + fy1 * faceSize + fx1]
           const v0 = v00 * (1 - xFrac) + v10 * xFrac
           const v1 = v01 * (1 - xFrac) + v11 * xFrac
-          fakeWarped[(y * imgW + x) * 3 + c] = v0 * (1 - yFrac) + v1 * yFrac
+          fakeWarped[(by * bw + bx) * 3 + c] = v0 * (1 - yFrac) + v1 * yFrac
         }
 
-        // White mask (255 inside face region)
-        whiteMask[y * imgW + x] = 255
-
-        // Mark this pixel as having valid face data
-        faceRegion[y * imgW + x] = 1
+        whiteMask[by * bw + bx] = 255
+        faceRegion[by * bw + bx] = 1
 
         // Diff map
         const d00 = diffMap[fy0 * faceSize + fx0]
@@ -1256,50 +1195,34 @@ function inverseWarpAndBlend(
         const d11 = diffMap[fy1 * faceSize + fx1]
         const d0 = d00 * (1 - xFrac) + d10 * xFrac
         const d1 = d01 * (1 - xFrac) + d11 * xFrac
-        diffWarped[y * imgW + x] = d0 * (1 - yFrac) + d1 * yFrac
+        diffWarped[by * bw + bx] = d0 * (1 - yFrac) + d1 * yFrac
       }
     }
   }
 
-  // Step 3: Threshold and refine masks
-  // Threshold white mask
+  // Step 3: Threshold masks (bounded)
   for (let i = 0; i < whiteMask.length; i++) {
     whiteMask[i] = whiteMask[i] > 20 ? 255 : 0
   }
 
-  // Threshold diff map (fthresh = 10)
   const DIFF_THRESH = 10
   for (let i = 0; i < diffWarped.length; i++) {
     diffWarped[i] = diffWarped[i] >= DIFF_THRESH ? 255 : 0
   }
 
   // Calculate adaptive kernel size based on mask dimensions
-  let minH = imgH, maxH = 0, minW = imgW, maxW = 0
-  for (let y = 0; y < imgH; y++) {
-    for (let x = 0; x < imgW; x++) {
-      if (whiteMask[y * imgW + x] === 255) {
-        minH = Math.min(minH, y)
-        maxH = Math.max(maxH, y)
-        minW = Math.min(minW, x)
-        maxW = Math.max(maxW, x)
-      }
-    }
-  }
-  const maskH = maxH - minH
-  const maskW = maxW - minW
-  const maskSize = Math.sqrt(maskH * maskW)
+  const maskSize = faceSizeEst
 
-  // Step 4: Morphological operations
-  // Erode white mask with adaptive kernel
+  // Step 4: Morphological operations (bounded)
   const erodeK = Math.max(Math.floor(maskSize / 10), 10)
-  let imgMask = erodeMask(whiteMask, imgW, imgH, erodeK)
+  let imgMask = await erodeMask(whiteMask, bw, bh, erodeK)
+  let diffMask = await dilateMask(diffWarped, bw, bh, 2)
 
-  // Dilate diff map with 2x2 kernel
-  let diffMask = dilateMask(diffWarped, imgW, imgH, 2)
-
-  // Warp face parsing mask from aligned space to full image and apply
-  for (let y = 0; y < imgH; y++) {
-    for (let x = 0; x < imgW; x++) {
+  // Warp face parsing mask (bounded)
+  for (let by = 0; by < bh; by++) {
+    const y = by + by0
+    for (let bx = 0; bx < bw; bx++) {
+      const x = bx + bx0
       const faceX = matrix[0] * x + matrix[1] * y + matrix[2]
       const faceY = matrix[3] * x + matrix[4] * y + matrix[5]
 
@@ -1307,46 +1230,79 @@ function inverseWarpAndBlend(
         const fx = Math.floor(faceX)
         const fy = Math.floor(faceY)
         if (faceMask[fy * faceSize + fx] > 0) {
-          diffMask[y * imgW + x] = 255
+          diffMask[by * bw + bx] = 255
         }
       }
     }
   }
 
-  // Step 5: Gaussian blur for smooth transitions
-  const blurK = Math.max(Math.floor(maskSize / 20), 5)
+  // Step 5: Gaussian blur (bounded)
+  // Reduced blur for sharper face boundaries (less hair bleed-through)
+  const blurK = Math.max(Math.floor(maskSize / 40), 3)
   const blurSize = blurK * 2 + 1
-  imgMask = gaussianBlur(imgMask, imgW, imgH, blurSize)
+  imgMask = await gaussianBlur(imgMask, bw, bh, blurSize)
+  diffMask = await boxBlur(diffMask, bw, bh, 7)
 
-  // Box blur diff mask (11x11 as in official)
-  diffMask = boxBlur(diffMask, imgW, imgH, 11)
+  // Step 6: Combine masks (bounded)
+  // Warp face parsing mask to bounded space with bilinear interpolation
+  const faceParsingWarped = new Float32Array(bw * bh)
+  for (let by = 0; by < bh; by++) {
+    const y = by + by0
+    for (let bx = 0; bx < bw; bx++) {
+      const x = bx + bx0
+      const faceX = matrix[0] * x + matrix[1] * y + matrix[2]
+      const faceY = matrix[3] * x + matrix[4] * y + matrix[5]
 
-  // Step 6: Combine masks and normalize
-  // CRITICAL: Constrain final mask to only pixels where we have valid face data
-  // This prevents blur from spreading into neighboring face regions (which would blend with zeros/black)
-  // Dilate faceRegion slightly to allow smooth edge blending without hard cutoff
-  const faceRegionFloat = new Float32Array(imgW * imgH)
+      if (faceX >= 0 && faceX < faceSize && faceY >= 0 && faceY < faceSize) {
+        // Bilinear interpolation for smooth mask
+        const fx0 = Math.floor(faceX)
+        const fy0 = Math.floor(faceY)
+        const fx1 = Math.min(fx0 + 1, faceSize - 1)
+        const fy1 = Math.min(fy0 + 1, faceSize - 1)
+        const xFrac = faceX - fx0
+        const yFrac = faceY - fy0
+
+        const v00 = faceMask[fy0 * faceSize + fx0]
+        const v10 = faceMask[fy0 * faceSize + fx1]
+        const v01 = faceMask[fy1 * faceSize + fx0]
+        const v11 = faceMask[fy1 * faceSize + fx1]
+        const v0 = v00 * (1 - xFrac) + v10 * xFrac
+        const v1 = v01 * (1 - xFrac) + v11 * xFrac
+        faceParsingWarped[by * bw + bx] = v0 * (1 - yFrac) + v1 * yFrac
+      }
+    }
+  }
+
+  // Blur face parsing mask for smooth transitions
+  const blurredFaceParsing = await gaussianBlur(faceParsingWarped, bw, bh, blurSize)
+
+  const faceRegionFloat = new Float32Array(bw * bh)
   for (let i = 0; i < faceRegion.length; i++) {
     faceRegionFloat[i] = faceRegion[i] * 255
   }
-  const dilatedFaceRegion = dilateMask(faceRegionFloat, imgW, imgH, 3)
-  const blurredFaceRegion = gaussianBlur(dilatedFaceRegion, imgW, imgH, 5)
+  const dilatedFaceRegion = await dilateMask(faceRegionFloat, bw, bh, 3)
+  const blurredFaceRegion = await gaussianBlur(dilatedFaceRegion, bw, bh, 5)
 
+  // Combine all masks: imgMask × diffMask × faceRegion × faceParsing
   for (let i = 0; i < imgMask.length; i++) {
     const regionWeight = blurredFaceRegion[i] / 255
-    imgMask[i] = (imgMask[i] / 255) * (diffMask[i] / 255) * regionWeight
+    const faceWeight = blurredFaceParsing[i] / 255  // Face parsing constraint
+    imgMask[i] = (imgMask[i] / 255) * (diffMask[i] / 255) * regionWeight * faceWeight
   }
 
-  // Step 7: Final alpha blend
+  // Step 7: Final alpha blend (copy original, blend only bounded region)
   const result = new Float32Array(originalImage)
-  for (let y = 0; y < imgH; y++) {
-    for (let x = 0; x < imgW; x++) {
-      const alpha = imgMask[y * imgW + x]
+  for (let by = 0; by < bh; by++) {
+    const y = by + by0
+    for (let bx = 0; bx < bw; bx++) {
+      const x = bx + bx0
+      const alpha = imgMask[by * bw + bx]
       if (alpha > 0) {
         for (let c = 0; c < 3; c++) {
-          const idx = (y * imgW + x) * 3 + c
-          const fakeVal = Math.max(0, Math.min(1, fakeWarped[idx]))
-          result[idx] = alpha * fakeVal + (1 - alpha) * originalImage[idx]
+          const srcIdx = (by * bw + bx) * 3 + c
+          const dstIdx = (y * imgW + x) * 3 + c
+          const fakeVal = Math.max(0, Math.min(1, fakeWarped[srcIdx]))
+          result[dstIdx] = alpha * fakeVal + (1 - alpha) * originalImage[dstIdx]
         }
       }
     }
@@ -1519,19 +1475,54 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
         const timeout = payload?.timeout ?? DEFAULT_TIMEOUT
         const enableEnhancement = payload?.enableEnhancement ?? false
 
+        // Always update the enhancement preference
+        enhancementEnabled = enableEnhancement
+
         // Reuse existing sessions if already initialized
         if (det10gSession && arcfaceSession && inswapperSession && segmenter) {
-          // If enhancement setting changed and we need GFPGAN but don't have it, continue init
+          // If enhancement is off, or enhancement is on and GFPGAN is loaded, we're ready
           if (!enableEnhancement || gfpganSession) {
             console.log('Face Swapper models already loaded, reusing sessions')
             self.postMessage({ type: 'ready', payload: { id: payload?.id } })
             break
           }
+
+          // Enhancement is ON but GFPGAN not loaded - load only GFPGAN
+          console.log('Loading GFPGAN for face enhancement...')
+          self.postMessage({ type: 'phase', payload: { phase: 'download', id: payload?.id } })
+
+          const gfpganCached = await isModelCached(GFPGAN_MODEL_URL, FACE_ENHANCER_CACHE)
+
+          const gfpganBuffer = await downloadModel(GFPGAN_MODEL_URL, (current, total) => {
+            const progress = (current / (total || 1)) * 100
+            self.postMessage({
+              type: 'progress',
+              payload: {
+                phase: 'download',
+                progress,
+                detail: gfpganCached ? undefined : { current, total, unit: 'bytes' },
+                id: payload?.id
+              }
+            })
+          }, timeout, FACE_ENHANCER_CACHE)
+
+          self.postMessage({ type: 'phase', payload: { phase: 'loading', id: payload?.id } })
+          gfpganSession = await createSession(gfpganBuffer)
+
+          console.log('GFPGAN loaded for face enhancement')
+          self.postMessage({ type: 'ready', payload: { id: payload?.id } })
+          break
         }
 
         // Check for WebGPU support
         useWebGPU = await checkWebGPU()
         console.log(`Face Swapper using ${useWebGPU ? 'WebGPU' : 'WASM'} backend`)
+
+        // Initialize WebGPU compute for image processing
+        if (useWebGPU) {
+          await initWebGPU()
+          console.log(`WebGPU compute: ${isWebGPUAvailable() ? 'enabled' : 'disabled'}`)
+        }
 
         // Calculate total model size for progress
         let totalSize = MODEL_SIZES.det10g + MODEL_SIZES.arcface + MODEL_SIZES.inswapper + MODEL_SIZES.emap
@@ -1720,7 +1711,7 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
         // Keep reference to original target image for face parsing and color matching
         // This ensures we always use the original target face features, not already-swapped faces
         const originalTarget = new Float32Array(payload.targetImage)
-        let result = new Float32Array(payload.targetImage)
+        let result: Float32Array = new Float32Array(payload.targetImage)
         const targetFaces = payload.targetFaces
         const totalFaces = targetFaces.length
 
@@ -1739,14 +1730,9 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
             sourceEmbedding
           )
 
-          // Generate face mask from ORIGINAL target face using face parsing
-          const swapMask = await parseFaceAligned(
-            originalTarget,
-            payload.targetWidth!,
-            payload.targetHeight!,
-            matrix,
-            INSWAPPER_INPUT_SIZE
-          )
+          // Generate face mask from SWAPPED face using face parsing
+          // This ensures the mask matches the actual swapped result boundaries
+          const swapMask = await parseSwappedFace(swapped, INSWAPPER_INPUT_SIZE)
 
           // Get aligned original face for difference map calculation (same alignment as swapped)
           const alignedOriginal = warpAffine(
@@ -1759,7 +1745,7 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
             false   // RGB, not BGR
           )
 
-          result = inverseWarpAndBlend(
+          result = await inverseWarpAndBlend(
             result,
             payload.targetWidth!,
             payload.targetHeight!,
@@ -1767,7 +1753,7 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
             alignedOriginal,
             matrix,
             swapMask
-          ) as Float32Array<ArrayBuffer>
+          )
 
           // Generate mask at GFPGAN size using crop from original target
           const enhanceMask = await parseFaceCrop(
@@ -1790,8 +1776,8 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
           })
         }
 
-        // Phase: enhance - optional GFPGAN enhancement
-        if (gfpganSession && swappedFaceData.length > 0) {
+        // Phase: enhance - optional GFPGAN enhancement (only if user enabled it)
+        if (enhancementEnabled && gfpganSession && swappedFaceData.length > 0) {
           self.postMessage({ type: 'phase', payload: { phase: 'enhance', id: payload.id } })
 
           for (let i = 0; i < swappedFaceData.length; i++) {
@@ -1861,6 +1847,8 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
           await segmenter.dispose()
         }
         segmenter = null
+        // Dispose WebGPU resources
+        disposeWebGPU()
       } catch (e) {
         console.warn('Error disposing sessions:', e)
       }

@@ -201,8 +201,14 @@ export function useFaceSwapperWorker(options: UseFaceSwapperWorkerOptions = {}) 
 
   const initModels = useCallback((enableEnhancement: boolean = false): Promise<void> => {
     return new Promise((resolve, reject) => {
+      // Auto-recreate worker if disposed
       if (!workerRef.current) {
-        reject(new Error('Worker not initialized'))
+        createWorker()
+      }
+
+      const worker = workerRef.current
+      if (!worker) {
+        reject(new Error('Failed to create worker'))
         return
       }
 
@@ -215,16 +221,16 @@ export function useFaceSwapperWorker(options: UseFaceSwapperWorkerOptions = {}) 
 
       const handleMessage = (e: MessageEvent<WorkerMessage>) => {
         if (e.data.type === 'ready') {
-          workerRef.current?.removeEventListener('message', handleMessage)
+          worker.removeEventListener('message', handleMessage)
           resolve()
         } else if (e.data.type === 'error') {
-          workerRef.current?.removeEventListener('message', handleMessage)
+          worker.removeEventListener('message', handleMessage)
           reject(new Error(e.data.payload as string))
         }
       }
 
-      workerRef.current.addEventListener('message', handleMessage)
-      workerRef.current.postMessage({
+      worker.addEventListener('message', handleMessage)
+      worker.postMessage({
         type: 'init',
         payload: {
           id,
@@ -233,7 +239,7 @@ export function useFaceSwapperWorker(options: UseFaceSwapperWorkerOptions = {}) 
         }
       })
     })
-  }, [])
+  }, [createWorker])
 
   const detectFaces = useCallback((
     imageData: ImageData,
@@ -323,6 +329,8 @@ export function useFaceSwapperWorker(options: UseFaceSwapperWorkerOptions = {}) 
 
   const dispose = useCallback(() => {
     workerRef.current?.postMessage({ type: 'dispose' })
+    workerRef.current?.terminate()
+    workerRef.current = null
     isInitializedRef.current = false
   }, [])
 

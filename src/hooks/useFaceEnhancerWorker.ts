@@ -238,6 +238,8 @@ export function useFaceEnhancerWorker(options: UseFaceEnhancerWorkerOptions = {}
 
   const dispose = useCallback(() => {
     workerRef.current?.postMessage({ type: 'dispose' })
+    workerRef.current?.terminate()
+    workerRef.current = null
     isInitializedRef.current = false
   }, [])
 

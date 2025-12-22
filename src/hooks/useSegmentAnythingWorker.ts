@@ -255,6 +255,8 @@ export function useSegmentAnythingWorker(options: UseSegmentAnythingOptions = {}
 
   const dispose = useCallback(() => {
     workerRef.current?.postMessage({ type: 'dispose', payload: {} })
+    workerRef.current?.terminate()
+    workerRef.current = null
     isSegmentedRef.current = false
   }, [])
 

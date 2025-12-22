@@ -31,6 +31,10 @@ export const PageResetContext = createContext<{ resetPage: (path: string) => voi
   resetPage: () => {}
 })
 
+// Helper to generate next key
+let keyCounter = 0
+const nextKey = () => ++keyCounter
+
 export function Layout() {
   const { t } = useTranslation()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -42,14 +46,15 @@ export function Layout() {
   const [visitedPages, setVisitedPages] = useState<Set<string>>(new Set())
   // Track the last visited free-tools sub-page for navigation
   const [lastFreeToolsPage, setLastFreeToolsPage] = useState<string | null>(null)
+  // Track keys for each page to force remount when reset
+  const [pageKeys, setPageKeys] = useState<Record<string, number>>({})
 
-  // Reset a persistent page by removing it from visitedPages (forces unmount)
+  // Reset a persistent page by changing its key (forces remount)
   const resetPage = useCallback((path: string) => {
-    setVisitedPages(prev => {
-      const next = new Set(prev)
-      next.delete(path)
-      return next
-    })
+    setPageKeys(prev => ({
+      ...prev,
+      [path]: nextKey()
+    }))
   }, [])
 
   const { isValidated, isValidating, loadApiKey, hasAttemptedLoad, isLoading: isLoadingApiKey } = useApiKeyStore()
@@ -327,68 +332,68 @@ export function Layout() {
               {/* Persistent Free Tools pages - mounted once visited, removed from visitedPages forces unmount */}
               {visitedPages.has('/free-tools/video') && (
                 <div className={location.pathname === '/free-tools/video' ? 'h-full overflow-auto' : 'hidden'}>
-                  <VideoEnhancerPage />
+                  <VideoEnhancerPage key={pageKeys['/free-tools/video'] || 0} />
                 </div>
               )}
               {visitedPages.has('/free-tools/image') && (
                 <div className={location.pathname === '/free-tools/image' ? 'h-full overflow-auto' : 'hidden'}>
-                  <ImageEnhancerPage />
+                  <ImageEnhancerPage key={pageKeys['/free-tools/image'] || 0} />
                 </div>
               )}
               {visitedPages.has('/free-tools/face-enhancer') && (
                 <div className={location.pathname === '/free-tools/face-enhancer' ? 'h-full overflow-auto' : 'hidden'}>
-                  <FaceEnhancerPage />
+                  <FaceEnhancerPage key={pageKeys['/free-tools/face-enhancer'] || 0} />
                 </div>
               )}
               {visitedPages.has('/free-tools/face-swapper') && (
                 <div className={location.pathname === '/free-tools/face-swapper' ? 'h-full overflow-auto' : 'hidden'}>
-                  <FaceSwapperPage />
+                  <FaceSwapperPage key={pageKeys['/free-tools/face-swapper'] || 0} />
                 </div>
               )}
               {visitedPages.has('/free-tools/background-remover') && (
                 <div className={location.pathname === '/free-tools/background-remover' ? 'h-full overflow-auto' : 'hidden'}>
-                  <BackgroundRemoverPage />
+                  <BackgroundRemoverPage key={pageKeys['/free-tools/background-remover'] || 0} />
                 </div>
               )}
               {visitedPages.has('/free-tools/image-eraser') && (
                 <div className={location.pathname === '/free-tools/image-eraser' ? 'h-full overflow-auto' : 'hidden'}>
-                  <ImageEraserPage />
+                  <ImageEraserPage key={pageKeys['/free-tools/image-eraser'] || 0} />
                 </div>
               )}
               {visitedPages.has('/free-tools/segment-anything') && (
                 <div className={location.pathname === '/free-tools/segment-anything' ? 'h-full overflow-auto' : 'hidden'}>
-                  <SegmentAnythingPage />
+                  <SegmentAnythingPage key={pageKeys['/free-tools/segment-anything'] || 0} />
                 </div>
               )}
               {/* Persistent Z-Image page - mounted once visited, then persist via CSS show/hide */}
               {visitedPages.has('/z-image') && (
                 <div className={location.pathname === '/z-image' ? 'h-full overflow-auto' : 'hidden'}>
-                  <ZImagePage />
+                  <ZImagePage key={pageKeys['/z-image'] || 0} />
                 </div>
               )}
               {visitedPages.has('/free-tools/video-converter') && (
                 <div className={location.pathname === '/free-tools/video-converter' ? 'h-full overflow-auto' : 'hidden'}>
-                  <VideoConverterPage />
+                  <VideoConverterPage key={pageKeys['/free-tools/video-converter'] || 0} />
                 </div>
               )}
               {visitedPages.has('/free-tools/audio-converter') && (
                 <div className={location.pathname === '/free-tools/audio-converter' ? 'h-full overflow-auto' : 'hidden'}>
-                  <AudioConverterPage />
+                  <AudioConverterPage key={pageKeys['/free-tools/audio-converter'] || 0} />
                 </div>
               )}
               {visitedPages.has('/free-tools/image-converter') && (
                 <div className={location.pathname === '/free-tools/image-converter' ? 'h-full overflow-auto' : 'hidden'}>
-                  <ImageConverterPage />
+                  <ImageConverterPage key={pageKeys['/free-tools/image-converter'] || 0} />
                 </div>
               )}
               {visitedPages.has('/free-tools/media-trimmer') && (
                 <div className={location.pathname === '/free-tools/media-trimmer' ? 'h-full overflow-auto' : 'hidden'}>
-                  <MediaTrimmerPage />
+                  <MediaTrimmerPage key={pageKeys['/free-tools/media-trimmer'] || 0} />
                 </div>
               )}
               {visitedPages.has('/free-tools/media-merger') && (
                 <div className={location.pathname === '/free-tools/media-merger' ? 'h-full overflow-auto' : 'hidden'}>
-                  <MediaMergerPage />
+                  <MediaMergerPage key={pageKeys['/free-tools/media-merger'] || 0} />
                 </div>
               )}
             </>

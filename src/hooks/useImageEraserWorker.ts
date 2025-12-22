@@ -216,6 +216,8 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
 
   const dispose = useCallback(() => {
     workerRef.current?.postMessage({ type: 'dispose' })
+    workerRef.current?.terminate()
+    workerRef.current = null
     isInitializedRef.current = false
   }, [])
 

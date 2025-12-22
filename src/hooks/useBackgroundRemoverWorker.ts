@@ -193,6 +193,8 @@ export function useBackgroundRemoverWorker(
 
   const dispose = useCallback(() => {
     workerRef.current?.postMessage({ type: 'dispose' })
+    workerRef.current?.terminate()
+    workerRef.current = null
   }, [])
 
   const retryWorker = useCallback(() => {

@@ -2,9 +2,9 @@
  * Shared face parsing utilities for face enhancer and face swapper workers
  */
 
-// Face region labels to include in mask (excludes background, hair, hat, neck, cloth, accessories)
+// Face region labels to include in mask (excludes background, hair, hat, ears, neck, cloth, accessories)
 export const FACE_LABELS = new Set([
-  'skin', 'nose', 'eye_g', 'l_eye', 'r_eye', 'l_brow', 'r_brow', 'l_ear', 'r_ear', 'mouth', 'u_lip', 'l_lip'
+  'skin', 'nose', 'eye_g', 'l_eye', 'r_eye', 'l_brow', 'r_brow', 'mouth', 'u_lip', 'l_lip'
 ])
 
 /**

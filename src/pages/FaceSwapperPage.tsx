@@ -173,14 +173,14 @@ export function FaceSwapperPage() {
   }, [retryWorker])
 
   const handleBack = useCallback(() => {
-    if (isProcessing) {
+    if (isProcessing || isDetecting) {
       setShowBackWarning(true)
     } else {
       dispose()
       resetPage(location.pathname)
       navigate('/free-tools')
     }
-  }, [isProcessing, dispose, resetPage, location.pathname, navigate])
+  }, [isProcessing, isDetecting, dispose, resetPage, location.pathname, navigate])
 
   const handleConfirmBack = useCallback(() => {
     setShowBackWarning(false)
@@ -814,7 +814,6 @@ export function FaceSwapperPage() {
       setError(err instanceof Error ? err.message : 'Face swap failed')
     } finally {
       setIsProcessing(false)
-      dispose()
     }
   }
 

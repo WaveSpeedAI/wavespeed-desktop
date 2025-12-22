@@ -7,7 +7,13 @@
 
 import * as ort from 'onnxruntime-web'
 import { pipeline, env, RawImage } from '@huggingface/transformers'
-import { FACE_LABELS, featherMask } from '@/lib/faceParsingUtils'
+import { FACE_LABELS } from '@/lib/faceParsingUtils'
+import {
+  initWebGPU,
+  gaussianBlur,
+  erodeMask,
+  disposeWebGPU
+} from './webgpuCompute'
 
 // Configure transformers.js
 env.allowLocalModels = false
@@ -76,6 +82,30 @@ interface WorkerMessage {
 
 // Default timeout (60 minutes)
 const DEFAULT_TIMEOUT = 3600000
+
+/**
+ * Feather mask edges using Gaussian blur (auto-fallback to CPU if GPU unavailable)
+ */
+async function featherMask(mask: Uint8Array, size: number, featherRadius: number): Promise<Uint8Array> {
+  const kernelSize = featherRadius * 2 + 1
+
+  // Convert mask to Float32Array for processing
+  const floatMask = new Float32Array(mask.length)
+  for (let i = 0; i < mask.length; i++) {
+    floatMask[i] = mask[i]
+  }
+
+  // Apply Gaussian blur (auto-fallback to CPU if GPU unavailable)
+  const blurred = await gaussianBlur(floatMask, size, size, kernelSize)
+
+  // Convert back to Uint8Array
+  const result = new Uint8Array(mask.length)
+  for (let i = 0; i < mask.length; i++) {
+    result[i] = Math.round(Math.max(0, Math.min(255, blurred[i])))
+  }
+
+  return result
+}
 
 /**
  * Download model with progress tracking
@@ -587,8 +617,19 @@ async function parseFace(
     }
   }
 
+  // Erode mask to shrink face region (prevents hair bleed-through)
+  const maskFloat = new Float32Array(mask.length)
+  for (let i = 0; i < mask.length; i++) {
+    maskFloat[i] = mask[i]
+  }
+  const erodedMask = await erodeMask(maskFloat, outputSize, outputSize, 7)
+  const erodedUint8 = new Uint8Array(mask.length)
+  for (let i = 0; i < mask.length; i++) {
+    erodedUint8[i] = Math.max(0, Math.round(erodedMask[i]))
+  }
+
   // Apply feathering to mask edges
-  const featheredMask = featherMask(mask, outputSize, 8)
+  const featheredMask = await featherMask(erodedUint8, outputSize, 4)
 
   return featheredMask
 }
@@ -750,6 +791,12 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
         useWebGPU = await checkWebGPU()
         console.log(`Face Enhancer using ${useWebGPU ? 'WebGPU' : 'WASM'} backend`)
 
+        // Initialize WebGPU compute for accelerated mask processing
+        if (useWebGPU) {
+          const gpuInitialized = await initWebGPU()
+          console.log(`WebGPU compute: ${gpuInitialized ? 'enabled' : 'disabled'}`)
+        }
+
         // Check if models are cached
         const yoloCached = await isModelCached(YOLO_MODEL_URL)
         const gfpganCached = await isModelCached(GFPGAN_MODEL_URL)
@@ -892,6 +939,8 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
           await segmenter.dispose()
         }
         segmenter = null
+        // Dispose WebGPU resources
+        disposeWebGPU()
       } catch (e) {
         console.warn('Error disposing sessions:', e)
       }

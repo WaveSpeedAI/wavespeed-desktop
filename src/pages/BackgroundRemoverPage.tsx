@@ -134,6 +134,7 @@ export function BackgroundRemoverPage() {
   const handleFileSelect = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) return
 
+    setError(null)
     // Store the original blob for processing
     setOriginalBlob(file)
 
@@ -195,7 +196,7 @@ export function BackgroundRemoverPage() {
 
     setIsProcessing(true)
     setProcessingKey((k) => k + 1)
-    resetAndStart('process')
+    resetAndStart('download')
 
     try {
       // Process all three outputs in worker
@@ -244,7 +245,6 @@ export function BackgroundRemoverPage() {
       console.error('Background removal failed:', error)
     } finally {
       setIsProcessing(false)
-      dispose()
     }
   }
 

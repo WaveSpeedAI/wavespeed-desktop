@@ -374,6 +374,7 @@ export function SegmentAnythingPage() {
   const resetImage = useCallback(async () => {
     setOriginalImage(null)
     setLoadedImage(null)
+    setError(null)
     setIsEncoded(false)
     setIsMultiMaskMode(false)
     setPoints([])

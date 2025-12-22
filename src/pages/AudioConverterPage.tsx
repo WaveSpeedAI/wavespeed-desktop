@@ -123,6 +123,7 @@ export function AudioConverterPage() {
         return
       }
 
+      setError(null)
       // Clean up previous URLs
       if (audioUrl) URL.revokeObjectURL(audioUrl)
       if (convertedUrl) URL.revokeObjectURL(convertedUrl)

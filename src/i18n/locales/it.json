@@ -582,7 +582,8 @@
       "eta": "~{{time}} rimanente",
       "sideBySide": "Affiancato",
       "comparison": "Confronto a scorrimento",
-      "dragToCompare": "Trascina per confrontare"
+      "dragToCompare": "Trascina per confrontare",
+      "enhanceFace": "Migliora qualità viso"
     },
     "faceEnhancer": {
       "title": "Miglioramento Volti",

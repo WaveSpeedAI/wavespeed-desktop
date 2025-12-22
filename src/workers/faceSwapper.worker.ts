@@ -70,7 +70,7 @@ const INSWAPPER_INPUT_SIZE = 128
 const GFPGAN_INPUT_SIZE = 512
 
 // Detection thresholds
-const CONFIDENCE_THRESHOLD = 0.5
+const CONFIDENCE_THRESHOLD = 0.35
 const NMS_THRESHOLD = 0.4
 
 // Cache names

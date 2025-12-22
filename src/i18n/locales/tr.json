@@ -582,7 +582,8 @@
       "eta": "~{{time}} kaldı",
       "sideBySide": "Yan yana",
       "comparison": "Kaydırmalı karşılaştırma",
-      "dragToCompare": "Karşılaştırmak için sürükleyin"
+      "dragToCompare": "Karşılaştırmak için sürükleyin",
+      "enhanceFace": "Yüz kalitesini artır"
     },
     "faceEnhancer": {
       "title": "Yüz Geliştirici",

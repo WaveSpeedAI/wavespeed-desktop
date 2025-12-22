@@ -152,6 +152,12 @@ export function useFaceEnhancerWorker(options: UseFaceEnhancerWorkerOptions = {}
     }
   }, [])
 
+  const ensureWorker = useCallback(() => {
+    if (!workerRef.current) {
+      createWorker()
+    }
+  }, [createWorker])
+
   // Initialize worker
   useEffect(() => {
     createWorker()
@@ -165,6 +171,8 @@ export function useFaceEnhancerWorker(options: UseFaceEnhancerWorkerOptions = {}
 
   const initModel = useCallback((): Promise<void> => {
     return new Promise((resolve, reject) => {
+      ensureWorker()
+
       if (!workerRef.current) {
         reject(new Error('Worker not initialized'))
         return
@@ -196,10 +204,12 @@ export function useFaceEnhancerWorker(options: UseFaceEnhancerWorkerOptions = {}
         }
       })
     })
-  }, [])
+  }, [ensureWorker])
 
   const enhance = useCallback((imageData: ImageData): Promise<{ dataUrl: string; faces: number }> => {
     return new Promise((resolve, reject) => {
+      ensureWorker()
+
       if (!workerRef.current) {
         reject(new Error('Worker not initialized'))
         return
@@ -234,7 +244,7 @@ export function useFaceEnhancerWorker(options: UseFaceEnhancerWorkerOptions = {}
         { transfer: [float32Data.buffer] }
       )
     })
-  }, [])
+  }, [ensureWorker])
 
   const dispose = useCallback(() => {
     workerRef.current?.postMessage({ type: 'dispose' })

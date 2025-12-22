@@ -117,6 +117,7 @@ export function MediaMergerPage() {
 
   const handleFilesSelect = useCallback(
     (files: FileList | File[]) => {
+      setError(null)
       const newItems: MediaItem[] = []
       const firstType = mediaItems.length > 0 ? mediaItems[0].type : null
 

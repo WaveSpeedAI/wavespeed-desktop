@@ -61,7 +61,8 @@ type Tool = 'brush' | 'eraser'
 // Phase configuration for image eraser
 const PHASES = [
   { id: 'download', labelKey: 'freeTools.progress.downloading', weight: 0.1 },
-  { id: 'process', labelKey: 'freeTools.progress.processing', weight: 0.9 }
+  { id: 'loading', labelKey: 'freeTools.progress.loading', weight: 0.1 },
+  { id: 'process', labelKey: 'freeTools.progress.processing', weight: 0.8 }
 ]
 
 export function ImageEraserPage() {
@@ -116,12 +117,14 @@ export function ImageEraserPage() {
     onPhase: (phase) => {
       if (phase === 'download') {
         startPhase('download')
+      } else if (phase === 'loading') {
+        startPhase('loading')
       } else if (phase === 'process') {
         startPhase('process')
       }
     },
     onProgress: (phase, progressValue, detail) => {
-      const phaseId = phase === 'download' ? 'download' : 'process'
+      const phaseId = phase === 'download' ? 'download' : phase === 'loading' ? 'loading' : 'process'
       updatePhase(phaseId, progressValue, detail)
     },
     onReady: () => {
@@ -506,6 +509,7 @@ export function ImageEraserPage() {
     (file: File) => {
       if (!file.type.startsWith('image/')) return
 
+      setError(null)
       const reader = new FileReader()
       reader.onload = (e) => {
         const dataUrl = e.target?.result as string
@@ -577,7 +581,7 @@ export function ImageEraserPage() {
     }
 
     setIsProcessing(true)
-    resetAndStart('process')
+    resetAndStart('download')
 
     try {
       // Initialize model if not already done (instant if cached)

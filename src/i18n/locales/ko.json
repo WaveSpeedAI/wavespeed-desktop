@@ -582,7 +582,8 @@
       "eta": "~{{time}} 남음",
       "sideBySide": "나란히 비교",
       "comparison": "슬라이더 비교",
-      "dragToCompare": "드래그하여 비교"
+      "dragToCompare": "드래그하여 비교",
+      "enhanceFace": "얼굴 품질 향상"
     },
     "faceEnhancer": {
       "title": "얼굴 보정",

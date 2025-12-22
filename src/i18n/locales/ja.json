@@ -582,7 +582,8 @@
       "eta": "~{{time}} 残り",
       "sideBySide": "並べて比較",
       "comparison": "スライダー比較",
-      "dragToCompare": "ドラッグして比較"
+      "dragToCompare": "ドラッグして比較",
+      "enhanceFace": "顔の品質を向上"
     },
     "faceEnhancer": {
       "title": "顔補正",

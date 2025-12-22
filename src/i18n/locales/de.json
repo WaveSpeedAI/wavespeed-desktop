@@ -582,7 +582,8 @@
       "eta": "~{{time}} verbleibend",
       "sideBySide": "Nebeneinander",
       "comparison": "Schieberegler-Vergleich",
-      "dragToCompare": "Zum Vergleichen ziehen"
+      "dragToCompare": "Zum Vergleichen ziehen",
+      "enhanceFace": "Gesichtsqualität verbessern"
     },
     "faceEnhancer": {
       "title": "Gesichtsverbesserung",

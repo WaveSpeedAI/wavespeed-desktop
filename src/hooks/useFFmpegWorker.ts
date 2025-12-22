@@ -130,6 +130,12 @@ export function useFFmpegWorker(options: UseFFmpegWorkerOptions = {}) {
     }
   }, [])
 
+  const ensureWorker = useCallback(() => {
+    if (!workerRef.current) {
+      createWorker()
+    }
+  }, [createWorker])
+
   // Initialize worker
   useEffect(() => {
     createWorker()
@@ -144,6 +150,8 @@ export function useFFmpegWorker(options: UseFFmpegWorkerOptions = {}) {
   // Pre-load FFmpeg (optional, can be called early)
   const load = useCallback((): Promise<void> => {
     return new Promise((resolve, reject) => {
+      ensureWorker()
+
       if (!workerRef.current) {
         reject(new Error('Worker not initialized'))
         return
@@ -167,7 +175,7 @@ export function useFFmpegWorker(options: UseFFmpegWorkerOptions = {}) {
       workerRef.current.addEventListener('message', handleMessage)
       workerRef.current.postMessage({ type: 'load' })
     })
-  }, [])
+  }, [ensureWorker])
 
   // Convert media file
   const convert = useCallback((
@@ -178,6 +186,8 @@ export function useFFmpegWorker(options: UseFFmpegWorkerOptions = {}) {
     options?: ConvertOptions
   ): Promise<{ data: ArrayBuffer; filename: string }> => {
     return new Promise((resolve, reject) => {
+      ensureWorker()
+
       if (!workerRef.current) {
         reject(new Error('Worker not initialized'))
         return
@@ -203,7 +213,7 @@ export function useFFmpegWorker(options: UseFFmpegWorkerOptions = {}) {
         { transfer: [file] }
       )
     })
-  }, [])
+  }, [ensureWorker])
 
   // Merge multiple media files
   const merge = useCallback((
@@ -213,6 +223,8 @@ export function useFFmpegWorker(options: UseFFmpegWorkerOptions = {}) {
     outputExt: string
   ): Promise<{ data: ArrayBuffer; filename: string }> => {
     return new Promise((resolve, reject) => {
+      ensureWorker()
+
       if (!workerRef.current) {
         reject(new Error('Worker not initialized'))
         return
@@ -238,7 +250,7 @@ export function useFFmpegWorker(options: UseFFmpegWorkerOptions = {}) {
         { transfer: files }
       )
     })
-  }, [])
+  }, [ensureWorker])
 
   // Trim media file
   const trim = useCallback((
@@ -250,6 +262,8 @@ export function useFFmpegWorker(options: UseFFmpegWorkerOptions = {}) {
     outputExt: string
   ): Promise<{ data: ArrayBuffer; filename: string }> => {
     return new Promise((resolve, reject) => {
+      ensureWorker()
+
       if (!workerRef.current) {
         reject(new Error('Worker not initialized'))
         return
@@ -275,7 +289,7 @@ export function useFFmpegWorker(options: UseFFmpegWorkerOptions = {}) {
         { transfer: [file] }
       )
     })
-  }, [])
+  }, [ensureWorker])
 
   // Get media info
   const getMediaInfo = useCallback((
@@ -283,6 +297,8 @@ export function useFFmpegWorker(options: UseFFmpegWorkerOptions = {}) {
     fileName: string
   ): Promise<MediaInfo> => {
     return new Promise((resolve, reject) => {
+      ensureWorker()
+
       if (!workerRef.current) {
         reject(new Error('Worker not initialized'))
         return
@@ -310,7 +326,7 @@ export function useFFmpegWorker(options: UseFFmpegWorkerOptions = {}) {
         { transfer: [clonedBuffer] }
       )
     })
-  }, [])
+  }, [ensureWorker])
 
   // Cancel current operation
   const cancel = useCallback(() => {

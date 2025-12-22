@@ -582,7 +582,8 @@
       "eta": "~{{time}} remaining",
       "sideBySide": "Side by side",
       "comparison": "Comparison slider",
-      "dragToCompare": "Drag to compare"
+      "dragToCompare": "Drag to compare",
+      "enhanceFace": "Enhance face quality"
     },
     "faceEnhancer": {
       "title": "Face Enhancer",

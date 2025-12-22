@@ -144,6 +144,7 @@ export function VideoEnhancerPage() {
     (file: File) => {
       if (!file.type.startsWith('video/')) return
 
+      setError(null)
       // Cleanup previous
       if (videoUrl) URL.revokeObjectURL(videoUrl)
       if (downloadUrl) URL.revokeObjectURL(downloadUrl)
@@ -380,8 +381,6 @@ export function VideoEnhancerPage() {
         videoRef.current.playbackRate = 1
         videoRef.current.pause()
       }
-    } finally {
-      dispose()
     }
   }
 

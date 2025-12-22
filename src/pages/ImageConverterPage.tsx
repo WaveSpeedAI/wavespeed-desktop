@@ -130,6 +130,7 @@ export function ImageConverterPage() {
   }, [resetPage, location.pathname, navigate])
 
   const handleFileSelect = useCallback((files: FileList | File[]) => {
+    setError(null)
     const newImages: ImageFile[] = []
 
     Array.from(files).forEach((file) => {

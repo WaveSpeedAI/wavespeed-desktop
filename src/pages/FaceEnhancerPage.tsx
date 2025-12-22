@@ -44,8 +44,9 @@ type ScaleType = '1x' | '2x' | '3x' | '4x'
 // Phase configuration for face enhancer
 const PHASES = [
   { id: 'download', labelKey: 'freeTools.progress.downloading', weight: 0.2 },
+  { id: 'loading', labelKey: 'freeTools.progress.loading', weight: 0.1 },
   { id: 'detect', labelKey: 'freeTools.faceEnhancer.detecting', weight: 0.1 },
-  { id: 'enhance', labelKey: 'freeTools.faceEnhancer.enhancing', weight: 0.7 }
+  { id: 'enhance', labelKey: 'freeTools.faceEnhancer.enhancing', weight: 0.6 }
 ]
 
 export function FaceEnhancerPage() {
@@ -97,6 +98,8 @@ export function FaceEnhancerPage() {
     onPhase: (phase) => {
       if (phase === 'download') {
         startPhase('download')
+      } else if (phase === 'loading') {
+        startPhase('loading')
       } else if (phase === 'detect') {
         startPhase('detect')
       } else if (phase === 'enhance') {
@@ -104,7 +107,14 @@ export function FaceEnhancerPage() {
       }
     },
     onProgress: (phase, progressValue, detail) => {
-      const phaseId = phase === 'download' ? 'download' : phase === 'detect' ? 'detect' : 'enhance'
+      const phaseId =
+        phase === 'download'
+          ? 'download'
+          : phase === 'loading'
+            ? 'loading'
+            : phase === 'detect'
+              ? 'detect'
+              : 'enhance'
       updatePhase(phaseId, progressValue, detail)
     },
     onError: (err) => {
@@ -143,6 +153,7 @@ export function FaceEnhancerPage() {
       const reader = new FileReader()
       reader.onload = (e) => {
         const dataUrl = e.target?.result as string
+        setError(null)
         setOriginalImage(dataUrl)
         setEnhancedImage(null)
         setEnhancedSize(null)
@@ -321,7 +332,6 @@ export function FaceEnhancerPage() {
       setError(error instanceof Error ? error.message : 'Enhancement failed')
     } finally {
       setIsProcessing(false)
-      dispose()
     }
   }
 

@@ -582,7 +582,8 @@
       "eta": "~{{time}} còn lại",
       "sideBySide": "Cạnh nhau",
       "comparison": "So sánh trượt",
-      "dragToCompare": "Kéo để so sánh"
+      "dragToCompare": "Kéo để so sánh",
+      "enhanceFace": "Nâng cao chất lượng khuôn mặt"
     },
     "faceEnhancer": {
       "title": "Cải thiện Khuôn mặt",

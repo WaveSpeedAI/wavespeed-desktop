@@ -582,7 +582,8 @@
       "eta": "~{{time}} शेष",
       "sideBySide": "साथ-साथ",
       "comparison": "स्लाइडर तुलना",
-      "dragToCompare": "तुलना के लिए खींचें"
+      "dragToCompare": "तुलना के लिए खींचें",
+      "enhanceFace": "चेहरे की गुणवत्ता बढ़ाएं"
     },
     "faceEnhancer": {
       "title": "फेस एन्हांसर",

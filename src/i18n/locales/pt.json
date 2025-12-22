@@ -582,7 +582,8 @@
       "eta": "~{{time}} restante",
       "sideBySide": "Lado a lado",
       "comparison": "Comparação deslizante",
-      "dragToCompare": "Arraste para comparar"
+      "dragToCompare": "Arraste para comparar",
+      "enhanceFace": "Melhorar qualidade do rosto"
     },
     "faceEnhancer": {
       "title": "Melhorador de Rostos",

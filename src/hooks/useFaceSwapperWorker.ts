@@ -188,6 +188,12 @@ export function useFaceSwapperWorker(options: UseFaceSwapperWorkerOptions = {}) 
     }
   }, [])
 
+  const ensureWorker = useCallback(() => {
+    if (!workerRef.current) {
+      createWorker()
+    }
+  }, [createWorker])
+
   // Initialize worker
   useEffect(() => {
     createWorker()
@@ -201,10 +207,7 @@ export function useFaceSwapperWorker(options: UseFaceSwapperWorkerOptions = {}) 
 
   const initModels = useCallback((enableEnhancement: boolean = false): Promise<void> => {
     return new Promise((resolve, reject) => {
-      // Auto-recreate worker if disposed
-      if (!workerRef.current) {
-        createWorker()
-      }
+      ensureWorker()
 
       const worker = workerRef.current
       if (!worker) {
@@ -239,13 +242,15 @@ export function useFaceSwapperWorker(options: UseFaceSwapperWorkerOptions = {}) 
         }
       })
     })
-  }, [createWorker])
+  }, [ensureWorker])
 
   const detectFaces = useCallback((
     imageData: ImageData,
     imageId: 'source' | 'target'
   ): Promise<DetectedFace[]> => {
     return new Promise((resolve, reject) => {
+      ensureWorker()
+
       if (!workerRef.current) {
         reject(new Error('Worker not initialized'))
         return
@@ -281,10 +286,12 @@ export function useFaceSwapperWorker(options: UseFaceSwapperWorkerOptions = {}) 
         { transfer: [float32Data.buffer] }
       )
     })
-  }, [])
+  }, [ensureWorker])
 
   const swapFaces = useCallback((params: SwapParams): Promise<{ dataUrl: string }> => {
     return new Promise((resolve, reject) => {
+      ensureWorker()
+
       if (!workerRef.current) {
         reject(new Error('Worker not initialized'))
         return
@@ -325,7 +332,7 @@ export function useFaceSwapperWorker(options: UseFaceSwapperWorkerOptions = {}) 
         { transfer: [sourceFloat32.buffer, targetFloat32.buffer] }
       )
     })
-  }, [])
+  }, [ensureWorker])
 
   const dispose = useCallback(() => {
     workerRef.current?.postMessage({ type: 'dispose' })

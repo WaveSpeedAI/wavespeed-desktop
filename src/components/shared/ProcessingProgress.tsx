@@ -79,6 +79,12 @@ export function ProcessingProgress({
   const { phases, currentPhaseIndex, overallProgress, eta, isActive } = progress
 
   const currentPhase = phases[currentPhaseIndex]
+  const isComplete = phases.length > 0 && phases.every((phase) => phase.status === 'completed')
+  const currentLabel = isComplete
+    ? t('common.done')
+    : currentPhase
+      ? t(currentPhase.labelKey)
+      : ''
 
   if (!isActive && overallProgress === 0) {
     return null
@@ -110,16 +116,16 @@ export function ProcessingProgress({
         )}
 
         {/* Current phase label with spinner */}
-        {currentPhase && (
+        {currentLabel && (
           <span className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
-            {isActive && currentPhase.status === 'active' && (
+            {isActive && currentPhase?.status === 'active' && (
               <Loader2 className="h-3 w-3 animate-spin" />
             )}
-            {currentPhase.status === 'completed' && (
+            {currentPhase?.status === 'completed' && (
               <Check className="h-3 w-3 text-primary" />
             )}
-            {t(currentPhase.labelKey)}
-            {currentPhase.detail && formatDetail(currentPhase.detail) && (
+            {currentLabel}
+            {!isComplete && currentPhase?.detail && formatDetail(currentPhase.detail) && (
               <span className="text-muted-foreground/60">
                 ({formatDetail(currentPhase.detail)})
               </span>

@@ -128,6 +128,7 @@ export function VideoConverterPage() {
         return
       }
 
+      setError(null)
       // Clean up previous URLs
       if (videoUrl) URL.revokeObjectURL(videoUrl)
       if (convertedUrl) URL.revokeObjectURL(convertedUrl)

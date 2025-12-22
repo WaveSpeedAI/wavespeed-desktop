@@ -582,7 +582,8 @@
       "eta": "~{{time}} осталось",
       "sideBySide": "Рядом",
       "comparison": "Сравнение ползунком",
-      "dragToCompare": "Перетащите для сравнения"
+      "dragToCompare": "Перетащите для сравнения",
+      "enhanceFace": "Улучшить качество лица"
     },
     "faceEnhancer": {
       "title": "Улучшение лиц",

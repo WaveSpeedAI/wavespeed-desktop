@@ -582,7 +582,8 @@
       "eta": "~{{time}} 剩余",
       "sideBySide": "并排对比",
       "comparison": "滑块对比",
-      "dragToCompare": "拖动对比"
+      "dragToCompare": "拖动对比",
+      "enhanceFace": "增强面部质量"
     },
     "faceEnhancer": {
       "title": "人脸增强",

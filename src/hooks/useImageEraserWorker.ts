@@ -118,6 +118,12 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
     }
   }, [])
 
+  const ensureWorker = useCallback(() => {
+    if (!workerRef.current) {
+      createWorker()
+    }
+  }, [createWorker])
+
   // Initialize worker
   useEffect(() => {
     createWorker()
@@ -132,6 +138,8 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
 
   const initModel = useCallback((): Promise<void> => {
     return new Promise((resolve, reject) => {
+      ensureWorker()
+
       if (!workerRef.current) {
         reject(new Error('Worker not initialized'))
         return
@@ -164,7 +172,7 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
         }
       })
     })
-  }, [])
+  }, [ensureWorker])
 
   const removeObjects = useCallback(
     (
@@ -174,6 +182,8 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
       height: number
     ): Promise<EraserResult> => {
       return new Promise((resolve, reject) => {
+        ensureWorker()
+
         if (!workerRef.current) {
           reject(new Error('Worker not initialized'))
           return
@@ -211,7 +221,7 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
         )
       })
     },
-    []
+    [ensureWorker]
   )
 
   const dispose = useCallback(() => {

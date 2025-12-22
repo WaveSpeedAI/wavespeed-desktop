@@ -582,7 +582,8 @@
       "eta": "~{{time}} متبقي",
       "sideBySide": "جنباً إلى جنب",
       "comparison": "مقارنة بالمنزلق",
-      "dragToCompare": "اسحب للمقارنة"
+      "dragToCompare": "اسحب للمقارنة",
+      "enhanceFace": "تحسين جودة الوجه"
     },
     "faceEnhancer": {
       "title": "تحسين الوجه",

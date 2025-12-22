@@ -43,16 +43,18 @@ import { cn } from '@/lib/utils'
 // Phase configuration for face swapper
 const PHASES_WITHOUT_ENHANCE = [
   { id: 'download', labelKey: 'freeTools.progress.downloading', weight: 0.3 },
+  { id: 'loading', labelKey: 'freeTools.progress.loading', weight: 0.1 },
   { id: 'detect', labelKey: 'freeTools.faceSwapper.detecting', weight: 0.1 },
   { id: 'embed', labelKey: 'freeTools.faceSwapper.extractingEmbedding', weight: 0.1 },
-  { id: 'swap', labelKey: 'freeTools.faceSwapper.swapping', weight: 0.5 }
+  { id: 'swap', labelKey: 'freeTools.faceSwapper.swapping', weight: 0.4 }
 ]
 
 const PHASES_WITH_ENHANCE = [
   { id: 'download', labelKey: 'freeTools.progress.downloading', weight: 0.25 },
+  { id: 'loading', labelKey: 'freeTools.progress.loading', weight: 0.1 },
   { id: 'detect', labelKey: 'freeTools.faceSwapper.detecting', weight: 0.1 },
   { id: 'embed', labelKey: 'freeTools.faceSwapper.extractingEmbedding', weight: 0.05 },
-  { id: 'swap', labelKey: 'freeTools.faceSwapper.swapping', weight: 0.4 },
+  { id: 'swap', labelKey: 'freeTools.faceSwapper.swapping', weight: 0.3 },
   { id: 'enhance', labelKey: 'freeTools.faceSwapper.enhancing', weight: 0.2 }
 ]
 
@@ -214,6 +216,7 @@ export function FaceSwapperPage() {
     const reader = new FileReader()
     reader.onload = async (e) => {
       const dataUrl = e.target?.result as string
+      setError(null)
       setSourceImage(dataUrl)
       setSourceFaces([])
       setSelectedSourceFaceIndex(null)
@@ -263,6 +266,7 @@ export function FaceSwapperPage() {
     const reader = new FileReader()
     reader.onload = async (e) => {
       const dataUrl = e.target?.result as string
+      setError(null)
       setTargetImage(dataUrl)
       setOriginalTargetImage(dataUrl)
       setTargetFaces([])

@@ -47,7 +47,7 @@ const YOLO_INPUT_SIZE = 640
 const GFPGAN_INPUT_SIZE = 512
 
 // Detection thresholds
-const CONFIDENCE_THRESHOLD = 0.5
+const CONFIDENCE_THRESHOLD = 0.35
 const IOU_THRESHOLD = 0.45
 
 // Cache names

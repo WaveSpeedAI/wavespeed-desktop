@@ -115,6 +115,7 @@ export function MediaTrimmerPage() {
       const type = getMediaType(file)
       if (type !== 'video' && type !== 'audio') return
 
+      setError(null)
       // Clean up previous URLs
       if (mediaUrl) URL.revokeObjectURL(mediaUrl)
       if (trimmedUrl) URL.revokeObjectURL(trimmedUrl)

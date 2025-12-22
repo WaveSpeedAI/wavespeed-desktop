@@ -582,7 +582,8 @@
       "eta": "~{{time}} tersisa",
       "sideBySide": "Berdampingan",
       "comparison": "Perbandingan geser",
-      "dragToCompare": "Seret untuk membandingkan"
+      "dragToCompare": "Seret untuk membandingkan",
+      "enhanceFace": "Tingkatkan kualitas wajah"
     },
     "faceEnhancer": {
       "title": "Peningkat Wajah",

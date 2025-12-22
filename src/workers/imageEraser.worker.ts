@@ -21,6 +21,14 @@ const CACHE_NAME = 'lama-model-cache'
 // ONNX Runtime session
 let session: ort.InferenceSession | null = null
 
+/**
+ * Safely dispose an ONNX tensor to free memory
+ * The dispose method exists at runtime but isn't in TypeScript types
+ */
+function disposeTensor(tensor: ort.Tensor): void {
+  (tensor as unknown as { dispose?: () => void }).dispose?.()
+}
+
 interface WorkerMessage {
   type: 'init' | 'process' | 'dispose'
   payload?: {
@@ -481,13 +489,24 @@ async function removeArea(
   }
 
   const results = await session.run(feeds)
+
+  // Dispose input tensors to free memory
+  disposeTensor(imageTensor)
+  disposeTensor(maskTensor)
+
   const outputName = session.outputNames[0]
   const rawOutput = results[outputName].data as Float32Array
 
+  // Copy raw output before disposing
+  const rawOutputCopy = new Float32Array(rawOutput)
+
+  // Dispose output tensor to free memory
+  disposeTensor(results[outputName])
+
   // Model outputs 0-255 range, convert to 0-1
-  const output = new Float32Array(rawOutput.length)
-  for (let i = 0; i < rawOutput.length; i++) {
-    output[i] = Math.max(0, Math.min(1, rawOutput[i] / 255.0))
+  const output = new Float32Array(rawOutputCopy.length)
+  for (let i = 0; i < rawOutputCopy.length; i++) {
+    output[i] = Math.max(0, Math.min(1, rawOutputCopy[i] / 255.0))
   }
 
   // Resize output back to crop size

@@ -61,6 +61,14 @@ let gfpganSession: ort.InferenceSession | null = null
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let segmenter: any = null
 
+/**
+ * Safely dispose an ONNX tensor to free memory
+ * The dispose method exists at runtime but isn't in TypeScript types
+ */
+function disposeTensor(tensor: ort.Tensor): void {
+  (tensor as unknown as { dispose?: () => void }).dispose?.()
+}
+
 interface FaceBox {
   x: number
   y: number
@@ -412,12 +420,21 @@ async function detectFaces(
   const inputName = yoloSession.inputNames[0]
   const results = await yoloSession.run({ [inputName]: inputTensor })
 
+  // Dispose input tensor to free memory
+  disposeTensor(inputTensor)
+
   // Get output - YOLOv8 uses 'output0' as output name
   const outputName = Object.keys(results)[0]
   const output = results[outputName].data as Float32Array
 
+  // Copy output data before disposing
+  const outputCopy = new Float32Array(output)
+
+  // Dispose output tensor to free memory
+  disposeTensor(results[outputName])
+
   // Parse boxes
-  return parseYoloOutput(output, width, height, scale, padX, padY)
+  return parseYoloOutput(outputCopy, width, height, scale, padX, padY)
 }
 
 /**
@@ -505,9 +522,18 @@ async function enhanceFace(faceData: Float32Array): Promise<Float32Array> {
   const inputName = gfpganSession.inputNames[0]
   const results = await gfpganSession.run({ [inputName]: inputTensor })
 
+  // Dispose input tensor to free memory
+  disposeTensor(inputTensor)
+
   // Get output
   const outputName = Object.keys(results)[0]
-  const output = results[outputName].data as Float32Array
+  const outputData = results[outputName].data as Float32Array
+
+  // Copy output data before disposing
+  const output = new Float32Array(outputData)
+
+  // Dispose output tensor to free memory
+  disposeTensor(results[outputName])
 
   return output
 }

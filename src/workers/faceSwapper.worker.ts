@@ -93,6 +93,14 @@ let segmenter: any = null
 // EMAP matrix for embedding transformation (extracted from inswapper model)
 let emapMatrix: Float32Array | null = null
 
+/**
+ * Safely dispose an ONNX tensor to free memory
+ * The dispose method exists at runtime but isn't in TypeScript types
+ */
+function disposeTensor(tensor: ort.Tensor): void {
+  (tensor as unknown as { dispose?: () => void }).dispose?.()
+}
+
 // Standard ArcFace destination landmarks for 112x112 aligned face
 // These are the target positions for the 5 facial landmarks
 const ARCFACE_DST_112 = [
@@ -424,6 +432,9 @@ async function detectFacesWithLandmarks(
   const inputName = det10gSession.inputNames[0]
   const results = await det10gSession.run({ [inputName]: inputTensor })
 
+  // Dispose input tensor to free memory
+  disposeTensor(inputTensor)
+
   // SCRFD outputs 9 tensors grouped by stride level
   const outputNames = Object.keys(results)
 
@@ -546,6 +557,11 @@ async function detectFacesWithLandmarks(
         landmarks
       })
     }
+  }
+
+  // Dispose output tensors to free memory
+  for (const name of outputNames) {
+    disposeTensor(results[name])
   }
 
   // Apply NMS with index tracking (preserves landmark association)
@@ -800,14 +816,23 @@ async function extractEmbedding(
   const inputName = arcfaceSession.inputNames[0]
   const results = await arcfaceSession.run({ [inputName]: inputTensor })
 
+  // Dispose input tensor to free memory
+  disposeTensor(inputTensor)
+
   const outputName = Object.keys(results)[0]
   const embedding = results[outputName].data as Float32Array
 
+  // Copy embedding data before disposing output tensor
+  const embeddingCopy = new Float32Array(embedding)
+
+  // Dispose output tensor to free memory
+  disposeTensor(results[outputName])
+
   // Normalize embedding to unit length
-  const norm = Math.sqrt(embedding.reduce((sum, v) => sum + v * v, 0))
-  const normalized = new Float32Array(embedding.length)
-  for (let i = 0; i < embedding.length; i++) {
-    normalized[i] = embedding[i] / norm
+  const norm = Math.sqrt(embeddingCopy.reduce((sum, v) => sum + v * v, 0))
+  const normalized = new Float32Array(embeddingCopy.length)
+  for (let i = 0; i < embeddingCopy.length; i++) {
+    normalized[i] = embeddingCopy[i] / norm
   }
 
   return normalized
@@ -860,8 +885,19 @@ async function swapFace(
   }
 
   const results = await inswapperSession.run(inputs)
+
+  // Dispose input tensors to free memory
+  disposeTensor(targetTensor)
+  disposeTensor(embeddingTensor)
+
   const outputName = Object.keys(results)[0]
-  const swapped = results[outputName].data as Float32Array
+  const swappedData = results[outputName].data as Float32Array
+
+  // Copy swapped data before disposing output tensor
+  const swapped = new Float32Array(swappedData)
+
+  // Dispose output tensor to free memory
+  disposeTensor(results[outputName])
 
   return { swapped, matrix }
 }
@@ -1385,8 +1421,18 @@ async function enhanceFaceRegion(
   const inputTensor = new ort.Tensor('float32', faceData, [1, 3, GFPGAN_INPUT_SIZE, GFPGAN_INPUT_SIZE])
   const inputName = gfpganSession.inputNames[0]
   const results = await gfpganSession.run({ [inputName]: inputTensor })
+
+  // Dispose input tensor to free memory
+  disposeTensor(inputTensor)
+
   const outputName = Object.keys(results)[0]
-  const enhanced = results[outputName].data as Float32Array
+  const enhancedData = results[outputName].data as Float32Array
+
+  // Copy enhanced data before disposing output tensor
+  const enhanced = new Float32Array(enhancedData)
+
+  // Dispose output tensor to free memory
+  disposeTensor(results[outputName])
 
   // Paste back with semantic mask and edge feathering
   const result = new Float32Array(imageData)

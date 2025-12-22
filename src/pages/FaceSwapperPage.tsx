@@ -1168,6 +1168,7 @@ export function FaceSwapperPage() {
                     </div>
                     <div className="bg-muted rounded-lg overflow-hidden flex items-center justify-center p-2 min-h-[180px]">
                       <canvas
+                        key={`target-${selectedTargetFaceIndex}`}
                         ref={(canvas) => {
                           if (!canvas || !targetImage || selectedTargetFaceIndex === null) return
                           const face = targetFaces[selectedTargetFaceIndex]
@@ -1211,6 +1212,7 @@ export function FaceSwapperPage() {
                     <div className="bg-muted rounded-lg overflow-hidden flex items-center justify-center p-2 min-h-[180px]">
                       {resultImage && selectedTargetFaceIndex !== null && swappedFaces.has(selectedTargetFaceIndex) ? (
                         <canvas
+                          key={`swapped-${selectedTargetFaceIndex}`}
                           ref={(canvas) => {
                             if (!canvas || !resultImage || selectedTargetFaceIndex === null) return
                             const face = targetFaces[selectedTargetFaceIndex]
@@ -1238,7 +1240,7 @@ export function FaceSwapperPage() {
                           className="mx-auto rounded"
                         />
                       ) : (
-                        <div className="text-xs text-muted-foreground text-center px-2">
+                        <div key="placeholder" className="text-xs text-muted-foreground text-center px-2">
                           {t('freeTools.faceSwapper.swappedFacePlaceholder')}
                         </div>
                       )}

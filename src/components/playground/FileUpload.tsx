@@ -190,16 +190,59 @@ export function FileUpload({
     }
   }, [disabled, maxFiles, urls, multiple, onChange, onUploadingChange])
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: accept.split(',').reduce((acc, type) => {
+  // Parse accept string into react-dropzone format
+  // Maps MIME types to extensions for better browser compatibility
+  const dropzoneAccept = useMemo(() => {
+    const result: Record<string, string[]> = {}
+    const extensions: string[] = []
+
+    // MIME type to extension mappings for common types
+    const mimeToExt: Record<string, string[]> = {
+      'application/zip': ['.zip'],
+      'application/x-zip-compressed': ['.zip'],
+      'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg'],
+      'video/*': ['.mp4', '.webm', '.mov', '.avi', '.mkv'],
+      'audio/*': ['.mp3', '.wav', '.ogg', '.m4a', '.webm', '.flac'],
+    }
+
+    for (const type of accept.split(',')) {
       const trimmed = type.trim()
       if (trimmed.startsWith('.')) {
-        return acc
+        // Collect file extensions
+        extensions.push(trimmed)
+      } else {
+        // MIME type - add with known extensions or empty array
+        result[trimmed] = mimeToExt[trimmed] || []
+        // For zip MIME types, also add the alternative MIME type for Windows compatibility
+        if (trimmed === 'application/zip') {
+          result['application/x-zip-compressed'] = ['.zip']
+        } else if (trimmed === 'application/x-zip-compressed') {
+          result['application/zip'] = ['.zip']
+        }
       }
-      acc[trimmed] = []
-      return acc
-    }, {} as Record<string, string[]>),
+    }
+
+    // If we have standalone extensions, add them under a wildcard or specific MIME
+    if (extensions.length > 0) {
+      // Add extensions to existing MIME types or create a catch-all
+      const hasZip = extensions.includes('.zip')
+      if (hasZip) {
+        result['application/zip'] = ['.zip']
+        result['application/x-zip-compressed'] = ['.zip']
+      }
+      // For other extensions, add to application/octet-stream as fallback
+      const otherExts = extensions.filter(e => e !== '.zip')
+      if (otherExts.length > 0) {
+        result['application/octet-stream'] = otherExts
+      }
+    }
+
+    return result
+  }, [accept])
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: dropzoneAccept,
     multiple: multiple && urls.length < maxFiles,
     disabled: disabled || isUploading || (!multiple && urls.length >= 1),
     maxFiles: maxFiles - urls.length

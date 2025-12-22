@@ -1,6 +1,6 @@
 {
   "name": "wavespeed-desktop",
-  "version": "1.0.31",
+  "version": "1.0.32",
   "description": "WaveSpeedAI Desktop Application - A playground for AI models",
   "main": "./out/main/index.js",
   "author": {
@@ -180,6 +180,9 @@
       ],
       "category": "Development",
       "maintainer": "WaveSpeed <support@wavespeed.ai>"
+    },
+    "deb": {
+      "afterInstall": "build/linux/after-install.sh"
     },
     "publish": {
       "provider": "github",

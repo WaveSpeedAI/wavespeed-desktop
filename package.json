@@ -179,7 +179,11 @@
         }
       ],
       "category": "Development",
-      "maintainer": "WaveSpeed <support@wavespeed.ai>"
+      "maintainer": "WaveSpeed <support@wavespeed.ai>",
+      "executableArgs": ["--no-sandbox"]
+    },
+    "deb": {
+      "afterInstall": "build/linux/after-install.sh"
     },
     "publish": {
       "provider": "github",

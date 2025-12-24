@@ -1798,7 +1798,13 @@ function registerCrossOriginIsolationHeadersForDev(): void {
 
 function registerExternalCorsBypass(): void {
   const allowlist = [
-    'https://staticimgly.com/'
+    'https://staticimgly.com/',
+    // WaveSpeed CDN domains for uploaded images/videos
+    'https://api.wavespeed.ai/',
+    'https://wavespeed-ai-api.s3.us-west-1.amazonaws.com/',
+    'https://d2y7nh0s0qcbcd.cloudfront.net/',
+    'https://wsai-data.s3.us-west-2.amazonaws.com/',
+    'https://d1vt3wv42npcj8.cloudfront.net/'
   ]
 
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
@@ -1812,6 +1818,8 @@ function registerExternalCorsBypass(): void {
     headers['Access-Control-Allow-Origin'] = ['*']
     headers['Access-Control-Allow-Methods'] = ['GET,HEAD,OPTIONS']
     headers['Access-Control-Allow-Headers'] = ['*']
+    // Add Cross-Origin-Resource-Policy header to allow loading in COEP context
+    headers['Cross-Origin-Resource-Policy'] = ['cross-origin']
     callback({ responseHeaders: headers })
   })
 }

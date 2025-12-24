@@ -137,6 +137,8 @@ class WaveSpeedClient {
     this.client = axios.create({
       baseURL: BASE_URL,
       timeout: 60000, // 60 second timeout for connection and read
+      maxBodyLength: Infinity, // Allow large file uploads
+      maxContentLength: Infinity, // Allow large response content
       headers: {
         'Content-Type': 'application/json',
         'X-Client-Name': 'wavespeed-desktop',
@@ -317,11 +319,18 @@ class WaveSpeedClient {
       const formData = new FormData()
       formData.append('file', file)
 
+      // Dynamic timeout based on file size
+      // Minimum 120 seconds, add 1 second per MB, maximum 10 minutes
+      const minTimeout = 120000
+      const maxTimeout = 600000
+      const fileSizeMb = file.size / (1024 * 1024)
+      const timeout = Math.min(maxTimeout, Math.max(minTimeout, Math.ceil(fileSizeMb) * 1000 + minTimeout))
+
       const response = await this.client.post<UploadResponse>('/api/v3/media/upload/binary', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         },
-        timeout: 120000, // 120 seconds for file uploads
+        timeout,
         signal
       })
 

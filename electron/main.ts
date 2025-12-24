@@ -1,5 +1,5 @@
-import { app, BrowserWindow, shell, ipcMain, dialog, Menu, clipboard, protocol, net, session } from 'electron'
-import { join, dirname, resolve } from 'path'
+import { app, BrowserWindow, shell, ipcMain, dialog, Menu, clipboard, protocol, net } from 'electron'
+import { join, dirname } from 'path'
 import { existsSync, readFileSync, writeFileSync, mkdirSync, createWriteStream, unlinkSync, statSync, readdirSync, copyFileSync } from 'fs'
 import { readdir, stat } from 'fs/promises'
 import AdmZip from 'adm-zip'
@@ -240,7 +240,7 @@ function createWindow(): void {
     const indexPath = join(__dirname, '../renderer/index.html')
     console.log('Loading renderer from:', indexPath)
     console.log('File exists:', existsSync(indexPath))
-    mainWindow.loadURL('app://index.html')
+    mainWindow.loadFile(indexPath)
   }
 
   // Open DevTools with keyboard shortcut (Cmd+Opt+I on Mac, Ctrl+Shift+I on Windows/Linux)
@@ -1712,16 +1712,6 @@ ipcMain.handle('sd-save-model-from-cache', async (_, fileName: string, data: Uin
 // Register custom protocol for local asset files (must be before app.whenReady)
 protocol.registerSchemesAsPrivileged([
   {
-    scheme: 'app',
-    privileges: {
-      standard: true,
-      secure: true,
-      supportFetchAPI: true,
-      corsEnabled: true,
-      stream: true
-    }
-  },
-  {
     scheme: 'local-asset',
     privileges: {
       secure: true,
@@ -1732,103 +1722,14 @@ protocol.registerSchemesAsPrivileged([
   }
 ])
 
-const crossOriginIsolationHeaders = {
-  'Cross-Origin-Opener-Policy': 'same-origin',
-  'Cross-Origin-Embedder-Policy': 'require-corp'
-}
-
-const crossOriginResourcePolicyHeaders = {
-  'Cross-Origin-Resource-Policy': 'cross-origin'
-}
-
-function mergeResponseHeaders(response: Response, extraHeaders: Record<string, string>): Response {
-  const headers = new Headers(response.headers)
-  for (const [key, value] of Object.entries(extraHeaders)) {
-    headers.set(key, value)
-  }
-  return new Response(response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers
-  })
-}
-
-function registerAppProtocol(): void {
-  const rendererRoot = resolve(__dirname, '../renderer')
-
-  protocol.handle('app', async (request) => {
-    const url = new URL(request.url)
-    const requestPath = decodeURIComponent(url.pathname)
-    const normalizedPath = requestPath === '/' || requestPath === '' ? '/index.html' : requestPath
-    const resolvedPath = resolve(rendererRoot, `.${normalizedPath}`)
-
-    if (!resolvedPath.startsWith(rendererRoot)) {
-      return new Response('Not found', { status: 404 })
-    }
-
-    const response = await net.fetch(pathToFileURL(resolvedPath).href)
-    return mergeResponseHeaders(response, crossOriginIsolationHeaders)
-  })
-}
-
-function registerCrossOriginIsolationHeadersForDev(): void {
-  if (!is.dev || !process.env['ELECTRON_RENDERER_URL']) {
-    return
-  }
-
-  let rendererOrigin: string | null = null
-  try {
-    rendererOrigin = new URL(process.env['ELECTRON_RENDERER_URL']).origin
-  } catch (error) {
-    console.warn('Failed to parse ELECTRON_RENDERER_URL:', error)
-  }
-
-  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
-    if (rendererOrigin && details.url.startsWith(rendererOrigin)) {
-      const headers = { ...(details.responseHeaders ?? {}) }
-      headers['Cross-Origin-Opener-Policy'] = ['same-origin']
-      headers['Cross-Origin-Embedder-Policy'] = ['require-corp']
-      callback({ responseHeaders: headers })
-      return
-    }
-
-    callback({ responseHeaders: details.responseHeaders })
-  })
-}
-
-function registerExternalCorsBypass(): void {
-  const allowlist = [
-    'https://staticimgly.com/'
-  ]
-
-  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
-    const shouldAllow = allowlist.some((origin) => details.url.startsWith(origin))
-    if (!shouldAllow) {
-      callback({ responseHeaders: details.responseHeaders })
-      return
-    }
-
-    const headers = { ...(details.responseHeaders ?? {}) }
-    headers['Access-Control-Allow-Origin'] = ['*']
-    headers['Access-Control-Allow-Methods'] = ['GET,HEAD,OPTIONS']
-    headers['Access-Control-Allow-Headers'] = ['*']
-    callback({ responseHeaders: headers })
-  })
-}
-
 // App lifecycle
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.wavespeed.desktop')
 
-  registerAppProtocol()
-  registerCrossOriginIsolationHeadersForDev()
-  registerExternalCorsBypass()
-
   // Handle local-asset:// protocol for loading local files (videos, images, etc.)
-  protocol.handle('local-asset', async (request) => {
+  protocol.handle('local-asset', (request) => {
     const filePath = decodeURIComponent(request.url.replace('local-asset://', ''))
-    const response = await net.fetch(pathToFileURL(filePath).href)
-    return mergeResponseHeaders(response, crossOriginResourcePolicyHeaders)
+    return net.fetch(pathToFileURL(filePath).href)
   })
 
   app.on('browser-window-created', (_, window) => {

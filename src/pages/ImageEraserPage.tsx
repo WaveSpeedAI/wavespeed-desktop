@@ -1107,7 +1107,7 @@ export function ImageEraserPage() {
                 {/* Mask canvas (drawing layer) - buffer at original res, displayed at canvasSize */}
                 <canvas
                   ref={maskCanvasRef}
-                  className={cn('absolute inset-0 cursor-none', isProcessing && 'pointer-events-none')}
+                  className={cn('absolute inset-0', isProcessing && 'pointer-events-none')}
                   style={{
                     width: canvasSize.width,
                     height: canvasSize.height,

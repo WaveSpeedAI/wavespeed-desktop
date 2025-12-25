@@ -180,7 +180,9 @@
       ],
       "category": "Development",
       "maintainer": "WaveSpeed <support@wavespeed.ai>",
-      "executableArgs": ["--no-sandbox"]
+      "executableArgs": [
+        "--no-sandbox"
+      ]
     },
     "deb": {
       "afterInstall": "build/linux/after-install.sh"

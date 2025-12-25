@@ -374,6 +374,7 @@ export function MaskEditor({
                 width={canvasSize.width}
                 height={canvasSize.height}
                 className="absolute inset-0 rounded-lg"
+                style={{ filter: 'brightness(1.12) contrast(1.05)' }}
               />
 
               {/* Mask canvas (drawing layer) */}
@@ -381,10 +382,7 @@ export function MaskEditor({
                 ref={maskCanvasRef}
                 width={canvasSize.width}
                 height={canvasSize.height}
-                className={cn(
-                  "absolute inset-0 rounded-lg",
-                  tool === 'fill' ? "cursor-cell" : "cursor-none"
-                )}
+                className="absolute inset-0 rounded-lg"
                 style={{ opacity: 0.7 }}
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}

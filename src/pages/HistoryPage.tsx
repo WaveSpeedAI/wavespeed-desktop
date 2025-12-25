@@ -42,6 +42,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AudioPlayer } from '@/components/shared/AudioPlayer'
+import { useInView } from '@/hooks/useInView'
 
 // Video preview component - shows first frame, plays on hover
 function VideoPreview({ src, enabled }: { src: string; enabled: boolean }) {
@@ -106,12 +107,11 @@ export function HistoryPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
-  const [total, setTotal] = useState(0)
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [selectedItem, setSelectedItem] = useState<HistoryItem | null>(null)
   const [copiedId, setCopiedId] = useState(false)
   const [loadPreviews, setLoadPreviews] = useState(true)
-  const pageSize = 20
+  const pageSize = 50
 
   const handleCopyId = async (id: string) => {
     await navigator.clipboard.writeText(id)
@@ -132,7 +132,6 @@ export function HistoryPage() {
 
       const response = await apiClient.getHistory(page, pageSize, filters)
       setItems(response.items || [])
-      setTotal(response.total || 0)
     } catch (err) {
       console.error('History fetch error:', err)
       setError(err instanceof Error ? err.message : 'Failed to fetch history')
@@ -150,7 +149,16 @@ export function HistoryPage() {
     fetchHistory()
   }, [fetchHistory])
 
-  const totalPages = Math.ceil(total / pageSize)
+  const maxSelectablePages = 100
+  const pageOptions = Array.from({ length: maxSelectablePages }, (_, index) => index + 1)
+  const displayStart = items.length === 0 ? 0 : (page - 1) * pageSize + 1
+  const displayEnd = items.length === 0 ? 0 : (page - 1) * pageSize + items.length
+
+  useEffect(() => {
+    if (page > maxSelectablePages) {
+      setPage(maxSelectablePages)
+    }
+  }, [page, maxSelectablePages])
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -196,6 +204,82 @@ export function HistoryPage() {
       case 'text': return FileText
       default: return File
     }
+  }
+
+  const HistoryCard = ({ item }: { item: HistoryItem }) => {
+    const { ref, isInView } = useInView<HTMLDivElement>()
+    const PreviewIcon = getPreviewIcon(item)
+    const hasPreview = item.outputs && item.outputs.length > 0
+    const firstOutput = item.outputs?.[0]
+    const shouldLoad = loadPreviews && isInView
+
+    return (
+      <Card
+        key={item.id}
+        className="overflow-hidden cursor-pointer border hover:shadow-md transition-shadow"
+        onClick={() => setSelectedItem(item)}
+      >
+        {/* Preview */}
+        <div ref={ref} className="aspect-square bg-muted relative">
+          {shouldLoad && hasPreview && typeof firstOutput === 'string' && firstOutput.match(/\.(jpg|jpeg|png|gif|webp)/i) ? (
+            <img
+              src={firstOutput}
+              alt="Preview"
+              className="w-full h-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
+          ) : shouldLoad && hasPreview && typeof firstOutput === 'string' && firstOutput.match(/\.(mp4|webm|mov)/i) ? (
+            <VideoPreview src={firstOutput} enabled={shouldLoad} />
+          ) : shouldLoad && hasPreview && typeof firstOutput === 'string' && firstOutput.match(/\.(mp3|wav|ogg|flac|aac|m4a|wma)/i) ? (
+            <div
+              className="w-full h-full flex items-center justify-center p-3"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <AudioPlayer src={firstOutput} compact />
+            </div>
+          ) : shouldLoad && hasPreview && typeof firstOutput === 'object' ? (
+            <div className="w-full h-full flex flex-col items-center justify-center p-3 gap-1">
+              <FileJson className="h-6 w-6 text-muted-foreground shrink-0" />
+              <pre className="text-[10px] text-muted-foreground overflow-hidden text-ellipsis w-full text-center line-clamp-3">
+                {JSON.stringify(firstOutput, null, 0).slice(0, 100)}
+              </pre>
+            </div>
+          ) : shouldLoad && hasPreview && typeof firstOutput === 'string' && !firstOutput.startsWith('http') ? (
+            <div className="w-full h-full flex flex-col items-center justify-center p-3 gap-1">
+              <FileText className="h-6 w-6 text-muted-foreground shrink-0" />
+              <p className="text-[10px] text-muted-foreground overflow-hidden text-ellipsis w-full text-center line-clamp-3">
+                {firstOutput.slice(0, 150)}
+              </p>
+            </div>
+          ) : shouldLoad && hasPreview && typeof firstOutput === 'string' && firstOutput.startsWith('http') ? (
+            <div className="w-full h-full flex flex-col items-center justify-center p-3 gap-1">
+              <Link className="h-6 w-6 text-muted-foreground shrink-0" />
+              <p className="text-[10px] text-muted-foreground overflow-hidden text-ellipsis w-full text-center line-clamp-2 break-all">
+                {firstOutput}
+              </p>
+            </div>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <PreviewIcon className="h-10 w-10 text-muted-foreground" />
+            </div>
+          )}
+          <div className="absolute top-1.5 right-1.5">
+            {getStatusBadge(item.status)}
+          </div>
+        </div>
+
+        <CardContent className="p-2">
+          <p className="text-sm font-medium truncate">{item.model}</p>
+          <p className="text-xs text-muted-foreground truncate">{formatDate(item.created_at)}</p>
+          {item.execution_time && (
+            <p className="text-xs text-muted-foreground">
+              {(item.execution_time / 1000).toFixed(2)}s
+            </p>
+          )}
+        </CardContent>
+      </Card>
+    )
   }
 
   // Show loading state while API key is being loaded from storage
@@ -265,7 +349,7 @@ export function HistoryPage() {
 
       {/* Content */}
       <ScrollArea className="flex-1 relative z-10">
-        <div className="px-6 py-5">
+        <div className="p-4">
           {isLoading && items.length === 0 ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -295,90 +379,22 @@ export function HistoryPage() {
               <p className="text-muted-foreground text-sm">{t('history.noHistory')}</p>
             </div>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {items.map((item) => {
-                const PreviewIcon = getPreviewIcon(item)
-                const hasPreview = item.outputs && item.outputs.length > 0
-
-                return (
-                  <Card
-                    key={item.id}
-                    className="overflow-hidden cursor-pointer card-elevated border-transparent hover:border-primary/20"
-                    onClick={() => setSelectedItem(item)}
-                  >
-                    {/* Preview */}
-                    <div className="aspect-video bg-muted relative">
-                      {loadPreviews && hasPreview && typeof item.outputs![0] === 'string' && item.outputs![0].match(/\.(jpg|jpeg|png|gif|webp)/i) ? (
-                        <img
-                          src={item.outputs![0]}
-                          alt="Preview"
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                      ) : loadPreviews && hasPreview && typeof item.outputs![0] === 'string' && item.outputs![0].match(/\.(mp4|webm|mov)/i) ? (
-                        <VideoPreview src={item.outputs![0]} enabled={loadPreviews} />
-                      ) : loadPreviews && hasPreview && typeof item.outputs![0] === 'string' && item.outputs![0].match(/\.(mp3|wav|ogg|flac|aac|m4a|wma)/i) ? (
-                        <div
-                          className="w-full h-full flex items-center justify-center p-3"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <AudioPlayer src={item.outputs![0]} compact />
-                        </div>
-                      ) : hasPreview && typeof item.outputs![0] === 'object' ? (
-                        <div className="w-full h-full flex flex-col items-center justify-center p-3 gap-1">
-                          <FileJson className="h-6 w-6 text-muted-foreground shrink-0" />
-                          <pre className="text-[10px] text-muted-foreground overflow-hidden text-ellipsis w-full text-center line-clamp-3">
-                            {JSON.stringify(item.outputs![0], null, 0).slice(0, 100)}
-                          </pre>
-                        </div>
-                      ) : hasPreview && typeof item.outputs![0] === 'string' && !item.outputs![0].startsWith('http') ? (
-                        <div className="w-full h-full flex flex-col items-center justify-center p-3 gap-1">
-                          <FileText className="h-6 w-6 text-muted-foreground shrink-0" />
-                          <p className="text-[10px] text-muted-foreground overflow-hidden text-ellipsis w-full text-center line-clamp-3">
-                            {item.outputs![0].slice(0, 150)}
-                          </p>
-                        </div>
-                      ) : hasPreview && typeof item.outputs![0] === 'string' && item.outputs![0].startsWith('http') ? (
-                        <div className="w-full h-full flex flex-col items-center justify-center p-3 gap-1">
-                          <Link className="h-6 w-6 text-muted-foreground shrink-0" />
-                          <p className="text-[10px] text-muted-foreground overflow-hidden text-ellipsis w-full text-center line-clamp-2 break-all">
-                            {item.outputs![0]}
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <PreviewIcon className="h-10 w-10 text-muted-foreground" />
-                        </div>
-                      )}
-                      <div className="absolute top-1.5 right-1.5">
-                        {getStatusBadge(item.status)}
-                      </div>
-                    </div>
-
-                    <CardContent className="p-2.5">
-                      <p className="font-medium text-xs truncate">{item.model}</p>
-                      <div className="flex items-center justify-between mt-1 text-xs text-muted-foreground">
-                        <span>{formatDate(item.created_at)}</span>
-                        {item.execution_time && (
-                          <span>{(item.execution_time / 1000).toFixed(2)}s</span>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )
-              })}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {items.map((item) => (
+                <HistoryCard key={item.id} item={item} />
+              ))}
             </div>
           )}
         </div>
       </ScrollArea>
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {maxSelectablePages > 1 && (
         <div className="border-t p-4 flex items-center justify-between relative z-10">
           <p className="text-sm text-muted-foreground">
-            {(page - 1) * pageSize + 1} - {Math.min(page * pageSize, total)} / {total}
+            {displayStart} - {displayEnd}
           </p>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             <Button
               variant="outline"
               size="sm"
@@ -388,11 +404,27 @@ export function HistoryPage() {
               <ChevronLeft className="h-4 w-4" />
               {t('common.previous')}
             </Button>
+            <Select
+              value={String(page)}
+              onValueChange={(value) => setPage(Number(value))}
+              disabled={isLoading}
+            >
+              <SelectTrigger className="w-20 h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {pageOptions.map((pageNumber) => (
+                  <SelectItem key={pageNumber} value={String(pageNumber)}>
+                    {pageNumber}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setPage(p => p + 1)}
-              disabled={page >= totalPages || isLoading}
+              disabled={page >= maxSelectablePages || isLoading}
             >
               {t('common.next')}
               <ChevronRight className="h-4 w-4" />

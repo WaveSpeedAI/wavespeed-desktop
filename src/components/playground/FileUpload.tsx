@@ -45,6 +45,7 @@ export function FileUpload({
   const [captureMode, setCaptureMode] = useState<CaptureMode>('upload')
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [previewType, setPreviewType] = useState<'image' | 'video' | 'audio' | null>(null)
+  const [draggingIndex, setDraggingIndex] = useState<number | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
 
   // Convert value to array for consistent handling
@@ -273,6 +274,14 @@ export function FileUpload({
     }
   }, [])
 
+  const moveUrl = useCallback((fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return
+    const nextUrls = [...urls]
+    const [moved] = nextUrls.splice(fromIndex, 1)
+    nextUrls.splice(toIndex, 0, moved)
+    onChange(multiple ? nextUrls : nextUrls[0] || '')
+  }, [urls, onChange, multiple])
+
   return (
     <div className="space-y-2">
       {/* Uploaded files */}
@@ -294,7 +303,31 @@ export function FileUpload({
             return (
               <div
                 key={index}
-                className="relative group rounded-md border bg-muted/50 overflow-hidden h-16 w-16 flex-shrink-0 cursor-pointer"
+                className={cn(
+                  'relative group rounded-md border bg-muted/50 overflow-hidden h-16 w-16 flex-shrink-0 cursor-pointer',
+                  draggingIndex === index && 'opacity-60'
+                )}
+                draggable={multiple && !disabled}
+                onDragStart={(e) => {
+                  if (!multiple || disabled) return
+                  e.dataTransfer.effectAllowed = 'move'
+                  e.dataTransfer.setData('text/plain', String(index))
+                  setDraggingIndex(index)
+                }}
+                onDragOver={(e) => {
+                  if (!multiple || disabled) return
+                  e.preventDefault()
+                  e.dataTransfer.dropEffect = 'move'
+                  if (draggingIndex === null || draggingIndex === index) return
+                  moveUrl(draggingIndex, index)
+                  setDraggingIndex(index)
+                }}
+                onDrop={(e) => {
+                  if (!multiple || disabled) return
+                  e.preventDefault()
+                  setDraggingIndex(null)
+                }}
+                onDragEnd={() => setDraggingIndex(null)}
                 onClick={handlePreview}
               >
                 {isImage ? (

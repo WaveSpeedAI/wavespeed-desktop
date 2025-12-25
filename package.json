@@ -24,7 +24,10 @@
     "build:mac:fast": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --dir",
     "build:linux": "npm run build && electron-builder --linux",
     "build:all": "npm run build && electron-builder --win --mac --linux",
-    "dist": "npm run build && electron-builder"
+    "dist": "npm run build && electron-builder",
+    "build:web": "vite build",
+    "preview:web": "vite preview --port 8989 --host 0.0.0.0",
+    "dev:web": "vite --port 8989 --host 0.0.0.0"
   },
   "dependencies": {
     "@ffmpeg/ffmpeg": "^0.12.15",

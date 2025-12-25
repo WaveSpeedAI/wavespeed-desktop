@@ -18,5 +18,14 @@ export default defineConfig({
   },
   optimizeDeps: {
     exclude: ['@huggingface/transformers', '@ffmpeg/ffmpeg', '@ffmpeg/util']
-  }
+  },
+  build: {
+    outDir: 'dist-web',
+    assetsDir: 'assets',
+    sourcemap: false,
+    rollupOptions: {
+      input: resolve(__dirname, 'index.html'),
+    },
+  },
+  base: './',
 })

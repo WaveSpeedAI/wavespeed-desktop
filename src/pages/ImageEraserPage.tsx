@@ -1084,7 +1084,7 @@ export function ImageEraserPage() {
                 style={{ minHeight: Math.max(400, canvasSize.height * zoom + 16) }}
               >
                 <div
-                  className="relative"
+                  className="relative cursor-none"
                   style={{
                     width: canvasSize.width,
                     height: canvasSize.height,
@@ -1095,7 +1095,7 @@ export function ImageEraserPage() {
                 {/* Background image canvas - buffer at original res, displayed at canvasSize */}
                 <canvas
                   ref={imageCanvasRef}
-                  className="absolute inset-0 cursor-pointer"
+                  className="absolute inset-0 cursor-none"
                   style={{
                     width: canvasSize.width,
                     height: canvasSize.height,
@@ -1107,7 +1107,7 @@ export function ImageEraserPage() {
                 {/* Mask canvas (drawing layer) - buffer at original res, displayed at canvasSize */}
                 <canvas
                   ref={maskCanvasRef}
-                  className={cn('absolute inset-0', isProcessing && 'pointer-events-none')}
+                  className={cn('absolute inset-0 cursor-none', isProcessing && 'pointer-events-none')}
                   style={{
                     width: canvasSize.width,
                     height: canvasSize.height,

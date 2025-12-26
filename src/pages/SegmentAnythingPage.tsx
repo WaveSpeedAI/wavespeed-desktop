@@ -668,7 +668,7 @@ export function SegmentAnythingPage() {
                 ref={imageContainerRef}
                 className={cn(
                   'relative mx-auto bg-muted rounded-lg overflow-hidden',
-                  'cursor-default'
+                  'cursor-none'
                 )}
                 style={{
                   width: canvasSize.width,

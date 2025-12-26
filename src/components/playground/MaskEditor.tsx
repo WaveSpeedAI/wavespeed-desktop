@@ -365,7 +365,7 @@ export function MaskEditor({
           ) : (
             <div
               ref={containerRef}
-              className="relative mx-auto"
+              className="relative mx-auto cursor-none"
               style={{ width: canvasSize.width, height: canvasSize.height }}
             >
               {/* Background canvas (reference image) */}

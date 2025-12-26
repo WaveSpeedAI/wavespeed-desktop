@@ -33,6 +33,7 @@
     "downloadFailed": "下载失败。请检查您的网络连接。"
   },
   "nav": {
+    "home": "首页",
     "models": "模型",
     "playground": "演练场",
     "history": "历史记录",
@@ -41,6 +42,28 @@
     "freeTools": "免费工具",
     "settings": "设置",
     "collapse": "收起"
+  },
+  "welcome": {
+    "subtitle": "触手可及的 AI 创意工具",
+    "footer": "由 WaveSpeed AI 驱动",
+    "quickLinks": {
+      "settings": {
+        "title": "设置",
+        "description": "配置 API 密钥、语言和下载"
+      },
+      "freeTools": {
+        "title": "免费工具",
+        "description": "本地运行的 AI 工具 - 无需密钥"
+      },
+      "game": {
+        "title": "小游戏",
+        "description": "玩 Flappy Bird 消磨时间"
+      },
+      "website": {
+        "title": "访问官网",
+        "description": "在网页端体验 WaveSpeed AI"
+      }
+    }
   },
   "models": {
     "title": "模型",
@@ -161,6 +184,43 @@
       "failedError": "优化提示词失败",
       "optimizing": "优化中...",
       "optimize": "优化"
+    },
+    "flappyBird": {
+      "clickToStart": "点击或按空格键开始游戏",
+      "viewResults": "查看结果",
+      "playWhileWaiting": "边等边玩",
+      "quit": "退出"
+    },
+    "batch": {
+      "title": "批量",
+      "enable": "启用批量模式",
+      "disable": "禁用批量模式",
+      "repeatCount": "数量",
+      "randomizeSeed": "随机种子",
+      "stopOnError": "出错时停止",
+      "runBatch": "运行批量 ({{count}})",
+      "running": "运行中 {{current}}/{{total}}...",
+      "cancelling": "取消中...",
+      "cancel": "取消",
+      "completed": "{{count}} 已完成",
+      "failed": "{{count}} 失败",
+      "downloadAll": "全部下载",
+      "saveAllToAssets": "全部保存",
+      "savedAll": "已保存到资产",
+      "savedAllDesc": "已保存 {{count}} 个输出",
+      "saved": "已保存",
+      "downloadSuccess": "已下载 {{filename}}",
+      "downloadFailed": "下载失败: {{error}}",
+      "downloadAllSuccess": "已下载 {{count}} 个文件",
+      "clearResults": "清除",
+      "results": "结果",
+      "result": "结果",
+      "inputDetails": "输入详情",
+      "preview": "预览",
+      "items": "项",
+      "noPreview": "无可用预览",
+      "seedsGenerated": "种子已自动生成",
+      "settings": "批量设置"
     }
   },
   "history": {

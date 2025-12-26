@@ -9,6 +9,8 @@ import { usePredictionInputsStore } from '@mobile/stores/predictionInputsStore'
 import { apiClient } from '@/api/client'
 import { DynamicForm } from '@/components/playground/DynamicForm'
 import { OutputDisplay } from '@/components/playground/OutputDisplay'
+import { BatchControls } from '@/components/playground/BatchControls'
+import { BatchOutputGrid } from '@/components/playground/BatchOutputGrid'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -20,7 +22,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Play, RotateCcw, Loader2, Save, Globe, Settings2, Image, Gamepad2 } from 'lucide-react'
+import { RotateCcw, Loader2, Save, Globe, Settings2, Image, Gamepad2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/useToast'
 import { GameDialog } from '@mobile/components/games/GameDialog'
@@ -45,6 +47,8 @@ export function MobilePlaygroundPage() {
     setFormFields,
     resetForm,
     runPrediction,
+    runBatch,
+    clearBatchResults,
   } = usePlaygroundStore()
   const { templates, loadTemplates, saveTemplate, isLoaded: templatesLoaded } = useTemplateStore()
   const { save: savePredictionInputs, load: loadPredictionInputs, isLoaded: inputsLoaded } = usePredictionInputsStore()
@@ -184,7 +188,12 @@ export function MobilePlaygroundPage() {
   }, [setFormValues])
 
   const handleRun = async () => {
-    await runPrediction()
+    // Check if batch mode is enabled
+    if (activeTab?.batchConfig?.enabled && activeTab.batchConfig.repeatCount > 1) {
+      await runBatch()
+    } else {
+      await runPrediction()
+    }
     // Switch to output view after running
     setActiveView('output')
   }
@@ -249,6 +258,41 @@ export function MobilePlaygroundPage() {
       lastSavedPredictionRef.current = prediction.id
     }
   }, [activeTab?.currentPrediction, activeTab?.selectedModel, activeTab?.formValues, activeTab?.outputs, activeTab?.isRunning, savePredictionInputs])
+
+  // Save batch prediction inputs to local storage when batch completes
+  const lastSavedBatchRef = useRef<Set<string>>(new Set())
+  useEffect(() => {
+    const batchResults = activeTab?.batchResults
+    const model = activeTab?.selectedModel
+    const isRunning = activeTab?.isRunning
+
+    if (!batchResults || batchResults.length === 0 || !model || isRunning) return
+
+    // Save inputs for each completed batch result
+    for (const result of batchResults) {
+      if (
+        result.prediction?.id &&
+        !result.error &&
+        result.outputs.length > 0 &&
+        result.input &&
+        Object.keys(result.input).length > 0 &&
+        !lastSavedBatchRef.current.has(result.prediction.id)
+      ) {
+        console.log('[MobilePlaygroundPage] Saving batch prediction inputs:', {
+          predictionId: result.prediction.id,
+          modelId: model.model_id,
+          inputKeys: Object.keys(result.input)
+        })
+        savePredictionInputs(
+          result.prediction.id,
+          model.model_id,
+          model.name,
+          result.input
+        )
+        lastSavedBatchRef.current.add(result.prediction.id)
+      }
+    }
+  }, [activeTab?.batchResults, activeTab?.selectedModel, activeTab?.isRunning, savePredictionInputs])
 
   if (isLoadingApiKey) {
     return (
@@ -324,34 +368,22 @@ export function MobilePlaygroundPage() {
               {/* Action Buttons */}
               <div className="p-4 border-t bg-muted/30 safe-area-bottom">
                 <div className="flex gap-2">
-                  <Button
-                    className="flex-1 mobile-button gradient-bg hover:opacity-90 transition-opacity glow-sm"
-                    onClick={handleRun}
-                    disabled={!activeTab.selectedModel || activeTab.isRunning}
-                  >
-                    {activeTab.isRunning ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {t('playground.running')}
-                      </>
-                    ) : (
-                      <>
-                        <Play className="mr-2 h-4 w-4" />
-                        {t('playground.run')}
-                        {activeTab.selectedModel && (
-                          <span className="ml-2 text-xs opacity-80">
-                            {isPricingLoading ? (
-                              '...'
-                            ) : calculatedPrice != null ? (
-                              `$${calculatedPrice.toFixed(4)}`
-                            ) : activeTab.selectedModel.base_price != null ? (
-                              `$${activeTab.selectedModel.base_price.toFixed(4)}`
-                            ) : null}
-                          </span>
-                        )}
-                      </>
-                    )}
-                  </Button>
+                  <BatchControls
+                    disabled={!activeTab.selectedModel}
+                    isRunning={activeTab.isRunning}
+                    onRun={handleRun}
+                    runLabel={t('playground.run')}
+                    runningLabel={t('playground.running')}
+                    price={
+                      isPricingLoading
+                        ? '...'
+                        : calculatedPrice != null
+                          ? `$${calculatedPrice.toFixed(4)}`
+                          : activeTab.selectedModel?.base_price != null
+                            ? `$${activeTab.selectedModel.base_price.toFixed(4)}`
+                            : undefined
+                    }
+                  />
                   <Button
                     variant="outline"
                     className="touch-target"
@@ -412,15 +444,28 @@ export function MobilePlaygroundPage() {
                     </div>
                   </div>
                 )}
-                <OutputDisplay
-                  prediction={activeTab.currentPrediction}
-                  outputs={activeTab.outputs}
-                  error={activeTab.error}
-                  isLoading={activeTab.isRunning}
-                  modelId={activeTab.selectedModel?.model_id}
-                  modelName={activeTab.selectedModel?.name}
-                  onSaveTemplate={activeTab.selectedModel ? () => setShowSaveTemplateDialog(true) : undefined}
-                />
+                {/* Show BatchOutputGrid for batch results, OutputDisplay for single results */}
+                {activeTab.batchResults && activeTab.batchResults.length > 0 ? (
+                  <BatchOutputGrid
+                    results={activeTab.batchResults}
+                    modelId={activeTab.selectedModel?.model_id}
+                    modelName={activeTab.selectedModel?.name}
+                    onClear={clearBatchResults}
+                    isRunning={activeTab.isRunning}
+                    totalCount={activeTab.batchConfig?.repeatCount}
+                    queue={activeTab.batchState?.queue}
+                  />
+                ) : (
+                  <OutputDisplay
+                    prediction={activeTab.currentPrediction}
+                    outputs={activeTab.outputs}
+                    error={activeTab.error}
+                    isLoading={activeTab.isRunning}
+                    modelId={activeTab.selectedModel?.model_id}
+                    modelName={activeTab.selectedModel?.name}
+                    onSaveTemplate={activeTab.selectedModel ? () => setShowSaveTemplateDialog(true) : undefined}
+                  />
+                )}
               </div>
             </div>
           )}

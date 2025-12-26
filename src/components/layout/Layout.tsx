@@ -7,19 +7,16 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { ToastAction } from '@/components/ui/toast'
 import { toast } from '@/hooks/useToast'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
-import { apiClient } from '@/api/client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { KeyRound, Eye, EyeOff, Loader2, Zap, ExternalLink } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { VideoEnhancerPage } from '@/pages/VideoEnhancerPage'
 import { ImageEnhancerPage } from '@/pages/ImageEnhancerPage'
 import { BackgroundRemoverPage } from '@/pages/BackgroundRemoverPage'
 import { ImageEraserPage } from '@/pages/ImageEraserPage'
 import { SegmentAnythingPage } from '@/pages/SegmentAnythingPage'
+import { WelcomePage } from '@/pages/WelcomePage'
 
 export function Layout() {
-  const { t } = useTranslation()
+  useTranslation() // Keep for i18n context
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
@@ -30,12 +27,7 @@ export function Layout() {
   // Track the last visited free-tools sub-page for navigation
   const [lastFreeToolsPage, setLastFreeToolsPage] = useState<string | null>(null)
 
-  const { apiKey: _apiKey, isLoading: isLoadingApiKey, isValidated, loadApiKey } = useApiKeyStore()
-  void _apiKey // Used for conditional rendering
-  const [inputKey, setInputKey] = useState('')
-  const [showKey, setShowKey] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
-  const [error, setError] = useState('')
+  const { isLoading: isLoadingApiKey, isValidated } = useApiKeyStore()
 
   // Track visits to persistent pages and last visited free-tools page
   useEffect(() => {
@@ -55,7 +47,7 @@ export function Layout() {
   }, [location.pathname, visitedPages])
 
   // Pages that don't require API key
-  const publicPaths = ['/settings', '/templates', '/assets', '/free-tools']
+  const publicPaths = ['/', '/settings', '/templates', '/assets', '/free-tools']
   const isPublicPage = publicPaths.some(path =>
     location.pathname === path || location.pathname.startsWith(path + '/')
   )
@@ -83,39 +75,6 @@ export function Layout() {
     return unsubscribe
   }, [navigate])
 
-  const handleSaveApiKey = async () => {
-    if (!inputKey.trim()) return
-
-    setIsSaving(true)
-    setError('')
-    try {
-      // Validate the key first by trying to fetch models
-      apiClient.setApiKey(inputKey.trim())
-      await apiClient.listModels()
-
-      // If we get here, the key is valid - save it directly
-      if (window.electronAPI) {
-        await window.electronAPI.setApiKey(inputKey.trim())
-      } else {
-        localStorage.setItem('wavespeed_api_key', inputKey.trim())
-      }
-
-      // Reload the API key state
-      await loadApiKey()
-
-      toast({
-        title: t('settings.apiKey.saved'),
-        description: t('settings.apiKey.savedDesc'),
-      })
-    } catch {
-      // Validation failed - clear the temporary key from client
-      apiClient.setApiKey('')
-      setError(t('settings.apiKey.invalidDesc'))
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
   // Show loading state while API key is being loaded
   if (isLoadingApiKey) {
     return (
@@ -128,103 +87,8 @@ export function Layout() {
   // Check if current page requires login (must have a validated API key)
   const requiresLogin = !isValidated && !isPublicPage
 
-  // Login form content for protected pages
-  const loginContent = (
-    <div className="flex h-full items-center justify-center relative overflow-hidden">
-      <div className="relative z-10 w-full max-w-md px-6">
-        {/* Logo and title */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center mb-4">
-            <div className="gradient-bg rounded-xl p-3">
-              <Zap className="h-8 w-8 text-white" />
-            </div>
-          </div>
-          <h1 className="text-3xl font-bold gradient-text mb-2">WaveSpeed</h1>
-          <p className="text-muted-foreground">
-            {t('apiKeyRequired.defaultDesc')}
-          </p>
-        </div>
-
-        {/* API Key form */}
-        <div className="bg-card border rounded-lg p-6 shadow-lg space-y-4">
-          <div className="flex items-center gap-2 mb-4">
-            <KeyRound className="h-5 w-5 text-muted-foreground" />
-            <h2 className="font-semibold">{t('settings.apiKey.title')}</h2>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="apiKey">{t('settings.apiKey.label')}</Label>
-            <div className="relative">
-              <Input
-                id="apiKey"
-                type={showKey ? 'text' : 'password'}
-                value={inputKey}
-                onChange={(e) => {
-                  setInputKey(e.target.value)
-                  setError('')
-                }}
-                onKeyDown={(e) => e.key === 'Enter' && handleSaveApiKey()}
-                placeholder={t('settings.apiKey.placeholder')}
-                className="pr-10"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="absolute right-0 top-0 h-full px-3"
-                onClick={() => setShowKey(!showKey)}
-              >
-                {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </Button>
-            </div>
-            {error && (
-              <p className="text-sm text-destructive">{error}</p>
-            )}
-          </div>
-
-          <Button
-            className="w-full gradient-bg hover:opacity-90"
-            onClick={handleSaveApiKey}
-            disabled={isSaving || !inputKey.trim()}
-          >
-            {isSaving ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {t('settings.apiKey.validating')}
-              </>
-            ) : (
-              t('settings.apiKey.save')
-            )}
-          </Button>
-
-          <p className="text-xs text-muted-foreground text-center">
-            {t('settings.apiKey.getKey')}{' '}
-            <a
-              href="https://wavespeed.ai"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline inline-flex items-center gap-1"
-            >
-              wavespeed.ai
-              <ExternalLink className="h-3 w-3" />
-            </a>
-          </p>
-        </div>
-
-        {/* Settings link */}
-        <p className="text-center mt-4 text-sm text-muted-foreground">
-          {t('apiKeyRequired.orGoTo')}{' '}
-          <Button
-            variant="link"
-            className="p-0 h-auto"
-            onClick={() => navigate('/settings')}
-          >
-            {t('nav.settings')}
-          </Button>
-        </p>
-      </div>
-    </div>
-  )
+  // Welcome page content for users without API key
+  const welcomeContent = <WelcomePage />
 
   return (
     <TooltipProvider>
@@ -287,7 +151,7 @@ export function Layout() {
           lastFreeToolsPage={lastFreeToolsPage}
         />
         <main className="flex-1 overflow-hidden relative">
-          {requiresLogin ? loginContent : (
+          {requiresLogin ? welcomeContent : (
             <>
               {/* Regular routes via Outlet */}
               <div className={location.pathname === '/free-tools/video' || location.pathname === '/free-tools/image' || location.pathname === '/free-tools/background-remover' || location.pathname === '/free-tools/image-eraser' || location.pathname === '/free-tools/segment-anything' ? 'hidden' : 'h-full overflow-auto'}>

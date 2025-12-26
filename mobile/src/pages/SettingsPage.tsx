@@ -20,6 +20,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
@@ -655,8 +656,8 @@ export function SettingsPage() {
               </Badge>
             )}
             {apiKey && !storeIsValidating && isValidated && (
-              <Badge variant="success">
-                <Check className="mr-1 h-3 w-3" /> {t('settings.apiKey.valid')}
+              <Badge variant="success" className="px-2">
+                <Check className="h-4 w-4" />
               </Badge>
             )}
           </div>
@@ -964,6 +965,9 @@ export function SettingsPage() {
                 {formatSize(cacheSize || 0)}
               </span>
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              {t('settings.cache.description')}
+            </DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-auto -mx-6 px-6">
             {cacheItems.length === 0 ? (

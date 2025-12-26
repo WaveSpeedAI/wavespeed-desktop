@@ -33,6 +33,7 @@
     "downloadFailed": "Download failed. Please check your network connection."
   },
   "nav": {
+    "home": "Home",
     "models": "Models",
     "playground": "Playground",
     "history": "History",
@@ -41,6 +42,28 @@
     "freeTools": "Free Tools",
     "settings": "Settings",
     "collapse": "Collapse"
+  },
+  "welcome": {
+    "subtitle": "AI-Powered Creative Tools at Your Fingertips",
+    "footer": "Powered by WaveSpeed AI",
+    "quickLinks": {
+      "settings": {
+        "title": "Settings",
+        "description": "Configure API key, language & downloads"
+      },
+      "freeTools": {
+        "title": "Free Tools",
+        "description": "AI tools that run locally - no API key"
+      },
+      "game": {
+        "title": "Mini Game",
+        "description": "Play Flappy Bird while you wait"
+      },
+      "website": {
+        "title": "Visit Website",
+        "description": "Explore WaveSpeed AI on the web"
+      }
+    }
   },
   "models": {
     "title": "Models",
@@ -161,6 +184,43 @@
       "failedError": "Failed to optimize prompt",
       "optimizing": "Optimizing...",
       "optimize": "Optimize"
+    },
+    "flappyBird": {
+      "clickToStart": "Click or press Space to start a game",
+      "viewResults": "View Results",
+      "playWhileWaiting": "Play while waiting",
+      "quit": "Quit"
+    },
+    "batch": {
+      "title": "Batch",
+      "enable": "Enable batch mode",
+      "disable": "Disable batch mode",
+      "repeatCount": "Count",
+      "randomizeSeed": "Randomize Seed",
+      "stopOnError": "Stop on Error",
+      "runBatch": "Run Batch ({{count}})",
+      "running": "Running {{current}}/{{total}}...",
+      "cancelling": "Cancelling...",
+      "cancel": "Cancel",
+      "completed": "{{count}} completed",
+      "failed": "{{count}} failed",
+      "downloadAll": "Download All",
+      "saveAllToAssets": "Save All",
+      "savedAll": "Saved to Assets",
+      "savedAllDesc": "Saved {{count}} output(s)",
+      "saved": "Saved",
+      "downloadSuccess": "Downloaded {{filename}}",
+      "downloadFailed": "Download failed: {{error}}",
+      "downloadAllSuccess": "Downloaded {{count}} file(s)",
+      "clearResults": "Clear",
+      "results": "Results",
+      "result": "Result",
+      "inputDetails": "Input Details",
+      "preview": "Preview",
+      "items": "items",
+      "noPreview": "No preview available",
+      "seedsGenerated": "Seeds auto-generated",
+      "settings": "Batch Settings"
     }
   },
   "history": {
@@ -407,7 +467,15 @@
       "downloadPartial": "Partial download",
       "downloadPartialDesc": "Some models failed to download. You can try again later.",
       "downloadComplete": "Download complete",
-      "downloadCompleteDesc": "All AI models have been downloaded and cached."
+      "downloadCompleteDesc": "All AI models have been downloaded and cached.",
+      "itemDeleted": "Cache item deleted"
+    },
+    "downloads": {
+      "title": "Downloads",
+      "description": "Configure download settings for AI models",
+      "downloadTimeout": "Download Timeout",
+      "downloadTimeoutDesc": "Maximum time to wait when downloading AI models",
+      "minutes": "minutes"
     },
     "updates": {
       "title": "Updates",

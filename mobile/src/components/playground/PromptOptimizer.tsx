@@ -6,6 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Sparkles, Loader2 } from 'lucide-react'
@@ -145,6 +146,9 @@ export function PromptOptimizer({ currentPrompt, onOptimized, disabled, modelTyp
                 </span>
               )}
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              {t('playground.optimizer.description', 'Use AI to optimize your prompt for better results')}
+            </DialogDescription>
           </DialogHeader>
 
           {!optimizerModel ? (

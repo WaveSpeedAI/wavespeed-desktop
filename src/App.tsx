@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import { Layout } from '@/components/layout/Layout'
 import { ModelsPage } from '@/pages/ModelsPage'
 import { PlaygroundPage } from '@/pages/PlaygroundPage'
@@ -8,6 +8,7 @@ import { HistoryPage } from '@/pages/HistoryPage'
 import { AssetsPage } from '@/pages/AssetsPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { FreeToolsPage } from '@/pages/FreeToolsPage'
+import { WelcomePage } from '@/pages/WelcomePage'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
 import { useModelsStore } from '@/stores/modelsStore'
 import { useThemeStore } from '@/stores/themeStore'
@@ -34,7 +35,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
-        <Route index element={<Navigate to="/models" replace />} />
+        <Route index element={<WelcomePage />} />
         <Route path="models" element={<ModelsPage />} />
         <Route path="playground" element={<PlaygroundPage />} />
         <Route path="playground/:modelId" element={<PlaygroundPage />} />

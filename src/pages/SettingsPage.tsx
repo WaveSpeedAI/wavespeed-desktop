@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
 import { apiClient } from '@/api/client'
@@ -46,6 +47,7 @@ interface UpdateStatus {
 
 export function SettingsPage() {
   const { t, i18n } = useTranslation()
+  const navigate = useNavigate()
   const { apiKey, setApiKey, isValidated, isValidating: storeIsValidating, validateApiKey } = useApiKeyStore()
   const { theme, setTheme } = useThemeStore()
   const { settings: assetsSettings, loadSettings: loadAssetsSettings, setAutoSave, setAssetsDirectory } = useAssetsStore()
@@ -418,6 +420,8 @@ export function SettingsPage() {
       title: t('settings.apiKey.cleared'),
       description: t('settings.apiKey.clearedDesc'),
     })
+    // Navigate to welcome page after clearing API key
+    navigate('/')
   }
 
   const handleChannelChange = useCallback(async (channel: UpdateChannel) => {

@@ -72,7 +72,7 @@
       },
       "zImage": {
         "title": "Z-Image",
-        "description": "本地 AI 图像生成 - 在您的设备上运行，无需 API",
+        "description": "本地 AI 图像生成 - 在您的设备上运行，无需 API Key",
         "badge": "本地"
       },
       "freeTools": {

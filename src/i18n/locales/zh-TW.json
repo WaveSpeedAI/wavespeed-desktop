@@ -72,7 +72,7 @@
       },
       "zImage": {
         "title": "Z-Image",
-        "description": "本機 AI 圖像生成 - 在您的裝置上執行，無需 API",
+        "description": "本地 AI 圖像生成 - 在您的裝置上執行，無需 API Key",
         "badge": "本機"
       },
       "freeTools": {

@@ -72,7 +72,7 @@
       },
       "zImage": {
         "title": "Z-Image",
-        "description": "로컬 AI 이미지 생성 - 기기에서 실행, API 불필요",
+        "description": "로컬 AI 이미지 생성 - 기기에서 실행되며 API 키가 필요 없습니다",
         "badge": "로컬"
       },
       "freeTools": {

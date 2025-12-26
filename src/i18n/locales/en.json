@@ -72,7 +72,7 @@
       },
       "zImage": {
         "title": "Z-Image",
-        "description": "Local AI image generation - runs on your device, no API needed",
+        "description": "Local AI image generation - runs on your device, no API key needed",
         "badge": "Local"
       },
       "freeTools": {

@@ -72,7 +72,7 @@
       },
       "zImage": {
         "title": "Z-Image",
-        "description": "ローカルAI画像生成 - デバイス上で実行、APIは不要",
+        "description": "ローカルAI画像生成 - お使いのデバイスで動作し、APIキーは不要",
         "badge": "ローカル"
       },
       "freeTools": {

@@ -72,7 +72,7 @@
       },
       "zImage": {
         "title": "Z-Image",
-        "description": "Pembuatan gambar AI lokal - berjalan di perangkat Anda, tanpa API",
+        "description": "Pembuatan gambar AI lokal - berjalan pada perangkat Anda, tidak memerlukan kunci API",
         "badge": "Lokal"
       },
       "freeTools": {

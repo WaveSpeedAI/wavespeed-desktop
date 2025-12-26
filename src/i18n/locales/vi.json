@@ -72,7 +72,7 @@
       },
       "zImage": {
         "title": "Z-Image",
-        "description": "Tạo ảnh AI cục bộ - chạy trên thiết bị của bạn, không cần API",
+        "description": "Tạo ảnh AI cục bộ - chạy trên thiết bị của bạn, không cần khóa API",
         "badge": "Cục bộ"
       },
       "freeTools": {

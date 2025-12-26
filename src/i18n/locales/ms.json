@@ -72,7 +72,7 @@
       },
       "zImage": {
         "title": "Z-Image",
-        "description": "Penjanaan imej AI tempatan - berjalan pada peranti anda, tanpa API",
+        "description": "Penjanaan imej AI setempat - berjalan pada peranti anda, tidak memerlukan kunci API",
         "badge": "Tempatan"
       },
       "freeTools": {

@@ -72,7 +72,7 @@
       },
       "zImage": {
         "title": "Z-Image",
-        "description": "Yerel AI g��rüntü oluşturma - cihazınızda çalışır, API gerekmez",
+        "description": "Yerel AI görüntü üretimi - cihazınızda çalışır, API anahtarı gerekmez",
         "badge": "Yerel"
       },
       "freeTools": {

@@ -72,7 +72,7 @@
       },
       "zImage": {
         "title": "Z-Image",
-        "description": "Lokale KI-Bildgenerierung - läuft auf Ihrem Gerät, keine API erforderlich",
+        "description": "Lokale KI-Bildgenerierung – läuft auf Ihrem Gerät, kein API-Schlüssel erforderlich",
         "badge": "Lokal"
       },
       "freeTools": {

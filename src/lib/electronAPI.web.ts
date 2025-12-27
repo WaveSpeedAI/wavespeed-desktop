@@ -1,18 +1,18 @@
-// Web 版本的 electronAPI mock 实现
-// 用于在浏览器环境中提供与 Electron API 兼容的接口
+// Web mock implementation of electronAPI.
+// Provides Electron API-compatible interfaces in browser environments.
 
 import type { ElectronAPI } from '@/types/electron'
 
-// 检查是否在浏览器环境
+// Check whether we are running in a browser environment.
 const isBrowser = typeof window !== 'undefined' && !window.electronAPI
 
-// 使用 localStorage 存储 API key
+// Use localStorage for API key persistence.
 const API_KEY_STORAGE_KEY = 'wavespeed_api_key'
 const SETTINGS_STORAGE_KEY = 'wavespeed_settings'
 const ASSETS_METADATA_STORAGE_KEY = 'wavespeed_assets_metadata'
 const ASSETS_SETTINGS_STORAGE_KEY = 'wavespeed_assets_settings'
 
-// 默认设置
+// Default settings.
 const DEFAULT_SETTINGS = {
   theme: 'system' as const,
   defaultPollInterval: 2000,
@@ -21,9 +21,9 @@ const DEFAULT_SETTINGS = {
   autoCheckUpdate: false,
 }
 
-// Web 版本的 electronAPI 实现
+// Web implementation of electronAPI.
 export const electronAPIWeb: ElectronAPI = {
-  // API Key 管理
+  // API key management
   getApiKey: async (): Promise<string> => {
     return localStorage.getItem(API_KEY_STORAGE_KEY) || ''
   },
@@ -37,7 +37,7 @@ export const electronAPIWeb: ElectronAPI = {
     }
   },
 
-  // 设置管理
+  // Settings management
   getSettings: async () => {
     try {
       const stored = localStorage.getItem(SETTINGS_STORAGE_KEY)
@@ -72,7 +72,7 @@ export const electronAPIWeb: ElectronAPI = {
     }
   },
 
-  // 文件下载（使用浏览器下载）
+  // File download (browser-based)
   downloadFile: async (url: string, defaultFilename: string) => {
     try {
       const response = await fetch(url)
@@ -95,7 +95,7 @@ export const electronAPIWeb: ElectronAPI = {
     window.open(url, '_blank', 'noopener,noreferrer')
   },
 
-  // 应用信息
+  // App information
   getAppVersion: async (): Promise<string> => {
     return '1.0.0-web'
   },
@@ -108,7 +108,7 @@ export const electronAPIWeb: ElectronAPI = {
     return { success: false, path: '' }
   },
 
-  // 更新相关（Web 版本不支持）
+  // Update-related APIs (not supported in web version)
   checkForUpdates: async () => {
     return { status: 'not-available', message: 'Updates are not available in web version' }
   },
@@ -131,7 +131,7 @@ export const electronAPIWeb: ElectronAPI = {
     }
   },
 
-  // Assets 管理（使用 IndexedDB 或 localStorage）
+  // Asset management (using IndexedDB or localStorage)
   getAssetsSettings: async () => {
     try {
       const stored = localStorage.getItem(ASSETS_SETTINGS_STORAGE_KEY)
@@ -218,7 +218,7 @@ export const electronAPIWeb: ElectronAPI = {
     return []
   },
 
-  // Stable Diffusion APIs（Web 版本不支持）
+  // Stable Diffusion APIs (not supported in web version)
   sdGetBinaryPath: async () => {
     return { success: false, error: 'Stable Diffusion not available in web version' }
   },
@@ -308,7 +308,7 @@ export const electronAPIWeb: ElectronAPI = {
     }
   },
 
-  // 文件操作（Web 版本不支持）
+  // File operations (not supported in web version)
   fileGetSize: async () => {
     return { success: false, error: 'Not available in web version' }
   },
@@ -325,7 +325,7 @@ export const electronAPIWeb: ElectronAPI = {
     return { success: false, error: 'Not available in web version' }
   },
 
-  // SD 下载路径辅助函数
+  // Stable Diffusion download path helpers
   sdGetBinaryDownloadPath: async () => {
     return { success: false, error: 'Not available in web version' }
   },
@@ -343,8 +343,7 @@ export const electronAPIWeb: ElectronAPI = {
   },
 }
 
-// 在浏览器环境中注入 electronAPI
+// Inject electronAPI when running in a browser environment.
 if (isBrowser) {
   ;(window as Window & { electronAPI: ElectronAPI }).electronAPI = electronAPIWeb
 }
-

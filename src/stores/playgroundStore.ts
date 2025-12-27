@@ -135,16 +135,18 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
     set(state => ({
       tabs: state.tabs.map(tab =>
         tab.id === state.activeTabId
-          ? {
-              ...tab,
-              selectedModel: model,
-              formValues: {},
-              formFields: [],
-              validationErrors: {},
-              currentPrediction: null,
-              error: null,
-              outputs: []
-            }
+          ? tab.selectedModel?.model_id === model?.model_id
+            ? tab
+            : {
+                ...tab,
+                selectedModel: model,
+                formValues: {},
+                formFields: [],
+                validationErrors: {},
+                currentPrediction: null,
+                error: null,
+                outputs: []
+              }
           : tab
       )
     }))

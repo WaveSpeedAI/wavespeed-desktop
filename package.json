@@ -169,12 +169,6 @@
     "linux": {
       "target": [
         {
-          "target": "AppImage",
-          "arch": [
-            "x64"
-          ]
-        },
-        {
           "target": "deb",
           "arch": [
             "x64"
@@ -182,10 +176,7 @@
         }
       ],
       "category": "Development",
-      "maintainer": "WaveSpeed <support@wavespeed.ai>",
-      "executableArgs": [
-        "--no-sandbox"
-      ]
+      "maintainer": "WaveSpeed <support@wavespeed.ai>"
     },
     "deb": {
       "afterInstall": "build/linux/after-install.sh"

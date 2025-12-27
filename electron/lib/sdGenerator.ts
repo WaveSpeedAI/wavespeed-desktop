@@ -154,10 +154,15 @@ export class SDGenerator {
     console.log('[SDGenerator] Spawning SD process:', binaryPath)
     console.log('[SDGenerator] Arguments:', JSON.stringify(args))
 
+    const binaryDir = dirname(binaryPath)
+    const ldLibraryPath = process.env.LD_LIBRARY_PATH
+      ? `${binaryDir}:${process.env.LD_LIBRARY_PATH}`
+      : binaryDir
+
     // Spawn child process
     const childProcess = spawn(binaryPath, args, {
       cwd: outputDir,
-      env: { ...process.env }
+      env: { ...process.env, LD_LIBRARY_PATH: ldLibraryPath }
     })
 
     // Track active process for cancellation

@@ -1,6 +1,5 @@
 /**
- * Generic utility functions (cross-module reusable)
- * 通用工具函数（跨模块复用）
+ * Generic utility functions (cross-module reusable).
  */
 
 import { type ClassValue, clsx } from "clsx"

@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useContext, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { PageResetContext } from '@/components/layout/Layout'
 import { useTranslation } from 'react-i18next'
+import { generateFreeToolFilename } from '@/stores/assetsStore'
 import { useFaceSwapperWorker, type DetectedFace } from '@/hooks/useFaceSwapperWorker'
 import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
 import { ProcessingProgress } from '@/components/shared/ProcessingProgress'
@@ -839,7 +840,7 @@ export function FaceSwapperPage() {
 
       const link = document.createElement('a')
       link.href = dataUrl
-      link.download = `face-swap-${Date.now()}.${downloadFormat}`
+      link.download = generateFreeToolFilename('face-swapper', downloadFormat)
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)

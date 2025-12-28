@@ -459,7 +459,8 @@ ipcMain.handle('get-default-assets-directory', () => {
 })
 
 ipcMain.handle('get-zimage-output-path', () => {
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+  // Use same ID format as other assets: base36 timestamp + random suffix
+  const id = Date.now().toString(36) + Math.random().toString(36).substring(2, 6)
   const settings = loadSettings()
   const assetsDir = settings.assetsDirectory || defaultAssetsDirectory
   const imagesDir = join(assetsDir, 'images')
@@ -467,7 +468,8 @@ ipcMain.handle('get-zimage-output-path', () => {
   if (!existsSync(imagesDir)) {
     mkdirSync(imagesDir, { recursive: true })
   }
-  return join(imagesDir, `local_z-image_${timestamp}.png`)
+  // Format: {owner}_{model}_{id}_{resultIndex}.{ext} - consistent with generateFileName in assetsStore
+  return join(imagesDir, `local_z-image_${id}_0.png`)
 })
 
 ipcMain.handle('select-directory', async () => {

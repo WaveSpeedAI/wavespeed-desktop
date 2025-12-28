@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/tooltip'
 import { Download, CheckCircle2, XCircle, Save, ExternalLink, Copy, Check, Loader2 } from 'lucide-react'
 import { AudioPlayer } from '@/components/shared/AudioPlayer'
-import { useAssetsStore, detectAssetType } from '@/stores/assetsStore'
+import { useAssetsStore, detectAssetType, generateDownloadFilename } from '@/stores/assetsStore'
 import { toast } from '@/hooks/useToast'
 import { cn } from '@/lib/utils'
 import type { BatchResult, BatchQueueItem } from '@/types/batch'
@@ -45,11 +45,6 @@ function isVideoUrl(url: string): boolean {
 
 function isAudioUrl(url: string): boolean {
   return isUrl(url) && /\.(mp3|wav|ogg|flac|aac|m4a|wma)(\?.*)?$/i.test(url)
-}
-
-function getExtensionFromUrl(url: string): string | null {
-  const match = url.match(/\.([a-zA-Z0-9]+)(\?.*)?$/)
-  return match ? match[1] : null
 }
 
 export function BatchOutputGrid({
@@ -143,9 +138,13 @@ export function BatchOutputGrid({
     }
   }, [results.length])
 
-  const handleDownload = async (url: string, index: number) => {
-    const extension = getExtensionFromUrl(url) || 'png'
-    const filename = `batch-${index + 1}.${extension}`
+  const handleDownload = async (url: string, predictionId?: string, resultIndex: number = 0) => {
+    const filename = generateDownloadFilename({
+      modelId,
+      url,
+      predictionId,
+      resultIndex
+    })
 
     if (window.electronAPI?.downloadFile) {
       const result = await window.electronAPI.downloadFile(url, filename)
@@ -160,9 +159,10 @@ export function BatchOutputGrid({
   const handleDownloadAll = async () => {
     for (const result of results) {
       if (result.error) continue
-      for (const output of result.outputs) {
+      for (let outputIndex = 0; outputIndex < result.outputs.length; outputIndex++) {
+        const output = result.outputs[outputIndex]
         if (typeof output === 'string' && isUrl(output)) {
-          await handleDownload(output, result.index)
+          await handleDownload(output, result.prediction?.id, outputIndex)
         }
       }
     }
@@ -478,7 +478,7 @@ export function BatchOutputGrid({
                                 size="icon"
                                 variant="secondary"
                                 className="h-8 w-8"
-                                onClick={() => handleDownload(outputStr, selectedResult.index)}
+                                onClick={() => handleDownload(outputStr, selectedResult.prediction?.id, outputIndex)}
                               >
                                 <Download className="h-4 w-4" />
                               </Button>

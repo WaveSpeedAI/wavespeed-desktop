@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { PredictionResult } from '@/types/prediction'
-import { useAssetsStore, detectAssetType } from '@/stores/assetsStore'
+import { useAssetsStore, detectAssetType, generateDownloadFilename } from '@/stores/assetsStore'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -176,8 +176,12 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId }
   }, [modelId, prediction?.id, saveAsset, t])
 
   const handleDownload = async (url: string, index: number) => {
-    const extension = getExtensionFromUrl(url) || 'png'
-    const filename = `output-${index + 1}.${extension}`
+    const filename = generateDownloadFilename({
+      modelId,
+      url,
+      predictionId: prediction?.id,
+      resultIndex: index
+    })
 
     // Use Electron API if available
     if (window.electronAPI?.downloadFile) {
@@ -480,7 +484,3 @@ function isAudioUrl(url: string): boolean {
   return isUrl(url) && /\.(mp3|wav|ogg|flac|aac|m4a|wma)(\?.*)?$/i.test(url)
 }
 
-function getExtensionFromUrl(url: string): string | null {
-  const match = url.match(/\.([a-zA-Z0-9]+)(\?.*)?$/)
-  return match ? match[1] : null
-}

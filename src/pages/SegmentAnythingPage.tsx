@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect, useContext } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { PageResetContext } from '@/components/layout/Layout'
 import { useTranslation } from 'react-i18next'
+import { generateFreeToolFilename } from '@/stores/assetsStore'
 import { useSegmentAnythingWorker, type MaskResult } from '@/hooks/useSegmentAnythingWorker'
 import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
 import { ProcessingProgress } from '@/components/shared/ProcessingProgress'
@@ -537,7 +538,7 @@ export function SegmentAnythingPage() {
   const downloadImage = (dataUrl: string) => {
     const link = document.createElement('a')
     link.href = dataUrl
-    link.download = `segment-${Date.now()}.${downloadFormat}`
+    link.download = generateFreeToolFilename('segment-anything', downloadFormat)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)

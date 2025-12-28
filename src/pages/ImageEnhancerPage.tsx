@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useContext } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { PageResetContext } from '@/components/layout/Layout'
 import { useTranslation } from 'react-i18next'
+import { generateFreeToolFilename } from '@/stores/assetsStore'
 import { useUpscalerWorker } from '@/hooks/useUpscalerWorker'
 import { useFaceEnhancerWorker } from '@/hooks/useFaceEnhancerWorker'
 import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
@@ -403,7 +404,7 @@ export function ImageEnhancerPage() {
 
     const link = document.createElement('a')
     link.href = dataUrl
-    link.download = `enhanced-image-${Date.now()}.${downloadFormat}`
+    link.download = generateFreeToolFilename('image-enhancer', downloadFormat)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)

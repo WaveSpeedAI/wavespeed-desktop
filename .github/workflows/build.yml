@@ -124,8 +124,9 @@ jobs:
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" &&
             cd /home/ubuntu/service/wavespeed-desktop &&
+            git checkout main &&
+            git fetch origin &&
             git reset --hard origin/main &&
-            git pull &&
             npm install &&
             npm run build
           '

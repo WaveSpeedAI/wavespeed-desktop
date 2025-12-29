@@ -241,8 +241,13 @@ export function PlaygroundPage() {
   }
 
   const handleNewTab = () => {
-    createTab()
-    navigate('/playground')
+    const currentModel = activeTab?.selectedModel
+    createTab(currentModel || undefined)
+    if (currentModel) {
+      navigate(`/playground/${currentModel.model_id}`)
+    } else {
+      navigate('/playground')
+    }
   }
 
   const handleCloseTab = (e: React.MouseEvent, tabId: string) => {

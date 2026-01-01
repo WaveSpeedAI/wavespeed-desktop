@@ -66,6 +66,19 @@ export function SettingsPage() {
   const [overallProgress, setOverallProgress] = useState(0)
   const abortControllerRef = useRef<AbortController | null>(null)
 
+  // Update state
+  const [isCheckingUpdate, setIsCheckingUpdate] = useState(false)
+  const [updateInfo, setUpdateInfo] = useState<{
+    hasUpdate: boolean
+    currentVersion: string
+    latestVersion: string
+    downloadUrl: string
+    releaseNotes?: string
+  } | null>(null)
+
+  // Current app version
+  const currentVersion = '0.8.1' // From package.json
+
   // Get the saved language preference (including 'auto')
   const [languagePreference, setLanguagePreference] = useState(() => {
     return localStorage.getItem('wavespeed_language') || 'auto'
@@ -181,6 +194,118 @@ export function SettingsPage() {
       setIsClearingCache(false)
     }
   }, [t])
+
+  // Check for updates via GitHub API
+  const handleCheckForUpdates = useCallback(async () => {
+    setIsCheckingUpdate(true)
+    setUpdateInfo(null)
+
+    try {
+      // Check GitHub releases for mobile APK
+      const response = await fetch(
+        'https://api.github.com/repos/WaveSpeedAI/wavespeed-desktop/releases',
+        { headers: { 'Accept': 'application/vnd.github.v3+json' } }
+      )
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch releases')
+      }
+
+      const releases = await response.json()
+
+      // Find the latest release that has an APK asset
+      let latestMobileRelease = null
+      let apkAsset = null
+
+      for (const release of releases) {
+        // Skip drafts and prereleases
+        if (release.draft || release.prerelease) continue
+
+        // Look for APK asset
+        const apk = release.assets?.find((asset: { name: string }) =>
+          asset.name.endsWith('.apk')
+        )
+
+        if (apk) {
+          latestMobileRelease = release
+          apkAsset = apk
+          break
+        }
+      }
+
+      if (!latestMobileRelease || !apkAsset) {
+        // No mobile release found
+        setUpdateInfo({
+          hasUpdate: false,
+          currentVersion,
+          latestVersion: currentVersion,
+          downloadUrl: '',
+        })
+        toast({
+          title: t('settings.updates.notAvailable', { version: currentVersion }),
+        })
+        return
+      }
+
+      // Extract version from tag (e.g., "v0.8.2" -> "0.8.2")
+      const latestVersion = latestMobileRelease.tag_name.replace(/^v/, '')
+
+      // Compare versions
+      const compareVersions = (v1: string, v2: string): number => {
+        const parts1 = v1.split('.').map(Number)
+        const parts2 = v2.split('.').map(Number)
+        for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+          const p1 = parts1[i] || 0
+          const p2 = parts2[i] || 0
+          if (p1 < p2) return -1
+          if (p1 > p2) return 1
+        }
+        return 0
+      }
+
+      const hasUpdate = compareVersions(currentVersion, latestVersion) < 0
+
+      setUpdateInfo({
+        hasUpdate,
+        currentVersion,
+        latestVersion,
+        downloadUrl: apkAsset.browser_download_url,
+        releaseNotes: latestMobileRelease.body,
+      })
+
+      if (hasUpdate) {
+        toast({
+          title: t('settings.updates.available', { version: latestVersion }),
+        })
+      } else {
+        toast({
+          title: t('settings.updates.notAvailable', { version: currentVersion }),
+        })
+      }
+    } catch (error) {
+      console.error('Failed to check for updates:', error)
+      toast({
+        title: t('settings.updates.checkFailed'),
+        variant: 'destructive',
+      })
+    } finally {
+      setIsCheckingUpdate(false)
+    }
+  }, [currentVersion, t])
+
+  // Download update (open browser to APK download)
+  const handleDownloadUpdate = useCallback(async () => {
+    if (!updateInfo?.downloadUrl) return
+
+    try {
+      // Use Capacitor Browser to open download URL
+      const { Browser } = await import('@capacitor/browser')
+      await Browser.open({ url: updateInfo.downloadUrl })
+    } catch {
+      // Fallback to window.open
+      window.open(updateInfo.downloadUrl, '_blank')
+    }
+  }, [updateInfo])
 
   // Check if a model is already cached
   const checkModelCached = async (url: string, cacheName: string): Promise<boolean> => {
@@ -1031,6 +1156,65 @@ export function SettingsPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Updates Card */}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>{t('settings.updates.title')}</CardTitle>
+          <CardDescription>
+            {t('settings.updates.description')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-sm font-medium">
+                {t('settings.about.version')}: {currentVersion}
+              </p>
+              {updateInfo && (
+                <p className="text-xs text-muted-foreground">
+                  {updateInfo.hasUpdate
+                    ? t('settings.updates.available', { version: updateInfo.latestVersion })
+                    : t('settings.updates.notAvailable', { version: currentVersion })}
+                </p>
+              )}
+            </div>
+            <Button
+              variant="outline"
+              onClick={handleCheckForUpdates}
+              disabled={isCheckingUpdate}
+            >
+              {isCheckingUpdate ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {t('settings.updates.checking')}
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  {t('settings.updates.checkForUpdates')}
+                </>
+              )}
+            </Button>
+          </div>
+
+          {/* Show download button if update available */}
+          {updateInfo?.hasUpdate && (
+            <div className="flex flex-col gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20">
+              <div className="flex items-center gap-2">
+                <Download className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium">
+                  {t('settings.updates.available', { version: updateInfo.latestVersion })}
+                </span>
+              </div>
+              <Button onClick={handleDownloadUpdate}>
+                <Download className="mr-2 h-4 w-4" />
+                {t('settings.updates.downloadUpdate')}
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Card className="mt-6">
         <CardHeader>

@@ -323,6 +323,7 @@ export function ZImagePage() {
       const steps = (zImageFormValues.steps as number) || 4
       const cfgScale = (zImageFormValues.cfg_scale as number) || 1
       const lowVramMode = Boolean(zImageFormValues.low_vram_mode)
+      const vaeTiling = Boolean(zImageFormValues.vae_tiling) || lowVramMode
 
       const result = await generateZImage({
         modelPath,
@@ -334,6 +335,7 @@ export function ZImagePage() {
         cfgScale,
         seed,
         lowVramMode,
+        vaeTiling,
         samplingMethod: ((zImageFormValues.sampling_method as string) || 'euler') as SamplingMethod,
         scheduler: ((zImageFormValues.scheduler as string) || 'simple') as Scheduler
       })

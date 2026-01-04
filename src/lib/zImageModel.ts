@@ -106,6 +106,12 @@ function createZImageSchema() {
         description: 'Keep CLIP on CPU to reduce VRAM usage',
         default: false
       },
+      vae_tiling: {
+        type: 'boolean',
+        title: 'Enable VAE tiling',
+        description: 'Reduce VRAM usage during VAE decode',
+        default: false
+      },
       seed: {
         type: 'integer',
         title: 'Seed',
@@ -137,6 +143,7 @@ function createZImageSchema() {
       'sampling_method',
       'scheduler',
       'low_vram_mode',
+      'vae_tiling',
       'seed'
     ]
   }

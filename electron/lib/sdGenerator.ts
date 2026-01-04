@@ -18,6 +18,7 @@ export interface GenerationOptions {
   llmPath?: string
   vaePath?: string
   clipOnCpu?: boolean
+  vaeTiling?: boolean
   prompt: string
   negativePrompt?: string
   width: number
@@ -75,11 +76,12 @@ export class SDGenerator {
       seed,
       samplingMethod,
       scheduler,
-      outputPath,
-      clipOnCpu,
-      onProgress,
-      onLog
-    } = options
+    outputPath,
+    clipOnCpu,
+    vaeTiling,
+    onProgress,
+    onLog
+  } = options
 
     // Validate binary exists
     if (!existsSync(binaryPath)) {
@@ -123,6 +125,10 @@ export class SDGenerator {
 
     if (clipOnCpu) {
       args.push('--clip-on-cpu')
+    }
+
+    if (vaeTiling) {
+      args.push('--vae-tiling')
     }
 
     // Add LLM (text encoder) if provided

@@ -1328,6 +1328,7 @@ ipcMain.handle('sd-generate-image', async (event, params: {
   llmPath?: string
   vaePath?: string
   lowVramMode?: boolean
+  vaeTiling?: boolean
   prompt: string
   negativePrompt?: string
   width: number
@@ -1375,6 +1376,7 @@ ipcMain.handle('sd-generate-image', async (event, params: {
     const vramMb = getGpuVramMb()
     const lowVramMode = Boolean(params.lowVramMode)
     const useCpuOffload = lowVramMode || (vramMb !== null && vramMb < 16000)
+    const useVaeTiling = Boolean(params.vaeTiling) || useCpuOffload
 
     if (vramMb !== null) {
       console.log(`[SD Generate] Detected GPU VRAM: ${vramMb} MB`)
@@ -1388,6 +1390,10 @@ ipcMain.handle('sd-generate-image', async (event, params: {
       console.log('[SD Generate] Enabling CLIP CPU offload for low VRAM GPU')
     }
 
+    if (useVaeTiling) {
+      console.log('[SD Generate] Enabling VAE tiling')
+    }
+
     // Use SDGenerator class for image generation
     const result = await sdGenerator.generate({
       binaryPath,
@@ -1395,6 +1401,7 @@ ipcMain.handle('sd-generate-image', async (event, params: {
       llmPath: params.llmPath,
       vaePath: params.vaePath,
       clipOnCpu: useCpuOffload,
+      vaeTiling: useVaeTiling,
       prompt: params.prompt,
       negativePrompt: params.negativePrompt,
       width: params.width,

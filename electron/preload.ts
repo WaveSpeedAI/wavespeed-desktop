@@ -141,6 +141,8 @@ const electronAPI = {
     ipcRenderer.invoke('sd-get-binary-path'),
   sdGetSystemInfo: (): Promise<{ platform: string; arch: string; acceleration: string; supported: boolean }> =>
     ipcRenderer.invoke('sd-get-system-info'),
+  sdGetGpuVramMb: (): Promise<{ success: boolean; vramMb: number | null; error?: string }> =>
+    ipcRenderer.invoke('sd-get-gpu-vram'),
   sdCheckAuxiliaryModels: (): Promise<{ success: boolean; llmExists: boolean; vaeExists: boolean; llmPath: string; vaePath: string; error?: string }> =>
     ipcRenderer.invoke('sd-check-auxiliary-models'),
   sdListAuxiliaryModels: (): Promise<{ success: boolean; models?: Array<{ name: string; path: string; size: number; type: 'llm' | 'vae' }>; error?: string }> =>

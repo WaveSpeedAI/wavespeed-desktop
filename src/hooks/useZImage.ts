@@ -228,19 +228,19 @@ export function useZImage(options: UseZImageOptions = {}) {
 
       // Determine download URL based on platform and acceleration
       let url = ''
-      const githubBaseUrl = 'https://github.com/WaveSpeedAI/stable-diffusion.cpp/releases/download/master-433-700a797'
+      const githubBaseUrl = 'https://github.com/WaveSpeedAI/stable-diffusion.cpp/releases/download/master-434-52e09ea'
 
       if (platform === 'win32') {
         // Windows: Use Vulkan build from WaveSpeed release
         console.log('[useZImage] Using Windows Vulkan build from WaveSpeed release')
-        url = `${githubBaseUrl}/sd-master-700a797-bin-win-vulkan-x64.zip`
+        url = `${githubBaseUrl}/sd-master-52e09ea-bin-win-vulkan-x64.zip`
       } else if (platform === 'darwin') {
         // macOS: Use Metal build from WaveSpeed release
         console.log('[useZImage] Using macOS Metal build from WaveSpeed release')
-        url = `${githubBaseUrl}/sd-master-700a797-bin-Darwin-macOS-15.7.2-arm64-metal.zip`
+        url = `${githubBaseUrl}/sd-master-52e09ea-bin-Darwin-macOS-15.7.2-arm64-metal.zip`
       } else {
-        // Linux: Use AVX512 build from WaveSpeed release
-        url = `${githubBaseUrl}/sd-master-700a797-bin-Linux-Ubuntu-24.04-x86_64-avx512.zip`
+        // Linux: Use AVX2 build from WaveSpeed release
+        url = `${githubBaseUrl}/sd-master-52e09ea-bin-Linux-Ubuntu-24.04-x86_64-avx2.zip`
       }
 
       console.log(`[useZImage] Download URL: ${url}`)

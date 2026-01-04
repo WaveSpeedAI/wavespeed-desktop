@@ -165,6 +165,7 @@ export interface ElectronAPI {
   sdDeleteBinary: () => Promise<{ success: boolean; error?: string }>
   getFileSize: (filePath: string) => Promise<number>
   sdGetSystemInfo: () => Promise<{ platform: string; arch: string; acceleration: string; supported: boolean }>
+  sdGetGpuVramMb: () => Promise<{ success: boolean; vramMb: number | null; error?: string }>
   onSdProgress: (callback: (data: SDProgressData) => void) => () => void
   onSdLog: (callback: (data: { type: 'stdout' | 'stderr'; message: string }) => void) => () => void
   onSdDownloadProgress: (callback: (data: SDProgressData) => void) => () => void

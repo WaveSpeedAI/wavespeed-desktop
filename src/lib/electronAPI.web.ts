@@ -272,6 +272,10 @@ export const electronAPIWeb: ElectronAPI = {
     }
   },
 
+  sdGetGpuVramMb: async () => {
+    return { success: false, vramMb: null, error: 'Not available in web version' }
+  },
+
   onSdProgress: () => {
     return () => {
       // no-op

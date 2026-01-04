@@ -1321,6 +1321,21 @@ ipcMain.handle('sd-get-system-info', () => {
 })
 
 /**
+ * Get GPU VRAM in MB (Windows only)
+ */
+ipcMain.handle('sd-get-gpu-vram', () => {
+  try {
+    return { success: true, vramMb: getGpuVramMb() }
+  } catch (error) {
+    return {
+      success: false,
+      vramMb: null,
+      error: (error as Error).message
+    }
+  }
+})
+
+/**
  * Generate image
  */
 ipcMain.handle('sd-generate-image', async (event, params: {
@@ -1374,9 +1389,10 @@ ipcMain.handle('sd-generate-image', async (event, params: {
     }
 
     const vramMb = getGpuVramMb()
-    const lowVramMode = Boolean(params.lowVramMode)
-    const useCpuOffload = lowVramMode || (vramMb !== null && vramMb < 16000)
-    const useVaeTiling = Boolean(params.vaeTiling) || useCpuOffload
+    const isLowVramGpu = vramMb !== null && vramMb < 16000
+    const lowVramMode = Boolean(params.lowVramMode) || isLowVramGpu
+    const useCpuOffload = lowVramMode
+    const useVaeTiling = Boolean(params.vaeTiling) || isLowVramGpu
 
     if (vramMb !== null) {
       console.log(`[SD Generate] Detected GPU VRAM: ${vramMb} MB`)
@@ -1384,14 +1400,16 @@ ipcMain.handle('sd-generate-image', async (event, params: {
       console.log('[SD Generate] GPU VRAM detection unavailable')
     }
 
-    if (lowVramMode) {
+    if (Boolean(params.lowVramMode)) {
       console.log('[SD Generate] Enabling low VRAM mode from UI setting')
-    } else if (useCpuOffload) {
-      console.log('[SD Generate] Enabling CLIP CPU offload for low VRAM GPU')
+    } else if (isLowVramGpu) {
+      console.log('[SD Generate] Enabling low VRAM mode for low VRAM GPU')
     }
 
-    if (useVaeTiling) {
-      console.log('[SD Generate] Enabling VAE tiling')
+    if (Boolean(params.vaeTiling)) {
+      console.log('[SD Generate] Enabling VAE tiling from UI setting')
+    } else if (isLowVramGpu) {
+      console.log('[SD Generate] Enabling VAE tiling for low VRAM GPU')
     }
 
     // Use SDGenerator class for image generation

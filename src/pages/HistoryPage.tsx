@@ -15,12 +15,23 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Loader2,
   RefreshCw,
@@ -38,11 +49,13 @@ import {
   Copy,
   Check,
   Eye,
-  EyeOff
+  EyeOff,
+  Trash2
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AudioPlayer } from '@/components/shared/AudioPlayer'
 import { useInView } from '@/hooks/useInView'
+import { toast } from '@/hooks/useToast'
 
 // Video preview component - shows first frame, plays on hover
 function VideoPreview({ src, enabled }: { src: string; enabled: boolean }) {
@@ -111,6 +124,11 @@ export function HistoryPage() {
   const [selectedItem, setSelectedItem] = useState<HistoryItem | null>(null)
   const [copiedId, setCopiedId] = useState(false)
   const [loadPreviews, setLoadPreviews] = useState(true)
+  const [deleteConfirmItem, setDeleteConfirmItem] = useState<HistoryItem | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isSelectionMode, setIsSelectionMode] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false)
   const pageSize = 50
 
   const handleCopyId = async (id: string) => {
@@ -140,6 +158,88 @@ export function HistoryPage() {
     }
   }, [isValidated, page, pageSize, statusFilter])
 
+  const handleDelete = useCallback(async (item: HistoryItem) => {
+    setIsDeleting(true)
+    try {
+      await apiClient.deletePrediction(item.id)
+      setItems(prevItems => prevItems.filter((existing) => existing.id !== item.id))
+      if (selectedItem?.id === item.id) {
+        setSelectedItem(null)
+      }
+      toast({
+        title: t('history.deleted'),
+      })
+    } catch (err) {
+      toast({
+        title: t('common.error'),
+        description: err instanceof Error ? err.message : t('history.deleteFailed'),
+        variant: 'destructive',
+      })
+    } finally {
+      setIsDeleting(false)
+      setDeleteConfirmItem(null)
+    }
+  }, [selectedItem?.id, t])
+
+  const handleBulkDelete = useCallback(async () => {
+    if (selectedIds.size === 0) return
+    setIsDeleting(true)
+    const idsToDelete = Array.from(selectedIds)
+    const idsSet = new Set(idsToDelete)
+    try {
+      await apiClient.deletePredictions(idsToDelete)
+      setItems(prevItems => prevItems.filter((existing) => !idsSet.has(existing.id)))
+      if (selectedItem && idsSet.has(selectedItem.id)) {
+        setSelectedItem(null)
+      }
+      setSelectedIds(new Set())
+      setIsSelectionMode(false)
+      toast({
+        title: t('history.deletedBulk'),
+        description: t('history.deletedBulkDesc', { count: idsToDelete.length }),
+      })
+    } catch (err) {
+      toast({
+        title: t('common.error'),
+        description: err instanceof Error ? err.message : t('history.deleteFailed'),
+        variant: 'destructive',
+      })
+    } finally {
+      setIsDeleting(false)
+      setShowBulkDeleteConfirm(false)
+    }
+  }, [selectedIds, selectedItem, t])
+
+  const handleToggleSelect = useCallback((id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }, [])
+
+  const handleToggleSelectionMode = useCallback(() => {
+    setIsSelectionMode((prev) => {
+      const next = !prev
+      if (!next) {
+        setSelectedIds(new Set())
+      }
+      return next
+    })
+  }, [])
+
+  const handleSelectAll = useCallback(() => {
+    setSelectedIds(new Set(items.map(item => item.id)))
+  }, [items])
+
+  const handleClearSelection = useCallback(() => {
+    setSelectedIds(new Set())
+  }, [])
+
   // Load API key on mount
   useEffect(() => {
     loadApiKey()
@@ -148,6 +248,10 @@ export function HistoryPage() {
   useEffect(() => {
     fetchHistory()
   }, [fetchHistory])
+
+  useEffect(() => {
+    setSelectedIds(new Set())
+  }, [page, statusFilter])
 
   const maxSelectablePages = 100
   const pageOptions = Array.from({ length: maxSelectablePages }, (_, index) => index + 1)
@@ -216,11 +320,26 @@ export function HistoryPage() {
     return (
       <Card
         key={item.id}
-        className="overflow-hidden cursor-pointer border hover:shadow-md transition-shadow"
-        onClick={() => setSelectedItem(item)}
+        className={cn(
+          "overflow-hidden cursor-pointer border hover:shadow-md transition-shadow",
+          selectedIds.has(item.id) && "ring-2 ring-primary"
+        )}
+        onClick={() => isSelectionMode ? handleToggleSelect(item.id) : setSelectedItem(item)}
       >
         {/* Preview */}
         <div ref={ref} className="aspect-square bg-muted relative">
+          {isSelectionMode && (
+            <div
+              className="absolute top-2 left-2 z-10"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Checkbox
+                checked={selectedIds.has(item.id)}
+                onCheckedChange={() => handleToggleSelect(item.id)}
+                className="bg-background"
+              />
+            </div>
+          )}
           {shouldLoad && hasPreview && typeof firstOutput === 'string' && firstOutput.match(/\.(jpg|jpeg|png|gif|webp)/i) ? (
             <img
               src={firstOutput}
@@ -306,10 +425,31 @@ export function HistoryPage() {
             <h1 className="text-2xl font-bold tracking-tight">{t('history.title')}</h1>
             <p className="text-muted-foreground text-sm mt-0.5">{t('history.description')}</p>
           </div>
-          <Button variant="outline" size="sm" onClick={fetchHistory} disabled={isLoading}>
-            <RefreshCw className={cn("mr-2 h-4 w-4", isLoading && "animate-spin")} />
-            {t('common.refresh')}
-          </Button>
+          <div className="flex items-center gap-2">
+            {isSelectionMode && selectedIds.size > 0 && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setShowBulkDeleteConfirm(true)}
+                disabled={isDeleting}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                {t('history.deleteSelected', { count: selectedIds.size })}
+              </Button>
+            )}
+            <Button
+              variant={isSelectionMode ? "default" : "outline"}
+              size="sm"
+              onClick={handleToggleSelectionMode}
+              disabled={isDeleting}
+            >
+              {isSelectionMode ? t('history.selectionDone') : t('history.select')}
+            </Button>
+            <Button variant="outline" size="sm" onClick={fetchHistory} disabled={isLoading}>
+              <RefreshCw className={cn("mr-2 h-4 w-4", isLoading && "animate-spin")} />
+              {t('common.refresh')}
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -344,6 +484,16 @@ export function HistoryPage() {
               <EyeOff className="h-4 w-4" />
             )}
           </Button>
+          {isSelectionMode && items.length > 0 && (
+            <>
+              <Button variant="outline" size="sm" onClick={handleSelectAll} disabled={selectedIds.size === items.length}>
+                {t('common.selectAll')}
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleClearSelection} disabled={selectedIds.size === 0}>
+                {t('common.clear')}
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
@@ -441,6 +591,17 @@ export function HistoryPage() {
           </DialogHeader>
           {selectedItem && (
             <div className="flex-1 overflow-y-auto space-y-4">
+              <div className="flex justify-end">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setDeleteConfirmItem(selectedItem)}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
+                  {t('common.delete')}
+                </Button>
+              </div>
               {/* Preview using OutputDisplay */}
               {selectedItem.outputs && selectedItem.outputs.length > 0 && (
                 <div className="h-[400px]">
@@ -506,6 +667,50 @@ export function HistoryPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleteConfirmItem} onOpenChange={() => setDeleteConfirmItem(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('history.deleteConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('history.deleteConfirmDesc')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteConfirmItem && handleDelete(deleteConfirmItem)}
+              disabled={!deleteConfirmItem || isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
+              {t('common.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showBulkDeleteConfirm} onOpenChange={setShowBulkDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('history.bulkDeleteConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('history.bulkDeleteConfirmDesc', { count: selectedIds.size })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              disabled={isDeleting || selectedIds.size === 0}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
+              {t('history.deleteSelected', { count: selectedIds.size })}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

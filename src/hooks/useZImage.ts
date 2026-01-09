@@ -62,6 +62,11 @@ export function useZImage(options: UseZImageOptions = {}) {
    */
   const downloadLlm = useCallback(async () => {
     try {
+      // Check if Electron API is available (required for local generation)
+      if (!window.electronAPI) {
+        throw new Error('Z-Image requires the WaveSpeed Desktop app. This feature is not available in browser mode.')
+      }
+
       // Check if file already exists before starting download
       const checkResult = await window.electronAPI?.sdCheckAuxiliaryModels()
       if (checkResult?.success && checkResult.llmExists) {
@@ -131,6 +136,11 @@ export function useZImage(options: UseZImageOptions = {}) {
    */
   const downloadVae = useCallback(async () => {
     try {
+      // Check if Electron API is available (required for local generation)
+      if (!window.electronAPI) {
+        throw new Error('Z-Image requires the WaveSpeed Desktop app. This feature is not available in browser mode.')
+      }
+
       // Check if file already exists before starting download
       const checkResult = await window.electronAPI?.sdCheckAuxiliaryModels()
       if (checkResult?.success && checkResult.vaeExists) {
@@ -200,6 +210,11 @@ export function useZImage(options: UseZImageOptions = {}) {
    */
   const downloadBinary = useCallback(async () => {
     try {
+      // Check if Electron API is available (required for local generation)
+      if (!window.electronAPI) {
+        throw new Error('Z-Image requires the WaveSpeed Desktop app. This feature is not available in browser mode.')
+      }
+
       // Check if file already exists before starting download
       const checkResult = await window.electronAPI?.sdGetBinaryPath()
       if (checkResult?.success && checkResult.path) {
@@ -306,7 +321,7 @@ export function useZImage(options: UseZImageOptions = {}) {
       optionsRef.current.onPhase?.('generate')
 
       if (!window.electronAPI?.sdGenerateImage) {
-        throw new Error('Electron API not available')
+        throw new Error('Z-Image requires the WaveSpeed Desktop app. This feature is not available in browser mode.')
       }
 
       // Get models info

@@ -18,6 +18,7 @@ export interface GenerationOptions {
   llmPath?: string
   vaePath?: string
   clipOnCpu?: boolean
+  vaeTiling?: boolean
   prompt: string
   negativePrompt?: string
   width: number
@@ -75,11 +76,12 @@ export class SDGenerator {
       seed,
       samplingMethod,
       scheduler,
-      outputPath,
-      clipOnCpu,
-      onProgress,
-      onLog
-    } = options
+    outputPath,
+    clipOnCpu,
+    vaeTiling,
+    onProgress,
+    onLog
+  } = options
 
     // Validate binary exists
     if (!existsSync(binaryPath)) {
@@ -125,6 +127,10 @@ export class SDGenerator {
       args.push('--clip-on-cpu')
     }
 
+    if (vaeTiling) {
+      args.push('--vae-tiling')
+    }
+
     // Add LLM (text encoder) if provided
     if (llmPath && existsSync(llmPath)) {
       args.push('--llm', llmPath)
@@ -154,10 +160,15 @@ export class SDGenerator {
     console.log('[SDGenerator] Spawning SD process:', binaryPath)
     console.log('[SDGenerator] Arguments:', JSON.stringify(args))
 
+    const binaryDir = dirname(binaryPath)
+    const ldLibraryPath = process.env.LD_LIBRARY_PATH
+      ? `${binaryDir}:${process.env.LD_LIBRARY_PATH}`
+      : binaryDir
+
     // Spawn child process
     const childProcess = spawn(binaryPath, args, {
       cwd: outputDir,
-      env: { ...process.env }
+      env: { ...process.env, LD_LIBRARY_PATH: ldLibraryPath }
     })
 
     // Track active process for cancellation

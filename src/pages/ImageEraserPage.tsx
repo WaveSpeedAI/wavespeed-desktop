@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect, useContext } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { PageResetContext } from '@/components/layout/Layout'
 import { useTranslation } from 'react-i18next'
+import { generateFreeToolFilename } from '@/stores/assetsStore'
 import { useImageEraserWorker } from '@/hooks/useImageEraserWorker'
 import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
 import { ProcessingProgress } from '@/components/shared/ProcessingProgress'
@@ -681,7 +682,7 @@ export function ImageEraserPage() {
 
     const link = document.createElement('a')
     link.href = dataUrl
-    link.download = `erased-${Date.now()}.${downloadFormat}`
+    link.download = generateFreeToolFilename('image-eraser', downloadFormat)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)

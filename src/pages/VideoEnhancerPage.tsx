@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect, useContext } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { PageResetContext } from '@/components/layout/Layout'
 import { useTranslation } from 'react-i18next'
+import { generateFreeToolFilename } from '@/stores/assetsStore'
 import { useUpscalerWorker } from '@/hooks/useUpscalerWorker'
 import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
 import { ProcessingProgress } from '@/components/shared/ProcessingProgress'
@@ -51,7 +52,7 @@ export function VideoEnhancerPage() {
   const abortRef = useRef(false)
   const dragCounterRef = useRef(0)
 
-  const [videoFile, setVideoFile] = useState<File | null>(null)
+  const [_videoFile, setVideoFile] = useState<File | null>(null)
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
@@ -402,7 +403,7 @@ export function VideoEnhancerPage() {
       downloadFormat === 'mp4' && supportedFormats.mp4 ? 'mp4' : 'webm'
     const link = document.createElement('a')
     link.href = downloadUrl
-    link.download = `enhanced-${videoFile?.name?.replace(/\.[^.]+$/, '') || 'video'}.${extension}`
+    link.download = generateFreeToolFilename('video-enhancer', extension)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)

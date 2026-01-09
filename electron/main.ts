@@ -459,7 +459,8 @@ ipcMain.handle('get-default-assets-directory', () => {
 })
 
 ipcMain.handle('get-zimage-output-path', () => {
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+  // Use same ID format as other assets: base36 timestamp + random suffix
+  const id = Date.now().toString(36) + Math.random().toString(36).substring(2, 6)
   const settings = loadSettings()
   const assetsDir = settings.assetsDirectory || defaultAssetsDirectory
   const imagesDir = join(assetsDir, 'images')
@@ -467,7 +468,8 @@ ipcMain.handle('get-zimage-output-path', () => {
   if (!existsSync(imagesDir)) {
     mkdirSync(imagesDir, { recursive: true })
   }
-  return join(imagesDir, `local_z-image_${timestamp}.png`)
+  // Format: {owner}_{model}_{id}_{resultIndex}.{ext} - consistent with generateFileName in assetsStore
+  return join(imagesDir, `local_z-image_${id}_0.png`)
 })
 
 ipcMain.handle('select-directory', async () => {
@@ -1319,6 +1321,21 @@ ipcMain.handle('sd-get-system-info', () => {
 })
 
 /**
+ * Get GPU VRAM in MB (Windows only)
+ */
+ipcMain.handle('sd-get-gpu-vram', () => {
+  try {
+    return { success: true, vramMb: getGpuVramMb() }
+  } catch (error) {
+    return {
+      success: false,
+      vramMb: null,
+      error: (error as Error).message
+    }
+  }
+})
+
+/**
  * Generate image
  */
 ipcMain.handle('sd-generate-image', async (event, params: {
@@ -1326,6 +1343,7 @@ ipcMain.handle('sd-generate-image', async (event, params: {
   llmPath?: string
   vaePath?: string
   lowVramMode?: boolean
+  vaeTiling?: boolean
   prompt: string
   negativePrompt?: string
   width: number
@@ -1371,8 +1389,10 @@ ipcMain.handle('sd-generate-image', async (event, params: {
     }
 
     const vramMb = getGpuVramMb()
-    const lowVramMode = Boolean(params.lowVramMode)
-    const useCpuOffload = lowVramMode || (vramMb !== null && vramMb < 16000)
+    const isLowVramGpu = vramMb !== null && vramMb < 16000
+    const lowVramMode = Boolean(params.lowVramMode) || isLowVramGpu
+    const useCpuOffload = lowVramMode
+    const useVaeTiling = Boolean(params.vaeTiling) || isLowVramGpu
 
     if (vramMb !== null) {
       console.log(`[SD Generate] Detected GPU VRAM: ${vramMb} MB`)
@@ -1380,10 +1400,16 @@ ipcMain.handle('sd-generate-image', async (event, params: {
       console.log('[SD Generate] GPU VRAM detection unavailable')
     }
 
-    if (lowVramMode) {
+    if (Boolean(params.lowVramMode)) {
       console.log('[SD Generate] Enabling low VRAM mode from UI setting')
-    } else if (useCpuOffload) {
-      console.log('[SD Generate] Enabling CLIP CPU offload for low VRAM GPU')
+    } else if (isLowVramGpu) {
+      console.log('[SD Generate] Enabling low VRAM mode for low VRAM GPU')
+    }
+
+    if (Boolean(params.vaeTiling)) {
+      console.log('[SD Generate] Enabling VAE tiling from UI setting')
+    } else if (isLowVramGpu) {
+      console.log('[SD Generate] Enabling VAE tiling for low VRAM GPU')
     }
 
     // Use SDGenerator class for image generation
@@ -1393,6 +1419,7 @@ ipcMain.handle('sd-generate-image', async (event, params: {
       llmPath: params.llmPath,
       vaePath: params.vaePath,
       clipOnCpu: useCpuOffload,
+      vaeTiling: useVaeTiling,
       prompt: params.prompt,
       negativePrompt: params.negativePrompt,
       width: params.width,

@@ -5,7 +5,6 @@ import { Slider } from '@/components/ui/slider'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Paintbrush, Eraser, PaintBucket, RefreshCw, Trash2, Undo2, Redo2, Loader2 } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import { floodFill, invertMask, clearCanvas, canvasToBlob, extractVideoFrame } from '@/lib/maskUtils'
 
 type Tool = 'brush' | 'eraser' | 'fill'

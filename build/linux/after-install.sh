@@ -1,21 +1,20 @@
 #!/bin/bash
 
-# Create symlink or update-alternatives
-if type update-alternatives 2>/dev/null >&1; then
-    if [ -L '/usr/bin/${executable}' -a -e '/usr/bin/${executable}' -a "`readlink '/usr/bin/${executable}'`" != '/etc/alternatives/${executable}' ]; then
-        rm -f '/usr/bin/${executable}'
-    fi
-    update-alternatives --install '/usr/bin/${executable}' '${executable}' '/opt/${sanitizedProductName}/${executable}' 100 || ln -sf '/opt/${sanitizedProductName}/${executable}' '/usr/bin/${executable}'
-else
-    ln -sf '/opt/${sanitizedProductName}/${executable}' '/usr/bin/${executable}'
-fi
+# Create wrapper script with --no-sandbox for Ubuntu 24.04+ compatibility
+# The Electron sandbox requires either SUID chrome-sandbox or --no-sandbox flag
+cat > '/usr/bin/${executable}' << 'EOF'
+#!/bin/bash
+exec '/opt/${sanitizedProductName}/${executable}' --no-sandbox "$@"
+EOF
+chmod +x '/usr/bin/${executable}'
 
-# Set SUID bit on chrome-sandbox for Ubuntu 24.04+ compatibility
-# See: https://github.com/WaveSpeedAI/wavespeed-desktop/issues/13
-chrome_sandbox_path='/opt/${sanitizedProductName}/chrome-sandbox'
-if [ -f "$chrome_sandbox_path" ]; then
-    chown root:root "$chrome_sandbox_path" || true
-    chmod 4755 "$chrome_sandbox_path" || true
+# Fix desktop file to use wrapper script (electron-builder adds invalid lowercase exec=)
+DESKTOP_FILE='/usr/share/applications/${executable}.desktop'
+if [ -f "$DESKTOP_FILE" ]; then
+    # Replace Exec= line to use wrapper script
+    sed -i 's|^Exec=.*|Exec=/usr/bin/${executable} %U|' "$DESKTOP_FILE"
+    # Remove invalid lowercase exec= line if present
+    sed -i '/^exec=/d' "$DESKTOP_FILE"
 fi
 
 if hash update-mime-database 2>/dev/null; then
@@ -24,4 +23,18 @@ fi
 
 if hash update-desktop-database 2>/dev/null; then
     update-desktop-database /usr/share/applications || true
+fi
+
+# Install icon in multiple sizes (electron-builder only installs 1024x1024)
+ICON_SOURCE='/usr/share/icons/hicolor/1024x1024/apps/${executable}.png'
+if [ -f "$ICON_SOURCE" ]; then
+    for SIZE in 512x512 256x256 128x128 64x64 48x48; do
+        mkdir -p "/usr/share/icons/hicolor/$SIZE/apps"
+        cp "$ICON_SOURCE" "/usr/share/icons/hicolor/$SIZE/apps/${executable}.png"
+    done
+fi
+
+# Update icon cache
+if hash gtk-update-icon-cache 2>/dev/null; then
+    gtk-update-icon-cache /usr/share/icons/hicolor -f || true
 fi

@@ -73,6 +73,8 @@ export interface GenerationParams {
   vaePath?: string
   /** Enable low VRAM mode (CLIP on CPU) */
   lowVramMode?: boolean
+  /** Enable VAE tiling for lower VRAM usage */
+  vaeTiling?: boolean
   /** Positive prompt */
   prompt: string
   /** Negative prompt */

@@ -63,6 +63,7 @@ export function ZImagePage() {
   const [usedSeed, setUsedSeed] = useState<number | null>(null)
   const [metalWarning, setMetalWarning] = useState<string | null>(null)
   const [accelerationInfo, setAccelerationInfo] = useState<{ platform: string; arch: string; acceleration: string } | null>(null)
+  const [vramMb, setVramMb] = useState<number | null>(null)
 
   // Stores
   const {
@@ -146,6 +147,37 @@ export function ZImagePage() {
     }
   }, [electronAvailable])
 
+  // Detect GPU VRAM for auto-toggling low VRAM settings
+  useEffect(() => {
+    let active = true
+    if (!electronAvailable || !window.electronAPI?.sdGetGpuVramMb) {
+      return
+    }
+
+    window.electronAPI.sdGetGpuVramMb().then((result) => {
+      if (!active) return
+      if (result?.success && Number.isFinite(result.vramMb)) {
+        setVramMb(result.vramMb)
+      } else {
+        setVramMb(null)
+      }
+    }).catch(() => {
+      // Ignore VRAM detection failures
+    })
+
+    return () => {
+      active = false
+    }
+  }, [electronAvailable])
+
+  const isLowVramGpu = vramMb !== null && vramMb < 16000
+
+  useEffect(() => {
+    if (!isLowVramGpu) return
+    setZImageFormValue('low_vram_mode', true)
+    setZImageFormValue('vae_tiling', true)
+  }, [isLowVramGpu, setZImageFormValue])
+
   // Listen for generation progress from sd.cpp
   useEffect(() => {
     if (!electronAvailable || !window.electronAPI?.onSdProgress) {
@@ -184,11 +216,15 @@ export function ZImagePage() {
 
   // Form handlers
   const handleFormChange = useCallback((key: string, value: unknown) => {
+    if (isLowVramGpu && (key === 'low_vram_mode' || key === 'vae_tiling') && value === false) {
+      setZImageFormValue(key, true)
+      return
+    }
     setZImageFormValue(key, value)
     if (validationErrors[key]) {
       setValidationErrors(prev => ({ ...prev, [key]: '' }))
     }
-  }, [setZImageFormValue, validationErrors])
+  }, [isLowVramGpu, setZImageFormValue, validationErrors])
 
   const handleSetDefaults = useCallback((defaults: Record<string, unknown>) => {
     setZImageFormValues(defaults)
@@ -323,6 +359,7 @@ export function ZImagePage() {
       const steps = (zImageFormValues.steps as number) || 4
       const cfgScale = (zImageFormValues.cfg_scale as number) || 1
       const lowVramMode = Boolean(zImageFormValues.low_vram_mode)
+      const vaeTiling = Boolean(zImageFormValues.vae_tiling) || lowVramMode
 
       const result = await generateZImage({
         modelPath,
@@ -334,6 +371,7 @@ export function ZImagePage() {
         cfgScale,
         seed,
         lowVramMode,
+        vaeTiling,
         samplingMethod: ((zImageFormValues.sampling_method as string) || 'euler') as SamplingMethod,
         scheduler: ((zImageFormValues.scheduler as string) || 'simple') as Scheduler
       })

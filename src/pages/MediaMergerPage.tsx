@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useContext } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { PageResetContext } from '@/components/layout/Layout'
 import { useTranslation } from 'react-i18next'
+import { generateFreeToolFilename } from '@/stores/assetsStore'
 import { useFFmpegWorker } from '@/hooks/useFFmpegWorker'
 import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
 import { ProcessingProgress } from '@/components/shared/ProcessingProgress'
@@ -270,7 +271,7 @@ export function MediaMergerPage() {
 
     const mediaType = mediaItems[0]?.type || 'video'
     const ext = mediaType === 'video' ? 'mp4' : 'mp3'
-    const filename = `merged_${Date.now()}.${ext}`
+    const filename = generateFreeToolFilename('media-merger', ext)
 
     const link = document.createElement('a')
     link.href = mergedUrl

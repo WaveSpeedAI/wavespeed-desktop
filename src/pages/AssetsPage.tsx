@@ -203,6 +203,16 @@ export function AssetsPage() {
 
   // Preview toggle
   const [loadPreviews, setLoadPreviews] = useState(true)
+  const [loadedPreviewKeys, setLoadedPreviewKeys] = useState<Set<string>>(() => new Set())
+
+  const markPreviewLoaded = useCallback((key: string) => {
+    setLoadedPreviewKeys((prev) => {
+      if (prev.has(key)) return prev
+      const next = new Set(prev)
+      next.add(key)
+      return next
+    })
+  }, [])
 
   // Load assets on mount
   useEffect(() => {
@@ -386,10 +396,15 @@ export function AssetsPage() {
     }
   }, [])
 
-  const AssetCard = ({ asset }: { asset: AssetMetadata }) => {
+  const AssetCard = ({ asset, assetKey }: { asset: AssetMetadata; assetKey: string }) => {
     const { ref, isInView } = useInView<HTMLDivElement>()
     const assetUrl = getAssetUrl(asset)
-    const shouldLoad = loadPreviews && isInView
+    const shouldLoad = loadPreviews && (isInView || loadedPreviewKeys.has(assetKey))
+
+    useEffect(() => {
+      if (!loadPreviews || !isInView || !assetUrl) return
+      markPreviewLoaded(assetKey)
+    }, [assetKey, assetUrl, isInView, loadPreviews, markPreviewLoaded])
 
     return (
       <div
@@ -756,9 +771,10 @@ export function AssetsPage() {
           </div>
         ) : (
           <div className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {paginatedAssets.map((asset) => (
-              <AssetCard key={asset.id} asset={asset} />
-            ))}
+            {paginatedAssets.map((asset) => {
+              const assetKey = asset.filePath || asset.originalUrl || asset.id
+              return <AssetCard key={assetKey} asset={asset} assetKey={assetKey} />
+            })}
           </div>
         )}
       </ScrollArea>

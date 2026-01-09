@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useContext } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { PageResetContext } from '@/components/layout/Layout'
 import { useTranslation } from 'react-i18next'
+import { generateFreeToolFilename } from '@/stores/assetsStore'
 import { useFaceEnhancerWorker } from '@/hooks/useFaceEnhancerWorker'
 import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
 import { ProcessingProgress } from '@/components/shared/ProcessingProgress'
@@ -346,7 +347,7 @@ export function FaceEnhancerPage() {
 
     const link = document.createElement('a')
     link.href = dataUrl
-    link.download = `enhanced-face-${Date.now()}.${downloadFormat}`
+    link.download = generateFreeToolFilename('face-enhancer', downloadFormat)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)

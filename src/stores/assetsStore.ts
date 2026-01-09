@@ -62,6 +62,30 @@ function generateFileName(modelId: string, type: AssetType, url: string, predict
   return `${slug}_${id}_${resultIndex}.${ext}`
 }
 
+// Exported version for downloads - uses same naming convention as saved assets
+export function generateDownloadFilename(options: {
+  modelId?: string
+  url: string
+  predictionId?: string
+  resultIndex?: number
+}): string {
+  const { modelId, url, predictionId, resultIndex = 0 } = options
+  const slug = modelId
+    ? modelId.replace(/\//g, '_').replace(/[^a-zA-Z0-9_]/g, '-').toLowerCase().replace(/-+/g, '-')
+    : 'output'
+  const id = predictionId || (Date.now().toString(36) + Math.random().toString(36).substring(2, 6))
+  const ext = getExtensionFromUrl(url) || 'png'
+  return `${slug}_${id}_${resultIndex}.${ext}`
+}
+
+// Generate filename for free tools - format: free-tools_{tool-name}_{id}_{resultIndex}.{ext}
+export function generateFreeToolFilename(toolName: string, extension: string, suffix?: string): string {
+  const id = Date.now().toString(36) + Math.random().toString(36).substring(2, 6)
+  const toolSlug = toolName.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()
+  const suffixPart = suffix ? `-${suffix}` : ''
+  return `free-tools_${toolSlug}${suffixPart}_${id}_0.${extension}`
+}
+
 // Helper to extract model ID from filename
 // Format: "{model-slug}_{predictionId}_{resultIndex}.{ext}"
 // where model-slug has / replaced with _

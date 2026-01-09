@@ -688,12 +688,12 @@ export function SettingsPage() {
             <p className="text-xs text-muted-foreground">
               {t('settings.apiKey.getKey')}{' '}
               <a
-                href="https://wavespeed.ai"
+                href="https://wavespeed.ai/accesskey"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary hover:underline"
               >
-                wavespeed.ai
+                wavespeed.ai/accesskey
               </a>
             </p>
           </div>

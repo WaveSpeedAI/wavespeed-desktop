@@ -235,12 +235,12 @@ export function Layout() {
           <p className="text-xs text-muted-foreground text-center">
             {t('settings.apiKey.getKey')}{' '}
             <a
-              href="https://wavespeed.ai"
+              href="https://wavespeed.ai/accesskey"
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary hover:underline inline-flex items-center gap-1"
             >
-              wavespeed.ai
+              wavespeed.ai/accesskey
               <ExternalLink className="h-3 w-3" />
             </a>
           </p>

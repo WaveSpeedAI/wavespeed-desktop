@@ -13,6 +13,7 @@ import { ZImagePage } from '@/pages/ZImagePage'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
 import { useModelsStore } from '@/stores/modelsStore'
 import { useThemeStore } from '@/stores/themeStore'
+import i18n, { languages } from '@/i18n'
 
 // Placeholder for persistent pages (rendered in Layout, not via router)
 const PersistentPagePlaceholder = () => null
@@ -26,6 +27,29 @@ function App() {
     initTheme()
     loadApiKey()
   }, [initTheme, loadApiKey])
+
+  useEffect(() => {
+    const syncLanguageFromSettings = async () => {
+      if (!window.electronAPI?.getSettings) return
+      const settings = await window.electronAPI.getSettings()
+      const storedLanguage = settings.language
+      if (!storedLanguage) return
+
+      localStorage.setItem('wavespeed_language', storedLanguage)
+      if (storedLanguage === 'auto') return
+
+      const supportedLangs = languages
+        .map((lang) => lang.code)
+        .filter((code) => code !== 'auto')
+      if (!supportedLangs.includes(storedLanguage)) return
+
+      if (i18n.language !== storedLanguage) {
+        await i18n.changeLanguage(storedLanguage)
+      }
+    }
+
+    syncLanguageFromSettings()
+  }, [])
 
   useEffect(() => {
     if (isValidated) {

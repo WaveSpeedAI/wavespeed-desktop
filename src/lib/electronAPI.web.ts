@@ -19,6 +19,7 @@ const DEFAULT_SETTINGS = {
   defaultTimeout: 30000,
   updateChannel: 'stable' as const,
   autoCheckUpdate: false,
+  language: 'auto',
 }
 
 // Web implementation of electronAPI.

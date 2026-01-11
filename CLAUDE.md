@@ -224,7 +224,7 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - Asset file naming format: `{model-slug}_{predictionId}_{resultindex}.{ext}` (e.g., `flux-schnell_pred-abc123_0.png`)
 - Layout.tsx handles unified API key login screen - pages don't need individual ApiKeyRequired checks
 - Settings page (`/settings`) is a public path accessible without API key
-- Free Tools pages are public paths accessible without API key: `/free-tools`, `/free-tools/image`, `/free-tools/video`, `/free-tools/background-remover`, `/free-tools/face-enhancer`, `/free-tools/face-swapper`, `/free-tools/image-eraser`, `/free-tools/segment-anything`, `/free-tools/video-converter`, `/free-tools/audio-converter`, `/free-tools/image-converter`, `/free-tools/media-trimmer`, `/free-tools/media-merger`
+- Free Tools pages are public paths accessible without API key: `/free-tools`, `/free-tools/image-enhancer`, `/free-tools/video-enhancer`, `/free-tools/background-remover`, `/free-tools/face-enhancer`, `/free-tools/face-swapper`, `/free-tools/image-eraser`, `/free-tools/segment-anything`, `/free-tools/video-converter`, `/free-tools/audio-converter`, `/free-tools/image-converter`, `/free-tools/media-trimmer`, `/free-tools/media-merger`
 - Free Tools feature uses UpscalerJS with ESRGAN models for image/video upscaling (slim/medium/thick quality options)
 - Video Enhancer processes frames at 30 FPS using WebM muxer with VP9 codec
 - Upscaler uses Web Worker to keep UI responsive during heavy processing

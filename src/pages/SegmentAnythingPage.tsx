@@ -35,15 +35,15 @@ import {
   Trash2,
   Scissors,
   Star,
-  RefreshCw
+  RefreshCw,
+  StopCircle
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { featherMask } from '@/lib/maskUtils'
 
-// Phase configuration for segment anything
+// Phase configuration for segment anything (simplified to single phase)
 const PHASES = [
-  { id: 'download', labelKey: 'freeTools.progress.downloading', weight: 0.3 },
-  { id: 'process', labelKey: 'freeTools.progress.processing', weight: 0.7 }
+  { id: 'process', labelKey: 'freeTools.progress.processing', weight: 1.0 }
 ]
 
 // Mask overlay color (blue with transparency)
@@ -107,7 +107,8 @@ export function SegmentAnythingPage() {
     dispose,
     isSegmented,
     retryModel,
-    hasFailed
+    hasFailed,
+    cancel
   } = useSegmentAnythingWorker({
     onPhase: (phase) => {
       if (phase === 'download') {
@@ -560,6 +561,14 @@ export function SegmentAnythingPage() {
     }
   }, [retryModel, resetAndStart, originalImage, segmentImage])
 
+  // Handle cancel processing
+  const handleCancel = useCallback(() => {
+    cancel()
+    setIsProcessing(false)
+    setIsEncoded(false)
+    resetProgress()
+  }, [cancel, resetProgress])
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -754,14 +763,20 @@ export function SegmentAnythingPage() {
 
           {/* Controls */}
           <div className="flex flex-wrap items-center justify-center gap-3">
-            <Button
-              variant="outline"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isProcessing}
-            >
-              <Upload className="h-4 w-4 mr-2" />
-              {t('freeTools.segmentAnything.resetImage')}
-            </Button>
+            {isProcessing ? (
+              <Button onClick={handleCancel} variant="destructive">
+                <StopCircle className="h-4 w-4 mr-2" />
+                {t('common.cancel')}
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                {t('freeTools.segmentAnything.resetImage')}
+              </Button>
+            )}
 
             <Tooltip>
               <TooltipTrigger asChild>

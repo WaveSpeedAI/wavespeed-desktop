@@ -27,12 +27,11 @@ self.onmessage = async (e: MessageEvent) => {
         // Reset phase tracking
         lastPhase = ''
 
-        // Auto-detect GPU support
-        const hasGpu = typeof navigator !== 'undefined' && 'gpu' in navigator
-
+        // Force CPU mode to avoid WebGPU compatibility issues with different ONNX Runtime versions
+        // The @imgly/background-removal library has its own bundled ONNX Runtime that may conflict with global versions
         const config: Config = {
           model,
-          device: hasGpu ? 'gpu' : 'cpu',
+          device: 'cpu',
           output: {
             format: 'image/png',
             quality: 1
@@ -115,18 +114,16 @@ self.onmessage = async (e: MessageEvent) => {
         // Reset phase tracking
         lastPhase = ''
 
-        // Auto-detect GPU support
-        const hasGpu = typeof navigator !== 'undefined' && 'gpu' in navigator
-
         // Total operations for progress calculation
         const totalOps = 3
         const downloadWeight = 10 // Download is 10% of total progress
         const processWeight = 90 // Processing is 90% of total progress
         const perOpWeight = processWeight / totalOps // 30% per operation
 
+        // Force CPU mode to avoid WebGPU compatibility issues
         const createConfig = (opIndex: number): Config => ({
           model,
-          device: hasGpu ? 'gpu' : 'cpu',
+          device: 'cpu',
           output: {
             format: 'image/png',
             quality: 1

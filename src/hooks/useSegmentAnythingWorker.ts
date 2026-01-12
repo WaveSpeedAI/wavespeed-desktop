@@ -282,6 +282,31 @@ export function useSegmentAnythingWorker(options: UseSegmentAnythingOptions = {}
   const checkIsSegmented = useCallback(() => isSegmentedRef.current, [])
   const checkHasFailed = useCallback(() => hasFailedRef.current, [])
 
+  // Cancel ongoing processing by terminating and recreating the worker
+  const cancel = useCallback(() => {
+    // Clear all pending callbacks
+    for (const [id] of maskCallbacksRef.current) {
+      maskCallbacksRef.current.delete(id)
+    }
+    for (const [id] of segmentCallbacksRef.current) {
+      segmentCallbacksRef.current.delete(id)
+    }
+    for (const [id] of resetCallbacksRef.current) {
+      resetCallbacksRef.current.delete(id)
+    }
+    for (const [id] of initCallbacksRef.current) {
+      initCallbacksRef.current.delete(id)
+    }
+    // Terminate and recreate worker
+    if (workerRef.current) {
+      workerRef.current.terminate()
+      workerRef.current = null
+    }
+    isInitializedRef.current = false
+    isSegmentedRef.current = false
+    createWorker()
+  }, [createWorker])
+
   return {
     initModel,
     segmentImage,
@@ -291,6 +316,7 @@ export function useSegmentAnythingWorker(options: UseSegmentAnythingOptions = {}
     retryModel: retryWorker,
     isInitialized: checkIsInitialized,
     isSegmented: checkIsSegmented,
-    hasFailed: checkHasFailed
+    hasFailed: checkHasFailed,
+    cancel
   }
 }

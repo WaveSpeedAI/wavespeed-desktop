@@ -4,10 +4,6 @@ on:
   push:
     tags:
       - 'v*'
-    paths:
-      - 'mobile/**'
-      - 'src/**'
-      - '.github/workflows/mobile.yml'
   pull_request:
     branches: [main, mobile-app]
     paths:
@@ -63,6 +59,24 @@ jobs:
         working-directory: mobile/android
         run: ./gradlew assembleRelease
 
+      - name: Rename APKs
+        run: |
+          # Rename debug APK
+          if [ -f mobile/android/app/build/outputs/apk/debug/app-debug.apk ]; then
+            mv mobile/android/app/build/outputs/apk/debug/app-debug.apk \
+               mobile/android/app/build/outputs/apk/debug/WaveSpeed-Mobile-debug.apk
+          fi
+          # Rename release APK
+          if [ -f mobile/android/app/build/outputs/apk/release/app-release.apk ]; then
+            mv mobile/android/app/build/outputs/apk/release/app-release.apk \
+               mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile.apk
+          fi
+          # Also handle unsigned release APK
+          if [ -f mobile/android/app/build/outputs/apk/release/app-release-unsigned.apk ]; then
+            mv mobile/android/app/build/outputs/apk/release/app-release-unsigned.apk \
+               mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile-unsigned.apk
+          fi
+
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
@@ -91,11 +105,13 @@ jobs:
         with:
           path: artifacts
 
-      - name: Create Release
+      - name: List artifacts
+        run: find artifacts -type f -name "*.apk"
+
+      - name: Upload to Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            artifacts/wavespeed-mobile-debug/*.apk
             artifacts/wavespeed-mobile-release/*.apk
           draft: false
           prerelease: ${{ contains(github.ref, '-') }}

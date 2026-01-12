@@ -89,6 +89,9 @@ export function SettingsPage() {
   const handleLanguageChange = useCallback((langCode: string) => {
     setLanguagePreference(langCode)
     localStorage.setItem('wavespeed_language', langCode)
+    if (window.electronAPI?.setSettings) {
+      window.electronAPI.setSettings({ language: langCode })
+    }
 
     if (langCode === 'auto') {
       // Detect browser language
@@ -361,6 +364,10 @@ export function SettingsPage() {
         const settings = await window.electronAPI.getSettings()
         setUpdateChannel(settings.updateChannel || 'stable')
         setAutoCheckUpdate(settings.autoCheckUpdate !== false)
+        if (settings.language) {
+          setLanguagePreference(settings.language)
+          localStorage.setItem('wavespeed_language', settings.language)
+        }
       }
       // Load assets settings
       loadAssetsSettings()
@@ -681,12 +688,12 @@ export function SettingsPage() {
             <p className="text-xs text-muted-foreground">
               {t('settings.apiKey.getKey')}{' '}
               <a
-                href="https://wavespeed.ai"
+                href="https://wavespeed.ai/accesskey"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary hover:underline"
               >
-                wavespeed.ai
+                wavespeed.ai/accesskey
               </a>
             </p>
           </div>

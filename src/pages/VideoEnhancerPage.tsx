@@ -1,6 +1,8 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useRef, useCallback, useEffect, useContext } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { PageResetContext } from '@/components/layout/Layout'
 import { useTranslation } from 'react-i18next'
+import { generateFreeToolFilename } from '@/stores/assetsStore'
 import { useUpscalerWorker } from '@/hooks/useUpscalerWorker'
 import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
 import { ProcessingProgress } from '@/components/shared/ProcessingProgress'
@@ -14,33 +16,35 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
-  DialogHeader,
-  DialogFooter
-} from '@/components/ui/dialog'
-import { ArrowLeft, Upload, Download, Play, Square, X, RefreshCw, AlertTriangle } from 'lucide-react'
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog'
+import { ArrowLeft, Upload, Download, Play, Square, X, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type ModelType = 'slim' | 'medium' | 'thick'
 type ScaleType = '2x' | '3x' | '4x'
 
-// Check if running on mobile (Capacitor)
-const isMobile = (): boolean => {
-  return !!(window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.()
-}
-
-// Phase configuration for video enhancer (simplified to single phase)
+// Phase configuration for video enhancer (model loading is cached by browser)
 const PHASES = [
-  { id: 'process', labelKey: 'freeTools.progress.processing', weight: 1.0 }
+  { id: 'process', labelKey: 'freeTools.progress.processingFrames', weight: 0.9 },
+  { id: 'encode', labelKey: 'freeTools.progress.encoding', weight: 0.08 },
+  { id: 'finalize', labelKey: 'freeTools.progress.finalizing', weight: 0.02 }
 ]
 
 export function VideoEnhancerPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const location = useLocation()
+  const { resetPage } = useContext(PageResetContext)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -48,15 +52,20 @@ export function VideoEnhancerPage() {
   const abortRef = useRef(false)
   const dragCounterRef = useRef(0)
 
-  const [videoFile, setVideoFile] = useState<File | null>(null)
+  const [_videoFile, setVideoFile] = useState<File | null>(null)
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [model, setModel] = useState<ModelType>('slim')
   const [scale, setScale] = useState<ScaleType>('2x')
+  const [downloadFormat, setDownloadFormat] = useState<'webm' | 'mp4'>('mp4')
+  const [supportedFormats, setSupportedFormats] = useState<{
+    webm: boolean
+    mp4: boolean
+  }>({ webm: true, mp4: false })
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null)
   const [showPreview, setShowPreview] = useState(false)
-  const [showMobileWarning, setShowMobileWarning] = useState(false)
+  const [showBackWarning, setShowBackWarning] = useState(false)
 
   // Multi-phase progress tracking
   const {
@@ -71,7 +80,7 @@ export function VideoEnhancerPage() {
 
   const [error, setError] = useState<string | null>(null)
 
-  const { loadModel, upscale, dispose, hasFailed, retryWorker, cancel } = useUpscalerWorker({
+  const { loadModel, upscale, dispose, hasFailed, retryWorker } = useUpscalerWorker({
     onPhase: () => {
       // Model loading phases ignored - handled by browser caching
     },
@@ -90,6 +99,38 @@ export function VideoEnhancerPage() {
     retryWorker()
   }, [retryWorker])
 
+  const handleBack = useCallback(() => {
+    if (isProcessing) {
+      setShowBackWarning(true)
+    } else {
+      abortRef.current = true
+      dispose()
+      resetPage(location.pathname)
+      navigate('/free-tools')
+    }
+  }, [isProcessing, dispose, resetPage, location.pathname, navigate])
+
+  const handleConfirmBack = useCallback(() => {
+    setShowBackWarning(false)
+    abortRef.current = true
+    dispose()
+    resetPage(location.pathname)
+    navigate('/free-tools')
+  }, [dispose, resetPage, location.pathname, navigate])
+
+  // Check supported video formats
+  useEffect(() => {
+    const webmSupported = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+    const mp4Supported =
+      MediaRecorder.isTypeSupported('video/mp4;codecs=avc1') ||
+      MediaRecorder.isTypeSupported('video/mp4')
+    setSupportedFormats({ webm: webmSupported, mp4: mp4Supported })
+    // Fallback to webm if mp4 is not supported (default is mp4)
+    if (!mp4Supported) {
+      setDownloadFormat('webm')
+    }
+  }, [])
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -104,6 +145,7 @@ export function VideoEnhancerPage() {
     (file: File) => {
       if (!file.type.startsWith('video/')) return
 
+      setError(null)
       // Cleanup previous
       if (videoUrl) URL.revokeObjectURL(videoUrl)
       if (downloadUrl) URL.revokeObjectURL(downloadUrl)
@@ -154,14 +196,6 @@ export function VideoEnhancerPage() {
       setIsDragging(false)
     }
   }, [])
-
-  const handleStartClick = () => {
-    if (isMobile()) {
-      setShowMobileWarning(true)
-    } else {
-      startProcessing()
-    }
-  }
 
   const startProcessing = async () => {
     if (!videoRef.current || !canvasRef.current) return
@@ -348,14 +382,11 @@ export function VideoEnhancerPage() {
         videoRef.current.playbackRate = 1
         videoRef.current.pause()
       }
-    } finally {
-      dispose()
     }
   }
 
   const stopProcessing = () => {
     abortRef.current = true
-    cancel() // Terminate worker immediately
     setIsProcessing(false)
     resetProgress()
     if (videoRef.current) {
@@ -368,9 +399,11 @@ export function VideoEnhancerPage() {
   const handleDownload = () => {
     if (!downloadUrl) return
 
+    const extension =
+      downloadFormat === 'mp4' && supportedFormats.mp4 ? 'mp4' : 'webm'
     const link = document.createElement('a')
     link.href = downloadUrl
-    link.download = `enhanced-${videoFile?.name?.replace(/\.[^.]+$/, '') || 'video'}.webm`
+    link.download = generateFreeToolFilename('video-enhancer', extension)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -400,7 +433,7 @@ export function VideoEnhancerPage() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => navigate('/free-tools')}
+          onClick={handleBack}
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -505,7 +538,7 @@ export function VideoEnhancerPage() {
             </Select>
 
             {!isProcessing ? (
-              <Button onClick={handleStartClick} className="gradient-bg">
+              <Button onClick={startProcessing} className="gradient-bg">
                 <Play className="h-4 w-4 mr-2" />
                 {t('freeTools.videoEnhancer.start')}
               </Button>
@@ -517,10 +550,26 @@ export function VideoEnhancerPage() {
             )}
 
             {downloadUrl && (
-              <Button variant="outline" onClick={handleDownload}>
-                <Download className="h-4 w-4 mr-2" />
-                {t('freeTools.videoEnhancer.download')}
-              </Button>
+              <>
+                <Select
+                  value={downloadFormat}
+                  onValueChange={(v) => setDownloadFormat(v as 'webm' | 'mp4')}
+                >
+                  <SelectTrigger className="w-28">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {supportedFormats.mp4 && (
+                      <SelectItem value="mp4">MP4</SelectItem>
+                    )}
+                    <SelectItem value="webm">WebM</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" onClick={handleDownload}>
+                  <Download className="h-4 w-4 mr-2" />
+                  {t('freeTools.videoEnhancer.download')}
+                </Button>
+              </>
             )}
           </div>
 
@@ -535,7 +584,7 @@ export function VideoEnhancerPage() {
           {/* Error with retry button */}
           {error && hasFailed() && !isProcessing && (
             <div className="flex items-center justify-center gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-              <span className="text-sm text-destructive">{t('common.downloadFailed')}</span>
+              <span className="text-sm text-destructive">{error}</span>
               <Button variant="outline" size="sm" onClick={handleRetry}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 {t('common.retry')}
@@ -640,41 +689,23 @@ export function VideoEnhancerPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Mobile Warning Dialog */}
-      <Dialog open={showMobileWarning} onOpenChange={setShowMobileWarning}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-yellow-500" />
-              {t('freeTools.videoEnhancer.mobileWarning.title')}
-            </DialogTitle>
-            <DialogDescription>
-              {t('freeTools.videoEnhancer.mobileWarning.description')}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <p>{t('freeTools.videoEnhancer.mobileWarning.recommendations')}</p>
-            <ul className="list-disc list-inside space-y-1 ml-2">
-              <li>{t('freeTools.videoEnhancer.mobileWarning.duration')}</li>
-              <li>{t('freeTools.videoEnhancer.mobileWarning.resolution')}</li>
-              <li>{t('freeTools.videoEnhancer.mobileWarning.model')}</li>
-            </ul>
-          </div>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setShowMobileWarning(false)}>
-              {t('common.cancel')}
-            </Button>
-            <Button
-              onClick={() => {
-                setShowMobileWarning(false)
-                startProcessing()
-              }}
-            >
-              {t('freeTools.videoEnhancer.mobileWarning.proceed')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Back Warning Dialog */}
+      <AlertDialog open={showBackWarning} onOpenChange={setShowBackWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('freeTools.backWarning.title')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('freeTools.backWarning.description')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('freeTools.backWarning.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmBack}>
+              {t('freeTools.backWarning.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

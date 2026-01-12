@@ -28,7 +28,6 @@
     "success": "成功",
     "warning": "警告",
     "selectAll": "全选",
-    "deselectAll": "取消全选",
     "done": "完成",
     "retry": "重试",
     "downloadFailed": "下载失败。请检查您的网络连接。"
@@ -40,29 +39,46 @@
     "history": "历史记录",
     "templates": "模板",
     "assets": "我的资产",
+    "zImage": "Z-Image",
     "freeTools": "免费工具",
     "settings": "设置",
     "collapse": "收起"
   },
   "welcome": {
-    "subtitle": "触手可及的 AI 创意工具",
-    "footer": "由 WaveSpeed AI 驱动",
-    "quickLinks": {
-      "settings": {
-        "title": "设置",
-        "description": "配置 API 密钥、语言和下载"
+    "tagline": "触手可及的 AI 创意工具",
+    "explore": "探索",
+    "getStarted": "开始使用",
+    "tryFreeTools": "试用免费工具",
+    "features": {
+      "models": {
+        "title": "模型浏览",
+        "description": "浏览 AI 模型，支持图像、视频和音频生成"
+      },
+      "playground": {
+        "title": "演练场",
+        "description": "多标签工作区，自定义参数运行模型"
+      },
+      "templates": {
+        "title": "模板",
+        "description": "保存和复用您喜爱的配置"
+      },
+      "history": {
+        "title": "历史记录",
+        "description": "追踪和查看最近的预测记录"
+      },
+      "assets": {
+        "title": "我的资产",
+        "description": "整理和管理生成的输出内容"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "本地 AI 图像生成 - 在您的设备上运行，无需 API Key",
+        "badge": "本地"
       },
       "freeTools": {
         "title": "免费工具",
-        "description": "本地运行的 AI 工具 - 无需密钥"
-      },
-      "game": {
-        "title": "小游戏",
-        "description": "玩 Flappy Bird 消磨时间"
-      },
-      "website": {
-        "title": "访问官网",
-        "description": "在网页端体验 WaveSpeed AI"
+        "description": "本地运行的强大 AI 工具 - 无需 API 密钥",
+        "badge": "免费"
       }
     }
   },
@@ -81,15 +97,13 @@
     "type": "类型",
     "basePrice": "基础价格",
     "openInNewTab": "在新标签页打开",
-    "openDocs": "打开文档",
-    "openWaveSpeed": "在 WaveSpeed 打开",
     "addToFavorites": "添加到收藏",
     "removeFromFavorites": "取消收藏"
   },
   "playground": {
     "title": "演练场",
     "selectModel": "选择模型",
-    "searchModels": "搜索...",
+    "searchModels": "搜索模型...",
     "noModelSelected": "未选择模型",
     "selectModelPrompt": "选择一个模型以配置参数",
     "run": "运行",
@@ -100,13 +114,6 @@
     "noOutputs": "暂无输出",
     "configureAndRun": "配置模型并点击运行以生成",
     "generating": "生成中...",
-    "imageCopied": "图片已复制到剪贴板",
-    "urlCopied": "链接已复制到剪贴板",
-    "copyFailed": "复制失败",
-    "copyImage": "复制图片",
-    "copyUrl": "复制链接",
-    "copy": "复制",
-    "download": "下载",
     "saveAsTemplate": "保存为模板",
     "saveTemplate": "保存模板",
     "saveTemplateDesc": "为 {{model}} 保存当前配置",
@@ -140,8 +147,6 @@
       "micPermissionDenied": "麦克风权限被拒绝。请在浏览器设置中允许访问。",
       "noMicFound": "未找到麦克风。请连接麦克风后重试。",
       "micError": "无法访问麦克风",
-      "micInUse": "麦克风正被其他应用程序使用。请关闭其他应用后重试。",
-      "tapToRecord": "点击开始录音",
       "switchCamera": "切换相机",
       "takePhoto": "拍照",
       "retake": "重拍",
@@ -210,9 +215,6 @@
       "savedAll": "已保存到资产",
       "savedAllDesc": "已保存 {{count}} 个输出",
       "saved": "已保存",
-      "downloadSuccess": "已下载 {{filename}}",
-      "downloadFailed": "下载失败: {{error}}",
-      "downloadAllSuccess": "已下载 {{count}} 个文件",
       "clearResults": "清除",
       "results": "结果",
       "result": "结果",
@@ -233,47 +235,28 @@
       "completed": "已完成",
       "failed": "失败",
       "processing": "处理中",
-      "created": "已创建",
-      "archived": "已归档"
+      "created": "已创建"
     },
     "loadPreviews": "加载预览",
     "disablePreviews": "禁用预览",
     "generationDetails": "生成详情",
+    "select": "选择",
+    "selectionDone": "完成",
+    "deleteSelected": "删除 ({{count}})",
+    "bulkDeleteConfirmTitle": "删除历史记录",
+    "bulkDeleteConfirmDesc": "确定要删除 {{count}} 条预测吗？此操作无法撤销。",
+    "deleteConfirmTitle": "删除历史记录",
+    "deleteConfirmDesc": "确定要删除此预测吗？此操作无法撤销。",
+    "deleted": "历史记录已删除",
+    "deletedBulk": "历史记录已删除",
+    "deletedBulkDesc": "已删除 {{count}} 条历史记录",
+    "deleteFailed": "删除历史记录失败",
     "model": "模型",
     "created": "创建时间",
     "executionTime": "执行时间",
     "predictionId": "预测 ID",
     "notAvailable": "历史记录不可用",
-    "notAvailableDesc": "预测历史 API 当前不可用。",
-    "saveTemplate": {
-      "button": "保存为模板",
-      "dialogTitle": "保存为模板",
-      "nameLabel": "模板名称",
-      "namePlaceholder": "输入模板名称",
-      "duplicateName": "已存在同名模板",
-      "success": "模板已保存",
-      "successDesc": "您的模板已成功保存",
-      "error": "保存失败",
-      "noInputsTitle": "无法保存模板",
-      "noInputsDesc": "输入参数仅适用于在此应用中进行的预测。请先运行新的预测。"
-    },
-    "hasInputs": "可保存为模板",
-    "select": "选择",
-    "selectionDone": "完成",
-    "deleteSelected": "删除",
-    "bulkDeleteConfirmTitle": "删除预测记录",
-    "bulkDeleteConfirmDesc": "确定要删除 {{count}} 条预测记录吗？此操作无法撤销。",
-    "deleteConfirmTitle": "删除预测记录",
-    "deleteConfirmDesc": "确定要删除此预测记录吗？此操作无法撤销。",
-    "deleted": "预测记录已删除",
-    "deletedBulk": "预测记录已删除",
-    "deletedBulkDesc": "已删除 {{count}} 条预测记录",
-    "deleteFailed": "删除预测记录失败",
-    "downloadComplete": "下载完成",
-    "downloadCompleteDesc": "已下载 {{count}} 个文件",
-    "downloadFailed": "下载失败",
-    "downloadFailedDesc": "{{count}} 个文件下载失败",
-    "longPressHint": "长按选择"
+    "notAvailableDesc": "预测历史 API 当前不可用。"
   },
   "templates": {
     "title": "模板",
@@ -399,10 +382,46 @@
     "loadPreviews": "加载预览",
     "disablePreviews": "禁用预览"
   },
+  "zImage": {
+    "title": "Z-Image",
+    "subtitle": "本地免费运行 Z-Image",
+    "generateImage": "生成",
+    "generating": "生成中...",
+    "downloadingSd": "下载 SD 中...",
+    "downloadingVae": "下载 VAE 中...",
+    "downloadingLlm": "下载 LLM 中...",
+    "downloadingZImage": "下载模型中...",
+    "stopGeneration": "停止",
+    "models": {
+      "q4k": {
+        "description": "推荐：快速推理，质量良好，约 2.5GB"
+      },
+      "q6k": {
+        "description": "高质量：最佳效果，速度较慢，约 3.5GB"
+      },
+      "q8": {
+        "description": "最高质量：最大精度，速度较慢，约 4GB"
+      },
+      "q2k": {
+        "description": "轻量级：最快生成，质量较低，约 1.5GB"
+      }
+    },
+    "errors": {
+      "desktopRequired": "此功能需要桌面应用。请下载 WaveSpeed Desktop 或尝试在线版本。",
+      "generationCancelled": "生成已取消"
+    },
+    "tips": {
+      "intelMacUnsupported": "本地 Z-Image 仅支持 Apple Silicon 的 Mac。",
+      "linuxArmUnsupported": "Linux ARM 不支持本地 Z-Image。",
+      "windowsArmUnsupported": "Windows ARM 不支持本地 Z-Image。",
+      "linuxCpuOnly": "Linux 上本地 Z-Image 仅使用 CPU。可能较慢—请减少步数或图像尺寸。",
+      "windowsVulkanRequired": "Windows 上本地 Z-Image 需要支持 Vulkan 的 GPU 驱动。若不可用，生成可能较慢或失败。",
+      "slowWithoutMetal": "Metal 加速不可用。生成将使用 CPU，可能较慢—请减少步数或图像尺寸。"
+    }
+  },
   "settings": {
     "title": "设置",
     "description": "配置您的 WaveSpeed Desktop 应用程序",
-    "mobileDescription": "配置您的 WaveSpeed Mobile 应用程序",
     "apiKey": {
       "title": "API 密钥",
       "description": "输入您的 WaveSpeed API 密钥以访问模型",
@@ -418,6 +437,7 @@
       "invalidDesc": "无法验证 API 密钥。请检查后重试。",
       "cleared": "API 密钥已清除",
       "clearedDesc": "您的 API 密钥已被移除。",
+      "itemDeleted": "Cache item deleted",
       "error": "错误",
       "errorDesc": "保存 API 密钥失败。"
     },
@@ -471,20 +491,18 @@
       "clear": "清除",
       "cleared": "缓存已清除",
       "clearedDesc": "AI模型缓存已清除。需要时将重新下载模型。",
+      "itemDeleted": "缓存项已删除",
       "clearFailed": "清除缓存失败",
-      "predownload": "预下载模型",
-      "predownloadDesc": "下载所有免费工具的AI模型以供离线使用",
-      "downloadModels": "下载全部",
-      "downloading": "下载中",
-      "alreadyCached": "已缓存",
-      "downloaded": "已下载",
-      "overallProgress": "总进度",
-      "downloadCancelled": "下载已取消",
-      "downloadCancelledDesc": "模型下载已取消",
-      "downloadPartial": "部分下载",
-      "downloadPartialDesc": "部分模型下载失败，您可以稍后重试。",
-      "downloadComplete": "下载完成",
-      "downloadCompleteDesc": "所有AI模型已下载并缓存。"
+      "zImageAuxiliary": "Z-Image 辅助模型",
+      "zImageModels": "Z-Image 模型",
+      "zImageBinary": "Z-Image 二进制"
+    },
+    "downloads": {
+      "title": "下载",
+      "description": "配置AI模型下载设置",
+      "downloadTimeout": "下载超时",
+      "downloadTimeoutDesc": "下载AI模型的最大等待时间",
+      "minutes": "分钟"
     },
     "updates": {
       "title": "更新",
@@ -517,9 +535,7 @@
     "about": {
       "title": "关于",
       "description": "WaveSpeed Desktop - AI 模型演练场",
-      "mobileDescription": "WaveSpeed Mobile - AI 模型演练场",
       "aboutText": "一个用于运行 WaveSpeed API AI 模型的开源桌面应用程序。",
-      "mobileAboutText": "一个用于运行 WaveSpeed API AI 模型的开源移动应用程序。",
       "viewOnGitHub": "在 GitHub 上查看"
     }
   },
@@ -556,16 +572,7 @@
       "cancelled": "已取消",
       "original": "原始",
       "enhanced": "增强后",
-      "eta": "~{{time}} 剩余",
-      "mobileWarning": {
-        "title": "移动设备警告",
-        "description": "由于内存限制，视频增强可能会导致移动设备上的应用崩溃。",
-        "recommendations": "为了获得最佳效果，我们建议：",
-        "duration": "视频长度小于 5 秒",
-        "resolution": "分辨率低于 720p (1280×720)",
-        "model": "使用「快速」模型选项",
-        "proceed": "仍然继续"
-      }
+      "eta": "~{{time}} 剩余"
     },
     "imageEnhancer": {
       "title": "图片增强",
@@ -586,7 +593,66 @@
       "eta": "~{{time}} 剩余",
       "sideBySide": "并排对比",
       "comparison": "滑块对比",
-      "dragToCompare": "拖动对比"
+      "dragToCompare": "拖动对比",
+      "enhanceFace": "增强面部质量"
+    },
+    "faceEnhancer": {
+      "title": "人脸增强",
+      "description": "使用 AI 增强和修复人脸质量",
+      "selectImage": "选择包含人脸的图片",
+      "orDragDrop": "或拖放文件",
+      "enhance": "增强",
+      "download": "下载",
+      "processing": "处理中...",
+      "original": "原始",
+      "enhanced": "增强后",
+      "sideBySide": "并排对比",
+      "comparison": "滑块对比",
+      "dragToCompare": "拖动对比",
+      "detecting": "检测人脸",
+      "enhancing": "增强人脸",
+      "noFaces": "图片中未检测到人脸",
+      "facesFound": "检测到 {{count}} 张人脸"
+    },
+    "faceSwapper": {
+      "title": "人脸替换",
+      "description": "使用AI替换图像中的人脸",
+      "sourceTitle": "源人脸",
+      "targetTitle": "目标图像",
+      "selectSource": "选择源人脸",
+      "selectTarget": "选择目标图像",
+      "sourceHint": "要复制的人脸身份",
+      "targetHint": "要替换人脸的图像",
+      "orDragDrop": "or drag and drop",
+      "noSourceFace": "源图像中未检测到人脸",
+      "noTargetFaces": "目标图像中未检测到人脸",
+      "clickToSelect": "点击人脸选择要替换的目标",
+      "facesSelected": "已选择 {{selected}}/{{total}} 张人脸",
+      "sourceSelected": "Face {{selected}}/{{total}} selected",
+      "faceDetected": "已检测到人脸",
+      "swapFaces": "替换人脸",
+      "processing": "处理中...",
+      "detecting": "检测人脸中",
+      "extractingEmbedding": "提取人脸特征",
+      "swapping": "替换人脸中",
+      "enhancing": "增强结果中",
+      "enableEnhancement": "增强替换后的人脸",
+      "original": "原图",
+      "result": "结果",
+      "download": "下载",
+      "clickFaceToSwap": "点击要换脸的人脸",
+      "swapFace": "换脸",
+      "targetFace": "目标人脸",
+      "sourceFace": "源人脸",
+      "enhanceFace": "增强面部质量",
+      "swap": "换脸",
+      "change": "更换",
+      "clickToSwapMore": "点击其他人脸继续换脸",
+      "swapped": "已换脸",
+      "revert": "恢复",
+      "swappedFace": "换脸后",
+      "swappedFacePlaceholder": "尚未换脸",
+      "alreadySwapped": "已换过此脸"
     },
     "backgroundRemover": {
       "title": "背景移除",
@@ -648,111 +714,6 @@
       "cutMask": "裁剪蒙版",
       "hint": "左键点击包含区域，右键点击排除区域"
     },
-    "videoConverter": {
-      "title": "视频转换",
-      "description": "在不同格式之间转换视频",
-      "selectVideo": "点击或拖拽视频到这里",
-      "outputFormat": "输出格式",
-      "convert": "转换",
-      "converting": "转换中...",
-      "download": "下载",
-      "newVideo": "新视频",
-      "result": "转换结果"
-    },
-    "audioConverter": {
-      "title": "音频转换",
-      "description": "MP3 与 WAV 格式互转",
-      "selectAudio": "点击或拖拽 MP3/WAV 文件到这里",
-      "supportedFormats": "MP3 ↔ WAV 互转",
-      "inputAudio": "输入音频",
-      "selectAudioFile": "选择 MP3 或 WAV 文件进行转换",
-      "outputFormat": "输出格式",
-      "bitrate": "比特率",
-      "convert": "转换音频",
-      "converting": "转换中...",
-      "download": "下载",
-      "newAudio": "新音频",
-      "result": "转换结果",
-      "invalidFile": "请选择 MP3 或 WAV 文件"
-    },
-    "imageConverter": {
-      "title": "图片转换",
-      "description": "将图片转换为 JPG、PNG 或 WebP",
-      "selectImage": "点击或拖拽图片到这里",
-      "supportedFormats": "任意图片 → JPG/PNG/WebP",
-      "inputImage": "输入图片",
-      "selectImageFile": "选择要转换的图片",
-      "outputFormat": "输出格式",
-      "quality": "质量",
-      "convert": "转换",
-      "converting": "转换中...",
-      "download": "下载",
-      "newImage": "新图片",
-      "result": "转换结果",
-      "invalidFile": "请选择有效的图片文件"
-    },
-    "mediaTrimmer": {
-      "title": "媒体剪辑",
-      "description": "将视频和音频剪辑到合适的长度",
-      "selectMedia": "点击或拖拽媒体文件到这里",
-      "supportedFormats": "支持视频和音频文件",
-      "inputMedia": "输入媒体",
-      "selectMediaFile": "选择要剪辑的媒体文件",
-      "trimSettings": "剪辑设置",
-      "selectRange": "选择开始和结束时间",
-      "startTime": "开始时间",
-      "endTime": "结束时间",
-      "timeFormat": "格式: 分:秒.毫秒 或 秒数",
-      "outputDuration": "输出时长",
-      "duration": "时长",
-      "trim": "剪辑媒体",
-      "trimming": "剪辑中...",
-      "download": "下载",
-      "newMedia": "新文件",
-      "result": "剪辑结果",
-      "invalidFile": "请选择有效的视频或音频文件",
-      "invalidRange": "结束时间必须大于开始时间"
-    },
-    "mediaMerger": {
-      "title": "媒体合并",
-      "description": "将多个视频或音频文件合并为一个",
-      "selectMedia": "点击或拖拽文件到这里",
-      "supportedFormats": "支持视频和音频文件",
-      "addFiles": "添加文件",
-      "inputFiles": "输入文件",
-      "dragToReorder": "拖动以排序",
-      "noFiles": "未添加文件",
-      "addFilesDesc": "添加要合并的视频或音频文件",
-      "outputFormat": "输出格式",
-      "merge": "合并",
-      "merging": "合并中...",
-      "download": "下载",
-      "clear": "清除",
-      "result": "合并结果",
-      "invalidFile": "请选择有效的视频或音频文件",
-      "minFiles": "请添加至少2个文件进行合并"
-    },
-    "faceEnhancer": {
-      "title": "人脸增强",
-      "description": "使用 AI 增强和修复照片中的人脸",
-      "selectImage": "点击或拖拽图片到这里",
-      "modelsInfo": "使用 YOLO + GFPGAN AI 模型",
-      "inputImage": "输入图片",
-      "selectImageWithFaces": "选择包含人脸的图片进行增强",
-      "enhance": "增强人脸",
-      "enhancing": "增强人脸中...",
-      "detecting": "检测人脸中...",
-      "downloading": "下载模型中...",
-      "loading": "加载模型中...",
-      "processing": "处理中...",
-      "download": "下载",
-      "newImage": "新图片",
-      "result": "增强结果",
-      "facesEnhanced": "已增强 {{count}} 张人脸",
-      "noFacesFound": "未检测到人脸",
-      "invalidFile": "请选择有效的图片文件",
-      "firstTimeDownload": "首次使用？模型将被下载（约350MB）"
-    },
     "progress": {
       "downloading": "下载模型中",
       "loading": "加载模型中",
@@ -762,10 +723,91 @@
       "finalizing": "完成中",
       "overall": "总进度",
       "remaining": "剩余"
+    },
+    "backWarning": {
+      "title": "正在处理中",
+      "description": "任务正在处理中。确定要返回吗？这将取消当前操作。",
+      "cancel": "取消",
+      "confirm": "返回"
+    },
+    "videoConverter": {
+      "title": "视频转换器",
+      "description": "在多种格式之间转换视频（MP4、WebM、MOV、AVI）",
+      "selectVideo": "选择视频",
+      "orDragDrop": "或拖放文件",
+      "dropToReplace": "拖放以替换视频",
+      "supportedFormats": "支持 MP4、WebM、MOV、AVI、MKV",
+      "convert": "转换",
+      "converting": "转换中...",
+      "original": "原始",
+      "outputSettings": "输出设置",
+      "format": "格式",
+      "quality": "质量",
+      "resolution": "分辨率",
+      "convertedSize": "转换后大小",
+      "converted": "已转换"
+    },
+    "audioConverter": {
+      "title": "音频转换器",
+      "description": "在多种格式之间转换音频（MP3、AAC、FLAC、WAV）",
+      "selectAudio": "选择音频",
+      "orDragDrop": "或拖放文件",
+      "dropToReplace": "拖放以替换音频",
+      "supportedFormats": "支持 MP3、M4A、OGG、WAV、FLAC",
+      "convert": "转换",
+      "converting": "转换中...",
+      "original": "原始",
+      "converted": "已转换",
+      "playOriginal": "播放原始",
+      "playConverted": "播放转换后"
+    },
+    "imageConverter": {
+      "title": "图片转换器",
+      "description": "在多种格式之间转换图片（JPG、PNG、WebP、GIF）",
+      "selectImages": "选择图片",
+      "orDragDrop": "或拖放文件",
+      "dropToAdd": "拖放以添加图片",
+      "supportedFormats": "支持 JPG、PNG、WebP、GIF、BMP",
+      "addMore": "添加更多",
+      "convert": "转换",
+      "converting": "转换中...",
+      "quality": "质量",
+      "downloadAll": "全部下载"
+    },
+    "mediaTrimmer": {
+      "title": "媒体裁剪器",
+      "description": "将视频或音频裁剪到特定时长",
+      "selectMedia": "选择媒体",
+      "orDragDrop": "或拖放文件",
+      "dropToReplace": "拖放以替换媒体",
+      "supportedFormats": "支持视频和音频文件",
+      "trim": "裁剪",
+      "trimming": "裁剪中...",
+      "originalDuration": "原始时长",
+      "selectedDuration": "已选时长",
+      "trimmedSize": "裁剪后大小",
+      "playingOriginal": "播放原始",
+      "playingTrimmed": "播放裁剪后"
+    },
+    "mediaMerger": {
+      "title": "媒体合并器",
+      "description": "将多个视频或音频文件合并为一个",
+      "selectFiles": "选择文件",
+      "orDragDrop": "或拖放文件",
+      "dropToAdd": "拖放以添加文件",
+      "supportedFormats": "支持视频和音频文件",
+      "addMore": "添加更多",
+      "merge": "合并",
+      "merging": "合并中...",
+      "merged": "已合并",
+      "totalDuration": "总时长",
+      "sameFormatNote": "文件必须具有相同格式才能无损合并"
+    },
+    "ffmpeg": {
+      "loading": "加载 FFmpeg",
+      "converting": "转换中",
+      "merging": "合并中",
+      "trimming": "裁剪中"
     }
-  },
-  "game": {
-    "waitingLong": "等了很久？来局小游戏！",
-    "clickToPlay": "点击开始"
   }
 }

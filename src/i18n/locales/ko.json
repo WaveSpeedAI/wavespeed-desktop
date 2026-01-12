@@ -34,14 +34,54 @@
     "downloadFailed": "다운로드에 실패했습니다. 네트워크 연결을 확인해 주세요."
   },
   "nav": {
+    "home": "홈",
     "models": "모델",
     "playground": "플레이그라운드",
     "history": "기록",
     "templates": "템플릿",
     "assets": "내 에셋",
+    "zImage": "Z-Image",
     "freeTools": "무료 도구",
     "settings": "설정",
     "collapse": "접기"
+  },
+  "welcome": {
+    "tagline": "손끝에서 펼쳐지는 AI 크리에이티브 도구",
+    "explore": "탐색",
+    "getStarted": "시작하기",
+    "tryFreeTools": "무료 도구 체험",
+    "features": {
+      "models": {
+        "title": "모델 브라우저",
+        "description": "이미지, 비디오, 오디오 생성을 위한 AI 모델 탐색"
+      },
+      "playground": {
+        "title": "플레이그라운드",
+        "description": "사용자 정의 매개변수로 모델을 실행하는 멀티탭 작업 공간"
+      },
+      "templates": {
+        "title": "템플릿",
+        "description": "즐겨 사용하는 설정 저장 및 재사용"
+      },
+      "history": {
+        "title": "기록",
+        "description": "최근 예측 추적 및 검토"
+      },
+      "assets": {
+        "title": "내 에셋",
+        "description": "생성된 출력물 정리 및 관리"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "로컬 AI 이미지 생성 - 기기에서 실행되며 API 키가 필요 없습니다",
+        "badge": "로컬"
+      },
+      "freeTools": {
+        "title": "무료 도구",
+        "description": "로컬에서 실행되는 강력한 AI 도구 - API 키 불필요",
+        "badge": "무료"
+      }
+    }
   },
   "models": {
     "title": "모델",
@@ -151,6 +191,40 @@
       "failedError": "프롬프트 최적화에 실패했습니다",
       "optimizing": "최적화 중...",
       "optimize": "최적화"
+    },
+    "flappyBird": {
+      "clickToStart": "클릭하거나 스페이스바를 눌러 게임 시작",
+      "viewResults": "결과 보기",
+      "playWhileWaiting": "기다리는 동안 플레이",
+      "quit": "종료"
+    },
+    "batch": {
+      "title": "배치",
+      "enable": "배치 모드 활성화",
+      "disable": "배치 모드 비활성화",
+      "repeatCount": "횟수",
+      "randomizeSeed": "시드 무작위화",
+      "stopOnError": "오류 시 중지",
+      "runBatch": "배치 실행 ({{count}})",
+      "running": "실행 중 {{current}}/{{total}}...",
+      "cancelling": "취소 중...",
+      "cancel": "취소",
+      "completed": "{{count}} 완료",
+      "failed": "{{count}} 실패",
+      "downloadAll": "전체 다운로드",
+      "saveAllToAssets": "전체 저장",
+      "savedAll": "에셋에 저장됨",
+      "savedAllDesc": "{{count}}개 출력 저장됨",
+      "saved": "저장됨",
+      "clearResults": "지우기",
+      "results": "결과",
+      "result": "결과",
+      "inputDetails": "입력 상세",
+      "preview": "미리보기",
+      "items": "개",
+      "noPreview": "미리보기 없음",
+      "seedsGenerated": "시드 자동 생성됨",
+      "settings": "배치 설정"
     }
   },
   "history": {
@@ -167,6 +241,17 @@
     "loadPreviews": "미리보기 로드",
     "disablePreviews": "미리보기 비활성화",
     "generationDetails": "생성 세부 정보",
+    "select": "선택",
+    "selectionDone": "완료",
+    "deleteSelected": "삭제 ({{count}})",
+    "bulkDeleteConfirmTitle": "기록 삭제",
+    "bulkDeleteConfirmDesc": "{{count}}개의 예측을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+    "deleteConfirmTitle": "기록 삭제",
+    "deleteConfirmDesc": "이 예측을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+    "deleted": "기록이 삭제되었습니다",
+    "deletedBulk": "기록이 삭제되었습니다",
+    "deletedBulkDesc": "{{count}}개의 기록이 삭제되었습니다",
+    "deleteFailed": "기록 삭제에 실패했습니다",
     "model": "모델",
     "created": "생성됨",
     "executionTime": "실행 시간",
@@ -322,6 +407,43 @@
     "loadPreviews": "미리보기 로드",
     "disablePreviews": "미리보기 비활성화"
   },
+  "zImage": {
+    "title": "Z-Image",
+    "subtitle": "Z-Image를 로컬에서 무료로 실행",
+    "generateImage": "생성",
+    "generating": "생성 중...",
+    "downloadingSd": "SD 다운로드 중...",
+    "downloadingVae": "VAE 다운로드 중...",
+    "downloadingLlm": "LLM 다운로드 중...",
+    "downloadingZImage": "모델 다운로드 중...",
+    "stopGeneration": "중지",
+    "models": {
+      "q4k": {
+        "description": "권장: 빠른 추론과 좋은 품질, 약 2.5GB"
+      },
+      "q6k": {
+        "description": "고품질: 최고의 결과, 느린 생성, 약 3.5GB"
+      },
+      "q8": {
+        "description": "최고 품질: 최대 정밀도, 느린 생성, 약 4GB"
+      },
+      "q2k": {
+        "description": "경량: 가장 빠른 생성, 낮은 품질, 약 1.5GB"
+      }
+    },
+    "errors": {
+      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "generationCancelled": "생성이 취소되었습니다"
+    },
+    "tips": {
+      "intelMacUnsupported": "로컬 Z-Image는 Apple Silicon Mac에서만 지원됩니다.",
+      "linuxArmUnsupported": "Linux ARM에서는 로컬 Z-Image가 지원되지 않습니다.",
+      "windowsArmUnsupported": "Windows ARM에서는 로컬 Z-Image가 지원되지 않습니다.",
+      "linuxCpuOnly": "Linux에서 로컬 Z-Image는 CPU만 사용합니다. 느릴 수 있습니다—스텝 수나 이미지 크기를 줄이세요.",
+      "windowsVulkanRequired": "Windows의 로컬 Z-Image는 Vulkan 지원 GPU 드라이버가 필요합니다. 사용할 수 없으면 생성이 느리거나 실패할 수 있습니다.",
+      "slowWithoutMetal": "Metal 가속을 사용할 수 없습니다. 생성은 CPU에서 실행되며 느릴 수 있습니다—스텝 수나 이미지 크기를 줄이세요."
+    }
+  },
   "settings": {
     "title": "설정",
     "description": "WaveSpeed Desktop 애플리케이션 구성",
@@ -341,6 +463,7 @@
       "invalidDesc": "API 키를 확인할 수 없습니다. 확인 후 다시 시도하세요.",
       "cleared": "API 키 삭제됨",
       "clearedDesc": "API 키가 제거되었습니다.",
+      "itemDeleted": "Cache item deleted",
       "error": "오류",
       "errorDesc": "API 키 저장에 실패했습니다."
     },
@@ -394,7 +517,18 @@
       "clear": "清除",
       "cleared": "缓存已清除",
       "clearedDesc": "AI模型缓存已清除。需要时将重新下载模型。",
-      "clearFailed": "清除缓存失败"
+      "itemDeleted": "캐시 항목이 삭제되었습니다",
+      "clearFailed": "캐시 삭제 실패",
+      "zImageAuxiliary": "Z-Image 보조 모델",
+      "zImageModels": "Z-Image 모델",
+      "zImageBinary": "Z-Image 바이너리"
+    },
+    "downloads": {
+      "title": "다운로드",
+      "description": "AI 모델 다운로드 설정",
+      "downloadTimeout": "다운로드 시간 제한",
+      "downloadTimeoutDesc": "AI 모델 다운로드 최대 대기 시간",
+      "minutes": "분"
     },
     "updates": {
       "title": "업데이트",
@@ -487,7 +621,66 @@
       "eta": "~{{time}} 남음",
       "sideBySide": "나란히 비교",
       "comparison": "슬라이더 비교",
-      "dragToCompare": "드래그하여 비교"
+      "dragToCompare": "드래그하여 비교",
+      "enhanceFace": "얼굴 품질 향상"
+    },
+    "faceEnhancer": {
+      "title": "얼굴 보정",
+      "description": "AI를 사용하여 얼굴 품질 향상 및 복원",
+      "selectImage": "얼굴이 포함된 이미지 선택",
+      "orDragDrop": "또는 드래그 앤 드롭",
+      "enhance": "보정",
+      "download": "다운로드",
+      "processing": "처리 중...",
+      "original": "원본",
+      "enhanced": "보정됨",
+      "sideBySide": "나란히 비교",
+      "comparison": "슬라이더 비교",
+      "dragToCompare": "드래그하여 비교",
+      "detecting": "얼굴 감지 중",
+      "enhancing": "얼굴 보정 중",
+      "noFaces": "이미지에서 얼굴이 감지되지 않았습니다",
+      "facesFound": "{{count}}개의 얼굴 감지됨"
+    },
+    "faceSwapper": {
+      "title": "얼굴 교체",
+      "description": "AI를 사용하여 이미지의 얼굴 교체",
+      "sourceTitle": "소스 얼굴",
+      "targetTitle": "대상 이미지",
+      "selectSource": "소스 얼굴 선택",
+      "selectTarget": "대상 이미지 선택",
+      "sourceHint": "복사할 얼굴 정체성",
+      "targetHint": "얼굴을 교체할 이미지",
+      "orDragDrop": "or drag and drop",
+      "noSourceFace": "소스 이미지에서 얼굴이 감지되지 않았습니다",
+      "noTargetFaces": "대상 이미지에서 얼굴이 감지되지 않았습니다",
+      "clickToSelect": "교체할 얼굴을 클릭하여 선택",
+      "facesSelected": "{{selected}}/{{total}}개의 얼굴 선택됨",
+      "sourceSelected": "Face {{selected}}/{{total}} selected",
+      "faceDetected": "얼굴 감지됨",
+      "swapFaces": "얼굴 교체",
+      "processing": "처리 중...",
+      "detecting": "얼굴 감지 중",
+      "extractingEmbedding": "얼굴 특징 추출 중",
+      "swapping": "얼굴 교체 중",
+      "enhancing": "결과 보정 중",
+      "enableEnhancement": "교체된 얼굴 보정",
+      "original": "원본",
+      "result": "결과",
+      "download": "다운로드",
+      "clickFaceToSwap": "교체할 얼굴을 클릭하세요",
+      "swapFace": "얼굴 교체",
+      "targetFace": "대상 얼굴",
+      "sourceFace": "원본 얼굴",
+      "enhanceFace": "얼굴 품질 향상",
+      "swap": "교체",
+      "change": "변경",
+      "clickToSwapMore": "다른 얼굴을 클릭하여 계속",
+      "swapped": "교체됨",
+      "revert": "되돌리기",
+      "swappedFace": "교체된 얼굴",
+      "swappedFacePlaceholder": "아직 교체되지 않음",
+      "alreadySwapped": "이미 교체됨"
     },
     "backgroundRemover": {
       "title": "배경 제거",
@@ -650,6 +843,89 @@
       "finalizing": "마무리 중",
       "overall": "전체",
       "remaining": "남음"
+    },
+    "backWarning": {
+      "title": "처리 중",
+      "description": "작업이 진행 중입니다. 돌아가시겠습니까? 현재 작업이 취소됩니다.",
+      "cancel": "취소",
+      "confirm": "돌아가기"
+    },
+    "videoConverter": {
+      "title": "비디오 변환기",
+      "description": "다양한 형식 간 비디오 변환 (MP4, WebM, MOV, AVI)",
+      "selectVideo": "비디오 선택",
+      "orDragDrop": "또는 드래그 앤 드롭",
+      "dropToReplace": "드롭하여 비디오 교체",
+      "supportedFormats": "MP4, WebM, MOV, AVI, MKV 지원",
+      "convert": "변환",
+      "converting": "변환 중...",
+      "original": "원본",
+      "outputSettings": "출력 설정",
+      "format": "형식",
+      "quality": "품질",
+      "resolution": "해상도",
+      "convertedSize": "변환 후 크기"
+    },
+    "audioConverter": {
+      "title": "오디오 변환기",
+      "description": "다양한 형식 간 오디오 변환 (MP3, AAC, FLAC, WAV)",
+      "selectAudio": "오디오 선택",
+      "orDragDrop": "또는 드래그 앤 드롭",
+      "dropToReplace": "드롭하여 오디오 교체",
+      "supportedFormats": "MP3, M4A, OGG, WAV, FLAC 지원",
+      "convert": "변환",
+      "converting": "변환 중...",
+      "converted": "변환됨",
+      "playOriginal": "원본 재생",
+      "playConverted": "변환 후 재생"
+    },
+    "imageConverter": {
+      "title": "이미지 변환기",
+      "description": "다양한 형식 간 이미지 변환 (JPG, PNG, WebP, GIF)",
+      "selectImages": "이미지 선택",
+      "orDragDrop": "또는 드래그 앤 드롭",
+      "dropToAdd": "드롭하여 이미지 추가",
+      "supportedFormats": "JPG, PNG, WebP, GIF, BMP 지원",
+      "addMore": "더 추가",
+      "convert": "변환",
+      "converting": "변환 중...",
+      "quality": "품질",
+      "downloadAll": "모두 다운로드"
+    },
+    "mediaTrimmer": {
+      "title": "미디어 트리머",
+      "description": "비디오 또는 오디오를 특정 길이로 자르기",
+      "selectMedia": "미디어 선택",
+      "orDragDrop": "또는 드래그 앤 드롭",
+      "dropToReplace": "드롭하여 미디어 교체",
+      "supportedFormats": "비디오 및 오디오 파일 지원",
+      "trim": "자르기",
+      "trimming": "자르는 중...",
+      "originalDuration": "원본 길이",
+      "selectedDuration": "선택 길이",
+      "trimmedSize": "자른 후 크기",
+      "playingOriginal": "원본 재생 중",
+      "playingTrimmed": "자른 파일 재생 중"
+    },
+    "mediaMerger": {
+      "title": "미디어 병합기",
+      "description": "여러 비디오 또는 오디오 파일을 하나로 병합",
+      "selectFiles": "파일 선택",
+      "orDragDrop": "또는 드래그 앤 드롭",
+      "dropToAdd": "드롭하여 파일 추가",
+      "supportedFormats": "비디오 및 오디오 파일 지원",
+      "addMore": "더 추가",
+      "merge": "병합",
+      "merging": "병합 중...",
+      "merged": "병합됨",
+      "totalDuration": "총 길이",
+      "sameFormatNote": "무손실 병합을 위해 파일은 동일한 형식이어야 합니다"
+    },
+    "ffmpeg": {
+      "loading": "FFmpeg 로드 중",
+      "converting": "변환 중",
+      "merging": "병합 중",
+      "trimming": "자르는 중"
     }
   },
   "game": {

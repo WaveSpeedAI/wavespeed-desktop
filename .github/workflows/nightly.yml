@@ -1,12 +1,9 @@
 name: Nightly Build
 
 on:
-  push:
-    branches: [main]
   schedule:
     # Run at 2:00 AM UTC every day
     - cron: '0 2 * * *'
-  workflow_dispatch:
 
 jobs:
   check-changes:
@@ -34,8 +31,8 @@ jobs:
 
   build:
     needs: check-changes
-    # Build on push, workflow_dispatch, or if scheduled and has changes
-    if: always() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.check-changes.outputs.should_build == 'true')
+    # Build on schedule when there are recent changes
+    if: needs.check-changes.outputs.should_build == 'true'
     strategy:
       matrix:
         include:

@@ -1,6 +1,8 @@
-import { useState, useRef, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useRef, useCallback, useContext } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { PageResetContext } from '@/components/layout/Layout'
 import { useTranslation } from 'react-i18next'
+import { generateFreeToolFilename } from '@/stores/assetsStore'
 import { useBackgroundRemoverWorker } from '@/hooks/useBackgroundRemoverWorker'
 import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
 import { ProcessingProgress } from '@/components/shared/ProcessingProgress'
@@ -14,7 +16,17 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import { ArrowLeft, Upload, Download, Loader2, Eraser, X, RefreshCw, StopCircle } from 'lucide-react'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog'
+import { ArrowLeft, Upload, Download, Loader2, Eraser, X, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type ModelType = 'isnet_quint8' | 'isnet_fp16' | 'isnet'
@@ -25,14 +37,17 @@ interface ResultImages {
   mask: string | null
 }
 
-// Phase configuration for background remover (simplified to single phase)
+// Phase configuration for background remover
 const PHASES = [
-  { id: 'process', labelKey: 'freeTools.progress.processing', weight: 1.0 }
+  { id: 'download', labelKey: 'freeTools.progress.downloading', weight: 0.1 },
+  { id: 'process', labelKey: 'freeTools.progress.processing', weight: 0.9 }
 ]
 
 export function BackgroundRemoverPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const location = useLocation()
+  const { resetPage } = useContext(PageResetContext)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const canvasRefs = {
     foreground: useRef<HTMLCanvasElement>(null),
@@ -60,6 +75,7 @@ export function BackgroundRemoverPage() {
     'png'
   )
   const [previewImage, setPreviewImage] = useState<string | null>(null)
+  const [showBackWarning, setShowBackWarning] = useState(false)
 
   // Multi-phase progress tracking
   const {
@@ -73,7 +89,7 @@ export function BackgroundRemoverPage() {
 
   const [error, setError] = useState<string | null>(null)
 
-  const { removeBackgroundAll, dispose, retryWorker, hasFailed, cancel } = useBackgroundRemoverWorker({
+  const { removeBackgroundAll, dispose, retryWorker, hasFailed } = useBackgroundRemoverWorker({
     onPhase: (phase) => {
       // Start the corresponding phase when worker reports it
       if (phase === 'download') {
@@ -99,15 +115,27 @@ export function BackgroundRemoverPage() {
     retryWorker()
   }, [retryWorker])
 
-  const handleCancel = useCallback(() => {
-    cancel()
-    setIsProcessing(false)
-    resetProgress()
-  }, [cancel, resetProgress])
+  const handleBack = useCallback(() => {
+    if (isProcessing) {
+      setShowBackWarning(true)
+    } else {
+      dispose()
+      resetPage(location.pathname)
+      navigate('/free-tools')
+    }
+  }, [isProcessing, dispose, resetPage, location.pathname, navigate])
+
+  const handleConfirmBack = useCallback(() => {
+    setShowBackWarning(false)
+    dispose()
+    resetPage(location.pathname)
+    navigate('/free-tools')
+  }, [dispose, resetPage, location.pathname, navigate])
 
   const handleFileSelect = useCallback((file: File) => {
     if (!file.type.startsWith('image/')) return
 
+    setError(null)
     // Store the original blob for processing
     setOriginalBlob(file)
 
@@ -169,7 +197,7 @@ export function BackgroundRemoverPage() {
 
     setIsProcessing(true)
     setProcessingKey((k) => k + 1)
-    resetAndStart('process')
+    resetAndStart('download')
 
     try {
       // Process all three outputs in worker
@@ -218,7 +246,6 @@ export function BackgroundRemoverPage() {
       console.error('Background removal failed:', error)
     } finally {
       setIsProcessing(false)
-      dispose()
     }
   }
 
@@ -251,7 +278,7 @@ export function BackgroundRemoverPage() {
 
     const link = document.createElement('a')
     link.href = dataUrl
-    link.download = `${type}-${Date.now()}.${downloadFormat}`
+    link.download = generateFreeToolFilename('bg-remover', downloadFormat, type)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -289,7 +316,7 @@ export function BackgroundRemoverPage() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => navigate('/free-tools')}
+          onClick={handleBack}
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -378,23 +405,23 @@ export function BackgroundRemoverPage() {
               </SelectContent>
             </Select>
 
-            {isProcessing ? (
-              <Button
-                onClick={handleCancel}
-                variant="destructive"
-              >
-                <StopCircle className="h-4 w-4 mr-2" />
-                {t('common.cancel')}
-              </Button>
-            ) : (
-              <Button
-                onClick={handleRemoveBackground}
-                className="gradient-bg"
-              >
-                <Eraser className="h-4 w-4 mr-2" />
-                {t('freeTools.backgroundRemover.remove')}
-              </Button>
-            )}
+            <Button
+              onClick={handleRemoveBackground}
+              disabled={isProcessing}
+              className="gradient-bg"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {t('freeTools.backgroundRemover.processing')}
+                </>
+              ) : (
+                <>
+                  <Eraser className="h-4 w-4 mr-2" />
+                  {t('freeTools.backgroundRemover.remove')}
+                </>
+              )}
+            </Button>
 
             {hasResults && (
               <Select
@@ -427,7 +454,7 @@ export function BackgroundRemoverPage() {
           {/* Error with retry button */}
           {error && hasFailed() && !isProcessing && (
             <div className="flex items-center justify-center gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-              <span className="text-sm text-destructive">{t('common.downloadFailed')}</span>
+              <span className="text-sm text-destructive">{error}</span>
               <Button variant="outline" size="sm" onClick={handleRetry}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 {t('common.retry')}
@@ -454,7 +481,8 @@ export function BackgroundRemoverPage() {
                   <img
                     src={originalImage}
                     alt="Original"
-                    className="max-w-full max-h-full object-contain"
+                    className="max-w-full max-h-full object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                    onClick={() => setPreviewImage(originalImage)}
                   />
                 </div>
               </CardContent>
@@ -604,6 +632,24 @@ export function BackgroundRemoverPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Back Warning Dialog */}
+      <AlertDialog open={showBackWarning} onOpenChange={setShowBackWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('freeTools.backWarning.title')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('freeTools.backWarning.description')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('freeTools.backWarning.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmBack}>
+              {t('freeTools.backWarning.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

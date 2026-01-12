@@ -29,19 +29,58 @@
     "success": "สำเร็จ",
     "warning": "คำเตือน",
     "selectAll": "เลือกทั้งหมด",
-    "deselectAll": "ยกเลิกการเลือกทั้งหมด",
     "retry": "ลองอีกครั้ง",
     "downloadFailed": "ดาวน์โหลดล้มเหลว กรุณาตรวจสอบการเชื่อมต่อเครือข่ายของคุณ"
   },
   "nav": {
+    "home": "หน้าแรก",
     "models": "โมเดล",
     "playground": "สนามทดสอบ",
     "history": "ประวัติ",
     "templates": "เทมเพลต",
     "assets": "ทรัพย์สินของฉัน",
+    "zImage": "Z-Image",
     "freeTools": "เครื่องมือฟรี",
     "settings": "การตั้งค่า",
     "collapse": "ยุบ"
+  },
+  "welcome": {
+    "tagline": "เครื่องมือสร้างสรรค์ AI ที่ปลายนิ้วของคุณ",
+    "explore": "สำรวจ",
+    "getStarted": "เริ่มต้นใช้งาน",
+    "tryFreeTools": "ลองเครื่องมือฟรี",
+    "features": {
+      "models": {
+        "title": "เบราว์เซอร์โมเดล",
+        "description": "เรียกดูโมเดล AI สำหรับการสร้างภาพ วิดีโอ และเสียง"
+      },
+      "playground": {
+        "title": "สนามทดสอบ",
+        "description": "พื้นที่ทำงานหลายแท็บเพื่อเรียกใช้โมเดลด้วยพารามิเตอร์ที่กำหนดเอง"
+      },
+      "templates": {
+        "title": "เทมเพลต",
+        "description": "บันทึกและนำการกำหนดค่าที่ชื่นชอบมาใช้ซ้ำ"
+      },
+      "history": {
+        "title": "ประวัติ",
+        "description": "ติดตามและตรวจสอบการคาดการณ์ล่าสุดของคุณ"
+      },
+      "assets": {
+        "title": "ทรัพย์สินของฉัน",
+        "description": "จัดระเบียบและจัดการเอาต์พุตที่สร้างขึ้น"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "การสร้างภาพ AI ในเครื่อง - ทำงานบนอุปกรณ์ของคุณ ไม่ต้องใช้ API key",
+        "badge": "ในเครื่อง"
+      },
+      "freeTools": {
+        "title": "เครื่องมือฟรี",
+        "description": "เครื่องมือ AI ที่ทรงพลังที่ทำงานในเครื่อง - ไม่ต้องใช้ API key",
+        "badge": "ฟรี"
+      }
+    }
   },
   "models": {
     "title": "โมเดล",
@@ -151,6 +190,40 @@
       "failedError": "ปรับแต่ง prompt ไม่สำเร็จ",
       "optimizing": "กำลังปรับแต่ง...",
       "optimize": "ปรับแต่ง"
+    },
+    "batch": {
+      "title": "แบตช์",
+      "enable": "เปิดใช้โหมดแบตช์",
+      "disable": "ปิดใช้โหมดแบตช์",
+      "repeatCount": "จำนวน",
+      "randomizeSeed": "Seed สุ่ม",
+      "stopOnError": "หยุดเมื่อเกิดข้อผิดพลาด",
+      "runBatch": "รันแบตช์ ({{count}})",
+      "running": "กำลังรัน {{current}}/{{total}}...",
+      "cancelling": "กำลังยกเลิก...",
+      "cancel": "ยกเลิก",
+      "completed": "{{count}} เสร็จสิ้น",
+      "failed": "{{count}} ล้มเหลว",
+      "downloadAll": "ดาวน์โหลดทั้งหมด",
+      "saveAllToAssets": "บันทึกทั้งหมด",
+      "savedAll": "บันทึกไปยังทรัพย์สินแล้ว",
+      "savedAllDesc": "บันทึก {{count}} ผลลัพธ์แล้ว",
+      "saved": "บันทึกแล้ว",
+      "clearResults": "ล้าง",
+      "results": "ผลลัพธ์",
+      "result": "ผลลัพธ์",
+      "inputDetails": "รายละเอียดอินพุต",
+      "preview": "ตัวอย่าง",
+      "items": "รายการ",
+      "noPreview": "ไม่มีตัวอย่าง",
+      "seedsGenerated": "สร้าง seed อัตโนมัติแล้ว",
+      "settings": "การตั้งค่าแบตช์"
+    },
+    "flappyBird": {
+      "clickToStart": "คลิกหรือกด Space เพื่อเริ่มเกม",
+      "viewResults": "ดูผลลัพธ์",
+      "playWhileWaiting": "เล่นขณะรอ",
+      "quit": "ออก"
     }
   },
   "history": {
@@ -167,36 +240,23 @@
     "loadPreviews": "โหลดตัวอย่าง",
     "disablePreviews": "ปิดตัวอย่าง",
     "generationDetails": "รายละเอียดการสร้าง",
+    "select": "เลือก",
+    "selectionDone": "เสร็จสิ้น",
+    "deleteSelected": "ลบ ({{count}})",
+    "bulkDeleteConfirmTitle": "ลบรายการประวัติ",
+    "bulkDeleteConfirmDesc": "คุณแน่ใจหรือไม่ว่าต้องการลบการคาดคะเน {{count}} รายการ? การกระทำนี้ไม่สามารถยกเลิกได้",
+    "deleteConfirmTitle": "ลบรายการประวัติ",
+    "deleteConfirmDesc": "คุณแน่ใจหรือไม่ว่าต้องการลบการคาดคะเนนี้? การกระทำนี้ไม่สามารถยกเลิกได้",
+    "deleted": "ลบรายการประวัติแล้ว",
+    "deletedBulk": "ลบรายการประวัติแล้ว",
+    "deletedBulkDesc": "ลบรายการประวัติแล้ว {{count}} รายการ",
+    "deleteFailed": "ลบรายการประวัติไม่สำเร็จ",
     "model": "โมเดล",
     "created": "สร้างเมื่อ",
     "executionTime": "เวลาดำเนินการ",
     "predictionId": "ID การทำนาย",
     "notAvailable": "ประวัติไม่พร้อมใช้งาน",
-    "notAvailableDesc": "API ประวัติการทำนายไม่พร้อมใช้งานในขณะนี้",
-    "saveTemplate": {
-      "button": "บันทึกเป็นเทมเพลต",
-      "dialogTitle": "บันทึกเป็นเทมเพลต",
-      "nameLabel": "ชื่อเทมเพลต",
-      "namePlaceholder": "ใส่ชื่อเทมเพลต",
-      "duplicateName": "มีเทมเพลตชื่อนี้อยู่แล้ว",
-      "success": "บันทึกเทมเพลตแล้ว",
-      "successDesc": "เทมเพลตของคุณถูกบันทึกเรียบร้อยแล้ว",
-      "error": "บันทึกล้มเหลว",
-      "noInputsTitle": "ไม่สามารถบันทึกเทมเพลตได้",
-      "noInputsDesc": "พารามิเตอร์อินพุตใช้ได้เฉพาะการทำนายที่ทำในแอปนี้เท่านั้น ลองรันการทำนายใหม่ก่อน"
-    },
-    "hasInputs": "สามารถบันทึกเป็นเทมเพลตได้",
-    "select": "เลือก",
-    "selectionDone": "เสร็จสิ้น",
-    "deleteSelected": "ลบ",
-    "bulkDeleteConfirmTitle": "ลบการทำนาย",
-    "bulkDeleteConfirmDesc": "คุณแน่ใจหรือไม่ว่าต้องการลบ {{count}} การทำนาย? การดำเนินการนี้ไม่สามารถยกเลิกได้",
-    "deleteConfirmTitle": "ลบการทำนาย",
-    "deleteConfirmDesc": "คุณแน่ใจหรือไม่ว่าต้องการลบการทำนายนี้? การดำเนินการนี้ไม่สามารถยกเลิกได้",
-    "deleted": "ลบการทำนายแล้ว",
-    "deletedBulk": "ลบการทำนายแล้ว",
-    "deletedBulkDesc": "ลบ {{count}} การทำนายแล้ว",
-    "deleteFailed": "ลบการทำนายล้มเหลว"
+    "notAvailableDesc": "API ประวัติการทำนายไม่พร้อมใช้งานในขณะนี้"
   },
   "templates": {
     "title": "เทมเพลต",
@@ -322,10 +382,46 @@
     "loadPreviews": "โหลดตัวอย่าง",
     "disablePreviews": "ปิดใช้งานตัวอย่าง"
   },
+  "zImage": {
+    "title": "Z-Image",
+    "subtitle": "รัน Z-Image ในเครื่องฟรี",
+    "generateImage": "สร้าง",
+    "generating": "กำลังสร้าง...",
+    "downloadingSd": "กำลังดาวน์โหลด SD...",
+    "downloadingVae": "กำลังดาวน์โหลด VAE...",
+    "downloadingLlm": "กำลังดาวน์โหลด LLM...",
+    "downloadingZImage": "กำลังดาวน์โหลดโมเดล...",
+    "stopGeneration": "หยุด",
+    "models": {
+      "q4k": {
+        "description": "แนะนำ: การอนุมานที่รวดเร็วด้วยคุณภาพดี, ~2.5GB"
+      },
+      "q6k": {
+        "description": "คุณภาพสูง: ผลลัพธ์ที่ดีที่สุด, การสร้างช้าลง, ~3.5GB"
+      },
+      "q8": {
+        "description": "คุณภาพสูงสุด: ความแม่นยำสูงสุด, การสร้างช้าลง, ~4GB"
+      },
+      "q2k": {
+        "description": "เบา: การสร้างเร็วที่สุด, คุณภาพต่ำกว่า, ~1.5GB"
+      }
+    },
+    "errors": {
+      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "generationCancelled": "ยกเลิกการสร้างแล้ว"
+    },
+    "tips": {
+      "intelMacUnsupported": "Z-Image แบบโลคอลรองรับเฉพาะ Mac ที่ใช้ Apple Silicon เท่านั้น",
+      "linuxArmUnsupported": "Linux ARM ไม่รองรับสำหรับ Z-Image แบบโลคอล",
+      "windowsArmUnsupported": "Windows ARM ไม่รองรับสำหรับ Z-Image แบบโลคอล",
+      "linuxCpuOnly": "Z-Image แบบโลคอลบน Linux ทำงานด้วย CPU เท่านั้น อาจช้า—ลดจำนวนสเต็ปหรือขนาดภาพ",
+      "windowsVulkanRequired": "Z-Image แบบโลคอลบน Windows ต้องใช้ไดรเวอร์ GPU ที่รองรับ Vulkan หากไม่มี การสร้างอาจช้าหรือล้มเหลว",
+      "slowWithoutMetal": "ไม่รองรับการเร่งด้วย Metal การสร้างจะทำงานบน CPU และอาจช้า—ลดจำนวนสเต็ปหรือขนาดภาพ"
+    }
+  },
   "settings": {
     "title": "การตั้งค่า",
     "description": "กำหนดค่าแอปพลิเคชัน WaveSpeed Desktop",
-    "mobileDescription": "กำหนดค่าแอปพลิเคชัน WaveSpeed Mobile",
     "apiKey": {
       "title": "คีย์ API",
       "description": "ใส่คีย์ API WaveSpeed เพื่อเข้าถึงโมเดล",
@@ -341,6 +437,7 @@
       "invalidDesc": "ไม่สามารถตรวจสอบคีย์ API ได้ กรุณาตรวจสอบและลองอีกครั้ง",
       "cleared": "ล้างคีย์ API แล้ว",
       "clearedDesc": "คีย์ API ของคุณถูกลบแล้ว",
+      "itemDeleted": "Cache item deleted",
       "error": "ข้อผิดพลาด",
       "errorDesc": "ไม่สามารถบันทึกคีย์ API ได้"
     },
@@ -394,7 +491,18 @@
       "clear": "ล้าง",
       "cleared": "ล้างแคชแล้ว",
       "clearedDesc": "แคชโมเดล AI ถูกล้างแล้ว โมเดลจะถูกดาวน์โหลดใหม่เมื่อจำเป็น",
-      "clearFailed": "ล้างแคชไม่สำเร็จ"
+      "itemDeleted": "ลบรายการแคชแล้ว",
+      "clearFailed": "ล้างแคชไม่สำเร็จ",
+      "zImageAuxiliary": "โมเดลเสริม Z-Image",
+      "zImageModels": "โมเดล Z-Image",
+      "zImageBinary": "ไบนารี Z-Image"
+    },
+    "downloads": {
+      "title": "ดาวน์โหลด",
+      "description": "ตั้งค่าการดาวน์โหลดโมเดล AI",
+      "downloadTimeout": "หมดเวลาดาวน์โหลด",
+      "downloadTimeoutDesc": "เวลารอสูงสุดเมื่อดาวน์โหลดโมเดล AI",
+      "minutes": "นาที"
     },
     "updates": {
       "title": "การอัปเดต",
@@ -427,9 +535,7 @@
     "about": {
       "title": "เกี่ยวกับ",
       "description": "WaveSpeed Desktop - สนามทดสอบโมเดล AI",
-      "mobileDescription": "WaveSpeed Mobile - สนามทดสอบโมเดล AI",
       "aboutText": "แอปพลิเคชันเดสก์ท็อปโอเพนซอร์สสำหรับเรียกใช้โมเดล AI ด้วย WaveSpeed API",
-      "mobileAboutText": "แอปพลิเคชันมือถือโอเพนซอร์สสำหรับเรียกใช้โมเดล AI ด้วย WaveSpeed API",
       "viewOnGitHub": "ดูบน GitHub"
     }
   },
@@ -487,7 +593,66 @@
       "eta": "~{{time}} เหลืออยู่",
       "sideBySide": "เทียบข้างกัน",
       "comparison": "เปรียบเทียบแบบเลื่อน",
-      "dragToCompare": "ลากเพื่อเปรียบเทียบ"
+      "dragToCompare": "ลากเพื่อเปรียบเทียบ",
+      "enhanceFace": "ปรับปรุงคุณภาพใบหน้า"
+    },
+    "faceEnhancer": {
+      "title": "ปรับปรุงใบหน้า",
+      "description": "ปรับปรุงและฟื้นฟูคุณภาพใบหน้าด้วย AI",
+      "selectImage": "เลือกรูปภาพที่มีใบหน้า",
+      "orDragDrop": "หรือลากและวาง",
+      "enhance": "ปรับปรุง",
+      "download": "ดาวน์โหลด",
+      "processing": "กำลังประมวลผล...",
+      "original": "ต้นฉบับ",
+      "enhanced": "ปรับปรุงแล้ว",
+      "sideBySide": "เทียบข้างกัน",
+      "comparison": "เปรียบเทียบแบบเลื่อน",
+      "dragToCompare": "ลากเพื่อเปรียบเทียบ",
+      "detecting": "กำลังตรวจจับใบหน้า",
+      "enhancing": "กำลังปรับปรุงใบหน้า",
+      "noFaces": "ไม่พบใบหน้าในรูปภาพ",
+      "facesFound": "ตรวจพบ {{count}} ใบหน้า"
+    },
+    "faceSwapper": {
+      "title": "สลับใบหน้า",
+      "description": "สลับใบหน้าระหว่างรูปภาพโดยใช้ AI",
+      "sourceTitle": "ใบหน้าต้นทาง",
+      "targetTitle": "รูปภาพเป้าหมาย",
+      "selectSource": "เลือกใบหน้าต้นทาง",
+      "selectTarget": "เลือกรูปภาพเป้าหมาย",
+      "sourceHint": "ตัวตนของใบหน้าที่จะคัดลอก",
+      "targetHint": "รูปภาพที่จะถูกเปลี่ยนใบหน้า",
+      "orDragDrop": "or drag and drop",
+      "noSourceFace": "ไม่พบใบหน้าในรูปภาพต้นทาง",
+      "noTargetFaces": "ไม่พบใบหน้าในรูปภาพเป้าหมาย",
+      "clickToSelect": "คลิกที่ใบหน้าเพื่อเลือกว่าจะสลับใบหน้าไหน",
+      "facesSelected": "เลือก {{selected}}/{{total}} ใบหน้า",
+      "sourceSelected": "Face {{selected}}/{{total}} selected",
+      "faceDetected": "ตรวจพบใบหน้า",
+      "swapFaces": "สลับใบหน้า",
+      "processing": "กำลังประมวลผล...",
+      "detecting": "กำลังตรวจจับใบหน้า",
+      "extractingEmbedding": "กำลังดึงตัวตนของใบหน้า",
+      "swapping": "กำลังสลับใบหน้า",
+      "enhancing": "กำลังปรับปรุงผลลัพธ์",
+      "enableEnhancement": "ปรับปรุงใบหน้าที่สลับแล้ว",
+      "original": "ต้นฉบับ",
+      "result": "ผลลัพธ์",
+      "download": "ดาวน์โหลด",
+      "clickFaceToSwap": "คลิกที่ใบหน้าเพื่อสลับ",
+      "swapFace": "สลับใบหน้า",
+      "targetFace": "ใบหน้าเป้าหมาย",
+      "sourceFace": "ใบหน้าต้นทาง",
+      "enhanceFace": "ปรับปรุงคุณภาพใบหน้า",
+      "swap": "สลับ",
+      "change": "เปลี่ยน",
+      "clickToSwapMore": "คลิกใบหน้าอื่นเพื่อดำเนินการต่อ",
+      "swapped": "สลับแล้ว",
+      "revert": "เปลี่ยนกลับ",
+      "swappedFace": "ใบหน้าที่สลับแล้ว",
+      "swappedFacePlaceholder": "ยังไม่ได้สลับ",
+      "alreadySwapped": "สลับแล้ว"
     },
     "backgroundRemover": {
       "title": "ตัวลบพื้นหลัง",
@@ -559,101 +724,88 @@
       "cutMask": "ตัดมาสก์",
       "hint": "คลิกซ้ายเพื่อรวม คลิกขวาเพื่อยกเว้นพื้นที่"
     },
+    "backWarning": {
+      "title": "กำลังประมวลผล",
+      "description": "มีงานกำลังประมวลผลอยู่ คุณแน่ใจหรือไม่ว่าต้องการย้อนกลับ? การดำเนินการนี้จะยกเลิกการทำงานปัจจุบัน",
+      "cancel": "ยกเลิก",
+      "confirm": "ย้อนกลับ"
+    },
     "videoConverter": {
-      "title": "ตัวแปลงวิดีโอ",
-      "description": "แปลงวิดีโอระหว่างรูปแบบ"
+      "title": "Video Converter",
+      "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
+      "selectVideo": "Select Video",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace video",
+      "supportedFormats": "Supports MP4, WebM, MOV, AVI, MKV",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "original": "Original",
+      "outputSettings": "Output Settings",
+      "format": "Format",
+      "quality": "Quality",
+      "resolution": "Resolution",
+      "convertedSize": "Converted Size"
     },
     "audioConverter": {
-      "title": "ตัวแปลงเสียง",
-      "description": "แปลงระหว่างรูปแบบ MP3 และ WAV",
-      "selectAudio": "คลิกหรือลากไฟล์ MP3/WAV มาที่นี่",
-      "supportedFormats": "แปลง MP3 ↔ WAV",
-      "converting": "กำลังแปลง...",
-      "convert": "แปลง",
-      "download": "ดาวน์โหลด",
-      "complete": "เสร็จสมบูรณ์",
-      "outputFormat": "รูปแบบผลลัพธ์",
-      "bitrate": "อัตราบิต",
-      "noFileSelected": "ไม่ได้เลือกไฟล์"
+      "title": "Audio Converter",
+      "description": "Convert audio between formats (MP3, AAC, FLAC, WAV)",
+      "selectAudio": "Select Audio",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace audio",
+      "supportedFormats": "Supports MP3, M4A, OGG, WAV, FLAC",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "converted": "Converted",
+      "playOriginal": "Play original",
+      "playConverted": "Play converted"
     },
     "imageConverter": {
-      "title": "ตัวแปลงรูปภาพ",
-      "description": "แปลงรูปภาพเป็น JPG, PNG หรือ WebP",
-      "selectImage": "คลิกหรือลากรูปภาพมาที่นี่",
-      "supportedFormats": "รูปภาพใดก็ได้ → JPG/PNG/WebP",
-      "converting": "กำลังแปลง...",
-      "convert": "แปลง",
-      "download": "ดาวน์โหลด",
-      "complete": "เสร็จสมบูรณ์",
-      "outputFormat": "รูปแบบผลลัพธ์",
-      "quality": "คุณภาพ",
-      "noFileSelected": "ไม่ได้เลือกไฟล์"
+      "title": "Image Converter",
+      "description": "Convert images between formats (JPG, PNG, WebP, GIF)",
+      "selectImages": "Select Images",
+      "orDragDrop": "or drag and drop",
+      "dropToAdd": "Drop to add images",
+      "supportedFormats": "Supports JPG, PNG, WebP, GIF, BMP",
+      "addMore": "Add More",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "quality": "Quality",
+      "downloadAll": "Download All"
     },
     "mediaTrimmer": {
-      "title": "ตัดสื่อ",
-      "description": "ตัดวิดีโอและเสียงตามความยาวที่ต้องการ",
-      "selectMedia": "ลากไฟล์สื่อมาที่นี่",
-      "supportedFormats": "รองรับไฟล์วิดีโอและเสียง",
-      "inputMedia": "สื่อนำเข้า",
-      "selectMediaFile": "เลือกไฟล์ที่จะตัด",
-      "trimSettings": "การตั้งค่าการตัด",
-      "selectRange": "เลือกเวลาเริ่มต้นและสิ้นสุด",
-      "startTime": "เวลาเริ่มต้น",
-      "endTime": "เวลาสิ้นสุด",
-      "timeFormat": "รูปแบบ: m:ss.d หรือวินาที",
-      "outputDuration": "ระยะเวลาผลลัพธ์",
-      "duration": "ระยะเวลา",
-      "trim": "ตัด",
-      "trimming": "กำลังตัด...",
-      "download": "ดาวน์โหลด",
-      "newMedia": "ไฟล์ใหม่",
-      "result": "ผลการตัด",
-      "invalidFile": "กรุณาเลือกไฟล์วิดีโอหรือเสียงที่ถูกต้อง",
-      "invalidRange": "เวลาสิ้นสุดต้องมากกว่าเวลาเริ่มต้น"
+      "title": "Media Trimmer",
+      "description": "Trim videos or audio to a specific duration",
+      "selectMedia": "Select Media",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace media",
+      "supportedFormats": "Supports video and audio files",
+      "trim": "Trim",
+      "trimming": "Trimming...",
+      "originalDuration": "Original",
+      "selectedDuration": "Selected",
+      "trimmedSize": "Trimmed Size",
+      "playingOriginal": "Playing original",
+      "playingTrimmed": "Playing trimmed"
     },
     "mediaMerger": {
-      "title": "รวมสื่อ",
-      "description": "รวมวิดีโอหรือเสียงหลายไฟล์เป็นหนึ่งเดียว",
-      "selectMedia": "ลากไฟล์มาที่นี่",
-      "supportedFormats": "รองรับไฟล์วิดีโอและเสียง",
-      "addFiles": "เพิ่มไฟล์",
-      "inputFiles": "ไฟล์นำเข้า",
-      "dragToReorder": "ลากเพื่อเรียงลำดับ",
-      "noFiles": "ไม่มีไฟล์",
-      "addFilesDesc": "เพิ่มวิดีโอหรือเสียงเพื่อรวม",
-      "outputFormat": "รูปแบบผลลัพธ์",
-      "merge": "รวม",
-      "merging": "กำลังรวม...",
-      "download": "ดาวน์โหลด",
-      "clear": "ล้าง",
-      "result": "ผลลัพธ์",
-      "invalidFile": "กรุณาเลือกไฟล์วิดีโอหรือเสียงที่ถูกต้อง",
-      "minFiles": "เพิ่มอย่างน้อย 2 ไฟล์เพื่อรวม"
+      "title": "Media Merger",
+      "description": "Merge multiple video or audio files into one",
+      "selectFiles": "Select Files",
+      "orDragDrop": "or drag and drop",
+      "dropToAdd": "Drop to add files",
+      "supportedFormats": "Supports video and audio files",
+      "addMore": "Add More",
+      "merge": "Merge",
+      "merging": "Merging...",
+      "merged": "Merged",
+      "totalDuration": "Total Duration",
+      "sameFormatNote": "Files must have the same format for lossless merging"
     },
-    "faceEnhancer": {
-      "title": "ปรับปรุงใบหน้า",
-      "description": "ปรับปรุงและกู้คืนใบหน้าในรูปภาพโดยใช้ AI",
-      "selectImage": "คลิกหรือลากรูปภาพมาที่นี่",
-      "modelsInfo": "ใช้โมเดล AI YOLO + GFPGAN",
-      "inputImage": "รูปภาพนำเข้า",
-      "selectImageWithFaces": "เลือกรูปภาพที่มีใบหน้าเพื่อปรับปรุง",
-      "enhance": "ปรับปรุงใบหน้า",
-      "enhancing": "กำลังปรับปรุงใบหน้า...",
-      "detecting": "กำลังตรวจจับใบหน้า...",
-      "downloading": "กำลังดาวน์โหลดโมเดล...",
-      "loading": "กำลังโหลดโมเดล...",
-      "processing": "กำลังประมวลผล...",
-      "download": "ดาวน์โหลด",
-      "newImage": "รูปภาพใหม่",
-      "result": "ผลลัพธ์ที่ปรับปรุงแล้ว",
-      "facesEnhanced": "ปรับปรุง {{count}} ใบหน้าแล้ว",
-      "noFacesFound": "ไม่พบใบหน้า",
-      "invalidFile": "กรุณาเลือกไฟล์รูปภาพที่ถูกต้อง",
-      "firstTimeDownload": "ครั้งแรก? โมเดลจะถูกดาวน์โหลด (~350MB)"
+    "ffmpeg": {
+      "loading": "Loading FFmpeg",
+      "converting": "Converting",
+      "merging": "Merging",
+      "trimming": "Trimming"
     }
-  },
-  "game": {
-    "waitingLong": "รอนานไหม? มาเล่นมินิเกมกัน!",
-    "clickToPlay": "คลิกเพื่อเริ่ม"
   }
 }

@@ -34,14 +34,54 @@
     "downloadFailed": "डाउनलोड विफल। कृपया अपना नेटवर्क कनेक्शन जांचें।"
   },
   "nav": {
+    "home": "होम",
     "models": "मॉडल",
     "playground": "प्लेग्राउंड",
     "history": "इतिहास",
     "templates": "टेम्पलेट",
     "assets": "मेरी संपत्तियां",
+    "zImage": "Z-Image",
     "freeTools": "मुफ्त उपकरण",
     "settings": "सेटिंग्स",
     "collapse": "संक्षिप्त करें"
+  },
+  "welcome": {
+    "tagline": "आपकी उंगलियों पर AI-संचालित रचनात्मक उपकरण",
+    "explore": "अन्वेषण करें",
+    "getStarted": "शुरू करें",
+    "tryFreeTools": "मुफ्त उपकरण आज़माएं",
+    "features": {
+      "models": {
+        "title": "मॉडल ब्राउज़र",
+        "description": "छवि, वीडियो और ऑडियो जनरेशन के लिए AI मॉडल ब्राउज़ करें"
+      },
+      "playground": {
+        "title": "प्लेग्राउंड",
+        "description": "कस्टम पैरामीटर के साथ मॉडल चलाने के लिए मल्टी-टैब वर्कस्पेस"
+      },
+      "templates": {
+        "title": "टेम्पलेट",
+        "description": "अपनी पसंदीदा कॉन्फ़िगरेशन सहेजें और पुन: उपयोग करें"
+      },
+      "history": {
+        "title": "इतिहास",
+        "description": "अपनी हाल की भविष्यवाणियों को ट्रैक और समीक्षा करें"
+      },
+      "assets": {
+        "title": "मेरी संपत्तियां",
+        "description": "अपने जनरेट किए गए आउटपुट को व्यवस्थित और प्रबंधित करें"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "स्थानीय AI छवि निर्माण - आपके डिवाइस पर चलता है, API कुंजी की आवश्यकता नहीं",
+        "badge": "स्थानीय"
+      },
+      "freeTools": {
+        "title": "मुफ्त उपकरण",
+        "description": "शक्तिशाली AI उपकरण जो स्थानीय रूप से चलते हैं - API कुंजी की आवश्यकता नहीं",
+        "badge": "मुफ्त"
+      }
+    }
   },
   "models": {
     "title": "मॉडल",
@@ -151,6 +191,40 @@
       "failedError": "प्रॉम्प्ट ऑप्टिमाइज़ करने में विफल",
       "optimizing": "ऑप्टिमाइज़ हो रहा है...",
       "optimize": "ऑप्टिमाइज़ करें"
+    },
+    "flappyBird": {
+      "clickToStart": "गेम शुरू करने के लिए क्लिक करें या स्पेस दबाएं",
+      "viewResults": "परिणाम देखें",
+      "playWhileWaiting": "प्रतीक्षा करते समय खेलें",
+      "quit": "बाहर निकलें"
+    },
+    "batch": {
+      "title": "बैच",
+      "enable": "बैच मोड सक्षम करें",
+      "disable": "बैच मोड अक्षम करें",
+      "repeatCount": "संख्या",
+      "randomizeSeed": "रैंडम सीड",
+      "stopOnError": "त्रुटि पर रोकें",
+      "runBatch": "बैच चलाएं ({{count}})",
+      "running": "चल रहा है {{current}}/{{total}}...",
+      "cancelling": "रद्द हो रहा है...",
+      "cancel": "रद्द करें",
+      "completed": "{{count}} पूर्ण",
+      "failed": "{{count}} विफल",
+      "downloadAll": "सभी डाउनलोड करें",
+      "saveAllToAssets": "सभी सहेजें",
+      "savedAll": "संपत्ति में सहेजा गया",
+      "savedAllDesc": "{{count}} आउटपुट सहेजे गए",
+      "saved": "सहेजा गया",
+      "clearResults": "साफ़ करें",
+      "results": "परिणाम",
+      "result": "परिणाम",
+      "inputDetails": "इनपुट विवरण",
+      "preview": "पूर्वावलोकन",
+      "items": "आइटम",
+      "noPreview": "कोई पूर्वावलोकन नहीं",
+      "seedsGenerated": "सीड स्वचालित रूप से जनरेट किए गए",
+      "settings": "बैच सेटिंग्स"
     }
   },
   "history": {
@@ -167,6 +241,17 @@
     "loadPreviews": "प्रीव्यू लोड करें",
     "disablePreviews": "प्रीव्यू अक्षम करें",
     "generationDetails": "जनरेशन विवरण",
+    "select": "चयन करें",
+    "selectionDone": "पूर्ण",
+    "deleteSelected": "हटाएं ({{count}})",
+    "bulkDeleteConfirmTitle": "इतिहास आइटम हटाएं",
+    "bulkDeleteConfirmDesc": "क्या आप वाकई {{count}} भविष्यवाणी(यों) को हटाना चाहते हैं? यह कार्रवाई वापस नहीं की जा सकती।",
+    "deleteConfirmTitle": "इतिहास आइटम हटाएं",
+    "deleteConfirmDesc": "क्या आप वाकई इस भविष्यवाणी को हटाना चाहते हैं? यह कार्रवाई वापस नहीं की जा सकती।",
+    "deleted": "इतिहास आइटम हटाया गया",
+    "deletedBulk": "इतिहास आइटम हटाए गए",
+    "deletedBulkDesc": "{{count}} इतिहास आइटम हटाए गए",
+    "deleteFailed": "इतिहास आइटम हटाने में विफल",
     "model": "मॉडल",
     "created": "बनाया गया",
     "executionTime": "निष्पादन समय",
@@ -322,6 +407,43 @@
     "loadPreviews": "प्रीव्यू लोड करें",
     "disablePreviews": "प्रीव्यू अक्षम करें"
   },
+  "zImage": {
+    "title": "Z-Image",
+    "subtitle": "Z-Image को स्थानीय रूप से मुफ्त में चलाएं",
+    "generateImage": "जनरेट करें",
+    "generating": "जनरेट हो रहा है...",
+    "downloadingSd": "SD डाउनलोड हो रहा है...",
+    "downloadingVae": "VAE डाउनलोड हो रहा है...",
+    "downloadingLlm": "LLM डाउनलोड हो रहा है...",
+    "downloadingZImage": "मॉडल डाउनलोड हो रहा है...",
+    "stopGeneration": "रोकें",
+    "models": {
+      "q4k": {
+        "description": "अनुशंसित: अच्छी गुणवत्ता के साथ तेज़ इन्फरेंस, ~2.5GB"
+      },
+      "q6k": {
+        "description": "उच्च गुणवत्ता: सर्वोत्तम परिणाम, धीमी जनरेशन, ~3.5GB"
+      },
+      "q8": {
+        "description": "उच्चतम गुणवत्ता: अधिकतम सटीकता, धीमी जनरेशन, ~4GB"
+      },
+      "q2k": {
+        "description": "हल्का: सबसे तेज़ जनरेशन, कम गुणवत्ता, ~1.5GB"
+      }
+    },
+    "errors": {
+      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "generationCancelled": "जनरेशन रद्द की गई"
+    },
+    "tips": {
+      "intelMacUnsupported": "लोकल Z-Image केवल Apple Silicon Macs पर समर्थित है।",
+      "linuxArmUnsupported": "Linux ARM पर लोकल Z-Image समर्थित नहीं है।",
+      "windowsArmUnsupported": "Windows ARM पर लोकल Z-Image समर्थित नहीं है।",
+      "linuxCpuOnly": "Linux पर लोकल Z-Image केवल CPU पर चलता है। यह धीमा हो सकता है—steps या image size कम करें।",
+      "windowsVulkanRequired": "Windows पर लोकल Z-Image के लिए Vulkan-compatible GPU drivers आवश्यक हैं। उपलब्ध न होने पर generation धीमी या fail हो सकती है।",
+      "slowWithoutMetal": "Metal acceleration उपलब्ध नहीं है। Generation CPU पर चलेगी और धीमी हो सकती है—steps या image size कम करें।"
+    }
+  },
   "settings": {
     "title": "सेटिंग्स",
     "description": "अपना WaveSpeed Desktop एप्लिकेशन कॉन्फ़िगर करें",
@@ -341,6 +463,7 @@
       "invalidDesc": "API कुंजी सत्यापित नहीं की जा सकी। कृपया जांचें और पुनः प्रयास करें।",
       "cleared": "API कुंजी साफ़ की गई",
       "clearedDesc": "आपकी API कुंजी हटा दी गई है।",
+      "itemDeleted": "Cache item deleted",
       "error": "त्रुटि",
       "errorDesc": "API कुंजी सहेजने में विफल।"
     },
@@ -394,7 +517,18 @@
       "clear": "साफ करें",
       "cleared": "कैश साफ हो गया",
       "clearedDesc": "AI मॉडल कैश साफ हो गया है। जरूरत पड़ने पर मॉडल फिर से डाउनलोड होंगे।",
-      "clearFailed": "कैश साफ करने में विफल"
+      "itemDeleted": "कैश आइटम हटाया गया",
+      "clearFailed": "कैश साफ करने में विफल",
+      "zImageAuxiliary": "Z-Image सहायक मॉडल",
+      "zImageModels": "Z-Image मॉडल",
+      "zImageBinary": "Z-Image बाइनरी"
+    },
+    "downloads": {
+      "title": "डाउनलोड",
+      "description": "AI मॉडल डाउनलोड सेटिंग्स",
+      "downloadTimeout": "डाउनलोड टाइमआउट",
+      "downloadTimeoutDesc": "AI मॉडल डाउनलोड करते समय अधिकतम प्रतीक्षा समय",
+      "minutes": "मिनट"
     },
     "updates": {
       "title": "अपडेट",
@@ -487,7 +621,66 @@
       "eta": "~{{time}} शेष",
       "sideBySide": "साथ-साथ",
       "comparison": "स्लाइडर तुलना",
-      "dragToCompare": "तुलना के लिए खींचें"
+      "dragToCompare": "तुलना के लिए खींचें",
+      "enhanceFace": "चेहरे की गुणवत्ता बढ़ाएं"
+    },
+    "faceEnhancer": {
+      "title": "फेस एन्हांसर",
+      "description": "AI का उपयोग करके चेहरे की गुणवत्ता बढ़ाएं और पुनर्स्थापित करें",
+      "selectImage": "चेहरों वाली छवि चुनें",
+      "orDragDrop": "या ड्रैग और ड्रॉप करें",
+      "enhance": "बेहतर बनाएं",
+      "download": "डाउनलोड",
+      "processing": "प्रसंस्करण...",
+      "original": "मूल",
+      "enhanced": "बेहतर",
+      "sideBySide": "साथ-साथ",
+      "comparison": "स्लाइडर तुलना",
+      "dragToCompare": "तुलना के लिए खींचें",
+      "detecting": "चेहरे पहचान रहे हैं",
+      "enhancing": "चेहरे बेहतर बना रहे हैं",
+      "noFaces": "छवि में कोई चेहरा नहीं मिला",
+      "facesFound": "{{count}} चेहरे मिले"
+    },
+    "faceSwapper": {
+      "title": "फेस स्वैपर",
+      "description": "AI का उपयोग करके छवियों के बीच चेहरे बदलें",
+      "sourceTitle": "स्रोत चेहरा",
+      "targetTitle": "लक्ष्य छवि",
+      "selectSource": "स्रोत चेहरा चुनें",
+      "selectTarget": "लक्ष्य छवि चुनें",
+      "sourceHint": "कॉपी करने के लिए चेहरे की पहचान",
+      "targetHint": "छवि जहां चेहरे बदले जाएंगे",
+      "orDragDrop": "or drag and drop",
+      "noSourceFace": "स्रोत छवि में कोई चेहरा नहीं मिला",
+      "noTargetFaces": "लक्ष्य छवि में कोई चेहरा नहीं मिला",
+      "clickToSelect": "बदलने के लिए चेहरों पर क्लिक करें",
+      "facesSelected": "{{selected}}/{{total}} चेहरे चुने गए",
+      "sourceSelected": "Face {{selected}}/{{total}} selected",
+      "faceDetected": "चेहरा मिला",
+      "swapFaces": "चेहरे बदलें",
+      "processing": "प्रोसेसिंग...",
+      "detecting": "चेहरे पहचान रहे हैं",
+      "extractingEmbedding": "चेहरे की पहचान निकाल रहे हैं",
+      "swapping": "चेहरा बदल रहा है",
+      "enhancing": "परिणाम बेहतर बना रहे हैं",
+      "enableEnhancement": "बदले गए चेहरे बेहतर बनाएं",
+      "original": "मूल",
+      "result": "परिणाम",
+      "download": "डाउनलोड",
+      "clickFaceToSwap": "बदलने के लिए चेहरे पर क्लिक करें",
+      "swapFace": "चेहरा बदलें",
+      "targetFace": "लक्षित चेहरा",
+      "sourceFace": "स्रोत चेहरा",
+      "enhanceFace": "चेहरे की गुणवत्ता बढ़ाएं",
+      "swap": "बदलें",
+      "change": "बदलें",
+      "clickToSwapMore": "जारी रखने के लिए किसी अन्य चेहरे पर क्लिक करें",
+      "swapped": "बदला गया",
+      "revert": "वापस लाएं",
+      "swappedFace": "बदला गया चेहरा",
+      "swappedFacePlaceholder": "अभी तक नहीं बदला",
+      "alreadySwapped": "पहले से बदला हुआ"
     },
     "backgroundRemover": {
       "title": "बैकग्राउंड रिमूवर",
@@ -650,6 +843,89 @@
       "finalizing": "अंतिम चरण",
       "overall": "समग्र",
       "remaining": "शेष"
+    },
+    "backWarning": {
+      "title": "प्रक्रिया जारी है",
+      "description": "एक कार्य वर्तमान में संसाधित हो रहा है। क्या आप वाकई वापस जाना चाहते हैं? यह वर्तमान ऑपरेशन को रद्द कर देगा।",
+      "cancel": "रद्द करें",
+      "confirm": "वापस जाएं"
+    },
+    "videoConverter": {
+      "title": "Video Converter",
+      "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
+      "selectVideo": "Select Video",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace video",
+      "supportedFormats": "Supports MP4, WebM, MOV, AVI, MKV",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "original": "Original",
+      "outputSettings": "Output Settings",
+      "format": "Format",
+      "quality": "Quality",
+      "resolution": "Resolution",
+      "convertedSize": "Converted Size"
+    },
+    "audioConverter": {
+      "title": "Audio Converter",
+      "description": "Convert audio between formats (MP3, AAC, FLAC, WAV)",
+      "selectAudio": "Select Audio",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace audio",
+      "supportedFormats": "Supports MP3, M4A, OGG, WAV, FLAC",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "converted": "Converted",
+      "playOriginal": "Play original",
+      "playConverted": "Play converted"
+    },
+    "imageConverter": {
+      "title": "Image Converter",
+      "description": "Convert images between formats (JPG, PNG, WebP, GIF)",
+      "selectImages": "Select Images",
+      "orDragDrop": "or drag and drop",
+      "dropToAdd": "Drop to add images",
+      "supportedFormats": "Supports JPG, PNG, WebP, GIF, BMP",
+      "addMore": "Add More",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "quality": "Quality",
+      "downloadAll": "Download All"
+    },
+    "mediaTrimmer": {
+      "title": "Media Trimmer",
+      "description": "Trim videos or audio to a specific duration",
+      "selectMedia": "Select Media",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace media",
+      "supportedFormats": "Supports video and audio files",
+      "trim": "Trim",
+      "trimming": "Trimming...",
+      "originalDuration": "Original",
+      "selectedDuration": "Selected",
+      "trimmedSize": "Trimmed Size",
+      "playingOriginal": "Playing original",
+      "playingTrimmed": "Playing trimmed"
+    },
+    "mediaMerger": {
+      "title": "Media Merger",
+      "description": "Merge multiple video or audio files into one",
+      "selectFiles": "Select Files",
+      "orDragDrop": "or drag and drop",
+      "dropToAdd": "Drop to add files",
+      "supportedFormats": "Supports video and audio files",
+      "addMore": "Add More",
+      "merge": "Merge",
+      "merging": "Merging...",
+      "merged": "Merged",
+      "totalDuration": "Total Duration",
+      "sameFormatNote": "Files must have the same format for lossless merging"
+    },
+    "ffmpeg": {
+      "loading": "Loading FFmpeg",
+      "converting": "Converting",
+      "merging": "Merging",
+      "trimming": "Trimming"
     }
   },
   "game": {

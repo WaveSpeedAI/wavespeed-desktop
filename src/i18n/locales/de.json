@@ -34,14 +34,54 @@
     "downloadFailed": "Download fehlgeschlagen. Bitte überprüfen Sie Ihre Netzwerkverbindung."
   },
   "nav": {
+    "home": "Startseite",
     "models": "Modelle",
     "playground": "Playground",
     "history": "Verlauf",
     "templates": "Vorlagen",
     "assets": "Meine Assets",
+    "zImage": "Z-Image",
     "freeTools": "Kostenlose Tools",
     "settings": "Einstellungen",
     "collapse": "Einklappen"
+  },
+  "welcome": {
+    "tagline": "KI-Kreativwerkzeuge direkt zur Hand",
+    "explore": "Erkunden",
+    "getStarted": "Loslegen",
+    "tryFreeTools": "Kostenlose Tools ausprobieren",
+    "features": {
+      "models": {
+        "title": "Modell-Browser",
+        "description": "Durchsuchen Sie KI-Modelle für Bild-, Video- und Audiogenerierung"
+      },
+      "playground": {
+        "title": "Playground",
+        "description": "Multi-Tab-Arbeitsbereich zum Ausführen von Modellen mit benutzerdefinierten Parametern"
+      },
+      "templates": {
+        "title": "Vorlagen",
+        "description": "Speichern und verwenden Sie Ihre Lieblingskonfigurationen wieder"
+      },
+      "history": {
+        "title": "Verlauf",
+        "description": "Verfolgen und überprüfen Sie Ihre letzten Vorhersagen"
+      },
+      "assets": {
+        "title": "Meine Assets",
+        "description": "Organisieren und verwalten Sie Ihre generierten Ausgaben"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "Lokale KI-Bildgenerierung – läuft auf Ihrem Gerät, kein API-Schlüssel erforderlich",
+        "badge": "Lokal"
+      },
+      "freeTools": {
+        "title": "Kostenlose Tools",
+        "description": "Leistungsstarke KI-Tools, die lokal laufen - kein API-Schlüssel erforderlich",
+        "badge": "Kostenlos"
+      }
+    }
   },
   "models": {
     "title": "Modelle",
@@ -151,6 +191,40 @@
       "failedError": "Prompt-Optimierung fehlgeschlagen",
       "optimizing": "Optimiere...",
       "optimize": "Optimieren"
+    },
+    "flappyBird": {
+      "clickToStart": "Klicken oder Leertaste drücken um ein Spiel zu starten",
+      "viewResults": "Ergebnisse Anzeigen",
+      "playWhileWaiting": "Spielen während du wartest",
+      "quit": "Beenden"
+    },
+    "batch": {
+      "title": "Stapel",
+      "enable": "Stapelmodus aktivieren",
+      "disable": "Stapelmodus deaktivieren",
+      "repeatCount": "Anzahl",
+      "randomizeSeed": "Zufälliger Seed",
+      "stopOnError": "Bei Fehler stoppen",
+      "runBatch": "Stapel ausführen ({{count}})",
+      "running": "Ausführung {{current}}/{{total}}...",
+      "cancelling": "Abbrechen...",
+      "cancel": "Abbrechen",
+      "completed": "{{count}} abgeschlossen",
+      "failed": "{{count}} fehlgeschlagen",
+      "downloadAll": "Alle herunterladen",
+      "saveAllToAssets": "Alle speichern",
+      "savedAll": "In Assets gespeichert",
+      "savedAllDesc": "{{count}} Ausgaben gespeichert",
+      "saved": "Gespeichert",
+      "clearResults": "Löschen",
+      "results": "Ergebnisse",
+      "result": "Ergebnis",
+      "inputDetails": "Eingabedetails",
+      "preview": "Vorschau",
+      "items": "Elemente",
+      "noPreview": "Keine Vorschau",
+      "seedsGenerated": "Seeds automatisch generiert",
+      "settings": "Stapeleinstellungen"
     }
   },
   "history": {
@@ -167,6 +241,17 @@
     "loadPreviews": "Vorschauen laden",
     "disablePreviews": "Vorschauen deaktivieren",
     "generationDetails": "Generierungsdetails",
+    "select": "Auswählen",
+    "selectionDone": "Fertig",
+    "deleteSelected": "Löschen ({{count}})",
+    "bulkDeleteConfirmTitle": "Verlaufseinträge löschen",
+    "bulkDeleteConfirmDesc": "Möchten Sie {{count}} Vorhersage(n) wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleteConfirmTitle": "Verlaufseintrag löschen",
+    "deleteConfirmDesc": "Möchten Sie diese Vorhersage wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleted": "Verlaufseintrag gelöscht",
+    "deletedBulk": "Verlaufseinträge gelöscht",
+    "deletedBulkDesc": "{{count}} Verlaufseintrag(e) gelöscht",
+    "deleteFailed": "Verlaufseintrag konnte nicht gelöscht werden",
     "model": "Modell",
     "created": "Erstellt",
     "executionTime": "Ausführungszeit",
@@ -322,6 +407,43 @@
     "loadPreviews": "Vorschauen laden",
     "disablePreviews": "Vorschauen deaktivieren"
   },
+  "zImage": {
+    "title": "Z-Image",
+    "subtitle": "Z-Image lokal kostenlos ausführen",
+    "generateImage": "Generieren",
+    "generating": "Generierung...",
+    "downloadingSd": "SD wird heruntergeladen...",
+    "downloadingVae": "VAE wird heruntergeladen...",
+    "downloadingLlm": "LLM wird heruntergeladen...",
+    "downloadingZImage": "Modell wird heruntergeladen...",
+    "stopGeneration": "Stoppen",
+    "models": {
+      "q4k": {
+        "description": "Empfohlen: Schnelle Inferenz mit guter Qualität, ~2,5GB"
+      },
+      "q6k": {
+        "description": "Hohe Qualität: Beste Ergebnisse, langsamere Generierung, ~3,5GB"
+      },
+      "q8": {
+        "description": "Höchste Qualität: Maximale Präzision, langsamere Generierung, ~4GB"
+      },
+      "q2k": {
+        "description": "Leichtgewichtig: Schnellste Generierung, geringere Qualität, ~1,5GB"
+      }
+    },
+    "errors": {
+      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "generationCancelled": "Generierung abgebrochen"
+    },
+    "tips": {
+      "intelMacUnsupported": "Lokales Z-Image wird nur auf Apple-Silicon-Macs unterstützt.",
+      "linuxArmUnsupported": "Linux ARM wird für lokales Z-Image nicht unterstützt.",
+      "windowsArmUnsupported": "Windows ARM wird für lokales Z-Image nicht unterstützt.",
+      "linuxCpuOnly": "Lokales Z-Image läuft unter Linux nur auf der CPU. Es kann langsam sein—reduziere Schritte oder Bildgröße.",
+      "windowsVulkanRequired": "Lokales Z-Image unter Windows erfordert Vulkan-fähige GPU-Treiber. Falls nicht verfügbar, kann die Generierung langsam sein oder fehlschlagen.",
+      "slowWithoutMetal": "Metal-Beschleunigung ist nicht verfügbar. Die Generierung läuft auf der CPU und kann langsam sein—reduziere Schritte oder Bildgröße."
+    }
+  },
   "settings": {
     "title": "Einstellungen",
     "description": "Ihre WaveSpeed Desktop-Anwendung konfigurieren",
@@ -341,6 +463,7 @@
       "invalidDesc": "Der API-Schlüssel konnte nicht validiert werden. Bitte überprüfen und erneut versuchen.",
       "cleared": "API-Schlüssel gelöscht",
       "clearedDesc": "Ihr API-Schlüssel wurde entfernt.",
+      "itemDeleted": "Cache item deleted",
       "error": "Fehler",
       "errorDesc": "Fehler beim Speichern des API-Schlüssels."
     },
@@ -394,7 +517,18 @@
       "clear": "Leeren",
       "cleared": "Cache geleert",
       "clearedDesc": "Der KI-Modell-Cache wurde geleert. Modelle werden bei Bedarf erneut heruntergeladen.",
-      "clearFailed": "Cache konnte nicht geleert werden"
+      "itemDeleted": "Cache-Element gelöscht",
+      "clearFailed": "Cache konnte nicht geleert werden",
+      "zImageAuxiliary": "Z-Image-Hilfsmodelle",
+      "zImageModels": "Z-Image-Modelle",
+      "zImageBinary": "Z-Image-Binärdatei"
+    },
+    "downloads": {
+      "title": "Downloads",
+      "description": "Download-Einstellungen für KI-Modelle",
+      "downloadTimeout": "Download-Timeout",
+      "downloadTimeoutDesc": "Maximale Wartezeit beim Herunterladen von KI-Modellen",
+      "minutes": "Minuten"
     },
     "updates": {
       "title": "Updates",
@@ -487,7 +621,66 @@
       "eta": "~{{time}} verbleibend",
       "sideBySide": "Nebeneinander",
       "comparison": "Schieberegler-Vergleich",
-      "dragToCompare": "Zum Vergleichen ziehen"
+      "dragToCompare": "Zum Vergleichen ziehen",
+      "enhanceFace": "Gesichtsqualität verbessern"
+    },
+    "faceEnhancer": {
+      "title": "Gesichtsverbesserung",
+      "description": "Verbessern und restaurieren Sie Gesichtsqualität mit KI",
+      "selectImage": "Bild mit Gesichtern auswählen",
+      "orDragDrop": "oder Drag & Drop",
+      "enhance": "Verbessern",
+      "download": "Herunterladen",
+      "processing": "Verarbeitung...",
+      "original": "Original",
+      "enhanced": "Verbessert",
+      "sideBySide": "Nebeneinander",
+      "comparison": "Schieberegler-Vergleich",
+      "dragToCompare": "Zum Vergleichen ziehen",
+      "detecting": "Gesichter erkennen",
+      "enhancing": "Gesichter verbessern",
+      "noFaces": "Keine Gesichter im Bild erkannt",
+      "facesFound": "{{count}} Gesicht(er) erkannt"
+    },
+    "faceSwapper": {
+      "title": "Gesichtertausch",
+      "description": "Tauschen Sie Gesichter zwischen Bildern mit KI",
+      "sourceTitle": "Quellgesicht",
+      "targetTitle": "Zielbild",
+      "selectSource": "Quellgesicht auswählen",
+      "selectTarget": "Zielbild auswählen",
+      "sourceHint": "Die zu kopierende Gesichtsidentität",
+      "targetHint": "Bild, in dem Gesichter ersetzt werden",
+      "orDragDrop": "or drag and drop",
+      "noSourceFace": "Kein Gesicht im Quellbild erkannt",
+      "noTargetFaces": "Keine Gesichter im Zielbild erkannt",
+      "clickToSelect": "Klicken Sie auf Gesichter, um auszuwählen, welche getauscht werden sollen",
+      "facesSelected": "{{selected}}/{{total}} Gesicht(er) ausgewählt",
+      "sourceSelected": "Face {{selected}}/{{total}} selected",
+      "faceDetected": "Gesicht erkannt",
+      "swapFaces": "Gesichter tauschen",
+      "processing": "Verarbeitung...",
+      "detecting": "Gesichter erkennen",
+      "extractingEmbedding": "Gesichtsidentität extrahieren",
+      "swapping": "Gesicht tauschen",
+      "enhancing": "Ergebnis verbessern",
+      "enableEnhancement": "Getauschte Gesichter verbessern",
+      "original": "Original",
+      "result": "Ergebnis",
+      "download": "Herunterladen",
+      "clickFaceToSwap": "Klicken Sie auf ein Gesicht zum Tauschen",
+      "swapFace": "Gesicht Tauschen",
+      "targetFace": "Zielgesicht",
+      "sourceFace": "Quellgesicht",
+      "enhanceFace": "Gesichtsqualität verbessern",
+      "swap": "Tauschen",
+      "change": "Ändern",
+      "clickToSwapMore": "Klicken Sie auf ein anderes Gesicht, um fortzufahren",
+      "swapped": "Getauscht",
+      "revert": "Rückgängig",
+      "swappedFace": "Getauschtes Gesicht",
+      "swappedFacePlaceholder": "Noch nicht getauscht",
+      "alreadySwapped": "Bereits getauscht"
     },
     "backgroundRemover": {
       "title": "Hintergrund-Entferner",
@@ -650,6 +843,89 @@
       "finalizing": "Fertigstellung",
       "overall": "Gesamt",
       "remaining": "verbleibend"
+    },
+    "backWarning": {
+      "title": "Verarbeitung läuft",
+      "description": "Eine Aufgabe wird gerade verarbeitet. Möchten Sie wirklich zurückgehen? Dies wird den aktuellen Vorgang abbrechen.",
+      "cancel": "Abbrechen",
+      "confirm": "Zurück"
+    },
+    "videoConverter": {
+      "title": "Video-Konverter",
+      "description": "Videos zwischen Formaten konvertieren (MP4, WebM, MOV, AVI)",
+      "selectVideo": "Video auswählen",
+      "orDragDrop": "oder per Drag & Drop",
+      "dropToReplace": "Ablegen zum Ersetzen des Videos",
+      "supportedFormats": "Unterstützt MP4, WebM, MOV, AVI, MKV",
+      "convert": "Konvertieren",
+      "converting": "Konvertierung...",
+      "original": "Original",
+      "outputSettings": "Ausgabeeinstellungen",
+      "format": "Format",
+      "quality": "Qualität",
+      "resolution": "Auflösung",
+      "convertedSize": "Konvertierte Größe"
+    },
+    "audioConverter": {
+      "title": "Audio-Konverter",
+      "description": "Audio zwischen Formaten konvertieren (MP3, AAC, FLAC, WAV)",
+      "selectAudio": "Audio auswählen",
+      "orDragDrop": "oder per Drag & Drop",
+      "dropToReplace": "Ablegen zum Ersetzen des Audios",
+      "supportedFormats": "Unterstützt MP3, M4A, OGG, WAV, FLAC",
+      "convert": "Konvertieren",
+      "converting": "Konvertierung...",
+      "converted": "Konvertiert",
+      "playOriginal": "Original abspielen",
+      "playConverted": "Konvertiert abspielen"
+    },
+    "imageConverter": {
+      "title": "Bild-Konverter",
+      "description": "Bilder zwischen Formaten konvertieren (JPG, PNG, WebP, GIF)",
+      "selectImages": "Bilder auswählen",
+      "orDragDrop": "oder per Drag & Drop",
+      "dropToAdd": "Ablegen zum Hinzufügen von Bildern",
+      "supportedFormats": "Unterstützt JPG, PNG, WebP, GIF, BMP",
+      "addMore": "Mehr hinzufügen",
+      "convert": "Konvertieren",
+      "converting": "Konvertierung...",
+      "quality": "Qualität",
+      "downloadAll": "Alle herunterladen"
+    },
+    "mediaTrimmer": {
+      "title": "Medien-Trimmer",
+      "description": "Videos oder Audio auf eine bestimmte Dauer zuschneiden",
+      "selectMedia": "Medium auswählen",
+      "orDragDrop": "oder per Drag & Drop",
+      "dropToReplace": "Ablegen zum Ersetzen des Mediums",
+      "supportedFormats": "Unterstützt Video- und Audiodateien",
+      "trim": "Zuschneiden",
+      "trimming": "Zuschneiden...",
+      "originalDuration": "Original",
+      "selectedDuration": "Ausgewählt",
+      "trimmedSize": "Zugeschnittene Größe",
+      "playingOriginal": "Original abspielen",
+      "playingTrimmed": "Zugeschnitten abspielen"
+    },
+    "mediaMerger": {
+      "title": "Medien-Zusammenführung",
+      "description": "Mehrere Video- oder Audiodateien zu einer zusammenführen",
+      "selectFiles": "Dateien auswählen",
+      "orDragDrop": "oder per Drag & Drop",
+      "dropToAdd": "Ablegen zum Hinzufügen von Dateien",
+      "supportedFormats": "Unterstützt Video- und Audiodateien",
+      "addMore": "Mehr hinzufügen",
+      "merge": "Zusammenführen",
+      "merging": "Zusammenführung...",
+      "merged": "Zusammengeführt",
+      "totalDuration": "Gesamtdauer",
+      "sameFormatNote": "Dateien müssen das gleiche Format für verlustfreie Zusammenführung haben"
+    },
+    "ffmpeg": {
+      "loading": "FFmpeg wird geladen",
+      "converting": "Konvertierung",
+      "merging": "Zusammenführung",
+      "trimming": "Zuschneiden"
     }
   },
   "game": {

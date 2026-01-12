@@ -30,7 +30,6 @@
     "success": "Success",
     "warning": "Warning",
     "selectAll": "Select All",
-    "deselectAll": "Deselect All",
     "downloadFailed": "Download failed. Please check your network connection."
   },
   "nav": {
@@ -40,29 +39,46 @@
     "history": "History",
     "templates": "Templates",
     "assets": "My Assets",
+    "zImage": "Z-Image",
     "freeTools": "Free Tools",
     "settings": "Settings",
     "collapse": "Collapse"
   },
   "welcome": {
-    "subtitle": "AI-Powered Creative Tools at Your Fingertips",
-    "footer": "Powered by WaveSpeed AI",
-    "quickLinks": {
-      "settings": {
-        "title": "Settings",
-        "description": "Configure API key, language & downloads"
+    "tagline": "AI-Powered Creative Tools at Your Fingertips",
+    "explore": "Explore",
+    "getStarted": "Get Started",
+    "tryFreeTools": "Try Free Tools",
+    "features": {
+      "models": {
+        "title": "Model Browser",
+        "description": "Browse and explore AI models for image, video, and audio generation"
+      },
+      "playground": {
+        "title": "Playground",
+        "description": "Multi-tab workspace to run models with custom parameters"
+      },
+      "templates": {
+        "title": "Templates",
+        "description": "Save and reuse your favorite configurations"
+      },
+      "history": {
+        "title": "History",
+        "description": "Track and review your recent predictions"
+      },
+      "assets": {
+        "title": "My Assets",
+        "description": "Organize and manage your generated outputs"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "Local AI image generation - runs on your device, no API key needed",
+        "badge": "Local"
       },
       "freeTools": {
         "title": "Free Tools",
-        "description": "AI tools that run locally - no API key"
-      },
-      "game": {
-        "title": "Mini Game",
-        "description": "Play Flappy Bird while you wait"
-      },
-      "website": {
-        "title": "Visit Website",
-        "description": "Explore WaveSpeed AI on the web"
+        "description": "Powerful AI tools that run locally - no API key needed",
+        "badge": "Free"
       }
     }
   },
@@ -81,15 +97,13 @@
     "type": "Type",
     "basePrice": "Base price",
     "openInNewTab": "Open in new tab",
-    "openDocs": "Open documentation",
-    "openWaveSpeed": "Open on WaveSpeed",
     "addToFavorites": "Add to favorites",
     "removeFromFavorites": "Remove from favorites"
   },
   "playground": {
     "title": "Playground",
     "selectModel": "Select a model",
-    "searchModels": "Search...",
+    "searchModels": "Search models...",
     "noModelSelected": "No model selected",
     "selectModelPrompt": "Select a model to configure parameters",
     "run": "Run",
@@ -100,13 +114,6 @@
     "noOutputs": "No outputs yet",
     "configureAndRun": "Configure the model and click Run to generate",
     "generating": "Generating...",
-    "imageCopied": "Image copied to clipboard",
-    "urlCopied": "URL copied to clipboard",
-    "copyFailed": "Failed to copy",
-    "copyImage": "Copy image",
-    "copyUrl": "Copy URL",
-    "copy": "Copy",
-    "download": "Download",
     "saveAsTemplate": "Save as Template",
     "saveTemplate": "Save Template",
     "saveTemplateDesc": "Save your current configuration for {{model}}",
@@ -140,8 +147,6 @@
       "micPermissionDenied": "Microphone permission denied. Please allow access in your browser settings.",
       "noMicFound": "No microphone found. Please connect a microphone and try again.",
       "micError": "Failed to access microphone",
-      "micInUse": "Microphone is in use by another application. Please close other apps and try again.",
-      "tapToRecord": "Tap to start recording",
       "switchCamera": "Switch camera",
       "takePhoto": "Take photo",
       "retake": "Retake",
@@ -210,9 +215,6 @@
       "savedAll": "Saved to Assets",
       "savedAllDesc": "Saved {{count}} output(s)",
       "saved": "Saved",
-      "downloadSuccess": "Downloaded {{filename}}",
-      "downloadFailed": "Download failed: {{error}}",
-      "downloadAllSuccess": "Downloaded {{count}} file(s)",
       "clearResults": "Clear",
       "results": "Results",
       "result": "Result",
@@ -233,47 +235,28 @@
       "completed": "Completed",
       "failed": "Failed",
       "processing": "Processing",
-      "created": "Created",
-      "archived": "Archived"
+      "created": "Created"
     },
     "loadPreviews": "Load previews",
     "disablePreviews": "Disable previews",
     "generationDetails": "Generation Details",
+    "select": "Select",
+    "selectionDone": "Done",
+    "deleteSelected": "Delete ({{count}})",
+    "bulkDeleteConfirmTitle": "Delete History Items",
+    "bulkDeleteConfirmDesc": "Are you sure you want to delete {{count}} prediction(s)? This action cannot be undone.",
+    "deleteConfirmTitle": "Delete History Item",
+    "deleteConfirmDesc": "Are you sure you want to delete this prediction? This action cannot be undone.",
+    "deleted": "History item deleted",
+    "deletedBulk": "History items deleted",
+    "deletedBulkDesc": "Deleted {{count}} history item(s)",
+    "deleteFailed": "Failed to delete history item",
     "model": "Model",
     "created": "Created",
     "executionTime": "Execution Time",
     "predictionId": "Prediction ID",
     "notAvailable": "History Not Available",
-    "notAvailableDesc": "The prediction history API is not available at this time.",
-    "saveTemplate": {
-      "button": "Save as Template",
-      "dialogTitle": "Save as Template",
-      "nameLabel": "Template Name",
-      "namePlaceholder": "Enter template name",
-      "duplicateName": "A template with this name already exists",
-      "success": "Template Saved",
-      "successDesc": "Your template has been saved successfully",
-      "error": "Failed to Save",
-      "noInputsTitle": "Cannot Save Template",
-      "noInputsDesc": "Input parameters are only available for predictions made in this app. Try running a new prediction first."
-    },
-    "hasInputs": "Can be saved as template",
-    "select": "Select",
-    "selectionDone": "Done",
-    "deleteSelected": "Delete",
-    "bulkDeleteConfirmTitle": "Delete Predictions",
-    "bulkDeleteConfirmDesc": "Are you sure you want to delete {{count}} prediction(s)? This action cannot be undone.",
-    "deleteConfirmTitle": "Delete Prediction",
-    "deleteConfirmDesc": "Are you sure you want to delete this prediction? This action cannot be undone.",
-    "deleted": "Prediction deleted",
-    "deletedBulk": "Predictions deleted",
-    "deletedBulkDesc": "Deleted {{count}} prediction(s)",
-    "deleteFailed": "Failed to delete prediction",
-    "downloadComplete": "Download complete",
-    "downloadCompleteDesc": "Downloaded {{count}} file(s)",
-    "downloadFailed": "Download failed",
-    "downloadFailedDesc": "Failed to download {{count}} file(s)",
-    "longPressHint": "Long press to select"
+    "notAvailableDesc": "The prediction history API is not available at this time."
   },
   "templates": {
     "title": "Templates",
@@ -399,10 +382,46 @@
     "loadPreviews": "Load previews",
     "disablePreviews": "Disable previews"
   },
+  "zImage": {
+    "title": "Z-Image",
+    "subtitle": "Run Z-Image locally for free",
+    "generateImage": "Generate",
+    "generating": "Generating...",
+    "downloadingSd": "Downloading SD...",
+    "downloadingVae": "Downloading VAE...",
+    "downloadingLlm": "Downloading LLM...",
+    "downloadingZImage": "Downloading Model...",
+    "stopGeneration": "Stop",
+    "models": {
+      "q4k": {
+        "description": "Recommended: Fast inference with good quality, ~2.5GB"
+      },
+      "q6k": {
+        "description": "High quality: Best results, slower generation, ~3.5GB"
+      },
+      "q8": {
+        "description": "Highest quality: Maximum precision, slower generation, ~4GB"
+      },
+      "q2k": {
+        "description": "Lightweight: Fastest generation, lower quality, ~1.5GB"
+      }
+    },
+    "errors": {
+      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "generationCancelled": "Generation cancelled"
+    },
+    "tips": {
+      "intelMacUnsupported": "Local Z-Image is only supported on Apple Silicon Macs.",
+      "linuxArmUnsupported": "Linux ARM is not supported for local Z-Image.",
+      "windowsArmUnsupported": "Windows ARM is not supported for local Z-Image.",
+      "linuxCpuOnly": "Local Z-Image runs on CPU only on Linux. It may be slow—reduce steps or image size.",
+      "windowsVulkanRequired": "Local Z-Image on Windows requires Vulkan-capable GPU drivers. If unavailable, generation will be slow or may fail.",
+      "slowWithoutMetal": "Metal acceleration is not available. Generation will run on CPU and may be slow—reduce steps or image size."
+    }
+  },
   "settings": {
     "title": "Settings",
     "description": "Configure your WaveSpeed Desktop application",
-    "mobileDescription": "Configure your WaveSpeed Mobile application",
     "apiKey": {
       "title": "API Key",
       "description": "Enter your WaveSpeed API key to access the models",
@@ -418,6 +437,7 @@
       "invalidDesc": "The API key could not be validated. Please check and try again.",
       "cleared": "API Key cleared",
       "clearedDesc": "Your API key has been removed.",
+      "itemDeleted": "Cache item deleted",
       "error": "Error",
       "errorDesc": "Failed to save API key."
     },
@@ -471,21 +491,11 @@
       "clear": "Clear",
       "cleared": "Cache cleared",
       "clearedDesc": "AI model cache has been cleared. Models will be re-downloaded when needed.",
+      "itemDeleted": "Cache item deleted",
       "clearFailed": "Failed to clear cache",
-      "predownload": "Pre-download Models",
-      "predownloadDesc": "Download all Free Tools AI models for offline use",
-      "downloadModels": "Download All",
-      "downloading": "Downloading",
-      "alreadyCached": "Already cached",
-      "downloaded": "Downloaded",
-      "overallProgress": "Overall Progress",
-      "downloadCancelled": "Download cancelled",
-      "downloadCancelledDesc": "Model download was cancelled",
-      "downloadPartial": "Partial download",
-      "downloadPartialDesc": "Some models failed to download. You can try again later.",
-      "downloadComplete": "Download complete",
-      "downloadCompleteDesc": "All AI models have been downloaded and cached.",
-      "itemDeleted": "Cache item deleted"
+      "zImageAuxiliary": "Z-Image Auxiliary",
+      "zImageModels": "Z-Image Models",
+      "zImageBinary": "Z-Image Binary"
     },
     "downloads": {
       "title": "Downloads",
@@ -525,9 +535,7 @@
     "about": {
       "title": "About",
       "description": "WaveSpeed Desktop - AI Model Playground",
-      "mobileDescription": "WaveSpeed Mobile - AI Model Playground",
       "aboutText": "An open-source desktop application for running AI models with WaveSpeed API.",
-      "mobileAboutText": "An open-source mobile application for running AI models with WaveSpeed API.",
       "viewOnGitHub": "View on GitHub"
     }
   },
@@ -564,16 +572,7 @@
       "cancelled": "Cancelled",
       "original": "Original",
       "enhanced": "Enhanced",
-      "eta": "~{{time}} remaining",
-      "mobileWarning": {
-        "title": "Mobile Device Warning",
-        "description": "Video enhancement may cause the app to crash on mobile devices due to memory limitations.",
-        "recommendations": "For best results, we recommend:",
-        "duration": "Video length under 5 seconds",
-        "resolution": "Resolution under 720p (1280×720)",
-        "model": "Use the \"Fast\" model option",
-        "proceed": "Continue Anyway"
-      }
+      "eta": "~{{time}} remaining"
     },
     "imageEnhancer": {
       "title": "Image Enhancer",
@@ -594,7 +593,66 @@
       "eta": "~{{time}} remaining",
       "sideBySide": "Side by side",
       "comparison": "Comparison slider",
-      "dragToCompare": "Drag to compare"
+      "dragToCompare": "Drag to compare",
+      "enhanceFace": "Enhance face quality"
+    },
+    "faceEnhancer": {
+      "title": "Face Enhancer",
+      "description": "Enhance and restore face quality using AI",
+      "selectImage": "Select an image with faces",
+      "orDragDrop": "or drag and drop",
+      "enhance": "Enhance",
+      "download": "Download",
+      "processing": "Processing...",
+      "original": "Original",
+      "enhanced": "Enhanced",
+      "sideBySide": "Side by side",
+      "comparison": "Comparison slider",
+      "dragToCompare": "Drag to compare",
+      "detecting": "Detecting faces",
+      "enhancing": "Enhancing faces",
+      "noFaces": "No faces detected in the image",
+      "facesFound": "{{count}} face(s) detected"
+    },
+    "faceSwapper": {
+      "title": "Face Swapper",
+      "description": "Swap faces between images using AI",
+      "sourceTitle": "Source Face",
+      "targetTitle": "Target Image",
+      "selectSource": "Select source face",
+      "selectTarget": "Select target image",
+      "sourceHint": "The face identity to copy",
+      "targetHint": "Image where faces will be replaced",
+      "orDragDrop": "or drag and drop",
+      "noSourceFace": "No face detected in source image",
+      "noTargetFaces": "No faces detected in target image",
+      "clickToSelect": "Click on faces to select which ones to swap",
+      "facesSelected": "{{selected}}/{{total}} face(s) selected",
+      "sourceSelected": "Face {{selected}}/{{total}} selected",
+      "faceDetected": "Face detected",
+      "swapFaces": "Swap Faces",
+      "processing": "Processing...",
+      "detecting": "Detecting faces",
+      "extractingEmbedding": "Extracting face identity",
+      "swapping": "Swapping face",
+      "enhancing": "Enhancing result",
+      "enableEnhancement": "Enhance swapped faces",
+      "original": "Original",
+      "result": "Result",
+      "download": "Download",
+      "clickFaceToSwap": "Click on a face to swap",
+      "swapFace": "Swap Face",
+      "targetFace": "Target Face",
+      "sourceFace": "Source Face",
+      "enhanceFace": "Enhance face quality",
+      "swap": "Swap",
+      "change": "Change",
+      "clickToSwapMore": "Click another face to swap",
+      "swapped": "Swapped",
+      "revert": "Revert",
+      "swappedFace": "Swapped Face",
+      "swappedFacePlaceholder": "Not swapped yet",
+      "alreadySwapped": "Already Swapped"
     },
     "backgroundRemover": {
       "title": "Background Remover",
@@ -656,111 +714,6 @@
       "cutMask": "Cut Mask",
       "hint": "Left-click to include areas, right-click to exclude areas"
     },
-    "videoConverter": {
-      "title": "Video Converter",
-      "description": "Convert videos between formats",
-      "selectVideo": "Click or drag video here",
-      "outputFormat": "Output Format",
-      "convert": "Convert",
-      "converting": "Converting...",
-      "download": "Download",
-      "newVideo": "New Video",
-      "result": "Converted Video"
-    },
-    "audioConverter": {
-      "title": "Audio Converter",
-      "description": "Convert between MP3 and WAV formats",
-      "selectAudio": "Click or drag MP3/WAV file here",
-      "supportedFormats": "MP3 ↔ WAV conversion",
-      "inputAudio": "Input Audio",
-      "selectAudioFile": "Select an MP3 or WAV file to convert",
-      "outputFormat": "Output Format",
-      "bitrate": "Bitrate",
-      "convert": "Convert Audio",
-      "converting": "Converting...",
-      "download": "Download",
-      "newAudio": "New Audio",
-      "result": "Converted Audio",
-      "invalidFile": "Please select an MP3 or WAV file"
-    },
-    "imageConverter": {
-      "title": "Image Converter",
-      "description": "Convert images to JPG, PNG, or WebP",
-      "selectImage": "Click or drag image here",
-      "supportedFormats": "Any image → JPG/PNG/WebP",
-      "inputImage": "Input Image",
-      "selectImageFile": "Select an image to convert",
-      "outputFormat": "Output Format",
-      "quality": "Quality",
-      "convert": "Convert",
-      "converting": "Converting...",
-      "download": "Download",
-      "newImage": "New Image",
-      "result": "Converted Image",
-      "invalidFile": "Please select a valid image file"
-    },
-    "mediaTrimmer": {
-      "title": "Media Trimmer",
-      "description": "Trim video and audio clips to the perfect length",
-      "selectMedia": "Click or drag media here",
-      "supportedFormats": "Supports video and audio files",
-      "inputMedia": "Input Media",
-      "selectMediaFile": "Select a media file to trim",
-      "trimSettings": "Trim Settings",
-      "selectRange": "Select start and end time",
-      "startTime": "Start Time",
-      "endTime": "End Time",
-      "timeFormat": "Format: m:ss.d or seconds",
-      "outputDuration": "Output duration",
-      "duration": "Duration",
-      "trim": "Trim Media",
-      "trimming": "Trimming...",
-      "download": "Download",
-      "newMedia": "New File",
-      "result": "Trimmed Result",
-      "invalidFile": "Please select a valid video or audio file",
-      "invalidRange": "End time must be greater than start time"
-    },
-    "mediaMerger": {
-      "title": "Media Merger",
-      "description": "Combine multiple video or audio files into one",
-      "selectMedia": "Click or drag files here",
-      "supportedFormats": "Supports video and audio files",
-      "addFiles": "Add Files",
-      "inputFiles": "Input Files",
-      "dragToReorder": "Drag to reorder",
-      "noFiles": "No files added",
-      "addFilesDesc": "Add video or audio files to merge",
-      "outputFormat": "Output Format",
-      "merge": "Merge",
-      "merging": "Merging...",
-      "download": "Download",
-      "clear": "Clear",
-      "result": "Merged Result",
-      "invalidFile": "Please select valid video or audio files",
-      "minFiles": "Add at least 2 files to merge"
-    },
-    "faceEnhancer": {
-      "title": "Face Enhancer",
-      "description": "Enhance and restore faces in photos using AI",
-      "selectImage": "Click or drag image here",
-      "modelsInfo": "Uses YOLO + GFPGAN AI models",
-      "inputImage": "Input Image",
-      "selectImageWithFaces": "Select an image with faces to enhance",
-      "enhance": "Enhance Faces",
-      "enhancing": "Enhancing faces...",
-      "detecting": "Detecting faces...",
-      "downloading": "Downloading models...",
-      "loading": "Loading models...",
-      "processing": "Processing...",
-      "download": "Download",
-      "newImage": "New Image",
-      "result": "Enhanced Result",
-      "facesEnhanced": "{{count}} face(s) enhanced",
-      "noFacesFound": "No faces found",
-      "invalidFile": "Please select a valid image file",
-      "firstTimeDownload": "First time? Models will be downloaded (~350MB)"
-    },
     "progress": {
       "downloading": "Downloading model",
       "loading": "Loading model",
@@ -770,10 +723,91 @@
       "finalizing": "Finalizing",
       "overall": "Overall",
       "remaining": "remaining"
+    },
+    "backWarning": {
+      "title": "Processing in Progress",
+      "description": "A task is currently processing. Are you sure you want to go back? This will cancel the current operation.",
+      "cancel": "Cancel",
+      "confirm": "Go Back"
+    },
+    "videoConverter": {
+      "title": "Video Converter",
+      "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
+      "selectVideo": "Select Video",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace video",
+      "supportedFormats": "Supports MP4, WebM, MOV, AVI, MKV",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "original": "Original",
+      "outputSettings": "Output Settings",
+      "format": "Format",
+      "quality": "Quality",
+      "resolution": "Resolution",
+      "convertedSize": "Converted Size",
+      "converted": "Converted"
+    },
+    "audioConverter": {
+      "title": "Audio Converter",
+      "description": "Convert audio between formats (MP3, AAC, FLAC, WAV)",
+      "selectAudio": "Select Audio",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace audio",
+      "supportedFormats": "Supports MP3, M4A, OGG, WAV, FLAC",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "original": "Original",
+      "converted": "Converted",
+      "playOriginal": "Play original",
+      "playConverted": "Play converted"
+    },
+    "imageConverter": {
+      "title": "Image Converter",
+      "description": "Convert images between formats (JPG, PNG, WebP, GIF)",
+      "selectImages": "Select Images",
+      "orDragDrop": "or drag and drop",
+      "dropToAdd": "Drop to add images",
+      "supportedFormats": "Supports JPG, PNG, WebP, GIF, BMP",
+      "addMore": "Add More",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "quality": "Quality",
+      "downloadAll": "Download All"
+    },
+    "mediaTrimmer": {
+      "title": "Media Trimmer",
+      "description": "Trim videos or audio to a specific duration",
+      "selectMedia": "Select Media",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace media",
+      "supportedFormats": "Supports video and audio files",
+      "trim": "Trim",
+      "trimming": "Trimming...",
+      "originalDuration": "Original",
+      "selectedDuration": "Selected",
+      "trimmedSize": "Trimmed Size",
+      "playingOriginal": "Playing original",
+      "playingTrimmed": "Playing trimmed"
+    },
+    "mediaMerger": {
+      "title": "Media Merger",
+      "description": "Merge multiple video or audio files into one",
+      "selectFiles": "Select Files",
+      "orDragDrop": "or drag and drop",
+      "dropToAdd": "Drop to add files",
+      "supportedFormats": "Supports video and audio files",
+      "addMore": "Add More",
+      "merge": "Merge",
+      "merging": "Merging...",
+      "merged": "Merged",
+      "totalDuration": "Total Duration",
+      "sameFormatNote": "Files must have the same format for lossless merging"
+    },
+    "ffmpeg": {
+      "loading": "Loading FFmpeg",
+      "converting": "Converting",
+      "merging": "Merging",
+      "trimming": "Trimming"
     }
-  },
-  "game": {
-    "waitingLong": "Waiting too long? Play a mini game!",
-    "clickToPlay": "Click to start"
   }
 }

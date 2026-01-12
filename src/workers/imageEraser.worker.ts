@@ -1,15 +1,16 @@
 /**
  * Image Eraser Web Worker
- * Uses LaMa inpainting model via ONNX Runtime (WASM only)
+ * Uses LaMa inpainting model via ONNX Runtime (WebGPU with WASM fallback)
  */
 
-// @ts-expect-error - onnxruntime-web types not resolved due to package.json exports
 import * as ort from 'onnxruntime-web'
 
 // Configure WASM paths to use CDN (required for Vite bundling)
-// v1.23.0 has all WASM variants (basic, simd, threaded, simd-threaded)
-const ORT_WASM_VERSION = '1.23.0'
+const ORT_WASM_VERSION = '1.21.0'
 ort.env.wasm.wasmPaths = `https://cdn.jsdelivr.net/npm/onnxruntime-web@${ORT_WASM_VERSION}/dist/`
+
+// Track which backend is being used
+let useWebGPU = false
 
 // LaMa model from Hugging Face (quantized)
 const MODEL_URL =
@@ -20,6 +21,14 @@ const CACHE_NAME = 'lama-model-cache'
 // ONNX Runtime session
 let session: ort.InferenceSession | null = null
 
+/**
+ * Safely dispose an ONNX tensor to free memory
+ * The dispose method exists at runtime but isn't in TypeScript types
+ */
+function disposeTensor(tensor: ort.Tensor): void {
+  (tensor as unknown as { dispose?: () => void }).dispose?.()
+}
+
 interface WorkerMessage {
   type: 'init' | 'process' | 'dispose'
   payload?: {
@@ -28,18 +37,24 @@ interface WorkerMessage {
     width?: number
     height?: number
     id?: number
+    timeout?: number // in milliseconds
   }
 }
+
+// Default timeout (60 minutes)
+const DEFAULT_TIMEOUT = 3600000
 
 /**
  * Download model with progress tracking
  */
 async function downloadModel(
-  onProgress: (current: number, total: number) => void
+  url: string,
+  onProgress: (current: number, total: number) => void,
+  timeout: number = DEFAULT_TIMEOUT
 ): Promise<ArrayBuffer> {
   // Try to get from cache first
   const cache = await caches.open(CACHE_NAME)
-  const cachedResponse = await cache.match(MODEL_URL)
+  const cachedResponse = await cache.match(url)
 
   if (cachedResponse) {
     const buffer = await cachedResponse.arrayBuffer()
@@ -47,68 +62,108 @@ async function downloadModel(
     return buffer
   }
 
-  // Download with progress
-  const response = await fetch(MODEL_URL, {
-    mode: 'cors'
-  })
+  // Download with progress and configurable timeout
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeout)
+  const timeoutSeconds = Math.round(timeout / 1000)
 
-  if (!response.ok) {
-    throw new Error(`Failed to download model: ${response.status}`)
-  }
-
-  const contentLength = response.headers.get('content-length')
-  const total = contentLength ? parseInt(contentLength, 10) : 0
-
-  const reader = response.body?.getReader()
-  if (!reader) {
-    throw new Error('Failed to get response reader')
-  }
-
-  const chunks: Uint8Array[] = []
-  let received = 0
-
-  while (true) {
-    const { done, value } = await reader.read()
-    if (done) break
-
-    chunks.push(value)
-    received += value.length
-    onProgress(received, total)
-  }
-
-  // Combine chunks
-  const buffer = new Uint8Array(received)
-  let position = 0
-  for (const chunk of chunks) {
-    buffer.set(chunk, position)
-    position += chunk.length
-  }
-
-  // Cache the model for future use
   try {
-    const cacheResponse = new Response(buffer.buffer, {
+    const response = await fetch(url, {
       headers: {
-        'Content-Type': 'application/octet-stream',
-        'Content-Length': buffer.byteLength.toString()
-      }
+        Origin: self.location.origin
+      },
+      signal: controller.signal
     })
-    await cache.put(MODEL_URL, cacheResponse)
-  } catch (e) {
-    console.warn('Failed to cache model:', e)
-  }
 
-  return buffer.buffer
+    if (!response.ok) {
+      throw new Error(`Failed to download model: ${response.status}`)
+    }
+
+    const contentLength = response.headers.get('content-length')
+    const total = contentLength ? parseInt(contentLength, 10) : 0
+
+    const reader = response.body?.getReader()
+    if (!reader) {
+      throw new Error('Failed to get response reader')
+    }
+
+    const chunks: Uint8Array[] = []
+    let received = 0
+
+    while (true) {
+      // Check if aborted during streaming
+      if (controller.signal.aborted) {
+        reader.cancel()
+        throw new Error(`Model download timed out after ${timeoutSeconds} seconds`)
+      }
+
+      const { done, value } = await reader.read()
+      if (done) break
+
+      chunks.push(value)
+      received += value.length
+      onProgress(received, total)
+    }
+
+    clearTimeout(timeoutId)
+
+    // Combine chunks
+    const buffer = new Uint8Array(received)
+    let position = 0
+    for (const chunk of chunks) {
+      buffer.set(chunk, position)
+      position += chunk.length
+    }
+
+    // Cache the model for future use
+    try {
+      const cacheResponse = new Response(buffer.buffer, {
+        headers: {
+          'Content-Type': 'application/octet-stream',
+          'Content-Length': buffer.byteLength.toString()
+        }
+      })
+      await cache.put(url, cacheResponse)
+    } catch (e) {
+      console.warn('Failed to cache model:', e)
+    }
+
+    return buffer.buffer
+  } catch (error) {
+    clearTimeout(timeoutId)
+    if ((error as Error).name === 'AbortError') {
+      throw new Error(`Model download timed out after ${timeoutSeconds} seconds`)
+    }
+    throw error
+  }
 }
 
 /**
- * Initialize ONNX session with WASM
+ * Initialize ONNX session with WebGPU (fallback to WASM)
  */
 async function initSession(modelBuffer: ArrayBuffer): Promise<void> {
+  // Try WebGPU first if available
+  if (useWebGPU) {
+    try {
+      session = await ort.InferenceSession.create(modelBuffer, {
+        executionProviders: ['webgpu'],
+        graphOptimizationLevel: 'all'
+      })
+      console.log('Using WebGPU backend')
+      return
+    } catch (e) {
+      const errorMsg = e instanceof Error ? e.message : String(e)
+      console.warn(`WebGPU session creation failed, falling back to WASM. Reason: ${errorMsg}`)
+      useWebGPU = false
+    }
+  }
+
+  // Fallback to WASM
   session = await ort.InferenceSession.create(modelBuffer, {
     executionProviders: ['wasm'],
     graphOptimizationLevel: 'all',
     enableCpuMemArena: true,
-    executionMode: 'sequential'
+    executionMode: 'parallel'
   })
   console.log('Using WASM backend')
 }
@@ -426,19 +481,32 @@ async function removeArea(
     MODEL_SIZE
   ])
 
-  // Run inference
+  // Run inference - use actual input/output names from model
+  const inputNames = session.inputNames
   const feeds: Record<string, ort.Tensor> = {
-    image: imageTensor,
-    mask: maskTensor
+    [inputNames[0]]: imageTensor,
+    [inputNames[1]]: maskTensor
   }
 
   const results = await session.run(feeds)
-  const rawOutput = results['output'].data as Float32Array
+
+  // Dispose input tensors to free memory
+  disposeTensor(imageTensor)
+  disposeTensor(maskTensor)
+
+  const outputName = session.outputNames[0]
+  const rawOutput = results[outputName].data as Float32Array
+
+  // Copy raw output before disposing
+  const rawOutputCopy = new Float32Array(rawOutput)
+
+  // Dispose output tensor to free memory
+  disposeTensor(results[outputName])
 
   // Model outputs 0-255 range, convert to 0-1
-  const output = new Float32Array(rawOutput.length)
-  for (let i = 0; i < rawOutput.length; i++) {
-    output[i] = Math.max(0, Math.min(1, rawOutput[i] / 255.0))
+  const output = new Float32Array(rawOutputCopy.length)
+  for (let i = 0; i < rawOutputCopy.length; i++) {
+    output[i] = Math.max(0, Math.min(1, rawOutputCopy[i] / 255.0))
   }
 
   // Resize output back to crop size
@@ -475,6 +543,20 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
   switch (type) {
     case 'init': {
       try {
+        // Reuse existing session if already initialized
+        if (session) {
+          console.log('Image Eraser model already loaded, reusing session')
+          self.postMessage({ type: 'ready', payload: { id: payload?.id } })
+          break
+        }
+
+        // Get timeout from payload
+        const timeout = payload?.timeout ?? DEFAULT_TIMEOUT
+
+        // Force WASM backend - WebGPU has kernel compatibility issues with LaMa model
+        useWebGPU = false
+        console.log('Image Eraser using WASM backend')
+
         // Check if model is cached first
         const cache = await caches.open(CACHE_NAME)
         const cachedResponse = await cache.match(MODEL_URL)
@@ -495,7 +577,7 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
             payload: { phase: 'download', id: payload?.id }
           })
 
-          modelBuffer = await downloadModel((current, total) => {
+          modelBuffer = await downloadModel(MODEL_URL, (current, total) => {
             self.postMessage({
               type: 'progress',
               payload: {
@@ -505,7 +587,7 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
                 id: payload?.id
               }
             })
-          })
+          }, timeout)
 
           // Phase: loading (after download)
           self.postMessage({
@@ -521,20 +603,10 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
           payload: { id: payload?.id }
         })
       } catch (error) {
-        console.error('Model initialization error:', error)
-        let errorMessage = 'Failed to initialize model'
-        if (error instanceof Error) {
-          errorMessage = error.message
-          // Add more context for common errors
-          if (error.message.includes('Failed to download')) {
-            errorMessage = `Model download failed. Please check your network connection. (${error.message})`
-          } else if (error.message.includes('CORS') || error.message.includes('cross-origin')) {
-            errorMessage = 'Cross-origin request blocked. Try refreshing the page.'
-          }
-        }
         self.postMessage({
           type: 'error',
-          payload: errorMessage
+          payload:
+            error instanceof Error ? error.message : 'Failed to initialize model'
         })
       }
       break
@@ -611,8 +683,14 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
     }
 
     case 'dispose': {
-      if (session) {
-        session = null
+      // Properly release ONNX session to free WASM memory
+      try {
+        if (session) {
+          await session.release()
+          session = null
+        }
+      } catch (e) {
+        console.warn('Error disposing session:', e)
       }
       self.postMessage({ type: 'disposed' })
       break

@@ -2,27 +2,25 @@ import { useState, useEffect, useMemo } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 
-// Compact aspect ratio icon component
-function AspectIcon({ ratio, className }: { ratio: string; className?: string }) {
-  // Calculate relative dimensions for the icon (max 14px)
+// Compact aspect ratio icon
+function AspectIcon({ ratio }: { ratio: string }) {
   const getDimensions = () => {
     switch (ratio) {
-      case '1:1': return { w: 12, h: 12 }
-      case '16:9': return { w: 14, h: 8 }
-      case '9:16': return { w: 8, h: 14 }
-      case '4:3': return { w: 14, h: 10 }
-      case '3:4': return { w: 10, h: 14 }
-      case '3:2': return { w: 14, h: 9 }
-      case '2:3': return { w: 9, h: 14 }
-      default: return { w: 12, h: 12 }
+      case '1:1': return { w: 10, h: 10 }
+      case '16:9': return { w: 12, h: 7 }
+      case '9:16': return { w: 7, h: 12 }
+      case '4:3': return { w: 12, h: 9 }
+      case '3:4': return { w: 9, h: 12 }
+      case '3:2': return { w: 12, h: 8 }
+      case '2:3': return { w: 8, h: 12 }
+      default: return { w: 10, h: 10 }
     }
   }
   const { w, h } = getDimensions()
   return (
     <div
-      className={cn("border border-current rounded-[2px]", className)}
+      className="border border-current rounded-[1px]"
       style={{ width: w, height: h }}
     />
   )
@@ -82,6 +80,8 @@ function generatePresets(min: number, max: number) {
 export function SizeSelector({ value, onChange, disabled, min = 256, max = 1536 }: SizeSelectorProps) {
   const [width, setWidth] = useState(1024)
   const [height, setHeight] = useState(1024)
+  const [widthInput, setWidthInput] = useState('1024')
+  const [heightInput, setHeightInput] = useState('1024')
 
   // Parse value into width/height
   useEffect(() => {
@@ -93,30 +93,40 @@ export function SizeSelector({ value, onChange, disabled, min = 256, max = 1536 
         if (!isNaN(w) && !isNaN(h)) {
           setWidth(w)
           setHeight(h)
+          setWidthInput(String(w))
+          setHeightInput(String(h))
         }
       }
     }
   }, [value])
 
+  const clamp = (n: number) => Math.min(max, Math.max(min, n))
+
   const handleWidthChange = (w: number) => {
     setWidth(w)
+    setWidthInput(String(w))
     onChange(`${w}*${height}`)
   }
 
   const handleHeightChange = (h: number) => {
     setHeight(h)
+    setHeightInput(String(h))
     onChange(`${width}*${h}`)
   }
 
   const handlePreset = (w: number, h: number) => {
     setWidth(w)
     setHeight(h)
+    setWidthInput(String(w))
+    setHeightInput(String(h))
     onChange(`${w}*${h}`)
   }
 
   const handleSwap = () => {
     setWidth(height)
     setHeight(width)
+    setWidthInput(String(height))
+    setHeightInput(String(width))
     onChange(`${height}*${width}`)
   }
 
@@ -128,7 +138,7 @@ export function SizeSelector({ value, onChange, disabled, min = 256, max = 1536 
   return (
     <div className="space-y-3">
       {/* Preset buttons */}
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex gap-1">
         {availablePresets.map((preset) => (
           <Button
             key={`${preset.width}x${preset.height}`}
@@ -137,11 +147,11 @@ export function SizeSelector({ value, onChange, disabled, min = 256, max = 1536 
             size="sm"
             onClick={() => handlePreset(preset.width, preset.height)}
             disabled={disabled}
-            className="h-7 px-2 gap-1.5"
+            className="h-6 px-1.5 gap-1 text-xs"
             title={`${preset.width}×${preset.height}`}
           >
             <AspectIcon ratio={preset.label} />
-            <span className="text-xs">{preset.label}</span>
+            {preset.label}
           </Button>
         ))}
       </div>
@@ -152,8 +162,25 @@ export function SizeSelector({ value, onChange, disabled, min = 256, max = 1536 
           <Label className="text-xs text-muted-foreground">Width</Label>
           <Input
             type="number"
-            value={width}
-            onChange={(e) => handleWidthChange(parseInt(e.target.value, 10) || min)}
+            value={widthInput}
+            onChange={(e) => {
+              const next = e.target.value
+              setWidthInput(next)
+              if (next === '') return
+              const parsed = parseInt(next, 10)
+              if (Number.isNaN(parsed)) return
+              handleWidthChange(parsed)
+            }}
+            onBlur={() => {
+              if (widthInput === '') {
+                handleWidthChange(min)
+                return
+              }
+              const parsed = parseInt(widthInput, 10)
+              if (!Number.isNaN(parsed)) {
+                handleWidthChange(clamp(parsed))
+              }
+            }}
             min={min}
             max={max}
             step={64}
@@ -193,8 +220,25 @@ export function SizeSelector({ value, onChange, disabled, min = 256, max = 1536 
           <Label className="text-xs text-muted-foreground">Height</Label>
           <Input
             type="number"
-            value={height}
-            onChange={(e) => handleHeightChange(parseInt(e.target.value, 10) || min)}
+            value={heightInput}
+            onChange={(e) => {
+              const next = e.target.value
+              setHeightInput(next)
+              if (next === '') return
+              const parsed = parseInt(next, 10)
+              if (Number.isNaN(parsed)) return
+              handleHeightChange(parsed)
+            }}
+            onBlur={() => {
+              if (heightInput === '') {
+                handleHeightChange(min)
+                return
+              }
+              const parsed = parseInt(heightInput, 10)
+              if (!Number.isNaN(parsed)) {
+                handleHeightChange(clamp(parsed))
+              }
+            }}
             min={min}
             max={max}
             step={64}

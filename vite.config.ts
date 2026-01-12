@@ -19,6 +19,15 @@ export default defineConfig({
   // Ensure WASM files are properly served
   assetsInclude: ['**/*.wasm'],
   optimizeDeps: {
-    exclude: ['@huggingface/transformers']
-  }
+    exclude: ['@huggingface/transformers', '@ffmpeg/ffmpeg', '@ffmpeg/util']
+  },
+  build: {
+    outDir: 'dist-web',
+    assetsDir: 'assets',
+    sourcemap: false,
+    rollupOptions: {
+      input: resolve(__dirname, 'index.html'),
+    },
+  },
+  base: './',
 })

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
 import { useAssetsStore } from '@/stores/assetsStore'
+import { formatBytes } from '@/types/progress'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -41,6 +41,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { toast } from '@/hooks/useToast'
+import { useInView } from '@/hooks/useInView'
 import { cn } from '@/lib/utils'
 import {
   Search,
@@ -59,7 +60,6 @@ import {
   Tag,
   X,
   Filter,
-  Settings,
   CheckSquare,
   Square,
   Plus,
@@ -140,13 +140,6 @@ function AssetTypeIcon({ type, className }: { type: AssetType; className?: strin
   }
 }
 
-// Format file size
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-}
-
 // Format date
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr)
@@ -171,13 +164,11 @@ function getAssetUrl(asset: AssetMetadata): string {
 
 export function AssetsPage() {
   const { t } = useTranslation()
-  const navigate = useNavigate()
   const {
     assets,
     isLoaded,
-    settings,
+    isLoading,
     loadAssets,
-    loadSettings,
     deleteAsset,
     deleteAssets,
     updateAsset,
@@ -185,7 +176,6 @@ export function AssetsPage() {
     getAllTags,
     getAllModels,
     openAssetLocation,
-    validateAssets,
   } = useAssetsStore()
 
   // Filter state
@@ -209,23 +199,25 @@ export function AssetsPage() {
 
   // Pagination state
   const [page, setPage] = useState(1)
-  const pageSize = 20
+  const pageSize = 50
 
   // Preview toggle
   const [loadPreviews, setLoadPreviews] = useState(true)
+  const [loadedPreviewKeys, setLoadedPreviewKeys] = useState<Set<string>>(() => new Set())
+
+  const markPreviewLoaded = useCallback((key: string) => {
+    setLoadedPreviewKeys((prev) => {
+      if (prev.has(key)) return prev
+      const next = new Set(prev)
+      next.add(key)
+      return next
+    })
+  }, [])
 
   // Load assets on mount
   useEffect(() => {
     loadAssets()
-    loadSettings()
-  }, [loadAssets, loadSettings])
-
-  // Validate assets on load (remove orphaned entries)
-  useEffect(() => {
-    if (isLoaded) {
-      validateAssets()
-    }
-  }, [isLoaded, validateAssets])
+  }, [loadAssets])
 
   // Debounce search
   useEffect(() => {
@@ -397,9 +389,6 @@ export function AssetsPage() {
     await updateAsset(asset.id, { tags: asset.tags.filter(t => t !== tag) })
   }, [updateAsset])
 
-  const handleGoToSettings = useCallback(() => {
-    navigate('/settings')
-  }, [navigate])
 
   const handleOpenAssetsFolder = useCallback(async () => {
     if (window.electronAPI?.openAssetsFolder) {
@@ -407,7 +396,153 @@ export function AssetsPage() {
     }
   }, [])
 
-  if (!isLoaded) {
+  const AssetCard = ({ asset, assetKey }: { asset: AssetMetadata; assetKey: string }) => {
+    const { ref, isInView } = useInView<HTMLDivElement>()
+    const assetUrl = getAssetUrl(asset)
+    const shouldLoad = loadPreviews && (isInView || loadedPreviewKeys.has(assetKey))
+
+    useEffect(() => {
+      if (!loadPreviews || !isInView || !assetUrl) return
+      markPreviewLoaded(assetKey)
+    }, [assetKey, assetUrl, isInView, loadPreviews, markPreviewLoaded])
+
+    return (
+      <div
+        className={cn(
+          "group relative border rounded-lg overflow-hidden bg-card hover:shadow-md transition-shadow",
+          selectedIds.has(asset.id) && "ring-2 ring-primary"
+        )}
+      >
+        {/* Thumbnail */}
+        <div
+          ref={ref}
+          className="aspect-square bg-muted flex items-center justify-center cursor-pointer"
+          onClick={() => isSelectionMode ? handleToggleSelect(asset.id) : setPreviewAsset(asset)}
+        >
+          {asset.type === 'image' && shouldLoad && assetUrl ? (
+            <img
+              src={assetUrl}
+              alt={asset.fileName}
+              className="w-full h-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
+          ) : asset.type === 'video' && shouldLoad && assetUrl ? (
+            <VideoPreview src={assetUrl} enabled={shouldLoad} />
+          ) : (
+            <AssetTypeIcon type={asset.type} className="h-12 w-12 text-muted-foreground" />
+          )}
+
+          {/* Selection checkbox overlay */}
+          {isSelectionMode && (
+            <div className="absolute top-2 left-2" onClick={(e) => e.stopPropagation()}>
+              <Checkbox
+                checked={selectedIds.has(asset.id)}
+                onCheckedChange={() => handleToggleSelect(asset.id)}
+                className="bg-background"
+              />
+            </div>
+          )}
+
+          {/* Favorite star */}
+          {asset.favorite && (
+            <div className="absolute top-2 right-2">
+              <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+            </div>
+          )}
+
+          {/* Type badge */}
+          <Badge
+            variant="secondary"
+            className={cn(
+              "absolute text-xs",
+              isSelectionMode ? "top-9 left-2" : "top-2 left-2"
+            )}
+          >
+            <AssetTypeIcon type={asset.type} className="h-3 w-3 mr-1" />
+            {t(`assets.types.${asset.type}`)}
+          </Badge>
+        </div>
+
+        {/* Info */}
+        <div className="p-2">
+          <div className="flex items-start justify-between gap-1">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium truncate" title={asset.fileName}>
+                {asset.fileName}
+              </p>
+              <p className="text-xs text-muted-foreground truncate" title={asset.modelId}>
+                {asset.modelId}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {formatDate(asset.createdAt)} · {formatBytes(asset.fileSize)}
+              </p>
+            </div>
+
+            {/* Actions */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setPreviewAsset(asset)}>
+                  <Eye className="mr-2 h-4 w-4" />
+                  {t('assets.preview')}
+                </DropdownMenuItem>
+                {isDesktopMode ? (
+                  <DropdownMenuItem onClick={() => handleOpenLocation(asset)}>
+                    <FolderOpen className="mr-2 h-4 w-4" />
+                    {t('assets.openLocation')}
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem onClick={() => handleDownload(asset)}>
+                    <Download className="mr-2 h-4 w-4" />
+                    {t('common.download')}
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={() => handleToggleFavorite(asset)}>
+                  <Star className={cn("mr-2 h-4 w-4", asset.favorite && "fill-yellow-400")} />
+                  {asset.favorite ? t('assets.unfavorite') : t('assets.favorite')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTagDialogAsset(asset)}>
+                  <Tag className="mr-2 h-4 w-4" />
+                  {t('assets.manageTags')}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => setDeleteConfirmAsset(asset)}
+                  className="text-destructive"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  {t('common.delete')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* Tags */}
+          {asset.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              {asset.tags.slice(0, 3).map((tag) => (
+                <Badge key={tag} variant="outline" className="text-xs">
+                  {tag}
+                </Badge>
+              ))}
+              {asset.tags.length > 3 && (
+                <Badge variant="outline" className="text-xs">
+                  +{asset.tags.length - 3}
+                </Badge>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  if (isLoading || !isLoaded) {
     return (
       <div className="flex h-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -497,10 +632,6 @@ export function AssetsPage() {
                     {t('assets.openFolder')}
                   </Button>
                 )}
-                <Button variant="outline" size="sm" onClick={handleGoToSettings}>
-                  <Settings className="mr-2 h-4 w-4" />
-                  {t('assets.settings')}
-                </Button>
               </>
             )}
           </div>
@@ -598,9 +729,9 @@ export function AssetsPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t('assets.allModels')}</SelectItem>
-                    {allModels.map((model) => (
-                      <SelectItem key={model.modelId} value={model.modelId}>
-                        {model.modelName}
+                    {allModels.map((modelId) => (
+                      <SelectItem key={modelId} value={modelId}>
+                        {modelId}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -637,148 +768,13 @@ export function AssetsPage() {
                 ? t('assets.noAssetsDesc')
                 : t('assets.noMatchingAssets')}
             </p>
-            {assets.length === 0 && !settings.autoSaveAssets && (
-              <Button onClick={handleGoToSettings}>
-                <Settings className="mr-2 h-4 w-4" />
-                {t('assets.enableAutoSave')}
-              </Button>
-            )}
           </div>
         ) : (
           <div className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {paginatedAssets.map((asset) => (
-              <div
-                key={asset.id}
-                className={cn(
-                  "group relative border rounded-lg overflow-hidden bg-card hover:shadow-md transition-shadow",
-                  selectedIds.has(asset.id) && "ring-2 ring-primary"
-                )}
-              >
-                {/* Thumbnail */}
-                <div
-                  className="aspect-square bg-muted flex items-center justify-center cursor-pointer"
-                  onClick={() => isSelectionMode ? handleToggleSelect(asset.id) : setPreviewAsset(asset)}
-                >
-                  {asset.type === 'image' && loadPreviews && getAssetUrl(asset) ? (
-                    <img
-                      src={getAssetUrl(asset)}
-                      alt={asset.fileName}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  ) : asset.type === 'video' && getAssetUrl(asset) ? (
-                    <VideoPreview src={getAssetUrl(asset)} enabled={loadPreviews} />
-                  ) : (
-                    <AssetTypeIcon type={asset.type} className="h-12 w-12 text-muted-foreground" />
-                  )}
-
-                  {/* Selection checkbox overlay */}
-                  {isSelectionMode && (
-                    <div className="absolute top-2 left-2" onClick={(e) => e.stopPropagation()}>
-                      <Checkbox
-                        checked={selectedIds.has(asset.id)}
-                        onCheckedChange={() => handleToggleSelect(asset.id)}
-                        className="bg-background"
-                      />
-                    </div>
-                  )}
-
-                  {/* Favorite star */}
-                  {asset.favorite && (
-                    <div className="absolute top-2 right-2">
-                      <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                    </div>
-                  )}
-
-                  {/* Type badge */}
-                  <Badge
-                    variant="secondary"
-                    className={cn(
-                      "absolute text-xs",
-                      isSelectionMode ? "top-9 left-2" : "top-2 left-2"
-                    )}
-                  >
-                    <AssetTypeIcon type={asset.type} className="h-3 w-3 mr-1" />
-                    {t(`assets.types.${asset.type}`)}
-                  </Badge>
-                </div>
-
-                {/* Info */}
-                <div className="p-2">
-                  <div className="flex items-start justify-between gap-1">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium truncate" title={asset.fileName}>
-                        {asset.fileName}
-                      </p>
-                      <p className="text-xs text-muted-foreground truncate" title={asset.modelName}>
-                        {asset.modelName}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatDate(asset.createdAt)} · {formatFileSize(asset.fileSize)}
-                      </p>
-                    </div>
-
-                    {/* Actions */}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => setPreviewAsset(asset)}>
-                          <Eye className="mr-2 h-4 w-4" />
-                          {t('assets.preview')}
-                        </DropdownMenuItem>
-                        {isDesktopMode ? (
-                          <DropdownMenuItem onClick={() => handleOpenLocation(asset)}>
-                            <FolderOpen className="mr-2 h-4 w-4" />
-                            {t('assets.openLocation')}
-                          </DropdownMenuItem>
-                        ) : (
-                          <DropdownMenuItem onClick={() => handleDownload(asset)}>
-                            <Download className="mr-2 h-4 w-4" />
-                            {t('common.download')}
-                          </DropdownMenuItem>
-                        )}
-                        <DropdownMenuItem onClick={() => handleToggleFavorite(asset)}>
-                          <Star className={cn("mr-2 h-4 w-4", asset.favorite && "fill-yellow-400")} />
-                          {asset.favorite ? t('assets.unfavorite') : t('assets.favorite')}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setTagDialogAsset(asset)}>
-                          <Tag className="mr-2 h-4 w-4" />
-                          {t('assets.manageTags')}
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={() => setDeleteConfirmAsset(asset)}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          {t('common.delete')}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-
-                  {/* Tags */}
-                  {asset.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {asset.tags.slice(0, 3).map((tag) => (
-                        <Badge key={tag} variant="outline" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                      {asset.tags.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{asset.tags.length - 3}
-                        </Badge>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
+            {paginatedAssets.map((asset) => {
+              const assetKey = asset.filePath || asset.originalUrl || asset.id
+              return <AssetCard key={assetKey} asset={asset} assetKey={assetKey} />
+            })}
           </div>
         )}
       </ScrollArea>
@@ -818,7 +814,7 @@ export function AssetsPage() {
           <DialogHeader>
             <DialogTitle>{previewAsset?.fileName}</DialogTitle>
             <DialogDescription>
-              {previewAsset?.modelName} · {previewAsset && formatDate(previewAsset.createdAt)}
+              {previewAsset?.modelId} · {previewAsset && formatDate(previewAsset.createdAt)}
             </DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-auto">

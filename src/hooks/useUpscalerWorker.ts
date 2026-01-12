@@ -102,6 +102,12 @@ export function useUpscalerWorker(options: UseUpscalerWorkerOptions = {}) {
     }
   }, [])
 
+  const ensureWorker = useCallback(() => {
+    if (!workerRef.current) {
+      createWorker()
+    }
+  }, [createWorker])
+
   // Initialize worker
   useEffect(() => {
     createWorker()
@@ -116,6 +122,8 @@ export function useUpscalerWorker(options: UseUpscalerWorkerOptions = {}) {
   const loadModel = useCallback(
     (model: ModelType, scale: ScaleType): Promise<void> => {
       return new Promise((resolve, reject) => {
+        ensureWorker()
+
         if (!workerRef.current) {
           reject(new Error('Worker not initialized'))
           return
@@ -137,11 +145,13 @@ export function useUpscalerWorker(options: UseUpscalerWorkerOptions = {}) {
         workerRef.current.postMessage({ type: 'load', payload: { model, scale, id } })
       })
     },
-    []
+    [ensureWorker]
   )
 
   const upscale = useCallback((imageData: ImageData): Promise<string> => {
     return new Promise((resolve, reject) => {
+      ensureWorker()
+
       if (!workerRef.current) {
         reject(new Error('Worker not initialized'))
         return
@@ -162,10 +172,12 @@ export function useUpscalerWorker(options: UseUpscalerWorkerOptions = {}) {
 
       workerRef.current.postMessage({ type: 'upscale', payload: { imageData, id } })
     })
-  }, [])
+  }, [ensureWorker])
 
   const dispose = useCallback(() => {
     workerRef.current?.postMessage({ type: 'dispose' })
+    workerRef.current?.terminate()
+    workerRef.current = null
   }, [])
 
   const hasFailed = useCallback(() => hasFailedRef.current, [])

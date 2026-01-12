@@ -9,18 +9,21 @@ import {
   DialogContent,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Download, CheckCircle2, XCircle, Save, Copy, Check, Loader2 } from 'lucide-react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { Download, CheckCircle2, XCircle, Save, ExternalLink, Copy, Check, Loader2 } from 'lucide-react'
 import { AudioPlayer } from '@/components/shared/AudioPlayer'
-import { useAssetsStore, detectAssetType } from '@/stores/assetsStore'
+import { useAssetsStore, detectAssetType, generateDownloadFilename } from '@/stores/assetsStore'
 import { toast } from '@/hooks/useToast'
 import { cn } from '@/lib/utils'
-import { getPlatformService } from '@mobile/platform'
 import type { BatchResult, BatchQueueItem } from '@/types/batch'
 
 interface BatchOutputGridProps {
   results: BatchResult[]
   modelId?: string
-  modelName?: string
   onClear: () => void
   className?: string
   isRunning?: boolean
@@ -44,15 +47,9 @@ function isAudioUrl(url: string): boolean {
   return isUrl(url) && /\.(mp3|wav|ogg|flac|aac|m4a|wma)(\?.*)?$/i.test(url)
 }
 
-function getExtensionFromUrl(url: string): string | null {
-  const match = url.match(/\.([a-zA-Z0-9]+)(\?.*)?$/)
-  return match ? match[1] : null
-}
-
 export function BatchOutputGrid({
   results,
   modelId,
-  modelName,
   onClear,
   className,
   isRunning,
@@ -65,7 +62,6 @@ export function BatchOutputGrid({
   const [savedIndexes, setSavedIndexes] = useState<Set<number>>(new Set())
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
   const autoSavedIndexesRef = useRef<Set<number>>(new Set())
-  const platformService = getPlatformService()
 
   const { saveAsset, settings, hasAssetForPrediction } = useAssetsStore()
 
@@ -109,7 +105,6 @@ export function BatchOutputGrid({
             // Each batch item has unique predictionId, so just use outputIndex
             const saveResult = await saveAsset(output, assetType, {
               modelId,
-              modelName: modelName || modelId || 'batch',
               predictionId: result.prediction?.id,
               originalUrl: output,
               resultIndex: outputIndex
@@ -133,7 +128,7 @@ export function BatchOutputGrid({
     }
 
     saveNewResults()
-  }, [results, modelId, modelName, settings.autoSaveAssets, saveAsset, hasAssetForPrediction, isRunning, t])
+  }, [results, modelId, settings.autoSaveAssets, saveAsset, hasAssetForPrediction, isRunning, t])
 
   // Reset auto-saved tracking when results are cleared
   useEffect(() => {
@@ -143,21 +138,31 @@ export function BatchOutputGrid({
     }
   }, [results.length])
 
-  const handleDownload = async (url: string) => {
-    // Open in browser to trigger system download
-    await platformService.openExternal(url)
+  const handleDownload = async (url: string, predictionId?: string, resultIndex: number = 0) => {
+    const filename = generateDownloadFilename({
+      modelId,
+      url,
+      predictionId,
+      resultIndex
+    })
+
+    if (window.electronAPI?.downloadFile) {
+      const result = await window.electronAPI.downloadFile(url, filename)
+      if (!result.success && !result.canceled) {
+        console.error('Download failed:', result.error)
+      }
+    } else {
+      window.open(url, '_blank')
+    }
   }
 
   const handleDownloadAll = async () => {
-    let downloadCount = 0
     for (const result of results) {
       if (result.error) continue
-      for (const output of result.outputs) {
+      for (let outputIndex = 0; outputIndex < result.outputs.length; outputIndex++) {
+        const output = result.outputs[outputIndex]
         if (typeof output === 'string' && isUrl(output)) {
-          await handleDownload(output)
-          downloadCount++
-          // Add delay between opens to avoid overwhelming the browser
-          await new Promise(resolve => setTimeout(resolve, 500))
+          await handleDownload(output, result.prediction?.id, outputIndex)
         }
       }
     }
@@ -183,7 +188,6 @@ export function BatchOutputGrid({
           // Each batch item has unique predictionId, so just use outputIndex
           const saveResult = await saveAsset(output, assetType, {
             modelId,
-            modelName: modelName || modelId || 'batch',
             predictionId: result.prediction?.id,
             originalUrl: output,
             resultIndex: outputIndex
@@ -203,15 +207,13 @@ export function BatchOutputGrid({
       title: t('playground.batch.savedAll'),
       description: t('playground.batch.savedAllDesc', { count: savedCount }),
     })
-  }, [modelId, modelName, results, saveAsset, t])
+  }, [modelId, results, saveAsset, t])
 
   const handleCopy = async (url: string, index: number) => {
     try {
-      const success = await platformService.copyToClipboard(url)
-      if (success) {
-        setCopiedIndex(index)
-        setTimeout(() => setCopiedIndex(null), 2000)
-      }
+      await navigator.clipboard.writeText(url)
+      setCopiedIndex(index)
+      setTimeout(() => setCopiedIndex(null), 2000)
     } catch (err) {
       console.error('Copy failed:', err)
     }
@@ -231,38 +233,35 @@ export function BatchOutputGrid({
 
   return (
     <div className={cn('flex flex-col h-full', className)}>
-      {/* Header - Mobile optimized */}
-      <div className="flex flex-col gap-2 mb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h3 className="text-sm font-medium flex items-center gap-2">
-              {isRunning && <Loader2 className="h-4 w-4 animate-spin" />}
-              {t('playground.batch.results')} ({completedCount + failedCount}/{total})
-            </h3>
-            <div className="flex items-center gap-2 text-xs">
-              {completedCount > 0 && (
-                <span className="flex items-center gap-1 text-green-600">
-                  <CheckCircle2 className="h-3 w-3" />
-                  {completedCount}
-                </span>
-              )}
-              {failedCount > 0 && (
-                <span className="flex items-center gap-1 text-destructive">
-                  <XCircle className="h-3 w-3" />
-                  {failedCount}
-                </span>
-              )}
-            </div>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-3">
+          <h3 className="text-sm font-medium flex items-center gap-2">
+            {isRunning && <Loader2 className="h-4 w-4 animate-spin" />}
+            {t('playground.batch.results')} ({completedCount + failedCount}/{total})
+          </h3>
+          <div className="flex items-center gap-2 text-xs">
+            {completedCount > 0 && (
+              <span className="flex items-center gap-1 text-green-600">
+                <CheckCircle2 className="h-3 w-3" />
+                {completedCount}
+              </span>
+            )}
+            {failedCount > 0 && (
+              <span className="flex items-center gap-1 text-destructive">
+                <XCircle className="h-3 w-3" />
+                {failedCount}
+              </span>
+            )}
           </div>
           {isRunning && (
-            <Progress value={progress} className="h-2 w-20" />
+            <Progress value={progress} className="h-2 w-24" />
           )}
         </div>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
-            className="flex-1"
             onClick={handleDownloadAll}
             disabled={completedCount === 0 || isRunning}
           >
@@ -272,7 +271,6 @@ export function BatchOutputGrid({
           <Button
             variant="outline"
             size="sm"
-            className="flex-1"
             onClick={handleSaveAll}
             disabled={completedCount === 0 || savingAll || !modelId || isRunning || allSaved}
           >
@@ -296,9 +294,16 @@ export function BatchOutputGrid({
         </div>
       </div>
 
-      {/* Results Grid - Mobile optimized: 2 columns */}
+      {/* Results Grid - dynamic columns based on item count with minimum cell size */}
       <ScrollArea className="flex-1">
-        <div className="grid grid-cols-2 gap-2 p-1">
+        <div className={cn(
+          'grid gap-4 p-1',
+          // For fewer items, use larger minimum cell sizes
+          total <= 2 && 'grid-cols-1 sm:grid-cols-2',
+          total === 3 && 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+          total === 4 && 'grid-cols-2 lg:grid-cols-4',
+          total > 4 && 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
+        )}>
           {Array.from({ length: total }, (_, index) => {
             const result = results.find(r => r.index === index)
             const queueItem = queue?.find(q => q.index === index)
@@ -313,12 +318,12 @@ export function BatchOutputGrid({
                 key={index}
                 onClick={() => result && !hasError && setSelectedResult(result)}
                 className={cn(
-                  'relative border rounded-lg overflow-hidden bg-card transition-all active:scale-[0.98]',
+                  'relative border rounded-lg overflow-hidden bg-card transition-all',
                   isPending
                     ? 'cursor-default'
                     : hasError
                       ? 'border-destructive/50 opacity-70 cursor-default'
-                      : 'hover:border-primary cursor-pointer',
+                      : 'hover:border-primary hover:shadow-md cursor-pointer',
                   result && savedIndexes.has(result.index) && 'ring-1 ring-green-500/50'
                 )}
               >
@@ -390,9 +395,9 @@ export function BatchOutputGrid({
         </div>
       </ScrollArea>
 
-      {/* Detail Dialog - Mobile optimized */}
+      {/* Detail Dialog */}
       <Dialog open={!!selectedResult} onOpenChange={() => setSelectedResult(null)}>
-        <DialogContent className="max-w-[95vw] max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogTitle>
             {t('playground.batch.result')} #{selectedResult?.index !== undefined ? selectedResult.index + 1 : ''}
           </DialogTitle>
@@ -407,7 +412,7 @@ export function BatchOutputGrid({
                   const isAudio = !isObject && isAudioUrl(outputStr)
 
                   return (
-                    <div key={outputIndex} className="relative">
+                    <div key={outputIndex} className="relative group">
                       {isImage && (
                         <img
                           src={outputStr}
@@ -434,31 +439,52 @@ export function BatchOutputGrid({
                         <p className="text-sm break-all">{outputStr}</p>
                       )}
 
-                      {/* Actions - Always visible on mobile */}
+                      {/* Actions */}
                       {!isObject && (
-                        <div className="flex gap-2 mt-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="flex-1"
-                            onClick={() => handleCopy(outputStr, selectedResult.index * 100 + outputIndex)}
-                          >
-                            {copiedIndex === selectedResult.index * 100 + outputIndex ? (
-                              <Check className="h-4 w-4 mr-1" />
-                            ) : (
-                              <Copy className="h-4 w-4 mr-1" />
-                            )}
-                            {t('common.copy')}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="flex-1"
-                            onClick={() => handleDownload(outputStr)}
-                          >
-                            <Download className="h-4 w-4 mr-1" />
-                            {t('common.download')}
-                          </Button>
+                        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="secondary"
+                                className="h-8 w-8"
+                                onClick={() => handleCopy(outputStr, selectedResult.index * 100 + outputIndex)}
+                              >
+                                {copiedIndex === selectedResult.index * 100 + outputIndex ? (
+                                  <Check className="h-4 w-4" />
+                                ) : (
+                                  <Copy className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>{t('common.copy')}</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="secondary"
+                                className="h-8 w-8"
+                                onClick={() => window.open(outputStr, '_blank')}
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>{t('common.openInBrowser')}</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="secondary"
+                                className="h-8 w-8"
+                                onClick={() => handleDownload(outputStr, selectedResult.prediction?.id, outputIndex)}
+                              >
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>{t('common.download')}</TooltipContent>
+                          </Tooltip>
                         </div>
                       )}
                     </div>

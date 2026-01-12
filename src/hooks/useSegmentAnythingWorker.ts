@@ -159,6 +159,12 @@ export function useSegmentAnythingWorker(options: UseSegmentAnythingOptions = {}
     }
   }, [])
 
+  const ensureWorker = useCallback(() => {
+    if (!workerRef.current) {
+      createWorker()
+    }
+  }, [createWorker])
+
   // Initialize worker on mount
   useEffect(() => {
     createWorker()
@@ -172,6 +178,8 @@ export function useSegmentAnythingWorker(options: UseSegmentAnythingOptions = {}
 
   const initModel = useCallback((): Promise<void> => {
     return new Promise((resolve, reject) => {
+      ensureWorker()
+
       if (!workerRef.current) {
         reject(new Error('Worker not initialized'))
         return
@@ -191,10 +199,12 @@ export function useSegmentAnythingWorker(options: UseSegmentAnythingOptions = {}
 
       workerRef.current.postMessage({ type: 'init', payload: { id } })
     })
-  }, [])
+  }, [ensureWorker])
 
   const segmentImage = useCallback((imageDataUrl: string): Promise<void> => {
     return new Promise((resolve, reject) => {
+      ensureWorker()
+
       if (!workerRef.current) {
         reject(new Error('Worker not initialized'))
         return
@@ -214,10 +224,12 @@ export function useSegmentAnythingWorker(options: UseSegmentAnythingOptions = {}
 
       workerRef.current.postMessage({ type: 'segment', payload: { id, imageDataUrl } })
     })
-  }, [])
+  }, [ensureWorker])
 
   const decodeMask = useCallback((points: PointPrompt[]): Promise<MaskResult> => {
     return new Promise((resolve, reject) => {
+      ensureWorker()
+
       if (!workerRef.current) {
         reject(new Error('Worker not initialized'))
         return
@@ -237,10 +249,12 @@ export function useSegmentAnythingWorker(options: UseSegmentAnythingOptions = {}
 
       workerRef.current.postMessage({ type: 'decodeMask', payload: { id, points } })
     })
-  }, [])
+  }, [ensureWorker])
 
   const reset = useCallback((): Promise<void> => {
     return new Promise((resolve, reject) => {
+      ensureWorker()
+
       if (!workerRef.current) {
         reject(new Error('Worker not initialized'))
         return
@@ -251,10 +265,12 @@ export function useSegmentAnythingWorker(options: UseSegmentAnythingOptions = {}
 
       workerRef.current.postMessage({ type: 'reset', payload: { id } })
     })
-  }, [])
+  }, [ensureWorker])
 
   const dispose = useCallback(() => {
     workerRef.current?.postMessage({ type: 'dispose', payload: {} })
+    workerRef.current?.terminate()
+    workerRef.current = null
     isSegmentedRef.current = false
   }, [])
 

@@ -34,14 +34,54 @@
     "downloadFailed": "ダウンロードに失敗しました。ネットワーク接続を確認してください。"
   },
   "nav": {
+    "home": "ホーム",
     "models": "モデル",
     "playground": "プレイグラウンド",
     "history": "履歴",
     "templates": "テンプレート",
     "assets": "マイアセット",
+    "zImage": "Z-Image",
     "freeTools": "無料ツール",
     "settings": "設定",
     "collapse": "折りたたむ"
+  },
+  "welcome": {
+    "tagline": "すぐに使えるAIクリエイティブツール",
+    "explore": "探索",
+    "getStarted": "始める",
+    "tryFreeTools": "無料ツールを試す",
+    "features": {
+      "models": {
+        "title": "モデルブラウザ",
+        "description": "画像、動画、音声生成用のAIモデルを閲覧"
+      },
+      "playground": {
+        "title": "プレイグラウンド",
+        "description": "カスタムパラメータでモデルを実行できるマルチタブワークスペース"
+      },
+      "templates": {
+        "title": "テンプレート",
+        "description": "お気に入りの設定を保存して再利用"
+      },
+      "history": {
+        "title": "履歴",
+        "description": "最近の予測を追跡・確認"
+      },
+      "assets": {
+        "title": "マイアセット",
+        "description": "生成した出力を整理・管理"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "ローカルAI画像生成 - お使いのデバイスで動作し、APIキーは不要",
+        "badge": "ローカル"
+      },
+      "freeTools": {
+        "title": "無料ツール",
+        "description": "ローカルで動作する強力なAIツール - APIキー不要",
+        "badge": "無料"
+      }
+    }
   },
   "models": {
     "title": "モデル",
@@ -151,6 +191,40 @@
       "failedError": "プロンプトの最適化に失敗しました",
       "optimizing": "最適化中...",
       "optimize": "最適化"
+    },
+    "flappyBird": {
+      "clickToStart": "クリックまたはスペースキーでゲーム開始",
+      "viewResults": "結果を見る",
+      "playWhileWaiting": "待っている間にプレイ",
+      "quit": "終了"
+    },
+    "batch": {
+      "title": "バッチ",
+      "enable": "バッチモードを有効化",
+      "disable": "バッチモードを無効化",
+      "repeatCount": "回数",
+      "randomizeSeed": "シードをランダム化",
+      "stopOnError": "エラー時に停止",
+      "runBatch": "バッチ実行 ({{count}})",
+      "running": "実行中 {{current}}/{{total}}...",
+      "cancelling": "キャンセル中...",
+      "cancel": "キャンセル",
+      "completed": "{{count}} 完了",
+      "failed": "{{count}} 失敗",
+      "downloadAll": "すべてダウンロード",
+      "saveAllToAssets": "すべて保存",
+      "savedAll": "アセットに保存しました",
+      "savedAllDesc": "{{count}} 個の出力を保存しました",
+      "saved": "保存済み",
+      "clearResults": "クリア",
+      "results": "結果",
+      "result": "結果",
+      "inputDetails": "入力詳細",
+      "preview": "プレビュー",
+      "items": "件",
+      "noPreview": "プレビューなし",
+      "seedsGenerated": "シードを自動生成しました",
+      "settings": "バッチ設定"
     }
   },
   "history": {
@@ -167,6 +241,17 @@
     "loadPreviews": "プレビューを読み込む",
     "disablePreviews": "プレビューを無効化",
     "generationDetails": "生成の詳細",
+    "select": "選択",
+    "selectionDone": "完了",
+    "deleteSelected": "削除 ({{count}})",
+    "bulkDeleteConfirmTitle": "履歴を削除",
+    "bulkDeleteConfirmDesc": "{{count}} 件の予測を削除しますか？この操作は取り消せません。",
+    "deleteConfirmTitle": "履歴を削除",
+    "deleteConfirmDesc": "この予測を削除しますか？この操作は取り消せません。",
+    "deleted": "履歴を削除しました",
+    "deletedBulk": "履歴を削除しました",
+    "deletedBulkDesc": "{{count}} 件の履歴を削除しました",
+    "deleteFailed": "履歴の削除に失敗しました",
     "model": "モデル",
     "created": "作成日時",
     "executionTime": "実行時間",
@@ -327,6 +412,43 @@
     "loadPreviews": "プレビューを読み込む",
     "disablePreviews": "プレビューを無効にする"
   },
+  "zImage": {
+    "title": "Z-Image",
+    "subtitle": "Z-Image をローカルで無料で実行",
+    "generateImage": "生成",
+    "generating": "生成中...",
+    "downloadingSd": "SDをダウンロード中...",
+    "downloadingVae": "VAEをダウンロード中...",
+    "downloadingLlm": "LLMをダウンロード中...",
+    "downloadingZImage": "モデルをダウンロード中...",
+    "stopGeneration": "停止",
+    "models": {
+      "q4k": {
+        "description": "推奨：高速な推論と良好な品質、約2.5GB"
+      },
+      "q6k": {
+        "description": "高品質：最高の結果、生成速度は遅い、約3.5GB"
+      },
+      "q8": {
+        "description": "最高品質：最大精度、生成速度は遅い、約4GB"
+      },
+      "q2k": {
+        "description": "軽量：最速生成、品質は低い、約1.5GB"
+      }
+    },
+    "errors": {
+      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "generationCancelled": "生成がキャンセルされました"
+    },
+    "tips": {
+      "intelMacUnsupported": "ローカルのZ-ImageはApple Silicon搭載Macのみ対応です。",
+      "linuxArmUnsupported": "Linux ARMはローカルZ-Imageに未対応です。",
+      "windowsArmUnsupported": "Windows ARMはローカルZ-Imageに未対応です。",
+      "linuxCpuOnly": "LinuxではローカルZ-ImageはCPUのみで動作します。遅くなる可能性があります—ステップ数や画像サイズを減らしてください。",
+      "windowsVulkanRequired": "WindowsのローカルZ-ImageはVulkan対応GPUドライバーが必要です。利用できない場合、生成が遅いか失敗することがあります。",
+      "slowWithoutMetal": "Metalアクセラレーションは利用できません。生成はCPUで実行され、遅くなる可能性があります—ステップ数や画像サイズを減らしてください。"
+    }
+  },
   "settings": {
     "title": "設定",
     "description": "WaveSpeed Desktopアプリケーションの設定",
@@ -346,6 +468,7 @@
       "invalidDesc": "APIキーを検証できませんでした。確認して再試行してください。",
       "cleared": "APIキーをクリアしました",
       "clearedDesc": "APIキーが削除されました。",
+      "itemDeleted": "Cache item deleted",
       "error": "エラー",
       "errorDesc": "APIキーの保存に失敗しました。"
     },
@@ -399,7 +522,18 @@
       "clear": "清除",
       "cleared": "缓存已清除",
       "clearedDesc": "AI模型缓存已清除。需要时将重新下载模型。",
-      "clearFailed": "清除缓存失败"
+      "itemDeleted": "キャッシュ項目を削除しました",
+      "clearFailed": "キャッシュのクリアに失敗しました",
+      "zImageAuxiliary": "Z-Image 補助モデル",
+      "zImageModels": "Z-Image モデル",
+      "zImageBinary": "Z-Image バイナリ"
+    },
+    "downloads": {
+      "title": "ダウンロード",
+      "description": "AIモデルのダウンロード設定",
+      "downloadTimeout": "ダウンロードタイムアウト",
+      "downloadTimeoutDesc": "AIモデルのダウンロード最大待機時間",
+      "minutes": "分"
     },
     "updates": {
       "title": "アップデート",
@@ -492,7 +626,66 @@
       "eta": "~{{time}} 残り",
       "sideBySide": "並べて比較",
       "comparison": "スライダー比較",
-      "dragToCompare": "ドラッグして比較"
+      "dragToCompare": "ドラッグして比較",
+      "enhanceFace": "顔の品質を向上"
+    },
+    "faceEnhancer": {
+      "title": "顔補正",
+      "description": "AIを使用して顔の画質を向上・修復",
+      "selectImage": "顔が含まれる画像を選択",
+      "orDragDrop": "またはドラッグ＆ドロップ",
+      "enhance": "補正",
+      "download": "ダウンロード",
+      "processing": "処理中...",
+      "original": "オリジナル",
+      "enhanced": "補正後",
+      "sideBySide": "並べて比較",
+      "comparison": "スライダー比較",
+      "dragToCompare": "ドラッグして比較",
+      "detecting": "顔を検出中",
+      "enhancing": "顔を補正中",
+      "noFaces": "画像内に顔が検出されませんでした",
+      "facesFound": "{{count}}個の顔を検出"
+    },
+    "faceSwapper": {
+      "title": "顔入れ替え",
+      "description": "AIを使用して画像の顔を入れ替え",
+      "sourceTitle": "ソース顔",
+      "targetTitle": "ターゲット画像",
+      "selectSource": "ソース顔を選択",
+      "selectTarget": "ターゲット画像を選択",
+      "sourceHint": "コピーする顔のアイデンティティ",
+      "targetHint": "顔を入れ替える画像",
+      "orDragDrop": "or drag and drop",
+      "noSourceFace": "ソース画像に顔が検出されませんでした",
+      "noTargetFaces": "ターゲット画像に顔が検出されませんでした",
+      "clickToSelect": "顔をクリックして入れ替え対象を選択",
+      "facesSelected": "{{selected}}/{{total}}個の顔を選択",
+      "sourceSelected": "Face {{selected}}/{{total}} selected",
+      "faceDetected": "顔を検出",
+      "swapFaces": "顔を入れ替え",
+      "processing": "処理中...",
+      "detecting": "顔を検出中",
+      "extractingEmbedding": "顔の特徴を抽出中",
+      "swapping": "顔を入れ替え中",
+      "enhancing": "結果を補正中",
+      "enableEnhancement": "入れ替えた顔を補正",
+      "original": "オリジナル",
+      "result": "結果",
+      "download": "ダウンロード",
+      "clickFaceToSwap": "交換する顔をクリック",
+      "swapFace": "顔を交換",
+      "targetFace": "対象の顔",
+      "sourceFace": "元の顔",
+      "enhanceFace": "顔の品質を向上",
+      "swap": "交換",
+      "change": "変更",
+      "clickToSwapMore": "他の顔をクリックして続行",
+      "swapped": "交換済み",
+      "revert": "元に戻す",
+      "swappedFace": "交換後の顔",
+      "swappedFacePlaceholder": "まだ交換されていません",
+      "alreadySwapped": "交換済み"
     },
     "backgroundRemover": {
       "title": "背景削除",
@@ -655,6 +848,89 @@
       "finalizing": "最終処理中",
       "overall": "全体",
       "remaining": "残り"
+    },
+    "backWarning": {
+      "title": "処理中",
+      "description": "タスクは現在処理中です。戻りますか？現在の操作はキャンセルされます。",
+      "cancel": "キャンセル",
+      "confirm": "戻る"
+    },
+    "videoConverter": {
+      "title": "ビデオ変換",
+      "description": "動画形式を変換（MP4、WebM、MOV、AVI）",
+      "selectVideo": "動画を選択",
+      "orDragDrop": "またはドラッグ＆ドロップ",
+      "dropToReplace": "ドロップして動画を置換",
+      "supportedFormats": "MP4、WebM、MOV、AVI、MKVに対応",
+      "convert": "変換",
+      "converting": "変換中...",
+      "original": "オリジナル",
+      "outputSettings": "出力設定",
+      "format": "形式",
+      "quality": "品質",
+      "resolution": "解像度",
+      "convertedSize": "変換後サイズ"
+    },
+    "audioConverter": {
+      "title": "オーディオ変換",
+      "description": "音声形式を変換（MP3、AAC、FLAC、WAV）",
+      "selectAudio": "音声を選択",
+      "orDragDrop": "またはドラッグ＆ドロップ",
+      "dropToReplace": "ドロップして音声を置換",
+      "supportedFormats": "MP3、M4A、OGG、WAV、FLACに対応",
+      "convert": "変換",
+      "converting": "変換中...",
+      "converted": "変換済み",
+      "playOriginal": "オリジナルを再生",
+      "playConverted": "変換後を再生"
+    },
+    "imageConverter": {
+      "title": "画像変換",
+      "description": "画像形式を変換（JPG、PNG、WebP、GIF）",
+      "selectImages": "画像を選択",
+      "orDragDrop": "またはドラッグ＆ドロップ",
+      "dropToAdd": "ドロップして画像を追加",
+      "supportedFormats": "JPG、PNG、WebP、GIF、BMPに対応",
+      "addMore": "追加",
+      "convert": "変換",
+      "converting": "変換中...",
+      "quality": "品質",
+      "downloadAll": "すべてダウンロード"
+    },
+    "mediaTrimmer": {
+      "title": "メディアトリミング",
+      "description": "動画や音声を特定の長さに切り取り",
+      "selectMedia": "メディアを選択",
+      "orDragDrop": "またはドラッグ＆ドロップ",
+      "dropToReplace": "ドロップしてメディアを置換",
+      "supportedFormats": "動画と音声ファイルに対応",
+      "trim": "トリミング",
+      "trimming": "トリミング中...",
+      "originalDuration": "オリジナル",
+      "selectedDuration": "選択範囲",
+      "trimmedSize": "トリミング後サイズ",
+      "playingOriginal": "オリジナルを再生中",
+      "playingTrimmed": "トリミング後を再生中"
+    },
+    "mediaMerger": {
+      "title": "メディア結合",
+      "description": "複数の動画または音声ファイルを1つに結合",
+      "selectFiles": "ファイルを選択",
+      "orDragDrop": "またはドラッグ＆ドロップ",
+      "dropToAdd": "ドロップしてファイルを追加",
+      "supportedFormats": "動画と音声ファイルに対応",
+      "addMore": "追加",
+      "merge": "結合",
+      "merging": "結合中...",
+      "merged": "結合済み",
+      "totalDuration": "合計時間",
+      "sameFormatNote": "ロスレス結合には同じ形式のファイルが必要です"
+    },
+    "ffmpeg": {
+      "loading": "FFmpegを読み込み中",
+      "converting": "変換中",
+      "merging": "結合中",
+      "trimming": "トリミング中"
     }
   },
   "game": {

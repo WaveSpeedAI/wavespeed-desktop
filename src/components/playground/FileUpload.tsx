@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDropzone } from 'react-dropzone'
 import { apiClient } from '@/api/client'
@@ -24,6 +24,7 @@ interface FileUploadProps {
   placeholder?: string
   isMaskField?: boolean
   formValues?: Record<string, unknown>
+  onUploadingChange?: (isUploading: boolean) => void
 }
 
 export function FileUpload({
@@ -34,7 +35,8 @@ export function FileUpload({
   onChange,
   disabled = false,
   isMaskField = false,
-  formValues
+  formValues,
+  onUploadingChange
 }: FileUploadProps) {
   const { t } = useTranslation()
   const [isUploading, setIsUploading] = useState(false)
@@ -43,6 +45,8 @@ export function FileUpload({
   const [captureMode, setCaptureMode] = useState<CaptureMode>('upload')
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [previewType, setPreviewType] = useState<'image' | 'video' | 'audio' | null>(null)
+  const [draggingIndex, setDraggingIndex] = useState<number | null>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   // Convert value to array for consistent handling
   const urls = Array.isArray(value) ? value : value ? [value] : []
@@ -106,7 +110,11 @@ export function FileUpload({
   const handleCapture = useCallback(async (blob: Blob) => {
     setError(null)
     setIsUploading(true)
+    onUploadingChange?.(true)
     setCaptureMode('upload')
+
+    // Create abort controller for this upload
+    abortControllerRef.current = new AbortController()
 
     try {
       // Create a file from the blob with appropriate extension
@@ -116,7 +124,7 @@ export function FileUpload({
       const filename = `capture_${Date.now()}.${extension}`
       const file = new File([blob], filename, { type: blob.type })
 
-      const url = await apiClient.uploadFile(file)
+      const url = await apiClient.uploadFile(file, abortControllerRef.current.signal)
 
       if (multiple) {
         onChange([...urls, url])
@@ -124,24 +132,39 @@ export function FileUpload({
         onChange(url)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed')
+      // Don't show error for cancelled uploads
+      if (err instanceof Error && err.message === 'Upload cancelled') {
+        // Silently ignore
+      } else {
+        setError(err instanceof Error ? err.message : 'Upload failed')
+      }
     } finally {
+      abortControllerRef.current = null
       setIsUploading(false)
+      onUploadingChange?.(false)
     }
-  }, [multiple, urls, onChange])
+  }, [multiple, urls, onChange, onUploadingChange])
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (disabled) return
 
     setError(null)
     setIsUploading(true)
+    onUploadingChange?.(true)
+
+    // Create abort controller for this upload batch
+    abortControllerRef.current = new AbortController()
 
     try {
       const uploadPromises = acceptedFiles.slice(0, maxFiles - urls.length).map(async (file) => {
         try {
-          const url = await apiClient.uploadFile(file)
+          const url = await apiClient.uploadFile(file, abortControllerRef.current?.signal)
           return { url, name: file.name, type: file.type }
-        } catch {
+        } catch (err) {
+          // Re-throw cancellation errors to stop all uploads
+          if (err instanceof Error && err.message === 'Upload cancelled') {
+            throw err
+          }
           throw new Error(`Failed to upload ${file.name}`)
         }
       })
@@ -155,22 +178,72 @@ export function FileUpload({
         onChange(newUrls[0] || '')
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed')
+      // Don't show error for cancelled uploads
+      if (err instanceof Error && err.message === 'Upload cancelled') {
+        // Silently ignore
+      } else {
+        setError(err instanceof Error ? err.message : 'Upload failed')
+      }
     } finally {
+      abortControllerRef.current = null
       setIsUploading(false)
+      onUploadingChange?.(false)
     }
-  }, [disabled, maxFiles, urls, multiple, onChange])
+  }, [disabled, maxFiles, urls, multiple, onChange, onUploadingChange])
+
+  // Parse accept string into react-dropzone format
+  // Maps MIME types to extensions for better browser compatibility
+  const dropzoneAccept = useMemo(() => {
+    const result: Record<string, string[]> = {}
+    const extensions: string[] = []
+
+    // MIME type to extension mappings for common types
+    const mimeToExt: Record<string, string[]> = {
+      'application/zip': ['.zip'],
+      'application/x-zip-compressed': ['.zip'],
+      'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg'],
+      'video/*': ['.mp4', '.webm', '.mov', '.avi', '.mkv'],
+      'audio/*': ['.mp3', '.wav', '.ogg', '.m4a', '.webm', '.flac'],
+    }
+
+    for (const type of accept.split(',')) {
+      const trimmed = type.trim()
+      if (trimmed.startsWith('.')) {
+        // Collect file extensions
+        extensions.push(trimmed)
+      } else {
+        // MIME type - add with known extensions or empty array
+        result[trimmed] = mimeToExt[trimmed] || []
+        // For zip MIME types, also add the alternative MIME type for Windows compatibility
+        if (trimmed === 'application/zip') {
+          result['application/x-zip-compressed'] = ['.zip']
+        } else if (trimmed === 'application/x-zip-compressed') {
+          result['application/zip'] = ['.zip']
+        }
+      }
+    }
+
+    // If we have standalone extensions, add them under a wildcard or specific MIME
+    if (extensions.length > 0) {
+      // Add extensions to existing MIME types or create a catch-all
+      const hasZip = extensions.includes('.zip')
+      if (hasZip) {
+        result['application/zip'] = ['.zip']
+        result['application/x-zip-compressed'] = ['.zip']
+      }
+      // For other extensions, add to application/octet-stream as fallback
+      const otherExts = extensions.filter(e => e !== '.zip')
+      if (otherExts.length > 0) {
+        result['application/octet-stream'] = otherExts
+      }
+    }
+
+    return result
+  }, [accept])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: accept.split(',').reduce((acc, type) => {
-      const trimmed = type.trim()
-      if (trimmed.startsWith('.')) {
-        return acc
-      }
-      acc[trimmed] = []
-      return acc
-    }, {} as Record<string, string[]>),
+    accept: dropzoneAccept,
     multiple: multiple && urls.length < maxFiles,
     disabled: disabled || isUploading || (!multiple && urls.length >= 1),
     maxFiles: maxFiles - urls.length
@@ -195,6 +268,20 @@ export function FileUpload({
 
   const canAddMore = multiple ? urls.length < maxFiles : urls.length === 0
 
+  const handleCancelUpload = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+  }, [])
+
+  const moveUrl = useCallback((fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return
+    const nextUrls = [...urls]
+    const [moved] = nextUrls.splice(fromIndex, 1)
+    nextUrls.splice(toIndex, 0, moved)
+    onChange(multiple ? nextUrls : nextUrls[0] || '')
+  }, [urls, onChange, multiple])
+
   return (
     <div className="space-y-2">
       {/* Uploaded files */}
@@ -216,7 +303,31 @@ export function FileUpload({
             return (
               <div
                 key={index}
-                className="relative group rounded-md border bg-muted/50 overflow-hidden h-16 w-16 flex-shrink-0 cursor-pointer"
+                className={cn(
+                  'relative group rounded-md border bg-muted/50 overflow-hidden h-16 w-16 flex-shrink-0 cursor-pointer',
+                  draggingIndex === index && 'opacity-60'
+                )}
+                draggable={multiple && !disabled}
+                onDragStart={(e) => {
+                  if (!multiple || disabled) return
+                  e.dataTransfer.effectAllowed = 'move'
+                  e.dataTransfer.setData('text/plain', String(index))
+                  setDraggingIndex(index)
+                }}
+                onDragOver={(e) => {
+                  if (!multiple || disabled) return
+                  e.preventDefault()
+                  e.dataTransfer.dropEffect = 'move'
+                  if (draggingIndex === null || draggingIndex === index) return
+                  moveUrl(draggingIndex, index)
+                  setDraggingIndex(index)
+                }}
+                onDrop={(e) => {
+                  if (!multiple || disabled) return
+                  e.preventDefault()
+                  setDraggingIndex(null)
+                }}
+                onDragEnd={() => setDraggingIndex(null)}
                 onClick={handlePreview}
               >
                 {isImage ? (
@@ -323,6 +434,19 @@ export function FileUpload({
                   <div className="flex items-center gap-2 w-full justify-center">
                     <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
                     <span className="text-xs text-muted-foreground">{t('playground.capture.uploading')}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleCancelUpload()
+                      }}
+                      className="h-5 px-1.5 text-xs text-muted-foreground hover:text-destructive"
+                    >
+                      <X className="h-3 w-3 mr-0.5" />
+                      {t('common.cancel')}
+                    </Button>
                   </div>
                 ) : (
                   <div className="flex items-center gap-1.5 w-full justify-center">

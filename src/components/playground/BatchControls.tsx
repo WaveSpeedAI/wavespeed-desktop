@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Play, Loader2, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { MOBILE_BATCH_LIMITS } from '@/types/batch'
 
 interface BatchControlsProps {
   disabled?: boolean
@@ -117,7 +116,7 @@ export function BatchControls({
 
             {enabled && (
               <>
-                {/* Repeat Count - Limited to 4 for mobile */}
+                {/* Repeat Count */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label className="text-sm">{t('playground.batch.repeatCount')}</Label>
@@ -126,8 +125,8 @@ export function BatchControls({
                   <Slider
                     value={[repeatCount]}
                     onValueChange={handleCountChange}
-                    min={MOBILE_BATCH_LIMITS.minRepeat}
-                    max={MOBILE_BATCH_LIMITS.maxRepeat}
+                    min={2}
+                    max={16}
                     step={1}
                     className="w-full"
                   />

@@ -2,13 +2,21 @@
 
 Cross-platform applications for running AI models from [WaveSpeedAI](https://wavespeed.ai). Available for Desktop (Windows, macOS, Linux) and Mobile (Android).
 
-![Playground Screenshot](https://github.com/user-attachments/assets/cef45169-99f0-46dc-99d4-eb0433d28387)
+[![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Desktop-win-x64.exe)
+[![macOS Intel](https://img.shields.io/badge/macOS_Intel-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Desktop-mac-x64.dmg)
+[![macOS Apple Silicon](https://img.shields.io/badge/macOS_Silicon-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Desktop-mac-arm64.dmg)
+[![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Desktop-linux-x86_64.AppImage)
+
+![Playground Screenshot](https://github.com/user-attachments/assets/904a3ff8-c302-4b84-851b-34a76486c891)
+![Face Swapper Screenshot](https://github.com/user-attachments/assets/f9eb0022-4bf7-4efd-a9a6-43138ab5cfcb)
+![Z-Image Screenshot](https://github.com/user-attachments/assets/f2eabfb1-a613-4b01-9f84-a5ae5fd07638)
 
 ## Features
 
 - **Model Browser**: Browse and search available AI models with fuzzy search, sortable by popularity, name, price, or type
 - **Favorites**: Star your favorite models for quick access with a dedicated filter
 - **Multi-Tab Playground**: Run predictions with multiple models simultaneously in separate tabs
+- **Batch Processing**: Run the same prediction multiple times (2-16) with auto-randomized seeds for variations
 - **Dynamic Forms**: Auto-generated forms from model schemas with validation
 - **Mask Drawing**: Interactive canvas-based mask editor for models that accept mask inputs, with brush, eraser, and bucket fill tools
 - **Templates**: Save and reuse playground configurations as templates for quick access
@@ -16,8 +24,17 @@ Cross-platform applications for running AI models from [WaveSpeedAI](https://wav
 - **Free Tools**: Free AI-powered image and video tools (no API key required)
   - **Image Enhancer**: Upscale images 2x-4x with ESRGAN models (slim, medium, thick quality options)
   - **Video Enhancer**: Frame-by-frame video upscaling with real-time progress and ETA
+  - **Face Enhancer**: Enhance and restore face quality using YOLO v8 for detection and GFPGAN v1.4 for enhancement (WebGPU accelerated)
+  - **Face Swapper**: Swap faces between images using InsightFace models (SCRFD detection, ArcFace embedding, Inswapper) with optional GFPGAN enhancement
   - **Background Remover**: Remove image backgrounds instantly using AI, displaying foreground, background, and mask outputs simultaneously with individual download buttons
-  - **Image Eraser**: Remove unwanted objects from images using LaMa inpainting model with smart crop and blend
+  - **Image Eraser**: Remove unwanted objects from images using LaMa inpainting model with smart crop and blend (WebGPU accelerated)
+  - **Segment Anything**: Interactive object segmentation with point prompts using SlimSAM model
+  - **Video Converter**: Convert videos between formats (MP4, WebM, AVI, MOV, MKV) with codec and quality options
+  - **Audio Converter**: Convert audio between formats (MP3, WAV, AAC, FLAC, OGG) with bitrate control
+  - **Image Converter**: Batch convert images between formats (JPG, PNG, WebP, GIF, BMP) with quality settings
+  - **Media Trimmer**: Trim video/audio files by selecting start and end times
+  - **Media Merger**: Merge multiple video/audio files into one
+- **Z-Image (Local)**: Run local image generation via stable-diffusion.cpp with model/aux downloads, progress, and logs
 - **Multi-Phase Progress**: Compact progress bars with phase indicators, real-time status, and ETA for all Free Tools
 - **History**: View your recent predictions (last 24 hours) with detailed view, download, and copy prediction ID
 - **My Assets**: Save, browse, and manage generated outputs (images, videos, audio) with tags, favorites, and search
@@ -166,7 +183,7 @@ wavespeed-desktop/
 │   ├── pages/          # Page components
 │   ├── stores/         # Zustand stores
 │   ├── types/          # TypeScript types
-│   └── workers/        # Web Workers
+│   └── workers/        # Web Workers (upscaler, background remover, image eraser, ffmpeg)
 ├── mobile/             # Mobile app (Android)
 │   ├── src/            # Mobile-specific overrides
 │   ├── android/        # Android native project

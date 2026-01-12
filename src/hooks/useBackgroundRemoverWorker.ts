@@ -116,6 +116,12 @@ export function useBackgroundRemoverWorker(
     }
   }, [])
 
+  const ensureWorker = useCallback(() => {
+    if (!workerRef.current) {
+      createWorker()
+    }
+  }, [createWorker])
+
   // Initialize worker
   useEffect(() => {
     createWorker()
@@ -134,6 +140,8 @@ export function useBackgroundRemoverWorker(
       outputType: OutputType = 'foreground'
     ): Promise<Blob> => {
       return new Promise((resolve, reject) => {
+        ensureWorker()
+
         if (!workerRef.current) {
           reject(new Error('Worker not initialized'))
           return
@@ -158,12 +166,14 @@ export function useBackgroundRemoverWorker(
         })
       })
     },
-    []
+    [ensureWorker]
   )
 
   const removeBackgroundAll = useCallback(
     (imageBlob: Blob, model: ModelType = 'isnet_fp16'): Promise<AllOutputsResult> => {
       return new Promise((resolve, reject) => {
+        ensureWorker()
+
         if (!workerRef.current) {
           reject(new Error('Worker not initialized'))
           return
@@ -188,11 +198,13 @@ export function useBackgroundRemoverWorker(
         })
       })
     },
-    []
+    [ensureWorker]
   )
 
   const dispose = useCallback(() => {
     workerRef.current?.postMessage({ type: 'dispose' })
+    workerRef.current?.terminate()
+    workerRef.current = null
   }, [])
 
   const retryWorker = useCallback(() => {

@@ -29,19 +29,58 @@
     "success": "Berjaya",
     "warning": "Amaran",
     "selectAll": "Pilih semua",
-    "deselectAll": "Nyahpilih semua",
     "retry": "Cuba Lagi",
     "downloadFailed": "Muat turun gagal. Sila semak sambungan rangkaian anda."
   },
   "nav": {
+    "home": "Laman Utama",
     "models": "Model",
     "playground": "Playground",
     "history": "Sejarah",
     "templates": "Templat",
     "assets": "Aset Saya",
+    "zImage": "Z-Image",
     "freeTools": "Alat Percuma",
     "settings": "Tetapan",
     "collapse": "Kuncupkan"
+  },
+  "welcome": {
+    "tagline": "Alat Kreatif AI di Hujung Jari Anda",
+    "explore": "Terokai",
+    "getStarted": "Mula",
+    "tryFreeTools": "Cuba Alat Percuma",
+    "features": {
+      "models": {
+        "title": "Pelayar Model",
+        "description": "Layari model AI untuk penjanaan imej, video dan audio"
+      },
+      "playground": {
+        "title": "Playground",
+        "description": "Ruang kerja berbilang tab untuk menjalankan model dengan parameter tersuai"
+      },
+      "templates": {
+        "title": "Templat",
+        "description": "Simpan dan guna semula konfigurasi kegemaran anda"
+      },
+      "history": {
+        "title": "Sejarah",
+        "description": "Jejak dan semak ramalan terkini anda"
+      },
+      "assets": {
+        "title": "Aset Saya",
+        "description": "Susun dan urus output yang dijana"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "Penjanaan imej AI setempat - berjalan pada peranti anda, tidak memerlukan kunci API",
+        "badge": "Tempatan"
+      },
+      "freeTools": {
+        "title": "Alat Percuma",
+        "description": "Alat AI yang berkuasa yang berjalan secara tempatan - tiada kunci API diperlukan",
+        "badge": "Percuma"
+      }
+    }
   },
   "models": {
     "title": "Model",
@@ -151,6 +190,40 @@
       "failedError": "Gagal mengoptimumkan prompt",
       "optimizing": "Mengoptimumkan...",
       "optimize": "Optimumkan"
+    },
+    "flappyBird": {
+      "clickToStart": "Klik atau tekan Ruang untuk memulakan permainan",
+      "viewResults": "Lihat Keputusan",
+      "playWhileWaiting": "Bermain semasa menunggu",
+      "quit": "Keluar"
+    },
+    "batch": {
+      "title": "Kelompok",
+      "enable": "Dayakan mod kelompok",
+      "disable": "Nyahdayakan mod kelompok",
+      "repeatCount": "Kuantiti",
+      "randomizeSeed": "Benih rawak",
+      "stopOnError": "Berhenti pada ralat",
+      "runBatch": "Jalankan kelompok ({{count}})",
+      "running": "Menjalankan {{current}}/{{total}}...",
+      "cancelling": "Membatalkan...",
+      "cancel": "Batal",
+      "completed": "{{count}} selesai",
+      "failed": "{{count}} gagal",
+      "downloadAll": "Muat turun semua",
+      "saveAllToAssets": "Simpan semua",
+      "savedAll": "Disimpan ke aset",
+      "savedAllDesc": "{{count}} output disimpan",
+      "saved": "Disimpan",
+      "clearResults": "Padam",
+      "results": "Keputusan",
+      "result": "Keputusan",
+      "inputDetails": "Butiran input",
+      "preview": "Pratonton",
+      "items": "item",
+      "noPreview": "Tiada pratonton",
+      "seedsGenerated": "Benih dijana secara automatik",
+      "settings": "Tetapan kelompok"
     }
   },
   "history": {
@@ -167,36 +240,23 @@
     "loadPreviews": "Muat pratonton",
     "disablePreviews": "Nyahaktif pratonton",
     "generationDetails": "Butiran Penjanaan",
+    "select": "Pilih",
+    "selectionDone": "Selesai",
+    "deleteSelected": "Padam ({{count}})",
+    "bulkDeleteConfirmTitle": "Padam item sejarah",
+    "bulkDeleteConfirmDesc": "Adakah anda pasti mahu memadam {{count}} ramalan? Tindakan ini tidak boleh dibatalkan.",
+    "deleteConfirmTitle": "Padam item sejarah",
+    "deleteConfirmDesc": "Adakah anda pasti mahu memadam ramalan ini? Tindakan ini tidak boleh dibatalkan.",
+    "deleted": "Item sejarah dipadam",
+    "deletedBulk": "Item sejarah dipadam",
+    "deletedBulkDesc": "{{count}} item sejarah dipadam",
+    "deleteFailed": "Gagal memadam item sejarah",
     "model": "Model",
     "created": "Dicipta",
     "executionTime": "Masa Pelaksanaan",
     "predictionId": "ID Ramalan",
     "notAvailable": "Sejarah Tidak Tersedia",
-    "notAvailableDesc": "API sejarah ramalan tidak tersedia pada masa ini.",
-    "saveTemplate": {
-      "button": "Simpan sebagai templat",
-      "dialogTitle": "Simpan sebagai templat",
-      "nameLabel": "Nama templat",
-      "namePlaceholder": "Masukkan nama templat",
-      "duplicateName": "Templat dengan nama ini sudah wujud",
-      "success": "Templat disimpan",
-      "successDesc": "Templat anda berjaya disimpan",
-      "error": "Gagal menyimpan",
-      "noInputsTitle": "Tidak dapat menyimpan templat",
-      "noInputsDesc": "Parameter input hanya tersedia untuk ramalan yang dibuat dalam aplikasi ini. Cuba jalankan ramalan baharu dahulu."
-    },
-    "hasInputs": "Boleh disimpan sebagai templat",
-    "select": "Pilih",
-    "selectionDone": "Selesai",
-    "deleteSelected": "Padam",
-    "bulkDeleteConfirmTitle": "Padam Ramalan",
-    "bulkDeleteConfirmDesc": "Adakah anda pasti mahu memadam {{count}} ramalan? Tindakan ini tidak boleh dibatalkan.",
-    "deleteConfirmTitle": "Padam Ramalan",
-    "deleteConfirmDesc": "Adakah anda pasti mahu memadam ramalan ini? Tindakan ini tidak boleh dibatalkan.",
-    "deleted": "Ramalan dipadam",
-    "deletedBulk": "Ramalan dipadam",
-    "deletedBulkDesc": "{{count}} ramalan dipadam",
-    "deleteFailed": "Gagal memadam ramalan"
+    "notAvailableDesc": "API sejarah ramalan tidak tersedia pada masa ini."
   },
   "templates": {
     "title": "Templat",
@@ -322,10 +382,46 @@
     "loadPreviews": "Muat pratonton",
     "disablePreviews": "Lumpuhkan pratonton"
   },
+  "zImage": {
+    "title": "Z-Image",
+    "subtitle": "Jalankan Z-Image secara tempatan percuma",
+    "generateImage": "Jana",
+    "generating": "Menjana...",
+    "downloadingSd": "Memuat turun SD...",
+    "downloadingVae": "Memuat turun VAE...",
+    "downloadingLlm": "Memuat turun LLM...",
+    "downloadingZImage": "Memuat turun Model...",
+    "stopGeneration": "Hentikan",
+    "models": {
+      "q4k": {
+        "description": "Disyorkan: Inferens pantas dengan kualiti baik, ~2.5GB"
+      },
+      "q6k": {
+        "description": "Kualiti tinggi: Hasil terbaik, penjanaan lebih perlahan, ~3.5GB"
+      },
+      "q8": {
+        "description": "Kualiti tertinggi: Ketepatan maksimum, penjanaan lebih perlahan, ~4GB"
+      },
+      "q2k": {
+        "description": "Ringan: Penjanaan terpantas, kualiti lebih rendah, ~1.5GB"
+      }
+    },
+    "errors": {
+      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "generationCancelled": "Penjanaan dibatalkan"
+    },
+    "tips": {
+      "intelMacUnsupported": "Z-Image tempatan hanya disokong pada Mac Apple Silicon.",
+      "linuxArmUnsupported": "Linux ARM tidak disokong untuk Z-Image tempatan.",
+      "windowsArmUnsupported": "Windows ARM tidak disokong untuk Z-Image tempatan.",
+      "linuxCpuOnly": "Z-Image tempatan hanya berjalan pada CPU di Linux. Ia mungkin perlahan—kurangkan langkah atau saiz imej.",
+      "windowsVulkanRequired": "Z-Image tempatan di Windows memerlukan pemacu GPU yang menyokong Vulkan. Jika tiada, penjanaan mungkin perlahan atau gagal.",
+      "slowWithoutMetal": "Pecutan Metal tidak tersedia. Penjanaan akan berjalan pada CPU dan mungkin perlahan—kurangkan langkah atau saiz imej."
+    }
+  },
   "settings": {
     "title": "Tetapan",
     "description": "Konfigurasikan aplikasi WaveSpeed Desktop anda",
-    "mobileDescription": "Konfigurasikan aplikasi WaveSpeed Mobile anda",
     "apiKey": {
       "title": "Kunci API",
       "description": "Masukkan kunci API WaveSpeed anda untuk mengakses model",
@@ -341,6 +437,7 @@
       "invalidDesc": "Kunci API tidak dapat disahkan. Sila semak dan cuba lagi.",
       "cleared": "Kunci API dikosongkan",
       "clearedDesc": "Kunci API anda telah dibuang.",
+      "itemDeleted": "Cache item deleted",
       "error": "Ralat",
       "errorDesc": "Gagal menyimpan kunci API."
     },
@@ -394,7 +491,18 @@
       "clear": "Padam",
       "cleared": "Cache dipadam",
       "clearedDesc": "Cache model AI telah dipadam. Model akan dimuat turun semula apabila diperlukan.",
-      "clearFailed": "Gagal memadam cache"
+      "itemDeleted": "Item cache dipadam",
+      "clearFailed": "Gagal memadam cache",
+      "zImageAuxiliary": "Model tambahan Z-Image",
+      "zImageModels": "Model Z-Image",
+      "zImageBinary": "Binari Z-Image"
+    },
+    "downloads": {
+      "title": "Muat Turun",
+      "description": "Konfigurasi muat turun model AI",
+      "downloadTimeout": "Had Masa Muat Turun",
+      "downloadTimeoutDesc": "Masa menunggu maksimum semasa memuat turun model AI",
+      "minutes": "minit"
     },
     "updates": {
       "title": "Kemaskini",
@@ -427,9 +535,7 @@
     "about": {
       "title": "Tentang",
       "description": "WaveSpeed Desktop - Playground Model AI",
-      "mobileDescription": "WaveSpeed Mobile - Playground Model AI",
       "aboutText": "Aplikasi desktop sumber terbuka untuk menjalankan model AI dengan API WaveSpeed.",
-      "mobileAboutText": "Aplikasi mudah alih sumber terbuka untuk menjalankan model AI dengan API WaveSpeed.",
       "viewOnGitHub": "Lihat di GitHub"
     }
   },
@@ -487,7 +593,66 @@
       "eta": "~{{time}} lagi",
       "sideBySide": "Bersebelahan",
       "comparison": "Perbandingan gelongsor",
-      "dragToCompare": "Seret untuk membandingkan"
+      "dragToCompare": "Seret untuk membandingkan",
+      "enhanceFace": "Tingkatkan kualiti wajah"
+    },
+    "faceEnhancer": {
+      "title": "Penambah Baik Wajah",
+      "description": "Tingkatkan dan pulihkan kualiti wajah menggunakan AI",
+      "selectImage": "Pilih imej dengan wajah",
+      "orDragDrop": "atau seret dan lepas",
+      "enhance": "Tingkatkan",
+      "download": "Muat Turun",
+      "processing": "Memproses...",
+      "original": "Asal",
+      "enhanced": "Ditingkatkan",
+      "sideBySide": "Bersebelahan",
+      "comparison": "Perbandingan gelongsor",
+      "dragToCompare": "Seret untuk membandingkan",
+      "detecting": "Mengesan wajah",
+      "enhancing": "Meningkatkan wajah",
+      "noFaces": "Tiada wajah dikesan dalam imej",
+      "facesFound": "{{count}} wajah dikesan"
+    },
+    "faceSwapper": {
+      "title": "Penukar Wajah",
+      "description": "Tukar wajah antara imej menggunakan AI",
+      "sourceTitle": "Wajah Sumber",
+      "targetTitle": "Imej Sasaran",
+      "selectSource": "Pilih wajah sumber",
+      "selectTarget": "Pilih imej sasaran",
+      "sourceHint": "Identiti wajah untuk disalin",
+      "targetHint": "Imej di mana wajah akan diganti",
+      "orDragDrop": "or drag and drop",
+      "noSourceFace": "Tiada wajah dikesan dalam imej sumber",
+      "noTargetFaces": "Tiada wajah dikesan dalam imej sasaran",
+      "clickToSelect": "Klik pada wajah untuk memilih yang mana hendak ditukar",
+      "facesSelected": "{{selected}}/{{total}} wajah dipilih",
+      "sourceSelected": "Face {{selected}}/{{total}} selected",
+      "faceDetected": "Wajah dikesan",
+      "swapFaces": "Tukar Wajah",
+      "processing": "Memproses...",
+      "detecting": "Mengesan wajah",
+      "extractingEmbedding": "Mengekstrak identiti wajah",
+      "swapping": "Menukar wajah",
+      "enhancing": "Meningkatkan hasil",
+      "enableEnhancement": "Tingkatkan wajah yang ditukar",
+      "original": "Asal",
+      "result": "Hasil",
+      "download": "Muat turun",
+      "clickFaceToSwap": "Klik wajah untuk ditukar",
+      "swapFace": "Tukar Wajah",
+      "targetFace": "Wajah Sasaran",
+      "sourceFace": "Wajah Sumber",
+      "enhanceFace": "Tingkatkan kualiti wajah",
+      "swap": "Tukar",
+      "change": "Tukar",
+      "clickToSwapMore": "Klik wajah lain untuk meneruskan",
+      "swapped": "Ditukar",
+      "revert": "Kembalikan",
+      "swappedFace": "Wajah Ditukar",
+      "swappedFacePlaceholder": "Belum ditukar",
+      "alreadySwapped": "Sudah Ditukar"
     },
     "backgroundRemover": {
       "title": "Penyingkir Latar Belakang",
@@ -559,101 +724,88 @@
       "cutMask": "Potong Topeng",
       "hint": "Klik kiri untuk menyertakan, klik kanan untuk mengecualikan kawasan"
     },
+    "backWarning": {
+      "title": "Pemprosesan Sedang Berjalan",
+      "description": "Satu tugas sedang diproses. Adakah anda pasti mahu kembali? Ini akan membatalkan operasi semasa.",
+      "cancel": "Batal",
+      "confirm": "Kembali"
+    },
     "videoConverter": {
-      "title": "Penukar Video",
-      "description": "Tukar video antara format"
+      "title": "Video Converter",
+      "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
+      "selectVideo": "Select Video",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace video",
+      "supportedFormats": "Supports MP4, WebM, MOV, AVI, MKV",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "original": "Original",
+      "outputSettings": "Output Settings",
+      "format": "Format",
+      "quality": "Quality",
+      "resolution": "Resolution",
+      "convertedSize": "Converted Size"
     },
     "audioConverter": {
-      "title": "Penukar Audio",
-      "description": "Penukaran antara format MP3 dan WAV",
-      "selectAudio": "Klik atau seret fail MP3/WAV ke sini",
-      "supportedFormats": "Penukaran MP3 ↔ WAV",
-      "converting": "Menukar...",
-      "convert": "Tukar",
-      "download": "Muat turun",
-      "complete": "Selesai",
-      "outputFormat": "Format output",
-      "bitrate": "Kadar bit",
-      "noFileSelected": "Tiada fail dipilih"
+      "title": "Audio Converter",
+      "description": "Convert audio between formats (MP3, AAC, FLAC, WAV)",
+      "selectAudio": "Select Audio",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace audio",
+      "supportedFormats": "Supports MP3, M4A, OGG, WAV, FLAC",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "converted": "Converted",
+      "playOriginal": "Play original",
+      "playConverted": "Play converted"
     },
     "imageConverter": {
-      "title": "Penukar Imej",
-      "description": "Tukar imej ke JPG, PNG, atau WebP",
-      "selectImage": "Klik atau seret imej ke sini",
-      "supportedFormats": "Mana-mana imej → JPG/PNG/WebP",
-      "converting": "Menukar...",
-      "convert": "Tukar",
-      "download": "Muat turun",
-      "complete": "Selesai",
-      "outputFormat": "Format output",
-      "quality": "Kualiti",
-      "noFileSelected": "Tiada fail dipilih"
+      "title": "Image Converter",
+      "description": "Convert images between formats (JPG, PNG, WebP, GIF)",
+      "selectImages": "Select Images",
+      "orDragDrop": "or drag and drop",
+      "dropToAdd": "Drop to add images",
+      "supportedFormats": "Supports JPG, PNG, WebP, GIF, BMP",
+      "addMore": "Add More",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "quality": "Quality",
+      "downloadAll": "Download All"
     },
     "mediaTrimmer": {
-      "title": "Pemangkas Media",
-      "description": "Pangkas video dan audio mengikut panjang yang dikehendaki",
-      "selectMedia": "Seret fail media ke sini",
-      "supportedFormats": "Menyokong fail video dan audio",
-      "inputMedia": "Media input",
-      "selectMediaFile": "Pilih fail untuk dipangkas",
-      "trimSettings": "Tetapan pangkas",
-      "selectRange": "Pilih masa mula dan tamat",
-      "startTime": "Masa mula",
-      "endTime": "Masa tamat",
-      "timeFormat": "Format: m:ss.d atau saat",
-      "outputDuration": "Tempoh output",
-      "duration": "Tempoh",
-      "trim": "Pangkas",
-      "trimming": "Memangkas...",
-      "download": "Muat turun",
-      "newMedia": "Fail baharu",
-      "result": "Hasil pangkasan",
-      "invalidFile": "Sila pilih fail video atau audio yang sah",
-      "invalidRange": "Masa tamat mesti lebih besar daripada masa mula"
+      "title": "Media Trimmer",
+      "description": "Trim videos or audio to a specific duration",
+      "selectMedia": "Select Media",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace media",
+      "supportedFormats": "Supports video and audio files",
+      "trim": "Trim",
+      "trimming": "Trimming...",
+      "originalDuration": "Original",
+      "selectedDuration": "Selected",
+      "trimmedSize": "Trimmed Size",
+      "playingOriginal": "Playing original",
+      "playingTrimmed": "Playing trimmed"
     },
     "mediaMerger": {
-      "title": "Penggabung Media",
-      "description": "Gabungkan beberapa video atau audio menjadi satu",
-      "selectMedia": "Seret fail ke sini",
-      "supportedFormats": "Menyokong fail video dan audio",
-      "addFiles": "Tambah fail",
-      "inputFiles": "Fail input",
-      "dragToReorder": "Seret untuk menyusun semula",
-      "noFiles": "Tiada fail",
-      "addFilesDesc": "Tambah video atau audio untuk digabung",
-      "outputFormat": "Format output",
-      "merge": "Gabung",
-      "merging": "Menggabung...",
-      "download": "Muat turun",
-      "clear": "Kosongkan",
-      "result": "Hasil",
-      "invalidFile": "Sila pilih fail video atau audio yang sah",
-      "minFiles": "Tambah sekurang-kurangnya 2 fail untuk digabung"
+      "title": "Media Merger",
+      "description": "Merge multiple video or audio files into one",
+      "selectFiles": "Select Files",
+      "orDragDrop": "or drag and drop",
+      "dropToAdd": "Drop to add files",
+      "supportedFormats": "Supports video and audio files",
+      "addMore": "Add More",
+      "merge": "Merge",
+      "merging": "Merging...",
+      "merged": "Merged",
+      "totalDuration": "Total Duration",
+      "sameFormatNote": "Files must have the same format for lossless merging"
     },
-    "faceEnhancer": {
-      "title": "Penambah Baik Wajah",
-      "description": "Tambah baik dan pulihkan wajah dalam foto menggunakan AI",
-      "selectImage": "Klik atau seret imej ke sini",
-      "modelsInfo": "Menggunakan model AI YOLO + GFPGAN",
-      "inputImage": "Imej Input",
-      "selectImageWithFaces": "Pilih imej dengan wajah untuk ditambah baik",
-      "enhance": "Tambah Baik Wajah",
-      "enhancing": "Menambah baik wajah...",
-      "detecting": "Mengesan wajah...",
-      "downloading": "Memuat turun model...",
-      "loading": "Memuatkan model...",
-      "processing": "Memproses...",
-      "download": "Muat turun",
-      "newImage": "Imej Baharu",
-      "result": "Hasil Ditambah Baik",
-      "facesEnhanced": "{{count}} wajah ditambah baik",
-      "noFacesFound": "Tiada wajah dijumpai",
-      "invalidFile": "Sila pilih fail imej yang sah",
-      "firstTimeDownload": "Kali pertama? Model akan dimuat turun (~350MB)"
+    "ffmpeg": {
+      "loading": "Loading FFmpeg",
+      "converting": "Converting",
+      "merging": "Merging",
+      "trimming": "Trimming"
     }
-  },
-  "game": {
-    "waitingLong": "Menunggu lama? Main permainan mini!",
-    "clickToPlay": "Klik untuk mula"
   }
 }

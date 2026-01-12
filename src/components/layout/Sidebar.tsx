@@ -9,6 +9,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import {
+  Home,
   LayoutGrid,
   PlayCircle,
   FolderOpen,
@@ -34,6 +35,11 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage }: SidebarProps
 
   const navItems = [
     {
+      titleKey: 'nav.home',
+      href: '/',
+      icon: Home
+    },
+    {
       titleKey: 'nav.models',
       href: '/models',
       icon: LayoutGrid
@@ -58,6 +64,11 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage }: SidebarProps
       titleKey: 'nav.assets',
       href: '/assets',
       icon: FolderHeart
+    },
+    {
+      titleKey: 'nav.zImage',
+      href: '/z-image',
+      icon: Zap
     },
     {
       titleKey: 'nav.freeTools',

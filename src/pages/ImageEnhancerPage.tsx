@@ -1,11 +1,15 @@
-import { useState, useRef, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useRef, useCallback, useContext } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { PageResetContext } from '@/components/layout/Layout'
 import { useTranslation } from 'react-i18next'
+import { generateFreeToolFilename } from '@/stores/assetsStore'
 import { useUpscalerWorker } from '@/hooks/useUpscalerWorker'
+import { useFaceEnhancerWorker } from '@/hooks/useFaceEnhancerWorker'
 import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
 import { ProcessingProgress } from '@/components/shared/ProcessingProgress'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -13,7 +17,18 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog'
 import {
   ArrowLeft,
   Upload,
@@ -23,8 +38,7 @@ import {
   X,
   Columns2,
   SplitSquareHorizontal,
-  RefreshCw,
-  StopCircle
+  RefreshCw
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -33,14 +47,21 @@ type ViewMode = 'sideBySide' | 'comparison'
 type ModelType = 'slim' | 'medium' | 'thick'
 type ScaleType = '2x' | '3x' | '4x'
 
-// Phase configuration for image enhancer (simplified to single phase)
+// Phase configuration for image enhancer (face enhancement + upscale)
 const PHASES = [
-  { id: 'process', labelKey: 'freeTools.progress.processing', weight: 1.0 }
+  { id: 'face-download', labelKey: 'freeTools.progress.downloading', weight: 0.1 },
+  { id: 'face-loading', labelKey: 'freeTools.progress.loading', weight: 0.1 },
+  { id: 'face-detect', labelKey: 'freeTools.faceEnhancer.detecting', weight: 0.1 },
+  { id: 'face-enhance', labelKey: 'freeTools.faceEnhancer.enhancing', weight: 0.2 },
+  { id: 'upscale-download', labelKey: 'freeTools.progress.downloading', weight: 0.1 },
+  { id: 'upscale-process', labelKey: 'freeTools.progress.processing', weight: 0.4 }
 ]
 
 export function ImageEnhancerPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const location = useLocation()
+  const { resetPage } = useContext(PageResetContext)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const dragCounterRef = useRef(0)
@@ -59,10 +80,12 @@ export function ImageEnhancerPage() {
   } | null>(null)
   const [model, setModel] = useState<ModelType>('slim')
   const [scale, setScale] = useState<ScaleType>('2x')
+  const [enhanceFace, setEnhanceFace] = useState(false)
   const [downloadFormat, setDownloadFormat] = useState<'png' | 'jpeg' | 'webp'>(
     'jpeg'
   )
-  const [showPreview, setShowPreview] = useState(false)
+  const [previewImage, setPreviewImage] = useState<string | null>(null)
+  const [showBackWarning, setShowBackWarning] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>('sideBySide')
   const [sliderPosition, setSliderPosition] = useState(50)
   const comparisonRef = useRef<HTMLDivElement>(null)
@@ -73,6 +96,7 @@ export function ImageEnhancerPage() {
     progress,
     startPhase,
     updatePhase,
+    completePhase,
     reset: resetProgress,
     resetAndStart,
     complete: completeAllPhases
@@ -80,18 +104,18 @@ export function ImageEnhancerPage() {
 
   const [error, setError] = useState<string | null>(null)
 
-  const { loadModel, upscale, dispose, hasFailed, retryWorker, cancel } = useUpscalerWorker({
+  const { loadModel, upscale, dispose, hasFailed, retryWorker } = useUpscalerWorker({
     onPhase: (phase) => {
       // Start the corresponding phase when worker reports it
       if (phase === 'download') {
-        startPhase('download')
+        startPhase('upscale-download')
       } else if (phase === 'process') {
-        startPhase('process')
+        startPhase('upscale-process')
       }
     },
     onProgress: (phase, progressValue, detail) => {
       // Update the phase that worker reports
-      const phaseId = phase === 'download' ? 'download' : 'process'
+      const phaseId = phase === 'download' ? 'upscale-download' : 'upscale-process'
       updatePhase(phaseId, progressValue, detail)
     },
     onError: (err) => {
@@ -101,16 +125,66 @@ export function ImageEnhancerPage() {
     }
   })
 
+  const {
+    initModel: initFaceModel,
+    enhance: enhanceFaces,
+    dispose: disposeFaceEnhancer,
+    hasFailed: hasFaceFailed,
+    retryWorker: retryFaceWorker
+  } = useFaceEnhancerWorker({
+    onPhase: (phase) => {
+      if (phase === 'download') {
+        startPhase('face-download')
+      } else if (phase === 'loading') {
+        startPhase('face-loading')
+      } else if (phase === 'detect') {
+        startPhase('face-detect')
+      } else if (phase === 'enhance') {
+        startPhase('face-enhance')
+      }
+    },
+    onProgress: (phase, progressValue, detail) => {
+      const phaseId =
+        phase === 'download'
+          ? 'face-download'
+          : phase === 'loading'
+            ? 'face-loading'
+          : phase === 'detect'
+            ? 'face-detect'
+            : 'face-enhance'
+      updatePhase(phaseId, progressValue, detail)
+    },
+    onError: (err) => {
+      console.error('Face enhancer error:', err)
+      setError(err)
+      setIsProcessing(false)
+    }
+  })
+
   const handleRetry = useCallback(() => {
     setError(null)
     retryWorker()
-  }, [retryWorker])
+    retryFaceWorker()
+  }, [retryWorker, retryFaceWorker])
 
-  const handleCancel = useCallback(() => {
-    cancel()
-    setIsProcessing(false)
-    resetProgress()
-  }, [cancel, resetProgress])
+  const handleBack = useCallback(() => {
+    if (isProcessing) {
+      setShowBackWarning(true)
+    } else {
+      dispose()
+      disposeFaceEnhancer()
+      resetPage(location.pathname)
+      navigate('/free-tools')
+    }
+  }, [isProcessing, dispose, disposeFaceEnhancer, resetPage, location.pathname, navigate])
+
+  const handleConfirmBack = useCallback(() => {
+    setShowBackWarning(false)
+    dispose()
+    disposeFaceEnhancer()
+    resetPage(location.pathname)
+    navigate('/free-tools')
+  }, [dispose, disposeFaceEnhancer, resetPage, location.pathname, navigate])
 
   const handleFileSelect = useCallback(
     (file: File) => {
@@ -119,6 +193,7 @@ export function ImageEnhancerPage() {
       const reader = new FileReader()
       reader.onload = (e) => {
         const dataUrl = e.target?.result as string
+        setError(null)
         setOriginalImage(dataUrl)
         setEnhancedImage(null)
         setEnhancedSize(null)
@@ -232,7 +307,16 @@ export function ImageEnhancerPage() {
     if (!originalImage || !originalSize || !canvasRef.current) return
 
     setIsProcessing(true)
-    resetAndStart('process')
+    setError(null)
+    if (enhanceFace) {
+      resetAndStart('face-download')
+    } else {
+      resetAndStart('upscale-download')
+      completePhase('face-download')
+      completePhase('face-loading')
+      completePhase('face-detect')
+      completePhase('face-enhance')
+    }
 
     try {
       // Load the selected model in worker (cached by browser after first download)
@@ -254,20 +338,37 @@ export function ImageEnhancerPage() {
       tempCtx.drawImage(img, 0, 0)
       const imageData = tempCtx.getImageData(0, 0, img.width, img.height)
 
+      let baseImageData = imageData
+      if (enhanceFace) {
+        await initFaceModel()
+        const { dataUrl, faces } = await enhanceFaces(imageData)
+        if (faces === 0) {
+          setError(t('freeTools.faceEnhancer.noFaces'))
+        }
+
+        const faceImg = new Image()
+        await new Promise<void>((resolve, reject) => {
+          faceImg.onload = () => resolve()
+          faceImg.onerror = () => reject(new Error('Failed to load face enhanced image'))
+          faceImg.src = dataUrl
+        })
+        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height)
+        tempCtx.drawImage(faceImg, 0, 0)
+        baseImageData = tempCtx.getImageData(0, 0, img.width, img.height)
+      }
+
       // Upscale in worker
-      const upscaledDataUrl = await upscale(imageData)
+      const upscaledDataUrl = await upscale(baseImageData)
 
       // Get scale multiplier
       const scaleMultiplier = parseInt(scale.replace('x', ''))
 
-      // Set the enhanced image
-      setEnhancedImage(upscaledDataUrl)
       setEnhancedSize({
         width: originalSize.width * scaleMultiplier,
         height: originalSize.height * scaleMultiplier
       })
 
-      // Also draw to canvas for download format conversion
+      // Draw to canvas for face enhancement and download format conversion
       const canvas = canvasRef.current
       canvas.width = originalSize.width * scaleMultiplier
       canvas.height = originalSize.height * scaleMultiplier
@@ -281,12 +382,14 @@ export function ImageEnhancerPage() {
         resultImg.src = upscaledDataUrl
       })
 
+      // Set the enhanced image
+      setEnhancedImage(upscaledDataUrl)
+
       completeAllPhases()
     } catch (error) {
       console.error('Enhancement failed:', error)
     } finally {
       setIsProcessing(false)
-      dispose()
     }
   }
 
@@ -301,7 +404,7 @@ export function ImageEnhancerPage() {
 
     const link = document.createElement('a')
     link.href = dataUrl
-    link.download = `enhanced-image-${Date.now()}.${downloadFormat}`
+    link.download = generateFreeToolFilename('image-enhancer', downloadFormat)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -335,7 +438,7 @@ export function ImageEnhancerPage() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => navigate('/free-tools')}
+          onClick={handleBack}
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -439,23 +542,35 @@ export function ImageEnhancerPage() {
               </SelectContent>
             </Select>
 
-            {isProcessing ? (
-              <Button
-                onClick={handleCancel}
-                variant="destructive"
-              >
-                <StopCircle className="h-4 w-4 mr-2" />
-                {t('common.cancel')}
-              </Button>
-            ) : (
-              <Button
-                onClick={handleEnhance}
-                className="gradient-bg"
-              >
-                <ImageUp className="h-4 w-4 mr-2" />
-                {t('freeTools.imageEnhancer.enhance')}
-              </Button>
-            )}
+            <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
+              <Switch
+                id="image-enhancer-face-toggle"
+                checked={enhanceFace}
+                onCheckedChange={setEnhanceFace}
+                disabled={isProcessing}
+              />
+              <Label htmlFor="image-enhancer-face-toggle" className="text-xs whitespace-nowrap">
+                {t('freeTools.imageEnhancer.enhanceFace')}
+              </Label>
+            </div>
+
+            <Button
+              onClick={handleEnhance}
+              disabled={isProcessing}
+              className="gradient-bg"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {t('freeTools.imageEnhancer.processing')}
+                </>
+              ) : (
+                <>
+                  <ImageUp className="h-4 w-4 mr-2" />
+                  {t('freeTools.imageEnhancer.enhance')}
+                </>
+              )}
+            </Button>
             {enhancedImage && (
               <>
                 {/* View mode toggle */}
@@ -512,13 +627,20 @@ export function ImageEnhancerPage() {
           />
 
           {/* Error with retry button */}
-          {error && hasFailed() && !isProcessing && (
+          {error && (hasFailed() || hasFaceFailed()) && !isProcessing && (
             <div className="flex items-center justify-center gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-              <span className="text-sm text-destructive">{t('common.downloadFailed')}</span>
+              <span className="text-sm text-destructive">{error}</span>
               <Button variant="outline" size="sm" onClick={handleRetry}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 {t('common.retry')}
               </Button>
+            </div>
+          )}
+
+          {/* No faces warning (non-fatal) */}
+          {error && error === t('freeTools.faceEnhancer.noFaces') && !isProcessing && (
+            <div className="flex items-center justify-center gap-3 p-4 bg-warning/10 border border-warning/20 rounded-lg">
+              <span className="text-sm text-warning-foreground">{error}</span>
             </div>
           )}
 
@@ -539,11 +661,12 @@ export function ImageEnhancerPage() {
                       </span>
                     )}
                   </div>
-                  <div className="relative aspect-video bg-muted rounded-lg overflow-hidden flex items-center justify-center">
+                  <div className="relative bg-muted rounded-lg">
                     <img
                       src={originalImage}
                       alt="Original"
-                      className="max-w-full max-h-full object-contain"
+                      className="w-full max-h-[70vh] object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => setPreviewImage(originalImage)}
                     />
                   </div>
                 </CardContent>
@@ -562,16 +685,16 @@ export function ImageEnhancerPage() {
                       </span>
                     )}
                   </div>
-                  <div className="relative aspect-video bg-muted rounded-lg overflow-hidden flex items-center justify-center">
+                  <div className="relative bg-muted rounded-lg min-h-[200px] flex items-center justify-center">
                     {enhancedImage ? (
                       <img
                         src={enhancedImage}
                         alt="Enhanced"
-                        className="max-w-full max-h-full object-contain cursor-pointer hover:opacity-90 transition-opacity"
-                        onClick={() => setShowPreview(true)}
+                        className="w-full max-h-[70vh] object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => setPreviewImage(enhancedImage)}
                       />
                     ) : (
-                      <div className="flex flex-col items-center justify-center text-muted-foreground">
+                      <div className="flex flex-col items-center justify-center text-muted-foreground py-16">
                         {isProcessing ? (
                           <>
                             <Loader2 className="h-8 w-8 animate-spin mb-2" />
@@ -618,7 +741,7 @@ export function ImageEnhancerPage() {
                 </div>
                 <div
                   ref={comparisonRef}
-                  className="relative aspect-video bg-muted rounded-lg overflow-hidden cursor-ew-resize select-none"
+                  className="relative bg-muted rounded-lg overflow-hidden cursor-ew-resize select-none"
                   onMouseDown={handleSliderMouseDown}
                   onTouchStart={handleSliderTouchStart}
                 >
@@ -626,7 +749,7 @@ export function ImageEnhancerPage() {
                   <img
                     src={enhancedImage}
                     alt="Enhanced"
-                    className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                    className="w-full max-h-[70vh] object-contain pointer-events-none"
                     draggable={false}
                   />
 
@@ -634,7 +757,7 @@ export function ImageEnhancerPage() {
                   <img
                     src={originalImage}
                     alt="Original"
-                    className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                    className="absolute inset-0 w-full max-h-[70vh] object-contain pointer-events-none"
                     style={{
                       clipPath: `inset(0 ${100 - sliderPosition}% 0 0)`
                     }}
@@ -674,7 +797,7 @@ export function ImageEnhancerPage() {
       )}
 
       {/* Fullscreen Preview Dialog */}
-      <Dialog open={showPreview} onOpenChange={setShowPreview}>
+      <Dialog open={!!previewImage} onOpenChange={(open) => !open && setPreviewImage(null)}>
         <DialogContent
           className="w-screen h-screen max-w-none max-h-none p-0 border-0 bg-black flex items-center justify-center"
           hideCloseButton
@@ -684,19 +807,37 @@ export function ImageEnhancerPage() {
             variant="ghost"
             size="icon"
             className="absolute top-4 right-4 z-50 text-white hover:bg-white/20 h-10 w-10 [filter:drop-shadow(0_0_2px_rgba(0,0,0,0.8))_drop-shadow(0_0_4px_rgba(0,0,0,0.5))]"
-            onClick={() => setShowPreview(false)}
+            onClick={() => setPreviewImage(null)}
           >
             <X className="h-6 w-6" />
           </Button>
-          {enhancedImage && (
+          {previewImage && (
             <img
-              src={enhancedImage}
+              src={previewImage}
               alt="Fullscreen preview"
               className="max-w-full max-h-full object-contain"
             />
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Back Warning Dialog */}
+      <AlertDialog open={showBackWarning} onOpenChange={setShowBackWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('freeTools.backWarning.title')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('freeTools.backWarning.description')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('freeTools.backWarning.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmBack}>
+              {t('freeTools.backWarning.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

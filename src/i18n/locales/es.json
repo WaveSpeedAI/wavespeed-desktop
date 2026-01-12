@@ -34,14 +34,54 @@
     "downloadFailed": "La descarga falló. Por favor verifica tu conexión de red."
   },
   "nav": {
+    "home": "Inicio",
     "models": "Modelos",
     "playground": "Playground",
     "history": "Historial",
     "templates": "Plantillas",
     "assets": "Mis Recursos",
+    "zImage": "Z-Image",
     "freeTools": "Herramientas Gratis",
     "settings": "Configuración",
     "collapse": "Contraer"
+  },
+  "welcome": {
+    "tagline": "Herramientas Creativas de IA al Alcance de tu Mano",
+    "explore": "Explorar",
+    "getStarted": "Comenzar",
+    "tryFreeTools": "Probar Herramientas Gratis",
+    "features": {
+      "models": {
+        "title": "Explorador de Modelos",
+        "description": "Explora modelos de IA para generación de imágenes, video y audio"
+      },
+      "playground": {
+        "title": "Playground",
+        "description": "Espacio de trabajo con múltiples pestañas para ejecutar modelos con parámetros personalizados"
+      },
+      "templates": {
+        "title": "Plantillas",
+        "description": "Guarda y reutiliza tus configuraciones favoritas"
+      },
+      "history": {
+        "title": "Historial",
+        "description": "Rastrea y revisa tus predicciones recientes"
+      },
+      "assets": {
+        "title": "Mis Recursos",
+        "description": "Organiza y gestiona tus salidas generadas"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "Generación de imágenes con IA local: se ejecuta en tu dispositivo, no necesitas clave API",
+        "badge": "Local"
+      },
+      "freeTools": {
+        "title": "Herramientas Gratis",
+        "description": "Potentes herramientas de IA que se ejecutan localmente - sin necesidad de clave API",
+        "badge": "Gratis"
+      }
+    }
   },
   "models": {
     "title": "Modelos",
@@ -151,6 +191,40 @@
       "failedError": "Error al optimizar el prompt",
       "optimizing": "Optimizando...",
       "optimize": "Optimizar"
+    },
+    "flappyBird": {
+      "clickToStart": "Clic o presiona Espacio para iniciar un juego",
+      "viewResults": "Ver Resultados",
+      "playWhileWaiting": "Jugar mientras esperas",
+      "quit": "Salir"
+    },
+    "batch": {
+      "title": "Lote",
+      "enable": "Activar modo lote",
+      "disable": "Desactivar modo lote",
+      "repeatCount": "Cantidad",
+      "randomizeSeed": "Semilla aleatoria",
+      "stopOnError": "Detener en error",
+      "runBatch": "Ejecutar lote ({{count}})",
+      "running": "Ejecutando {{current}}/{{total}}...",
+      "cancelling": "Cancelando...",
+      "cancel": "Cancelar",
+      "completed": "{{count}} completados",
+      "failed": "{{count}} fallidos",
+      "downloadAll": "Descargar todo",
+      "saveAllToAssets": "Guardar todo",
+      "savedAll": "Guardado en recursos",
+      "savedAllDesc": "{{count}} salidas guardadas",
+      "saved": "Guardado",
+      "clearResults": "Limpiar",
+      "results": "Resultados",
+      "result": "Resultado",
+      "inputDetails": "Detalles de entrada",
+      "preview": "Vista previa",
+      "items": "elementos",
+      "noPreview": "Sin vista previa",
+      "seedsGenerated": "Semillas generadas automáticamente",
+      "settings": "Configuración de lote"
     }
   },
   "history": {
@@ -167,6 +241,17 @@
     "loadPreviews": "Cargar vistas previas",
     "disablePreviews": "Desactivar vistas previas",
     "generationDetails": "Detalles de generación",
+    "select": "Seleccionar",
+    "selectionDone": "Listo",
+    "deleteSelected": "Eliminar ({{count}})",
+    "bulkDeleteConfirmTitle": "Eliminar elementos del historial",
+    "bulkDeleteConfirmDesc": "¿Seguro que deseas eliminar {{count}} predicción(es)? Esta acción no se puede deshacer.",
+    "deleteConfirmTitle": "Eliminar elemento del historial",
+    "deleteConfirmDesc": "¿Seguro que deseas eliminar esta predicción? Esta acción no se puede deshacer.",
+    "deleted": "Elemento del historial eliminado",
+    "deletedBulk": "Elementos del historial eliminados",
+    "deletedBulkDesc": "Se eliminaron {{count}} elemento(s) del historial",
+    "deleteFailed": "No se pudo eliminar el elemento del historial",
     "model": "Modelo",
     "created": "Creado",
     "executionTime": "Tiempo de ejecución",
@@ -322,6 +407,43 @@
     "loadPreviews": "Cargar vistas previas",
     "disablePreviews": "Deshabilitar vistas previas"
   },
+  "zImage": {
+    "title": "Z-Image",
+    "subtitle": "Ejecuta Z-Image localmente gratis",
+    "generateImage": "Generar",
+    "generating": "Generando...",
+    "downloadingSd": "Descargando SD...",
+    "downloadingVae": "Descargando VAE...",
+    "downloadingLlm": "Descargando LLM...",
+    "downloadingZImage": "Descargando modelo...",
+    "stopGeneration": "Detener",
+    "models": {
+      "q4k": {
+        "description": "Recomendado: Inferencia rápida con buena calidad, ~2.5GB"
+      },
+      "q6k": {
+        "description": "Alta calidad: Mejores resultados, generación más lenta, ~3.5GB"
+      },
+      "q8": {
+        "description": "Máxima calidad: Máxima precisión, generación más lenta, ~4GB"
+      },
+      "q2k": {
+        "description": "Ligero: Generación más rápida, menor calidad, ~1.5GB"
+      }
+    },
+    "errors": {
+      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "generationCancelled": "Generación cancelada"
+    },
+    "tips": {
+      "intelMacUnsupported": "Z-Image local solo es compatible con Macs Apple Silicon.",
+      "linuxArmUnsupported": "Linux ARM no es compatible con Z-Image local.",
+      "windowsArmUnsupported": "Windows ARM no es compatible con Z-Image local.",
+      "linuxCpuOnly": "Z-Image local se ejecuta solo en CPU en Linux. Puede ser lento—reduce pasos o tamaño de imagen.",
+      "windowsVulkanRequired": "Z-Image local en Windows requiere controladores de GPU compatibles con Vulkan. Si no están disponibles, la generación puede ser lenta o fallar.",
+      "slowWithoutMetal": "La aceleración Metal no está disponible. La generación se ejecutará en CPU y puede ser lenta—reduce pasos o tamaño de imagen."
+    }
+  },
   "settings": {
     "title": "Configuración",
     "description": "Configura tu aplicación WaveSpeed Desktop",
@@ -341,6 +463,7 @@
       "invalidDesc": "No se pudo validar la clave API. Por favor verifica e intenta de nuevo.",
       "cleared": "Clave API eliminada",
       "clearedDesc": "Tu clave API ha sido eliminada.",
+      "itemDeleted": "Cache item deleted",
       "error": "Error",
       "errorDesc": "Error al guardar la clave API."
     },
@@ -394,7 +517,18 @@
       "clear": "Limpiar",
       "cleared": "Caché limpiada",
       "clearedDesc": "La caché de modelos de IA ha sido limpiada. Los modelos se descargarán nuevamente cuando sea necesario.",
-      "clearFailed": "Error al limpiar la caché"
+      "itemDeleted": "Elemento de caché eliminado",
+      "clearFailed": "Error al limpiar la caché",
+      "zImageAuxiliary": "Modelos auxiliares de Z-Image",
+      "zImageModels": "Modelos de Z-Image",
+      "zImageBinary": "Binario de Z-Image"
+    },
+    "downloads": {
+      "title": "Descargas",
+      "description": "Configurar descargas de modelos de IA",
+      "downloadTimeout": "Tiempo de espera de descarga",
+      "downloadTimeoutDesc": "Tiempo máximo de espera al descargar modelos de IA",
+      "minutes": "minutos"
     },
     "updates": {
       "title": "Actualizaciones",
@@ -487,7 +621,66 @@
       "eta": "~{{time}} restante",
       "sideBySide": "Lado a lado",
       "comparison": "Comparación deslizante",
-      "dragToCompare": "Arrastra para comparar"
+      "dragToCompare": "Arrastra para comparar",
+      "enhanceFace": "Mejorar calidad de cara"
+    },
+    "faceEnhancer": {
+      "title": "Mejorador de Rostros",
+      "description": "Mejora y restaura la calidad del rostro usando IA",
+      "selectImage": "Selecciona una imagen con rostros",
+      "orDragDrop": "o arrastra y suelta",
+      "enhance": "Mejorar",
+      "download": "Descargar",
+      "processing": "Procesando...",
+      "original": "Original",
+      "enhanced": "Mejorado",
+      "sideBySide": "Lado a lado",
+      "comparison": "Comparación deslizante",
+      "dragToCompare": "Arrastra para comparar",
+      "detecting": "Detectando rostros",
+      "enhancing": "Mejorando rostros",
+      "noFaces": "No se detectaron rostros en la imagen",
+      "facesFound": "{{count}} rostro(s) detectado(s)"
+    },
+    "faceSwapper": {
+      "title": "Intercambiador de Rostros",
+      "description": "Intercambia rostros entre imágenes usando IA",
+      "sourceTitle": "Rostro Fuente",
+      "targetTitle": "Imagen Destino",
+      "selectSource": "Seleccionar rostro fuente",
+      "selectTarget": "Seleccionar imagen destino",
+      "sourceHint": "La identidad del rostro a copiar",
+      "targetHint": "Imagen donde se reemplazarán los rostros",
+      "orDragDrop": "or drag and drop",
+      "noSourceFace": "No se detectó ningún rostro en la imagen fuente",
+      "noTargetFaces": "No se detectaron rostros en la imagen destino",
+      "clickToSelect": "Haz clic en los rostros para seleccionar cuáles intercambiar",
+      "facesSelected": "{{selected}}/{{total}} rostro(s) seleccionado(s)",
+      "sourceSelected": "Face {{selected}}/{{total}} selected",
+      "faceDetected": "Rostro detectado",
+      "swapFaces": "Intercambiar Rostros",
+      "processing": "Procesando...",
+      "detecting": "Detectando rostros",
+      "extractingEmbedding": "Extrayendo identidad del rostro",
+      "swapping": "Intercambiando rostro",
+      "enhancing": "Mejorando resultado",
+      "enableEnhancement": "Mejorar rostros intercambiados",
+      "original": "Original",
+      "result": "Resultado",
+      "download": "Descargar",
+      "clickFaceToSwap": "Haz clic en una cara para intercambiar",
+      "swapFace": "Intercambiar Cara",
+      "targetFace": "Cara de Destino",
+      "sourceFace": "Cara de Origen",
+      "enhanceFace": "Mejorar calidad de cara",
+      "swap": "Intercambiar",
+      "change": "Cambiar",
+      "clickToSwapMore": "Haz clic en otro rostro para continuar",
+      "swapped": "Intercambiado",
+      "revert": "Revertir",
+      "swappedFace": "Rostro Intercambiado",
+      "swappedFacePlaceholder": "Aún no intercambiado",
+      "alreadySwapped": "Ya Intercambiado"
     },
     "backgroundRemover": {
       "title": "Eliminador de Fondo",
@@ -650,6 +843,89 @@
       "finalizing": "Finalizando",
       "overall": "General",
       "remaining": "restante"
+    },
+    "backWarning": {
+      "title": "Procesamiento en Curso",
+      "description": "Una tarea está en proceso. ¿Estás seguro de que quieres volver? Esto cancelará la operación actual.",
+      "cancel": "Cancelar",
+      "confirm": "Volver"
+    },
+    "videoConverter": {
+      "title": "Conversor de Video",
+      "description": "Convierte videos entre formatos (MP4, WebM, MOV, AVI)",
+      "selectVideo": "Seleccionar Video",
+      "orDragDrop": "o arrastrar y soltar",
+      "dropToReplace": "Soltar para reemplazar video",
+      "supportedFormats": "Soporta MP4, WebM, MOV, AVI, MKV",
+      "convert": "Convertir",
+      "converting": "Convirtiendo...",
+      "original": "Original",
+      "outputSettings": "Configuración de Salida",
+      "format": "Formato",
+      "quality": "Calidad",
+      "resolution": "Resolución",
+      "convertedSize": "Tamaño Convertido"
+    },
+    "audioConverter": {
+      "title": "Conversor de Audio",
+      "description": "Convierte audio entre formatos (MP3, AAC, FLAC, WAV)",
+      "selectAudio": "Seleccionar Audio",
+      "orDragDrop": "o arrastrar y soltar",
+      "dropToReplace": "Soltar para reemplazar audio",
+      "supportedFormats": "Soporta MP3, M4A, OGG, WAV, FLAC",
+      "convert": "Convertir",
+      "converting": "Convirtiendo...",
+      "converted": "Convertido",
+      "playOriginal": "Reproducir original",
+      "playConverted": "Reproducir convertido"
+    },
+    "imageConverter": {
+      "title": "Conversor de Imágenes",
+      "description": "Convierte imágenes entre formatos (JPG, PNG, WebP, GIF)",
+      "selectImages": "Seleccionar Imágenes",
+      "orDragDrop": "o arrastrar y soltar",
+      "dropToAdd": "Soltar para añadir imágenes",
+      "supportedFormats": "Soporta JPG, PNG, WebP, GIF, BMP",
+      "addMore": "Añadir Más",
+      "convert": "Convertir",
+      "converting": "Convirtiendo...",
+      "quality": "Calidad",
+      "downloadAll": "Descargar Todo"
+    },
+    "mediaTrimmer": {
+      "title": "Recortador de Medios",
+      "description": "Recorta videos o audio a una duración específica",
+      "selectMedia": "Seleccionar Medio",
+      "orDragDrop": "o arrastrar y soltar",
+      "dropToReplace": "Soltar para reemplazar medio",
+      "supportedFormats": "Soporta archivos de video y audio",
+      "trim": "Recortar",
+      "trimming": "Recortando...",
+      "originalDuration": "Original",
+      "selectedDuration": "Seleccionado",
+      "trimmedSize": "Tamaño Recortado",
+      "playingOriginal": "Reproduciendo original",
+      "playingTrimmed": "Reproduciendo recortado"
+    },
+    "mediaMerger": {
+      "title": "Fusionador de Medios",
+      "description": "Fusiona múltiples archivos de video o audio en uno",
+      "selectFiles": "Seleccionar Archivos",
+      "orDragDrop": "o arrastrar y soltar",
+      "dropToAdd": "Soltar para añadir archivos",
+      "supportedFormats": "Soporta archivos de video y audio",
+      "addMore": "Añadir Más",
+      "merge": "Fusionar",
+      "merging": "Fusionando...",
+      "merged": "Fusionado",
+      "totalDuration": "Duración Total",
+      "sameFormatNote": "Los archivos deben tener el mismo formato para fusión sin pérdida"
+    },
+    "ffmpeg": {
+      "loading": "Cargando FFmpeg",
+      "converting": "Convirtiendo",
+      "merging": "Fusionando",
+      "trimming": "Recortando"
     }
   },
   "game": {

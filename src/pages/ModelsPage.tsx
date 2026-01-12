@@ -6,7 +6,7 @@ import { useModelsStore, type SortBy } from '@/stores/modelsStore'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
   Select,
@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Search, FileText, Loader2, RefreshCw, ArrowUp, ArrowDown, Globe, Star, X, Info } from 'lucide-react'
+import { Search, PlayCircle, Loader2, RefreshCw, ArrowUp, ArrowDown, ExternalLink, Star, X, Info } from 'lucide-react'
 import {
   HoverCard,
   HoverCardContent,
@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/hover-card'
 import { cn } from '@/lib/utils'
 import { fuzzySearch } from '@/lib/fuzzySearch'
+import { usePlaygroundStore } from '@/stores/playgroundStore'
 import type { Model } from '@/types/model'
 
 // Get accent color class based on model type (3 categories: image, video, other)
@@ -52,16 +53,14 @@ const ModelCard = memo(function ModelCard({
   model,
   isFavorite,
   onOpenPlayground,
-  onOpenDocs,
-  onOpenWaveSpeedPage,
+  onOpenInNewTab,
   onToggleFavorite,
   t
 }: {
   model: Model
   isFavorite: boolean
   onOpenPlayground: (modelId: string) => void
-  onOpenDocs: (e: React.MouseEvent, modelId: string) => void
-  onOpenWaveSpeedPage: (e: React.MouseEvent, modelId: string) => void
+  onOpenInNewTab: (e: React.MouseEvent, modelId: string) => void
   onToggleFavorite: (e: React.MouseEvent, modelId: string) => void
   t: (key: string) => string
 }) {
@@ -145,19 +144,22 @@ const ModelCard = memo(function ModelCard({
               size="sm"
               variant="ghost"
               className="h-7 w-7 p-0"
-              title={t('models.openDocs')}
-              onClick={(e) => onOpenDocs(e, model.model_id)}
+              title={t('common.open')}
+              onClick={(e) => {
+                e.stopPropagation()
+                onOpenPlayground(model.model_id)
+              }}
             >
-              <FileText className="h-3.5 w-3.5" />
+              <PlayCircle className="h-3.5 w-3.5" />
             </Button>
             <Button
               size="sm"
               variant="ghost"
               className="h-7 w-7 p-0"
-              onClick={(e) => onOpenWaveSpeedPage(e, model.model_id)}
-              title={t('models.openWaveSpeed')}
+              onClick={(e) => onOpenInNewTab(e, model.model_id)}
+              title={t('models.openInNewTab')}
             >
-              <Globe className="h-3.5 w-3.5" />
+              <ExternalLink className="h-3.5 w-3.5" />
             </Button>
           </div>
         </div>
@@ -242,7 +244,19 @@ export function ModelsPage() {
     selectedType,
     setSelectedType
   } = useModelsStore()
-  const { isLoading: isLoadingApiKey, isValidated } = useApiKeyStore()
+  const { isLoading: isLoadingApiKey, isValidated, loadApiKey, hasAttemptedLoad } = useApiKeyStore()
+  const { createTab } = usePlaygroundStore()
+
+  // Load API key and fetch models on mount
+  useEffect(() => {
+    loadApiKey()
+  }, [loadApiKey])
+
+  useEffect(() => {
+    if (isValidated) {
+      fetchModels()
+    }
+  }, [isValidated, fetchModels])
 
   // Memoize filtered models with proper dependencies
   const filteredModels = useMemo(() => {
@@ -344,24 +358,12 @@ export function ModelsPage() {
     navigate(`/playground/${encodeURIComponent(modelId)}`)
   }, [navigate])
 
-  const handleOpenDocs = useCallback((e: React.MouseEvent, modelId: string) => {
+  const handleOpenInNewTab = useCallback((e: React.MouseEvent, modelId: string) => {
     e.stopPropagation()
-    // Convert model_id (e.g., "kwaivgi/kling-v2.6-pro") to docs URL format
-    // Pattern: https://wavespeed.ai/docs/docs-api/{owner}/{model-name}
-    const parts = modelId.split('/')
-    const owner = parts[0]
-    const modelName = parts.slice(1).join('-') // Convert any remaining slashes to dashes
-    const docsUrl = `https://wavespeed.ai/docs/docs-api/${owner}/${modelName}`
-    window.open(docsUrl, '_blank')
-  }, [])
-
-  const handleOpenWaveSpeedPage = useCallback((e: React.MouseEvent, modelId: string) => {
-    e.stopPropagation()
-    // Pattern: https://wavespeed.ai/models/{model_id}
-    // e.g., https://wavespeed.ai/models/kwaivgi/kling-v2.6-pro
-    const modelUrl = `https://wavespeed.ai/models/${modelId}`
-    window.open(modelUrl, '_blank')
-  }, [])
+    const model = models.find(m => m.model_id === modelId)
+    createTab(model)
+    navigate(`/playground/${encodeURIComponent(modelId)}`)
+  }, [models, createTab, navigate])
 
   const handleToggleFavorite = useCallback((e: React.MouseEvent, modelId: string) => {
     e.stopPropagation()
@@ -369,27 +371,10 @@ export function ModelsPage() {
   }, [toggleFavorite])
 
   // Show loading state while API key is being loaded from storage
-  if (isLoadingApiKey) {
+  if (isLoadingApiKey || !hasAttemptedLoad) {
     return (
       <div className="flex h-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    )
-  }
-
-
-  if (!isValidated) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <Card className="max-w-md">
-          <CardHeader className="text-center">
-            <Loader2 className="mx-auto h-12 w-12 animate-spin text-muted-foreground" />
-            <CardTitle>{t('settings.apiKey.validating')}</CardTitle>
-            <CardDescription>
-              {t('common.loading')}
-            </CardDescription>
-          </CardHeader>
-        </Card>
       </div>
     )
   }
@@ -408,7 +393,7 @@ export function ModelsPage() {
             <h1 className="text-2xl font-bold tracking-tight">{t('models.title')}</h1>
             <p className="text-muted-foreground text-sm mt-0.5">{t('models.description')}</p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => fetchModels()}>
+          <Button variant="outline" size="sm" onClick={() => fetchModels(true)}>
             <RefreshCw className="mr-2 h-4 w-4" />
             {t('common.refresh')}
           </Button>
@@ -492,7 +477,7 @@ export function ModelsPage() {
         ) : error ? (
           <div className="text-center py-8">
             <p className="text-destructive text-sm">{error}</p>
-            <Button variant="outline" size="sm" className="mt-3" onClick={() => fetchModels()}>
+            <Button variant="outline" size="sm" className="mt-3" onClick={() => fetchModels(true)}>
               {t('errors.tryAgain')}
             </Button>
           </div>
@@ -529,8 +514,7 @@ export function ModelsPage() {
                         model={model}
                         isFavorite={isFavorite(model.model_id)}
                         onOpenPlayground={handleOpenPlayground}
-                        onOpenDocs={handleOpenDocs}
-                        onOpenWaveSpeedPage={handleOpenWaveSpeedPage}
+                        onOpenInNewTab={handleOpenInNewTab}
                         onToggleFavorite={handleToggleFavorite}
                         t={t}
                       />

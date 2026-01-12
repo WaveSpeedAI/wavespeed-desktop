@@ -1,6 +1,8 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useRef, useCallback, useEffect, useContext } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { PageResetContext } from '@/components/layout/Layout'
 import { useTranslation } from 'react-i18next'
+import { generateFreeToolFilename } from '@/stores/assetsStore'
 import { useImageEraserWorker } from '@/hooks/useImageEraserWorker'
 import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
 import { ProcessingProgress } from '@/components/shared/ProcessingProgress'
@@ -28,6 +30,16 @@ import {
 } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog'
+import {
   ArrowLeft,
   Upload,
   Download,
@@ -41,21 +53,24 @@ import {
   ZoomIn,
   ZoomOut,
   Maximize2,
-  RefreshCw,
-  StopCircle
+  RefreshCw
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type Tool = 'brush' | 'eraser'
 
-// Phase configuration for image eraser (simplified to single phase)
+// Phase configuration for image eraser
 const PHASES = [
-  { id: 'process', labelKey: 'freeTools.progress.processing', weight: 1.0 }
+  { id: 'download', labelKey: 'freeTools.progress.downloading', weight: 0.1 },
+  { id: 'loading', labelKey: 'freeTools.progress.loading', weight: 0.1 },
+  { id: 'process', labelKey: 'freeTools.progress.processing', weight: 0.8 }
 ]
 
 export function ImageEraserPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const location = useLocation()
+  const { resetPage } = useContext(PageResetContext)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const imageCanvasRef = useRef<HTMLCanvasElement>(null)
@@ -84,6 +99,7 @@ export function ImageEraserPage() {
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(null)
   const [downloadFormat, setDownloadFormat] = useState<'png' | 'jpeg' | 'webp'>('jpeg')
   const [previewImage, setPreviewImage] = useState<string | null>(null)
+  const [showBackWarning, setShowBackWarning] = useState(false)
   const [zoom, setZoom] = useState(1)
 
   // Multi-phase progress tracking
@@ -98,16 +114,18 @@ export function ImageEraserPage() {
 
   const [error, setError] = useState<string | null>(null)
 
-  const { initModel, removeObjects, dispose, hasFailed, retryWorker, cancel } = useImageEraserWorker({
+  const { initModel, removeObjects, dispose, hasFailed, retryWorker } = useImageEraserWorker({
     onPhase: (phase) => {
       if (phase === 'download') {
         startPhase('download')
+      } else if (phase === 'loading') {
+        startPhase('loading')
       } else if (phase === 'process') {
         startPhase('process')
       }
     },
     onProgress: (phase, progressValue, detail) => {
-      const phaseId = phase === 'download' ? 'download' : 'process'
+      const phaseId = phase === 'download' ? 'download' : phase === 'loading' ? 'loading' : 'process'
       updatePhase(phaseId, progressValue, detail)
     },
     onReady: () => {
@@ -125,11 +143,22 @@ export function ImageEraserPage() {
     retryWorker()
   }, [retryWorker])
 
-  const handleCancel = useCallback(() => {
-    cancel()
-    setIsProcessing(false)
-    resetProgress()
-  }, [cancel, resetProgress])
+  const handleBack = useCallback(() => {
+    if (isProcessing) {
+      setShowBackWarning(true)
+    } else {
+      dispose()
+      resetPage(location.pathname)
+      navigate('/free-tools')
+    }
+  }, [isProcessing, dispose, resetPage, location.pathname, navigate])
+
+  const handleConfirmBack = useCallback(() => {
+    setShowBackWarning(false)
+    dispose()
+    resetPage(location.pathname)
+    navigate('/free-tools')
+  }, [dispose, resetPage, location.pathname, navigate])
 
   // Measure available container size on mount and window resize
   useEffect(() => {
@@ -481,6 +510,7 @@ export function ImageEraserPage() {
     (file: File) => {
       if (!file.type.startsWith('image/')) return
 
+      setError(null)
       const reader = new FileReader()
       reader.onload = (e) => {
         const dataUrl = e.target?.result as string
@@ -552,7 +582,7 @@ export function ImageEraserPage() {
     }
 
     setIsProcessing(true)
-    resetAndStart('process')
+    resetAndStart('download')
 
     try {
       // Initialize model if not already done (instant if cached)
@@ -652,7 +682,7 @@ export function ImageEraserPage() {
 
     const link = document.createElement('a')
     link.href = dataUrl
-    link.download = `erased-${Date.now()}.${downloadFormat}`
+    link.download = generateFreeToolFilename('image-eraser', downloadFormat)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -721,7 +751,7 @@ export function ImageEraserPage() {
 
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/free-tools')}>
+        <Button variant="ghost" size="icon" onClick={handleBack}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
@@ -971,17 +1001,23 @@ export function ImageEraserPage() {
 
             <div className="flex-1" />
 
-            {isProcessing ? (
-              <Button onClick={handleCancel} variant="destructive">
-                <StopCircle className="h-4 w-4 mr-2" />
-                {t('common.cancel')}
-              </Button>
-            ) : (
-              <Button onClick={handleRemoveObjects} className="gradient-bg">
-                <Eraser className="h-4 w-4 mr-2" />
-                {t('freeTools.imageEraser.removeObjects')}
-              </Button>
-            )}
+            <Button
+              onClick={handleRemoveObjects}
+              disabled={isProcessing}
+              className="gradient-bg"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {t('freeTools.imageEraser.processing')}
+                </>
+              ) : (
+                <>
+                  <Eraser className="h-4 w-4 mr-2" />
+                  {t('freeTools.imageEraser.removeObjects')}
+                </>
+              )}
+            </Button>
           </div>
 
           {/* Progress display */}
@@ -1049,7 +1085,7 @@ export function ImageEraserPage() {
                 style={{ minHeight: Math.max(400, canvasSize.height * zoom + 16) }}
               >
                 <div
-                  className="relative"
+                  className="relative cursor-none"
                   style={{
                     width: canvasSize.width,
                     height: canvasSize.height,
@@ -1060,7 +1096,7 @@ export function ImageEraserPage() {
                 {/* Background image canvas - buffer at original res, displayed at canvasSize */}
                 <canvas
                   ref={imageCanvasRef}
-                  className="absolute inset-0 cursor-pointer"
+                  className="absolute inset-0 cursor-none"
                   style={{
                     width: canvasSize.width,
                     height: canvasSize.height,
@@ -1143,6 +1179,24 @@ export function ImageEraserPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Back Warning Dialog */}
+      <AlertDialog open={showBackWarning} onOpenChange={setShowBackWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('freeTools.backWarning.title')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('freeTools.backWarning.description')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('freeTools.backWarning.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmBack}>
+              {t('freeTools.backWarning.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

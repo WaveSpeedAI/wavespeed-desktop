@@ -2,7 +2,7 @@ import type { PredictionResult } from './prediction'
 
 export interface BatchConfig {
   enabled: boolean
-  repeatCount: number // 2-4 for mobile (limited for performance)
+  repeatCount: number // 2-16
   randomizeSeed: boolean // Auto-randomize seed for each run
   stopOnError: boolean // Stop batch on first error or continue
 }
@@ -35,16 +35,9 @@ export interface BatchResult {
   timing?: number
 }
 
-// Mobile-specific limits: max 4 repeats to avoid memory issues
 export const DEFAULT_BATCH_CONFIG: BatchConfig = {
   enabled: false,
-  repeatCount: 2, // Default to 2 for mobile
+  repeatCount: 4,
   randomizeSeed: true,
   stopOnError: false
-}
-
-// Mobile batch limits
-export const MOBILE_BATCH_LIMITS = {
-  minRepeat: 2,
-  maxRepeat: 4, // Limited to 4 for mobile (desktop is 16)
 }

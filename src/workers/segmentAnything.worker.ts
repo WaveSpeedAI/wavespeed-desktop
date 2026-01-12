@@ -1,6 +1,8 @@
 import { env, SamModel, AutoProcessor, RawImage, Tensor } from '@huggingface/transformers'
 
 env.allowLocalModels = false
+// Align WASM files with the @huggingface/transformers onnxruntime-web dependency.
+env.backends.onnx.wasm!.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0-dev.20250409-89f8206ba4/dist/'
 
 const MODEL_ID = 'Xenova/slimsam-77-uniform'
 
@@ -54,7 +56,8 @@ async function loadModel(id: number): Promise<void> {
     ])
   } catch (e) {
     if (device === 'webgpu') {
-      console.warn('WebGPU failed, falling back to WASM:', e)
+      const errorMsg = e instanceof Error ? e.message : String(e)
+      console.warn(`WebGPU model loading failed, falling back to WASM. Reason: ${errorMsg}`)
       device = 'wasm'
       ;[model, processor] = await Promise.all([
         SamModel.from_pretrained(MODEL_ID, { dtype: 'fp32', device: 'wasm', progress_callback } as Parameters<typeof SamModel.from_pretrained>[1]),

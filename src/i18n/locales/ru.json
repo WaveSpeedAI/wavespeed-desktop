@@ -34,14 +34,54 @@
     "downloadFailed": "Загрузка не удалась. Пожалуйста, проверьте сетевое подключение."
   },
   "nav": {
+    "home": "Главная",
     "models": "Модели",
     "playground": "Playground",
     "history": "История",
     "templates": "Шаблоны",
     "assets": "Мои Активы",
+    "zImage": "Z-Image",
     "freeTools": "Бесплатные Инструменты",
     "settings": "Настройки",
     "collapse": "Свернуть"
+  },
+  "welcome": {
+    "tagline": "ИИ-инструменты для творчества под рукой",
+    "explore": "Исследовать",
+    "getStarted": "Начать",
+    "tryFreeTools": "Попробовать бесплатные инструменты",
+    "features": {
+      "models": {
+        "title": "Браузер моделей",
+        "description": "Просматривайте ИИ-модели для генерации изображений, видео и аудио"
+      },
+      "playground": {
+        "title": "Playground",
+        "description": "Рабочее пространство с несколькими вкладками для запуска моделей с пользовательскими параметрами"
+      },
+      "templates": {
+        "title": "Шаблоны",
+        "description": "Сохраняйте и повторно используйте любимые конфигурации"
+      },
+      "history": {
+        "title": "История",
+        "description": "Отслеживайте и просматривайте последние предсказания"
+      },
+      "assets": {
+        "title": "Мои Активы",
+        "description": "Организуйте и управляйте сгенерированными выводами"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "Локальная генерация изображений ИИ — работает на вашем устройстве, ключ API не требуется",
+        "badge": "Локально"
+      },
+      "freeTools": {
+        "title": "Бесплатные Инструменты",
+        "description": "Мощные ИИ-инструменты, работающие локально - API-ключ не требуется",
+        "badge": "Бесплатно"
+      }
+    }
   },
   "models": {
     "title": "Модели",
@@ -151,6 +191,40 @@
       "failedError": "Не удалось оптимизировать промпт",
       "optimizing": "Оптимизация...",
       "optimize": "Оптимизировать"
+    },
+    "flappyBird": {
+      "clickToStart": "Нажмите или пробел чтобы начать игру",
+      "viewResults": "Посмотреть Результаты",
+      "playWhileWaiting": "Играть пока ждёте",
+      "quit": "Выход"
+    },
+    "batch": {
+      "title": "Пакет",
+      "enable": "Включить пакетный режим",
+      "disable": "Отключить пакетный режим",
+      "repeatCount": "Количество",
+      "randomizeSeed": "Случайный сид",
+      "stopOnError": "Остановить при ошибке",
+      "runBatch": "Запустить пакет ({{count}})",
+      "running": "Выполнение {{current}}/{{total}}...",
+      "cancelling": "Отмена...",
+      "cancel": "Отмена",
+      "completed": "{{count}} завершено",
+      "failed": "{{count}} неудачно",
+      "downloadAll": "Скачать все",
+      "saveAllToAssets": "Сохранить все",
+      "savedAll": "Сохранено в активы",
+      "savedAllDesc": "Сохранено {{count}} результатов",
+      "saved": "Сохранено",
+      "clearResults": "Очистить",
+      "results": "Результаты",
+      "result": "Результат",
+      "inputDetails": "Детали входных данных",
+      "preview": "Предпросмотр",
+      "items": "элементов",
+      "noPreview": "Предпросмотр недоступен",
+      "seedsGenerated": "Сиды сгенерированы автоматически",
+      "settings": "Настройки пакета"
     }
   },
   "history": {
@@ -167,6 +241,17 @@
     "loadPreviews": "Загрузить превью",
     "disablePreviews": "Отключить превью",
     "generationDetails": "Детали генерации",
+    "select": "Выбрать",
+    "selectionDone": "Готово",
+    "deleteSelected": "Удалить ({{count}})",
+    "bulkDeleteConfirmTitle": "Удалить элементы истории",
+    "bulkDeleteConfirmDesc": "Вы уверены, что хотите удалить {{count}} прогноз(ов)? Это действие нельзя отменить.",
+    "deleteConfirmTitle": "Удалить элемент истории",
+    "deleteConfirmDesc": "Вы уверены, что хотите удалить этот прогноз? Это действие нельзя отменить.",
+    "deleted": "Элемент истории удален",
+    "deletedBulk": "Элементы истории удалены",
+    "deletedBulkDesc": "Удалено элементов истории: {{count}}",
+    "deleteFailed": "Не удалось удалить элемент истории",
     "model": "Модель",
     "created": "Создано",
     "executionTime": "Время выполнения",
@@ -322,6 +407,43 @@
     "loadPreviews": "Загрузить превью",
     "disablePreviews": "Отключить превью"
   },
+  "zImage": {
+    "title": "Z-Image",
+    "subtitle": "Запустите Z-Image локально бесплатно",
+    "generateImage": "Генерировать",
+    "generating": "Генерация...",
+    "downloadingSd": "Загрузка SD...",
+    "downloadingVae": "Загрузка VAE...",
+    "downloadingLlm": "Загрузка LLM...",
+    "downloadingZImage": "Загрузка модели...",
+    "stopGeneration": "Остановить",
+    "models": {
+      "q4k": {
+        "description": "Рекомендуется: Быстрый вывод с хорошим качеством, ~2,5ГБ"
+      },
+      "q6k": {
+        "description": "Высокое качество: Лучшие результаты, более медленная генерация, ~3,5ГБ"
+      },
+      "q8": {
+        "description": "Максимальное качество: Максимальная точность, более медленная генерация, ~4ГБ"
+      },
+      "q2k": {
+        "description": "Легковесный: Самая быстрая генерация, более низкое качество, ~1,5ГБ"
+      }
+    },
+    "errors": {
+      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "generationCancelled": "Генерация отменена"
+    },
+    "tips": {
+      "intelMacUnsupported": "Локальный Z-Image поддерживается только на Mac с Apple Silicon.",
+      "linuxArmUnsupported": "Linux ARM не поддерживается для локального Z-Image.",
+      "windowsArmUnsupported": "Windows ARM не поддерживается для локального Z-Image.",
+      "linuxCpuOnly": "Локальный Z-Image на Linux работает только на CPU. Это может быть медленно — уменьшите шаги или размер изображения.",
+      "windowsVulkanRequired": "Локальный Z-Image на Windows требует драйверов GPU с поддержкой Vulkan. Если их нет, генерация может быть медленной или завершиться ошибкой.",
+      "slowWithoutMetal": "Ускорение Metal недоступно. Генерация будет выполняться на CPU и может быть медленной — уменьшите шаги или размер изображения."
+    }
+  },
   "settings": {
     "title": "Настройки",
     "description": "Настройка приложения WaveSpeed Desktop",
@@ -341,6 +463,7 @@
       "invalidDesc": "Не удалось проверить API-ключ. Проверьте и попробуйте снова.",
       "cleared": "API-ключ удалён",
       "clearedDesc": "Ваш API-ключ был удалён.",
+      "itemDeleted": "Cache item deleted",
       "error": "Ошибка",
       "errorDesc": "Не удалось сохранить API-ключ."
     },
@@ -394,7 +517,18 @@
       "clear": "Очистить",
       "cleared": "Кэш очищен",
       "clearedDesc": "Кэш моделей ИИ очищен. Модели будут загружены повторно при необходимости.",
-      "clearFailed": "Не удалось очистить кэш"
+      "itemDeleted": "Элемент кэша удалён",
+      "clearFailed": "Не удалось очистить кэш",
+      "zImageAuxiliary": "Вспомогательные модели Z-Image",
+      "zImageModels": "Модели Z-Image",
+      "zImageBinary": "Бинарный файл Z-Image"
+    },
+    "downloads": {
+      "title": "Загрузки",
+      "description": "Настройки загрузки моделей ИИ",
+      "downloadTimeout": "Таймаут загрузки",
+      "downloadTimeoutDesc": "Максимальное время ожидания загрузки моделей ИИ",
+      "minutes": "минут"
     },
     "updates": {
       "title": "Обновления",
@@ -487,7 +621,66 @@
       "eta": "~{{time}} осталось",
       "sideBySide": "Рядом",
       "comparison": "Сравнение ползунком",
-      "dragToCompare": "Перетащите для сравнения"
+      "dragToCompare": "Перетащите для сравнения",
+      "enhanceFace": "Улучшить качество лица"
+    },
+    "faceEnhancer": {
+      "title": "Улучшение лиц",
+      "description": "Улучшение и восстановление качества лиц с помощью ИИ",
+      "selectImage": "Выберите изображение с лицами",
+      "orDragDrop": "или перетащите",
+      "enhance": "Улучшить",
+      "download": "Скачать",
+      "processing": "Обработка...",
+      "original": "Оригинал",
+      "enhanced": "Улучшенное",
+      "sideBySide": "Рядом",
+      "comparison": "Сравнение ползунком",
+      "dragToCompare": "Перетащите для сравнения",
+      "detecting": "Обнаружение лиц",
+      "enhancing": "Улучшение лиц",
+      "noFaces": "Лица на изображении не обнаружены",
+      "facesFound": "Обнаружено {{count}} лиц(о/а)"
+    },
+    "faceSwapper": {
+      "title": "Замена лиц",
+      "description": "Меняйте лица между изображениями с помощью ИИ",
+      "sourceTitle": "Исходное лицо",
+      "targetTitle": "Целевое изображение",
+      "selectSource": "Выберите исходное лицо",
+      "selectTarget": "Выберите целевое изображение",
+      "sourceHint": "Идентичность лица для копирования",
+      "targetHint": "Изображение, где будут заменены лица",
+      "orDragDrop": "or drag and drop",
+      "noSourceFace": "Лицо не обнаружено в исходном изображении",
+      "noTargetFaces": "Лица не обнаружены в целевом изображении",
+      "clickToSelect": "Нажмите на лица, чтобы выбрать, какие заменить",
+      "facesSelected": "{{selected}}/{{total}} лиц(о/а) выбрано",
+      "sourceSelected": "Face {{selected}}/{{total}} selected",
+      "faceDetected": "Лицо обнаружено",
+      "swapFaces": "Заменить лица",
+      "processing": "Обработка...",
+      "detecting": "Обнаружение лиц",
+      "extractingEmbedding": "Извлечение идентичности лица",
+      "swapping": "Замена лица",
+      "enhancing": "Улучшение результата",
+      "enableEnhancement": "Улучшить замененные лица",
+      "original": "Оригинал",
+      "result": "Результат",
+      "download": "Скачать",
+      "clickFaceToSwap": "Нажмите на лицо для замены",
+      "swapFace": "Заменить лицо",
+      "targetFace": "Целевое лицо",
+      "sourceFace": "Исходное лицо",
+      "enhanceFace": "Улучшить качество лица",
+      "swap": "Заменить",
+      "change": "Изменить",
+      "clickToSwapMore": "Нажмите на другое лицо, чтобы продолжить",
+      "swapped": "Заменено",
+      "revert": "Отменить",
+      "swappedFace": "Замененное лицо",
+      "swappedFacePlaceholder": "Еще не заменено",
+      "alreadySwapped": "Уже заменено"
     },
     "backgroundRemover": {
       "title": "Удаление фона",
@@ -650,6 +843,89 @@
       "finalizing": "Завершение",
       "overall": "Общий",
       "remaining": "осталось"
+    },
+    "backWarning": {
+      "title": "Выполняется обработка",
+      "description": "Задача в процессе выполнения. Вы уверены, что хотите вернуться? Текущая операция будет отменена.",
+      "cancel": "Отмена",
+      "confirm": "Назад"
+    },
+    "videoConverter": {
+      "title": "Конвертер видео",
+      "description": "Конвертация видео между форматами (MP4, WebM, MOV, AVI)",
+      "selectVideo": "Выбрать видео",
+      "orDragDrop": "или перетащите сюда",
+      "dropToReplace": "Перетащите для замены видео",
+      "supportedFormats": "Поддерживает MP4, WebM, MOV, AVI, MKV",
+      "convert": "Конвертировать",
+      "converting": "Конвертация...",
+      "original": "Оригинал",
+      "outputSettings": "Настройки вывода",
+      "format": "Формат",
+      "quality": "Качество",
+      "resolution": "Разрешение",
+      "convertedSize": "Размер после конвертации"
+    },
+    "audioConverter": {
+      "title": "Конвертер аудио",
+      "description": "Конвертация аудио между форматами (MP3, AAC, FLAC, WAV)",
+      "selectAudio": "Выбрать аудио",
+      "orDragDrop": "или перетащите сюда",
+      "dropToReplace": "Перетащите для замены аудио",
+      "supportedFormats": "Поддерживает MP3, M4A, OGG, WAV, FLAC",
+      "convert": "Конвертировать",
+      "converting": "Конвертация...",
+      "converted": "Конвертировано",
+      "playOriginal": "Воспроизвести оригинал",
+      "playConverted": "Воспроизвести конвертированное"
+    },
+    "imageConverter": {
+      "title": "Конвертер изображений",
+      "description": "Конвертация изображений между форматами (JPG, PNG, WebP, GIF)",
+      "selectImages": "Выбрать изображения",
+      "orDragDrop": "или перетащите сюда",
+      "dropToAdd": "Перетащите для добавления изображений",
+      "supportedFormats": "Поддерживает JPG, PNG, WebP, GIF, BMP",
+      "addMore": "Добавить ещё",
+      "convert": "Конвертировать",
+      "converting": "Конвертация...",
+      "quality": "Качество",
+      "downloadAll": "Скачать все"
+    },
+    "mediaTrimmer": {
+      "title": "Обрезка медиа",
+      "description": "Обрезка видео или аудио до определённой длительности",
+      "selectMedia": "Выбрать медиа",
+      "orDragDrop": "или перетащите сюда",
+      "dropToReplace": "Перетащите для замены медиа",
+      "supportedFormats": "Поддерживает видео и аудио файлы",
+      "trim": "Обрезать",
+      "trimming": "Обрезка...",
+      "originalDuration": "Оригинал",
+      "selectedDuration": "Выбрано",
+      "trimmedSize": "Размер после обрезки",
+      "playingOriginal": "Воспроизведение оригинала",
+      "playingTrimmed": "Воспроизведение обрезанного"
+    },
+    "mediaMerger": {
+      "title": "Объединение медиа",
+      "description": "Объединение нескольких видео или аудио файлов в один",
+      "selectFiles": "Выбрать файлы",
+      "orDragDrop": "или перетащите сюда",
+      "dropToAdd": "Перетащите для добавления файлов",
+      "supportedFormats": "Поддерживает видео и аудио файлы",
+      "addMore": "Добавить ещё",
+      "merge": "Объединить",
+      "merging": "Объединение...",
+      "merged": "Объединено",
+      "totalDuration": "Общая длительность",
+      "sameFormatNote": "Файлы должны иметь одинаковый формат для объединения без потерь"
+    },
+    "ffmpeg": {
+      "loading": "Загрузка FFmpeg",
+      "converting": "Конвертация",
+      "merging": "Объединение",
+      "trimming": "Обрезка"
     }
   },
   "game": {

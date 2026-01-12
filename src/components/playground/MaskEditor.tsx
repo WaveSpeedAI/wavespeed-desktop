@@ -5,7 +5,6 @@ import { Slider } from '@/components/ui/slider'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Paintbrush, Eraser, PaintBucket, RefreshCw, Trash2, Undo2, Redo2, Loader2 } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import { floodFill, invertMask, clearCanvas, canvasToBlob, extractVideoFrame } from '@/lib/maskUtils'
 
 type Tool = 'brush' | 'eraser' | 'fill'
@@ -365,7 +364,7 @@ export function MaskEditor({
           ) : (
             <div
               ref={containerRef}
-              className="relative mx-auto"
+              className="relative mx-auto cursor-none"
               style={{ width: canvasSize.width, height: canvasSize.height }}
             >
               {/* Background canvas (reference image) */}
@@ -374,6 +373,7 @@ export function MaskEditor({
                 width={canvasSize.width}
                 height={canvasSize.height}
                 className="absolute inset-0 rounded-lg"
+                style={referenceImage ? undefined : { filter: 'brightness(1.2) contrast(1.02) saturate(1.05)' }}
               />
 
               {/* Mask canvas (drawing layer) */}
@@ -381,11 +381,8 @@ export function MaskEditor({
                 ref={maskCanvasRef}
                 width={canvasSize.width}
                 height={canvasSize.height}
-                className={cn(
-                  "absolute inset-0 rounded-lg",
-                  tool === 'fill' ? "cursor-cell" : "cursor-none"
-                )}
-                style={{ opacity: 0.7 }}
+                className="absolute inset-0 rounded-lg"
+                style={{ opacity: 0.4 }}
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}

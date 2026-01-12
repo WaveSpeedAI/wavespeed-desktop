@@ -4,10 +4,12 @@ import { HashRouter } from 'react-router-dom'
 import App from './App'
 import './index.css'
 import './i18n'
+// Inject the electronAPI mock in browser environments.
+import './lib/electronAPI.web'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <HashRouter>
+    <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <App />
     </HashRouter>
   </React.StrictMode>

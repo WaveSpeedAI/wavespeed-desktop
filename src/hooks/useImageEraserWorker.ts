@@ -1,5 +1,6 @@
 import { useRef, useCallback, useEffect } from 'react'
 import type { ProgressDetail } from '@/types/progress'
+import { getDownloadTimeoutMs } from '@/stores/settingsStore'
 
 interface WorkerMessage {
   type: 'phase' | 'progress' | 'ready' | 'result' | 'error' | 'disposed'
@@ -117,6 +118,12 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
     }
   }, [])
 
+  const ensureWorker = useCallback(() => {
+    if (!workerRef.current) {
+      createWorker()
+    }
+  }, [createWorker])
+
   // Initialize worker
   useEffect(() => {
     createWorker()
@@ -131,6 +138,8 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
 
   const initModel = useCallback((): Promise<void> => {
     return new Promise((resolve, reject) => {
+      ensureWorker()
+
       if (!workerRef.current) {
         reject(new Error('Worker not initialized'))
         return
@@ -157,10 +166,13 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
 
       workerRef.current.postMessage({
         type: 'init',
-        payload: { id }
+        payload: {
+          id,
+          timeout: getDownloadTimeoutMs()
+        }
       })
     })
-  }, [])
+  }, [ensureWorker])
 
   const removeObjects = useCallback(
     (
@@ -170,6 +182,8 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
       height: number
     ): Promise<EraserResult> => {
       return new Promise((resolve, reject) => {
+        ensureWorker()
+
         if (!workerRef.current) {
           reject(new Error('Worker not initialized'))
           return
@@ -207,11 +221,13 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
         )
       })
     },
-    []
+    [ensureWorker]
   )
 
   const dispose = useCallback(() => {
     workerRef.current?.postMessage({ type: 'dispose' })
+    workerRef.current?.terminate()
+    workerRef.current = null
     isInitializedRef.current = false
   }, [])
 

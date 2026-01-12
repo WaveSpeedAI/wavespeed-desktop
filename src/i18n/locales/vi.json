@@ -29,19 +29,58 @@
     "success": "Thành công",
     "warning": "Cảnh báo",
     "selectAll": "Chọn tất cả",
-    "deselectAll": "Bỏ chọn tất cả",
     "retry": "Thử lại",
     "downloadFailed": "Tải xuống thất bại. Vui lòng kiểm tra kết nối mạng của bạn."
   },
   "nav": {
+    "home": "Trang chủ",
     "models": "Mô hình",
     "playground": "Sân chơi",
     "history": "Lịch sử",
     "templates": "Mẫu",
     "assets": "Tài sản của tôi",
+    "zImage": "Z-Image",
     "freeTools": "Công cụ Miễn phí",
     "settings": "Cài đặt",
     "collapse": "Thu gọn"
+  },
+  "welcome": {
+    "tagline": "Công cụ Sáng tạo AI Trong Tầm Tay",
+    "explore": "Khám phá",
+    "getStarted": "Bắt đầu",
+    "tryFreeTools": "Dùng thử Công cụ Miễn phí",
+    "features": {
+      "models": {
+        "title": "Trình duyệt Mô hình",
+        "description": "Duyệt các mô hình AI để tạo hình ảnh, video và âm thanh"
+      },
+      "playground": {
+        "title": "Sân chơi",
+        "description": "Không gian làm việc đa tab để chạy mô hình với các tham số tùy chỉnh"
+      },
+      "templates": {
+        "title": "Mẫu",
+        "description": "Lưu và sử dụng lại các cấu hình yêu thích"
+      },
+      "history": {
+        "title": "Lịch sử",
+        "description": "Theo dõi và xem lại các dự đoán gần đây"
+      },
+      "assets": {
+        "title": "Tài sản của tôi",
+        "description": "Sắp xếp và quản lý các đầu ra đã tạo"
+      },
+      "zImage": {
+        "title": "Z-Image",
+        "description": "Tạo ảnh AI cục bộ - chạy trên thiết bị của bạn, không cần khóa API",
+        "badge": "Cục bộ"
+      },
+      "freeTools": {
+        "title": "Công cụ Miễn phí",
+        "description": "Công cụ AI mạnh mẽ chạy cục bộ - không cần khóa API",
+        "badge": "Miễn phí"
+      }
+    }
   },
   "models": {
     "title": "Mô hình",
@@ -151,6 +190,40 @@
       "failedError": "Không thể tối ưu hóa prompt",
       "optimizing": "Đang tối ưu...",
       "optimize": "Tối ưu hóa"
+    },
+    "batch": {
+      "title": "Lô",
+      "enable": "Bật chế độ lô",
+      "disable": "Tắt chế độ lô",
+      "repeatCount": "Số lượng",
+      "randomizeSeed": "Seed ngẫu nhiên",
+      "stopOnError": "Dừng khi lỗi",
+      "runBatch": "Chạy lô ({{count}})",
+      "running": "Đang chạy {{current}}/{{total}}...",
+      "cancelling": "Đang hủy...",
+      "cancel": "Hủy",
+      "completed": "{{count}} hoàn thành",
+      "failed": "{{count}} thất bại",
+      "downloadAll": "Tải tất cả",
+      "saveAllToAssets": "Lưu tất cả",
+      "savedAll": "Đã lưu vào tài sản",
+      "savedAllDesc": "Đã lưu {{count}} đầu ra",
+      "saved": "Đã lưu",
+      "clearResults": "Xóa",
+      "results": "Kết quả",
+      "result": "Kết quả",
+      "inputDetails": "Chi tiết đầu vào",
+      "preview": "Xem trước",
+      "items": "mục",
+      "noPreview": "Không có xem trước",
+      "seedsGenerated": "Seed được tạo tự động",
+      "settings": "Cài đặt lô"
+    },
+    "flappyBird": {
+      "clickToStart": "Nhấp hoặc nhấn Space để bắt đầu trò chơi",
+      "viewResults": "Xem kết quả",
+      "playWhileWaiting": "Chơi trong khi chờ",
+      "quit": "Thoát"
     }
   },
   "history": {
@@ -167,36 +240,23 @@
     "loadPreviews": "Tải xem trước",
     "disablePreviews": "Tắt xem trước",
     "generationDetails": "Chi tiết tạo",
+    "select": "Chọn",
+    "selectionDone": "Xong",
+    "deleteSelected": "Xóa ({{count}})",
+    "bulkDeleteConfirmTitle": "Xóa mục lịch sử",
+    "bulkDeleteConfirmDesc": "Bạn có chắc muốn xóa {{count}} dự đoán không? Hành động này không thể hoàn tác.",
+    "deleteConfirmTitle": "Xóa mục lịch sử",
+    "deleteConfirmDesc": "Bạn có chắc muốn xóa dự đoán này không? Hành động này không thể hoàn tác.",
+    "deleted": "Đã xóa mục lịch sử",
+    "deletedBulk": "Đã xóa các mục lịch sử",
+    "deletedBulkDesc": "Đã xóa {{count}} mục lịch sử",
+    "deleteFailed": "Xóa mục lịch sử thất bại",
     "model": "Mô hình",
     "created": "Đã tạo",
     "executionTime": "Thời gian thực thi",
     "predictionId": "ID dự đoán",
     "notAvailable": "Lịch sử không khả dụng",
-    "notAvailableDesc": "API lịch sử dự đoán hiện không khả dụng.",
-    "saveTemplate": {
-      "button": "Lưu làm mẫu",
-      "dialogTitle": "Lưu làm mẫu",
-      "nameLabel": "Tên mẫu",
-      "namePlaceholder": "Nhập tên mẫu",
-      "duplicateName": "Đã tồn tại mẫu với tên này",
-      "success": "Đã lưu mẫu",
-      "successDesc": "Mẫu của bạn đã được lưu thành công",
-      "error": "Lưu thất bại",
-      "noInputsTitle": "Không thể lưu mẫu",
-      "noInputsDesc": "Tham số đầu vào chỉ khả dụng cho các dự đoán được thực hiện trong ứng dụng này. Hãy thử chạy một dự đoán mới trước."
-    },
-    "hasInputs": "Có thể lưu làm mẫu",
-    "select": "Chọn",
-    "selectionDone": "Xong",
-    "deleteSelected": "Xóa",
-    "bulkDeleteConfirmTitle": "Xóa dự đoán",
-    "bulkDeleteConfirmDesc": "Bạn có chắc chắn muốn xóa {{count}} dự đoán không? Hành động này không thể hoàn tác.",
-    "deleteConfirmTitle": "Xóa dự đoán",
-    "deleteConfirmDesc": "Bạn có chắc chắn muốn xóa dự đoán này không? Hành động này không thể hoàn tác.",
-    "deleted": "Đã xóa dự đoán",
-    "deletedBulk": "Đã xóa các dự đoán",
-    "deletedBulkDesc": "Đã xóa {{count}} dự đoán",
-    "deleteFailed": "Xóa dự đoán thất bại"
+    "notAvailableDesc": "API lịch sử dự đoán hiện không khả dụng."
   },
   "templates": {
     "title": "Mẫu",
@@ -322,10 +382,46 @@
     "loadPreviews": "Tải xem trước",
     "disablePreviews": "Tắt xem trước"
   },
+  "zImage": {
+    "title": "Z-Image",
+    "subtitle": "Chạy Z-Image cục bộ miễn phí",
+    "generateImage": "Tạo",
+    "generating": "Đang tạo...",
+    "downloadingSd": "Đang tải xuống SD...",
+    "downloadingVae": "Đang tải xuống VAE...",
+    "downloadingLlm": "Đang tải xuống LLM...",
+    "downloadingZImage": "Đang tải xuống Mô hình...",
+    "stopGeneration": "Dừng",
+    "models": {
+      "q4k": {
+        "description": "Được đề xuất: Suy luận nhanh với chất lượng tốt, ~2.5GB"
+      },
+      "q6k": {
+        "description": "Chất lượng cao: Kết quả tốt nhất, tạo chậm hơn, ~3.5GB"
+      },
+      "q8": {
+        "description": "Chất lượng cao nhất: Độ chính xác tối đa, tạo chậm hơn, ~4GB"
+      },
+      "q2k": {
+        "description": "Nhẹ: Tạo nhanh nhất, chất lượng thấp hơn, ~1.5GB"
+      }
+    },
+    "errors": {
+      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "generationCancelled": "Đã hủy tạo"
+    },
+    "tips": {
+      "intelMacUnsupported": "Z-Image cục bộ chỉ hỗ trợ trên Mac Apple Silicon.",
+      "linuxArmUnsupported": "Linux ARM không được hỗ trợ cho Z-Image cục bộ.",
+      "windowsArmUnsupported": "Windows ARM không được hỗ trợ cho Z-Image cục bộ.",
+      "linuxCpuOnly": "Z-Image cục bộ trên Linux chỉ chạy bằng CPU. Có thể chậm—giảm số bước hoặc kích thước ảnh.",
+      "windowsVulkanRequired": "Z-Image cục bộ trên Windows yêu cầu trình điều khiển GPU hỗ trợ Vulkan. Nếu không có, quá trình tạo có thể chậm hoặc thất bại.",
+      "slowWithoutMetal": "Không có tăng tốc Metal. Quá trình tạo sẽ chạy trên CPU và có thể chậm—giảm số bước hoặc kích thước ảnh."
+    }
+  },
   "settings": {
     "title": "Cài đặt",
     "description": "Cấu hình ứng dụng WaveSpeed Desktop",
-    "mobileDescription": "Cấu hình ứng dụng WaveSpeed Mobile",
     "apiKey": {
       "title": "Khóa API",
       "description": "Nhập khóa API WaveSpeed để truy cập các mô hình",
@@ -341,6 +437,7 @@
       "invalidDesc": "Không thể xác thực khóa API. Vui lòng kiểm tra và thử lại.",
       "cleared": "Đã xóa khóa API",
       "clearedDesc": "Khóa API của bạn đã được xóa.",
+      "itemDeleted": "Cache item deleted",
       "error": "Lỗi",
       "errorDesc": "Không thể lưu khóa API."
     },
@@ -394,7 +491,18 @@
       "clear": "Xóa",
       "cleared": "Đã xóa bộ nhớ đệm",
       "clearedDesc": "Bộ nhớ đệm mô hình AI đã được xóa. Các mô hình sẽ được tải xuống lại khi cần.",
-      "clearFailed": "Không thể xóa bộ nhớ đệm"
+      "itemDeleted": "Đã xóa mục bộ nhớ đệm",
+      "clearFailed": "Không thể xóa bộ nhớ đệm",
+      "zImageAuxiliary": "Mô hình phụ trợ Z-Image",
+      "zImageModels": "Mô hình Z-Image",
+      "zImageBinary": "Tệp nhị phân Z-Image"
+    },
+    "downloads": {
+      "title": "Tải xuống",
+      "description": "Cấu hình tải xuống mô hình AI",
+      "downloadTimeout": "Thời gian chờ tải xuống",
+      "downloadTimeoutDesc": "Thời gian chờ tối đa khi tải xuống các mô hình AI",
+      "minutes": "phút"
     },
     "updates": {
       "title": "Cập nhật",
@@ -427,9 +535,7 @@
     "about": {
       "title": "Giới thiệu",
       "description": "WaveSpeed Desktop - Sân chơi mô hình AI",
-      "mobileDescription": "WaveSpeed Mobile - Sân chơi mô hình AI",
       "aboutText": "Ứng dụng desktop mã nguồn mở để chạy mô hình AI với WaveSpeed API.",
-      "mobileAboutText": "Ứng dụng di động mã nguồn mở để chạy mô hình AI với WaveSpeed API.",
       "viewOnGitHub": "Xem trên GitHub"
     }
   },
@@ -487,7 +593,66 @@
       "eta": "~{{time}} còn lại",
       "sideBySide": "Cạnh nhau",
       "comparison": "So sánh trượt",
-      "dragToCompare": "Kéo để so sánh"
+      "dragToCompare": "Kéo để so sánh",
+      "enhanceFace": "Nâng cao chất lượng khuôn mặt"
+    },
+    "faceEnhancer": {
+      "title": "Cải thiện Khuôn mặt",
+      "description": "Cải thiện và phục hồi chất lượng khuôn mặt bằng AI",
+      "selectImage": "Chọn hình ảnh có khuôn mặt",
+      "orDragDrop": "hoặc kéo thả",
+      "enhance": "Cải thiện",
+      "download": "Tải xuống",
+      "processing": "Đang xử lý...",
+      "original": "Gốc",
+      "enhanced": "Đã cải thiện",
+      "sideBySide": "Cạnh nhau",
+      "comparison": "So sánh trượt",
+      "dragToCompare": "Kéo để so sánh",
+      "detecting": "Đang phát hiện khuôn mặt",
+      "enhancing": "Đang cải thiện khuôn mặt",
+      "noFaces": "Không phát hiện khuôn mặt trong hình ảnh",
+      "facesFound": "Phát hiện {{count}} khuôn mặt"
+    },
+    "faceSwapper": {
+      "title": "Hoán đổi Khuôn mặt",
+      "description": "Hoán đổi khuôn mặt giữa các hình ảnh bằng AI",
+      "sourceTitle": "Khuôn mặt Nguồn",
+      "targetTitle": "Hình ảnh Đích",
+      "selectSource": "Chọn khuôn mặt nguồn",
+      "selectTarget": "Chọn hình ảnh đích",
+      "sourceHint": "Danh tính khuôn mặt cần sao chép",
+      "targetHint": "Hình ảnh nơi các khuôn mặt sẽ được thay thế",
+      "orDragDrop": "or drag and drop",
+      "noSourceFace": "Không phát hiện khuôn mặt trong hình ảnh nguồn",
+      "noTargetFaces": "Không phát hiện khuôn mặt trong hình ảnh đích",
+      "clickToSelect": "Nhấp vào các khuôn mặt để chọn khuôn mặt cần hoán đổi",
+      "facesSelected": "Đã chọn {{selected}}/{{total}} khuôn mặt",
+      "sourceSelected": "Face {{selected}}/{{total}} selected",
+      "faceDetected": "Đã phát hiện khuôn mặt",
+      "swapFaces": "Hoán đổi Khuôn mặt",
+      "processing": "Đang xử lý...",
+      "detecting": "Đang phát hiện khuôn mặt",
+      "extractingEmbedding": "Đang trích xuất danh tính khuôn mặt",
+      "swapping": "Đang hoán đổi khuôn mặt",
+      "enhancing": "Đang cải thiện kết quả",
+      "enableEnhancement": "Cải thiện khuôn mặt đã hoán đổi",
+      "original": "Gốc",
+      "result": "Kết quả",
+      "download": "Tải xuống",
+      "clickFaceToSwap": "Nhấp vào khuôn mặt để hoán đổi",
+      "swapFace": "Hoán Đổi Khuôn Mặt",
+      "targetFace": "Khuôn Mặt Đích",
+      "sourceFace": "Khuôn Mặt Nguồn",
+      "enhanceFace": "Nâng cao chất lượng khuôn mặt",
+      "swap": "Hoán đổi",
+      "change": "Thay đổi",
+      "clickToSwapMore": "Nhấp vào khuôn mặt khác để tiếp tục",
+      "swapped": "Đã hoán đổi",
+      "revert": "Hoàn tác",
+      "swappedFace": "Khuôn mặt đã hoán đổi",
+      "swappedFacePlaceholder": "Chưa hoán đổi",
+      "alreadySwapped": "Đã hoán đổi"
     },
     "backgroundRemover": {
       "title": "Xóa Nền",
@@ -559,101 +724,88 @@
       "cutMask": "Cắt Mặt nạ",
       "hint": "Nhấp chuột trái để bao gồm, nhấp chuột phải để loại trừ vùng"
     },
+    "backWarning": {
+      "title": "Đang Xử Lý",
+      "description": "Một tác vụ đang được xử lý. Bạn có chắc chắn muốn quay lại? Điều này sẽ hủy thao tác hiện tại.",
+      "cancel": "Hủy",
+      "confirm": "Quay Lại"
+    },
     "videoConverter": {
-      "title": "Chuyển đổi Video",
-      "description": "Chuyển đổi video giữa các định dạng"
+      "title": "Video Converter",
+      "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
+      "selectVideo": "Select Video",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace video",
+      "supportedFormats": "Supports MP4, WebM, MOV, AVI, MKV",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "original": "Original",
+      "outputSettings": "Output Settings",
+      "format": "Format",
+      "quality": "Quality",
+      "resolution": "Resolution",
+      "convertedSize": "Converted Size"
     },
     "audioConverter": {
-      "title": "Chuyển đổi Âm thanh",
-      "description": "Chuyển đổi giữa định dạng MP3 và WAV",
-      "selectAudio": "Nhấp hoặc kéo tệp MP3/WAV vào đây",
-      "supportedFormats": "Chuyển đổi MP3 ↔ WAV",
-      "converting": "Đang chuyển đổi...",
-      "convert": "Chuyển đổi",
-      "download": "Tải xuống",
-      "complete": "Hoàn thành",
-      "outputFormat": "Định dạng đầu ra",
-      "bitrate": "Tốc độ bit",
-      "noFileSelected": "Chưa chọn tệp"
+      "title": "Audio Converter",
+      "description": "Convert audio between formats (MP3, AAC, FLAC, WAV)",
+      "selectAudio": "Select Audio",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace audio",
+      "supportedFormats": "Supports MP3, M4A, OGG, WAV, FLAC",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "converted": "Converted",
+      "playOriginal": "Play original",
+      "playConverted": "Play converted"
     },
     "imageConverter": {
-      "title": "Chuyển đổi Hình ảnh",
-      "description": "Chuyển đổi hình ảnh sang JPG, PNG hoặc WebP",
-      "selectImage": "Nhấp hoặc kéo hình ảnh vào đây",
-      "supportedFormats": "Bất kỳ hình ảnh → JPG/PNG/WebP",
-      "converting": "Đang chuyển đổi...",
-      "convert": "Chuyển đổi",
-      "download": "Tải xuống",
-      "complete": "Hoàn thành",
-      "outputFormat": "Định dạng đầu ra",
-      "quality": "Chất lượng",
-      "noFileSelected": "Chưa chọn tệp"
+      "title": "Image Converter",
+      "description": "Convert images between formats (JPG, PNG, WebP, GIF)",
+      "selectImages": "Select Images",
+      "orDragDrop": "or drag and drop",
+      "dropToAdd": "Drop to add images",
+      "supportedFormats": "Supports JPG, PNG, WebP, GIF, BMP",
+      "addMore": "Add More",
+      "convert": "Convert",
+      "converting": "Converting...",
+      "quality": "Quality",
+      "downloadAll": "Download All"
     },
     "mediaTrimmer": {
-      "title": "Cắt phương tiện",
-      "description": "Cắt video và âm thanh theo độ dài mong muốn",
-      "selectMedia": "Kéo tệp phương tiện vào đây",
-      "supportedFormats": "Hỗ trợ tệp video và âm thanh",
-      "inputMedia": "Phương tiện đầu vào",
-      "selectMediaFile": "Chọn tệp để cắt",
-      "trimSettings": "Cài đặt cắt",
-      "selectRange": "Chọn thời gian bắt đầu và kết thúc",
-      "startTime": "Thời gian bắt đầu",
-      "endTime": "Thời gian kết thúc",
-      "timeFormat": "Định dạng: m:ss.d hoặc giây",
-      "outputDuration": "Thời lượng đầu ra",
-      "duration": "Thời lượng",
-      "trim": "Cắt",
-      "trimming": "Đang cắt...",
-      "download": "Tải xuống",
-      "newMedia": "Tệp mới",
-      "result": "Kết quả cắt",
-      "invalidFile": "Vui lòng chọn tệp video hoặc âm thanh hợp lệ",
-      "invalidRange": "Thời gian kết thúc phải lớn hơn thời gian bắt đầu"
+      "title": "Media Trimmer",
+      "description": "Trim videos or audio to a specific duration",
+      "selectMedia": "Select Media",
+      "orDragDrop": "or drag and drop",
+      "dropToReplace": "Drop to replace media",
+      "supportedFormats": "Supports video and audio files",
+      "trim": "Trim",
+      "trimming": "Trimming...",
+      "originalDuration": "Original",
+      "selectedDuration": "Selected",
+      "trimmedSize": "Trimmed Size",
+      "playingOriginal": "Playing original",
+      "playingTrimmed": "Playing trimmed"
     },
     "mediaMerger": {
-      "title": "Ghép phương tiện",
-      "description": "Kết hợp nhiều video hoặc âm thanh thành một",
-      "selectMedia": "Kéo tệp vào đây",
-      "supportedFormats": "Hỗ trợ tệp video và âm thanh",
-      "addFiles": "Thêm tệp",
-      "inputFiles": "Tệp đầu vào",
-      "dragToReorder": "Kéo để sắp xếp lại",
-      "noFiles": "Không có tệp",
-      "addFilesDesc": "Thêm video hoặc âm thanh để ghép",
-      "outputFormat": "Định dạng đầu ra",
-      "merge": "Ghép",
-      "merging": "Đang ghép...",
-      "download": "Tải xuống",
-      "clear": "Xóa",
-      "result": "Kết quả",
-      "invalidFile": "Vui lòng chọn tệp video hoặc âm thanh hợp lệ",
-      "minFiles": "Thêm ít nhất 2 tệp để ghép"
+      "title": "Media Merger",
+      "description": "Merge multiple video or audio files into one",
+      "selectFiles": "Select Files",
+      "orDragDrop": "or drag and drop",
+      "dropToAdd": "Drop to add files",
+      "supportedFormats": "Supports video and audio files",
+      "addMore": "Add More",
+      "merge": "Merge",
+      "merging": "Merging...",
+      "merged": "Merged",
+      "totalDuration": "Total Duration",
+      "sameFormatNote": "Files must have the same format for lossless merging"
     },
-    "faceEnhancer": {
-      "title": "Nâng cao khuôn mặt",
-      "description": "Nâng cao và phục hồi khuôn mặt trong ảnh bằng AI",
-      "selectImage": "Nhấp hoặc kéo hình ảnh vào đây",
-      "modelsInfo": "Sử dụng mô hình AI YOLO + GFPGAN",
-      "inputImage": "Hình ảnh đầu vào",
-      "selectImageWithFaces": "Chọn hình ảnh có khuôn mặt để nâng cao",
-      "enhance": "Nâng cao khuôn mặt",
-      "enhancing": "Đang nâng cao khuôn mặt...",
-      "detecting": "Đang phát hiện khuôn mặt...",
-      "downloading": "Đang tải xuống mô hình...",
-      "loading": "Đang tải mô hình...",
-      "processing": "Đang xử lý...",
-      "download": "Tải xuống",
-      "newImage": "Hình ảnh mới",
-      "result": "Kết quả nâng cao",
-      "facesEnhanced": "Đã nâng cao {{count}} khuôn mặt",
-      "noFacesFound": "Không tìm thấy khuôn mặt",
-      "invalidFile": "Vui lòng chọn tệp hình ảnh hợp lệ",
-      "firstTimeDownload": "Lần đầu tiên? Mô hình sẽ được tải xuống (~350MB)"
+    "ffmpeg": {
+      "loading": "Loading FFmpeg",
+      "converting": "Converting",
+      "merging": "Merging",
+      "trimming": "Trimming"
     }
-  },
-  "game": {
-    "waitingLong": "Đợi lâu quá? Chơi mini game nhé!",
-    "clickToPlay": "Nhấp để bắt đầu"
   }
 }

@@ -53,20 +53,68 @@ export function detectAssetType(url: string): AssetType | null {
   return null
 }
 
-// Helper to generate filename
-function generateFileName(modelName: string, type: AssetType, url: string): string {
-  const slug = modelName.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase().replace(/-+/g, '-')
-  const date = new Date()
-  const dateStr = date.toISOString().split('T')[0]
-  const timeStr = date.toTimeString().split(' ')[0].replace(/:/g, '')
-  const index = Math.random().toString(36).substring(2, 6)
+// Helper to generate filename: model_predictionid_resultindex.ext
+function generateFileName(modelId: string, type: AssetType, url: string, predictionId?: string, resultIndex: number = 0): string {
+  // Replace / with _, other special chars with -, then clean up
+  const slug = modelId.replace(/\//g, '_').replace(/[^a-zA-Z0-9_]/g, '-').toLowerCase().replace(/-+/g, '-')
+  const id = predictionId || (Date.now().toString(36) + Math.random().toString(36).substring(2, 6))
   const ext = getExtensionFromUrl(url) || getDefaultExtension(type)
-  return `${slug}_${dateStr}_${timeStr}_${index}.${ext}`
+  return `${slug}_${id}_${resultIndex}.${ext}`
+}
+
+// Exported version for downloads - uses same naming convention as saved assets
+export function generateDownloadFilename(options: {
+  modelId?: string
+  url: string
+  predictionId?: string
+  resultIndex?: number
+}): string {
+  const { modelId, url, predictionId, resultIndex = 0 } = options
+  const slug = modelId
+    ? modelId.replace(/\//g, '_').replace(/[^a-zA-Z0-9_]/g, '-').toLowerCase().replace(/-+/g, '-')
+    : 'output'
+  const id = predictionId || (Date.now().toString(36) + Math.random().toString(36).substring(2, 6))
+  const ext = getExtensionFromUrl(url) || 'png'
+  return `${slug}_${id}_${resultIndex}.${ext}`
+}
+
+// Generate filename for free tools - format: free-tools_{tool-name}_{id}_{resultIndex}.{ext}
+export function generateFreeToolFilename(toolName: string, extension: string, suffix?: string): string {
+  const id = Date.now().toString(36) + Math.random().toString(36).substring(2, 6)
+  const toolSlug = toolName.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()
+  const suffixPart = suffix ? `-${suffix}` : ''
+  return `free-tools_${toolSlug}${suffixPart}_${id}_0.${extension}`
+}
+
+// Helper to extract model ID from filename
+// Format: "{model-slug}_{predictionId}_{resultIndex}.{ext}"
+// where model-slug has / replaced with _
+// Examples: "wavespeed-ai_flux-schnell_abc123_0.png" -> "wavespeed-ai/flux-schnell"
+//           "google_nano-banana-pro_edit_abc123_0.png" -> "google/nano-banana-pro/edit"
+//           "local_z-image_2024-12-21_0.png" -> "local/z-image"
+function extractModelId(fileName: string): string {
+  // Remove extension
+  const nameWithoutExt = fileName.replace(/\.[^.]+$/, '')
+  const parts = nameWithoutExt.split('_')
+
+  // Need at least 3 parts: model (1+), predictionId, resultIndex
+  if (parts.length >= 3) {
+    // Last part is resultIndex, second to last is predictionId
+    // Everything before is the model slug (joined with /)
+    const modelParts = parts.slice(0, -2)
+    return modelParts.join('/')
+  }
+
+  if (parts.length > 0 && parts[0]) {
+    return parts[0]
+  }
+  return 'unknown'
 }
 
 interface AssetsState {
   assets: AssetMetadata[]
   isLoaded: boolean
+  isLoading: boolean
   settings: AssetsSettings
 
   // Data loading
@@ -75,6 +123,7 @@ interface AssetsState {
 
   // Asset operations
   saveAsset: (url: string, type: AssetType, options: AssetsSaveOptions) => Promise<AssetMetadata | null>
+  registerLocalAsset: (filePath: string, type: AssetType, options: AssetsSaveOptions) => Promise<AssetMetadata | null>
   deleteAsset: (id: string) => Promise<boolean>
   deleteAssets: (ids: string[]) => Promise<number>
   updateAsset: (id: string, updates: Partial<Pick<AssetMetadata, 'tags' | 'favorite'>>) => Promise<void>
@@ -84,7 +133,7 @@ interface AssetsState {
 
   // Tag operations
   getAllTags: () => string[]
-  getAllModels: () => { modelId: string; modelName: string }[]
+  getAllModels: () => string[]
 
   // Settings
   setAutoSave: (enabled: boolean) => Promise<void>
@@ -100,22 +149,73 @@ interface AssetsState {
 export const useAssetsStore = create<AssetsState>((set, get) => ({
   assets: [],
   isLoaded: false,
+  isLoading: false,
   settings: {
     autoSaveAssets: true,
     assetsDirectory: ''
   },
 
   loadAssets: async () => {
-    if (window.electronAPI?.getAssetsMetadata) {
-      const metadata = await window.electronAPI.getAssetsMetadata()
-      set({ assets: metadata as AssetMetadata[], isLoaded: true })
-    } else {
-      // Browser fallback - limited functionality
-      const stored = localStorage.getItem(METADATA_STORAGE_KEY)
-      set({
-        assets: stored ? JSON.parse(stored) : [],
-        isLoaded: true
-      })
+    // Prevent duplicate loading
+    if (get().isLoading) return
+
+    set({ isLoading: true })
+
+    try {
+      if (window.electronAPI?.scanAssetsDirectory) {
+        // Scan actual files on disk (async, non-blocking)
+        const [files, existingMetadata] = await Promise.all([
+          window.electronAPI.scanAssetsDirectory(),
+          window.electronAPI.getAssetsMetadata?.() || Promise.resolve([])
+        ])
+
+        // Process in next tick to avoid blocking UI
+        await new Promise(resolve => setTimeout(resolve, 0))
+
+        const metadataByPath = new Map(existingMetadata.map(m => [m.filePath, m]))
+
+        // Build asset list from actual files, enriching with metadata if available
+        const assets: AssetMetadata[] = files.map(file => {
+          const existing = metadataByPath.get(file.filePath)
+          if (existing) {
+            // Use existing metadata but update file size (in case it changed)
+            return { ...existing, fileSize: file.fileSize }
+          }
+          // Create new metadata from file info
+          return {
+            id: generateId(),
+            filePath: file.filePath,
+            fileName: file.fileName,
+            type: file.type,
+            modelId: extractModelId(file.fileName),
+            createdAt: file.createdAt,
+            fileSize: file.fileSize,
+            tags: [],
+            favorite: false
+          }
+        })
+
+        // Sort by creation date (newest first)
+        assets.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
+        set({ assets, isLoaded: true, isLoading: false })
+
+        // Save merged metadata in background (don't await)
+        if (window.electronAPI?.saveAssetsMetadata) {
+          window.electronAPI.saveAssetsMetadata(assets as Parameters<typeof window.electronAPI.saveAssetsMetadata>[0])
+        }
+      } else {
+        // Browser fallback - limited functionality
+        const stored = localStorage.getItem(METADATA_STORAGE_KEY)
+        set({
+          assets: stored ? JSON.parse(stored) : [],
+          isLoaded: true,
+          isLoading: false
+        })
+      }
+    } catch (error) {
+      console.error('Failed to load assets:', error)
+      set({ isLoaded: true, isLoading: false })
     }
   },
 
@@ -133,7 +233,7 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
   },
 
   saveAsset: async (url, type, options) => {
-    const fileName = generateFileName(options.modelName, type, url)
+    const fileName = generateFileName(options.modelId, type, url, options.predictionId, options.resultIndex ?? 0)
 
     // Desktop mode: save file to disk
     if (window.electronAPI?.saveAsset) {
@@ -147,7 +247,6 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
           fileName,
           type,
           modelId: options.modelId,
-          modelName: options.modelName,
           createdAt: new Date().toISOString(),
           fileSize: result.fileSize || 0,
           tags: [],
@@ -176,7 +275,6 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
       fileName,
       type,
       modelId: options.modelId,
-      modelName: options.modelName,
       createdAt: new Date().toISOString(),
       fileSize: 0,
       tags: [],
@@ -188,6 +286,47 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
     set(state => {
       const newAssets = [metadata, ...state.assets]
       localStorage.setItem(METADATA_STORAGE_KEY, JSON.stringify(newAssets))
+      return { assets: newAssets }
+    })
+
+    return metadata
+  },
+
+  registerLocalAsset: async (filePath, type, options) => {
+    // Extract filename from path
+    const fileName = filePath.split(/[/\\]/).pop() || 'unknown'
+
+    // Get file size if in Electron
+    let fileSize = 0
+    if (window.electronAPI?.checkFileExists) {
+      const exists = await window.electronAPI.checkFileExists(filePath)
+      if (!exists) {
+        console.error('File does not exist:', filePath)
+        return null
+      }
+    }
+
+    const metadata: AssetMetadata = {
+      id: generateId(),
+      filePath,
+      fileName,
+      type,
+      modelId: options.modelId,
+      createdAt: new Date().toISOString(),
+      fileSize,
+      tags: [],
+      favorite: false,
+      predictionId: options.predictionId,
+      originalUrl: options.originalUrl
+    }
+
+    set(state => {
+      const newAssets = [metadata, ...state.assets]
+      if (window.electronAPI?.saveAssetsMetadata) {
+        window.electronAPI.saveAssetsMetadata(newAssets as Parameters<typeof window.electronAPI.saveAssetsMetadata>[0])
+      } else {
+        localStorage.setItem(METADATA_STORAGE_KEY, JSON.stringify(newAssets))
+      }
       return { assets: newAssets }
     })
 
@@ -297,7 +436,7 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
       const search = filter.search.toLowerCase()
       filtered = filtered.filter(a =>
         a.fileName.toLowerCase().includes(search) ||
-        a.modelName.toLowerCase().includes(search) ||
+        a.modelId.toLowerCase().includes(search) ||
         a.tags.some(t => t.toLowerCase().includes(search))
       )
     }
@@ -335,16 +474,9 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
 
   getAllModels: () => {
     const { assets } = get()
-    const modelsMap = new Map<string, string>()
-    assets.forEach(a => {
-      if (!modelsMap.has(a.modelId)) {
-        modelsMap.set(a.modelId, a.modelName)
-      }
-    })
-    return Array.from(modelsMap.entries()).map(([modelId, modelName]) => ({
-      modelId,
-      modelName
-    }))
+    const modelIds = new Set<string>()
+    assets.forEach(a => modelIds.add(a.modelId))
+    return Array.from(modelIds).sort()
   },
 
   setAutoSave: async (enabled) => {
@@ -383,23 +515,7 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
   },
 
   validateAssets: async () => {
-    if (!window.electronAPI?.checkFileExists) return
-
-    const { assets } = get()
-    const validAssets: AssetMetadata[] = []
-
-    for (const asset of assets) {
-      const exists = await window.electronAPI.checkFileExists(asset.filePath)
-      if (exists) {
-        validAssets.push(asset)
-      }
-    }
-
-    if (validAssets.length !== assets.length) {
-      set({ assets: validAssets })
-      if (window.electronAPI?.saveAssetsMetadata) {
-        window.electronAPI.saveAssetsMetadata(validAssets as Parameters<typeof window.electronAPI.saveAssetsMetadata>[0])
-      }
-    }
+    // No-op: assets are now loaded directly from disk scan, so validation is not needed
+    // The loadAssets function scans actual files and merges with metadata
   }
 }))

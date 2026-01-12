@@ -2,6 +2,7 @@ import { useState, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useNativeMediaMerger } from '@mobile/hooks/useNativeMediaMerger'
+import { useMobileDownload } from '@mobile/hooks/useMobileDownload'
 import { formatFileSize, getMediaType } from '@mobile/lib/ffmpegFormats'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -33,7 +34,9 @@ interface MediaItem {
 export function MediaMergerPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { downloadBlob } = useMobileDownload()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const resultVideoRef = useRef<HTMLVideoElement>(null)
 
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([])
   const [mergedUrl, setMergedUrl] = useState<string | null>(null)
@@ -146,8 +149,8 @@ export function MediaMergerPage() {
     }
   }
 
-  const handleDownload = () => {
-    if (!mergedUrl || !mergedBlob) return
+  const handleDownload = async () => {
+    if (!mergedBlob) return
 
     // Determine extension from blob type
     const blobType = mergedBlob.type
@@ -158,12 +161,7 @@ export function MediaMergerPage() {
 
     const filename = `merged_${Date.now()}.${ext}`
 
-    const link = document.createElement('a')
-    link.href = mergedUrl
-    link.download = filename
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    await downloadBlob(mergedBlob, filename)
   }
 
   const outputType = mediaItems.length > 0 ? mediaItems[0].type : null
@@ -340,9 +338,17 @@ export function MediaMergerPage() {
             {outputType === 'video' ? (
               <div className="aspect-video bg-black rounded-lg overflow-hidden">
                 <video
+                  ref={resultVideoRef}
                   src={mergedUrl}
                   className="w-full h-full object-contain"
                   controls
+                  playsInline
+                  preload="metadata"
+                  onLoadedMetadata={() => {
+                    if (resultVideoRef.current && resultVideoRef.current.currentTime === 0) {
+                      resultVideoRef.current.currentTime = 0.001
+                    }
+                  }}
                 />
               </div>
             ) : (

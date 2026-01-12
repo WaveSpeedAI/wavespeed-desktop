@@ -1,5 +1,7 @@
 import { useState, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { useMobileDownload } from '@mobile/hooks/useMobileDownload'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
@@ -19,8 +21,12 @@ interface ConversionResult {
 }
 
 export function VideoConverterPage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
+  const { downloadBlob } = useMobileDownload()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const resultVideoRef = useRef<HTMLVideoElement>(null)
 
   const [inputVideo, setInputVideo] = useState<{ file: File; url: string } | null>(null)
   const [outputFormat, setOutputFormat] = useState<OutputFormat>('webm')
@@ -31,7 +37,7 @@ export function VideoConverterPage() {
 
   const handleFileSelect = useCallback((file: File) => {
     if (!file.type.startsWith('video/')) {
-      setError('Please select a valid video file')
+      setError(t('freeTools.videoConverter.invalidFile'))
       return
     }
 
@@ -247,16 +253,10 @@ export function VideoConverterPage() {
     }
   }, [inputVideo, outputFormat])
 
-  const downloadResult = useCallback(() => {
+  const downloadResult = useCallback(async () => {
     if (!result) return
-
-    const a = document.createElement('a')
-    a.href = result.url
-    a.download = result.filename
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-  }, [result])
+    await downloadBlob(result.blob, result.filename)
+  }, [result, downloadBlob])
 
   return (
     <div className="container mx-auto p-4 max-w-4xl space-y-6">
@@ -266,9 +266,9 @@ export function VideoConverterPage() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h1 className="text-xl font-bold">Video Converter</h1>
+          <h1 className="text-xl font-bold">{t('freeTools.videoConverter.title')}</h1>
           <p className="text-muted-foreground text-xs">
-            Convert videos between formats using your browser
+            {t('freeTools.videoConverter.description')}
           </p>
         </div>
       </div>
@@ -278,10 +278,10 @@ export function VideoConverterPage() {
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Upload className="h-5 w-5" />
-            Input Video
+            {t('freeTools.videoConverter.inputVideo')}
           </CardTitle>
           <CardDescription>
-            Select or drag a video file to convert
+            {t('freeTools.videoConverter.selectVideoDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -297,19 +297,28 @@ export function VideoConverterPage() {
             >
               <Video className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <p className="text-sm text-muted-foreground mb-2">
-                Click or drag video here
+                {t('freeTools.videoConverter.selectVideo')}
               </p>
               <p className="text-xs text-muted-foreground">
-                Supports MP4, WebM, MOV, AVI
+                {t('freeTools.videoConverter.supportedFormats')}
               </p>
             </div>
           ) : (
             <div className="space-y-4">
               <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
                 <video
+                  ref={videoRef}
                   src={inputVideo.url}
                   className="w-full h-full object-contain"
                   controls
+                  playsInline
+                  preload="metadata"
+                  onLoadedMetadata={() => {
+                    // Force show first frame on mobile
+                    if (videoRef.current && videoRef.current.currentTime === 0) {
+                      videoRef.current.currentTime = 0.001
+                    }
+                  }}
                 />
                 <Button
                   variant="destructive"
@@ -341,11 +350,11 @@ export function VideoConverterPage() {
       {inputVideo && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Settings</CardTitle>
+            <CardTitle className="text-lg">{t('common.settings')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Output Format</Label>
+              <Label>{t('freeTools.videoConverter.outputFormat')}</Label>
               <Select value={outputFormat} onValueChange={(v) => setOutputFormat(v as OutputFormat)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -365,10 +374,10 @@ export function VideoConverterPage() {
               {isConverting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Converting...
+                  {t('freeTools.videoConverter.converting')}
                 </>
               ) : (
-                'Convert Video'
+                t('freeTools.videoConverter.convert')
               )}
             </Button>
 
@@ -395,18 +404,26 @@ export function VideoConverterPage() {
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <Download className="h-5 w-5" />
-              Result
+              {t('freeTools.videoConverter.result')}
             </CardTitle>
             <CardDescription>
-              Codec used: {result.codec.toUpperCase()}
+              {t('freeTools.videoConverter.codecUsed')}: {result.codec.toUpperCase()}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="aspect-video bg-black rounded-lg overflow-hidden">
               <video
+                ref={resultVideoRef}
                 src={result.url}
                 className="w-full h-full object-contain"
                 controls
+                playsInline
+                preload="metadata"
+                onLoadedMetadata={() => {
+                  if (resultVideoRef.current && resultVideoRef.current.currentTime === 0) {
+                    resultVideoRef.current.currentTime = 0.001
+                  }
+                }}
               />
             </div>
             <div className="space-y-3">
@@ -415,7 +432,7 @@ export function VideoConverterPage() {
               </div>
               <Button className="w-full" onClick={downloadResult}>
                 <Download className="mr-2 h-4 w-4" />
-                Download
+                {t('common.download')}
               </Button>
             </div>
           </CardContent>

@@ -2,6 +2,7 @@ import { useState, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAudioConverterWorker } from '@mobile/hooks/useAudioConverterWorker'
+import { useMobileDownload } from '@mobile/hooks/useMobileDownload'
 import { formatFileSize, formatDuration } from '@mobile/lib/ffmpegFormats'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -40,6 +41,7 @@ const AUDIO_BITRATES = [
 export function AudioConverterPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { downloadBlob } = useMobileDownload()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
 
@@ -148,18 +150,13 @@ export function AudioConverterPage() {
     }
   }
 
-  const handleDownload = () => {
-    if (!convertedUrl || !convertedBlob || !audioFile) return
+  const handleDownload = async () => {
+    if (!convertedBlob || !audioFile) return
 
     const format = AUDIO_FORMATS.find(f => f.id === outputFormat)
     const filename = audioFile.name.replace(/\.[^.]+$/, `.${format?.ext || outputFormat}`)
 
-    const link = document.createElement('a')
-    link.href = convertedUrl
-    link.download = filename
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    await downloadBlob(convertedBlob, filename)
   }
 
   const selectedFormat = AUDIO_FORMATS.find(f => f.id === outputFormat)

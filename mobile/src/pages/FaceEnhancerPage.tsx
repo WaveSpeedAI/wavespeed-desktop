@@ -2,6 +2,7 @@ import { useState, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useFaceEnhancerWorker } from '@mobile/hooks/useFaceEnhancerWorker'
+import { useMobileDownload } from '@mobile/hooks/useMobileDownload'
 import { formatFileSize } from '@mobile/lib/ffmpegFormats'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -22,6 +23,7 @@ import { cn } from '@/lib/utils'
 export function FaceEnhancerPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { downloadFromDataUrl } = useMobileDownload()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -149,17 +151,12 @@ export function FaceEnhancerPage() {
     }
   }
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!enhancedUrl || !imageFile) return
 
     const filename = imageFile.name.replace(/\.[^.]+$/, '_enhanced.png')
 
-    const link = document.createElement('a')
-    link.href = enhancedUrl
-    link.download = filename
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    await downloadFromDataUrl(enhancedUrl, filename)
   }
 
   const handleRetry = useCallback(() => {

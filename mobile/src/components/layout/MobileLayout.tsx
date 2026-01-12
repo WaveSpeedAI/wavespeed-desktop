@@ -9,7 +9,7 @@ import { Loader2 } from 'lucide-react'
 import { VideoEnhancerPage } from '@/pages/VideoEnhancerPage'
 import { ImageEnhancerPage } from '@/pages/ImageEnhancerPage'
 import { BackgroundRemoverPage } from '@/pages/BackgroundRemoverPage'
-import { ImageEraserPage } from '@/pages/ImageEraserPage'
+import { MobileImageEraserPage } from '@mobile/pages/MobileImageEraserPage'
 import { MobileSegmentAnythingPage } from '@mobile/pages/MobileSegmentAnythingPage'
 import { VideoConverterPage } from '@mobile/pages/VideoConverterPage'
 import { AudioConverterPage } from '@mobile/pages/AudioConverterPage'
@@ -120,7 +120,7 @@ export function MobileLayout() {
               )}
               {visitedPages.has('/free-tools/image-eraser') && (
                 <div className={location.pathname === '/free-tools/image-eraser' ? 'h-full overflow-auto' : 'hidden'}>
-                  <ErrorBoundary><ImageEraserPage /></ErrorBoundary>
+                  <ErrorBoundary><MobileImageEraserPage /></ErrorBoundary>
                 </div>
               )}
               {visitedPages.has('/free-tools/segment-anything') && (

@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useNativeMediaTrimmer } from '@mobile/hooks/useNativeMediaTrimmer'
+import { useMobileDownload } from '@mobile/hooks/useMobileDownload'
 import { formatDuration, formatFileSize, getMediaType } from '@mobile/lib/ffmpegFormats'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -57,8 +58,10 @@ import { cn } from '@/lib/utils'
 export function MediaTrimmerPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { downloadBlob } = useMobileDownload()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const mediaRef = useRef<HTMLVideoElement | HTMLAudioElement>(null)
+  const resultVideoRef = useRef<HTMLVideoElement>(null)
 
   const [mediaFile, setMediaFile] = useState<File | null>(null)
   const [mediaUrl, setMediaUrl] = useState<string | null>(null)
@@ -186,8 +189,8 @@ export function MediaTrimmerPage() {
     }
   }
 
-  const handleDownload = () => {
-    if (!trimmedUrl || !trimmedBlob || !mediaFile) return
+  const handleDownload = async () => {
+    if (!trimmedBlob || !mediaFile) return
 
     // Determine extension from blob type
     const blobType = trimmedBlob.type
@@ -199,12 +202,7 @@ export function MediaTrimmerPage() {
     const baseName = mediaFile.name.replace(/\.[^.]+$/, '')
     const filename = `${baseName}_trimmed.${ext}`
 
-    const link = document.createElement('a')
-    link.href = trimmedUrl
-    link.download = filename
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    await downloadBlob(trimmedBlob, filename)
   }
 
   const handleSliderChange = (values: number[]) => {
@@ -310,6 +308,14 @@ export function MediaTrimmerPage() {
                     src={mediaUrl!}
                     className="w-full h-full object-contain"
                     controls
+                    playsInline
+                    preload="metadata"
+                    onLoadedData={() => {
+                      const video = mediaRef.current as HTMLVideoElement
+                      if (video && video.currentTime === 0) {
+                        video.currentTime = 0.001
+                      }
+                    }}
                   />
                   <Button
                     variant="destructive"
@@ -473,9 +479,17 @@ export function MediaTrimmerPage() {
             {mediaType === 'video' ? (
               <div className="aspect-video bg-black rounded-lg overflow-hidden">
                 <video
+                  ref={resultVideoRef}
                   src={trimmedUrl}
                   className="w-full h-full object-contain"
                   controls
+                  playsInline
+                  preload="metadata"
+                  onLoadedMetadata={() => {
+                    if (resultVideoRef.current && resultVideoRef.current.currentTime === 0) {
+                      resultVideoRef.current.currentTime = 0.001
+                    }
+                  }}
                 />
               </div>
             ) : (

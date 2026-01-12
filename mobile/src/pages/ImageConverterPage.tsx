@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useMobileDownload } from '@mobile/hooks/useMobileDownload'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
@@ -103,6 +104,7 @@ async function convertImage(
 export function ImageConverterPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { downloadBlob } = useMobileDownload()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [imageFile, setImageFile] = useState<File | null>(null)
@@ -183,18 +185,13 @@ export function ImageConverterPage() {
     }
   }
 
-  const handleDownload = () => {
-    if (!convertedUrl || !convertedBlob || !imageFile) return
+  const handleDownload = async () => {
+    if (!convertedBlob || !imageFile) return
 
     const format = IMAGE_FORMATS.find(f => f.id === outputFormat)
     const filename = imageFile.name.replace(/\.[^.]+$/, `.${format?.ext || outputFormat}`)
 
-    const link = document.createElement('a')
-    link.href = convertedUrl
-    link.download = filename
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    await downloadBlob(convertedBlob, filename)
   }
 
   const selectedFormat = IMAGE_FORMATS.find(f => f.id === outputFormat)

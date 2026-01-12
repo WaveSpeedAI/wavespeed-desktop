@@ -156,6 +156,14 @@ export function VideoEnhancerPage() {
       setVideoUrl(url)
       setDownloadUrl(null)
       resetProgress()
+
+      // Force video to show first frame on mobile
+      // Wait for video element to be ready, then seek to show preview
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.currentTime = 0.001
+        }
+      }, 100)
       // eslint-disable-next-line react-hooks/exhaustive-deps
     },
     [videoUrl, downloadUrl, resetProgress]
@@ -610,6 +618,13 @@ export function VideoEnhancerPage() {
                     controls={!isProcessing}
                     muted
                     playsInline
+                    preload="metadata"
+                    onLoadedMetadata={() => {
+                      // Force show first frame on mobile
+                      if (videoRef.current && videoRef.current.currentTime === 0) {
+                        videoRef.current.currentTime = 0.001
+                      }
+                    }}
                   />
                 </div>
               </CardContent>

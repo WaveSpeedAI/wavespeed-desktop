@@ -30,7 +30,9 @@
     "success": "Success",
     "warning": "Warning",
     "selectAll": "Select All",
-    "downloadFailed": "Download failed. Please check your network connection."
+    "downloadFailed": "Download failed. Please check your network connection.",
+    "settings": "Settings",
+    "clearAll": "Clear All"
   },
   "nav": {
     "home": "Home",
@@ -192,7 +194,7 @@
       "optimize": "Optimize"
     },
     "flappyBird": {
-      "clickToStart": "Click or press Space to start a game",
+      "clickToStart": "Tap to start game",
       "viewResults": "View Results",
       "playWhileWaiting": "Play while waiting",
       "quit": "Quit"
@@ -235,7 +237,8 @@
       "completed": "Completed",
       "failed": "Failed",
       "processing": "Processing",
-      "created": "Created"
+      "created": "Created",
+      "archived": "Archived"
     },
     "loadPreviews": "Load previews",
     "disablePreviews": "Disable previews",
@@ -256,7 +259,24 @@
     "executionTime": "Execution Time",
     "predictionId": "Prediction ID",
     "notAvailable": "History Not Available",
-    "notAvailableDesc": "The prediction history API is not available at this time."
+    "notAvailableDesc": "The prediction history API is not available at this time.",
+    "downloadComplete": "Download Complete",
+    "downloadCompleteDesc": "Downloaded {{count}} file(s)",
+    "downloadFailed": "Download Failed",
+    "downloadFailedDesc": "{{count}} file(s) failed to download",
+    "hasInputs": "Has available inputs",
+    "saveTemplate": {
+      "button": "Save as Template",
+      "dialogTitle": "Save Template",
+      "nameLabel": "Template Name",
+      "namePlaceholder": "Enter template name...",
+      "duplicateName": "This name already exists",
+      "noInputsTitle": "Cannot Save Template",
+      "noInputsDesc": "No input parameters found for this prediction",
+      "success": "Template Saved",
+      "successDesc": "You can use it from the templates page",
+      "error": "Failed to save template"
+    }
   },
   "templates": {
     "title": "Templates",
@@ -495,7 +515,27 @@
       "clearFailed": "Failed to clear cache",
       "zImageAuxiliary": "Z-Image Auxiliary",
       "zImageModels": "Z-Image Models",
-      "zImageBinary": "Z-Image Binary"
+      "zImageBinary": "Z-Image Binary",
+      "predownload": "Pre-download Models",
+      "predownloadDesc": "Download AI models in advance for offline use",
+      "downloadModels": "Download Models",
+      "downloadPartial": "Partial Download Complete",
+      "downloadPartialDesc": "Some models downloaded successfully",
+      "downloadComplete": "Download Complete",
+      "downloadCompleteDesc": "All models downloaded successfully",
+      "downloadCancelled": "Download Cancelled",
+      "downloadCancelledDesc": "Model download was cancelled",
+      "alreadyCached": "Already cached",
+      "downloaded": "Downloaded",
+      "overallProgress": "Overall Progress",
+      "models": {
+        "ffmpegJs": "FFmpeg Core (JS)",
+        "ffmpegWasm": "FFmpeg Core (WASM)",
+        "backgroundRemover": "Background Remover",
+        "imageEraser": "Image Eraser (LaMa)",
+        "samEncoder": "SAM Vision Encoder",
+        "samDecoder": "SAM Prompt Decoder"
+      }
     },
     "downloads": {
       "title": "Downloads",
@@ -536,7 +576,10 @@
       "title": "About",
       "description": "WaveSpeed Desktop - AI Model Playground",
       "aboutText": "An open-source desktop application for running AI models with WaveSpeed API.",
-      "viewOnGitHub": "View on GitHub"
+      "viewOnGitHub": "View on GitHub",
+      "version": "Version",
+      "mobileDescription": "WaveSpeed Mobile - Mobile AI Tools",
+      "mobileAboutText": "An open-source mobile application for running AI models with WaveSpeed API."
     }
   },
   "apiKeyRequired": {
@@ -599,20 +642,31 @@
     "faceEnhancer": {
       "title": "Face Enhancer",
       "description": "Enhance and restore face quality using AI",
-      "selectImage": "Select an image with faces",
+      "inputImage": "Input Image",
+      "selectImage": "Click or drag image here",
+      "selectImageWithFaces": "Select an image with faces to enhance",
       "orDragDrop": "or drag and drop",
-      "enhance": "Enhance",
+      "modelsInfo": "Uses YOLO + GFPGAN AI models",
+      "enhance": "Enhance Faces",
       "download": "Download",
+      "downloading": "Downloading models...",
+      "loading": "Loading models...",
       "processing": "Processing...",
       "original": "Original",
       "enhanced": "Enhanced",
       "sideBySide": "Side by side",
       "comparison": "Comparison slider",
       "dragToCompare": "Drag to compare",
-      "detecting": "Detecting faces",
-      "enhancing": "Enhancing faces",
+      "detecting": "Detecting faces...",
+      "enhancing": "Enhancing faces...",
       "noFaces": "No faces detected in the image",
-      "facesFound": "{{count}} face(s) detected"
+      "noFacesFound": "No faces found",
+      "facesFound": "{{count}} face(s) detected",
+      "facesEnhanced": "{{count}} face(s) enhanced",
+      "result": "Enhanced Result",
+      "newImage": "New Image",
+      "firstTimeDownload": "First time? Models will be downloaded (~350MB)",
+      "invalidFile": "Please select a valid image file"
     },
     "faceSwapper": {
       "title": "Face Swapper",
@@ -698,6 +752,7 @@
       "undoEdit": "Undo removal",
       "redoEdit": "Redo removal",
       "hint": "Draw over objects you want to remove, then click Remove Objects",
+      "hintMobile": "Draw on the area you want to remove",
       "resultPlaceholder": "Result will appear here"
     },
     "segmentAnything": {
@@ -707,12 +762,15 @@
       "orDragDrop": "or drag and drop",
       "processing": "Processing image...",
       "hoverToPreview": "Hover over objects to preview segmentation",
+      "hoverToPreviewMobile": "Tap on object to start selecting",
       "clickToRefine": "Click to add more points, right-click to exclude areas",
+      "clickToRefineMobile": "Tap to add more points",
       "resetImage": "Reset Image",
       "clearPoints": "Clear Points",
       "clearPointsTooltip": "Clear all points and return to hover preview mode",
       "cutMask": "Cut Mask",
-      "hint": "Left-click to include areas, right-click to exclude areas"
+      "hint": "Left-click to include areas, right-click to exclude areas",
+      "hintMobile": "Tap to include, long press to exclude"
     },
     "progress": {
       "downloading": "Downloading model",
@@ -732,75 +790,104 @@
     },
     "videoConverter": {
       "title": "Video Converter",
-      "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
-      "selectVideo": "Select Video",
+      "description": "Convert videos between formats using your browser",
+      "inputVideo": "Input Video",
+      "selectVideo": "Click or drag video here",
+      "selectVideoDesc": "Select or drag a video file to convert",
       "orDragDrop": "or drag and drop",
       "dropToReplace": "Drop to replace video",
-      "supportedFormats": "Supports MP4, WebM, MOV, AVI, MKV",
-      "convert": "Convert",
+      "supportedFormats": "Supports MP4, WebM, MOV, AVI",
+      "convert": "Convert Video",
       "converting": "Converting...",
       "original": "Original",
       "outputSettings": "Output Settings",
+      "outputFormat": "Output Format",
       "format": "Format",
       "quality": "Quality",
       "resolution": "Resolution",
       "convertedSize": "Converted Size",
-      "converted": "Converted"
+      "converted": "Converted",
+      "result": "Result",
+      "codecUsed": "Codec used",
+      "invalidFile": "Please select a valid video file"
     },
     "audioConverter": {
       "title": "Audio Converter",
-      "description": "Convert audio between formats (MP3, AAC, FLAC, WAV)",
-      "selectAudio": "Select Audio",
+      "description": "Convert between MP3 and WAV formats",
+      "inputAudio": "Input Audio",
+      "selectAudio": "Click or drag MP3/WAV file here",
       "orDragDrop": "or drag and drop",
       "dropToReplace": "Drop to replace audio",
-      "supportedFormats": "Supports MP3, M4A, OGG, WAV, FLAC",
-      "convert": "Convert",
+      "supportedFormats": "MP3 ↔ WAV conversion",
+      "outputFormat": "Output Format",
+      "bitrate": "Bitrate",
+      "convert": "Convert Audio",
       "converting": "Converting...",
       "original": "Original",
       "converted": "Converted",
+      "result": "Result",
       "playOriginal": "Play original",
-      "playConverted": "Play converted"
+      "playConverted": "Play converted",
+      "invalidFile": "Please select an MP3 or WAV file"
     },
     "imageConverter": {
       "title": "Image Converter",
-      "description": "Convert images between formats (JPG, PNG, WebP, GIF)",
+      "description": "Convert images between JPG, PNG, WebP formats",
+      "inputImage": "Input Image",
+      "selectImage": "Click or drag image here",
       "selectImages": "Select Images",
       "orDragDrop": "or drag and drop",
       "dropToAdd": "Drop to add images",
-      "supportedFormats": "Supports JPG, PNG, WebP, GIF, BMP",
+      "supportedFormats": "JPG, PNG, WebP, GIF, BMP → JPG/PNG/WebP",
+      "outputFormat": "Output Format",
       "addMore": "Add More",
-      "convert": "Convert",
+      "convert": "Convert Image",
       "converting": "Converting...",
       "quality": "Quality",
-      "downloadAll": "Download All"
+      "result": "Result",
+      "downloadAll": "Download All",
+      "invalidFile": "Please select a valid image file"
     },
     "mediaTrimmer": {
       "title": "Media Trimmer",
       "description": "Trim videos or audio to a specific duration",
-      "selectMedia": "Select Media",
+      "inputMedia": "Input Media",
+      "selectMedia": "Click or drag video/audio here",
       "orDragDrop": "or drag and drop",
       "dropToReplace": "Drop to replace media",
-      "supportedFormats": "Supports video and audio files",
-      "trim": "Trim",
+      "supportedFormats": "MP4, WebM, MOV, AVI, MP3, WAV, OGG",
+      "trimSettings": "Trim Settings",
+      "selectRange": "Select start and end time",
+      "startTime": "Start Time",
+      "endTime": "End Time",
+      "timeFormat": "Format: m:ss.d or seconds",
+      "outputDuration": "Output duration",
+      "trim": "Trim Media",
       "trimming": "Trimming...",
       "originalDuration": "Original",
       "selectedDuration": "Selected",
       "trimmedSize": "Trimmed Size",
+      "result": "Trimmed Result",
       "playingOriginal": "Playing original",
-      "playingTrimmed": "Playing trimmed"
+      "playingTrimmed": "Playing trimmed",
+      "invalidFile": "Please select a valid video or audio file"
     },
     "mediaMerger": {
       "title": "Media Merger",
       "description": "Merge multiple video or audio files into one",
-      "selectFiles": "Select Files",
+      "inputMedia": "Input Files",
+      "selectFiles": "Click or drag files here",
       "orDragDrop": "or drag and drop",
       "dropToAdd": "Drop to add files",
-      "supportedFormats": "Supports video and audio files",
-      "addMore": "Add More",
-      "merge": "Merge",
+      "supportedFormats": "Add multiple video or audio files to merge",
+      "addMore": "Add more files",
+      "files": "files",
+      "merge": "Merge Files",
       "merging": "Merging...",
       "merged": "Merged",
+      "result": "Merged Result",
       "totalDuration": "Total Duration",
+      "sameTypeRequired": "All files must be the same type (video or audio)",
       "sameFormatNote": "Files must have the same format for lossless merging"
     },
     "ffmpeg": {
@@ -808,6 +895,13 @@
       "converting": "Converting",
       "merging": "Merging",
       "trimming": "Trimming"
-    }
+    },
+    "downloadSuccess": "Saved to Downloads folder",
+    "downloadStarted": "Download started",
+    "downloadFailed": "Download failed"
+  },
+  "game": {
+    "waitingLong": "This is taking a while",
+    "clickToPlay": "Tap to play a game while waiting"
   }
 }

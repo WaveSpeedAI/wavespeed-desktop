@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useSegmentAnythingWorker, type MaskResult } from '@mobile/hooks/useSegmentAnythingWorker'
+import { useMobileDownload } from '@mobile/hooks/useMobileDownload'
 import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
 import { ProcessingProgress } from '@/components/shared/ProcessingProgress'
 import { Button } from '@/components/ui/button'
@@ -44,6 +45,7 @@ interface Point {
 export function MobileSegmentAnythingPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { downloadFromDataUrl } = useMobileDownload()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageContainerRef = useRef<HTMLDivElement>(null)
   const maskCanvasRef = useRef<HTMLCanvasElement>(null)
@@ -481,47 +483,45 @@ export function MobileSegmentAnythingPage() {
   )
 
   // Download the preview
-  const handleDownload = useCallback(() => {
+  const handleDownload = useCallback(async () => {
     if (!previewUrl || !originalSize) return
+
+    const filename = `segment-${Date.now()}.${downloadFormat}`
 
     // For formats other than PNG, we need to convert
     if (downloadFormat === 'png') {
-      const link = document.createElement('a')
-      link.href = previewUrl
-      link.download = `segment-${Date.now()}.png`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
+      await downloadFromDataUrl(previewUrl, filename)
     } else {
       // Create a new canvas for the selected format
       const img = new Image()
-      img.onload = () => {
-        const canvas = document.createElement('canvas')
-        canvas.width = originalSize.width
-        canvas.height = originalSize.height
-        const ctx = canvas.getContext('2d')
-        if (!ctx) return
+      await new Promise<void>((resolve) => {
+        img.onload = async () => {
+          const canvas = document.createElement('canvas')
+          canvas.width = originalSize.width
+          canvas.height = originalSize.height
+          const ctx = canvas.getContext('2d')
+          if (!ctx) {
+            resolve()
+            return
+          }
 
-        if (downloadFormat === 'jpeg') {
-          // JPEG needs white background
-          ctx.fillStyle = 'white'
-          ctx.fillRect(0, 0, canvas.width, canvas.height)
+          if (downloadFormat === 'jpeg') {
+            // JPEG needs white background
+            ctx.fillStyle = 'white'
+            ctx.fillRect(0, 0, canvas.width, canvas.height)
+          }
+          ctx.drawImage(img, 0, 0)
+
+          const mimeType = downloadFormat === 'jpeg' ? 'image/jpeg' : 'image/webp'
+          const dataUrl = canvas.toDataURL(mimeType, 0.95)
+
+          await downloadFromDataUrl(dataUrl, filename)
+          resolve()
         }
-        ctx.drawImage(img, 0, 0)
-
-        const mimeType = downloadFormat === 'jpeg' ? 'image/jpeg' : 'image/webp'
-        const dataUrl = canvas.toDataURL(mimeType, 0.95)
-
-        const link = document.createElement('a')
-        link.href = dataUrl
-        link.download = `segment-${Date.now()}.${downloadFormat}`
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-      }
-      img.src = previewUrl
+        img.src = previewUrl
+      })
     }
-  }, [previewUrl, downloadFormat, originalSize])
+  }, [previewUrl, downloadFormat, originalSize, downloadFromDataUrl])
 
   // Handle retry
   const handleRetry = useCallback(async () => {
@@ -614,8 +614,8 @@ export function MobileSegmentAnythingPage() {
           {/* Status */}
           <div className="text-sm text-muted-foreground text-center">
             {isProcessing && t('freeTools.segmentAnything.processing')}
-            {isEncoded && !isMultiMaskMode && t('freeTools.segmentAnything.hoverToPreview')}
-            {isEncoded && isMultiMaskMode && t('freeTools.segmentAnything.clickToRefine')}
+            {isEncoded && !isMultiMaskMode && t('freeTools.segmentAnything.hoverToPreviewMobile')}
+            {isEncoded && isMultiMaskMode && t('freeTools.segmentAnything.clickToRefineMobile')}
           </div>
 
           {/* Canvas area */}
@@ -768,12 +768,9 @@ export function MobileSegmentAnythingPage() {
             </div>
           )}
 
-          {/* Instructions */}
-          <div className="text-xs text-muted-foreground text-center space-y-1">
-            <p>{t('freeTools.segmentAnything.hint')}</p>
-            <p className="text-muted-foreground/70">
-              {t('playground.capture.maskEditor.hint', 'Tap to include, long press to exclude')}
-            </p>
+          {/* Instructions - Mobile friendly */}
+          <div className="text-xs text-muted-foreground text-center">
+            <p>{t('freeTools.segmentAnything.hintMobile')}</p>
           </div>
         </div>
       )}

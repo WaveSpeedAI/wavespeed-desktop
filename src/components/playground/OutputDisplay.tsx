@@ -20,15 +20,69 @@ import { FlappyBird } from './FlappyBird'
 import { toast } from '@/hooks/useToast'
 import { cn } from '@/lib/utils'
 
+// Check if running in Capacitor native environment
+const isCapacitorNative = () => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return !!(window as any).Capacitor?.isNativePlatform?.()
+  } catch {
+    return false
+  }
+}
+
+// Mobile download helper using Capacitor
+const mobileDownload = async (url: string, filename: string): Promise<{ success: boolean; error?: string }> => {
+  try {
+    // Dynamic imports for Capacitor modules
+    const { CapacitorHttp } = await import('@capacitor/core')
+    const { Filesystem, Directory } = await import('@capacitor/filesystem')
+
+    // Fetch file using CapacitorHttp (bypasses CORS)
+    const response = await CapacitorHttp.get({
+      url,
+      responseType: 'blob'
+    })
+
+    if (response.status !== 200) {
+      return { success: false, error: `HTTP ${response.status}` }
+    }
+
+    // Create Downloads directory
+    const directory = 'Downloads'
+    try {
+      await Filesystem.mkdir({
+        path: directory,
+        directory: Directory.Documents,
+        recursive: true
+      })
+    } catch {
+      // Directory might already exist
+    }
+
+    // Save file
+    const filePath = `${directory}/${filename}`
+    await Filesystem.writeFile({
+      path: filePath,
+      data: response.data as string,
+      directory: Directory.Documents
+    })
+
+    return { success: true }
+  } catch (error) {
+    return { success: false, error: (error as Error).message }
+  }
+}
+
 interface OutputDisplayProps {
   prediction: PredictionResult | null
   outputs: (string | Record<string, unknown>)[]
   error: string | null
   isLoading: boolean
   modelId?: string
+  hideGameButton?: boolean
 }
 
-export function OutputDisplay({ prediction, outputs, error, isLoading, modelId }: OutputDisplayProps) {
+export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, hideGameButton }: OutputDisplayProps) {
   const { t } = useTranslation()
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
   const [fullscreenMedia, setFullscreenMedia] = useState<{ url: string; type: 'image' | 'video' } | null>(null)
@@ -183,16 +237,36 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId }
       resultIndex: index
     })
 
-    // Use Electron API if available
+    // Use Electron API if available (desktop)
     if (window.electronAPI?.downloadFile) {
       const result = await window.electronAPI.downloadFile(url, filename)
       if (!result.success && !result.canceled) {
         console.error('Download failed:', result.error)
       }
-    } else {
-      // Browser: just open in new tab
-      window.open(url, '_blank')
+      return
     }
+
+    // Use Capacitor if available (mobile native)
+    if (isCapacitorNative()) {
+      const result = await mobileDownload(url, filename)
+      if (result.success) {
+        toast({
+          title: t('common.success'),
+          description: t('freeTools.downloadSuccess')
+        })
+      } else {
+        console.error('Mobile download failed:', result.error)
+        toast({
+          title: t('common.error'),
+          description: result.error || 'Download failed',
+          variant: 'destructive'
+        })
+      }
+      return
+    }
+
+    // Browser fallback: open in new tab
+    window.open(url, '_blank')
   }
 
   const handleCopy = async (url: string, index: number) => {
@@ -269,24 +343,26 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId }
   return (
     <div className="h-full flex flex-col relative">
       {/* Play game button - top left */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-2 left-2 z-10 h-8 w-8 opacity-50 hover:opacity-100"
-            onClick={() => {
-              setShowGame(true)
-              setGameEndedWithResults(true)
-            }}
-          >
-            <Gamepad2 className="h-4 w-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          {t('playground.flappyBird.playWhileWaiting', 'Play while waiting')}
-        </TooltipContent>
-      </Tooltip>
+      {!hideGameButton && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-2 left-2 z-10 h-8 w-8 opacity-50 hover:opacity-100"
+              onClick={() => {
+                setShowGame(true)
+                setGameEndedWithResults(true)
+              }}
+            >
+              <Gamepad2 className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {t('playground.flappyBird.playWhileWaiting', 'Play while waiting')}
+          </TooltipContent>
+        </Tooltip>
+      )}
 
       {/* Outputs - fill remaining space */}
       <div className="flex-1 min-h-0 flex flex-col gap-4">
@@ -324,11 +400,14 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId }
                 <video
                   src={outputStr}
                   controls
+                  playsInline
                   className="max-w-full max-h-full object-contain"
                   style={{ maxWidth: 'min(100%, var(--max-w, 100%))', maxHeight: 'min(100%, var(--max-h, 100%))' }}
-                  preload="metadata"
-                  onLoadedMetadata={(e) => {
+                  preload="auto"
+                  onLoadedData={(e) => {
                     const video = e.currentTarget
+                    // Seek to show first frame as preview
+                    video.currentTime = 0.1
                     // Limit upscaling to 2x natural size
                     video.style.setProperty('--max-w', `${video.videoWidth * 2}px`)
                     video.style.setProperty('--max-h', `${video.videoHeight * 2}px`)
@@ -472,15 +551,37 @@ function isUrl(str: string): boolean {
   )
 }
 
+function getUrlExtension(url: string): string | null {
+  try {
+    // Parse URL and get pathname (ignoring query params)
+    const urlObj = new URL(url)
+    const pathname = urlObj.pathname.toLowerCase()
+    // Get the last segment and extract extension
+    const lastSegment = pathname.split('/').pop() || ''
+    const match = lastSegment.match(/\.([a-z0-9]+)$/)
+    return match ? match[1] : null
+  } catch {
+    // Fallback for invalid URLs
+    const match = url.match(/\.([a-z0-9]+)(?:\?.*)?$/i)
+    return match ? match[1].toLowerCase() : null
+  }
+}
+
 function isImageUrl(url: string): boolean {
-  return isUrl(url) && /\.(jpg|jpeg|png|gif|webp|bmp)(\?.*)?$/i.test(url)
+  if (!isUrl(url)) return false
+  const ext = getUrlExtension(url)
+  return ext !== null && ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'avif'].includes(ext)
 }
 
 function isVideoUrl(url: string): boolean {
-  return isUrl(url) && /\.(mp4|webm|mov|avi|mkv)(\?.*)?$/i.test(url)
+  if (!isUrl(url)) return false
+  const ext = getUrlExtension(url)
+  return ext !== null && ['mp4', 'webm', 'mov', 'avi', 'mkv', 'ogv', 'm4v'].includes(ext)
 }
 
 function isAudioUrl(url: string): boolean {
-  return isUrl(url) && /\.(mp3|wav|ogg|flac|aac|m4a|wma)(\?.*)?$/i.test(url)
+  if (!isUrl(url)) return false
+  const ext = getUrlExtension(url)
+  return ext !== null && ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a', 'wma', 'opus'].includes(ext)
 }
 

@@ -22,10 +22,10 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { RotateCcw, Loader2, Save, Globe, Settings2, Image, Gamepad2 } from 'lucide-react'
+import { RotateCcw, Loader2, Save, Globe, Settings2, Image } from 'lucide-react'
+import { GameDialog } from '@mobile/components/games/GameDialog'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/useToast'
-import { GameDialog } from '@mobile/components/games/GameDialog'
 
 type ViewTab = 'input' | 'output'
 
@@ -188,14 +188,15 @@ export function MobilePlaygroundPage() {
   }, [setFormValues])
 
   const handleRun = async () => {
+    // Switch to output view immediately so user can play game while waiting
+    setActiveView('output')
+
     // Check if batch mode is enabled
     if (activeTab?.batchConfig?.enabled && activeTab.batchConfig.repeatCount > 1) {
       await runBatch()
     } else {
       await runPrediction()
     }
-    // Switch to output view after running
-    setActiveView('output')
   }
 
   const handleReset = () => {
@@ -427,23 +428,6 @@ export function MobilePlaygroundPage() {
                 </div>
               </div>
               <div className="flex-1 p-4 overflow-auto">
-                {/* Game suggestion when running */}
-                {activeTab.isRunning && (
-                  <div
-                    className="mb-4 p-3 rounded-lg bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 cursor-pointer hover:bg-purple-500/20 transition-colors"
-                    onClick={() => setShowGame(true)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-full bg-purple-500/20">
-                        <Gamepad2 className="h-5 w-5 text-purple-400" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">{t('game.waitingLong')}</p>
-                        <p className="text-xs text-muted-foreground">{t('game.clickToPlay')}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
                 {/* Show BatchOutputGrid for batch results, OutputDisplay for single results */}
                 {activeTab.batchResults && activeTab.batchResults.length > 0 ? (
                   <BatchOutputGrid

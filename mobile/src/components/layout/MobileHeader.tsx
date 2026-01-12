@@ -1,11 +1,9 @@
-import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ChevronLeft, Zap, Sun, Moon, Gamepad2 } from 'lucide-react'
+import { ChevronLeft, Zap, Sun, Moon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useThemeStore } from '@/stores/themeStore'
 import { cn } from '@/lib/utils'
-import { GameDialog } from '@mobile/components/games/GameDialog'
 
 // Map paths to page titles (translation key or plain text prefixed with '!')
 const pageTitles: Record<string, string> = {
@@ -35,7 +33,6 @@ export function MobileHeader() {
   const location = useLocation()
   const navigate = useNavigate()
   const { theme, setTheme, resolvedTheme } = useThemeStore()
-  const [showGame, setShowGame] = useState(false)
 
   // Toggle between light and dark
   const toggleTheme = () => {
@@ -120,15 +117,6 @@ export function MobileHeader() {
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            onClick={() => setShowGame(true)}
-            title="Mini Game"
-          >
-            <Gamepad2 className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
             onClick={toggleTheme}
           >
             {isDark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
@@ -145,9 +133,6 @@ export function MobileHeader() {
           )}
         </div>
       </div>
-
-      {/* Game Dialog */}
-      <GameDialog open={showGame} onOpenChange={setShowGame} />
     </header>
   )
 }

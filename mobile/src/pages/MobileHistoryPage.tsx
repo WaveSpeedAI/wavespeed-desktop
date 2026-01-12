@@ -89,7 +89,7 @@ function VideoPreview({ src, enabled }: { src: string; enabled: boolean }) {
   const handleMouseLeave = () => {
     if (videoRef.current) {
       videoRef.current.pause()
-      videoRef.current.currentTime = 0
+      videoRef.current.currentTime = 0.1
     }
   }
 
@@ -120,8 +120,12 @@ function VideoPreview({ src, enabled }: { src: string; enabled: boolean }) {
         muted
         loop
         playsInline
-        preload="metadata"
-        onLoadedData={() => setIsLoaded(true)}
+        preload="auto"
+        onLoadedData={(e) => {
+          const video = e.currentTarget
+          video.currentTime = 0.1  // Seek to first frame for preview
+          setIsLoaded(true)
+        }}
         onError={() => setHasError(true)}
       />
     </div>
@@ -379,9 +383,18 @@ export function MobileHistoryPage() {
       const url = item.outputs[0]
       if (!url.startsWith('http')) continue
 
+      // Extract file extension from URL
+      const urlPath = new URL(url).pathname
+      const ext = urlPath.split('.').pop() || 'png'
+      const filename = `wavespeed_${item.id.slice(-8)}.${ext}`
+
       try {
-        await platform.downloadFile(url, `wavespeed_${item.id.slice(-8)}`)
-        successCount++
+        const result = await platform.downloadFile(url, filename)
+        if (result.success) {
+          successCount++
+        } else {
+          failCount++
+        }
       } catch {
         failCount++
       }
@@ -934,6 +947,7 @@ export function MobileHistoryPage() {
                     outputs={selectedItem.outputs}
                     error={null}
                     isLoading={false}
+                    hideGameButton
                   />
                 </div>
               )}

@@ -256,7 +256,19 @@ class CapacitorPlatformService implements PlatformService {
         // The response.data is already base64 when responseType is 'blob'
         const base64 = response.data as string
 
-        const filePath = `Downloads/${filename}`
+        // Ensure Downloads directory exists
+        const directory = 'Downloads'
+        try {
+          await Filesystem.mkdir({
+            path: directory,
+            directory: Directory.Documents,
+            recursive: true
+          })
+        } catch {
+          // Directory might already exist
+        }
+
+        const filePath = `${directory}/${filename}`
 
         await Filesystem.writeFile({
           path: filePath,

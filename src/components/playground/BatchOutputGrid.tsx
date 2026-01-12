@@ -14,12 +14,65 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { Download, CheckCircle2, XCircle, Save, ExternalLink, Copy, Check, Loader2 } from 'lucide-react'
+import { Download, CheckCircle2, XCircle, ExternalLink, Copy, Check, Loader2 } from 'lucide-react'
 import { AudioPlayer } from '@/components/shared/AudioPlayer'
 import { useAssetsStore, detectAssetType, generateDownloadFilename } from '@/stores/assetsStore'
 import { toast } from '@/hooks/useToast'
 import { cn } from '@/lib/utils'
 import type { BatchResult, BatchQueueItem } from '@/types/batch'
+
+// Check if running in Capacitor native environment
+const isCapacitorNative = () => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return !!(window as any).Capacitor?.isNativePlatform?.()
+  } catch {
+    return false
+  }
+}
+
+// Mobile download helper using Capacitor
+const mobileDownload = async (url: string, filename: string): Promise<{ success: boolean; error?: string }> => {
+  try {
+    // Dynamic imports for Capacitor modules
+    const { CapacitorHttp } = await import('@capacitor/core')
+    const { Filesystem, Directory } = await import('@capacitor/filesystem')
+
+    // Fetch file using CapacitorHttp (bypasses CORS)
+    const response = await CapacitorHttp.get({
+      url,
+      responseType: 'blob'
+    })
+
+    if (response.status !== 200) {
+      return { success: false, error: `HTTP ${response.status}` }
+    }
+
+    // Create Downloads directory
+    const directory = 'Downloads'
+    try {
+      await Filesystem.mkdir({
+        path: directory,
+        directory: Directory.Documents,
+        recursive: true
+      })
+    } catch {
+      // Directory might already exist
+    }
+
+    // Save file
+    const filePath = `${directory}/${filename}`
+    await Filesystem.writeFile({
+      path: filePath,
+      data: response.data as string,
+      directory: Directory.Documents
+    })
+
+    return { success: true }
+  } catch (error) {
+    return { success: false, error: (error as Error).message }
+  }
+}
 
 interface BatchOutputGridProps {
   results: BatchResult[]
@@ -35,16 +88,38 @@ function isUrl(str: string): boolean {
   return str.startsWith('http://') || str.startsWith('https://')
 }
 
+function getUrlExtension(url: string): string | null {
+  try {
+    // Parse URL and get pathname (ignoring query params)
+    const urlObj = new URL(url)
+    const pathname = urlObj.pathname.toLowerCase()
+    // Get the last segment and extract extension
+    const lastSegment = pathname.split('/').pop() || ''
+    const match = lastSegment.match(/\.([a-z0-9]+)$/)
+    return match ? match[1] : null
+  } catch {
+    // Fallback for invalid URLs
+    const match = url.match(/\.([a-z0-9]+)(?:\?.*)?$/i)
+    return match ? match[1].toLowerCase() : null
+  }
+}
+
 function isImageUrl(url: string): boolean {
-  return isUrl(url) && /\.(jpg|jpeg|png|gif|webp|bmp)(\?.*)?$/i.test(url)
+  if (!isUrl(url)) return false
+  const ext = getUrlExtension(url)
+  return ext !== null && ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'avif'].includes(ext)
 }
 
 function isVideoUrl(url: string): boolean {
-  return isUrl(url) && /\.(mp4|webm|mov|avi|mkv)(\?.*)?$/i.test(url)
+  if (!isUrl(url)) return false
+  const ext = getUrlExtension(url)
+  return ext !== null && ['mp4', 'webm', 'mov', 'avi', 'mkv', 'ogv', 'm4v'].includes(ext)
 }
 
 function isAudioUrl(url: string): boolean {
-  return isUrl(url) && /\.(mp3|wav|ogg|flac|aac|m4a|wma)(\?.*)?$/i.test(url)
+  if (!isUrl(url)) return false
+  const ext = getUrlExtension(url)
+  return ext !== null && ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a', 'wma', 'opus'].includes(ext)
 }
 
 export function BatchOutputGrid({
@@ -58,7 +133,6 @@ export function BatchOutputGrid({
 }: BatchOutputGridProps) {
   const { t } = useTranslation()
   const [selectedResult, setSelectedResult] = useState<BatchResult | null>(null)
-  const [savingAll, setSavingAll] = useState(false)
   const [savedIndexes, setSavedIndexes] = useState<Set<number>>(new Set())
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
   const autoSavedIndexesRef = useRef<Set<number>>(new Set())
@@ -70,7 +144,6 @@ export function BatchOutputGrid({
   const failedCount = results.filter(r => r.error).length
   const total = totalCount || results.length
   const progress = total > 0 ? ((completedCount + failedCount) / total) * 100 : 0
-  const allSaved = completedCount > 0 && completedResults.every(r => savedIndexes.has(r.index))
 
   // Auto-save results as they complete
   useEffect(() => {
@@ -146,14 +219,36 @@ export function BatchOutputGrid({
       resultIndex
     })
 
+    // Use Electron API if available (desktop)
     if (window.electronAPI?.downloadFile) {
       const result = await window.electronAPI.downloadFile(url, filename)
       if (!result.success && !result.canceled) {
         console.error('Download failed:', result.error)
       }
-    } else {
-      window.open(url, '_blank')
+      return
     }
+
+    // Use Capacitor if available (mobile native)
+    if (isCapacitorNative()) {
+      const result = await mobileDownload(url, filename)
+      if (result.success) {
+        toast({
+          title: t('common.success'),
+          description: t('freeTools.downloadSuccess')
+        })
+      } else {
+        console.error('Mobile download failed:', result.error)
+        toast({
+          title: t('common.error'),
+          description: result.error || 'Download failed',
+          variant: 'destructive'
+        })
+      }
+      return
+    }
+
+    // Browser fallback: open in new tab
+    window.open(url, '_blank')
   }
 
   const handleDownloadAll = async () => {
@@ -167,47 +262,6 @@ export function BatchOutputGrid({
       }
     }
   }
-
-  const handleSaveAll = useCallback(async () => {
-    if (!modelId) return
-
-    setSavingAll(true)
-    let savedCount = 0
-
-    for (const result of results) {
-      if (result.error) continue
-
-      for (let outputIndex = 0; outputIndex < result.outputs.length; outputIndex++) {
-        const output = result.outputs[outputIndex]
-        if (typeof output !== 'string') continue
-
-        const assetType = detectAssetType(output)
-        if (!assetType) continue
-
-        try {
-          // Each batch item has unique predictionId, so just use outputIndex
-          const saveResult = await saveAsset(output, assetType, {
-            modelId,
-            predictionId: result.prediction?.id,
-            originalUrl: output,
-            resultIndex: outputIndex
-          })
-          if (saveResult) {
-            savedCount++
-            setSavedIndexes(prev => new Set(prev).add(result.index))
-          }
-        } catch (err) {
-          console.error('Failed to save asset:', err)
-        }
-      }
-    }
-
-    setSavingAll(false)
-    toast({
-      title: t('playground.batch.savedAll'),
-      description: t('playground.batch.savedAllDesc', { count: savedCount }),
-    })
-  }, [modelId, results, saveAsset, t])
 
   const handleCopy = async (url: string, index: number) => {
     try {
@@ -267,21 +321,6 @@ export function BatchOutputGrid({
           >
             <Download className="h-3 w-3 mr-1" />
             {t('playground.batch.downloadAll')}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleSaveAll}
-            disabled={completedCount === 0 || savingAll || !modelId || isRunning || allSaved}
-          >
-            {savingAll ? (
-              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-            ) : allSaved ? (
-              <Check className="h-3 w-3 mr-1" />
-            ) : (
-              <Save className="h-3 w-3 mr-1" />
-            )}
-            {t('playground.batch.saveAllToAssets')}
           </Button>
           <Button
             variant="ghost"
@@ -350,7 +389,13 @@ export function BatchOutputGrid({
                       src={media.url}
                       className="w-full h-full object-cover"
                       muted
-                      preload="metadata"
+                      playsInline
+                      preload="auto"
+                      onLoadedData={(e) => {
+                        // Seek to first frame to show preview
+                        const video = e.currentTarget
+                        video.currentTime = 0.1
+                      }}
                     />
                   ) : media?.type === 'audio' ? (
                     <div className="text-muted-foreground text-xs">Audio</div>
@@ -424,6 +469,8 @@ export function BatchOutputGrid({
                         <video
                           src={outputStr}
                           controls
+                          playsInline
+                          preload="auto"
                           className="max-w-full rounded-lg"
                         />
                       )}

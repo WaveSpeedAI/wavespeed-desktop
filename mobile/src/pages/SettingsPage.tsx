@@ -385,42 +385,42 @@ export function SettingsPage() {
       type: 'direct' | 'worker'
     }> = [
       {
-        name: 'FFmpeg Core (JS)',
+        name: t('settings.cache.models.ffmpegJs'),
         url: `${ffmpegBase}/ffmpeg-core.js`,
         cacheName: 'ffmpeg-wasm-cache',
         size: '~150KB',
         type: 'direct'
       },
       {
-        name: 'FFmpeg Core (WASM)',
+        name: t('settings.cache.models.ffmpegWasm'),
         url: `${ffmpegBase}/ffmpeg-core.wasm`,
         cacheName: 'ffmpeg-wasm-cache',
         size: '~24MB',
         type: 'direct'
       },
       {
-        name: 'Background Remover',
+        name: t('settings.cache.models.backgroundRemover'),
         url: '', // Uses worker-based warm-up
         cacheName: 'background-removal-assets', // Library's internal cache name
         size: '~44MB',
         type: 'worker'
       },
       {
-        name: 'Image Eraser (LaMa)',
+        name: t('settings.cache.models.imageEraser'),
         url: 'https://huggingface.co/opencv/inpainting_lama/resolve/main/inpainting_lama_2025jan.onnx',
         cacheName: 'lama-model-cache',
         size: '~200MB',
         type: 'direct'
       },
       {
-        name: 'SAM Vision Encoder',
+        name: t('settings.cache.models.samEncoder'),
         url: 'https://huggingface.co/Xenova/slimsam-77-uniform/resolve/main/onnx/vision_encoder_quantized.onnx',
         cacheName: 'sam-model-cache',
         size: '~9MB',
         type: 'direct'
       },
       {
-        name: 'SAM Prompt Decoder',
+        name: t('settings.cache.models.samDecoder'),
         url: 'https://huggingface.co/Xenova/slimsam-77-uniform/resolve/main/onnx/prompt_encoder_mask_decoder_quantized.onnx',
         cacheName: 'sam-model-cache',
         size: '~5MB',

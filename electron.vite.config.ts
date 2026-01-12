@@ -33,7 +33,9 @@ export default defineConfig({
     plugins: [react()],
     build: {
       rollupOptions: {
-        input: resolve(__dirname, 'index.html')
+        input: resolve(__dirname, 'index.html'),
+        // Externalize Capacitor modules - they're only used in mobile builds
+        external: ['@capacitor/core', '@capacitor/filesystem']
       }
     },
     server: {

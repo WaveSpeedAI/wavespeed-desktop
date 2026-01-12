@@ -33,9 +33,9 @@ const isCapacitorNative = () => {
 // Mobile download helper using Capacitor
 const mobileDownload = async (url: string, filename: string): Promise<{ success: boolean; error?: string }> => {
   try {
-    // Dynamic imports for Capacitor modules
-    const { CapacitorHttp } = await import('@capacitor/core')
-    const { Filesystem, Directory } = await import('@capacitor/filesystem')
+    // Dynamic imports for Capacitor modules (vite-ignore to prevent desktop build errors)
+    const { CapacitorHttp } = await import(/* @vite-ignore */ '@capacitor/core')
+    const { Filesystem, Directory } = await import(/* @vite-ignore */ '@capacitor/filesystem')
 
     // Fetch file using CapacitorHttp (bypasses CORS)
     const response = await CapacitorHttp.get({

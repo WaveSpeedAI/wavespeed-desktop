@@ -52,6 +52,8 @@
     "@radix-ui/react-tooltip": "^1.1.3",
     "@tanstack/react-virtual": "^3.13.12",
     "@tensorflow/tfjs": "~4.11.0",
+    "@tensorflow/tfjs-backend-wasm": "~4.11.0",
+    "@tensorflow/tfjs-core": "~4.11.0",
     "@upscalerjs/default-model": "^1.0.0-beta.17",
     "@upscalerjs/esrgan-medium": "^1.0.0-beta.13",
     "@upscalerjs/esrgan-slim": "^1.0.0-beta.12",

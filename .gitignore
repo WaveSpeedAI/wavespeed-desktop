@@ -92,6 +92,7 @@ tmpclaude-*
 README.zh-CN.md
 
 # Mobile (Capacitor/Android)
+mobile/SESSION_LOG*.md
 mobile/android/app/build/
 mobile/android/.gradle/
 mobile/android/build/

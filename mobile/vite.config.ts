@@ -101,6 +101,7 @@ export default defineConfig({
       '@/components/playground/FileUpload': path.resolve(__dirname, './src/components/playground/FileUpload'),
       '@/components/playground/FormField': path.resolve(__dirname, './src/components/playground/FormField'),
       '@/components/playground/PromptOptimizer': path.resolve(__dirname, './src/components/playground/PromptOptimizer'),
+      '@/components/playground/AudioRecorder': path.resolve(__dirname, './src/components/playground/AudioRecorder'),
       '@/components/playground/SizeSelector': path.resolve(__dirname, './src/components/playground/SizeSelector'),
       '@/pages/SettingsPage': path.resolve(__dirname, './src/pages/SettingsPage'),
       // Mobile-specific code (must come before @/ to avoid prefix matching issues)

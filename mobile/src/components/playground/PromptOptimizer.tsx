@@ -4,17 +4,18 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Sparkles, Loader2 } from 'lucide-react'
 import { useModelsStore } from '@/stores/modelsStore'
 import { apiClient } from '@/api/client'
 import { schemaToFormFields, getDefaultValues, type FormFieldConfig } from '@/lib/schemaToForm'
-import { FormField } from '@/components/playground/FormField'
+import { FormField } from './FormField'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface PromptOptimizerProps {
   currentPrompt: string
@@ -121,24 +122,29 @@ export function PromptOptimizer({ currentPrompt, onOptimized, disabled, modelTyp
 
   return (
     <>
-      {/* Mobile: More visible button with text label */}
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="h-7 px-2 gap-1 text-xs shrink-0 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-purple-500/30 hover:border-purple-500/50 hover:from-purple-500/20 hover:to-pink-500/20"
-        onClick={() => setOpen(true)}
-        disabled={disabled}
-      >
-        <Sparkles className="h-3 w-3 text-purple-500" />
-        <span className="text-purple-600 dark:text-purple-400">AI</span>
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 shrink-0"
+            onClick={() => setOpen(true)}
+            disabled={disabled}
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="top">
+          <p>{t('playground.optimizer.tooltip')}</p>
+        </TooltipContent>
+      </Tooltip>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-[90vw] sm:max-w-md">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-purple-500" />
+              <Sparkles className="h-5 w-5" />
               {t('playground.optimizer.title')}
               {optimizerModel?.base_price !== undefined && (
                 <span className="text-sm font-normal text-muted-foreground">
@@ -147,7 +153,7 @@ export function PromptOptimizer({ currentPrompt, onOptimized, disabled, modelTyp
               )}
             </DialogTitle>
             <DialogDescription className="sr-only">
-              {t('playground.optimizer.description', 'Use AI to optimize your prompt for better results')}
+              {t('playground.optimizer.tooltip')}
             </DialogDescription>
           </DialogHeader>
 
@@ -180,11 +186,11 @@ export function PromptOptimizer({ currentPrompt, onOptimized, disabled, modelTyp
             <p className="text-sm text-destructive">{error}</p>
           )}
 
-          <DialogFooter className="flex-row gap-2">
-            <Button variant="outline" className="flex-1" onClick={() => setOpen(false)} disabled={isOptimizing}>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)} disabled={isOptimizing}>
               {t('common.cancel')}
             </Button>
-            <Button className="flex-1" onClick={handleOptimize} disabled={isOptimizing || !optimizerModel}>
+            <Button onClick={handleOptimize} disabled={isOptimizing || !optimizerModel}>
               {isOptimizing ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

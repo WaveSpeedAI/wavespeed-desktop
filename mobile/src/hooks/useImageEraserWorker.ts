@@ -1,5 +1,6 @@
 import { useRef, useCallback, useEffect } from 'react'
 import type { ProgressDetail } from '@/types/progress'
+import { getDownloadTimeoutMs } from '@/stores/settingsStore'
 
 interface WorkerMessage {
   type: 'phase' | 'progress' | 'ready' | 'result' | 'error' | 'disposed'
@@ -63,7 +64,6 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
     isInitializedRef.current = false
     hasFailedRef.current = false
 
-    // Use mobile-specific worker
     workerRef.current = new Worker(
       new URL('../workers/imageEraser.worker.ts', import.meta.url),
       { type: 'module' }
@@ -118,6 +118,12 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
     }
   }, [])
 
+  const ensureWorker = useCallback(() => {
+    if (!workerRef.current) {
+      createWorker()
+    }
+  }, [createWorker])
+
   // Initialize worker
   useEffect(() => {
     createWorker()
@@ -132,6 +138,8 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
 
   const initModel = useCallback((): Promise<void> => {
     return new Promise((resolve, reject) => {
+      ensureWorker()
+
       if (!workerRef.current) {
         reject(new Error('Worker not initialized'))
         return
@@ -144,25 +152,13 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
       }
 
       const id = idCounterRef.current++
-      let cleaned = false
-
-      const cleanup = () => {
-        if (cleaned) return
-        cleaned = true
-        readyCallbacksRef.current.delete(id)
-        workerRef.current?.removeEventListener('message', handleError)
-      }
-
-      // Wrap resolve to ensure cleanup on success
-      readyCallbacksRef.current.set(id, () => {
-        cleanup()
-        resolve()
-      })
+      readyCallbacksRef.current.set(id, resolve)
 
       // Set up error handler for this specific call
       const handleError = (e: MessageEvent<WorkerMessage>) => {
         if (e.data.type === 'error') {
-          cleanup()
+          readyCallbacksRef.current.delete(id)
+          workerRef.current?.removeEventListener('message', handleError)
           reject(new Error(e.data.payload as string))
         }
       }
@@ -170,10 +166,13 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
 
       workerRef.current.postMessage({
         type: 'init',
-        payload: { id }
+        payload: {
+          id,
+          timeout: getDownloadTimeoutMs()
+        }
       })
     })
-  }, [])
+  }, [ensureWorker])
 
   const removeObjects = useCallback(
     (
@@ -183,31 +182,21 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
       height: number
     ): Promise<EraserResult> => {
       return new Promise((resolve, reject) => {
+        ensureWorker()
+
         if (!workerRef.current) {
           reject(new Error('Worker not initialized'))
           return
         }
 
         const id = idCounterRef.current++
-        let cleaned = false
-
-        const cleanup = () => {
-          if (cleaned) return
-          cleaned = true
-          callbacksRef.current.delete(id)
-          workerRef.current?.removeEventListener('message', handleError)
-        }
-
-        // Wrap resolve to ensure cleanup on success
-        callbacksRef.current.set(id, (result) => {
-          cleanup()
-          resolve(result)
-        })
+        callbacksRef.current.set(id, resolve)
 
         // Set up error handler for this specific call
         const handleError = (e: MessageEvent<WorkerMessage>) => {
           if (e.data.type === 'error') {
-            cleanup()
+            callbacksRef.current.delete(id)
+            workerRef.current?.removeEventListener('message', handleError)
             reject(new Error(e.data.payload as string))
           }
         }
@@ -232,11 +221,13 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
         )
       })
     },
-    []
+    [ensureWorker]
   )
 
   const dispose = useCallback(() => {
     workerRef.current?.postMessage({ type: 'dispose' })
+    workerRef.current?.terminate()
+    workerRef.current = null
     isInitializedRef.current = false
   }, [])
 
@@ -247,5 +238,23 @@ export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) 
     createWorker()
   }, [createWorker])
 
-  return { initModel, removeObjects, dispose, isInitialized, hasFailed, retryWorker }
+  // Cancel ongoing processing by terminating and recreating the worker
+  const cancel = useCallback(() => {
+    // Clear all pending callbacks
+    for (const [id] of callbacksRef.current) {
+      callbacksRef.current.delete(id)
+    }
+    for (const [id] of readyCallbacksRef.current) {
+      readyCallbacksRef.current.delete(id)
+    }
+    // Terminate and recreate worker
+    if (workerRef.current) {
+      workerRef.current.terminate()
+      workerRef.current = null
+    }
+    isInitializedRef.current = false
+    createWorker()
+  }, [createWorker])
+
+  return { initModel, removeObjects, dispose, isInitialized, hasFailed, retryWorker, cancel }
 }

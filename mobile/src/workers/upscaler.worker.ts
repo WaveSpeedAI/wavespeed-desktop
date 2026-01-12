@@ -1,59 +1,51 @@
 import Upscaler from 'upscaler'
-import * as tf from '@tensorflow/tfjs'
+import * as tf from '@tensorflow/tfjs-core'
+import '@tensorflow/tfjs-backend-wasm'
 
-// Mobile only bundles slim models to keep APK size reasonable (~4MB)
-// Medium and thick models would add ~11MB and ~100MB+ respectively
 type ModelType = 'slim' | 'medium' | 'thick'
 type ScaleType = '2x' | '3x' | '4x'
 
 let upscaler: InstanceType<typeof Upscaler> | null = null
 let backendInitialized = false
 
-/**
- * Initialize TensorFlow.js backend with WebGL -> CPU fallback
- */
-async function initBackend(): Promise<string> {
-  if (backendInitialized) {
-    return tf.getBackend()
-  }
+// Initialize WASM backend (more reliable than WebGL, avoids CONTEXT_LOST errors)
+async function initBackend() {
+  if (backendInitialized) return
 
-  // Try WebGL first (faster)
   try {
-    await tf.setBackend('webgl')
-    await tf.ready()
-
-    // Test WebGL by creating a small tensor
-    const testTensor = tf.tensor([1, 2, 3])
-    testTensor.dispose()
-
-    backendInitialized = true
-    // WebGL backend initialized
-    return 'webgl'
-  } catch (e) {
-    // WebGL backend fallback
-  }
-
-  // Fall back to CPU (slower but more compatible)
-  try {
-    await tf.setBackend('cpu')
+    // Try WASM backend first (most reliable)
+    await tf.setBackend('wasm')
     await tf.ready()
     backendInitialized = true
-    // CPU backend initialized
-    return 'cpu'
+    console.log('[Upscaler] Using WASM backend')
   } catch (e) {
-    throw new Error('Failed to initialize any TensorFlow.js backend')
+    console.warn('[Upscaler] WASM backend failed, falling back to default:', e)
+    // Fall back to default (WebGL)
+    await tf.ready()
+    backendInitialized = true
+    console.log('[Upscaler] Using default backend:', tf.getBackend())
   }
 }
 
-const getModel = async (_model: ModelType, scale: ScaleType) => {
-  // Mobile only bundles slim models - always use slim regardless of requested model type
-  // This keeps APK size reasonable (~4MB vs 100MB+ for all models)
+const getModel = async (model: ModelType, scale: ScaleType) => {
   const modelMap = {
-    '2x': () => import('@upscalerjs/esrgan-slim/2x'),
-    '3x': () => import('@upscalerjs/esrgan-slim/3x'),
-    '4x': () => import('@upscalerjs/esrgan-slim/4x')
+    slim: {
+      '2x': () => import('@upscalerjs/esrgan-slim/2x'),
+      '3x': () => import('@upscalerjs/esrgan-slim/3x'),
+      '4x': () => import('@upscalerjs/esrgan-slim/4x')
+    },
+    medium: {
+      '2x': () => import('@upscalerjs/esrgan-medium/2x'),
+      '3x': () => import('@upscalerjs/esrgan-medium/3x'),
+      '4x': () => import('@upscalerjs/esrgan-medium/4x')
+    },
+    thick: {
+      '2x': () => import('@upscalerjs/esrgan-thick/2x'),
+      '3x': () => import('@upscalerjs/esrgan-thick/3x'),
+      '4x': () => import('@upscalerjs/esrgan-thick/4x')
+    }
   }
-  return (await modelMap[scale]()).default
+  return (await modelMap[model][scale]()).default
 }
 
 self.onmessage = async (e: MessageEvent) => {
@@ -89,17 +81,8 @@ self.onmessage = async (e: MessageEvent) => {
           }
         })
 
-        // Initialize backend first
-        const backend = await initBackend()
-
-        self.postMessage({
-          type: 'progress',
-          payload: {
-            phase: 'download',
-            progress: 20,
-            id
-          }
-        })
+        // Initialize WASM backend before loading model (fixes CONTEXT_LOST_WEBGL errors)
+        await initBackend()
 
         const modelDef = await getModel(model, scale)
 
@@ -123,10 +106,7 @@ self.onmessage = async (e: MessageEvent) => {
           }
         })
 
-        self.postMessage({
-          type: 'loaded',
-          payload: { id, backend }
-        })
+        self.postMessage({ type: 'loaded', payload: { id } })
         break
       }
 
@@ -176,13 +156,29 @@ self.onmessage = async (e: MessageEvent) => {
         const pixelCount = width * height
         const uint8Data = new Uint8ClampedArray(pixelCount * 4)
 
+        // Track if result is all black (indicates processing failure)
+        let hasNonBlackPixel = false
+
         for (let i = 0; i < pixelCount; i++) {
           const srcIdx = i * channels
           const dstIdx = i * 4
-          uint8Data[dstIdx] = Math.round(data[srcIdx]) // R
-          uint8Data[dstIdx + 1] = Math.round(data[srcIdx + 1]) // G
-          uint8Data[dstIdx + 2] = Math.round(data[srcIdx + 2]) // B
+          const r = Math.round(data[srcIdx])
+          const g = Math.round(data[srcIdx + 1])
+          const b = Math.round(data[srcIdx + 2])
+          uint8Data[dstIdx] = r // R
+          uint8Data[dstIdx + 1] = g // G
+          uint8Data[dstIdx + 2] = b // B
           uint8Data[dstIdx + 3] = 255 // A (fully opaque)
+
+          // Check if any pixel is non-black (threshold > 5 to account for noise)
+          if (!hasNonBlackPixel && (r > 5 || g > 5 || b > 5)) {
+            hasNonBlackPixel = true
+          }
+        }
+
+        // If result is all black, processing likely failed
+        if (!hasNonBlackPixel) {
+          throw new Error('Processing failed: output is all black. Please try again.')
         }
 
         const resultImageData = new ImageData(uint8Data, width, height)
@@ -213,20 +209,6 @@ self.onmessage = async (e: MessageEvent) => {
       }
     }
   } catch (error) {
-    const errorMessage = (error as Error).message
-
-    // Check for WebGL-specific errors and provide helpful message
-    if (errorMessage.includes('shader') ||
-        errorMessage.includes('WebGL') ||
-        errorMessage.includes('CONTEXT_LOST')) {
-      // Reset backend state to retry with CPU next time
-      backendInitialized = false
-      self.postMessage({
-        type: 'error',
-        payload: 'WebGL not supported on this device. Please try again (will use CPU mode).'
-      })
-    } else {
-      self.postMessage({ type: 'error', payload: errorMessage })
-    }
+    self.postMessage({ type: 'error', payload: (error as Error).message })
   }
 }

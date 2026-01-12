@@ -75,7 +75,6 @@ export function useSegmentAnythingWorker(options: UseSegmentAnythingOptions = {}
     isInitializedRef.current = false
     isSegmentedRef.current = false
 
-    // Use mobile-specific worker
     workerRef.current = new Worker(
       new URL('../workers/segmentAnything.worker.ts', import.meta.url),
       { type: 'module' }
@@ -154,11 +153,17 @@ export function useSegmentAnythingWorker(options: UseSegmentAnythingOptions = {}
     }
 
     workerRef.current.onerror = (e) => {
-      // Worker error handled via onError callback
+      console.error('Worker error:', e)
       hasFailedRef.current = true
       optionsRef.current.onError?.(e.message || 'Worker error')
     }
   }, [])
+
+  const ensureWorker = useCallback(() => {
+    if (!workerRef.current) {
+      createWorker()
+    }
+  }, [createWorker])
 
   // Initialize worker on mount
   useEffect(() => {
@@ -173,29 +178,20 @@ export function useSegmentAnythingWorker(options: UseSegmentAnythingOptions = {}
 
   const initModel = useCallback((): Promise<void> => {
     return new Promise((resolve, reject) => {
+      ensureWorker()
+
       if (!workerRef.current) {
         reject(new Error('Worker not initialized'))
         return
       }
 
       const id = idCounterRef.current++
-      let cleaned = false
-
-      const cleanup = () => {
-        if (cleaned) return
-        cleaned = true
-        initCallbacksRef.current.delete(id)
-        workerRef.current?.removeEventListener('message', handleError)
-      }
-
-      initCallbacksRef.current.set(id, () => {
-        cleanup()
-        resolve()
-      })
+      initCallbacksRef.current.set(id, resolve)
 
       const handleError = (e: MessageEvent<WorkerMessage>) => {
         if (e.data.type === 'error' && (e.data.payload as ErrorPayload).id === id) {
-          cleanup()
+          initCallbacksRef.current.delete(id)
+          workerRef.current?.removeEventListener('message', handleError)
           reject(new Error((e.data.payload as ErrorPayload).message))
         }
       }
@@ -203,33 +199,24 @@ export function useSegmentAnythingWorker(options: UseSegmentAnythingOptions = {}
 
       workerRef.current.postMessage({ type: 'init', payload: { id } })
     })
-  }, [])
+  }, [ensureWorker])
 
   const segmentImage = useCallback((imageDataUrl: string): Promise<void> => {
     return new Promise((resolve, reject) => {
+      ensureWorker()
+
       if (!workerRef.current) {
         reject(new Error('Worker not initialized'))
         return
       }
 
       const id = idCounterRef.current++
-      let cleaned = false
-
-      const cleanup = () => {
-        if (cleaned) return
-        cleaned = true
-        segmentCallbacksRef.current.delete(id)
-        workerRef.current?.removeEventListener('message', handleError)
-      }
-
-      segmentCallbacksRef.current.set(id, () => {
-        cleanup()
-        resolve()
-      })
+      segmentCallbacksRef.current.set(id, resolve)
 
       const handleError = (e: MessageEvent<WorkerMessage>) => {
         if (e.data.type === 'error' && (e.data.payload as ErrorPayload).id === id) {
-          cleanup()
+          segmentCallbacksRef.current.delete(id)
+          workerRef.current?.removeEventListener('message', handleError)
           reject(new Error((e.data.payload as ErrorPayload).message))
         }
       }
@@ -237,33 +224,24 @@ export function useSegmentAnythingWorker(options: UseSegmentAnythingOptions = {}
 
       workerRef.current.postMessage({ type: 'segment', payload: { id, imageDataUrl } })
     })
-  }, [])
+  }, [ensureWorker])
 
   const decodeMask = useCallback((points: PointPrompt[]): Promise<MaskResult> => {
     return new Promise((resolve, reject) => {
+      ensureWorker()
+
       if (!workerRef.current) {
         reject(new Error('Worker not initialized'))
         return
       }
 
       const id = idCounterRef.current++
-      let cleaned = false
-
-      const cleanup = () => {
-        if (cleaned) return
-        cleaned = true
-        maskCallbacksRef.current.delete(id)
-        workerRef.current?.removeEventListener('message', handleError)
-      }
-
-      maskCallbacksRef.current.set(id, (result) => {
-        cleanup()
-        resolve(result)
-      })
+      maskCallbacksRef.current.set(id, resolve)
 
       const handleError = (e: MessageEvent<WorkerMessage>) => {
         if (e.data.type === 'error' && (e.data.payload as ErrorPayload).id === id) {
-          cleanup()
+          maskCallbacksRef.current.delete(id)
+          workerRef.current?.removeEventListener('message', handleError)
           reject(new Error((e.data.payload as ErrorPayload).message))
         }
       }
@@ -271,10 +249,12 @@ export function useSegmentAnythingWorker(options: UseSegmentAnythingOptions = {}
 
       workerRef.current.postMessage({ type: 'decodeMask', payload: { id, points } })
     })
-  }, [])
+  }, [ensureWorker])
 
   const reset = useCallback((): Promise<void> => {
     return new Promise((resolve, reject) => {
+      ensureWorker()
+
       if (!workerRef.current) {
         reject(new Error('Worker not initialized'))
         return
@@ -285,10 +265,12 @@ export function useSegmentAnythingWorker(options: UseSegmentAnythingOptions = {}
 
       workerRef.current.postMessage({ type: 'reset', payload: { id } })
     })
-  }, [])
+  }, [ensureWorker])
 
   const dispose = useCallback(() => {
     workerRef.current?.postMessage({ type: 'dispose', payload: {} })
+    workerRef.current?.terminate()
+    workerRef.current = null
     isSegmentedRef.current = false
   }, [])
 
@@ -300,6 +282,31 @@ export function useSegmentAnythingWorker(options: UseSegmentAnythingOptions = {}
   const checkIsSegmented = useCallback(() => isSegmentedRef.current, [])
   const checkHasFailed = useCallback(() => hasFailedRef.current, [])
 
+  // Cancel ongoing processing by terminating and recreating the worker
+  const cancel = useCallback(() => {
+    // Clear all pending callbacks
+    for (const [id] of maskCallbacksRef.current) {
+      maskCallbacksRef.current.delete(id)
+    }
+    for (const [id] of segmentCallbacksRef.current) {
+      segmentCallbacksRef.current.delete(id)
+    }
+    for (const [id] of resetCallbacksRef.current) {
+      resetCallbacksRef.current.delete(id)
+    }
+    for (const [id] of initCallbacksRef.current) {
+      initCallbacksRef.current.delete(id)
+    }
+    // Terminate and recreate worker
+    if (workerRef.current) {
+      workerRef.current.terminate()
+      workerRef.current = null
+    }
+    isInitializedRef.current = false
+    isSegmentedRef.current = false
+    createWorker()
+  }, [createWorker])
+
   return {
     initModel,
     segmentImage,
@@ -309,6 +316,7 @@ export function useSegmentAnythingWorker(options: UseSegmentAnythingOptions = {}
     retryModel: retryWorker,
     isInitialized: checkIsInitialized,
     isSegmented: checkIsSegmented,
-    hasFailed: checkHasFailed
+    hasFailed: checkHasFailed,
+    cancel
   }
 }

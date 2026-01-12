@@ -64,7 +64,6 @@ export function useBackgroundRemoverWorker(
     }
     hasFailedRef.current = false
 
-    // Use mobile-specific worker
     workerRef.current = new Worker(
       new URL('../workers/backgroundRemover.worker.ts', import.meta.url),
       { type: 'module' }
@@ -117,6 +116,12 @@ export function useBackgroundRemoverWorker(
     }
   }, [])
 
+  const ensureWorker = useCallback(() => {
+    if (!workerRef.current) {
+      createWorker()
+    }
+  }, [createWorker])
+
   // Initialize worker
   useEffect(() => {
     createWorker()
@@ -135,31 +140,21 @@ export function useBackgroundRemoverWorker(
       outputType: OutputType = 'foreground'
     ): Promise<Blob> => {
       return new Promise((resolve, reject) => {
+        ensureWorker()
+
         if (!workerRef.current) {
           reject(new Error('Worker not initialized'))
           return
         }
 
         const id = idCounterRef.current++
-        let cleaned = false
-
-        const cleanup = () => {
-          if (cleaned) return
-          cleaned = true
-          callbacksRef.current.delete(id)
-          workerRef.current?.removeEventListener('message', handleError)
-        }
-
-        // Wrap resolve to ensure cleanup on success
-        callbacksRef.current.set(id, (result) => {
-          cleanup()
-          resolve(result)
-        })
+        callbacksRef.current.set(id, resolve)
 
         // Set up error handler for this specific call
         const handleError = (e: MessageEvent<WorkerMessage>) => {
           if (e.data.type === 'error') {
-            cleanup()
+            callbacksRef.current.delete(id)
+            workerRef.current?.removeEventListener('message', handleError)
             reject(new Error(e.data.payload as string))
           }
         }
@@ -171,37 +166,27 @@ export function useBackgroundRemoverWorker(
         })
       })
     },
-    []
+    [ensureWorker]
   )
 
   const removeBackgroundAll = useCallback(
     (imageBlob: Blob, model: ModelType = 'isnet_fp16'): Promise<AllOutputsResult> => {
       return new Promise((resolve, reject) => {
+        ensureWorker()
+
         if (!workerRef.current) {
           reject(new Error('Worker not initialized'))
           return
         }
 
         const id = idCounterRef.current++
-        let cleaned = false
-
-        const cleanup = () => {
-          if (cleaned) return
-          cleaned = true
-          callbacksAllRef.current.delete(id)
-          workerRef.current?.removeEventListener('message', handleError)
-        }
-
-        // Wrap resolve to ensure cleanup on success
-        callbacksAllRef.current.set(id, (result) => {
-          cleanup()
-          resolve(result)
-        })
+        callbacksAllRef.current.set(id, resolve)
 
         // Set up error handler for this specific call
         const handleError = (e: MessageEvent<WorkerMessage>) => {
           if (e.data.type === 'error') {
-            cleanup()
+            callbacksAllRef.current.delete(id)
+            workerRef.current?.removeEventListener('message', handleError)
             reject(new Error(e.data.payload as string))
           }
         }
@@ -213,11 +198,13 @@ export function useBackgroundRemoverWorker(
         })
       })
     },
-    []
+    [ensureWorker]
   )
 
   const dispose = useCallback(() => {
     workerRef.current?.postMessage({ type: 'dispose' })
+    workerRef.current?.terminate()
+    workerRef.current = null
   }, [])
 
   const retryWorker = useCallback(() => {
@@ -226,5 +213,22 @@ export function useBackgroundRemoverWorker(
 
   const hasFailed = useCallback(() => hasFailedRef.current, [])
 
-  return { removeBackground, removeBackgroundAll, dispose, retryWorker, hasFailed }
+  // Cancel ongoing processing by terminating and recreating the worker
+  const cancel = useCallback(() => {
+    // Clear all pending callbacks
+    for (const [id] of callbacksRef.current) {
+      callbacksRef.current.delete(id)
+    }
+    for (const [id] of callbacksAllRef.current) {
+      callbacksAllRef.current.delete(id)
+    }
+    // Terminate and recreate worker
+    if (workerRef.current) {
+      workerRef.current.terminate()
+      workerRef.current = null
+    }
+    createWorker()
+  }, [createWorker])
+
+  return { removeBackground, removeBackgroundAll, dispose, retryWorker, hasFailed, cancel }
 }

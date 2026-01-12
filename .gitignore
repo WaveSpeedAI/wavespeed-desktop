@@ -89,6 +89,7 @@ tmpclaude-*
 
 # Local development
 *.local.json
+README.zh-CN.md
 
 # Mobile (Capacitor/Android)
 mobile/android/app/build/

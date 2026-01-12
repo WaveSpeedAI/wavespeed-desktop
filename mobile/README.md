@@ -1,318 +1,318 @@
 # WaveSpeed Mobile
 
-WaveSpeed Mobile 是 [WaveSpeed AI](https://wavespeed.ai) 的官方 Android 移动客户端，基于 React + Capacitor 构建，与桌面端共享约 70% 代码，同时针对移动端进行了深度优化。
+WaveSpeed Mobile is the official Android client for [WaveSpeed AI](https://wavespeed.ai), built with React + Capacitor. It shares ~70% of code with the desktop app while being deeply optimized for mobile experience.
 
-## 版本信息
+## Version Info
 
-- **当前版本**: 0.8.1
-- **包名**: `ai.wavespeed.mobile`
-- **最低支持**: Android 5.0 (API 21)
+- **Current Version**: 0.8.1
+- **Package Name**: `ai.wavespeed.mobile`
+- **Minimum Support**: Android 5.0 (API 21)
 
-## 功能介绍
+## Features
 
-### 核心功能
+### Core Features
 
-#### 1. 模型浏览 (Models)
-- 浏览所有可用的 WaveSpeed AI 模型
-- 支持搜索和筛选
-- 点击模型直接进入 Playground 使用
+#### 1. Model Browser (Models)
+- Browse all available WaveSpeed AI models
+- Search and filter support
+- Tap a model to use it in Playground
 
-#### 2. AI 创作工坊 (Playground)
-- **输入/输出双视图**: 移动端特有的标签切换设计，充分利用屏幕空间
-- **动态表单**: 根据模型 Schema 自动生成参数表单
-- **支持的输入类型**:
-  - 文本输入（含 AI 提示词优化）
-  - 滑块调节
-  - 下拉选择
-  - 开关切换
-  - 文件上传（图片/视频/音频）
-  - LoRA 选择器
-  - 尺寸选择器
-  - 遮罩编辑器
-- **实时定价**: 显示预估费用
-- **自动切换**: 生成完成后自动跳转到输出视图
+#### 2. AI Workshop (Playground)
+- **Input/Output Dual View**: Mobile-specific tab switching design for better screen utilization
+- **Dynamic Forms**: Auto-generated parameter forms based on model schema
+- **Supported Input Types**:
+  - Text input (with AI prompt optimization)
+  - Slider adjustment
+  - Dropdown selection
+  - Toggle switches
+  - File upload (image/video/audio)
+  - LoRA selector
+  - Size selector
+  - Mask editor
+- **Real-time Pricing**: Display estimated cost
+- **Auto Switch**: Automatically switch to output view when generation completes
 
-#### 3. 模板管理 (Templates)
-- 保存常用参数配置为模板
-- 支持模板重命名
-- 批量导出/导入模板（JSON 格式）
-- 按模型分组浏览
-- 一键应用模板到 Playground
+#### 3. Template Management (Templates)
+- Save frequently used parameter configurations as templates
+- Support template renaming
+- Batch export/import templates (JSON format)
+- Browse by model groups
+- One-tap apply template to Playground
 
-#### 4. 历史记录 (History)
-- 网格视图展示历史生成记录
-- 支持状态筛选：全部、已完成、失败、已归档
-- 长按进入批量选择模式
-- 批量删除和批量下载
-- 缩略图预览（图片/视频/音频/JSON/文本）
-- 查看详细信息
-- 保存为模板功能
-- 本地输入参数缓存（带书签图标的记录可保存为模板）
+#### 4. History
+- Grid view for historical generation records
+- Status filter: All, Completed, Failed, Archived
+- Long-press to enter batch selection mode
+- Batch delete and batch download
+- Thumbnail preview (image/video/audio/JSON/text)
+- View detailed information
+- Save as template feature
+- Local input parameter cache (records with bookmark icon can be saved as templates)
 
-#### 5. 设置 (Settings)
-- API 密钥管理
-- 账户余额查询
-- 主题切换（自动/深色/浅色）
-- 语言选择（支持 18 种语言）
-- 自动保存设置
+#### 5. Settings
+- API key management
+- Account balance inquiry
+- Theme switching (Auto/Dark/Light)
+- Language selection (18 languages supported)
+- Auto-save settings
 
-### 免费工具 (Free Tools)
+### Free Tools
 
-无需 API 密钥即可使用的本地 AI 工具：
+Local AI tools that work without API key:
 
-#### 1. 视频增强 (Video Enhancer)
-- 逐帧 AI 超分辨率放大
-- 支持 2x-4x 放大倍数
-- 三种质量选项（快速/平衡/高质量）
-- 实时进度和预估剩余时间
-- 输出 WebM 格式（30 FPS）
+#### 1. Video Enhancer
+- Frame-by-frame AI super-resolution upscaling
+- Support 2x-4x upscaling
+- Three quality options (Fast/Balanced/High Quality)
+- Real-time progress and ETA
+- Output WebM format (30 FPS)
 
-#### 2. 图片增强 (Image Enhancer)
-- AI 图片超分辨率
-- 支持 2x-4x 放大
-- ESRGAN 模型（slim/medium/thick）
-- 下载 PNG/WebP 格式
+#### 2. Image Enhancer
+- AI image super-resolution
+- Support 2x-4x upscaling
+- ESRGAN models (slim/medium/thick)
+- Download PNG/WebP format
 
-#### 3. 背景移除 (Background Remover)
-- AI 自动识别并移除背景
-- 同时输出三种结果：
-  - 前景（透明背景）
-  - 背景（主体被移除）
-  - 遮罩（灰度分割图）
-- 自动检测 GPU 加速
+#### 3. Background Remover
+- AI automatic background removal
+- Three simultaneous outputs:
+  - Foreground (transparent background)
+  - Background (subject removed)
+  - Mask (grayscale segmentation)
+- Auto GPU acceleration detection
 
-#### 4. 图片擦除 (Image Eraser)
-- 涂抹移除图片中的物体
-- LaMa 修复模型
-- 画笔/橡皮/填充工具
-- 撤销/重做支持
-- 智能裁剪优化大图处理
+#### 4. Image Eraser
+- Paint to remove objects from images
+- LaMa inpainting model
+- Brush/Eraser/Fill tools
+- Undo/Redo support
+- Smart crop for large image optimization
 
-#### 5. 智能抠图 (Segment Anything)
-- 点击选择要分割的物体
-- 长按标记要排除的区域
-- 实时预览分割效果
-- 羽化边缘处理
-- 支持多种下载格式
+#### 5. Segment Anything
+- Tap to select objects to segment
+- Long-press to mark exclusion areas
+- Real-time segmentation preview
+- Feathered edge processing
+- Multiple download formats
 
-#### 6. 视频转换 (Video Converter)
-- 视频格式转换
-- 支持 WebM (VP8/VP9/AV1) 和 MP4 (H.264)
-- 自动编解码器检测
-- 进度显示
+#### 6. Video Converter
+- Video format conversion
+- Support WebM (VP8/VP9/AV1) and MP4 (H.264)
+- Auto codec detection
+- Progress display
 
-## 使用指南
+## Usage Guide
 
-### 安装应用
+### Installation
 
-1. 下载 APK 文件
-2. 在手机上打开文件
-3. 如提示"未知来源"，请在设置中允许安装
-4. 安装完成后打开应用
+1. Download the APK file
+2. Open the file on your phone
+3. If prompted about "Unknown sources", allow installation
+4. Install and launch the app
 
-### 首次使用
+### First Time Use
 
-1. **获取 API 密钥**
-   - 访问 [WaveSpeed AI](https://wavespeed.ai) 注册账号
-   - 在用户中心获取 API 密钥
+1. **Get API Key**
+   - Visit [WaveSpeed AI](https://wavespeed.ai) to register
+   - Get your API key from the user center
 
-2. **登录应用**
-   - 打开应用，在登录页面输入 API 密钥
-   - 点击"验证"按钮
-   - 验证成功后自动进入主界面
+2. **Login**
+   - Open the app and enter your API key on the login page
+   - Tap "Verify" button
+   - After verification, you'll enter the main interface
 
-3. **使用 Playground**
-   - 在模型页面选择一个模型
-   - 在输入视图配置参数
-   - 点击"运行"按钮开始生成
-   - 生成完成后自动切换到输出视图
+3. **Using Playground**
+   - Select a model on the Models page
+   - Configure parameters in the input view
+   - Tap "Run" to start generation
+   - Automatically switches to output view when complete
 
-### 模板使用
+### Using Templates
 
-1. **保存模板**
-   - 在 Playground 配置好参数后
-   - 点击"保存为模板"按钮
-   - 输入模板名称并保存
+1. **Save Template**
+   - Configure parameters in Playground
+   - Tap "Save as Template" button
+   - Enter template name and save
 
-2. **使用模板**
-   - 进入模板页面
-   - 点击想要使用的模板
-   - 自动跳转到 Playground 并加载参数
+2. **Use Template**
+   - Go to Templates page
+   - Tap the template you want to use
+   - Automatically jumps to Playground with parameters loaded
 
-3. **导出/导入**
-   - 点击页面顶部的导出按钮
-   - 选择导出单个或全部模板
-   - 导入时可选择合并或替换
+3. **Export/Import**
+   - Tap the export button at the top of the page
+   - Choose to export single or all templates
+   - When importing, choose merge or replace
 
-### 免费工具使用
+### Using Free Tools
 
-1. 点击主界面右上角的工具图标
-2. 选择需要的工具
-3. 上传或选择文件
-4. 等待处理完成
-5. 下载或保存结果
+1. Tap the tools icon at the top right of the main screen
+2. Select the tool you need
+3. Upload or select a file
+4. Wait for processing to complete
+5. Download or save the result
 
-## 注意事项
+## Notes
 
-### 性能相关
+### Performance
 
-1. **首次使用 AI 工具较慢**
-   - 免费工具首次使用需要下载模型
-   - 模型会缓存到本地，后续使用更快
-   - 建议在 Wi-Fi 环境下首次使用
+1. **First-time AI Tool Use is Slower**
+   - Free tools need to download models on first use
+   - Models are cached locally for faster subsequent use
+   - Recommend using Wi-Fi for first-time use
 
-2. **内存占用**
-   - AI 工具运行时内存占用较高
-   - 建议关闭其他应用以保证流畅
-   - 处理大文件时可能需要更多时间
+2. **Memory Usage**
+   - AI tools have high memory usage when running
+   - Recommend closing other apps for smooth operation
+   - Processing large files may take more time
 
-3. **GPU 加速**
-   - 部分工具支持 WebGPU 加速
-   - 不支持时会自动回退到 CPU 处理
-   - CPU 模式下处理速度会较慢
+3. **GPU Acceleration**
+   - Some tools support WebGPU acceleration
+   - Automatically falls back to CPU when not supported
+   - CPU mode processing is slower
 
-### 网络相关
+### Network
 
-1. **API 调用需要网络**
-   - Playground 生成需要稳定的网络连接
-   - 建议在 Wi-Fi 环境下使用
-   - 大文件上传可能需要较长时间
+1. **API Calls Require Network**
+   - Playground generation requires stable network connection
+   - Recommend using Wi-Fi
+   - Large file uploads may take longer
 
-2. **免费工具离线可用**
-   - 模型下载后可离线使用
-   - 无需 API 密钥和网络连接
+2. **Free Tools Work Offline**
+   - Can be used offline after model download
+   - No API key or network required
 
-### 数据存储
+### Data Storage
 
-1. **本地存储**
-   - 模板保存在本地存储
-   - 历史记录的输入参数会本地缓存
-   - 清除应用数据会丢失这些信息
+1. **Local Storage**
+   - Templates are saved locally
+   - History input parameters are cached locally
+   - Clearing app data will lose this information
 
-2. **自动归档**
-   - 超过 7 天的本地记录会自动归档
-   - 归档记录可在历史页面筛选查看
-   - 最多保留 10,000 条记录
+2. **Auto Archive**
+   - Local records older than 7 days are auto-archived
+   - Archived records can be filtered in History page
+   - Maximum 10,000 records retained
 
-### 已知限制
+### Known Limitations
 
-1. **视频处理**
-   - 视频增强处理时间较长
-   - 建议处理短视频（< 30 秒）
-   - 输出固定为 30 FPS
+1. **Video Processing**
+   - Video enhancement takes longer
+   - Recommend processing short videos (< 30 seconds)
+   - Output fixed at 30 FPS
 
-2. **图片尺寸**
-   - 部分工具对图片尺寸有限制
-   - 过大的图片会自动缩放处理
-   - 建议使用 4K 以下分辨率
+2. **Image Size**
+   - Some tools have image size limitations
+   - Oversized images are automatically scaled
+   - Recommend using resolutions below 4K
 
-## 与桌面端的区别
+## Differences from Desktop
 
-| 功能 | 桌面端 | 移动端 |
-|------|--------|--------|
-| 运行框架 | Electron | Capacitor (Android) |
-| 导航方式 | 侧边栏 | 底部导航栏 |
-| Playground | 多标签页 | 单页 + 输入/输出切换 |
-| 免费工具 | 路由切换 | 持久化渲染 |
-| 文件存储 | electron-store | Capacitor Preferences |
-| 拖放上传 | 完整支持 | 文件选择器 |
-| 视频转换 | 无 | 有（新功能） |
-| 资源管理 | 完整资源页 | 简化版 |
-| 历史输入 | 仅 API | API + 本地缓存 |
+| Feature | Desktop | Mobile |
+|---------|---------|--------|
+| Runtime Framework | Electron | Capacitor (Android) |
+| Navigation | Sidebar | Bottom Navigation |
+| Playground | Multi-tab | Single page + Input/Output switch |
+| Free Tools | Route switching | Persistent rendering |
+| File Storage | electron-store | Capacitor Preferences |
+| Drag & Drop | Full support | File picker |
+| Video Converter | No | Yes (new feature) |
+| Asset Management | Full page | Simplified |
+| History Inputs | API only | API + Local cache |
 
-### 移动端特有功能
+### Mobile-Specific Features
 
-1. **输入/输出视图切换** - 更好地利用手机屏幕
-2. **长按选择模式** - 历史记录长按进入批量选择
-3. **本地输入缓存** - 历史记录可追溯输入参数
-4. **视频转换工具** - 支持格式转换
-5. **持久化免费工具** - 切换页面不会丢失状态
-6. **批量下载** - 选择多个历史记录一键下载
+1. **Input/Output View Switch** - Better phone screen utilization
+2. **Long-press Selection Mode** - Long-press in History for batch selection
+3. **Local Input Cache** - History can trace input parameters
+4. **Video Converter Tool** - Format conversion support
+5. **Persistent Free Tools** - Page switching doesn't lose state
+6. **Batch Download** - Select multiple history records to download at once
 
-### 桌面端特有功能
+### Desktop-Specific Features
 
-1. **多标签 Playground** - 同时处理多个任务
-2. **完整资源管理** - 管理已保存的生成结果
-3. **拖放文件上传** - 更便捷的文件操作
-4. **自动更新** - 内置更新检查
+1. **Multi-tab Playground** - Handle multiple tasks simultaneously
+2. **Full Asset Management** - Manage saved generation results
+3. **Drag & Drop Upload** - More convenient file operations
+4. **Auto Updates** - Built-in update checking
 
-## 开发相关
+## Development
 
-### 技术栈
+### Tech Stack
 
-- **前端框架**: React 18 + TypeScript
-- **移动框架**: Capacitor 6.2
-- **UI 组件**: shadcn/ui + Tailwind CSS
-- **状态管理**: Zustand
-- **构建工具**: Vite
-- **AI 推理**: ONNX Runtime, TensorFlow.js
+- **Frontend Framework**: React 18 + TypeScript
+- **Mobile Framework**: Capacitor 6.2
+- **UI Components**: shadcn/ui + Tailwind CSS
+- **State Management**: Zustand
+- **Build Tool**: Vite
+- **AI Inference**: ONNX Runtime, TensorFlow.js
 
-### 开发命令
+### Development Commands
 
 ```bash
-# 安装依赖
+# Install dependencies
 npm install
 
-# 启动开发服务器
+# Start development server
 npm run dev
 
-# 构建生产版本
+# Build production version
 npm run build
 
-# 同步到 Android
+# Sync to Android
 npx cap sync android
 
-# 打开 Android Studio
+# Open Android Studio
 npx cap open android
 
-# 构建 Debug APK
+# Build Debug APK
 npm run android:build:debug
 
-# 构建 Release APK
+# Build Release APK
 npm run android:build:release
 ```
 
-### 项目结构
+### Project Structure
 
 ```
 mobile/
 ├── src/
-│   ├── components/      # 移动端专用组件
-│   ├── pages/           # 移动端页面
-│   ├── stores/          # 移动端状态管理
-│   ├── platform/        # Capacitor 平台服务
-│   └── App.tsx          # 路由配置
-├── android/             # Android 原生项目
-├── capacitor.config.ts  # Capacitor 配置
-├── vite.config.ts       # Vite 配置
-└── package.json         # 依赖配置
+│   ├── components/      # Mobile-specific components
+│   ├── pages/           # Mobile pages
+│   ├── stores/          # Mobile state management
+│   ├── platform/        # Capacitor platform service
+│   └── App.tsx          # Route configuration
+├── android/             # Android native project
+├── capacitor.config.ts  # Capacitor config
+├── vite.config.ts       # Vite config
+└── package.json         # Dependencies
 ```
 
-### 代码共享
+### Code Sharing
 
-移动端通过 Vite 路径别名与桌面端共享代码：
-- `@/` - 共享代码（父级 src/）
-- `@mobile/` - 移动端专用代码
+Mobile shares code with desktop via Vite path aliases:
+- `@/` - Shared code (parent src/)
+- `@mobile/` - Mobile-specific code
 
-## 支持与反馈
+## Support & Feedback
 
-- **官网**: [wavespeed.ai](https://wavespeed.ai)
-- **问题反馈**: [GitHub Issues](https://github.com/WaveSpeedAI/wavespeed-desktop/issues)
-- **API 文档**: [wavespeed.ai/docs](https://wavespeed.ai/docs)
+- **Website**: [wavespeed.ai](https://wavespeed.ai)
+- **Issue Tracker**: [GitHub Issues](https://github.com/WaveSpeedAI/wavespeed-desktop/issues)
+- **API Docs**: [wavespeed.ai/docs](https://wavespeed.ai/docs)
 
-## 更新日志
+## Changelog
 
 ### v0.8.1
-- 新增历史记录删除功能（单个/批量）
-- 新增长按选择模式
-- 新增批量下载功能
-- 修复 Slider 触摸滑动问题
-- 优化 Batch Mode 重置逻辑
-- 移除无用的历史状态筛选项
+- Add history delete feature (single/batch)
+- Add long-press selection mode
+- Add batch download feature
+- Fix Slider touch interaction issue
+- Optimize Batch Mode reset logic
+- Remove unused history status filters
 
 ### v0.8.0
-- 新增视频转换工具
-- 新增历史记录归档功能
-- 优化智能抠图交互（长按排除）
-- 本地输入参数缓存
-- 多项性能优化和 Bug 修复
+- Add video converter tool
+- Add history archive feature
+- Optimize Segment Anything interaction (long-press to exclude)
+- Local input parameter cache
+- Multiple performance optimizations and bug fixes

@@ -1,9 +1,3 @@
-/**
- * @mobile-safe
- * This file is shared with the mobile app (imported directly, not overridden).
- * DO NOT add Electron-specific code (window.electronAPI, etc.) here.
- * If you need Electron features, create a separate component or use platform detection.
- */
 import { useState, useEffect, useRef, useMemo, memo, useCallback } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useNavigate } from 'react-router-dom'

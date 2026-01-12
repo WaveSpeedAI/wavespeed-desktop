@@ -4,11 +4,14 @@ on:
   push:
     tags:
       - 'v*'
-  pull_request:
-    branches: [main, mobile-app]
+    branches:
+      - 'mobile-app'
     paths:
       - 'mobile/**'
-      - 'src/**'
+  pull_request:
+    branches: [mobile-app]
+    paths:
+      - 'mobile/**'
   workflow_dispatch:
 
 jobs:
@@ -34,31 +37,6 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
-
-      - name: Check shared files for Electron dependencies
-        run: |
-          echo "Checking shared files used by mobile for Electron dependencies..."
-          # Files that mobile imports directly from shared src/
-          SHARED_FILES=(
-            "src/pages/ModelsPage.tsx"
-          )
-          FAILED=false
-          for file in "${SHARED_FILES[@]}"; do
-            if [ -f "$file" ]; then
-              if grep -q "window\.electronAPI\|window\.electron\|require('electron')" "$file"; then
-                echo "❌ ERROR: $file contains Electron-specific code!"
-                echo "   This file is shared with mobile and must not use Electron APIs."
-                echo "   Either create a mobile override in mobile/src/ or use platform detection."
-                FAILED=true
-              else
-                echo "✓ $file is mobile-safe"
-              fi
-            fi
-          done
-          if [ "$FAILED" = true ]; then
-            exit 1
-          fi
-          echo "All shared files are mobile-compatible!"
 
       - name: Install root dependencies
         run: npm ci

@@ -3,7 +3,7 @@ name: Mobile Build
 on:
   push:
     tags:
-      - 'v*'
+      - 'mobile-v*'  # Only trigger on mobile-specific tags
     branches:
       - 'mobile-app'
     paths:
@@ -58,7 +58,7 @@ jobs:
         run: ./gradlew assembleDebug
 
       - name: Build Release APK
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/mobile-v')
         working-directory: mobile/android
         run: ./gradlew assembleRelease
 
@@ -88,7 +88,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload Release APK
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/mobile-v')
         uses: actions/upload-artifact@v4
         with:
           name: wavespeed-mobile-release
@@ -97,7 +97,7 @@ jobs:
 
   release:
     needs: build-android
-    if: startsWith(github.ref, 'refs/tags/v') && needs.build-android.result == 'success'
+    if: startsWith(github.ref, 'refs/tags/mobile-v') && needs.build-android.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -117,6 +117,6 @@ jobs:
           files: |
             artifacts/wavespeed-mobile-release/*.apk
           draft: false
-          prerelease: ${{ contains(github.ref, '-') }}
+          prerelease: ${{ contains(github.ref, '-beta') || contains(github.ref, '-alpha') || contains(github.ref, '-rc') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

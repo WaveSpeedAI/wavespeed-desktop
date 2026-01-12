@@ -4,7 +4,7 @@ WaveSpeed Mobile 是 [WaveSpeed AI](https://wavespeed.ai) 的官方 Android 移�
 
 ## 版本信息
 
-- **当前版本**: 0.8.0
+- **当前版本**: 0.8.1
 - **包名**: `ai.wavespeed.mobile`
 - **最低支持**: Android 5.0 (API 21)
 
@@ -41,7 +41,9 @@ WaveSpeed Mobile 是 [WaveSpeed AI](https://wavespeed.ai) 的官方 Android 移�
 
 #### 4. 历史记录 (History)
 - 网格视图展示历史生成记录
-- 支持状态筛选：全部、已完成、失败、处理中、已创建、已归档
+- 支持状态筛选：全部、已完成、失败、已归档
+- 长按进入批量选择模式
+- 批量删除和批量下载
 - 缩略图预览（图片/视频/音频/JSON/文本）
 - 查看详细信息
 - 保存为模板功能
@@ -221,10 +223,11 @@ WaveSpeed Mobile 是 [WaveSpeed AI](https://wavespeed.ai) 的官方 Android 移�
 ### 移动端特有功能
 
 1. **输入/输出视图切换** - 更好地利用手机屏幕
-2. **长按交互** - 智能抠图中长按标记排除区域
+2. **长按选择模式** - 历史记录长按进入批量选择
 3. **本地输入缓存** - 历史记录可追溯输入参数
 4. **视频转换工具** - 支持格式转换
 5. **持久化免费工具** - 切换页面不会丢失状态
+6. **批量下载** - 选择多个历史记录一键下载
 
 ### 桌面端特有功能
 
@@ -294,10 +297,18 @@ mobile/
 ## 支持与反馈
 
 - **官网**: [wavespeed.ai](https://wavespeed.ai)
-- **问题反馈**: [GitHub Issues](https://github.com/anthropics/claude-code/issues)
+- **问题反馈**: [GitHub Issues](https://github.com/WaveSpeedAI/wavespeed-desktop/issues)
 - **API 文档**: [wavespeed.ai/docs](https://wavespeed.ai/docs)
 
 ## 更新日志
+
+### v0.8.1
+- 新增历史记录删除功能（单个/批量）
+- 新增长按选择模式
+- 新增批量下载功能
+- 修复 Slider 触摸滑动问题
+- 优化 Batch Mode 重置逻辑
+- 移除无用的历史状态筛选项
 
 ### v0.8.0
 - 新增视频转换工具

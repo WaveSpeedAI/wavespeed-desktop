@@ -4,6 +4,7 @@ node_modules/
 # Build outputs
 dist/
 dist-electron/
+dist-web/
 out/
 release/
 
@@ -71,6 +72,7 @@ tmp/
 temp/
 *.tmp
 *.temp
+tmpclaude-*
 
 # Package manager locks (keep one, ignore others if switching)
 # Uncomment the ones you don't use:
@@ -87,3 +89,12 @@ temp/
 
 # Local development
 *.local.json
+
+# Mobile (Capacitor/Android)
+mobile/android/app/build/
+mobile/android/.gradle/
+mobile/android/build/
+mobile/android/local.properties
+mobile/android/.idea/
+mobile/android/*.iml
+mobile/dist/

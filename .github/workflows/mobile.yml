@@ -1,0 +1,103 @@
+name: Mobile Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+    paths:
+      - 'mobile/**'
+      - 'src/**'
+      - '.github/workflows/mobile.yml'
+  pull_request:
+    branches: [main, mobile-app]
+    paths:
+      - 'mobile/**'
+      - 'src/**'
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install mobile dependencies
+        working-directory: mobile
+        run: npm ci
+
+      - name: Build web assets
+        working-directory: mobile
+        run: npm run build
+
+      - name: Sync Capacitor
+        working-directory: mobile
+        run: npx cap sync android
+
+      - name: Build Debug APK
+        working-directory: mobile/android
+        run: ./gradlew assembleDebug
+
+      - name: Build Release APK
+        if: startsWith(github.ref, 'refs/tags/v')
+        working-directory: mobile/android
+        run: ./gradlew assembleRelease
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: wavespeed-mobile-debug
+          path: mobile/android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+      - name: Upload Release APK
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/upload-artifact@v4
+        with:
+          name: wavespeed-mobile-release
+          path: mobile/android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: ignore
+
+  release:
+    needs: build-android
+    if: startsWith(github.ref, 'refs/tags/v') && needs.build-android.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/wavespeed-mobile-debug/*.apk
+            artifacts/wavespeed-mobile-release/*.apk
+          draft: false
+          prerelease: ${{ contains(github.ref, '-') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

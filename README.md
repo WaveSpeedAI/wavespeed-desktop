@@ -1,6 +1,6 @@
-# WaveSpeed Desktop
+# WaveSpeed
 
-A cross-platform desktop application for running AI models from [WaveSpeedAI](https://wavespeed.ai).
+Cross-platform applications for running AI models from [WaveSpeedAI](https://wavespeed.ai). Available for Desktop (Windows, macOS, Linux) and Mobile (Android).
 
 ![Playground Screenshot](https://github.com/user-attachments/assets/cef45169-99f0-46dc-99d4-eb0433d28387)
 
@@ -35,10 +35,16 @@ A cross-platform desktop application for running AI models from [WaveSpeedAI](ht
 
 ### Quick Download
 
+#### Desktop
+
 [![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Desktop-win-x64.exe)
 [![macOS Intel](https://img.shields.io/badge/macOS_Intel-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Desktop-mac-x64.dmg)
 [![macOS Apple Silicon](https://img.shields.io/badge/macOS_Silicon-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Desktop-mac-arm64.dmg)
 [![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Desktop-linux-x86_64.AppImage)
+
+#### Mobile
+
+[![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/app-release.apk)
 
 Or browse all releases on the [Releases](https://github.com/WaveSpeedAI/wavespeed-desktop/releases) page.
 
@@ -66,6 +72,16 @@ Or browse all releases on the [Releases](https://github.com/WaveSpeedAI/wavespee
 1. Download `.AppImage` or `.deb`
 2. For AppImage: Make it executable (`chmod +x *.AppImage`) and run it
 3. For .deb: Install with `sudo dpkg -i *.deb`
+</details>
+
+<details>
+<summary><b>Android</b></summary>
+
+1. Download the `.apk` file
+2. Open the file on your Android device
+3. If prompted about "Unknown sources", allow installation from this source
+4. Install and launch the app
+5. Requires Android 5.0 (API 21) or higher
 </details>
 
 ### Nightly Builds
@@ -107,6 +123,29 @@ npm run dev
 | `npm run build:linux` | Build for Linux |
 | `npm run build:all` | Build for all platforms |
 
+### Mobile Development
+
+The mobile app is located in the `mobile/` directory and shares code with the desktop app.
+
+```bash
+# Navigate to mobile directory
+cd mobile
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build and sync to Android
+npm run build && npx cap sync android
+
+# Open in Android Studio
+npx cap open android
+```
+
+See [mobile/README.md](mobile/README.md) for detailed mobile development guide.
+
 ### Project Structure
 
 ```
@@ -114,7 +153,7 @@ wavespeed-desktop/
 ├── electron/           # Electron main process
 │   ├── main.ts         # Main process entry
 │   └── preload.ts      # Preload script (IPC bridge)
-├── src/
+├── src/                # Shared source code (desktop + mobile)
 │   ├── api/            # API client
 │   ├── components/     # React components
 │   │   ├── layout/     # Layout components
@@ -127,18 +166,29 @@ wavespeed-desktop/
 │   ├── pages/          # Page components
 │   ├── stores/         # Zustand stores
 │   ├── types/          # TypeScript types
-│   └── workers/        # Web Workers (upscaler, background remover, image eraser)
-├── .github/workflows/  # GitHub Actions
+│   └── workers/        # Web Workers
+├── mobile/             # Mobile app (Android)
+│   ├── src/            # Mobile-specific overrides
+│   ├── android/        # Android native project
+│   └── capacitor.config.ts
+├── .github/workflows/  # GitHub Actions (desktop + mobile)
 └── build/              # Build resources
 ```
 
 ## Tech Stack
 
+### Desktop
 - **Framework**: Electron + electron-vite
 - **Frontend**: React 18 + TypeScript
 - **Styling**: Tailwind CSS + shadcn/ui
 - **State Management**: Zustand
 - **HTTP Client**: Axios
+
+### Mobile
+- **Framework**: Capacitor 6
+- **Frontend**: React 18 + TypeScript (shared with desktop)
+- **Styling**: Tailwind CSS + shadcn/ui (shared)
+- **Platform**: Android 5.0+
 
 ## Configuration
 

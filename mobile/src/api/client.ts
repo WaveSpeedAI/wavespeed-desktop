@@ -1,43 +1,8 @@
 import axios, { AxiosInstance, AxiosError } from 'axios'
 import type { Model, ModelsResponse } from '@/types/model'
 import type { PredictionResult, PredictionResponse, HistoryResponse, UploadResponse } from '@/types/prediction'
-import packageJson from '../../package.json'
 
 const BASE_URL = 'https://api.wavespeed.ai'
-
-// Get app version from package.json
-const version = packageJson.version
-
-// Detect operating system - works in Electron, browser, and Node.js
-function getOperatingSystem(): string {
-  // Try Node.js/Electron process.platform first (most reliable)
-  if (typeof process !== 'undefined' && process.platform) {
-    return process.platform // 'darwin', 'win32', 'linux', etc.
-  }
-
-  // Fall back to user agent parsing (browser environment)
-  if (typeof navigator !== 'undefined' && navigator.userAgent) {
-    const userAgent = navigator.userAgent.toLowerCase()
-
-    if (userAgent.includes('mac os x') || userAgent.includes('macintosh')) {
-      return 'darwin'
-    } else if (userAgent.includes('windows') || userAgent.includes('win64') || userAgent.includes('win32')) {
-      return 'win32'
-    } else if (userAgent.includes('android')) {
-      return 'android'
-    } else if (userAgent.includes('iphone') || userAgent.includes('ipad') || userAgent.includes('ipod')) {
-      return 'ios'
-    } else if (userAgent.includes('cros')) {
-      return 'chromeos'
-    } else if (userAgent.includes('linux')) {
-      return 'linux'
-    } else if (userAgent.includes('freebsd')) {
-      return 'freebsd'
-    }
-  }
-
-  return 'unknown'
-}
 
 // Custom error class with detailed information
 export class APIError extends Error {
@@ -63,7 +28,7 @@ function extractErrorMessage(error: unknown): string {
 
     // Handle timeout errors
     if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-      return `Request timed out. The server may be experiencing high load.`
+      return `Request timed out after 60 seconds. The server may be experiencing high load.`
     }
 
     // Handle network errors
@@ -124,7 +89,7 @@ export interface RunOptions {
 
 export interface HistoryFilters {
   model?: string
-  status?: 'completed' | 'failed' | 'processing' | 'created'
+  status?: 'completed' | 'failed'
   created_after?: string
   created_before?: string
 }
@@ -136,14 +101,12 @@ class WaveSpeedClient {
   constructor() {
     this.client = axios.create({
       baseURL: BASE_URL,
-      timeout: 60000, // 60 second timeout for connection and read
-      maxBodyLength: Infinity, // Allow large file uploads
-      maxContentLength: Infinity, // Allow large response content
+      timeout: 60000,
       headers: {
         'Content-Type': 'application/json',
-        'X-Client-Name': 'wavespeed-desktop',
-        'X-Client-Version': version,
-        'X-Client-OS': getOperatingSystem()
+        // 'X-Client-Name': 'wavespeed-desktop',
+        // 'X-Client-Version': version,
+        // 'X-Client-OS': getOperatingSystem()
       }
     })
 
@@ -178,11 +141,9 @@ class WaveSpeedClient {
     }
   }
 
-  async runPrediction(model: string, input: Record<string, unknown>, options?: { timeout?: number }): Promise<PredictionResult> {
+  async runPrediction(model: string, input: Record<string, unknown>): Promise<PredictionResult> {
     try {
-      const response = await this.client.post<PredictionResponse>(`/api/v3/${model}`, input, {
-        timeout: options?.timeout
-      })
+      const response = await this.client.post<PredictionResponse>(`/api/v3/${model}`, input)
       if (response.data.code !== 200) {
         throw new APIError(response.data.message || 'Failed to run prediction', {
           code: response.data.code,
@@ -210,19 +171,21 @@ class WaveSpeedClient {
     }
   }
 
-  // Check if error is a connection/network error that should be retried
-  private isConnectionError(error: unknown): boolean {
-    if (error instanceof AxiosError) {
-      // Timeout errors
-      if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-        return true
+  // Get prediction details including inputs (if available from API)
+  async getPredictionDetails(predictionId: string): Promise<PredictionResult & { input?: Record<string, unknown> }> {
+    try {
+      const response = await this.client.get<PredictionResponse>(`/api/v3/predictions/${predictionId}/result`)
+      if (response.data.code !== 200) {
+        throw new APIError(response.data.message || 'Failed to get prediction details', {
+          code: response.data.code,
+          details: response.data
+        })
       }
-      // Network errors
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
-        return true
-      }
+      // The API might return 'input' field with the original inputs
+      return response.data.data as PredictionResult & { input?: Record<string, unknown> }
+    } catch (error) {
+      throw createAPIError(error, 'Failed to get prediction details')
     }
-    return false
   }
 
   async run(
@@ -232,9 +195,9 @@ class WaveSpeedClient {
   ): Promise<PredictionResult> {
     const { timeout = 36000000, pollInterval = 1000, enableSyncMode = false } = options
 
-    // If sync mode is enabled, add it to input and wait for response (use longer timeout)
+    // If sync mode is enabled, add it to input and wait for response
     if (enableSyncMode) {
-      const result = await this.runPrediction(model, { ...input, enable_sync_mode: true }, { timeout: 120000 })
+      const result = await this.runPrediction(model, { ...input, enable_sync_mode: true })
       return result
     }
 
@@ -246,34 +209,23 @@ class WaveSpeedClient {
       throw new Error('No request ID in response')
     }
 
-    // Poll for result with retry on connection errors
+    // Poll for result
     const startTime = Date.now()
     while (true) {
       if (Date.now() - startTime > timeout) {
         throw new Error('Prediction timed out')
       }
 
-      try {
-        const result = await this.getResult(requestId)
+      const result = await this.getResult(requestId)
 
-        if (result.status === 'completed') {
-          return result
-        }
+      if (result.status === 'completed') {
+        return result
+      }
 
-        if (result.status === 'failed') {
-          throw new APIError(result.error || 'Prediction failed', {
-            details: result
-          })
-        }
-      } catch (error) {
-        // Retry after 1 second on connection errors
-        if (this.isConnectionError(error)) {
-          console.warn('Connection error during polling, retrying in 1 second...', error)
-          await new Promise(resolve => setTimeout(resolve, 1000))
-          continue
-        }
-        // Re-throw non-connection errors
-        throw error
+      if (result.status === 'failed') {
+        throw new APIError(result.error || 'Prediction failed', {
+          details: result
+        })
       }
 
       // Wait before next poll
@@ -314,24 +266,15 @@ class WaveSpeedClient {
     }
   }
 
-  async uploadFile(file: File, signal?: AbortSignal): Promise<string> {
+  async uploadFile(file: File): Promise<string> {
     try {
       const formData = new FormData()
       formData.append('file', file)
 
-      // Dynamic timeout based on file size
-      // Minimum 120 seconds, add 1 second per MB, maximum 10 minutes
-      const minTimeout = 120000
-      const maxTimeout = 600000
-      const fileSizeMb = file.size / (1024 * 1024)
-      const timeout = Math.min(maxTimeout, Math.max(minTimeout, Math.ceil(fileSizeMb) * 1000 + minTimeout))
-
       const response = await this.client.post<UploadResponse>('/api/v3/media/upload/binary', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
-        },
-        timeout,
-        signal
+        }
       })
 
       if (response.data.code !== 200) {
@@ -343,10 +286,6 @@ class WaveSpeedClient {
 
       return response.data.data.download_url
     } catch (error) {
-      // Check if this is a cancellation error
-      if (axios.isCancel(error) || (error instanceof Error && error.name === 'CanceledError')) {
-        throw new APIError('Upload cancelled', { code: 0 })
-      }
       throw createAPIError(error, 'Failed to upload file')
     }
   }
@@ -413,6 +352,31 @@ class WaveSpeedClient {
       return response.data.data.balance
     } catch (error) {
       throw createAPIError(error, 'Failed to fetch balance')
+    }
+  }
+
+  async deletePrediction(predictionId: string): Promise<void> {
+    await this.deletePredictions([predictionId])
+  }
+
+  async deletePredictions(predictionIds: string[]): Promise<void> {
+    try {
+      const response = await this.client.post<{
+        code: number
+        message: string
+        data?: unknown
+      }>('/api/v3/predictions/delete', {
+        ids: predictionIds
+      })
+
+      if (response.data.code !== 200) {
+        throw new APIError(response.data.message || 'Failed to delete prediction', {
+          code: response.data.code,
+          details: response.data
+        })
+      }
+    } catch (error) {
+      throw createAPIError(error, 'Failed to delete prediction')
     }
   }
 }

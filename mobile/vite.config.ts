@@ -91,6 +91,8 @@ export default defineConfig({
       // i18n module (explicit path for directory import)
       '@/i18n': path.resolve(__dirname, '../src/i18n/index'),
       // Mobile-specific overrides (must come before @/)
+      '@/api/client': path.resolve(__dirname, './src/api/client'),
+      '@/components/ui/slider': path.resolve(__dirname, './src/components/ui/slider'),
       '@/hooks/useSegmentAnythingWorker': path.resolve(__dirname, './src/hooks/useSegmentAnythingWorker'),
       '@/hooks/useUpscalerWorker': path.resolve(__dirname, './src/hooks/useUpscalerWorker'),
       '@/hooks/useBackgroundRemoverWorker': path.resolve(__dirname, './src/hooks/useBackgroundRemoverWorker'),

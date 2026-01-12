@@ -15,18 +15,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import { Checkbox } from '@/components/ui/checkbox'
-import { useToast } from '@/hooks/use-toast'
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -50,11 +38,11 @@ import {
   Copy,
   Check,
   Eye,
-  EyeOff,
-  Trash2
+  EyeOff
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AudioPlayer } from '@/components/shared/AudioPlayer'
+import { useInView } from '@/hooks/useInView'
 
 // Video preview component - shows first frame, plays on hover
 function VideoPreview({ src, enabled }: { src: string; enabled: boolean }) {
@@ -114,104 +102,21 @@ function VideoPreview({ src, enabled }: { src: string; enabled: boolean }) {
 
 export function HistoryPage() {
   const { t } = useTranslation()
-  const { toast } = useToast()
-  const { isLoading: isLoadingApiKey, isValidated } = useApiKeyStore()
+  const { isLoading: isLoadingApiKey, isValidated, loadApiKey, hasAttemptedLoad } = useApiKeyStore()
   const [items, setItems] = useState<HistoryItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
-  const [total, setTotal] = useState(0)
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [selectedItem, setSelectedItem] = useState<HistoryItem | null>(null)
   const [copiedId, setCopiedId] = useState(false)
   const [loadPreviews, setLoadPreviews] = useState(true)
-  const pageSize = 20
-
-  // Delete functionality state
-  const [isSelectMode, setIsSelectMode] = useState(false)
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-  const [deleteConfirmItem, setDeleteConfirmItem] = useState<HistoryItem | null>(null)
-  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
+  const pageSize = 50
 
   const handleCopyId = async (id: string) => {
     await navigator.clipboard.writeText(id)
     setCopiedId(true)
     setTimeout(() => setCopiedId(false), 2000)
-  }
-
-  const handleDelete = async (item: HistoryItem) => {
-    setIsDeleting(true)
-    try {
-      await apiClient.deletePrediction(item.id)
-      setItems(prev => prev.filter(i => i.id !== item.id))
-      setTotal(prev => prev - 1)
-      setDeleteConfirmItem(null)
-      setSelectedItem(null)
-      toast({
-        title: t('history.deleted'),
-        description: item.model,
-      })
-    } catch (err) {
-      toast({
-        title: t('history.deleteFailed'),
-        description: err instanceof Error ? err.message : 'Unknown error',
-        variant: 'destructive',
-      })
-    } finally {
-      setIsDeleting(false)
-    }
-  }
-
-  const handleBulkDelete = async () => {
-    if (selectedIds.size === 0) return
-    setIsDeleting(true)
-    try {
-      await apiClient.deletePredictions(Array.from(selectedIds))
-      setItems(prev => prev.filter(i => !selectedIds.has(i.id)))
-      setTotal(prev => prev - selectedIds.size)
-      const count = selectedIds.size
-      setSelectedIds(new Set())
-      setIsSelectMode(false)
-      setBulkDeleteConfirm(false)
-      toast({
-        title: t('history.deletedBulk'),
-        description: t('history.deletedBulkDesc', { count }),
-      })
-    } catch (err) {
-      toast({
-        title: t('history.deleteFailed'),
-        description: err instanceof Error ? err.message : 'Unknown error',
-        variant: 'destructive',
-      })
-    } finally {
-      setIsDeleting(false)
-    }
-  }
-
-  const handleToggleSelect = (id: string) => {
-    setSelectedIds(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(id)) {
-        newSet.delete(id)
-      } else {
-        newSet.add(id)
-      }
-      return newSet
-    })
-  }
-
-  const handleSelectAll = () => {
-    if (selectedIds.size === items.length) {
-      setSelectedIds(new Set())
-    } else {
-      setSelectedIds(new Set(items.map(i => i.id)))
-    }
-  }
-
-  const handleClearSelection = () => {
-    setSelectedIds(new Set())
-    setIsSelectMode(false)
   }
 
   const fetchHistory = useCallback(async () => {
@@ -222,12 +127,11 @@ export function HistoryPage() {
 
     try {
       const filters = statusFilter !== 'all'
-        ? { status: statusFilter as 'completed' | 'failed' }
+        ? { status: statusFilter as 'completed' | 'failed' | 'processing' | 'created' }
         : undefined
 
       const response = await apiClient.getHistory(page, pageSize, filters)
       setItems(response.items || [])
-      setTotal(response.total || 0)
     } catch (err) {
       console.error('History fetch error:', err)
       setError(err instanceof Error ? err.message : 'Failed to fetch history')
@@ -236,11 +140,25 @@ export function HistoryPage() {
     }
   }, [isValidated, page, pageSize, statusFilter])
 
+  // Load API key on mount
+  useEffect(() => {
+    loadApiKey()
+  }, [loadApiKey])
+
   useEffect(() => {
     fetchHistory()
   }, [fetchHistory])
 
-  const totalPages = Math.ceil(total / pageSize)
+  const maxSelectablePages = 100
+  const pageOptions = Array.from({ length: maxSelectablePages }, (_, index) => index + 1)
+  const displayStart = items.length === 0 ? 0 : (page - 1) * pageSize + 1
+  const displayEnd = items.length === 0 ? 0 : (page - 1) * pageSize + items.length
+
+  useEffect(() => {
+    if (page > maxSelectablePages) {
+      setPage(maxSelectablePages)
+    }
+  }, [page, maxSelectablePages])
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -248,6 +166,10 @@ export function HistoryPage() {
         return <Badge variant="success">{t('history.status.completed')}</Badge>
       case 'failed':
         return <Badge variant="destructive">{t('history.status.failed')}</Badge>
+      case 'processing':
+        return <Badge variant="warning">{t('history.status.processing')}</Badge>
+      case 'created':
+        return <Badge variant="info">{t('history.status.created')}</Badge>
       default:
         return <Badge variant="secondary">{status}</Badge>
     }
@@ -284,8 +206,84 @@ export function HistoryPage() {
     }
   }
 
+  const HistoryCard = ({ item }: { item: HistoryItem }) => {
+    const { ref, isInView } = useInView<HTMLDivElement>()
+    const PreviewIcon = getPreviewIcon(item)
+    const hasPreview = item.outputs && item.outputs.length > 0
+    const firstOutput = item.outputs?.[0]
+    const shouldLoad = loadPreviews && isInView
+
+    return (
+      <Card
+        key={item.id}
+        className="overflow-hidden cursor-pointer border hover:shadow-md transition-shadow"
+        onClick={() => setSelectedItem(item)}
+      >
+        {/* Preview */}
+        <div ref={ref} className="aspect-square bg-muted relative">
+          {shouldLoad && hasPreview && typeof firstOutput === 'string' && firstOutput.match(/\.(jpg|jpeg|png|gif|webp)/i) ? (
+            <img
+              src={firstOutput}
+              alt="Preview"
+              className="w-full h-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
+          ) : shouldLoad && hasPreview && typeof firstOutput === 'string' && firstOutput.match(/\.(mp4|webm|mov)/i) ? (
+            <VideoPreview src={firstOutput} enabled={shouldLoad} />
+          ) : shouldLoad && hasPreview && typeof firstOutput === 'string' && firstOutput.match(/\.(mp3|wav|ogg|flac|aac|m4a|wma)/i) ? (
+            <div
+              className="w-full h-full flex items-center justify-center p-3"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <AudioPlayer src={firstOutput} compact />
+            </div>
+          ) : shouldLoad && hasPreview && typeof firstOutput === 'object' ? (
+            <div className="w-full h-full flex flex-col items-center justify-center p-3 gap-1">
+              <FileJson className="h-6 w-6 text-muted-foreground shrink-0" />
+              <pre className="text-[10px] text-muted-foreground overflow-hidden text-ellipsis w-full text-center line-clamp-3">
+                {JSON.stringify(firstOutput, null, 0).slice(0, 100)}
+              </pre>
+            </div>
+          ) : shouldLoad && hasPreview && typeof firstOutput === 'string' && !firstOutput.startsWith('http') ? (
+            <div className="w-full h-full flex flex-col items-center justify-center p-3 gap-1">
+              <FileText className="h-6 w-6 text-muted-foreground shrink-0" />
+              <p className="text-[10px] text-muted-foreground overflow-hidden text-ellipsis w-full text-center line-clamp-3">
+                {firstOutput.slice(0, 150)}
+              </p>
+            </div>
+          ) : shouldLoad && hasPreview && typeof firstOutput === 'string' && firstOutput.startsWith('http') ? (
+            <div className="w-full h-full flex flex-col items-center justify-center p-3 gap-1">
+              <Link className="h-6 w-6 text-muted-foreground shrink-0" />
+              <p className="text-[10px] text-muted-foreground overflow-hidden text-ellipsis w-full text-center line-clamp-2 break-all">
+                {firstOutput}
+              </p>
+            </div>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <PreviewIcon className="h-10 w-10 text-muted-foreground" />
+            </div>
+          )}
+          <div className="absolute top-1.5 right-1.5">
+            {getStatusBadge(item.status)}
+          </div>
+        </div>
+
+        <CardContent className="p-2">
+          <p className="text-sm font-medium truncate">{item.model}</p>
+          <p className="text-xs text-muted-foreground truncate">{formatDate(item.created_at)}</p>
+          {item.execution_time && (
+            <p className="text-xs text-muted-foreground">
+              {(item.execution_time / 1000).toFixed(2)}s
+            </p>
+          )}
+        </CardContent>
+      </Card>
+    )
+  }
+
   // Show loading state while API key is being loaded from storage
-  if (isLoadingApiKey) {
+  if (isLoadingApiKey || !hasAttemptedLoad) {
     return (
       <div className="flex h-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -308,44 +306,10 @@ export function HistoryPage() {
             <h1 className="text-2xl font-bold tracking-tight">{t('history.title')}</h1>
             <p className="text-muted-foreground text-sm mt-0.5">{t('history.description')}</p>
           </div>
-          <div className="flex items-center gap-2">
-            {isSelectMode ? (
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleSelectAll}
-                >
-                  {selectedIds.size === items.length ? t('common.deselectAll') : t('common.selectAll')}
-                </Button>
-                {selectedIds.size > 0 && (
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => setBulkDeleteConfirm(true)}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    {t('history.deleteSelected')} ({selectedIds.size})
-                  </Button>
-                )}
-                <Button variant="outline" size="sm" onClick={handleClearSelection}>
-                  {t('history.selectionDone')}
-                </Button>
-              </>
-            ) : (
-              <>
-                {items.length > 0 && (
-                  <Button variant="ghost" size="sm" onClick={() => setIsSelectMode(true)}>
-                    {t('history.select')}
-                  </Button>
-                )}
-                <Button variant="outline" size="sm" onClick={fetchHistory} disabled={isLoading}>
-                  <RefreshCw className={cn("mr-2 h-4 w-4", isLoading && "animate-spin")} />
-                  {t('common.refresh')}
-                </Button>
-              </>
-            )}
-          </div>
+          <Button variant="outline" size="sm" onClick={fetchHistory} disabled={isLoading}>
+            <RefreshCw className={cn("mr-2 h-4 w-4", isLoading && "animate-spin")} />
+            {t('common.refresh')}
+          </Button>
         </div>
 
         {/* Filters */}
@@ -364,6 +328,8 @@ export function HistoryPage() {
               <SelectItem value="all">{t('history.status.all')}</SelectItem>
               <SelectItem value="completed">{t('history.status.completed')}</SelectItem>
               <SelectItem value="failed">{t('history.status.failed')}</SelectItem>
+              <SelectItem value="processing">{t('history.status.processing')}</SelectItem>
+              <SelectItem value="created">{t('history.status.created')}</SelectItem>
             </SelectContent>
           </Select>
           <Button
@@ -383,7 +349,7 @@ export function HistoryPage() {
 
       {/* Content */}
       <ScrollArea className="flex-1 relative z-10">
-        <div className="px-6 py-5">
+        <div className="p-4">
           {isLoading && items.length === 0 ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -413,108 +379,22 @@ export function HistoryPage() {
               <p className="text-muted-foreground text-sm">{t('history.noHistory')}</p>
             </div>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {items.map((item) => {
-                const PreviewIcon = getPreviewIcon(item)
-                const hasPreview = item.outputs && item.outputs.length > 0
-
-                return (
-                  <Card
-                    key={item.id}
-                    className={cn(
-                      "overflow-hidden cursor-pointer card-elevated border-transparent hover:border-primary/20",
-                      isSelectMode && selectedIds.has(item.id) && "ring-2 ring-primary"
-                    )}
-                    onClick={() => {
-                      if (isSelectMode) {
-                        handleToggleSelect(item.id)
-                      } else {
-                        setSelectedItem(item)
-                      }
-                    }}
-                  >
-                    {/* Preview */}
-                    <div className="aspect-video bg-muted relative">
-                      {loadPreviews && hasPreview && typeof item.outputs![0] === 'string' && item.outputs![0].match(/\.(jpg|jpeg|png|gif|webp)/i) ? (
-                        <img
-                          src={item.outputs![0]}
-                          alt="Preview"
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                      ) : loadPreviews && hasPreview && typeof item.outputs![0] === 'string' && item.outputs![0].match(/\.(mp4|webm|mov)/i) ? (
-                        <VideoPreview src={item.outputs![0]} enabled={loadPreviews} />
-                      ) : loadPreviews && hasPreview && typeof item.outputs![0] === 'string' && item.outputs![0].match(/\.(mp3|wav|ogg|flac|aac|m4a|wma)/i) ? (
-                        <div
-                          className="w-full h-full flex items-center justify-center p-3"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <AudioPlayer src={item.outputs![0]} compact />
-                        </div>
-                      ) : hasPreview && typeof item.outputs![0] === 'object' ? (
-                        <div className="w-full h-full flex flex-col items-center justify-center p-3 gap-1">
-                          <FileJson className="h-6 w-6 text-muted-foreground shrink-0" />
-                          <pre className="text-[10px] text-muted-foreground overflow-hidden text-ellipsis w-full text-center line-clamp-3">
-                            {JSON.stringify(item.outputs![0], null, 0).slice(0, 100)}
-                          </pre>
-                        </div>
-                      ) : hasPreview && typeof item.outputs![0] === 'string' && !item.outputs![0].startsWith('http') ? (
-                        <div className="w-full h-full flex flex-col items-center justify-center p-3 gap-1">
-                          <FileText className="h-6 w-6 text-muted-foreground shrink-0" />
-                          <p className="text-[10px] text-muted-foreground overflow-hidden text-ellipsis w-full text-center line-clamp-3">
-                            {item.outputs![0].slice(0, 150)}
-                          </p>
-                        </div>
-                      ) : hasPreview && typeof item.outputs![0] === 'string' && item.outputs![0].startsWith('http') ? (
-                        <div className="w-full h-full flex flex-col items-center justify-center p-3 gap-1">
-                          <Link className="h-6 w-6 text-muted-foreground shrink-0" />
-                          <p className="text-[10px] text-muted-foreground overflow-hidden text-ellipsis w-full text-center line-clamp-2 break-all">
-                            {item.outputs![0]}
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <PreviewIcon className="h-10 w-10 text-muted-foreground" />
-                        </div>
-                      )}
-                      {isSelectMode && (
-                        <div className="absolute top-1.5 left-1.5 z-10">
-                          <Checkbox
-                            checked={selectedIds.has(item.id)}
-                            onClick={(e) => e.stopPropagation()}
-                            onCheckedChange={() => handleToggleSelect(item.id)}
-                          />
-                        </div>
-                      )}
-                      <div className="absolute top-1.5 right-1.5">
-                        {getStatusBadge(item.status)}
-                      </div>
-                    </div>
-
-                    <CardContent className="p-2.5">
-                      <p className="font-medium text-xs truncate">{item.model}</p>
-                      <div className="flex items-center justify-between mt-1 text-xs text-muted-foreground">
-                        <span>{formatDate(item.created_at)}</span>
-                        {item.execution_time && (
-                          <span>{(item.execution_time / 1000).toFixed(2)}s</span>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )
-              })}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {items.map((item) => (
+                <HistoryCard key={item.id} item={item} />
+              ))}
             </div>
           )}
         </div>
       </ScrollArea>
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {maxSelectablePages > 1 && (
         <div className="border-t p-4 flex items-center justify-between relative z-10">
           <p className="text-sm text-muted-foreground">
-            {(page - 1) * pageSize + 1} - {Math.min(page * pageSize, total)} / {total}
+            {displayStart} - {displayEnd}
           </p>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             <Button
               variant="outline"
               size="sm"
@@ -524,11 +404,27 @@ export function HistoryPage() {
               <ChevronLeft className="h-4 w-4" />
               {t('common.previous')}
             </Button>
+            <Select
+              value={String(page)}
+              onValueChange={(value) => setPage(Number(value))}
+              disabled={isLoading}
+            >
+              <SelectTrigger className="w-20 h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {pageOptions.map((pageNumber) => (
+                  <SelectItem key={pageNumber} value={String(pageNumber)}>
+                    {pageNumber}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setPage(p => p + 1)}
-              disabled={page >= totalPages || isLoading}
+              disabled={page >= maxSelectablePages || isLoading}
             >
               {t('common.next')}
               <ChevronRight className="h-4 w-4" />
@@ -540,16 +436,8 @@ export function HistoryPage() {
       {/* Detail Dialog */}
       <Dialog open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-          <DialogHeader className="flex flex-row items-center justify-between">
+          <DialogHeader>
             <DialogTitle>{t('history.generationDetails')}</DialogTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-destructive hover:text-destructive"
-              onClick={() => selectedItem && setDeleteConfirmItem(selectedItem)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
           </DialogHeader>
           {selectedItem && (
             <div className="flex-1 overflow-y-auto space-y-4">
@@ -618,52 +506,6 @@ export function HistoryPage() {
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Single Delete Confirmation */}
-      <AlertDialog open={!!deleteConfirmItem} onOpenChange={(open) => !open && setDeleteConfirmItem(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('history.deleteConfirmTitle')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('history.deleteConfirmDesc')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => deleteConfirmItem && handleDelete(deleteConfirmItem)}
-              disabled={isDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              {t('common.delete')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Bulk Delete Confirmation */}
-      <AlertDialog open={bulkDeleteConfirm} onOpenChange={setBulkDeleteConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('history.bulkDeleteConfirmTitle')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('history.bulkDeleteConfirmDesc', { count: selectedIds.size })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleBulkDelete}
-              disabled={isDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              {t('common.delete')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   )
 }

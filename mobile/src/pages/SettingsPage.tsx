@@ -76,8 +76,12 @@ export function SettingsPage() {
     releaseNotes?: string
   } | null>(null)
 
-  // Current app version
-  const currentVersion = '0.8.1' // From package.json
+  // Current app version - keep in sync with package.json and build.gradle
+  const currentVersion = '0.8.2'
+
+  // Download progress state for APK
+  const [isDownloadingApk, setIsDownloadingApk] = useState(false)
+  const [apkDownloadProgress, setApkDownloadProgress] = useState(0)
 
   // Get the saved language preference (including 'auto')
   const [languagePreference, setLanguagePreference] = useState(() => {
@@ -247,8 +251,8 @@ export function SettingsPage() {
         return
       }
 
-      // Extract version from tag (e.g., "v0.8.2" -> "0.8.2")
-      const latestVersion = latestMobileRelease.tag_name.replace(/^v/, '')
+      // Extract version from tag (e.g., "mobile-v0.8.2" -> "0.8.2" or "v0.8.2" -> "0.8.2")
+      const latestVersion = latestMobileRelease.tag_name.replace(/^(mobile-)?v/, '')
 
       // Compare versions
       const compareVersions = (v1: string, v2: string): number => {
@@ -293,19 +297,101 @@ export function SettingsPage() {
     }
   }, [currentVersion, t])
 
-  // Download update (open browser to APK download)
+  // Download update APK and prompt installation
   const handleDownloadUpdate = useCallback(async () => {
     if (!updateInfo?.downloadUrl) return
 
+    setIsDownloadingApk(true)
+    setApkDownloadProgress(0)
+
     try {
-      // Use Capacitor Browser to open download URL
-      const { Browser } = await import('@capacitor/browser')
-      await Browser.open({ url: updateInfo.downloadUrl })
-    } catch {
-      // Fallback to window.open
-      window.open(updateInfo.downloadUrl, '_blank')
+      // Check if we're in Capacitor native environment
+      const isNative = !!(window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.()
+
+      if (isNative) {
+        // Download APK using fetch with progress
+        const response = await fetch(updateInfo.downloadUrl)
+        if (!response.ok) throw new Error('Download failed')
+
+        const contentLength = response.headers.get('content-length')
+        const total = contentLength ? parseInt(contentLength, 10) : 0
+        const reader = response.body?.getReader()
+        if (!reader) throw new Error('Cannot read response')
+
+        const chunks: Uint8Array[] = []
+        let received = 0
+
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          chunks.push(value)
+          received += value.length
+          if (total > 0) {
+            setApkDownloadProgress(Math.round((received / total) * 100))
+          }
+        }
+
+        // Combine chunks into blob
+        const blob = new Blob(chunks, { type: 'application/vnd.android.package-archive' })
+        const base64 = await new Promise<string>((resolve) => {
+          const reader = new FileReader()
+          reader.onloadend = () => {
+            const result = reader.result as string
+            resolve(result.split(',')[1])
+          }
+          reader.readAsDataURL(blob)
+        })
+
+        // Save APK to Downloads folder
+        const { Filesystem, Directory } = await import(/* @vite-ignore */ '@capacitor/filesystem')
+        const filename = `WaveSpeed-Mobile-${updateInfo.latestVersion}.apk`
+
+        await Filesystem.writeFile({
+          path: `Download/${filename}`,
+          data: base64,
+          directory: Directory.ExternalStorage,
+        })
+
+        toast({
+          title: t('settings.updates.downloadComplete'),
+          description: t('settings.updates.openToInstall', { filename }),
+        })
+
+        // Try to open the file for installation using FileOpener or Browser
+        try {
+          const { Browser } = await import(/* @vite-ignore */ '@capacitor/browser')
+          // Open file manager to Downloads folder
+          await Browser.open({ url: `content://com.android.externalstorage.documents/document/primary%3ADownload%2F${encodeURIComponent(filename)}` })
+        } catch {
+          // If can't open directly, just show toast with instructions
+          toast({
+            title: t('settings.updates.installInstructions'),
+            description: t('settings.updates.findInDownloads', { filename }),
+          })
+        }
+      } else {
+        // Fallback for web: open in browser
+        const { Browser } = await import(/* @vite-ignore */ '@capacitor/browser')
+        await Browser.open({ url: updateInfo.downloadUrl })
+      }
+    } catch (error) {
+      console.error('Failed to download update:', error)
+      toast({
+        title: t('settings.updates.downloadFailed'),
+        variant: 'destructive',
+      })
+      // Fallback to browser download
+      try {
+        const { Browser } = await import(/* @vite-ignore */ '@capacitor/browser')
+        await Browser.open({ url: updateInfo.downloadUrl })
+      } catch {
+        window.open(updateInfo.downloadUrl, '_blank')
+      }
+    } finally {
+      setIsDownloadingApk(false)
+      setApkDownloadProgress(0)
     }
-  }, [updateInfo])
+  }, [updateInfo, t])
 
   // Check if a model is already cached
   const checkModelCached = async (url: string, cacheName: string): Promise<boolean> => {
@@ -703,6 +789,19 @@ export function SettingsPage() {
       setBalance(null)
     }
   }, [isValidated, fetchBalance])
+
+  // Check for updates on mount (only once per session)
+  useEffect(() => {
+    const hasCheckedUpdate = sessionStorage.getItem('wavespeed_update_checked')
+    if (!hasCheckedUpdate) {
+      // Delay check slightly to not block initial render
+      const timer = setTimeout(() => {
+        handleCheckForUpdates()
+        sessionStorage.setItem('wavespeed_update_checked', 'true')
+      }, 2000)
+      return () => clearTimeout(timer)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSave = async () => {
     setIsSaving(true)
@@ -1207,10 +1306,19 @@ export function SettingsPage() {
                   {t('settings.updates.available', { version: updateInfo.latestVersion })}
                 </span>
               </div>
-              <Button onClick={handleDownloadUpdate}>
-                <Download className="mr-2 h-4 w-4" />
-                {t('settings.updates.downloadUpdate')}
-              </Button>
+              {isDownloadingApk ? (
+                <div className="flex flex-col gap-2">
+                  <Progress value={apkDownloadProgress} className="h-2" />
+                  <span className="text-xs text-muted-foreground text-center">
+                    {t('settings.updates.downloadProgress', { progress: apkDownloadProgress })}
+                  </span>
+                </div>
+              ) : (
+                <Button onClick={handleDownloadUpdate}>
+                  <Download className="mr-2 h-4 w-4" />
+                  {t('settings.updates.downloadUpdate')}
+                </Button>
+              )}
             </div>
           )}
         </CardContent>

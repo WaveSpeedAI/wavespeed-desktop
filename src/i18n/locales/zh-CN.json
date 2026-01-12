@@ -570,7 +570,12 @@
       "devModeDesc": "开发模式下已禁用自动更新。",
       "checkFailed": "检查更新失败",
       "downloadFailed": "下载失败",
-      "downloadFailedDesc": "下载更新失败。"
+      "downloadFailedDesc": "下载更新失败。",
+      "downloadComplete": "下载完成",
+      "openToInstall": "请打开 {{filename}} 进行安装",
+      "installInstructions": "安装说明",
+      "findInDownloads": "APK 已保存到 Download 文件夹，请在文件管理器中打开 {{filename}} 进行安装",
+      "downloadProgress": "正在下载... {{progress}}%"
     },
     "about": {
       "title": "关于",

@@ -570,7 +570,12 @@
       "devModeDesc": "Auto-update is disabled in development mode.",
       "checkFailed": "Update check failed",
       "downloadFailed": "Download failed",
-      "downloadFailedDesc": "Failed to download the update."
+      "downloadFailedDesc": "Failed to download the update.",
+      "downloadComplete": "Download complete",
+      "openToInstall": "Please open {{filename}} to install",
+      "installInstructions": "Installation instructions",
+      "findInDownloads": "APK saved to Download folder. Please open {{filename}} in your file manager to install",
+      "downloadProgress": "Downloading... {{progress}}%"
     },
     "about": {
       "title": "About",

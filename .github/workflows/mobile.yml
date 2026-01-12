@@ -3,16 +3,12 @@ name: Mobile Build
 on:
   push:
     tags:
-      - 'mobile-v*'  # Only trigger on mobile-specific tags
+      - 'mobile-v*'  # Trigger release on mobile-specific tags
     branches:
-      - 'mobile-app'
-    paths:
-      - 'mobile/**'
+      - 'mobile-app'  # Build on mobile-app branch (no path filter to catch shared code changes)
   pull_request:
     branches: [mobile-app]
-    paths:
-      - 'mobile/**'
-  workflow_dispatch:
+  workflow_dispatch:  # Allow manual trigger anytime
 
 jobs:
   build-android:

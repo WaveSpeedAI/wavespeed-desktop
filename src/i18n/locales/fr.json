@@ -29,6 +29,7 @@
     "success": "Succès",
     "warning": "Avertissement",
     "selectAll": "Tout sélectionner",
+    "deselectAll": "Tout désélectionner",
     "retry": "Réessayer",
     "downloadFailed": "Le téléchargement a échoué. Veuillez vérifier votre connexion réseau."
   },
@@ -184,7 +185,18 @@
       "noInputsTitle": "Impossible d'enregistrer le modèle",
       "noInputsDesc": "Les paramètres d'entrée ne sont disponibles que pour les prédictions effectuées dans cette application. Essayez d'exécuter une nouvelle prédiction d'abord."
     },
-    "hasInputs": "Peut être enregistré comme modèle"
+    "hasInputs": "Peut être enregistré comme modèle",
+    "select": "Sélectionner",
+    "selectionDone": "Terminé",
+    "deleteSelected": "Supprimer",
+    "bulkDeleteConfirmTitle": "Supprimer les prédictions",
+    "bulkDeleteConfirmDesc": "Êtes-vous sûr de vouloir supprimer {{count}} prédiction(s) ? Cette action est irréversible.",
+    "deleteConfirmTitle": "Supprimer la prédiction",
+    "deleteConfirmDesc": "Êtes-vous sûr de vouloir supprimer cette prédiction ? Cette action est irréversible.",
+    "deleted": "Prédiction supprimée",
+    "deletedBulk": "Prédictions supprimées",
+    "deletedBulkDesc": "{{count}} prédiction(s) supprimée(s)",
+    "deleteFailed": "Échec de la suppression de la prédiction"
   },
   "templates": {
     "title": "Modèles",

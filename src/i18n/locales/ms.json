@@ -29,6 +29,7 @@
     "success": "Berjaya",
     "warning": "Amaran",
     "selectAll": "Pilih semua",
+    "deselectAll": "Nyahpilih semua",
     "retry": "Cuba Lagi",
     "downloadFailed": "Muat turun gagal. Sila semak sambungan rangkaian anda."
   },
@@ -184,7 +185,18 @@
       "noInputsTitle": "Tidak dapat menyimpan templat",
       "noInputsDesc": "Parameter input hanya tersedia untuk ramalan yang dibuat dalam aplikasi ini. Cuba jalankan ramalan baharu dahulu."
     },
-    "hasInputs": "Boleh disimpan sebagai templat"
+    "hasInputs": "Boleh disimpan sebagai templat",
+    "select": "Pilih",
+    "selectionDone": "Selesai",
+    "deleteSelected": "Padam",
+    "bulkDeleteConfirmTitle": "Padam Ramalan",
+    "bulkDeleteConfirmDesc": "Adakah anda pasti mahu memadam {{count}} ramalan? Tindakan ini tidak boleh dibatalkan.",
+    "deleteConfirmTitle": "Padam Ramalan",
+    "deleteConfirmDesc": "Adakah anda pasti mahu memadam ramalan ini? Tindakan ini tidak boleh dibatalkan.",
+    "deleted": "Ramalan dipadam",
+    "deletedBulk": "Ramalan dipadam",
+    "deletedBulkDesc": "{{count}} ramalan dipadam",
+    "deleteFailed": "Gagal memadam ramalan"
   },
   "templates": {
     "title": "Templat",

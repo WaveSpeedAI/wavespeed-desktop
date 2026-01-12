@@ -28,6 +28,7 @@
     "success": "成功",
     "warning": "警告",
     "selectAll": "すべて選択",
+    "deselectAll": "選択解除",
     "done": "完了",
     "retry": "再試行",
     "downloadFailed": "ダウンロードに失敗しました。ネットワーク接続を確認してください。"
@@ -184,7 +185,23 @@
       "noInputsTitle": "テンプレートを保存できません",
       "noInputsDesc": "入力パラメータは、このアプリで行った予測のみ利用可能です。先に新しい予測を実行してください。"
     },
-    "hasInputs": "テンプレートとして保存可能"
+    "hasInputs": "テンプレートとして保存可能",
+    "select": "選択",
+    "selectionDone": "完了",
+    "deleteSelected": "削除",
+    "bulkDeleteConfirmTitle": "予測を削除",
+    "bulkDeleteConfirmDesc": "{{count}}件の予測を削除しますか？この操作は元に戻せません。",
+    "deleteConfirmTitle": "予測を削除",
+    "deleteConfirmDesc": "この予測を削除しますか？この操作は元に戻せません。",
+    "deleted": "予測を削除しました",
+    "deletedBulk": "予測を削除しました",
+    "deletedBulkDesc": "{{count}}件の予測を削除しました",
+    "deleteFailed": "予測の削除に失敗しました",
+    "downloadComplete": "ダウンロード完了",
+    "downloadCompleteDesc": "{{count}}件のファイルをダウンロードしました",
+    "downloadFailed": "ダウンロード失敗",
+    "downloadFailedDesc": "{{count}}件のファイルのダウンロードに失敗しました",
+    "longPressHint": "長押しで選択"
   },
   "templates": {
     "title": "テンプレート",

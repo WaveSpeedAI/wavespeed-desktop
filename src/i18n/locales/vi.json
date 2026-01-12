@@ -29,6 +29,7 @@
     "success": "Thành công",
     "warning": "Cảnh báo",
     "selectAll": "Chọn tất cả",
+    "deselectAll": "Bỏ chọn tất cả",
     "retry": "Thử lại",
     "downloadFailed": "Tải xuống thất bại. Vui lòng kiểm tra kết nối mạng của bạn."
   },
@@ -184,7 +185,18 @@
       "noInputsTitle": "Không thể lưu mẫu",
       "noInputsDesc": "Tham số đầu vào chỉ khả dụng cho các dự đoán được thực hiện trong ứng dụng này. Hãy thử chạy một dự đoán mới trước."
     },
-    "hasInputs": "Có thể lưu làm mẫu"
+    "hasInputs": "Có thể lưu làm mẫu",
+    "select": "Chọn",
+    "selectionDone": "Xong",
+    "deleteSelected": "Xóa",
+    "bulkDeleteConfirmTitle": "Xóa dự đoán",
+    "bulkDeleteConfirmDesc": "Bạn có chắc chắn muốn xóa {{count}} dự đoán không? Hành động này không thể hoàn tác.",
+    "deleteConfirmTitle": "Xóa dự đoán",
+    "deleteConfirmDesc": "Bạn có chắc chắn muốn xóa dự đoán này không? Hành động này không thể hoàn tác.",
+    "deleted": "Đã xóa dự đoán",
+    "deletedBulk": "Đã xóa các dự đoán",
+    "deletedBulkDesc": "Đã xóa {{count}} dự đoán",
+    "deleteFailed": "Xóa dự đoán thất bại"
   },
   "templates": {
     "title": "Mẫu",

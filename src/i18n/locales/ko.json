@@ -29,6 +29,7 @@
     "success": "성공",
     "warning": "경고",
     "selectAll": "전체 선택",
+    "deselectAll": "전체 선택 해제",
     "retry": "다시 시도",
     "downloadFailed": "다운로드에 실패했습니다. 네트워크 연결을 확인해 주세요."
   },
@@ -184,7 +185,18 @@
       "noInputsTitle": "템플릿을 저장할 수 없습니다",
       "noInputsDesc": "입력 매개변수는 이 앱에서 수행한 예측에서만 사용할 수 있습니다. 먼저 새 예측을 실행하세요."
     },
-    "hasInputs": "템플릿으로 저장 가능"
+    "hasInputs": "템플릿으로 저장 가능",
+    "select": "선택",
+    "selectionDone": "완료",
+    "deleteSelected": "삭제",
+    "bulkDeleteConfirmTitle": "예측 삭제",
+    "bulkDeleteConfirmDesc": "{{count}}개의 예측을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+    "deleteConfirmTitle": "예측 삭제",
+    "deleteConfirmDesc": "이 예측을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+    "deleted": "예측이 삭제되었습니다",
+    "deletedBulk": "예측이 삭제되었습니다",
+    "deletedBulkDesc": "{{count}}개의 예측이 삭제되었습니다",
+    "deleteFailed": "예측 삭제 실패"
   },
   "templates": {
     "title": "템플릿",

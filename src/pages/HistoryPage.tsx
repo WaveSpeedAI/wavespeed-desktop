@@ -15,6 +15,18 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { Checkbox } from '@/components/ui/checkbox'
+import { useToast } from '@/hooks/use-toast'
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -38,7 +50,8 @@ import {
   Copy,
   Check,
   Eye,
-  EyeOff
+  EyeOff,
+  Trash2
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AudioPlayer } from '@/components/shared/AudioPlayer'
@@ -101,6 +114,7 @@ function VideoPreview({ src, enabled }: { src: string; enabled: boolean }) {
 
 export function HistoryPage() {
   const { t } = useTranslation()
+  const { toast } = useToast()
   const { isLoading: isLoadingApiKey, isValidated } = useApiKeyStore()
   const [items, setItems] = useState<HistoryItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -113,10 +127,91 @@ export function HistoryPage() {
   const [loadPreviews, setLoadPreviews] = useState(true)
   const pageSize = 20
 
+  // Delete functionality state
+  const [isSelectMode, setIsSelectMode] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [deleteConfirmItem, setDeleteConfirmItem] = useState<HistoryItem | null>(null)
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+
   const handleCopyId = async (id: string) => {
     await navigator.clipboard.writeText(id)
     setCopiedId(true)
     setTimeout(() => setCopiedId(false), 2000)
+  }
+
+  const handleDelete = async (item: HistoryItem) => {
+    setIsDeleting(true)
+    try {
+      await apiClient.deletePrediction(item.id)
+      setItems(prev => prev.filter(i => i.id !== item.id))
+      setTotal(prev => prev - 1)
+      setDeleteConfirmItem(null)
+      setSelectedItem(null)
+      toast({
+        title: t('history.deleted'),
+        description: item.model,
+      })
+    } catch (err) {
+      toast({
+        title: t('history.deleteFailed'),
+        description: err instanceof Error ? err.message : 'Unknown error',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return
+    setIsDeleting(true)
+    try {
+      await apiClient.deletePredictions(Array.from(selectedIds))
+      setItems(prev => prev.filter(i => !selectedIds.has(i.id)))
+      setTotal(prev => prev - selectedIds.size)
+      const count = selectedIds.size
+      setSelectedIds(new Set())
+      setIsSelectMode(false)
+      setBulkDeleteConfirm(false)
+      toast({
+        title: t('history.deletedBulk'),
+        description: t('history.deletedBulkDesc', { count }),
+      })
+    } catch (err) {
+      toast({
+        title: t('history.deleteFailed'),
+        description: err instanceof Error ? err.message : 'Unknown error',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(id)) {
+        newSet.delete(id)
+      } else {
+        newSet.add(id)
+      }
+      return newSet
+    })
+  }
+
+  const handleSelectAll = () => {
+    if (selectedIds.size === items.length) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(items.map(i => i.id)))
+    }
+  }
+
+  const handleClearSelection = () => {
+    setSelectedIds(new Set())
+    setIsSelectMode(false)
   }
 
   const fetchHistory = useCallback(async () => {
@@ -127,7 +222,7 @@ export function HistoryPage() {
 
     try {
       const filters = statusFilter !== 'all'
-        ? { status: statusFilter as 'completed' | 'failed' | 'processing' | 'created' }
+        ? { status: statusFilter as 'completed' | 'failed' }
         : undefined
 
       const response = await apiClient.getHistory(page, pageSize, filters)
@@ -153,10 +248,6 @@ export function HistoryPage() {
         return <Badge variant="success">{t('history.status.completed')}</Badge>
       case 'failed':
         return <Badge variant="destructive">{t('history.status.failed')}</Badge>
-      case 'processing':
-        return <Badge variant="warning">{t('history.status.processing')}</Badge>
-      case 'created':
-        return <Badge variant="info">{t('history.status.created')}</Badge>
       default:
         return <Badge variant="secondary">{status}</Badge>
     }
@@ -217,10 +308,44 @@ export function HistoryPage() {
             <h1 className="text-2xl font-bold tracking-tight">{t('history.title')}</h1>
             <p className="text-muted-foreground text-sm mt-0.5">{t('history.description')}</p>
           </div>
-          <Button variant="outline" size="sm" onClick={fetchHistory} disabled={isLoading}>
-            <RefreshCw className={cn("mr-2 h-4 w-4", isLoading && "animate-spin")} />
-            {t('common.refresh')}
-          </Button>
+          <div className="flex items-center gap-2">
+            {isSelectMode ? (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSelectAll}
+                >
+                  {selectedIds.size === items.length ? t('common.deselectAll') : t('common.selectAll')}
+                </Button>
+                {selectedIds.size > 0 && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setBulkDeleteConfirm(true)}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    {t('history.deleteSelected')} ({selectedIds.size})
+                  </Button>
+                )}
+                <Button variant="outline" size="sm" onClick={handleClearSelection}>
+                  {t('history.selectionDone')}
+                </Button>
+              </>
+            ) : (
+              <>
+                {items.length > 0 && (
+                  <Button variant="ghost" size="sm" onClick={() => setIsSelectMode(true)}>
+                    {t('history.select')}
+                  </Button>
+                )}
+                <Button variant="outline" size="sm" onClick={fetchHistory} disabled={isLoading}>
+                  <RefreshCw className={cn("mr-2 h-4 w-4", isLoading && "animate-spin")} />
+                  {t('common.refresh')}
+                </Button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Filters */}
@@ -239,8 +364,6 @@ export function HistoryPage() {
               <SelectItem value="all">{t('history.status.all')}</SelectItem>
               <SelectItem value="completed">{t('history.status.completed')}</SelectItem>
               <SelectItem value="failed">{t('history.status.failed')}</SelectItem>
-              <SelectItem value="processing">{t('history.status.processing')}</SelectItem>
-              <SelectItem value="created">{t('history.status.created')}</SelectItem>
             </SelectContent>
           </Select>
           <Button
@@ -298,8 +421,17 @@ export function HistoryPage() {
                 return (
                   <Card
                     key={item.id}
-                    className="overflow-hidden cursor-pointer card-elevated border-transparent hover:border-primary/20"
-                    onClick={() => setSelectedItem(item)}
+                    className={cn(
+                      "overflow-hidden cursor-pointer card-elevated border-transparent hover:border-primary/20",
+                      isSelectMode && selectedIds.has(item.id) && "ring-2 ring-primary"
+                    )}
+                    onClick={() => {
+                      if (isSelectMode) {
+                        handleToggleSelect(item.id)
+                      } else {
+                        setSelectedItem(item)
+                      }
+                    }}
                   >
                     {/* Preview */}
                     <div className="aspect-video bg-muted relative">
@@ -343,6 +475,15 @@ export function HistoryPage() {
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <PreviewIcon className="h-10 w-10 text-muted-foreground" />
+                        </div>
+                      )}
+                      {isSelectMode && (
+                        <div className="absolute top-1.5 left-1.5 z-10">
+                          <Checkbox
+                            checked={selectedIds.has(item.id)}
+                            onClick={(e) => e.stopPropagation()}
+                            onCheckedChange={() => handleToggleSelect(item.id)}
+                          />
                         </div>
                       )}
                       <div className="absolute top-1.5 right-1.5">
@@ -399,8 +540,16 @@ export function HistoryPage() {
       {/* Detail Dialog */}
       <Dialog open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-          <DialogHeader>
+          <DialogHeader className="flex flex-row items-center justify-between">
             <DialogTitle>{t('history.generationDetails')}</DialogTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-destructive hover:text-destructive"
+              onClick={() => selectedItem && setDeleteConfirmItem(selectedItem)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </DialogHeader>
           {selectedItem && (
             <div className="flex-1 overflow-y-auto space-y-4">
@@ -469,6 +618,52 @@ export function HistoryPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Single Delete Confirmation */}
+      <AlertDialog open={!!deleteConfirmItem} onOpenChange={(open) => !open && setDeleteConfirmItem(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('history.deleteConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('history.deleteConfirmDesc')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteConfirmItem && handleDelete(deleteConfirmItem)}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {t('common.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk Delete Confirmation */}
+      <AlertDialog open={bulkDeleteConfirm} onOpenChange={setBulkDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('history.bulkDeleteConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('history.bulkDeleteConfirmDesc', { count: selectedIds.size })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {t('common.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

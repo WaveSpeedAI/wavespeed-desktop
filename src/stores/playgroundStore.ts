@@ -143,7 +143,11 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
               validationErrors: {},
               currentPrediction: null,
               error: null,
-              outputs: []
+              outputs: [],
+              // Reset batch mode when switching models
+              batchConfig: { ...DEFAULT_BATCH_CONFIG },
+              batchState: null,
+              batchResults: []
             }
           : tab
       )

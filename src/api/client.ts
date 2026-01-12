@@ -89,7 +89,7 @@ export interface RunOptions {
 
 export interface HistoryFilters {
   model?: string
-  status?: 'completed' | 'failed' | 'processing' | 'created'
+  status?: 'completed' | 'failed'
   created_after?: string
   created_before?: string
 }
@@ -352,6 +352,31 @@ class WaveSpeedClient {
       return response.data.data.balance
     } catch (error) {
       throw createAPIError(error, 'Failed to fetch balance')
+    }
+  }
+
+  async deletePrediction(predictionId: string): Promise<void> {
+    await this.deletePredictions([predictionId])
+  }
+
+  async deletePredictions(predictionIds: string[]): Promise<void> {
+    try {
+      const response = await this.client.post<{
+        code: number
+        message: string
+        data?: unknown
+      }>('/api/v3/predictions/delete', {
+        ids: predictionIds
+      })
+
+      if (response.data.code !== 200) {
+        throw new APIError(response.data.message || 'Failed to delete prediction', {
+          code: response.data.code,
+          details: response.data
+        })
+      }
+    } catch (error) {
+      throw createAPIError(error, 'Failed to delete prediction')
     }
   }
 }

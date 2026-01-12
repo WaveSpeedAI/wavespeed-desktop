@@ -22,6 +22,17 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -47,6 +58,8 @@ import {
   Eye,
   EyeOff,
   BookmarkPlus,
+  Trash2,
+  Download,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AudioPlayer } from '@/components/shared/AudioPlayer'
@@ -197,6 +210,18 @@ export function MobileHistoryPage() {
   const [templateName, setTemplateName] = useState('')
   const [isSaving, setIsSaving] = useState(false)
   const [nameError, setNameError] = useState('')
+
+  // Delete functionality state
+  const [isSelectMode, setIsSelectMode] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [deleteConfirmItem, setDeleteConfirmItem] = useState<ExtendedHistoryItem | null>(null)
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isDownloading, setIsDownloading] = useState(false)
+
+  // Long press handling
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null)
+  const longPressTriggered = useRef(false)
   const [isFetchingInputs, setIsFetchingInputs] = useState(false)
 
   // Check for duplicate template name
@@ -231,6 +256,156 @@ export function MobileHistoryPage() {
     setTimeout(() => setCopiedId(false), 2000)
   }
 
+  const handleDelete = async (item: ExtendedHistoryItem) => {
+    setIsDeleting(true)
+    try {
+      await apiClient.deletePrediction(item.id)
+      setItems(prev => prev.filter(i => i.id !== item.id))
+      setTotal(prev => prev - 1)
+      setDeleteConfirmItem(null)
+      setSelectedItem(null)
+      toast({
+        title: t('history.deleted'),
+        description: item.model,
+      })
+    } catch (err) {
+      toast({
+        title: t('history.deleteFailed'),
+        description: err instanceof Error ? err.message : 'Unknown error',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return
+    setIsDeleting(true)
+    try {
+      await apiClient.deletePredictions(Array.from(selectedIds))
+      setItems(prev => prev.filter(i => !selectedIds.has(i.id)))
+      setTotal(prev => prev - selectedIds.size)
+      const count = selectedIds.size
+      setSelectedIds(new Set())
+      setIsSelectMode(false)
+      setBulkDeleteConfirm(false)
+      toast({
+        title: t('history.deletedBulk'),
+        description: t('history.deletedBulkDesc', { count }),
+      })
+    } catch (err) {
+      toast({
+        title: t('history.deleteFailed'),
+        description: err instanceof Error ? err.message : 'Unknown error',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(id)) {
+        newSet.delete(id)
+      } else {
+        newSet.add(id)
+      }
+      return newSet
+    })
+  }
+
+  const handleSelectAll = () => {
+    if (selectedIds.size === items.length) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(items.map(i => i.id)))
+    }
+  }
+
+  const handleClearSelection = () => {
+    setSelectedIds(new Set())
+    setIsSelectMode(false)
+  }
+
+  // Long press handlers
+  const handleLongPressStart = (item: ExtendedHistoryItem) => {
+    longPressTriggered.current = false
+    longPressTimer.current = setTimeout(() => {
+      longPressTriggered.current = true
+      if (!isSelectMode && statusFilter !== 'archived') {
+        setIsSelectMode(true)
+        setSelectedIds(new Set([item.id]))
+      }
+    }, 500) // 500ms for long press
+  }
+
+  const handleLongPressEnd = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current)
+      longPressTimer.current = null
+    }
+  }
+
+  const handleCardClick = (item: ExtendedHistoryItem) => {
+    // If long press was triggered, don't handle click
+    if (longPressTriggered.current) {
+      longPressTriggered.current = false
+      return
+    }
+
+    if (isSelectMode) {
+      handleToggleSelect(item.id)
+    } else {
+      setSelectedItem(item)
+    }
+  }
+
+  // Bulk download handler
+  const handleBulkDownload = async () => {
+    if (selectedIds.size === 0) return
+    setIsDownloading(true)
+
+    const platform = getPlatformService()
+    let successCount = 0
+    let failCount = 0
+
+    for (const id of selectedIds) {
+      const item = items.find(i => i.id === id)
+      if (!item?.outputs?.[0] || typeof item.outputs[0] !== 'string') continue
+
+      const url = item.outputs[0]
+      if (!url.startsWith('http')) continue
+
+      try {
+        await platform.downloadFile(url, `wavespeed_${item.id.slice(-8)}`)
+        successCount++
+      } catch {
+        failCount++
+      }
+    }
+
+    setIsDownloading(false)
+    setSelectedIds(new Set())
+    setIsSelectMode(false)
+
+    if (successCount > 0) {
+      toast({
+        title: t('history.downloadComplete'),
+        description: t('history.downloadCompleteDesc', { count: successCount }),
+      })
+    }
+    if (failCount > 0) {
+      toast({
+        title: t('history.downloadFailed'),
+        description: t('history.downloadFailedDesc', { count: failCount }),
+        variant: 'destructive',
+      })
+    }
+  }
+
   const fetchHistory = useCallback(async () => {
     if (!isValidated) return
 
@@ -257,7 +432,7 @@ export function MobileHistoryPage() {
       }
 
       const filters = statusFilter !== 'all'
-        ? { status: statusFilter as 'completed' | 'failed' | 'processing' | 'created' }
+        ? { status: statusFilter as 'completed' | 'failed' }
         : undefined
 
       const response = await apiClient.getHistory(page, pageSize, filters)
@@ -287,10 +462,6 @@ export function MobileHistoryPage() {
         return <Badge variant="success">{t('history.status.completed')}</Badge>
       case 'failed':
         return <Badge variant="destructive">{t('history.status.failed')}</Badge>
-      case 'processing':
-        return <Badge variant="warning">{t('history.status.processing')}</Badge>
-      case 'created':
-        return <Badge variant="info">{t('history.status.created')}</Badge>
       default:
         return <Badge variant="secondary">{status}</Badge>
     }
@@ -490,9 +661,44 @@ export function MobileHistoryPage() {
             <h1 className="text-xl font-bold tracking-tight">{t('history.title')}</h1>
             <p className="text-muted-foreground text-xs mt-0.5">{t('history.description')}</p>
           </div>
-          <Button variant="outline" size="sm" onClick={fetchHistory} disabled={isLoading}>
-            <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
-          </Button>
+          <div className="flex items-center gap-2">
+            {isSelectMode ? (
+              <>
+                {selectedIds.size > 0 && (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleBulkDownload}
+                      disabled={isDownloading}
+                    >
+                      {isDownloading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Download className="h-4 w-4" />
+                      )}
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => setBulkDeleteConfirm(true)}
+                      disabled={isDownloading}
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      {selectedIds.size}
+                    </Button>
+                  </>
+                )}
+                <Button variant="outline" size="sm" onClick={handleClearSelection} disabled={isDownloading}>
+                  {t('history.selectionDone')}
+                </Button>
+              </>
+            ) : (
+              <Button variant="outline" size="sm" onClick={fetchHistory} disabled={isLoading}>
+                <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Filters */}
@@ -511,8 +717,6 @@ export function MobileHistoryPage() {
               <SelectItem value="all">{t('history.status.all')}</SelectItem>
               <SelectItem value="completed">{t('history.status.completed')}</SelectItem>
               <SelectItem value="failed">{t('history.status.failed')}</SelectItem>
-              <SelectItem value="processing">{t('history.status.processing')}</SelectItem>
-              <SelectItem value="created">{t('history.status.created')}</SelectItem>
               <SelectItem value="archived">{t('history.status.archived')}</SelectItem>
             </SelectContent>
           </Select>
@@ -571,11 +775,29 @@ export function MobileHistoryPage() {
                 return (
                   <Card
                     key={item.id}
-                    className="overflow-hidden cursor-pointer card-elevated border-transparent hover:border-primary/20 active:scale-[0.98] transition-transform relative"
-                    onClick={() => setSelectedItem(item)}
+                    className={cn(
+                      "overflow-hidden cursor-pointer card-elevated border-transparent hover:border-primary/20 active:scale-[0.98] transition-transform relative select-none",
+                      isSelectMode && selectedIds.has(item.id) && "ring-2 ring-primary"
+                    )}
+                    onClick={() => handleCardClick(item)}
+                    onTouchStart={() => handleLongPressStart(item)}
+                    onTouchEnd={handleLongPressEnd}
+                    onTouchCancel={handleLongPressEnd}
+                    onMouseDown={() => handleLongPressStart(item)}
+                    onMouseUp={handleLongPressEnd}
+                    onMouseLeave={handleLongPressEnd}
                   >
                     {/* Preview */}
                     <div className="aspect-square bg-muted relative">
+                      {isSelectMode && (
+                        <div className="absolute top-1.5 left-1.5 z-10">
+                          <Checkbox
+                            checked={selectedIds.has(item.id)}
+                            onClick={(e) => e.stopPropagation()}
+                            onCheckedChange={() => handleToggleSelect(item.id)}
+                          />
+                        </div>
+                      )}
                       {loadPreviews && hasPreview && typeof item.outputs![0] === 'string' && item.outputs![0].match(/\.(jpg|jpeg|png|gif|webp)/i) ? (
                         <ProxyImage
                           src={item.outputs![0]}
@@ -675,11 +897,23 @@ export function MobileHistoryPage() {
       {/* Detail Dialog */}
       <Dialog open={!!selectedItem && !showSaveDialog} onOpenChange={(open) => !open && setSelectedItem(null)}>
         <DialogContent className="max-w-[95vw] max-h-[85vh] overflow-hidden flex flex-col">
-          <DialogHeader>
-            <DialogTitle className="text-base">{t('history.generationDetails')}</DialogTitle>
-            <DialogDescription className="sr-only">
-              {t('history.generationDetails')}
-            </DialogDescription>
+          <DialogHeader className="flex flex-row items-center justify-between">
+            <div>
+              <DialogTitle className="text-base">{t('history.generationDetails')}</DialogTitle>
+              <DialogDescription className="sr-only">
+                {t('history.generationDetails')}
+              </DialogDescription>
+            </div>
+            {statusFilter !== 'archived' && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-destructive hover:text-destructive"
+                onClick={() => selectedItem && setDeleteConfirmItem(selectedItem)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
           </DialogHeader>
           {selectedItem && (
             <div className="flex-1 overflow-y-auto space-y-4">
@@ -823,6 +1057,52 @@ export function MobileHistoryPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Single Delete Confirmation */}
+      <AlertDialog open={!!deleteConfirmItem} onOpenChange={(open) => !open && setDeleteConfirmItem(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('history.deleteConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('history.deleteConfirmDesc')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteConfirmItem && handleDelete(deleteConfirmItem)}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {t('common.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk Delete Confirmation */}
+      <AlertDialog open={bulkDeleteConfirm} onOpenChange={setBulkDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('history.bulkDeleteConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('history.bulkDeleteConfirmDesc', { count: selectedIds.size })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              {t('common.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

@@ -28,6 +28,7 @@
     "success": "Başarılı",
     "warning": "Uyarı",
     "selectAll": "Tümünü seç",
+    "deselectAll": "Tümünü kaldır",
     "done": "Tamamlandı",
     "retry": "Yeniden Dene",
     "downloadFailed": "İndirme başarısız. Lütfen ağ bağlantınızı kontrol edin."
@@ -184,7 +185,18 @@
       "noInputsTitle": "Şablon kaydedilemiyor",
       "noInputsDesc": "Giriş parametreleri yalnızca bu uygulamada yapılan tahminler için kullanılabilir. Önce yeni bir tahmin çalıştırmayı deneyin."
     },
-    "hasInputs": "Şablon olarak kaydedilebilir"
+    "hasInputs": "Şablon olarak kaydedilebilir",
+    "select": "Seç",
+    "selectionDone": "Tamamlandı",
+    "deleteSelected": "Sil",
+    "bulkDeleteConfirmTitle": "Tahminleri Sil",
+    "bulkDeleteConfirmDesc": "{{count}} tahmini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+    "deleteConfirmTitle": "Tahmini Sil",
+    "deleteConfirmDesc": "Bu tahmini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+    "deleted": "Tahmin silindi",
+    "deletedBulk": "Tahminler silindi",
+    "deletedBulkDesc": "{{count}} tahmin silindi",
+    "deleteFailed": "Tahmin silinemedi"
   },
   "templates": {
     "title": "Şablonlar",

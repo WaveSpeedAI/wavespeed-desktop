@@ -29,6 +29,7 @@
     "success": "نجاح",
     "warning": "تحذير",
     "selectAll": "تحديد الكل",
+    "deselectAll": "إلغاء تحديد الكل",
     "retry": "إعادة المحاولة",
     "downloadFailed": "فشل التنزيل. يرجى التحقق من اتصال الشبكة."
   },
@@ -184,7 +185,18 @@
       "noInputsTitle": "لا يمكن حفظ القالب",
       "noInputsDesc": "معلمات الإدخال متاحة فقط للتنبؤات التي تمت في هذا التطبيق. حاول تشغيل تنبؤ جديد أولاً."
     },
-    "hasInputs": "يمكن حفظه كقالب"
+    "hasInputs": "يمكن حفظه كقالب",
+    "select": "تحديد",
+    "selectionDone": "تم",
+    "deleteSelected": "حذف",
+    "bulkDeleteConfirmTitle": "حذف التنبؤات",
+    "bulkDeleteConfirmDesc": "هل أنت متأكد من حذف {{count}} تنبؤ(ات)؟ لا يمكن التراجع عن هذا الإجراء.",
+    "deleteConfirmTitle": "حذف التنبؤ",
+    "deleteConfirmDesc": "هل أنت متأكد من حذف هذا التنبؤ؟ لا يمكن التراجع عن هذا الإجراء.",
+    "deleted": "تم حذف التنبؤ",
+    "deletedBulk": "تم حذف التنبؤات",
+    "deletedBulkDesc": "تم حذف {{count}} تنبؤ(ات)",
+    "deleteFailed": "فشل حذف التنبؤ"
   },
   "templates": {
     "title": "القوالب",

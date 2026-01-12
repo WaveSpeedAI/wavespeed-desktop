@@ -28,6 +28,7 @@
     "success": "成功",
     "warning": "警告",
     "selectAll": "全选",
+    "deselectAll": "取消全选",
     "done": "完成",
     "retry": "重试",
     "downloadFailed": "下载失败。请检查您的网络连接。"
@@ -256,7 +257,23 @@
       "noInputsTitle": "无法保存模板",
       "noInputsDesc": "输入参数仅适用于在此应用中进行的预测。请先运行新的预测。"
     },
-    "hasInputs": "可保存为模板"
+    "hasInputs": "可保存为模板",
+    "select": "选择",
+    "selectionDone": "完成",
+    "deleteSelected": "删除",
+    "bulkDeleteConfirmTitle": "删除预测记录",
+    "bulkDeleteConfirmDesc": "确定要删除 {{count}} 条预测记录吗？此操作无法撤销。",
+    "deleteConfirmTitle": "删除预测记录",
+    "deleteConfirmDesc": "确定要删除此预测记录吗？此操作无法撤销。",
+    "deleted": "预测记录已删除",
+    "deletedBulk": "预测记录已删除",
+    "deletedBulkDesc": "已删除 {{count}} 条预测记录",
+    "deleteFailed": "删除预测记录失败",
+    "downloadComplete": "下载完成",
+    "downloadCompleteDesc": "已下载 {{count}} 个文件",
+    "downloadFailed": "下载失败",
+    "downloadFailedDesc": "{{count}} 个文件下载失败",
+    "longPressHint": "长按选择"
   },
   "templates": {
     "title": "模板",

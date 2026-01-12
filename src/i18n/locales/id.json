@@ -29,6 +29,7 @@
     "success": "Berhasil",
     "warning": "Peringatan",
     "selectAll": "Pilih semua",
+    "deselectAll": "Batalkan pilihan",
     "retry": "Coba Lagi",
     "downloadFailed": "Unduhan gagal. Silakan periksa koneksi jaringan Anda."
   },
@@ -184,7 +185,18 @@
       "noInputsTitle": "Tidak dapat menyimpan template",
       "noInputsDesc": "Parameter input hanya tersedia untuk prediksi yang dibuat di aplikasi ini. Coba jalankan prediksi baru terlebih dahulu."
     },
-    "hasInputs": "Dapat disimpan sebagai template"
+    "hasInputs": "Dapat disimpan sebagai template",
+    "select": "Pilih",
+    "selectionDone": "Selesai",
+    "deleteSelected": "Hapus",
+    "bulkDeleteConfirmTitle": "Hapus Prediksi",
+    "bulkDeleteConfirmDesc": "Apakah Anda yakin ingin menghapus {{count}} prediksi? Tindakan ini tidak dapat dibatalkan.",
+    "deleteConfirmTitle": "Hapus Prediksi",
+    "deleteConfirmDesc": "Apakah Anda yakin ingin menghapus prediksi ini? Tindakan ini tidak dapat dibatalkan.",
+    "deleted": "Prediksi dihapus",
+    "deletedBulk": "Prediksi dihapus",
+    "deletedBulkDesc": "{{count}} prediksi dihapus",
+    "deleteFailed": "Gagal menghapus prediksi"
   },
   "templates": {
     "title": "Template",

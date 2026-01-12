@@ -30,6 +30,7 @@
     "success": "Success",
     "warning": "Warning",
     "selectAll": "Select All",
+    "deselectAll": "Deselect All",
     "downloadFailed": "Download failed. Please check your network connection."
   },
   "nav": {
@@ -256,7 +257,23 @@
       "noInputsTitle": "Cannot Save Template",
       "noInputsDesc": "Input parameters are only available for predictions made in this app. Try running a new prediction first."
     },
-    "hasInputs": "Can be saved as template"
+    "hasInputs": "Can be saved as template",
+    "select": "Select",
+    "selectionDone": "Done",
+    "deleteSelected": "Delete",
+    "bulkDeleteConfirmTitle": "Delete Predictions",
+    "bulkDeleteConfirmDesc": "Are you sure you want to delete {{count}} prediction(s)? This action cannot be undone.",
+    "deleteConfirmTitle": "Delete Prediction",
+    "deleteConfirmDesc": "Are you sure you want to delete this prediction? This action cannot be undone.",
+    "deleted": "Prediction deleted",
+    "deletedBulk": "Predictions deleted",
+    "deletedBulkDesc": "Deleted {{count}} prediction(s)",
+    "deleteFailed": "Failed to delete prediction",
+    "downloadComplete": "Download complete",
+    "downloadCompleteDesc": "Downloaded {{count}} file(s)",
+    "downloadFailed": "Download failed",
+    "downloadFailedDesc": "Failed to download {{count}} file(s)",
+    "longPressHint": "Long press to select"
   },
   "templates": {
     "title": "Templates",

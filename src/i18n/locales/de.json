@@ -29,6 +29,7 @@
     "success": "Erfolg",
     "warning": "Warnung",
     "selectAll": "Alle auswählen",
+    "deselectAll": "Auswahl aufheben",
     "retry": "Erneut versuchen",
     "downloadFailed": "Download fehlgeschlagen. Bitte überprüfen Sie Ihre Netzwerkverbindung."
   },
@@ -184,7 +185,18 @@
       "noInputsTitle": "Vorlage kann nicht gespeichert werden",
       "noInputsDesc": "Eingabeparameter sind nur für Vorhersagen verfügbar, die in dieser App erstellt wurden. Versuchen Sie zuerst, eine neue Vorhersage auszuführen."
     },
-    "hasInputs": "Kann als Vorlage gespeichert werden"
+    "hasInputs": "Kann als Vorlage gespeichert werden",
+    "select": "Auswählen",
+    "selectionDone": "Fertig",
+    "deleteSelected": "Löschen",
+    "bulkDeleteConfirmTitle": "Vorhersagen löschen",
+    "bulkDeleteConfirmDesc": "Möchten Sie {{count}} Vorhersage(n) wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleteConfirmTitle": "Vorhersage löschen",
+    "deleteConfirmDesc": "Möchten Sie diese Vorhersage wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleted": "Vorhersage gelöscht",
+    "deletedBulk": "Vorhersagen gelöscht",
+    "deletedBulkDesc": "{{count}} Vorhersage(n) gelöscht",
+    "deleteFailed": "Löschen der Vorhersage fehlgeschlagen"
   },
   "templates": {
     "title": "Vorlagen",

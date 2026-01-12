@@ -29,6 +29,7 @@
     "success": "Éxito",
     "warning": "Advertencia",
     "selectAll": "Seleccionar todo",
+    "deselectAll": "Deseleccionar todo",
     "retry": "Reintentar",
     "downloadFailed": "La descarga falló. Por favor verifica tu conexión de red."
   },
@@ -184,7 +185,18 @@
       "noInputsTitle": "No se puede guardar la plantilla",
       "noInputsDesc": "Los parámetros de entrada solo están disponibles para predicciones realizadas en esta aplicación. Intenta ejecutar una nueva predicción primero."
     },
-    "hasInputs": "Se puede guardar como plantilla"
+    "hasInputs": "Se puede guardar como plantilla",
+    "select": "Seleccionar",
+    "selectionDone": "Hecho",
+    "deleteSelected": "Eliminar",
+    "bulkDeleteConfirmTitle": "Eliminar predicciones",
+    "bulkDeleteConfirmDesc": "¿Estás seguro de que deseas eliminar {{count}} predicción(es)? Esta acción no se puede deshacer.",
+    "deleteConfirmTitle": "Eliminar predicción",
+    "deleteConfirmDesc": "¿Estás seguro de que deseas eliminar esta predicción? Esta acción no se puede deshacer.",
+    "deleted": "Predicción eliminada",
+    "deletedBulk": "Predicciones eliminadas",
+    "deletedBulkDesc": "Se eliminaron {{count}} predicción(es)",
+    "deleteFailed": "Error al eliminar predicción"
   },
   "templates": {
     "title": "Plantillas",

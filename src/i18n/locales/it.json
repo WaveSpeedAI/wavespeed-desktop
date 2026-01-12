@@ -28,6 +28,7 @@
     "success": "Successo",
     "warning": "Avviso",
     "selectAll": "Seleziona tutto",
+    "deselectAll": "Deseleziona tutto",
     "done": "Fatto",
     "retry": "Riprova",
     "downloadFailed": "Download fallito. Verifica la tua connessione di rete."
@@ -184,7 +185,18 @@
       "noInputsTitle": "Impossibile salvare il template",
       "noInputsDesc": "I parametri di input sono disponibili solo per le previsioni effettuate in questa app. Prova prima a eseguire una nuova previsione."
     },
-    "hasInputs": "Può essere salvato come template"
+    "hasInputs": "Può essere salvato come template",
+    "select": "Seleziona",
+    "selectionDone": "Fatto",
+    "deleteSelected": "Elimina",
+    "bulkDeleteConfirmTitle": "Elimina previsioni",
+    "bulkDeleteConfirmDesc": "Sei sicuro di voler eliminare {{count}} previsione(i)? Questa azione non può essere annullata.",
+    "deleteConfirmTitle": "Elimina previsione",
+    "deleteConfirmDesc": "Sei sicuro di voler eliminare questa previsione? Questa azione non può essere annullata.",
+    "deleted": "Previsione eliminata",
+    "deletedBulk": "Previsioni eliminate",
+    "deletedBulkDesc": "{{count}} previsione(i) eliminata/e",
+    "deleteFailed": "Eliminazione previsione fallita"
   },
   "templates": {
     "title": "Template",

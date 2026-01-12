@@ -28,6 +28,7 @@
     "success": "Sucesso",
     "warning": "Aviso",
     "selectAll": "Selecionar tudo",
+    "deselectAll": "Desmarcar tudo",
     "done": "Concluído",
     "retry": "Tentar novamente",
     "downloadFailed": "Falha no download. Por favor, verifique sua conexão de rede."
@@ -184,7 +185,18 @@
       "noInputsTitle": "Não é possível salvar o template",
       "noInputsDesc": "Os parâmetros de entrada estão disponíveis apenas para previsões feitas neste aplicativo. Tente executar uma nova previsão primeiro."
     },
-    "hasInputs": "Pode ser salvo como template"
+    "hasInputs": "Pode ser salvo como template",
+    "select": "Selecionar",
+    "selectionDone": "Concluído",
+    "deleteSelected": "Excluir",
+    "bulkDeleteConfirmTitle": "Excluir previsões",
+    "bulkDeleteConfirmDesc": "Tem certeza de que deseja excluir {{count}} previsão(ões)? Esta ação não pode ser desfeita.",
+    "deleteConfirmTitle": "Excluir previsão",
+    "deleteConfirmDesc": "Tem certeza de que deseja excluir esta previsão? Esta ação não pode ser desfeita.",
+    "deleted": "Previsão excluída",
+    "deletedBulk": "Previsões excluídas",
+    "deletedBulkDesc": "{{count}} previsão(ões) excluída(s)",
+    "deleteFailed": "Falha ao excluir previsão"
   },
   "templates": {
     "title": "Templates",

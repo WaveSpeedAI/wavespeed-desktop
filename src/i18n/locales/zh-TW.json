@@ -28,6 +28,7 @@
     "success": "成功",
     "warning": "警告",
     "selectAll": "全選",
+    "deselectAll": "取消全選",
     "done": "完成",
     "retry": "重試",
     "downloadFailed": "下載失敗。請檢查您的網路連線。"
@@ -191,7 +192,23 @@
       "noInputsTitle": "無法儲存範本",
       "noInputsDesc": "輸入參數僅適用於在此應用程式中進行的預測。請先執行新的預測。"
     },
-    "hasInputs": "可儲存為範本"
+    "hasInputs": "可儲存為範本",
+    "select": "選擇",
+    "selectionDone": "完成",
+    "deleteSelected": "刪除",
+    "bulkDeleteConfirmTitle": "刪除預測記錄",
+    "bulkDeleteConfirmDesc": "確定要刪除 {{count}} 條預測記錄嗎？此操作無法撤銷。",
+    "deleteConfirmTitle": "刪除預測記錄",
+    "deleteConfirmDesc": "確定要刪除此預測記錄嗎？此操作無法撤銷。",
+    "deleted": "預測記錄已刪除",
+    "deletedBulk": "預測記錄已刪除",
+    "deletedBulkDesc": "已刪除 {{count}} 條預測記錄",
+    "deleteFailed": "刪除預測記錄失敗",
+    "downloadComplete": "下載完成",
+    "downloadCompleteDesc": "已下載 {{count}} 個檔案",
+    "downloadFailed": "下載失敗",
+    "downloadFailedDesc": "{{count}} 個檔案下載失敗",
+    "longPressHint": "長按選擇"
   },
   "templates": {
     "title": "範本",

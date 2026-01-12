@@ -1,31 +1,9 @@
 import Upscaler from 'upscaler'
-import * as tf from '@tensorflow/tfjs-core'
-import '@tensorflow/tfjs-backend-wasm'
 
 type ModelType = 'slim' | 'medium' | 'thick'
 type ScaleType = '2x' | '3x' | '4x'
 
 let upscaler: InstanceType<typeof Upscaler> | null = null
-let backendInitialized = false
-
-// Initialize WASM backend (more reliable than WebGL, avoids CONTEXT_LOST errors)
-async function initBackend() {
-  if (backendInitialized) return
-
-  try {
-    // Try WASM backend first (most reliable)
-    await tf.setBackend('wasm')
-    await tf.ready()
-    backendInitialized = true
-    console.log('[Upscaler] Using WASM backend')
-  } catch (e) {
-    console.warn('[Upscaler] WASM backend failed, falling back to default:', e)
-    // Fall back to default (WebGL)
-    await tf.ready()
-    backendInitialized = true
-    console.log('[Upscaler] Using default backend:', tf.getBackend())
-  }
-}
 
 const getModel = async (model: ModelType, scale: ScaleType) => {
   const modelMap = {
@@ -80,9 +58,6 @@ self.onmessage = async (e: MessageEvent) => {
             id
           }
         })
-
-        // Initialize WASM backend before loading model (fixes CONTEXT_LOST_WEBGL errors)
-        await initBackend()
 
         const modelDef = await getModel(model, scale)
 
@@ -156,29 +131,13 @@ self.onmessage = async (e: MessageEvent) => {
         const pixelCount = width * height
         const uint8Data = new Uint8ClampedArray(pixelCount * 4)
 
-        // Track if result is all black (indicates processing failure)
-        let hasNonBlackPixel = false
-
         for (let i = 0; i < pixelCount; i++) {
           const srcIdx = i * channels
           const dstIdx = i * 4
-          const r = Math.round(data[srcIdx])
-          const g = Math.round(data[srcIdx + 1])
-          const b = Math.round(data[srcIdx + 2])
-          uint8Data[dstIdx] = r // R
-          uint8Data[dstIdx + 1] = g // G
-          uint8Data[dstIdx + 2] = b // B
+          uint8Data[dstIdx] = Math.round(data[srcIdx]) // R
+          uint8Data[dstIdx + 1] = Math.round(data[srcIdx + 1]) // G
+          uint8Data[dstIdx + 2] = Math.round(data[srcIdx + 2]) // B
           uint8Data[dstIdx + 3] = 255 // A (fully opaque)
-
-          // Check if any pixel is non-black (threshold > 5 to account for noise)
-          if (!hasNonBlackPixel && (r > 5 || g > 5 || b > 5)) {
-            hasNonBlackPixel = true
-          }
-        }
-
-        // If result is all black, processing likely failed
-        if (!hasNonBlackPixel) {
-          throw new Error('Processing failed: output is all black. Please try again.')
         }
 
         const resultImageData = new ImageData(uint8Data, width, height)

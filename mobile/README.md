@@ -2,11 +2,24 @@
 
 WaveSpeed Mobile is the official Android client for [WaveSpeed AI](https://wavespeed.ai), built with React + Capacitor. It shares ~70% of code with the desktop app while being deeply optimized for mobile experience.
 
+[![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases?q=mobile&expanded=true)
+
 ## Version Info
 
-- **Current Version**: 0.8.1
+- **Current Version**: 0.8.2
 - **Package Name**: `ai.wavespeed.mobile`
 - **Minimum Support**: Android 5.0 (API 21)
+
+## Responsive & Adaptive Design
+
+WaveSpeed Mobile is designed with a **mobile-first, responsive approach**:
+
+- **Adaptive Layouts**: UI automatically adjusts for different screen sizes (phones to tablets)
+- **Touch-Optimized**: Large touch targets, swipe gestures, and haptic feedback
+- **Flexible Grids**: History and model browser use responsive grid layouts (2-5 columns based on screen width)
+- **Dynamic Typography**: Font sizes scale appropriately for readability
+- **Orientation Support**: Works seamlessly in portrait and landscape modes
+- **Safe Area Handling**: Proper insets for notches, rounded corners, and navigation bars
 
 ## Features
 
@@ -301,6 +314,15 @@ Mobile shares code with desktop via Vite path aliases:
 - **API Docs**: [wavespeed.ai/docs](https://wavespeed.ai/docs)
 
 ## Changelog
+
+### v0.8.2
+- Add video preview thumbnails in History and Playground pages
+- Improve download functionality with proper file naming
+- Fix FlappyBird game text for mobile (remove Space key reference)
+- Add missing translations for saveTemplate, game prompts, settings
+- Fix responsive layout issues for larger screens
+- Add MobileImageEraserPage component
+- Switch to Output view automatically when clicking Run
 
 ### v0.8.1
 - Add history delete feature (single/batch)

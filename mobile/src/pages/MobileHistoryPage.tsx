@@ -767,7 +767,7 @@ export function MobileHistoryPage() {
               <p className="text-muted-foreground text-sm">{t('history.noHistory')}</p>
             </div>
           ) : (
-            <div className="grid gap-3 grid-cols-2">
+            <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {items.map((item) => {
                 const PreviewIcon = getPreviewIcon(item)
                 const hasPreview = item.outputs && item.outputs.length > 0

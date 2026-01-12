@@ -893,7 +893,7 @@ export function SettingsPage() {
           <div className="space-y-2">
             <Label htmlFor="theme">{t('settings.appearance.theme')}</Label>
             <Select value={theme} onValueChange={(value) => setTheme(value as Theme)}>
-              <SelectTrigger id="theme" className="w-[200px]">
+              <SelectTrigger id="theme" className="w-full sm:w-[200px]">
                 <SelectValue placeholder={t('settings.appearance.theme')} />
               </SelectTrigger>
               <SelectContent>
@@ -935,7 +935,7 @@ export function SettingsPage() {
           <div className="space-y-2">
             <Label htmlFor="language">{t('settings.language.label')}</Label>
             <Select value={languagePreference} onValueChange={handleLanguageChange}>
-              <SelectTrigger id="language" className="w-[200px]">
+              <SelectTrigger id="language" className="w-full sm:w-[200px]">
                 <SelectValue placeholder={t('settings.language.label')} />
               </SelectTrigger>
               <SelectContent>

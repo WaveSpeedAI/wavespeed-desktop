@@ -29,6 +29,7 @@
     "success": "Succès",
     "warning": "Avertissement",
     "selectAll": "Tout sélectionner",
+    "deselectAll": "Tout désélectionner",
     "retry": "Réessayer",
     "downloadFailed": "Le téléchargement a échoué. Veuillez vérifier votre connexion réseau."
   },
@@ -256,7 +257,31 @@
     "executionTime": "Temps d'exécution",
     "predictionId": "ID de prédiction",
     "notAvailable": "Historique non disponible",
-    "notAvailableDesc": "L'API d'historique des prédictions n'est pas disponible pour le moment."
+    "notAvailableDesc": "L'API d'historique des prédictions n'est pas disponible pour le moment.",
+    "saveTemplate": {
+      "button": "Enregistrer comme modèle",
+      "dialogTitle": "Enregistrer comme modèle",
+      "nameLabel": "Nom du modèle",
+      "namePlaceholder": "Entrez le nom du modèle",
+      "duplicateName": "Un modèle avec ce nom existe déjà",
+      "success": "Modèle enregistré",
+      "successDesc": "Votre modèle a été enregistré avec succès",
+      "error": "Échec de l'enregistrement",
+      "noInputsTitle": "Impossible d'enregistrer le modèle",
+      "noInputsDesc": "Les paramètres d'entrée ne sont disponibles que pour les prédictions effectuées dans cette application. Essayez d'exécuter une nouvelle prédiction d'abord."
+    },
+    "hasInputs": "Peut être enregistré comme modèle",
+    "select": "Sélectionner",
+    "selectionDone": "Terminé",
+    "deleteSelected": "Supprimer",
+    "bulkDeleteConfirmTitle": "Supprimer les prédictions",
+    "bulkDeleteConfirmDesc": "Êtes-vous sûr de vouloir supprimer {{count}} prédiction(s) ? Cette action est irréversible.",
+    "deleteConfirmTitle": "Supprimer la prédiction",
+    "deleteConfirmDesc": "Êtes-vous sûr de vouloir supprimer cette prédiction ? Cette action est irréversible.",
+    "deleted": "Prédiction supprimée",
+    "deletedBulk": "Prédictions supprimées",
+    "deletedBulkDesc": "{{count}} prédiction(s) supprimée(s)",
+    "deleteFailed": "Échec de la suppression de la prédiction"
   },
   "templates": {
     "title": "Modèles",
@@ -422,6 +447,7 @@
   "settings": {
     "title": "Paramètres",
     "description": "Configurer votre application WaveSpeed Desktop",
+    "mobileDescription": "Configurer votre application WaveSpeed Mobile",
     "apiKey": {
       "title": "Clé API",
       "description": "Entrez votre clé API WaveSpeed pour accéder aux modèles",
@@ -535,7 +561,9 @@
     "about": {
       "title": "À propos",
       "description": "WaveSpeed Desktop - Playground de modèles IA",
+      "mobileDescription": "WaveSpeed Mobile - Playground de modèles IA",
       "aboutText": "Une application de bureau open source pour exécuter des modèles IA avec l'API WaveSpeed.",
+      "mobileAboutText": "Une application mobile open source pour exécuter des modèles IA avec l'API WaveSpeed.",
       "viewOnGitHub": "Voir sur GitHub"
     }
   },
@@ -714,6 +742,98 @@
       "cutMask": "Découper le masque",
       "hint": "Clic gauche pour inclure, clic droit pour exclure des zones"
     },
+    "videoConverter": {
+      "title": "Convertisseur Vidéo",
+      "description": "Convertir des vidéos entre formats"
+    },
+    "audioConverter": {
+      "title": "Convertisseur Audio",
+      "description": "Convertir entre les formats MP3 et WAV",
+      "selectAudio": "Glissez un fichier MP3/WAV ici",
+      "supportedFormats": "Conversion MP3 ↔ WAV",
+      "inputAudio": "Audio d'entrée",
+      "outputFormat": "Format de sortie",
+      "bitrate": "Débit binaire",
+      "convert": "Convertir",
+      "converting": "Conversion...",
+      "result": "Résultat",
+      "invalidFile": "Veuillez sélectionner un fichier MP3 ou WAV"
+    },
+    "imageConverter": {
+      "title": "Convertisseur d'Images",
+      "description": "Convertir des images en JPG, PNG ou WebP",
+      "selectImage": "Glissez une image ici",
+      "supportedFormats": "Toute image → JPG/PNG/WebP",
+      "inputImage": "Image d'entrée",
+      "outputFormat": "Format de sortie",
+      "quality": "Qualité",
+      "convert": "Convertir",
+      "converting": "Conversion...",
+      "result": "Résultat",
+      "invalidFile": "Veuillez sélectionner un fichier image valide"
+    },
+    "mediaTrimmer": {
+      "title": "Découpeur de médias",
+      "description": "Découpez vos vidéos et audios à la longueur souhaitée",
+      "selectMedia": "Glissez un fichier média ici",
+      "supportedFormats": "Supporte les fichiers vidéo et audio",
+      "inputMedia": "Média d'entrée",
+      "selectMediaFile": "Sélectionnez un fichier à découper",
+      "trimSettings": "Paramètres de découpe",
+      "selectRange": "Sélectionnez le temps de début et de fin",
+      "startTime": "Temps de début",
+      "endTime": "Temps de fin",
+      "timeFormat": "Format: m:ss.d ou secondes",
+      "outputDuration": "Durée de sortie",
+      "duration": "Durée",
+      "trim": "Découper",
+      "trimming": "Découpage...",
+      "download": "Télécharger",
+      "newMedia": "Nouveau fichier",
+      "result": "Résultat du découpage",
+      "invalidFile": "Sélectionnez un fichier vidéo ou audio valide",
+      "invalidRange": "Le temps de fin doit être supérieur au temps de début"
+    },
+    "mediaMerger": {
+      "title": "Fusionneur de médias",
+      "description": "Combinez plusieurs vidéos ou audios en un seul fichier",
+      "selectMedia": "Glissez des fichiers ici",
+      "supportedFormats": "Supporte les fichiers vidéo et audio",
+      "addFiles": "Ajouter des fichiers",
+      "inputFiles": "Fichiers d'entrée",
+      "dragToReorder": "Glissez pour réorganiser",
+      "noFiles": "Aucun fichier",
+      "addFilesDesc": "Ajoutez des vidéos ou audios à fusionner",
+      "outputFormat": "Format de sortie",
+      "merge": "Fusionner",
+      "merging": "Fusion...",
+      "download": "Télécharger",
+      "clear": "Effacer",
+      "result": "Résultat de la fusion",
+      "invalidFile": "Sélectionnez des fichiers vidéo ou audio valides",
+      "minFiles": "Ajoutez au moins 2 fichiers pour fusionner"
+    },
+    "faceEnhancer": {
+      "title": "Améliorateur de visages",
+      "description": "Améliorez et restaurez les visages dans les photos avec l'IA",
+      "selectImage": "Glissez une image ici",
+      "modelsInfo": "Utilise les modèles YOLO + GFPGAN",
+      "inputImage": "Image d'entrée",
+      "selectImageWithFaces": "Sélectionnez une image avec des visages à améliorer",
+      "enhance": "Améliorer les visages",
+      "enhancing": "Amélioration des visages...",
+      "detecting": "Détection des visages...",
+      "downloading": "Téléchargement des modèles...",
+      "loading": "Chargement des modèles...",
+      "processing": "Traitement...",
+      "download": "Télécharger",
+      "newImage": "Nouvelle image",
+      "result": "Résultat",
+      "facesEnhanced": "{{count}} visage(s) amélioré(s)",
+      "noFacesFound": "Aucun visage trouvé",
+      "invalidFile": "Sélectionnez un fichier image valide",
+      "firstTimeDownload": "Première fois ? Les modèles seront téléchargés (~350Mo)"
+    },
     "progress": {
       "downloading": "Téléchargement du modèle",
       "loading": "Chargement du modèle",
@@ -807,5 +927,9 @@
       "merging": "Fusion",
       "trimming": "Découpage"
     }
+  },
+  "game": {
+    "waitingLong": "L'attente est longue ? Jouez à un mini-jeu !",
+    "clickToPlay": "Cliquez pour commencer"
   }
 }

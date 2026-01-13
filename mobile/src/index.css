@@ -1,0 +1,258 @@
+/* Import shared styles from main project - must be first */
+@import '../../src/index.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Mobile-specific styles */
+@layer base {
+  html {
+    /* Prevent overscroll bounce on iOS */
+    overscroll-behavior: none;
+    /* Enable smooth scrolling */
+    scroll-behavior: smooth;
+    /* Prevent text size adjustment on orientation change */
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    /* Prevent pull-to-refresh */
+    overscroll-behavior-y: contain;
+    /* Ensure full viewport on mobile */
+    min-height: 100dvh;
+    /* Prevent selection on long press */
+    -webkit-user-select: none;
+    user-select: none;
+    /* Enable text selection for inputs */
+    -webkit-touch-callout: none;
+  }
+
+  /* Allow text selection in specific elements */
+  input, textarea, [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+}
+
+/* Safe area utilities */
+@layer utilities {
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .safe-area-left {
+    padding-left: env(safe-area-inset-left, 0px);
+  }
+
+  .safe-area-right {
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  .safe-area-inset {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+  }
+
+  /* Bottom navigation safe area */
+  .pb-safe {
+    padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Touch-friendly sizing */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .touch-target-lg {
+    min-height: 48px;
+    min-width: 48px;
+  }
+}
+
+/* Bottom navigation bar */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(56px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: hsl(var(--background));
+  border-top: 1px solid hsl(var(--border));
+  z-index: 50;
+}
+
+.dark .bottom-nav {
+  background: hsl(var(--background));
+}
+
+/* Bottom navigation item */
+.bottom-nav-item {
+  @apply flex flex-col items-center justify-center py-1 px-2;
+  @apply text-muted-foreground transition-colors;
+  min-width: 64px;
+  min-height: 48px;
+}
+
+.bottom-nav-item.active {
+  @apply text-primary;
+}
+
+.bottom-nav-item:active {
+  @apply bg-accent/50;
+}
+
+/* Mobile header */
+.mobile-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: hsl(var(--background) / 0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid hsl(var(--border));
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Keyboard visible state */
+body.keyboard-visible .bottom-nav {
+  display: none;
+}
+
+body.keyboard-visible .pb-safe {
+  padding-bottom: 0;
+}
+
+/* Mobile-optimized scrollbar (hide on touch devices) */
+@media (pointer: coarse) {
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  * {
+    scrollbar-width: none;
+  }
+}
+
+/* Touch feedback */
+.touch-feedback {
+  @apply transition-transform active:scale-95;
+}
+
+.touch-feedback-light {
+  @apply transition-opacity active:opacity-70;
+}
+
+/* Mobile card style */
+.mobile-card {
+  @apply bg-card rounded-lg border border-border p-4;
+  @apply active:bg-accent/50 transition-colors;
+}
+
+/* Full-bleed content */
+.full-bleed {
+  margin-left: calc(-1 * var(--sal, 0px));
+  margin-right: calc(-1 * var(--sar, 0px));
+  padding-left: var(--sal, 0px);
+  padding-right: var(--sar, 0px);
+}
+
+/* Mobile form input */
+.mobile-input {
+  @apply h-12 text-base;
+  /* Prevent iOS zoom on focus */
+  font-size: 16px !important;
+}
+
+/* Mobile button */
+.mobile-button {
+  @apply h-12 px-6 text-base font-medium;
+  @apply active:scale-[0.98] transition-transform;
+}
+
+/* Disable animations for reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Pull-to-refresh disabled */
+html, body {
+  overscroll-behavior-y: contain;
+}
+
+/* Fix for iOS bounce */
+#root {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
+/* Tab bar styles */
+.tab-bar {
+  @apply flex border-b border-border;
+}
+
+.tab-item {
+  @apply flex-1 py-3 text-center text-sm font-medium;
+  @apply text-muted-foreground transition-colors;
+  @apply border-b-2 border-transparent;
+}
+
+.tab-item.active {
+  @apply text-primary border-primary;
+}
+
+/* Mobile dialog (sheet style) */
+.mobile-sheet {
+  @apply fixed inset-x-0 bottom-0 z-50;
+  @apply bg-background rounded-t-xl;
+  @apply animate-in slide-in-from-bottom duration-300;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.mobile-sheet-overlay {
+  @apply fixed inset-0 z-50 bg-black/50;
+  @apply animate-in fade-in duration-200;
+}
+
+/* Ripple effect for Android feel */
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: currentColor;
+  opacity: 0.1;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s, opacity 0.3s;
+}
+
+.ripple:active::after {
+  width: 200%;
+  height: 200%;
+  opacity: 0;
+}

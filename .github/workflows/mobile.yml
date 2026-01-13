@@ -1,0 +1,122 @@
+name: Mobile Build
+
+on:
+  push:
+    tags:
+      - 'mobile-v*'  # Trigger release on mobile-specific tags
+    branches:
+      - 'mobile-app'  # Build on mobile-app branch (no path filter to catch shared code changes)
+  pull_request:
+    branches: [mobile-app]
+  workflow_dispatch:  # Allow manual trigger anytime
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install mobile dependencies
+        working-directory: mobile
+        run: npm ci
+
+      - name: Build web assets
+        working-directory: mobile
+        run: npm run build
+
+      - name: Sync Capacitor
+        working-directory: mobile
+        run: npx cap sync android
+
+      - name: Make gradlew executable
+        working-directory: mobile/android
+        run: chmod +x ./gradlew
+
+      - name: Build Debug APK
+        working-directory: mobile/android
+        run: ./gradlew assembleDebug
+
+      - name: Build Release APK
+        if: startsWith(github.ref, 'refs/tags/mobile-v')
+        working-directory: mobile/android
+        run: ./gradlew assembleRelease
+
+      - name: Rename APKs
+        run: |
+          # Rename debug APK
+          if [ -f mobile/android/app/build/outputs/apk/debug/app-debug.apk ]; then
+            mv mobile/android/app/build/outputs/apk/debug/app-debug.apk \
+               mobile/android/app/build/outputs/apk/debug/WaveSpeed-Mobile-debug.apk
+          fi
+          # Rename release APK
+          if [ -f mobile/android/app/build/outputs/apk/release/app-release.apk ]; then
+            mv mobile/android/app/build/outputs/apk/release/app-release.apk \
+               mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile.apk
+          fi
+          # Also handle unsigned release APK
+          if [ -f mobile/android/app/build/outputs/apk/release/app-release-unsigned.apk ]; then
+            mv mobile/android/app/build/outputs/apk/release/app-release-unsigned.apk \
+               mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile-unsigned.apk
+          fi
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: wavespeed-mobile-debug
+          path: mobile/android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+      - name: Upload Release APK
+        if: startsWith(github.ref, 'refs/tags/mobile-v')
+        uses: actions/upload-artifact@v4
+        with:
+          name: wavespeed-mobile-release
+          path: mobile/android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: ignore
+
+  release:
+    needs: build-android
+    if: startsWith(github.ref, 'refs/tags/mobile-v') && needs.build-android.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List artifacts
+        run: find artifacts -type f -name "*.apk"
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/wavespeed-mobile-release/*.apk
+          draft: false
+          prerelease: ${{ contains(github.ref, '-beta') || contains(github.ref, '-alpha') || contains(github.ref, '-rc') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

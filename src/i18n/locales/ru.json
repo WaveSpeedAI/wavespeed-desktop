@@ -28,6 +28,7 @@
     "success": "Успех",
     "warning": "Предупреждение",
     "selectAll": "Выбрать все",
+    "deselectAll": "Снять выделение",
     "done": "Готово",
     "retry": "Повторить",
     "downloadFailed": "Загрузка не удалась. Пожалуйста, проверьте сетевое подключение."
@@ -256,7 +257,31 @@
     "executionTime": "Время выполнения",
     "predictionId": "ID предсказания",
     "notAvailable": "История недоступна",
-    "notAvailableDesc": "API истории предсказаний в данный момент недоступен."
+    "notAvailableDesc": "API истории предсказаний в данный момент недоступен.",
+    "saveTemplate": {
+      "button": "Сохранить как шаблон",
+      "dialogTitle": "Сохранить как шаблон",
+      "nameLabel": "Название шаблона",
+      "namePlaceholder": "Введите название шаблона",
+      "duplicateName": "Шаблон с таким именем уже существует",
+      "success": "Шаблон сохранён",
+      "successDesc": "Ваш шаблон успешно сохранён",
+      "error": "Ошибка сохранения",
+      "noInputsTitle": "Невозможно сохранить шаблон",
+      "noInputsDesc": "Входные параметры доступны только для предсказаний, сделанных в этом приложении. Сначала попробуйте выполнить новое предсказание."
+    },
+    "hasInputs": "Можно сохранить как шаблон",
+    "select": "Выбрать",
+    "selectionDone": "Готово",
+    "deleteSelected": "Удалить",
+    "bulkDeleteConfirmTitle": "Удалить прогнозы",
+    "bulkDeleteConfirmDesc": "Вы уверены, что хотите удалить {{count}} прогноз(ов)? Это действие нельзя отменить.",
+    "deleteConfirmTitle": "Удалить прогноз",
+    "deleteConfirmDesc": "Вы уверены, что хотите удалить этот прогноз? Это действие нельзя отменить.",
+    "deleted": "Прогноз удален",
+    "deletedBulk": "Прогнозы удалены",
+    "deletedBulkDesc": "Удалено {{count}} прогноз(ов)",
+    "deleteFailed": "Не удалось удалить прогноз"
   },
   "templates": {
     "title": "Шаблоны",
@@ -422,6 +447,7 @@
   "settings": {
     "title": "Настройки",
     "description": "Настройка приложения WaveSpeed Desktop",
+    "mobileDescription": "Настройка приложения WaveSpeed Mobile",
     "apiKey": {
       "title": "API-ключ",
       "description": "Введите ваш API-ключ WaveSpeed для доступа к моделям",
@@ -535,7 +561,9 @@
     "about": {
       "title": "О программе",
       "description": "WaveSpeed Desktop - Playground для ИИ-моделей",
+      "mobileDescription": "WaveSpeed Mobile - Playground для ИИ-моделей",
       "aboutText": "Приложение с открытым исходным кодом для запуска ИИ-моделей с API WaveSpeed.",
+      "mobileAboutText": "Мобильное приложение с открытым исходным кодом для запуска ИИ-моделей с API WaveSpeed.",
       "viewOnGitHub": "Посмотреть на GitHub"
     }
   },
@@ -714,6 +742,98 @@
       "cutMask": "Вырезать по маске",
       "hint": "Левый клик для включения, правый клик для исключения областей"
     },
+    "videoConverter": {
+      "title": "Конвертер видео",
+      "description": "Конвертируйте видео между форматами"
+    },
+    "audioConverter": {
+      "title": "Конвертер аудио",
+      "description": "Конвертация между форматами MP3 и WAV",
+      "selectAudio": "Нажмите или перетащите файл MP3/WAV сюда",
+      "supportedFormats": "Конвертация MP3 ↔ WAV",
+      "converting": "Конвертация...",
+      "convert": "Конвертировать",
+      "download": "Скачать",
+      "complete": "Завершено",
+      "outputFormat": "Формат вывода",
+      "bitrate": "Битрейт",
+      "noFileSelected": "Файл не выбран"
+    },
+    "imageConverter": {
+      "title": "Конвертер изображений",
+      "description": "Конвертация изображений в JPG, PNG или WebP",
+      "selectImage": "Нажмите или перетащите изображение сюда",
+      "supportedFormats": "Любое изображение → JPG/PNG/WebP",
+      "converting": "Конвертация...",
+      "convert": "Конвертировать",
+      "download": "Скачать",
+      "complete": "Завершено",
+      "outputFormat": "Формат вывода",
+      "quality": "Качество",
+      "noFileSelected": "Файл не выбран"
+    },
+    "mediaTrimmer": {
+      "title": "Обрезка медиа",
+      "description": "Обрезайте видео и аудио до нужной длины",
+      "selectMedia": "Перетащите медиафайл сюда",
+      "supportedFormats": "Поддержка видео и аудио файлов",
+      "inputMedia": "Входной файл",
+      "selectMediaFile": "Выберите файл для обрезки",
+      "trimSettings": "Настройки обрезки",
+      "selectRange": "Выберите время начала и конца",
+      "startTime": "Время начала",
+      "endTime": "Время окончания",
+      "timeFormat": "Формат: m:ss.d или секунды",
+      "outputDuration": "Длительность",
+      "duration": "Длительность",
+      "trim": "Обрезать",
+      "trimming": "Обрезка...",
+      "download": "Скачать",
+      "newMedia": "Новый файл",
+      "result": "Результат обрезки",
+      "invalidFile": "Выберите корректный видео или аудио файл",
+      "invalidRange": "Время окончания должно быть больше времени начала"
+    },
+    "mediaMerger": {
+      "title": "Объединение медиа",
+      "description": "Объедините несколько видео или аудио в один файл",
+      "selectMedia": "Перетащите файлы сюда",
+      "supportedFormats": "Поддержка видео и аудио файлов",
+      "addFiles": "Добавить файлы",
+      "inputFiles": "Входные файлы",
+      "dragToReorder": "Перетащите для сортировки",
+      "noFiles": "Нет файлов",
+      "addFilesDesc": "Добавьте видео или аудио для объединения",
+      "outputFormat": "Формат вывода",
+      "merge": "Объединить",
+      "merging": "Объединение...",
+      "download": "Скачать",
+      "clear": "Очистить",
+      "result": "Результат",
+      "invalidFile": "Выберите корректные видео или аудио файлы",
+      "minFiles": "Добавьте минимум 2 файла для объединения"
+    },
+    "faceEnhancer": {
+      "title": "Улучшение лиц",
+      "description": "Улучшайте и восстанавливайте лица на фото с помощью ИИ",
+      "selectImage": "Перетащите изображение сюда",
+      "modelsInfo": "Использует модели YOLO + GFPGAN",
+      "inputImage": "Входное изображение",
+      "selectImageWithFaces": "Выберите изображение с лицами для улучшения",
+      "enhance": "Улучшить лица",
+      "enhancing": "Улучшение лиц...",
+      "detecting": "Обнаружение лиц...",
+      "downloading": "Загрузка моделей...",
+      "loading": "Загрузка моделей...",
+      "processing": "Обработка...",
+      "download": "Скачать",
+      "newImage": "Новое изображение",
+      "result": "Результат",
+      "facesEnhanced": "{{count}} лиц(о) улучшено",
+      "noFacesFound": "Лица не найдены",
+      "invalidFile": "Выберите корректный файл изображения",
+      "firstTimeDownload": "Первый раз? Модели будут загружены (~350МБ)"
+    },
     "progress": {
       "downloading": "Загрузка модели",
       "loading": "Загрузка модели в память",
@@ -807,5 +927,9 @@
       "merging": "Объединение",
       "trimming": "Обрезка"
     }
+  },
+  "game": {
+    "waitingLong": "Долго ждёте? Сыграйте в мини-игру!",
+    "clickToPlay": "Нажмите, чтобы начать"
   }
 }

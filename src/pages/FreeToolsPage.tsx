@@ -130,15 +130,15 @@ export function FreeToolsPage() {
   ]
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">{t('freeTools.title')}</h1>
-        <p className="text-muted-foreground mt-1">
+    <div className="p-4 md:p-8 pt-14 md:pt-8">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold">{t('freeTools.title')}</h1>
+        <p className="text-muted-foreground text-sm md:text-base mt-1">
           {t('freeTools.description')}
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6 max-w-6xl">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 max-w-6xl">
         {tools.map((tool) => (
           <Card
             key={tool.id}

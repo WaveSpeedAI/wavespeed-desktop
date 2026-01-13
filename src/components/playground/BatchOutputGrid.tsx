@@ -14,8 +14,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { Download, CheckCircle2, XCircle, Save, ExternalLink, Copy, Check, Loader2 } from 'lucide-react'
+import { Download, CheckCircle2, XCircle, ExternalLink, Copy, Check, Loader2 } from 'lucide-react'
 import { AudioPlayer } from '@/components/shared/AudioPlayer'
+import { FlappyBird } from './FlappyBird'
 import { useAssetsStore, detectAssetType, generateDownloadFilename } from '@/stores/assetsStore'
 import { toast } from '@/hooks/useToast'
 import { cn } from '@/lib/utils'
@@ -58,9 +59,9 @@ export function BatchOutputGrid({
 }: BatchOutputGridProps) {
   const { t } = useTranslation()
   const [selectedResult, setSelectedResult] = useState<BatchResult | null>(null)
-  const [savingAll, setSavingAll] = useState(false)
   const [savedIndexes, setSavedIndexes] = useState<Set<number>>(new Set())
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
+  const [showGame, setShowGame] = useState(true)
   const autoSavedIndexesRef = useRef<Set<number>>(new Set())
 
   const { saveAsset, settings, hasAssetForPrediction } = useAssetsStore()
@@ -70,7 +71,6 @@ export function BatchOutputGrid({
   const failedCount = results.filter(r => r.error).length
   const total = totalCount || results.length
   const progress = total > 0 ? ((completedCount + failedCount) / total) * 100 : 0
-  const allSaved = completedCount > 0 && completedResults.every(r => savedIndexes.has(r.index))
 
   // Auto-save results as they complete
   useEffect(() => {
@@ -130,13 +130,17 @@ export function BatchOutputGrid({
     saveNewResults()
   }, [results, modelId, settings.autoSaveAssets, saveAsset, hasAssetForPrediction, isRunning, t])
 
-  // Reset auto-saved tracking when results are cleared
+  // Reset auto-saved tracking and game state when results are cleared
   useEffect(() => {
     if (results.length === 0) {
       autoSavedIndexesRef.current = new Set()
       setSavedIndexes(new Set())
+      setShowGame(true) // Reset to show game for next batch
     }
   }, [results.length])
+
+  // Check if truly running in Electron (not web polyfill)
+  const isElectron = navigator.userAgent.toLowerCase().includes('electron')
 
   const handleDownload = async (url: string, predictionId?: string, resultIndex: number = 0) => {
     const filename = generateDownloadFilename({
@@ -146,68 +150,41 @@ export function BatchOutputGrid({
       resultIndex
     })
 
-    if (window.electronAPI?.downloadFile) {
+    if (isElectron && window.electronAPI?.downloadFile) {
       const result = await window.electronAPI.downloadFile(url, filename)
       if (!result.success && !result.canceled) {
         console.error('Download failed:', result.error)
       }
     } else {
+      // Web mode: open URL directly in new tab (CSP blocks fetch)
       window.open(url, '_blank')
     }
   }
 
   const handleDownloadAll = async () => {
+    let downloadCount = 0
     for (const result of results) {
       if (result.error) continue
       for (let outputIndex = 0; outputIndex < result.outputs.length; outputIndex++) {
         const output = result.outputs[outputIndex]
         if (typeof output === 'string' && isUrl(output)) {
           await handleDownload(output, result.prediction?.id, outputIndex)
+          downloadCount++
+          // Small delay between downloads to avoid browser blocking
+          if (!window.electronAPI?.downloadFile) {
+            await new Promise(resolve => setTimeout(resolve, 300))
+          }
         }
       }
+    }
+    if (downloadCount > 0) {
+      toast({
+        description: t('playground.batch.downloadStarted', { count: downloadCount }),
+        duration: 2000,
+      })
     }
   }
 
-  const handleSaveAll = useCallback(async () => {
-    if (!modelId) return
-
-    setSavingAll(true)
-    let savedCount = 0
-
-    for (const result of results) {
-      if (result.error) continue
-
-      for (let outputIndex = 0; outputIndex < result.outputs.length; outputIndex++) {
-        const output = result.outputs[outputIndex]
-        if (typeof output !== 'string') continue
-
-        const assetType = detectAssetType(output)
-        if (!assetType) continue
-
-        try {
-          // Each batch item has unique predictionId, so just use outputIndex
-          const saveResult = await saveAsset(output, assetType, {
-            modelId,
-            predictionId: result.prediction?.id,
-            originalUrl: output,
-            resultIndex: outputIndex
-          })
-          if (saveResult) {
-            savedCount++
-            setSavedIndexes(prev => new Set(prev).add(result.index))
-          }
-        } catch (err) {
-          console.error('Failed to save asset:', err)
-        }
-      }
-    }
-
-    setSavingAll(false)
-    toast({
-      title: t('playground.batch.savedAll'),
-      description: t('playground.batch.savedAllDesc', { count: savedCount }),
-    })
-  }, [modelId, results, saveAsset, t])
 
   const handleCopy = async (url: string, index: number) => {
     try {
@@ -238,9 +215,9 @@ export function BatchOutputGrid({
         <div className="flex items-center gap-3">
           <h3 className="text-sm font-medium flex items-center gap-2">
             {isRunning && <Loader2 className="h-4 w-4 animate-spin" />}
-            {t('playground.batch.results')} ({completedCount + failedCount}/{total})
+            <span className="hidden md:inline">{t('playground.batch.results')}</span> ({completedCount + failedCount}/{total})
           </h3>
-          <div className="flex items-center gap-2 text-xs">
+          <div className="hidden md:flex items-center gap-2 text-xs">
             {completedCount > 0 && (
               <span className="flex items-center gap-1 text-green-600">
                 <CheckCircle2 className="h-3 w-3" />
@@ -255,46 +232,55 @@ export function BatchOutputGrid({
             )}
           </div>
           {isRunning && (
-            <Progress value={progress} className="h-2 w-24" />
+            <Progress value={progress} className="h-2 w-16 md:w-24" />
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 md:gap-2">
+          {isRunning && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowGame(!showGame)}
+              className="text-xs md:text-sm"
+            >
+              {showGame ? 'Results' : 'Game'}
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"
             onClick={handleDownloadAll}
             disabled={completedCount === 0 || isRunning}
+            className="text-xs md:text-sm"
           >
-            <Download className="h-3 w-3 mr-1" />
-            {t('playground.batch.downloadAll')}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleSaveAll}
-            disabled={completedCount === 0 || savingAll || !modelId || isRunning || allSaved}
-          >
-            {savingAll ? (
-              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-            ) : allSaved ? (
-              <Check className="h-3 w-3 mr-1" />
-            ) : (
-              <Save className="h-3 w-3 mr-1" />
-            )}
-            {t('playground.batch.saveAllToAssets')}
+            <Download className="h-3 w-3 md:mr-1" />
+            <span className="hidden md:inline">{t('playground.batch.downloadAll')}</span>
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={onClear}
             disabled={isRunning}
+            className="text-xs md:text-sm"
           >
-            {t('playground.batch.clearResults')}
+            <span className="hidden md:inline">{t('playground.batch.clearResults')}</span>
+            <span className="md:hidden">Clear</span>
           </Button>
         </div>
       </div>
 
-      {/* Results Grid - dynamic columns based on item count with minimum cell size */}
+      {/* Game while waiting or idle (no results) */}
+      {showGame && (isRunning || results.length === 0) ? (
+        <div className="flex-1 relative">
+          <FlappyBird
+            isTaskRunning={isRunning}
+            taskStatus={isRunning ? `Processing ${completedCount + failedCount}/${total}` : undefined}
+            hasResults={completedCount > 0}
+            onViewResults={() => setShowGame(false)}
+          />
+        </div>
+      ) : (
+      /* Results Grid - dynamic columns based on item count with minimum cell size */
       <ScrollArea className="flex-1">
         <div className={cn(
           'grid gap-4 p-1',
@@ -394,6 +380,7 @@ export function BatchOutputGrid({
           })}
         </div>
       </ScrollArea>
+      )}
 
       {/* Detail Dialog */}
       <Dialog open={!!selectedResult} onOpenChange={() => setSelectedResult(null)}>

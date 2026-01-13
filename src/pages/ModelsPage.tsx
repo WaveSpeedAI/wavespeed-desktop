@@ -199,7 +199,7 @@ const SearchInput = memo(function SearchInput({
   }, [value])
 
   return (
-    <div className="relative flex-1 max-w-md">
+    <div className="relative flex-1 w-full sm:max-w-md">
       <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       <Input
         placeholder={placeholder}
@@ -317,14 +317,14 @@ export function ModelsPage() {
   const parentRef = useRef<HTMLDivElement>(null)
   const [columns, setColumns] = useState(4)
 
-  // Calculate columns based on container width
+  // Calculate columns based on container width (mobile-first breakpoints)
   useEffect(() => {
     const updateColumns = () => {
       if (parentRef.current) {
         const width = parentRef.current.offsetWidth
-        if (width >= 1280) setColumns(4)
-        else if (width >= 1024) setColumns(3)
-        else if (width >= 640) setColumns(2)
+        if (width >= 1024) setColumns(4)
+        else if (width >= 768) setColumns(3)
+        else if (width >= 480) setColumns(2)
         else setColumns(1)
       }
     }
@@ -387,20 +387,14 @@ export function ModelsPage() {
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-cyan-500/10 to-transparent rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
       
       {/* Header */}
-      <div className="page-header px-6 py-4 relative z-10">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">{t('models.title')}</h1>
-            <p className="text-muted-foreground text-sm mt-0.5">{t('models.description')}</p>
-          </div>
-          <Button variant="outline" size="sm" onClick={() => fetchModels(true)}>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            {t('common.refresh')}
-          </Button>
+      <div className="page-header px-4 md:px-6 py-4 pt-14 md:pt-4 relative z-10">
+        <div className="mb-4">
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight">{t('models.title')}</h1>
+          <p className="text-muted-foreground text-xs md:text-sm mt-0.5">{t('models.description')}</p>
         </div>
 
         {/* Search, Filters and Sort */}
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <SearchInput
             value={searchQuery}
             onChange={setSearchQuery}
@@ -408,36 +402,42 @@ export function ModelsPage() {
             placeholder={t('models.searchPlaceholder')}
           />
 
-          {/* Favorites Filter */}
-          <Button
-            variant={showFavoritesOnly ? "default" : "outline"}
-            size="sm"
-            onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-            title={showFavoritesOnly ? t('models.showAll') : t('models.showFavoritesOnly')}
-          >
-            <Star className={cn("h-4 w-4", showFavoritesOnly && "fill-current")} />
-          </Button>
-
-          {/* Sort Controls */}
-          <div className="flex items-center gap-1">
-            <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortBy)}>
-              <SelectTrigger className="w-[110px] h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="sort_order">{t('models.popularity')}</SelectItem>
-                <SelectItem value="name">{t('models.name')}</SelectItem>
-                <SelectItem value="price">{t('models.price')}</SelectItem>
-                <SelectItem value="type">{t('models.type')}</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button variant="outline" size="sm" className="h-9 w-9 p-0" onClick={toggleSortOrder}>
-              {sortOrder === 'asc' ? (
-                <ArrowUp className="h-4 w-4" />
-              ) : (
-                <ArrowDown className="h-4 w-4" />
-              )}
+          {/* Favorites Filter, Sort Controls, and Refresh */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              variant={showFavoritesOnly ? "default" : "outline"}
+              size="sm"
+              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+              title={showFavoritesOnly ? t('models.showAll') : t('models.showFavoritesOnly')}
+            >
+              <Star className={cn("h-4 w-4", showFavoritesOnly && "fill-current")} />
             </Button>
+
+            <Button variant="outline" size="sm" onClick={() => fetchModels(true)} className="h-9 w-9 p-0" title={t('common.refresh')}>
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+
+            {/* Sort Controls */}
+            <div className="flex items-center gap-1">
+              <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortBy)}>
+                <SelectTrigger className="w-[110px] h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sort_order">{t('models.popularity')}</SelectItem>
+                  <SelectItem value="name">{t('models.name')}</SelectItem>
+                  <SelectItem value="price">{t('models.price')}</SelectItem>
+                  <SelectItem value="type">{t('models.type')}</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="sm" className="h-9 w-9 p-0" onClick={toggleSortOrder}>
+                {sortOrder === 'asc' ? (
+                  <ArrowUp className="h-4 w-4" />
+                ) : (
+                  <ArrowDown className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
           </div>
 
           {/* Tag Filter Bar - inline */}
@@ -469,7 +469,7 @@ export function ModelsPage() {
       </div>
 
       {/* Content - Virtualized Grid */}
-      <div ref={parentRef} className="flex-1 overflow-auto px-6 py-5 relative z-10">
+      <div ref={parentRef} className="flex-1 overflow-auto px-4 md:px-6 py-4 md:py-5 relative z-10">
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />

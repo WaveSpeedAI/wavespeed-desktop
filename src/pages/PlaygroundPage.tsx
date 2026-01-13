@@ -65,6 +65,9 @@ export function PlaygroundPage() {
   const templateLoadedRef = useRef<string | null>(null)
   const initialTabCreatedRef = useRef(false)
 
+  // Mobile view state: 'config' or 'output'
+  const [mobileView, setMobileView] = useState<'config' | 'output'>('config')
+
   // Template dialog states
   const [showSaveTemplateDialog, setShowSaveTemplateDialog] = useState(false)
   const [newTemplateName, setNewTemplateName] = useState('')
@@ -227,6 +230,9 @@ export function PlaygroundPage() {
   const handleRun = async () => {
     if (!activeTab) return
 
+    // Switch to output view on mobile when running
+    setMobileView('output')
+
     const { batchConfig } = activeTab
     if (batchConfig.enabled && batchConfig.repeatCount > 1) {
       await runBatch()
@@ -317,7 +323,7 @@ export function PlaygroundPage() {
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col pt-12 md:pt-0">
       {/* Tab Bar */}
       <div className="page-header">
         <ScrollArea className="w-full">
@@ -377,9 +383,40 @@ export function PlaygroundPage() {
 
       {/* Playground Content */}
       {activeTab ? (
-        <div className="flex flex-1 overflow-hidden">
-          {/* Left Panel - Configuration */}
-          <div className="w-[420px] flex flex-col border-r bg-muted/30">
+        <div className="flex flex-col flex-1 overflow-hidden">
+          {/* Mobile Tab Switcher */}
+          <div className="md:hidden flex border-b bg-muted/30">
+            <button
+              onClick={() => setMobileView('config')}
+              className={cn(
+                "flex-1 py-3 text-sm font-medium transition-colors",
+                mobileView === 'config'
+                  ? "text-primary border-b-2 border-primary bg-background"
+                  : "text-muted-foreground"
+              )}
+            >
+              Input
+            </button>
+            <button
+              onClick={() => setMobileView('output')}
+              className={cn(
+                "flex-1 py-3 text-sm font-medium transition-colors",
+                mobileView === 'output'
+                  ? "text-primary border-b-2 border-primary bg-background"
+                  : "text-muted-foreground"
+              )}
+            >
+              Output
+            </button>
+          </div>
+
+          <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
+            {/* Left Panel - Configuration */}
+            <div className={cn(
+              "w-full md:w-[420px] flex flex-col border-b md:border-b-0 md:border-r bg-muted/30 overflow-y-auto",
+              // Mobile: show/hide based on mobileView, full height on mobile
+              mobileView === 'config' ? "flex flex-1" : "hidden md:flex"
+            )}>
             {/* Model Selector */}
             <div className="p-4 border-b">
               <label className="text-sm font-semibold mb-2 block text-foreground">{t('history.model')}</label>
@@ -460,7 +497,11 @@ export function PlaygroundPage() {
           </div>
 
           {/* Right Panel - Output */}
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className={cn(
+            "flex-1 flex flex-col min-w-0 overflow-hidden",
+            // Mobile: show/hide based on mobileView
+            mobileView === 'output' ? "flex" : "hidden md:flex"
+          )}>
             <div className="px-4 py-3 border-b bg-muted/30 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <h2 className="font-semibold text-lg">{t('playground.output')}</h2>
@@ -529,6 +570,7 @@ export function PlaygroundPage() {
             </div>
           </div>
         </div>
+      </div>
       ) : (
         <div className="flex-1 flex items-center justify-center text-muted-foreground">
           <div className="text-center">

@@ -19,16 +19,22 @@ import {
   PanelLeftClose,
   PanelLeft,
   FolderHeart,
-  Sparkles
+  Sparkles,
+  X
 } from 'lucide-react'
 
 interface SidebarProps {
   collapsed: boolean
   onToggle: () => void
   lastFreeToolsPage: string | null
+  isMobileOpen?: boolean
+  onMobileClose?: () => void
 }
 
-export function Sidebar({ collapsed, onToggle, lastFreeToolsPage }: SidebarProps) {
+// Check if running in Electron (not web)
+const isElectron = typeof navigator !== 'undefined' && navigator.userAgent.toLowerCase().includes('electron')
+
+export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, onMobileClose }: SidebarProps) {
   const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
@@ -65,11 +71,12 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage }: SidebarProps
       href: '/assets',
       icon: FolderHeart
     },
-    {
+    // Z-Image only available in desktop Electron app
+    ...(isElectron ? [{
       titleKey: 'nav.zImage',
       href: '/z-image',
       icon: Zap
-    },
+    }] : []),
     {
       titleKey: 'nav.freeTools',
       href: '/free-tools',
@@ -97,22 +104,37 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage }: SidebarProps
   return (
     <div
       className={cn(
-        "flex h-full flex-col border-r bg-slate-200 dark:bg-slate-900",
-        collapsed ? "w-16" : "w-48"
+        "flex h-full flex-col border-r bg-slate-200 dark:bg-slate-900 transition-transform duration-300",
+        // Desktop styles
+        "hidden md:flex",
+        collapsed ? "w-16" : "w-48",
+        // Mobile styles - fixed positioned drawer
+        isMobileOpen && "!flex fixed inset-y-0 left-0 z-50 w-64 shadow-xl"
       )}
     >
+      {/* Mobile close button */}
+      {isMobileOpen && (
+        <button
+          className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-800 md:hidden"
+          onClick={onMobileClose}
+          aria-label="Close menu"
+        >
+          <X className="h-5 w-5" />
+        </button>
+      )}
+
       {/* Logo */}
       <div
         style={{ display: 'flex', alignItems: 'center', flexDirection: 'row' }}
         className={cn(
           "h-16 border-b border-slate-300 dark:border-slate-800",
-          collapsed ? "justify-center px-2" : "gap-2 px-6"
+          collapsed && !isMobileOpen ? "justify-center px-2" : "gap-2 px-6"
         )}
       >
         <div className="gradient-bg rounded-lg p-1.5">
           <Zap className="h-5 w-5 text-white" style={{ flexShrink: 0 }} />
         </div>
-        {!collapsed && (
+        {(!collapsed || isMobileOpen) && (
           <span className="text-lg font-bold gradient-text" style={{ whiteSpace: 'nowrap' }}>
             WaveSpeed
           </span>
@@ -144,15 +166,15 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage }: SidebarProps
                     className={cn(
                       buttonVariants({ variant: active ? 'default' : 'ghost', size: 'sm' }),
                       'w-full justify-start',
-                      collapsed ? 'justify-center px-2' : 'gap-3 px-3',
+                      collapsed && !isMobileOpen ? 'justify-center px-2' : 'gap-3 px-3',
                       active && 'shadow-md'
                     )}
                   >
                     <item.icon className="h-5 w-5 shrink-0" />
-                    {!collapsed && <span>{t(item.titleKey)}</span>}
+                    {(!collapsed || isMobileOpen) && <span>{t(item.titleKey)}</span>}
                   </button>
                 </TooltipTrigger>
-                {collapsed && (
+                {collapsed && !isMobileOpen && (
                   <TooltipContent side="right">
                     {t(item.titleKey)}
                   </TooltipContent>
@@ -176,15 +198,15 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage }: SidebarProps
                     className={cn(
                       buttonVariants({ variant: active ? 'default' : 'ghost', size: 'sm' }),
                       'w-full justify-start',
-                      collapsed ? 'justify-center px-2' : 'gap-3 px-3',
+                      collapsed && !isMobileOpen ? 'justify-center px-2' : 'gap-3 px-3',
                       active && 'shadow-md'
                     )}
                   >
                     <item.icon className="h-5 w-5 shrink-0" />
-                    {!collapsed && <span>{t(item.titleKey)}</span>}
+                    {(!collapsed || isMobileOpen) && <span>{t(item.titleKey)}</span>}
                   </button>
                 </TooltipTrigger>
-                {collapsed && (
+                {collapsed && !isMobileOpen && (
                   <TooltipContent side="right">
                     {t(item.titleKey)}
                   </TooltipContent>
@@ -194,29 +216,31 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage }: SidebarProps
           })}
         </nav>
 
-        {/* Toggle Button */}
-        <Tooltip delayDuration={0}>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onToggle}
-              className={cn(
-                "w-full mt-2",
-                collapsed ? "justify-center px-2" : "justify-start gap-3 px-3"
-              )}
-            >
-              {collapsed ? (
-                <PanelLeft className="h-4 w-4" />
-              ) : (
-                <>
-                  <PanelLeftClose className="h-4 w-4" style={{ flexShrink: 0 }} />
-                  <span>{t('nav.collapse')}</span>
-                </>
-              )}
-            </Button>
-          </TooltipTrigger>
-        </Tooltip>
+        {/* Toggle Button - hidden on mobile */}
+        {!isMobileOpen && (
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onToggle}
+                className={cn(
+                  "w-full mt-2 hidden md:flex",
+                  collapsed ? "justify-center px-2" : "justify-start gap-3 px-3"
+                )}
+              >
+                {collapsed ? (
+                  <PanelLeft className="h-4 w-4" />
+                ) : (
+                  <>
+                    <PanelLeftClose className="h-4 w-4" style={{ flexShrink: 0 }} />
+                    <span>{t('nav.collapse')}</span>
+                  </>
+                )}
+              </Button>
+            </TooltipTrigger>
+          </Tooltip>
+        )}
       </div>
     </div>
   )

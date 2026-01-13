@@ -628,10 +628,10 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="container max-w-2xl py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">{t('settings.title')}</h1>
-        <p className="text-muted-foreground mt-2">
+    <div className="container max-w-2xl px-4 md:px-8 py-6 md:py-8 pt-14 md:pt-8">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold">{t('settings.title')}</h1>
+        <p className="text-muted-foreground text-sm md:text-base mt-2">
           {t('settings.description')}
         </p>
       </div>

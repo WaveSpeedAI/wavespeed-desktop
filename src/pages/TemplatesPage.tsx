@@ -244,14 +244,14 @@ export function TemplatesPage() {
   const isAllSelected = allFilteredIds.length > 0 && selectedIds.size === allFilteredIds.length
 
   return (
-    <div className="container py-8">
-      <div className="flex items-baseline gap-3 mb-6">
-        <h1 className="text-2xl font-bold">{t('templates.title')}</h1>
-        <p className="text-muted-foreground text-sm">{t('templates.description')}</p>
+    <div className="container px-4 md:px-8 py-6 md:py-8 pt-14 md:pt-8">
+      <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-3 mb-6">
+        <h1 className="text-xl md:text-2xl font-bold">{t('templates.title')}</h1>
+        <p className="text-muted-foreground text-xs md:text-sm">{t('templates.description')}</p>
       </div>
 
       {/* Search and Actions */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-6">
         {templates.length > 0 && (
           <label className="flex items-center gap-2 cursor-pointer">
             <input

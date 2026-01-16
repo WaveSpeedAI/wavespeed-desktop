@@ -941,7 +941,7 @@ export function FaceSwapperPage() {
       )}
 
       {/* Main content - side by side layout */}
-      <div className="flex gap-6">
+      <div className="flex flex-col lg:flex-row gap-6">
         {/* Left: Target image upload */}
         <div className="flex-1 max-w-2xl">
           <Card
@@ -1068,7 +1068,7 @@ export function FaceSwapperPage() {
 
         {/* Right: Working area - always reserve space when target image exists */}
         {targetImage && (
-          <div className="flex-1 min-w-[400px]">
+          <div className="flex-1 lg:min-w-[400px]">
             {selectedTargetFaceIndex !== null ? (
             <Card className="border-2 border-muted">
               <CardContent className="p-4 space-y-4">

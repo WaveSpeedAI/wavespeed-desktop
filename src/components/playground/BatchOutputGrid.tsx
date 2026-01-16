@@ -14,8 +14,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { Download, CheckCircle2, XCircle, Save, ExternalLink, Copy, Check, Loader2 } from 'lucide-react'
+import { Download, CheckCircle2, XCircle, ExternalLink, Copy, Check, Loader2 } from 'lucide-react'
 import { AudioPlayer } from '@/components/shared/AudioPlayer'
+import { FlappyBird } from './FlappyBird'
 import { useAssetsStore, detectAssetType, generateDownloadFilename } from '@/stores/assetsStore'
 import { toast } from '@/hooks/useToast'
 import { cn } from '@/lib/utils'
@@ -58,9 +59,9 @@ export function BatchOutputGrid({
 }: BatchOutputGridProps) {
   const { t } = useTranslation()
   const [selectedResult, setSelectedResult] = useState<BatchResult | null>(null)
-  const [savingAll, setSavingAll] = useState(false)
   const [savedIndexes, setSavedIndexes] = useState<Set<number>>(new Set())
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
+  const [showGame, setShowGame] = useState(true)
   const autoSavedIndexesRef = useRef<Set<number>>(new Set())
 
   const { saveAsset, settings, hasAssetForPrediction } = useAssetsStore()
@@ -70,7 +71,6 @@ export function BatchOutputGrid({
   const failedCount = results.filter(r => r.error).length
   const total = totalCount || results.length
   const progress = total > 0 ? ((completedCount + failedCount) / total) * 100 : 0
-  const allSaved = completedCount > 0 && completedResults.every(r => savedIndexes.has(r.index))
 
   // Auto-save results as they complete
   useEffect(() => {
@@ -130,13 +130,17 @@ export function BatchOutputGrid({
     saveNewResults()
   }, [results, modelId, settings.autoSaveAssets, saveAsset, hasAssetForPrediction, isRunning, t])
 
-  // Reset auto-saved tracking when results are cleared
+  // Reset auto-saved tracking and game state when results are cleared
   useEffect(() => {
     if (results.length === 0) {
       autoSavedIndexesRef.current = new Set()
       setSavedIndexes(new Set())
+      setShowGame(true) // Reset to show game for next batch
     }
   }, [results.length])
+
+  // Check if truly running in Electron (not web polyfill)
+  const isElectron = navigator.userAgent.toLowerCase().includes('electron')
 
   const handleDownload = async (url: string, predictionId?: string, resultIndex: number = 0) => {
     const filename = generateDownloadFilename({
@@ -146,68 +150,65 @@ export function BatchOutputGrid({
       resultIndex
     })
 
-    if (window.electronAPI?.downloadFile) {
+    if (isElectron && window.electronAPI?.downloadFile) {
       const result = await window.electronAPI.downloadFile(url, filename)
       if (!result.success && !result.canceled) {
         console.error('Download failed:', result.error)
       }
     } else {
-      window.open(url, '_blank')
+      // Web mode: fetch as blob and trigger download
+      try {
+        const response = await fetch(url)
+        const blob = await response.blob()
+        const blobUrl = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = blobUrl
+        a.download = filename
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(blobUrl)
+      } catch (err) {
+        console.error('Download failed:', err)
+        // Fallback: open in new tab
+        window.open(url, '_blank')
+      }
     }
   }
 
   const handleDownloadAll = async () => {
+    // Collect all URLs with their metadata
+    const downloads: { url: string; predictionId?: string; index: number }[] = []
     for (const result of results) {
       if (result.error) continue
-      for (let outputIndex = 0; outputIndex < result.outputs.length; outputIndex++) {
-        const output = result.outputs[outputIndex]
+      for (let i = 0; i < result.outputs.length; i++) {
+        const output = result.outputs[i]
         if (typeof output === 'string' && isUrl(output)) {
-          await handleDownload(output, result.prediction?.id, outputIndex)
+          downloads.push({ url: output, predictionId: result.prediction?.id, index: downloads.length })
         }
       }
     }
+
+    if (downloads.length === 0) return
+
+    toast({
+      description: `Downloading ${downloads.length} files...`,
+      duration: 2000,
+    })
+
+    // Download all with small delay between each
+    for (const { url, predictionId, index } of downloads) {
+      await handleDownload(url, predictionId, index)
+      // Small delay to prevent overwhelming the browser
+      await new Promise(resolve => setTimeout(resolve, 300))
+    }
+
+    toast({
+      description: `Downloaded ${downloads.length} files`,
+      duration: 2000,
+    })
   }
 
-  const handleSaveAll = useCallback(async () => {
-    if (!modelId) return
-
-    setSavingAll(true)
-    let savedCount = 0
-
-    for (const result of results) {
-      if (result.error) continue
-
-      for (let outputIndex = 0; outputIndex < result.outputs.length; outputIndex++) {
-        const output = result.outputs[outputIndex]
-        if (typeof output !== 'string') continue
-
-        const assetType = detectAssetType(output)
-        if (!assetType) continue
-
-        try {
-          // Each batch item has unique predictionId, so just use outputIndex
-          const saveResult = await saveAsset(output, assetType, {
-            modelId,
-            predictionId: result.prediction?.id,
-            originalUrl: output,
-            resultIndex: outputIndex
-          })
-          if (saveResult) {
-            savedCount++
-            setSavedIndexes(prev => new Set(prev).add(result.index))
-          }
-        } catch (err) {
-          console.error('Failed to save asset:', err)
-        }
-      }
-    }
-
-    setSavingAll(false)
-    toast({
-      title: t('playground.batch.savedAll'),
-      description: t('playground.batch.savedAllDesc', { count: savedCount }),
-    })
-  }, [modelId, results, saveAsset, t])
 
   const handleCopy = async (url: string, index: number) => {
     try {
@@ -238,9 +239,9 @@ export function BatchOutputGrid({
         <div className="flex items-center gap-3">
           <h3 className="text-sm font-medium flex items-center gap-2">
             {isRunning && <Loader2 className="h-4 w-4 animate-spin" />}
-            {t('playground.batch.results')} ({completedCount + failedCount}/{total})
+            <span className="hidden md:inline">{t('playground.batch.results')}</span> ({completedCount + failedCount}/{total})
           </h3>
-          <div className="flex items-center gap-2 text-xs">
+          <div className="hidden md:flex items-center gap-2 text-xs">
             {completedCount > 0 && (
               <span className="flex items-center gap-1 text-green-600">
                 <CheckCircle2 className="h-3 w-3" />
@@ -255,46 +256,55 @@ export function BatchOutputGrid({
             )}
           </div>
           {isRunning && (
-            <Progress value={progress} className="h-2 w-24" />
+            <Progress value={progress} className="h-2 w-16 md:w-24" />
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 md:gap-2">
+          {isRunning && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowGame(!showGame)}
+              className="text-xs md:text-sm"
+            >
+              {showGame ? 'Results' : 'Game'}
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"
             onClick={handleDownloadAll}
             disabled={completedCount === 0 || isRunning}
+            className="text-xs md:text-sm"
           >
-            <Download className="h-3 w-3 mr-1" />
-            {t('playground.batch.downloadAll')}
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleSaveAll}
-            disabled={completedCount === 0 || savingAll || !modelId || isRunning || allSaved}
-          >
-            {savingAll ? (
-              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-            ) : allSaved ? (
-              <Check className="h-3 w-3 mr-1" />
-            ) : (
-              <Save className="h-3 w-3 mr-1" />
-            )}
-            {t('playground.batch.saveAllToAssets')}
+            <Download className="h-3 w-3 md:mr-1" />
+            <span className="hidden md:inline">{t('playground.batch.downloadAll')}</span>
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={onClear}
             disabled={isRunning}
+            className="text-xs md:text-sm"
           >
-            {t('playground.batch.clearResults')}
+            <span className="hidden md:inline">{t('playground.batch.clearResults')}</span>
+            <span className="md:hidden">Clear</span>
           </Button>
         </div>
       </div>
 
-      {/* Results Grid - dynamic columns based on item count with minimum cell size */}
+      {/* Game while waiting or idle (no results) */}
+      {showGame && (isRunning || results.length === 0) ? (
+        <div className="flex-1 relative">
+          <FlappyBird
+            isTaskRunning={isRunning}
+            taskStatus={isRunning ? `Processing ${completedCount + failedCount}/${total}` : undefined}
+            hasResults={completedCount > 0}
+            onViewResults={() => setShowGame(false)}
+          />
+        </div>
+      ) : (
+      /* Results Grid - dynamic columns based on item count with minimum cell size */
       <ScrollArea className="flex-1">
         <div className={cn(
           'grid gap-4 p-1',
@@ -394,6 +404,7 @@ export function BatchOutputGrid({
           })}
         </div>
       </ScrollArea>
+      )}
 
       {/* Detail Dialog */}
       <Dialog open={!!selectedResult} onOpenChange={() => setSelectedResult(null)}>
@@ -412,79 +423,67 @@ export function BatchOutputGrid({
                   const isAudio = !isObject && isAudioUrl(outputStr)
 
                   return (
-                    <div key={outputIndex} className="relative group">
-                      {isImage && (
-                        <img
-                          src={outputStr}
-                          alt={`Output ${outputIndex + 1}`}
-                          className="max-w-full rounded-lg"
-                        />
-                      )}
-                      {isVideo && (
-                        <video
-                          src={outputStr}
-                          controls
-                          className="max-w-full rounded-lg"
-                        />
-                      )}
-                      {isAudio && (
-                        <AudioPlayer src={outputStr} />
-                      )}
-                      {isObject && (
-                        <pre className="p-4 bg-muted rounded-lg text-sm overflow-auto max-h-96">
-                          {outputStr}
-                        </pre>
-                      )}
-                      {!isImage && !isVideo && !isAudio && !isObject && (
-                        <p className="text-sm break-all">{outputStr}</p>
-                      )}
+                    <div key={outputIndex} className="space-y-2">
+                      {/* Media content */}
+                      <div className="relative">
+                        {isImage && (
+                          <img
+                            src={outputStr}
+                            alt={`Output ${outputIndex + 1}`}
+                            className="max-w-full rounded-lg"
+                          />
+                        )}
+                        {isVideo && (
+                          <video
+                            src={outputStr}
+                            controls
+                            className="max-w-full rounded-lg"
+                          />
+                        )}
+                        {isAudio && (
+                          <AudioPlayer src={outputStr} />
+                        )}
+                        {isObject && (
+                          <pre className="p-4 bg-muted rounded-lg text-sm overflow-auto max-h-96">
+                            {outputStr}
+                          </pre>
+                        )}
+                        {!isImage && !isVideo && !isAudio && !isObject && (
+                          <p className="text-sm break-all">{outputStr}</p>
+                        )}
+                      </div>
 
-                      {/* Actions */}
+                      {/* Actions - always visible below content */}
                       {!isObject && (
-                        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                size="icon"
-                                variant="secondary"
-                                className="h-8 w-8"
-                                onClick={() => handleCopy(outputStr, selectedResult.index * 100 + outputIndex)}
-                              >
-                                {copiedIndex === selectedResult.index * 100 + outputIndex ? (
-                                  <Check className="h-4 w-4" />
-                                ) : (
-                                  <Copy className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>{t('common.copy')}</TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                size="icon"
-                                variant="secondary"
-                                className="h-8 w-8"
-                                onClick={() => window.open(outputStr, '_blank')}
-                              >
-                                <ExternalLink className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>{t('common.openInBrowser')}</TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                size="icon"
-                                variant="secondary"
-                                className="h-8 w-8"
-                                onClick={() => handleDownload(outputStr, selectedResult.prediction?.id, outputIndex)}
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>{t('common.download')}</TooltipContent>
-                          </Tooltip>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDownload(outputStr, selectedResult.prediction?.id, outputIndex)}
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            {t('common.download')}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleCopy(outputStr, selectedResult.index * 100 + outputIndex)}
+                          >
+                            {copiedIndex === selectedResult.index * 100 + outputIndex ? (
+                              <Check className="h-4 w-4 mr-2" />
+                            ) : (
+                              <Copy className="h-4 w-4 mr-2" />
+                            )}
+                            {copiedIndex === selectedResult.index * 100 + outputIndex ? 'Copied!' : t('common.copy')}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => window.open(outputStr, '_blank')}
+                          >
+                            <ExternalLink className="h-4 w-4 mr-2" />
+                            {t('common.openInBrowser')}
+                          </Button>
                         </div>
                       )}
                     </div>

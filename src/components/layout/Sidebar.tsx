@@ -31,9 +31,6 @@ interface SidebarProps {
   onMobileClose?: () => void
 }
 
-// Check if running in Electron (not web)
-const isElectron = typeof navigator !== 'undefined' && navigator.userAgent.toLowerCase().includes('electron')
-
 export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, onMobileClose }: SidebarProps) {
   const { t } = useTranslation()
   const location = useLocation()
@@ -71,12 +68,11 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
       href: '/assets',
       icon: FolderHeart
     },
-    // Z-Image only available in desktop Electron app
-    ...(isElectron ? [{
+    {
       titleKey: 'nav.zImage',
       href: '/z-image',
       icon: Zap
-    }] : []),
+    },
     {
       titleKey: 'nav.freeTools',
       href: '/free-tools',

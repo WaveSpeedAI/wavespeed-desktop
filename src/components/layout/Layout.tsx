@@ -78,7 +78,7 @@ export function Layout() {
 
   // Track visits to persistent pages and last visited free-tools page
   useEffect(() => {
-    const persistentPaths = ['/free-tools/video', '/free-tools/image', '/free-tools/face-enhancer', '/free-tools/face-swapper', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/free-tools/video-converter', '/free-tools/audio-converter', '/free-tools/image-converter', '/free-tools/media-trimmer', '/free-tools/media-merger', '/z-image']
+    const persistentPaths = ['/free-tools/video-enhancer', '/free-tools/image-enhancer', '/free-tools/face-enhancer', '/free-tools/face-swapper', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/free-tools/video-converter', '/free-tools/audio-converter', '/free-tools/image-converter', '/free-tools/media-trimmer', '/free-tools/media-merger', '/z-image']
     if (persistentPaths.includes(location.pathname)) {
       // Track for lazy mounting
       if (!visitedPages.has(location.pathname)) {
@@ -326,18 +326,18 @@ export function Layout() {
           {requiresLogin ? loginContent : (
             <>
               {/* Regular routes via Outlet */}
-              <div className={['/free-tools/video', '/free-tools/image', '/free-tools/face-enhancer', '/free-tools/face-swapper', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/free-tools/video-converter', '/free-tools/audio-converter', '/free-tools/image-converter', '/free-tools/media-trimmer', '/free-tools/media-merger', '/z-image'].includes(location.pathname) ? 'hidden' : 'h-full overflow-auto'}>
+              <div className={['/free-tools/video-enhancer', '/free-tools/image-enhancer', '/free-tools/face-enhancer', '/free-tools/face-swapper', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/free-tools/video-converter', '/free-tools/audio-converter', '/free-tools/image-converter', '/free-tools/media-trimmer', '/free-tools/media-merger', '/z-image'].includes(location.pathname) ? 'hidden' : 'h-full overflow-auto'}>
                 <Outlet />
               </div>
               {/* Persistent Free Tools pages - mounted once visited, removed from visitedPages forces unmount */}
-              {visitedPages.has('/free-tools/video') && (
-                <div className={location.pathname === '/free-tools/video' ? 'h-full overflow-auto' : 'hidden'}>
-                  <VideoEnhancerPage key={pageKeys['/free-tools/video'] || 0} />
+              {visitedPages.has('/free-tools/video-enhancer') && (
+                <div className={location.pathname === '/free-tools/video-enhancer' ? 'h-full overflow-auto' : 'hidden'}>
+                  <VideoEnhancerPage key={pageKeys['/free-tools/video-enhancer'] || 0} />
                 </div>
               )}
-              {visitedPages.has('/free-tools/image') && (
-                <div className={location.pathname === '/free-tools/image' ? 'h-full overflow-auto' : 'hidden'}>
-                  <ImageEnhancerPage key={pageKeys['/free-tools/image'] || 0} />
+              {visitedPages.has('/free-tools/image-enhancer') && (
+                <div className={location.pathname === '/free-tools/image-enhancer' ? 'h-full overflow-auto' : 'hidden'}>
+                  <ImageEnhancerPage key={pageKeys['/free-tools/image-enhancer'] || 0} />
                 </div>
               )}
               {visitedPages.has('/free-tools/face-enhancer') && (

@@ -24,7 +24,7 @@ export function FreeToolsPage() {
       icon: Video,
       titleKey: 'freeTools.videoEnhancer.title',
       descriptionKey: 'freeTools.videoEnhancer.description',
-      route: '/free-tools/video',
+      route: '/free-tools/video-enhancer',
       gradient: 'from-violet-500/20 via-purple-500/10 to-transparent',
       image: videoEnhancerImg
     },
@@ -33,7 +33,7 @@ export function FreeToolsPage() {
       icon: ImageUp,
       titleKey: 'freeTools.imageEnhancer.title',
       descriptionKey: 'freeTools.imageEnhancer.description',
-      route: '/free-tools/image',
+      route: '/free-tools/image-enhancer',
       gradient: 'from-cyan-500/20 via-blue-500/10 to-transparent',
       image: imageEnhancerImg
     },

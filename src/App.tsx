@@ -70,8 +70,8 @@ function App() {
         <Route path="z-image" element={<ZImagePage />} />
         <Route path="free-tools" element={<FreeToolsPage />} />
         {/* Free tools pages are rendered persistently in Layout */}
-        <Route path="free-tools/video" element={<PersistentPagePlaceholder />} />
-        <Route path="free-tools/image" element={<PersistentPagePlaceholder />} />
+        <Route path="free-tools/video-enhancer" element={<PersistentPagePlaceholder />} />
+        <Route path="free-tools/image-enhancer" element={<PersistentPagePlaceholder />} />
         <Route path="free-tools/background-remover" element={<PersistentPagePlaceholder />} />
         <Route path="free-tools/image-eraser" element={<PersistentPagePlaceholder />} />
         <Route path="free-tools/face-enhancer" element={<PersistentPagePlaceholder />} />

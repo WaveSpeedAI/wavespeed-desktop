@@ -421,9 +421,9 @@ export function HistoryPage() {
       {/* Header */}
       <div className="page-header px-4 md:px-6 py-4 pt-14 md:pt-4 relative z-10">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-          <div>
+          <div className="flex items-baseline gap-3">
             <h1 className="text-xl md:text-2xl font-bold tracking-tight">{t('history.title')}</h1>
-            <p className="text-muted-foreground text-xs md:text-sm mt-0.5">{t('history.description')}</p>
+            <p className="text-muted-foreground text-xs md:text-sm">{t('history.description')}</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             {isSelectionMode && selectedIds.size > 0 && (

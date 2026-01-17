@@ -14,9 +14,6 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-// Check if running in Electron (not web)
-const isElectron = typeof navigator !== 'undefined' && navigator.userAgent.toLowerCase().includes('electron')
-
 interface FeatureCardProps {
   icon: React.ReactNode
   title: string
@@ -123,8 +120,7 @@ export function WelcomePage() {
       shapeGradient: 'from-teal-500/40 to-cyan-500/30',
       href: '/assets'
     },
-    // Z-Image only available in desktop Electron app
-    ...(isElectron ? [{
+    {
       icon: <Zap className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />,
       title: t('welcome.features.zImage.title'),
       description: t('welcome.features.zImage.description'),
@@ -132,7 +128,7 @@ export function WelcomePage() {
       shapeGradient: 'from-yellow-500/40 to-amber-500/30',
       href: '/z-image',
       badge: t('welcome.features.zImage.badge')
-    }] : []),
+    },
     {
       icon: <Wand2 className="h-6 w-6 text-orange-600 dark:text-orange-400" />,
       title: t('welcome.features.freeTools.title'),

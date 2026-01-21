@@ -176,6 +176,7 @@ export function ZImagePage() {
   }, [electronAvailable])
 
   const isLowVramGpu = vramMb !== null && vramMb < 16000
+  const hasWindowsGpu = accelerationInfo?.platform === 'win32' && accelerationInfo.arch === 'x64' && (accelerationInfo.acceleration !== 'CPU' || vramMb !== null)
 
   useEffect(() => {
     if (!isLowVramGpu) return
@@ -475,7 +476,7 @@ export function ZImagePage() {
       <div className="flex flex-1 overflow-hidden">
         {/* Left Panel - Form */}
         <div className={`w-full md:w-[420px] flex flex-col md:border-r bg-muted/30 ${mobileView === 'config' ? 'flex' : 'hidden md:flex'}`}>
-          <div className="flex-1 overflow-hidden p-4">
+          <div className="flex-1 overflow-auto p-4">
             {accelerationInfo?.platform === 'darwin' && accelerationInfo.arch !== 'arm64' && (
               <Alert variant="destructive" className="mb-3">
                 <AlertCircle className="h-4 w-4" />
@@ -512,7 +513,7 @@ export function ZImagePage() {
               </Alert>
             )}
 
-            {accelerationInfo?.platform === 'win32' && accelerationInfo.arch === 'x64' && (
+            {accelerationInfo?.platform === 'win32' && accelerationInfo.arch === 'x64' && !hasWindowsGpu && (
               <Alert className="mb-3">
                 <AlertCircle className="h-4 w-4 text-yellow-500" />
                 <AlertDescription className="text-sm">

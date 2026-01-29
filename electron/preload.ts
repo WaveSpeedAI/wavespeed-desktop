@@ -6,6 +6,7 @@ interface Settings {
   defaultTimeout: number
   updateChannel: 'stable' | 'nightly'
   autoCheckUpdate: boolean
+  language?: string
 }
 
 interface UpdateStatus {

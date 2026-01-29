@@ -123,6 +123,7 @@ interface Settings {
   autoCheckUpdate: boolean
   autoSaveAssets: boolean
   assetsDirectory: string
+  language: string
 }
 
 interface AssetMetadata {
@@ -151,7 +152,8 @@ const defaultSettings: Settings = {
   updateChannel: 'stable',
   autoCheckUpdate: true,
   autoSaveAssets: true,
-  assetsDirectory: defaultAssetsDirectory
+  assetsDirectory: defaultAssetsDirectory,
+  language: 'auto'
 }
 
 function loadSettings(): Settings {
@@ -329,7 +331,8 @@ ipcMain.handle('get-settings', () => {
     defaultPollInterval: settings.defaultPollInterval,
     defaultTimeout: settings.defaultTimeout,
     updateChannel: settings.updateChannel,
-    autoCheckUpdate: settings.autoCheckUpdate
+    autoCheckUpdate: settings.autoCheckUpdate,
+    language: settings.language
   }
 })
 

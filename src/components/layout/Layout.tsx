@@ -11,7 +11,7 @@ import { apiClient } from '@/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { KeyRound, Eye, EyeOff, Loader2, Zap, ExternalLink } from 'lucide-react'
+import { KeyRound, Eye, EyeOff, Loader2, Zap, ExternalLink, Menu } from 'lucide-react'
 import { VideoEnhancerPage } from '@/pages/VideoEnhancerPage'
 import { ImageEnhancerPage } from '@/pages/ImageEnhancerPage'
 import { BackgroundRemoverPage } from '@/pages/BackgroundRemoverPage'
@@ -38,9 +38,15 @@ const nextKey = () => ++keyCounter
 export function Layout() {
   const { t } = useTranslation()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
   const hasShownUpdateToast = useRef(false)
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setMobileMenuOpen(false)
+  }, [location.pathname])
 
   // Track which persistent pages have been visited (to delay initial mount)
   const [visitedPages, setVisitedPages] = useState<Set<string>>(new Set())
@@ -78,7 +84,7 @@ export function Layout() {
 
   // Track visits to persistent pages and last visited free-tools page
   useEffect(() => {
-    const persistentPaths = ['/free-tools/video', '/free-tools/image', '/free-tools/face-enhancer', '/free-tools/face-swapper', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/free-tools/video-converter', '/free-tools/audio-converter', '/free-tools/image-converter', '/free-tools/media-trimmer', '/free-tools/media-merger', '/z-image']
+    const persistentPaths = ['/free-tools/video-enhancer', '/free-tools/image-enhancer', '/free-tools/face-enhancer', '/free-tools/face-swapper', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/free-tools/video-converter', '/free-tools/audio-converter', '/free-tools/image-converter', '/free-tools/media-trimmer', '/free-tools/media-merger', '/z-image']
     if (persistentPaths.includes(location.pathname)) {
       // Track for lazy mounting
       if (!visitedPages.has(location.pathname)) {
@@ -235,12 +241,12 @@ export function Layout() {
           <p className="text-xs text-muted-foreground text-center">
             {t('settings.apiKey.getKey')}{' '}
             <a
-              href="https://wavespeed.ai"
+              href="https://wavespeed.ai/accesskey"
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary hover:underline inline-flex items-center gap-1"
             >
-              wavespeed.ai
+              wavespeed.ai/accesskey
               <ExternalLink className="h-3 w-3" />
             </a>
           </p>
@@ -265,6 +271,23 @@ export function Layout() {
     <PageResetContext.Provider value={{ resetPage }}>
     <TooltipProvider>
       <div className="flex h-screen overflow-hidden relative">
+        {/* Mobile menu button */}
+        <button
+          className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-background/80 backdrop-blur border shadow-lg md:hidden"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Toggle menu"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+
+        {/* Mobile overlay */}
+        {mobileMenuOpen && (
+          <div
+            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+        )}
+
         {/* Abstract art background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
           {/* Gradient orbs */}
@@ -321,23 +344,25 @@ export function Layout() {
           collapsed={sidebarCollapsed}
           onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
           lastFreeToolsPage={lastFreeToolsPage}
+          isMobileOpen={mobileMenuOpen}
+          onMobileClose={() => setMobileMenuOpen(false)}
         />
-        <main className="flex-1 overflow-hidden relative">
+        <main className="flex-1 overflow-hidden relative pl-14 md:pl-0">
           {requiresLogin ? loginContent : (
             <>
               {/* Regular routes via Outlet */}
-              <div className={['/free-tools/video', '/free-tools/image', '/free-tools/face-enhancer', '/free-tools/face-swapper', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/free-tools/video-converter', '/free-tools/audio-converter', '/free-tools/image-converter', '/free-tools/media-trimmer', '/free-tools/media-merger', '/z-image'].includes(location.pathname) ? 'hidden' : 'h-full overflow-auto'}>
+              <div className={['/free-tools/video-enhancer', '/free-tools/image-enhancer', '/free-tools/face-enhancer', '/free-tools/face-swapper', '/free-tools/background-remover', '/free-tools/image-eraser', '/free-tools/segment-anything', '/free-tools/video-converter', '/free-tools/audio-converter', '/free-tools/image-converter', '/free-tools/media-trimmer', '/free-tools/media-merger', '/z-image'].includes(location.pathname) ? 'hidden' : 'h-full overflow-auto'}>
                 <Outlet />
               </div>
               {/* Persistent Free Tools pages - mounted once visited, removed from visitedPages forces unmount */}
-              {visitedPages.has('/free-tools/video') && (
-                <div className={location.pathname === '/free-tools/video' ? 'h-full overflow-auto' : 'hidden'}>
-                  <VideoEnhancerPage key={pageKeys['/free-tools/video'] || 0} />
+              {visitedPages.has('/free-tools/video-enhancer') && (
+                <div className={location.pathname === '/free-tools/video-enhancer' ? 'h-full overflow-auto' : 'hidden'}>
+                  <VideoEnhancerPage key={pageKeys['/free-tools/video-enhancer'] || 0} />
                 </div>
               )}
-              {visitedPages.has('/free-tools/image') && (
-                <div className={location.pathname === '/free-tools/image' ? 'h-full overflow-auto' : 'hidden'}>
-                  <ImageEnhancerPage key={pageKeys['/free-tools/image'] || 0} />
+              {visitedPages.has('/free-tools/image-enhancer') && (
+                <div className={location.pathname === '/free-tools/image-enhancer' ? 'h-full overflow-auto' : 'hidden'}>
+                  <ImageEnhancerPage key={pageKeys['/free-tools/image-enhancer'] || 0} />
                 </div>
               )}
               {visitedPages.has('/free-tools/face-enhancer') && (

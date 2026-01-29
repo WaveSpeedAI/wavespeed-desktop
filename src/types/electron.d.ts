@@ -113,6 +113,7 @@ export interface ElectronAPI {
     defaultTimeout: number
     updateChannel: 'stable' | 'nightly'
     autoCheckUpdate: boolean
+    language?: string
   }>
   setSettings: (settings: Record<string, unknown>) => Promise<boolean>
   clearAllData: () => Promise<boolean>

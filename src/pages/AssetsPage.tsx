@@ -551,13 +551,13 @@ export function AssetsPage() {
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col pt-12 md:pt-0">
       {/* Header */}
       <div className="border-b p-4">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
-            <h1 className="text-2xl font-bold">{t('assets.title')}</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-xl md:text-2xl font-bold">{t('assets.title')}</h1>
+            <p className="text-xs md:text-sm text-muted-foreground">
               {t('assets.subtitle', { count: assets.length })}
             </p>
           </div>

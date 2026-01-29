@@ -317,14 +317,14 @@ export function ModelsPage() {
   const parentRef = useRef<HTMLDivElement>(null)
   const [columns, setColumns] = useState(4)
 
-  // Calculate columns based on container width
+  // Calculate columns based on container width (mobile-first breakpoints)
   useEffect(() => {
     const updateColumns = () => {
       if (parentRef.current) {
         const width = parentRef.current.offsetWidth
-        if (width >= 1280) setColumns(4)
-        else if (width >= 1024) setColumns(3)
-        else if (width >= 640) setColumns(2)
+        if (width >= 1024) setColumns(4)
+        else if (width >= 768) setColumns(3)
+        else if (width >= 480) setColumns(2)
         else setColumns(1)
       }
     }
@@ -389,9 +389,9 @@ export function ModelsPage() {
       {/* Header */}
       <div className="page-header px-6 py-4 relative z-10">
         <div className="flex items-center justify-between mb-4">
-          <div>
+          <div className="flex items-baseline gap-3">
             <h1 className="text-2xl font-bold tracking-tight">{t('models.title')}</h1>
-            <p className="text-muted-foreground text-sm mt-0.5">{t('models.description')}</p>
+            <p className="text-muted-foreground text-sm">{t('models.description')}</p>
           </div>
           <Button variant="outline" size="sm" onClick={() => fetchModels(true)}>
             <RefreshCw className="mr-2 h-4 w-4" />

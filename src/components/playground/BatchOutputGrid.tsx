@@ -9,11 +9,6 @@ import {
   DialogContent,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { Download, CheckCircle2, XCircle, ExternalLink, Copy, Check, Loader2 } from 'lucide-react'
 import { AudioPlayer } from '@/components/shared/AudioPlayer'
 import { FlappyBird } from './FlappyBird'
@@ -232,6 +227,26 @@ export function BatchOutputGrid({
     return null
   }
 
+  // Get successful results for navigation
+  const successfulResults = results.filter(r => !r.error).sort((a, b) => a.index - b.index)
+
+  // Navigate to previous/next result (with loop support)
+  const navigateResult = useCallback((direction: 'prev' | 'next') => {
+    if (!selectedResult || successfulResults.length <= 1) return
+
+    const currentIdx = successfulResults.findIndex(r => r.index === selectedResult.index)
+    if (currentIdx === -1) return
+
+    let newIdx: number
+    if (direction === 'prev') {
+      newIdx = currentIdx === 0 ? successfulResults.length - 1 : currentIdx - 1
+    } else {
+      newIdx = currentIdx === successfulResults.length - 1 ? 0 : currentIdx + 1
+    }
+
+    setSelectedResult(successfulResults[newIdx])
+  }, [selectedResult, successfulResults])
+
   return (
     <div className={cn('flex flex-col h-full', className)}>
       {/* Header */}
@@ -408,13 +423,42 @@ export function BatchOutputGrid({
 
       {/* Detail Dialog */}
       <Dialog open={!!selectedResult} onOpenChange={() => setSelectedResult(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-          <DialogTitle>
-            {t('playground.batch.result')} #{selectedResult?.index !== undefined ? selectedResult.index + 1 : ''}
-          </DialogTitle>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-0">
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-4 border-b">
+            <DialogTitle className="flex items-center gap-2">
+              {t('playground.batch.result')} #{selectedResult?.index !== undefined ? selectedResult.index + 1 : ''}
+              {successfulResults.length > 1 && (
+                <span className="text-sm font-normal text-muted-foreground">
+                  ({successfulResults.findIndex(r => r.index === selectedResult?.index) + 1}/{successfulResults.length})
+                </span>
+              )}
+            </DialogTitle>
+          </div>
           {selectedResult && (
-            <div className="flex-1 overflow-auto">
-              <div className="space-y-4">
+            <div className="flex-1 overflow-auto relative">
+              {/* Navigation buttons on sides */}
+              {successfulResults.length > 1 && (
+                <>
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    onClick={() => navigateResult('prev')}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full opacity-80 hover:opacity-100"
+                  >
+                    <span className="text-xl">◀</span>
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    onClick={() => navigateResult('next')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full opacity-80 hover:opacity-100"
+                  >
+                    <span className="text-xl">▶</span>
+                  </Button>
+                </>
+              )}
+              <div className="space-y-4 p-6">
                 {selectedResult.outputs.map((output, outputIndex) => {
                   const isObject = typeof output === 'object' && output !== null
                   const outputStr = isObject ? JSON.stringify(output, null, 2) : String(output)

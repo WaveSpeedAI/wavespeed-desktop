@@ -413,7 +413,7 @@ export function PlaygroundPage() {
           <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
             {/* Left Panel - Configuration */}
             <div className={cn(
-              "w-full md:w-[420px] flex flex-col border-b md:border-b-0 md:border-r bg-muted/30 overflow-y-auto",
+              "w-full md:w-[420px] md:max-w-[420px] md:flex-none flex flex-col border-b md:border-b-0 md:border-r bg-muted/30 overflow-y-auto",
               // Mobile: show/hide based on mobileView, full height on mobile
               mobileView === 'config' ? "flex flex-1" : "hidden md:flex"
             )}>

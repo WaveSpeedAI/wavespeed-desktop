@@ -30,7 +30,8 @@
     "selectAll": "Tümünü seç",
     "done": "Tamamlandı",
     "retry": "Yeniden Dene",
-    "downloadFailed": "İndirme başarısız. Lütfen ağ bağlantınızı kontrol edin."
+    "downloadFailed": "İndirme başarısız. Lütfen ağ bağlantınızı kontrol edin.",
+    "openInBrowser": "Tarayıcıda aç"
   },
   "nav": {
     "home": "Ana Sayfa",

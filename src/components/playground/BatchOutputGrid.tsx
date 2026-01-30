@@ -16,7 +16,6 @@ import {
 } from '@/components/ui/tooltip'
 import { Download, CheckCircle2, XCircle, ExternalLink, Copy, Check, Loader2 } from 'lucide-react'
 import { AudioPlayer } from '@/components/shared/AudioPlayer'
-import { FlappyBird } from './FlappyBird'
 import { useAssetsStore, detectAssetType, generateDownloadFilename } from '@/stores/assetsStore'
 import { toast } from '@/hooks/useToast'
 import { cn } from '@/lib/utils'
@@ -61,7 +60,6 @@ export function BatchOutputGrid({
   const [selectedResult, setSelectedResult] = useState<BatchResult | null>(null)
   const [savedIndexes, setSavedIndexes] = useState<Set<number>>(new Set())
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
-  const [showGame, setShowGame] = useState(true)
   const autoSavedIndexesRef = useRef<Set<number>>(new Set())
 
   const { saveAsset, settings, hasAssetForPrediction } = useAssetsStore()
@@ -130,12 +128,11 @@ export function BatchOutputGrid({
     saveNewResults()
   }, [results, modelId, settings.autoSaveAssets, saveAsset, hasAssetForPrediction, isRunning, t])
 
-  // Reset auto-saved tracking and game state when results are cleared
+  // Reset auto-saved tracking when results are cleared
   useEffect(() => {
     if (results.length === 0) {
       autoSavedIndexesRef.current = new Set()
       setSavedIndexes(new Set())
-      setShowGame(true) // Reset to show game for next batch
     }
   }, [results.length])
 
@@ -260,16 +257,6 @@ export function BatchOutputGrid({
           )}
         </div>
         <div className="flex items-center gap-1 md:gap-2">
-          {isRunning && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowGame(!showGame)}
-              className="text-xs md:text-sm"
-            >
-              {showGame ? 'Results' : 'Game'}
-            </Button>
-          )}
           <Button
             variant="outline"
             size="sm"
@@ -292,19 +279,7 @@ export function BatchOutputGrid({
           </Button>
         </div>
       </div>
-
-      {/* Game while waiting or idle (no results) */}
-      {showGame && (isRunning || results.length === 0) ? (
-        <div className="flex-1 relative">
-          <FlappyBird
-            isTaskRunning={isRunning}
-            taskStatus={isRunning ? `Processing ${completedCount + failedCount}/${total}` : undefined}
-            hasResults={completedCount > 0}
-            onViewResults={() => setShowGame(false)}
-          />
-        </div>
-      ) : (
-      /* Results Grid - dynamic columns based on item count with minimum cell size */
+      {/* Results Grid - dynamic columns based on item count with minimum cell size */}
       <ScrollArea className="flex-1">
         <div className={cn(
           'grid gap-4 p-1',
@@ -404,7 +379,6 @@ export function BatchOutputGrid({
           })}
         </div>
       </ScrollArea>
-      )}
 
       {/* Detail Dialog */}
       <Dialog open={!!selectedResult} onOpenChange={() => setSelectedResult(null)}>

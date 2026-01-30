@@ -30,7 +30,8 @@
     "success": "Success",
     "warning": "Warning",
     "selectAll": "Select All",
-    "downloadFailed": "Download failed. Please check your network connection."
+    "downloadFailed": "Download failed. Please check your network connection.",
+    "openInBrowser": "Open in browser"
   },
   "nav": {
     "home": "Home",

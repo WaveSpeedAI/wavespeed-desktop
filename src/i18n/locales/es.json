@@ -30,7 +30,8 @@
     "warning": "Advertencia",
     "selectAll": "Seleccionar todo",
     "retry": "Reintentar",
-    "downloadFailed": "La descarga falló. Por favor verifica tu conexión de red."
+    "downloadFailed": "La descarga falló. Por favor verifica tu conexión de red.",
+    "openInBrowser": "Abrir en el navegador"
   },
   "nav": {
     "home": "Inicio",

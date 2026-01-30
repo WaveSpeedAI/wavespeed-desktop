@@ -30,7 +30,8 @@
     "warning": "경고",
     "selectAll": "전체 선택",
     "retry": "다시 시도",
-    "downloadFailed": "다운로드에 실패했습니다. 네트워크 연결을 확인해 주세요."
+    "downloadFailed": "다운로드에 실패했습니다. 네트워크 연결을 확인해 주세요.",
+    "openInBrowser": "브라우저에서 열기"
   },
   "nav": {
     "home": "홈",

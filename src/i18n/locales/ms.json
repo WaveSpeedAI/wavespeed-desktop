@@ -30,7 +30,8 @@
     "warning": "Amaran",
     "selectAll": "Pilih semua",
     "retry": "Cuba Lagi",
-    "downloadFailed": "Muat turun gagal. Sila semak sambungan rangkaian anda."
+    "downloadFailed": "Muat turun gagal. Sila semak sambungan rangkaian anda.",
+    "openInBrowser": "Buka dalam pelayar"
   },
   "nav": {
     "home": "Laman Utama",

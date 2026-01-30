@@ -30,7 +30,8 @@
     "warning": "Warnung",
     "selectAll": "Alle auswählen",
     "retry": "Erneut versuchen",
-    "downloadFailed": "Download fehlgeschlagen. Bitte überprüfen Sie Ihre Netzwerkverbindung."
+    "downloadFailed": "Download fehlgeschlagen. Bitte überprüfen Sie Ihre Netzwerkverbindung.",
+    "openInBrowser": "Im Browser öffnen"
   },
   "nav": {
     "home": "Startseite",

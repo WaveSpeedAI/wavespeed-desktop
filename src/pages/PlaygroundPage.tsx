@@ -76,7 +76,7 @@ export function PlaygroundPage() {
   const batchPreviewInputs = useMemo(() => {
     if (!activeTab) return []
     const { batchConfig } = activeTab
-    if (!batchConfig.enabled || batchConfig.repeatCount <= 1) return []
+    if (!batchConfig.enabled) return []
     return generateBatchInputs()
   }, [activeTab, generateBatchInputs])
 

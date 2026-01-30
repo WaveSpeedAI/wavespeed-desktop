@@ -30,7 +30,8 @@
     "warning": "Avertissement",
     "selectAll": "Tout sélectionner",
     "retry": "Réessayer",
-    "downloadFailed": "Le téléchargement a échoué. Veuillez vérifier votre connexion réseau."
+    "downloadFailed": "Le téléchargement a échoué. Veuillez vérifier votre connexion réseau.",
+    "openInBrowser": "Ouvrir dans le navigateur"
   },
   "nav": {
     "home": "Accueil",

@@ -30,7 +30,8 @@
     "warning": "Peringatan",
     "selectAll": "Pilih semua",
     "retry": "Coba Lagi",
-    "downloadFailed": "Unduhan gagal. Silakan periksa koneksi jaringan Anda."
+    "downloadFailed": "Unduhan gagal. Silakan periksa koneksi jaringan Anda.",
+    "openInBrowser": "Buka di browser"
   },
   "nav": {
     "home": "Beranda",

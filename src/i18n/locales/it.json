@@ -30,7 +30,8 @@
     "selectAll": "Seleziona tutto",
     "done": "Fatto",
     "retry": "Riprova",
-    "downloadFailed": "Download fallito. Verifica la tua connessione di rete."
+    "downloadFailed": "Download fallito. Verifica la tua connessione di rete.",
+    "openInBrowser": "Apri nel browser"
   },
   "nav": {
     "home": "Home",

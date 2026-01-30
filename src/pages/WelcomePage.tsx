@@ -152,7 +152,7 @@ export function WelcomePage() {
               <Sparkles className="relative h-9 w-9 text-primary" />
             </div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
-              WaveSpeedAI Studio
+              {navigator.userAgent.toLowerCase().includes('electron') ? 'WaveSpeed Desktop' : 'WaveSpeedAI Studio'}
             </h1>
           </div>
           <p className="text-base text-muted-foreground max-w-lg mx-auto">

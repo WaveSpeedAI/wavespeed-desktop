@@ -351,4 +351,6 @@ export const electronAPIWeb: ElectronAPI = {
 // Inject electronAPI when running in a browser environment.
 if (isBrowser) {
   ;(window as Window & { electronAPI: ElectronAPI }).electronAPI = electronAPIWeb
+  // Set document title for web version (Desktop keeps "WaveSpeed Desktop" from index.html)
+  document.title = 'WaveSpeedAI Studio'
 }

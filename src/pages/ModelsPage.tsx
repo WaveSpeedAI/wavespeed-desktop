@@ -355,8 +355,10 @@ export function ModelsPage() {
 
   // Memoized handlers
   const handleOpenPlayground = useCallback((modelId: string) => {
+    const model = models.find(m => m.model_id === modelId)
+    createTab(model)
     navigate(`/playground/${encodeURIComponent(modelId)}`)
-  }, [navigate])
+  }, [models, createTab, navigate])
 
   const handleOpenInNewTab = useCallback((e: React.MouseEvent, modelId: string) => {
     e.stopPropagation()

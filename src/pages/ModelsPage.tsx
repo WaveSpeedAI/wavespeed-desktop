@@ -245,7 +245,7 @@ export function ModelsPage() {
     setSelectedType
   } = useModelsStore()
   const { isLoading: isLoadingApiKey, isValidated, loadApiKey, hasAttemptedLoad } = useApiKeyStore()
-  const { createTab } = usePlaygroundStore()
+  const { createTab, tabs, setActiveTab, setSelectedModel } = usePlaygroundStore()
 
   // Load API key and fetch models on mount
   useEffect(() => {
@@ -356,9 +356,14 @@ export function ModelsPage() {
   // Memoized handlers
   const handleOpenPlayground = useCallback((modelId: string) => {
     const model = models.find(m => m.model_id === modelId)
-    createTab(model)
+    if (tabs.length === 1 && tabs[0].selectedModel == null) {
+      setActiveTab(tabs[0].id)
+      setSelectedModel(model || null)
+    } else {
+      createTab(model)
+    }
     navigate(`/playground/${encodeURIComponent(modelId)}`)
-  }, [models, createTab, navigate])
+  }, [models, tabs, setActiveTab, setSelectedModel, createTab, navigate])
 
   const handleOpenInNewTab = useCallback((e: React.MouseEvent, modelId: string) => {
     e.stopPropagation()

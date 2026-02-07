@@ -91,18 +91,6 @@ export default defineConfig({
       // i18n module (explicit path for directory import)
       '@/i18n': path.resolve(__dirname, '../src/i18n/index'),
       // Mobile-specific overrides (must come before @/)
-      '@/api/client': path.resolve(__dirname, './src/api/client'),
-      '@/components/ui/slider': path.resolve(__dirname, './src/components/ui/slider'),
-      '@/hooks/useSegmentAnythingWorker': path.resolve(__dirname, './src/hooks/useSegmentAnythingWorker'),
-      '@/hooks/useUpscalerWorker': path.resolve(__dirname, './src/hooks/useUpscalerWorker'),
-      '@/hooks/useBackgroundRemoverWorker': path.resolve(__dirname, './src/hooks/useBackgroundRemoverWorker'),
-      '@/hooks/useImageEraserWorker': path.resolve(__dirname, './src/hooks/useImageEraserWorker'),
-      '@/components/playground/DynamicForm': path.resolve(__dirname, './src/components/playground/DynamicForm'),
-      '@/components/playground/FileUpload': path.resolve(__dirname, './src/components/playground/FileUpload'),
-      '@/components/playground/FormField': path.resolve(__dirname, './src/components/playground/FormField'),
-      '@/components/playground/PromptOptimizer': path.resolve(__dirname, './src/components/playground/PromptOptimizer'),
-      '@/components/playground/AudioRecorder': path.resolve(__dirname, './src/components/playground/AudioRecorder'),
-      '@/components/playground/SizeSelector': path.resolve(__dirname, './src/components/playground/SizeSelector'),
       '@/pages/SettingsPage': path.resolve(__dirname, './src/pages/SettingsPage'),
       // Mobile-specific code (must come before @/ to avoid prefix matching issues)
       '@mobile': path.resolve(__dirname, './src'),

@@ -150,6 +150,8 @@
       "micPermissionDenied": "Microphone permission denied. Please allow access in your browser settings.",
       "noMicFound": "No microphone found. Please connect a microphone and try again.",
       "micError": "Failed to access microphone",
+      "micInUse": "Microphone is in use by another application",
+      "tapToRecord": "Click to start recording",
       "switchCamera": "Switch camera",
       "takePhoto": "Take photo",
       "retake": "Retake",

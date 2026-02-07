@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { useSegmentAnythingWorker, type MaskResult } from '@mobile/hooks/useSegmentAnythingWorker'
+import { useSegmentAnythingWorker, type MaskResult } from '@/hooks/useSegmentAnythingWorker'
 import { useMobileDownload } from '@mobile/hooks/useMobileDownload'
 import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
 import { ProcessingProgress } from '@/components/shared/ProcessingProgress'

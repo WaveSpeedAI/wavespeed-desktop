@@ -31,7 +31,8 @@
     "deselectAll": "選択解除",
     "done": "完了",
     "retry": "再試行",
-    "downloadFailed": "ダウンロードに失敗しました。ネットワーク接続を確認してください。"
+    "downloadFailed": "ダウンロードに失敗しました。ネットワーク接続を確認してください。",
+    "openInBrowser": "ブラウザで開く"
   },
   "nav": {
     "home": "ホーム",

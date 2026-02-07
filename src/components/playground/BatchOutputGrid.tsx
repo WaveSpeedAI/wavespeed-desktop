@@ -273,6 +273,26 @@ export function BatchOutputGrid({
     }
   }
 
+  // Get successful results for navigation
+  const successfulResults = results.filter(r => !r.error).sort((a, b) => a.index - b.index)
+
+  // Navigate to previous/next result (with loop support)
+  const navigateResult = useCallback((direction: 'prev' | 'next') => {
+    if (!selectedResult || successfulResults.length <= 1) return
+
+    const currentIdx = successfulResults.findIndex(r => r.index === selectedResult.index)
+    if (currentIdx === -1) return
+
+    let newIdx: number
+    if (direction === 'prev') {
+      newIdx = currentIdx === 0 ? successfulResults.length - 1 : currentIdx - 1
+    } else {
+      newIdx = currentIdx === successfulResults.length - 1 ? 0 : currentIdx + 1
+    }
+
+    setSelectedResult(successfulResults[newIdx])
+  }, [selectedResult, successfulResults])
+
   // Get first media output for thumbnail
   const getFirstMedia = (result: BatchResult) => {
     for (const output of result.outputs) {
@@ -442,13 +462,38 @@ export function BatchOutputGrid({
 
       {/* Detail Dialog */}
       <Dialog open={!!selectedResult} onOpenChange={() => setSelectedResult(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-          <DialogTitle>
-            {t('playground.batch.result')} #{selectedResult?.index !== undefined ? selectedResult.index + 1 : ''}
-          </DialogTitle>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-0">
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-4 border-b">
+            <DialogTitle className="flex items-center gap-2">
+              {t('playground.batch.result')} #{selectedResult?.index !== undefined ? selectedResult.index + 1 : ''}
+              {successfulResults.length > 1 && (
+                <span className="text-sm font-normal text-muted-foreground">
+                  ({successfulResults.findIndex(r => r.index === selectedResult?.index) + 1}/{successfulResults.length})
+                </span>
+              )}
+            </DialogTitle>
+          </div>
           {selectedResult && (
-            <div className="flex-1 overflow-auto">
-              <div className="space-y-4">
+            <div className="flex-1 overflow-auto relative">
+              {/* Navigation buttons overlaid on content */}
+              {successfulResults.length > 1 && (
+                <>
+                  <button
+                    onClick={() => navigateResult('prev')}
+                    className="sticky top-1/2 -translate-y-1/2 float-left z-10 ml-2 h-10 w-10 rounded-full bg-black/30 text-white flex items-center justify-center active:bg-black/60 transition-colors"
+                  >
+                    <span className="text-lg">◀</span>
+                  </button>
+                  <button
+                    onClick={() => navigateResult('next')}
+                    className="sticky top-1/2 -translate-y-1/2 float-right z-10 mr-2 h-10 w-10 rounded-full bg-black/30 text-white flex items-center justify-center active:bg-black/60 transition-colors"
+                  >
+                    <span className="text-lg">▶</span>
+                  </button>
+                </>
+              )}
+              <div className="space-y-4 p-6 clear-both">
                 {selectedResult.outputs.map((output, outputIndex) => {
                   const isObject = typeof output === 'object' && output !== null
                   const outputStr = isObject ? JSON.stringify(output, null, 2) : String(output)

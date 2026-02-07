@@ -31,7 +31,8 @@
     "selectAll": "Alle auswählen",
     "deselectAll": "Auswahl aufheben",
     "retry": "Erneut versuchen",
-    "downloadFailed": "Download fehlgeschlagen. Bitte überprüfen Sie Ihre Netzwerkverbindung."
+    "downloadFailed": "Download fehlgeschlagen. Bitte überprüfen Sie Ihre Netzwerkverbindung.",
+    "openInBrowser": "Im Browser öffnen"
   },
   "nav": {
     "home": "Startseite",

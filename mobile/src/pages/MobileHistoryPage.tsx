@@ -419,6 +419,23 @@ export function MobileHistoryPage() {
     }
   }
 
+  // Navigate to previous/next history item (with loop support)
+  const navigateHistory = useCallback((direction: 'prev' | 'next') => {
+    if (!selectedItem || items.length <= 1) return
+
+    const currentIdx = items.findIndex(item => item.id === selectedItem.id)
+    if (currentIdx === -1) return
+
+    let newIdx: number
+    if (direction === 'prev') {
+      newIdx = currentIdx === 0 ? items.length - 1 : currentIdx - 1
+    } else {
+      newIdx = currentIdx === items.length - 1 ? 0 : currentIdx + 1
+    }
+
+    setSelectedItem(items[newIdx])
+  }, [selectedItem, items])
+
   const fetchHistory = useCallback(async () => {
     if (!isValidated) return
 
@@ -912,7 +929,14 @@ export function MobileHistoryPage() {
         <DialogContent className="max-w-[95vw] max-h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader className="flex flex-row items-center justify-between">
             <div>
-              <DialogTitle className="text-base">{t('history.generationDetails')}</DialogTitle>
+              <DialogTitle className="text-base flex items-center gap-2">
+                {t('history.generationDetails')}
+                {items.length > 1 && (
+                  <span className="text-sm font-normal text-muted-foreground">
+                    ({items.findIndex(item => item.id === selectedItem?.id) + 1}/{items.length})
+                  </span>
+                )}
+              </DialogTitle>
               <DialogDescription className="sr-only">
                 {t('history.generationDetails')}
               </DialogDescription>
@@ -929,7 +953,24 @@ export function MobileHistoryPage() {
             )}
           </DialogHeader>
           {selectedItem && (
-            <div className="flex-1 overflow-y-auto space-y-4">
+            <div className="flex-1 overflow-y-auto space-y-4 relative">
+              {/* Navigation buttons overlaid on preview */}
+              {items.length > 1 && (
+                <>
+                  <button
+                    onClick={() => navigateHistory('prev')}
+                    className="absolute left-2 top-[125px] z-10 h-10 w-10 rounded-full bg-black/30 text-white flex items-center justify-center active:bg-black/60 transition-colors"
+                  >
+                    <span className="text-lg">◀</span>
+                  </button>
+                  <button
+                    onClick={() => navigateHistory('next')}
+                    className="absolute right-2 top-[125px] z-10 h-10 w-10 rounded-full bg-black/30 text-white flex items-center justify-center active:bg-black/60 transition-colors"
+                  >
+                    <span className="text-lg">▶</span>
+                  </button>
+                </>
+              )}
               {/* Preview using OutputDisplay */}
               {selectedItem.outputs && selectedItem.outputs.length > 0 && (
                 <div className="h-[250px]">

@@ -31,7 +31,8 @@
     "deselectAll": "取消全選",
     "done": "完成",
     "retry": "重試",
-    "downloadFailed": "下載失敗。請檢查您的網路連線。"
+    "downloadFailed": "下載失敗。請檢查您的網路連線。",
+    "openInBrowser": "在瀏覽器中開啟"
   },
   "nav": {
     "home": "首頁",

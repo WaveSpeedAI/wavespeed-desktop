@@ -31,6 +31,7 @@
     "done": "完成",
     "retry": "重试",
     "downloadFailed": "下载失败。请检查您的网络连接。",
+    "openInBrowser": "在浏览器中打开",
     "settings": "设置",
     "clearAll": "全部清除"
   },

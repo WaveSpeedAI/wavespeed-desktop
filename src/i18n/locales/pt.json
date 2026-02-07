@@ -31,7 +31,8 @@
     "deselectAll": "Desmarcar tudo",
     "done": "Concluído",
     "retry": "Tentar novamente",
-    "downloadFailed": "Falha no download. Por favor, verifique sua conexão de rede."
+    "downloadFailed": "Falha no download. Por favor, verifique sua conexão de rede.",
+    "openInBrowser": "Abrir no navegador"
   },
   "nav": {
     "home": "Início",

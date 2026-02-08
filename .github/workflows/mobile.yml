@@ -3,14 +3,70 @@ name: Mobile Build
 on:
   push:
     tags:
-      - 'mobile-v*'  # Trigger release on mobile-specific tags
+      - 'v*'  # Unified release: same tag as desktop
     branches:
-      - 'mobile-app'  # Build on mobile-app branch (no path filter to catch shared code changes)
+      - 'main'
   pull_request:
-    branches: [mobile-app]
+    branches: [main]
   workflow_dispatch:  # Allow manual trigger anytime
 
 jobs:
+  # Warn if desktop files with mobile overrides were modified
+  check-overrides:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for tag comparison
+
+      - name: Check for override conflicts
+        run: |
+          # Find the previous tag
+          CURRENT_TAG=${GITHUB_REF#refs/tags/}
+          PREV_TAG=$(git tag --sort=-version:refname | grep '^v[0-9]' | grep -v "^${CURRENT_TAG}$" | head -1)
+
+          if [ -z "$PREV_TAG" ]; then
+            echo "No previous tag found, skipping override check"
+            exit 0
+          fi
+
+          echo "Comparing $PREV_TAG → $CURRENT_TAG"
+
+          # Files that have mobile overrides (alias in mobile/vite.config.ts)
+          OVERRIDE_MAP=(
+            "src/pages/SettingsPage.tsx|mobile/src/pages/SettingsPage.tsx"
+            "src/i18n/index.ts|mobile/src/i18n/index.ts"
+          )
+
+          CHANGED_FILES=$(git diff --name-only "$PREV_TAG" "$CURRENT_TAG")
+          HAS_WARNING=false
+
+          for entry in "${OVERRIDE_MAP[@]}"; do
+            DESKTOP_FILE="${entry%%|*}"
+            MOBILE_FILE="${entry##*|}"
+            if echo "$CHANGED_FILES" | grep -q "^${DESKTOP_FILE}$"; then
+              HAS_WARNING=true
+              echo "::warning file=${DESKTOP_FILE}::⚠️ This file was modified but has a mobile override at ${MOBILE_FILE}. Changes will NOT apply to mobile. Please review and manually sync if needed."
+            fi
+          done
+
+          if [ "$HAS_WARNING" = true ]; then
+            echo ""
+            echo "=============================================="
+            echo "⚠️  MOBILE OVERRIDE SYNC REQUIRED"
+            echo "=============================================="
+            echo "Some desktop files with mobile overrides were modified."
+            echo "The mobile build will proceed, but those changes"
+            echo "will NOT appear in the mobile app."
+            echo "Please manually sync the mobile override files."
+            echo "=============================================="
+          else
+            echo "✅ No override conflicts detected"
+          fi
+
   build-android:
     runs-on: ubuntu-latest
 
@@ -33,6 +89,33 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+
+      - name: Sync version from root package.json
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          # Read version from root package.json
+          VERSION=$(node -p "require('./package.json').version")
+          echo "Syncing version: $VERSION"
+
+          # Update mobile/package.json
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('mobile/package.json', 'utf8'));
+            pkg.version = '$VERSION';
+            fs.writeFileSync('mobile/package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+          echo "✅ mobile/package.json → $VERSION"
+
+          # Update build.gradle versionName and versionCode
+          # versionCode formula: major * 10000 + minor * 100 + patch
+          MAJOR=$(echo $VERSION | cut -d. -f1)
+          MINOR=$(echo $VERSION | cut -d. -f2)
+          PATCH=$(echo $VERSION | cut -d. -f3)
+          VERSION_CODE=$((MAJOR * 10000 + MINOR * 100 + PATCH))
+
+          sed -i "s/versionCode [0-9]*/versionCode $VERSION_CODE/" mobile/android/app/build.gradle
+          sed -i "s/versionName \"[^\"]*\"/versionName \"$VERSION\"/" mobile/android/app/build.gradle
+          echo "✅ build.gradle → versionName $VERSION, versionCode $VERSION_CODE"
 
       - name: Install root dependencies
         run: npm ci
@@ -58,26 +141,33 @@ jobs:
         run: ./gradlew assembleDebug
 
       - name: Build Release APK
-        if: startsWith(github.ref, 'refs/tags/mobile-v')
+        if: startsWith(github.ref, 'refs/tags/v')
         working-directory: mobile/android
         run: ./gradlew assembleRelease
 
       - name: Rename APKs
         run: |
+          # Extract version from tag, fallback to "dev"
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION="dev"
+          fi
+
           # Rename debug APK
           if [ -f mobile/android/app/build/outputs/apk/debug/app-debug.apk ]; then
             mv mobile/android/app/build/outputs/apk/debug/app-debug.apk \
-               mobile/android/app/build/outputs/apk/debug/WaveSpeed-Mobile-debug.apk
+               mobile/android/app/build/outputs/apk/debug/WaveSpeed-Mobile-${VERSION}-debug.apk
           fi
           # Rename release APK
           if [ -f mobile/android/app/build/outputs/apk/release/app-release.apk ]; then
             mv mobile/android/app/build/outputs/apk/release/app-release.apk \
-               mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile.apk
+               mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile-${VERSION}.apk
           fi
           # Also handle unsigned release APK
           if [ -f mobile/android/app/build/outputs/apk/release/app-release-unsigned.apk ]; then
             mv mobile/android/app/build/outputs/apk/release/app-release-unsigned.apk \
-               mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile-unsigned.apk
+               mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile-${VERSION}-unsigned.apk
           fi
 
       - name: Upload Debug APK
@@ -88,7 +178,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload Release APK
-        if: startsWith(github.ref, 'refs/tags/mobile-v')
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: actions/upload-artifact@v4
         with:
           name: wavespeed-mobile-release
@@ -97,7 +187,7 @@ jobs:
 
   release:
     needs: build-android
-    if: startsWith(github.ref, 'refs/tags/mobile-v') && needs.build-android.result == 'success'
+    if: startsWith(github.ref, 'refs/tags/v') && needs.build-android.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: write

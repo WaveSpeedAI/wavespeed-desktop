@@ -272,14 +272,34 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
   const handleCopy = async (url: string, index: number) => {
     try {
       await navigator.clipboard.writeText(url)
-      setCopiedIndex(index)
-      setTimeout(() => setCopiedIndex(null), 2000)
-    } catch (err) {
-      console.error('Copy failed:', err)
+    } catch {
+      // Fallback for WebView where clipboard API may be restricted
+      const textarea = document.createElement('textarea')
+      textarea.value = url
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textarea)
+    }
+    setCopiedIndex(index)
+    setTimeout(() => setCopiedIndex(null), 2000)
+    if (isCapacitorNative()) {
+      toast({ title: t('common.copied', 'Copied') })
     }
   }
 
-  const handleOpenExternal = (url: string) => {
+  const handleOpenExternal = async (url: string) => {
+    if (isCapacitorNative()) {
+      try {
+        const { Browser } = await import(/* @vite-ignore */ '@capacitor/browser')
+        await Browser.open({ url })
+      } catch {
+        window.open(url, '_blank')
+      }
+      return
+    }
     window.open(url, '_blank')
   }
 
@@ -445,10 +465,10 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
                 </div>
               )}
 
-              {/* Actions overlay */}
+              {/* Actions overlay - always visible on touch devices */}
               <div className={cn(
                 "absolute top-2 right-2 flex gap-1 transition-opacity",
-                "opacity-0 group-hover:opacity-100"
+                isCapacitorNative() ? "opacity-100" : "opacity-0 group-hover:opacity-100"
               )}>
                 <Button
                   size="icon"

@@ -38,7 +38,7 @@ interface ModelDownloadState {
   status: 'pending' | 'downloading' | 'completed' | 'error' | 'cached'
   progress: number
   error?: string
-  type?: 'direct' | 'worker'  // direct = fetch URL, worker = use background remover worker
+  type?: 'direct' | 'worker' | 'sam-worker'  // direct = fetch URL, worker = bg remover, sam-worker = segment anything
 }
 
 export function SettingsPage() {
@@ -455,6 +455,8 @@ export function SettingsPage() {
 
   // Background remover worker ref for pre-download
   const bgRemoverWorkerRef = useRef<Worker | null>(null)
+  // SAM worker ref for pre-download
+  const samWorkerRef = useRef<Worker | null>(null)
 
   // Download all Free Tools models
   const handleDownloadModels = useCallback(async () => {
@@ -499,18 +501,11 @@ export function SettingsPage() {
         type: 'direct'
       },
       {
-        name: t('settings.cache.models.samEncoder'),
-        url: 'https://huggingface.co/Xenova/slimsam-77-uniform/resolve/main/onnx/vision_encoder_quantized.onnx',
-        cacheName: 'sam-model-cache',
-        size: '~9MB',
-        type: 'direct'
-      },
-      {
-        name: t('settings.cache.models.samDecoder'),
-        url: 'https://huggingface.co/Xenova/slimsam-77-uniform/resolve/main/onnx/prompt_encoder_mask_decoder_quantized.onnx',
-        cacheName: 'sam-model-cache',
-        size: '~5MB',
-        type: 'direct'
+        name: `${t('settings.cache.models.samEncoder')} + ${t('settings.cache.models.samDecoder')}`,
+        url: '',
+        cacheName: '',
+        size: '~14MB',
+        type: 'sam-worker'
       }
     ]
 
@@ -541,6 +536,21 @@ export function SettingsPage() {
           const keys = await cache.keys()
           // If there are multiple entries (model chunks), consider it cached
           return keys.length > 5
+        }
+        return false
+      } catch {
+        return false
+      }
+    }
+
+    // Helper to check if SAM model is cached (by @huggingface/transformers)
+    const checkSamCached = async (): Promise<boolean> => {
+      try {
+        const cacheNames = await caches.keys()
+        for (const name of cacheNames) {
+          const cache = await caches.open(name)
+          const keys = await cache.keys()
+          if (keys.some(req => req.url.includes('slimsam-77-uniform'))) return true
         }
         return false
       } catch {
@@ -615,6 +625,47 @@ export function SettingsPage() {
       })
     }
 
+    // Helper to download SAM model via worker warm-up
+    const downloadSam = (
+      onProgress: (progress: number) => void
+    ): Promise<void> => {
+      return new Promise((resolve, reject) => {
+        const worker = new Worker(
+          new URL('../workers/segmentAnything.worker.ts', import.meta.url),
+          { type: 'module' }
+        )
+        samWorkerRef.current = worker
+
+        worker.onmessage = (e) => {
+          const { type, payload } = e.data
+
+          if (type === 'progress') {
+            const { phase, progress } = payload as { phase: string; progress: number }
+            if (phase === 'download') {
+              onProgress(progress)
+            }
+          } else if (type === 'ready') {
+            worker.terminate()
+            samWorkerRef.current = null
+            resolve()
+          } else if (type === 'error') {
+            worker.terminate()
+            samWorkerRef.current = null
+            reject(new Error((payload as { message: string }).message))
+          }
+        }
+
+        worker.onerror = (e) => {
+          worker.terminate()
+          samWorkerRef.current = null
+          reject(new Error(e.message))
+        }
+
+        // Send init to trigger model download and caching
+        worker.postMessage({ type: 'init', payload: { id: 0 } })
+      })
+    }
+
     try {
       // Check which models are already cached
       for (let i = 0; i < models.length; i++) {
@@ -622,6 +673,8 @@ export function SettingsPage() {
         let isCached: boolean
         if (model.type === 'worker') {
           isCached = await checkBgRemoverCached()
+        } else if (model.type === 'sam-worker') {
+          isCached = await checkSamCached()
         } else {
           isCached = await checkModelCached(model.url, model.cacheName)
         }
@@ -644,6 +697,8 @@ export function SettingsPage() {
         let isCached: boolean
         if (model.type === 'worker') {
           isCached = await checkBgRemoverCached()
+        } else if (model.type === 'sam-worker') {
+          isCached = await checkSamCached()
         } else {
           isCached = await checkModelCached(model.url, model.cacheName)
         }
@@ -680,8 +735,11 @@ export function SettingsPage() {
           }
 
           if (model.type === 'worker') {
-            // Download via worker warm-up
+            // Download via worker warm-up (Background Remover)
             await downloadBgRemover(updateProgress)
+          } else if (model.type === 'sam-worker') {
+            // Download via worker warm-up (Segment Anything)
+            await downloadSam(updateProgress)
           } else {
             // Download directly
             await downloadModel(model.url, model.cacheName, updateProgress, signal)
@@ -745,10 +803,14 @@ export function SettingsPage() {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
     }
-    // Also terminate background remover worker if running
+    // Also terminate workers if running
     if (bgRemoverWorkerRef.current) {
       bgRemoverWorkerRef.current.terminate()
       bgRemoverWorkerRef.current = null
+    }
+    if (samWorkerRef.current) {
+      samWorkerRef.current.terminate()
+      samWorkerRef.current = null
     }
     setIsDownloadingModels(false)
     toast({

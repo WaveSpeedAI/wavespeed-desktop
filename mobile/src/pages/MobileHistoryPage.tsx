@@ -839,7 +839,6 @@ export function MobileHistoryPage() {
                       ) : loadPreviews && hasPreview && typeof item.outputs![0] === 'string' && item.outputs![0].match(/\.(mp3|wav|ogg|flac|aac|m4a|wma)/i) ? (
                         <div
                           className="w-full h-full flex items-center justify-center p-3"
-                          onClick={(e) => e.stopPropagation()}
                         >
                           <AudioPlayer src={item.outputs![0]} compact />
                         </div>
@@ -988,6 +987,7 @@ export function MobileHistoryPage() {
                     outputs={selectedItem.outputs}
                     error={null}
                     isLoading={false}
+                    modelId={selectedItem.model}
                     hideGameButton
                   />
                 </div>

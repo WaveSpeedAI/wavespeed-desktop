@@ -6,6 +6,7 @@ Cross-platform applications for running AI models from [WaveSpeedAI](https://wav
 [![macOS Intel](https://img.shields.io/badge/macOS_Intel-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Desktop-mac-x64.dmg)
 [![macOS Apple Silicon](https://img.shields.io/badge/macOS_Silicon-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Desktop-mac-arm64.dmg)
 [![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Desktop-linux-x86_64.AppImage)
+[![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Mobile.apk)
 
 ![Playground Screenshot](https://github.com/user-attachments/assets/904a3ff8-c302-4b84-851b-34a76486c891)
 ![Face Swapper Screenshot](https://github.com/user-attachments/assets/f9eb0022-4bf7-4efd-a9a6-43138ab5cfcb)

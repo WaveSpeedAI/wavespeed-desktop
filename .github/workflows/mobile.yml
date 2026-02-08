@@ -159,10 +159,12 @@ jobs:
             mv mobile/android/app/build/outputs/apk/debug/app-debug.apk \
                mobile/android/app/build/outputs/apk/debug/WaveSpeed-Mobile-${VERSION}-debug.apk
           fi
-          # Rename release APK
+          # Rename release APK + create a fixed-name copy for README download link
           if [ -f mobile/android/app/build/outputs/apk/release/app-release.apk ]; then
             mv mobile/android/app/build/outputs/apk/release/app-release.apk \
                mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile-${VERSION}.apk
+            cp mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile-${VERSION}.apk \
+               mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile.apk
           fi
           # Also handle unsigned release APK
           if [ -f mobile/android/app/build/outputs/apk/release/app-release-unsigned.apk ]; then

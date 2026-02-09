@@ -174,7 +174,9 @@
         "done": "Done",
         "cancel": "Cancel",
         "hint": "White areas reveal, black areas hide"
-      }
+      },
+      "removeFile": "Remove File",
+      "removeFileConfirm": "Are you sure you want to remove this file?"
     },
     "autoSaved": "Auto-saved to Assets",
     "autoSavedDesc": "Saved {{count}} output(s) to My Assets",
@@ -229,7 +231,8 @@
       "noPreview": "No preview available",
       "seedsGenerated": "Seeds auto-generated",
       "settings": "Batch Settings"
-    }
+    },
+    "input": "Input"
   },
   "history": {
     "title": "History",
@@ -911,5 +914,22 @@
   "game": {
     "waitingLong": "This is taking a while",
     "clickToPlay": "Tap to play a game while waiting"
+  },
+  "videoConverter": {
+    "title": "Video Converter",
+    "description": "Convert videos between formats using your browser",
+    "invalidFile": "Please select a valid video file",
+    "input": "Input Video",
+    "inputDesc": "Select or drag a video file to convert",
+    "dropzone": "Click or drag video here",
+    "supportedFormats": "Supports MP4, WebM, MOV, AVI",
+    "settings": "Settings",
+    "outputFormat": "Output Format",
+    "convert": "Convert Video",
+    "converting": "Converting...",
+    "noCodecSupport": "No supported video codec found",
+    "result": "Result",
+    "codecUsed": "Codec used",
+    "download": "Download"
   }
 }

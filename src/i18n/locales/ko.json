@@ -171,7 +171,9 @@
         "done": "완료",
         "cancel": "취소",
         "hint": "흰색 영역은 표시, 검은색 영역은 숨김"
-      }
+      },
+      "removeFile": "파일 제거",
+      "removeFileConfirm": "이 파일을 제거하시겠습니까?"
     },
     "autoSaved": "에셋에 자동 저장됨",
     "autoSavedDesc": "{{count}}개의 출력을 내 에셋에 저장했습니다",
@@ -226,7 +228,8 @@
       "noPreview": "미리보기 없음",
       "seedsGenerated": "시드 자동 생성됨",
       "settings": "배치 설정"
-    }
+    },
+    "input": "입력"
   },
   "history": {
     "title": "기록",
@@ -244,15 +247,15 @@
     "generationDetails": "생성 세부 정보",
     "select": "선택",
     "selectionDone": "완료",
-    "deleteSelected": "삭제 ({{count}})",
-    "bulkDeleteConfirmTitle": "기록 삭제",
-    "bulkDeleteConfirmDesc": "{{count}}개의 예측을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
-    "deleteConfirmTitle": "기록 삭제",
-    "deleteConfirmDesc": "이 예측을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
-    "deleted": "기록이 삭제되었습니다",
-    "deletedBulk": "기록이 삭제되었습니다",
-    "deletedBulkDesc": "{{count}}개의 기록이 삭제되었습니다",
-    "deleteFailed": "기록 삭제에 실패했습니다",
+    "deleteSelected": "삭제",
+    "bulkDeleteConfirmTitle": "예측 삭제",
+    "bulkDeleteConfirmDesc": "{{count}}개의 예측을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+    "deleteConfirmTitle": "예측 삭제",
+    "deleteConfirmDesc": "이 예측을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+    "deleted": "예측이 삭제되었습니다",
+    "deletedBulk": "예측이 삭제되었습니다",
+    "deletedBulkDesc": "{{count}}개의 예측이 삭제되었습니다",
+    "deleteFailed": "예측 삭제 실패",
     "model": "모델",
     "created": "생성됨",
     "executionTime": "실행 시간",
@@ -271,18 +274,7 @@
       "noInputsTitle": "템플릿을 저장할 수 없습니다",
       "noInputsDesc": "입력 매개변수는 이 앱에서 수행한 예측에서만 사용할 수 있습니다. 먼저 새 예측을 실행하세요."
     },
-    "hasInputs": "템플릿으로 저장 가능",
-    "select": "선택",
-    "selectionDone": "완료",
-    "deleteSelected": "삭제",
-    "bulkDeleteConfirmTitle": "예측 삭제",
-    "bulkDeleteConfirmDesc": "{{count}}개의 예측을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
-    "deleteConfirmTitle": "예측 삭제",
-    "deleteConfirmDesc": "이 예측을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
-    "deleted": "예측이 삭제되었습니다",
-    "deletedBulk": "예측이 삭제되었습니다",
-    "deletedBulkDesc": "{{count}}개의 예측이 삭제되었습니다",
-    "deleteFailed": "예측 삭제 실패"
+    "hasInputs": "템플릿으로 저장 가능"
   },
   "templates": {
     "title": "템플릿",
@@ -627,21 +619,24 @@
     },
     "faceEnhancer": {
       "title": "얼굴 보정",
-      "description": "AI를 사용하여 얼굴 품질 향상 및 복원",
-      "selectImage": "얼굴이 포함된 이미지 선택",
-      "orDragDrop": "또는 드래그 앤 드롭",
-      "enhance": "보정",
-      "download": "다운로드",
+      "description": "AI로 사진 속 얼굴을 보정하고 복원",
+      "selectImage": "이미지를 여기에 드래그",
+      "modelsInfo": "YOLO + GFPGAN AI 모델 사용",
+      "inputImage": "입력 이미지",
+      "selectImageWithFaces": "보정할 얼굴이 있는 이미지 선택",
+      "enhance": "얼굴 보정",
+      "enhancing": "얼굴 보정 중...",
+      "detecting": "얼굴 감지 중...",
+      "downloading": "모델 다운로드 중...",
+      "loading": "모델 로딩 중...",
       "processing": "처리 중...",
-      "original": "원본",
-      "enhanced": "보정됨",
-      "sideBySide": "나란히 비교",
-      "comparison": "슬라이더 비교",
-      "dragToCompare": "드래그하여 비교",
-      "detecting": "얼굴 감지 중",
-      "enhancing": "얼굴 보정 중",
-      "noFaces": "이미지에서 얼굴이 감지되지 않았습니다",
-      "facesFound": "{{count}}개의 얼굴 감지됨"
+      "download": "다운로드",
+      "newImage": "새 이미지",
+      "result": "보정 결과",
+      "facesEnhanced": "{{count}}개의 얼굴 보정됨",
+      "noFacesFound": "얼굴을 찾을 수 없음",
+      "invalidFile": "유효한 이미지 파일을 선택하세요",
+      "firstTimeDownload": "처음이신가요? 모델이 다운로드됩니다 (~350MB)"
     },
     "faceSwapper": {
       "title": "얼굴 교체",
@@ -744,114 +739,6 @@
       "hint": "좌클릭으로 포함할 영역, 우클릭으로 제외할 영역 지정"
     },
     "videoConverter": {
-      "title": "비디오 변환",
-      "description": "비디오 형식 간 변환"
-    },
-    "audioConverter": {
-      "title": "오디오 변환",
-      "description": "MP3와 WAV 형식 간 변환",
-      "selectAudio": "MP3/WAV 파일을 여기에 드래그",
-      "supportedFormats": "MP3 ↔ WAV 변환",
-      "inputAudio": "입력 오디오",
-      "outputFormat": "출력 형식",
-      "bitrate": "비트레이트",
-      "convert": "변환",
-      "converting": "변환 중...",
-      "result": "변환 결과",
-      "invalidFile": "MP3 또는 WAV 파일을 선택하세요"
-    },
-    "imageConverter": {
-      "title": "이미지 변환",
-      "description": "이미지를 JPG, PNG, WebP로 변환",
-      "selectImage": "이미지를 여기에 드래그",
-      "supportedFormats": "모든 이미지 → JPG/PNG/WebP",
-      "inputImage": "입력 이미지",
-      "outputFormat": "출력 형식",
-      "quality": "품질",
-      "convert": "변환",
-      "converting": "변환 중...",
-      "result": "변환 결과",
-      "invalidFile": "유효한 이미지 파일을 선택하세요"
-    },
-    "mediaTrimmer": {
-      "title": "미디어 트리머",
-      "description": "동영상과 오디오를 원하는 길이로 자르기",
-      "selectMedia": "미디어 파일을 여기에 드래그",
-      "supportedFormats": "동영상 및 오디오 파일 지원",
-      "inputMedia": "입력 미디어",
-      "selectMediaFile": "자를 미디어 파일 선택",
-      "trimSettings": "트리밍 설정",
-      "selectRange": "시작 및 종료 시간 선택",
-      "startTime": "시작 시간",
-      "endTime": "종료 시간",
-      "timeFormat": "형식: m:ss.d 또는 초",
-      "outputDuration": "출력 길이",
-      "duration": "길이",
-      "trim": "자르기",
-      "trimming": "자르는 중...",
-      "download": "다운로드",
-      "newMedia": "새 파일",
-      "result": "트리밍 결과",
-      "invalidFile": "유효한 동영상 또는 오디오 파일을 선택하세요",
-      "invalidRange": "종료 시간은 시작 시간보다 커야 합니다"
-    },
-    "mediaMerger": {
-      "title": "미디어 병합",
-      "description": "여러 동영상 또는 오디오 파일을 하나로 병합",
-      "selectMedia": "파일을 여기에 드래그",
-      "supportedFormats": "동영상 및 오디오 파일 지원",
-      "addFiles": "파일 추가",
-      "inputFiles": "입력 파일",
-      "dragToReorder": "드래그하여 순서 변경",
-      "noFiles": "파일 없음",
-      "addFilesDesc": "병합할 동영상 또는 오디오 파일 추가",
-      "outputFormat": "출력 형식",
-      "merge": "병합",
-      "merging": "병합 중...",
-      "download": "다운로드",
-      "clear": "지우기",
-      "result": "병합 결과",
-      "invalidFile": "유효한 동영상 또는 오디오 파일을 선택하세요",
-      "minFiles": "병합하려면 2개 이상의 파일이 필요합니다"
-    },
-    "faceEnhancer": {
-      "title": "얼굴 보정",
-      "description": "AI로 사진 속 얼굴을 보정하고 복원",
-      "selectImage": "이미지를 여기에 드래그",
-      "modelsInfo": "YOLO + GFPGAN AI 모델 사용",
-      "inputImage": "입력 이미지",
-      "selectImageWithFaces": "보정할 얼굴이 있는 이미지 선택",
-      "enhance": "얼굴 보정",
-      "enhancing": "얼굴 보정 중...",
-      "detecting": "얼굴 감지 중...",
-      "downloading": "모델 다운로드 중...",
-      "loading": "모델 로딩 중...",
-      "processing": "처리 중...",
-      "download": "다운로드",
-      "newImage": "새 이미지",
-      "result": "보정 결과",
-      "facesEnhanced": "{{count}}개의 얼굴 보정됨",
-      "noFacesFound": "얼굴을 찾을 수 없음",
-      "invalidFile": "유효한 이미지 파일을 선택하세요",
-      "firstTimeDownload": "처음이신가요? 모델이 다운로드됩니다 (~350MB)"
-    },
-    "progress": {
-      "downloading": "모델 다운로드 중",
-      "loading": "모델 로딩 중",
-      "processing": "처리 중",
-      "processingFrames": "프레임 처리 중",
-      "encoding": "인코딩 중",
-      "finalizing": "마무리 중",
-      "overall": "전체",
-      "remaining": "남음"
-    },
-    "backWarning": {
-      "title": "처리 중",
-      "description": "작업이 진행 중입니다. 돌아가시겠습니까? 현재 작업이 취소됩니다.",
-      "cancel": "취소",
-      "confirm": "돌아가기"
-    },
-    "videoConverter": {
       "title": "비디오 변환기",
       "description": "다양한 형식 간 비디오 변환 (MP4, WebM, MOV, AVI)",
       "selectVideo": "비디오 선택",
@@ -922,6 +809,22 @@
       "totalDuration": "총 길이",
       "sameFormatNote": "무손실 병합을 위해 파일은 동일한 형식이어야 합니다"
     },
+    "progress": {
+      "downloading": "모델 다운로드 중",
+      "loading": "모델 로딩 중",
+      "processing": "처리 중",
+      "processingFrames": "프레임 처리 중",
+      "encoding": "인코딩 중",
+      "finalizing": "마무리 중",
+      "overall": "전체",
+      "remaining": "남음"
+    },
+    "backWarning": {
+      "title": "처리 중",
+      "description": "작업이 진행 중입니다. 돌아가시겠습니까? 현재 작업이 취소됩니다.",
+      "cancel": "취소",
+      "confirm": "돌아가기"
+    },
     "ffmpeg": {
       "loading": "FFmpeg 로드 중",
       "converting": "변환 중",
@@ -932,5 +835,22 @@
   "game": {
     "waitingLong": "오래 기다리셨나요? 미니 게임 해보세요!",
     "clickToPlay": "클릭하여 시작"
+  },
+  "videoConverter": {
+    "title": "비디오 변환기",
+    "description": "브라우저에서 비디오 형식 변환",
+    "invalidFile": "유효한 비디오 파일을 선택하세요",
+    "input": "입력 비디오",
+    "inputDesc": "변환할 비디오 파일을 선택하거나 드래그하세요",
+    "dropzone": "클릭하거나 비디오를 여기에 드래그",
+    "supportedFormats": "MP4, WebM, MOV, AVI 지원",
+    "settings": "설정",
+    "outputFormat": "출력 형식",
+    "convert": "비디오 변환",
+    "converting": "변환 중...",
+    "noCodecSupport": "지원되는 비디오 코덱을 찾을 수 없습니다",
+    "result": "결과",
+    "codecUsed": "사용된 코덱",
+    "download": "다운로드"
   }
 }

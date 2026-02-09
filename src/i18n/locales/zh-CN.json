@@ -172,7 +172,9 @@
         "done": "完成",
         "cancel": "取消",
         "hint": "白色区域显示，黑色区域隐藏"
-      }
+      },
+      "removeFile": "移除文件",
+      "removeFileConfirm": "确定要移除这个文件吗？"
     },
     "autoSaved": "已自动保存到资产",
     "autoSavedDesc": "已保存 {{count}} 个输出到我的资产",
@@ -227,7 +229,8 @@
       "noPreview": "无可用预览",
       "seedsGenerated": "种子已自动生成",
       "settings": "批量设置"
-    }
+    },
+    "input": "输入"
   },
   "history": {
     "title": "历史记录",
@@ -909,5 +912,22 @@
   "game": {
     "waitingLong": "等待时间较长",
     "clickToPlay": "点击玩个小游戏打发时间"
+  },
+  "videoConverter": {
+    "title": "视频转换器",
+    "description": "在浏览器中转换视频格式",
+    "invalidFile": "请选择有效的视频文件",
+    "input": "输入视频",
+    "inputDesc": "选择或拖拽视频文件进行转换",
+    "dropzone": "点击或拖拽视频到此处",
+    "supportedFormats": "支持 MP4, WebM, MOV, AVI",
+    "settings": "设置",
+    "outputFormat": "输出格式",
+    "convert": "转换视频",
+    "converting": "转换中...",
+    "noCodecSupport": "未找到支持的视频编码器",
+    "result": "结果",
+    "codecUsed": "使用的编码器",
+    "download": "下载"
   }
 }

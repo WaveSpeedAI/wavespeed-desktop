@@ -171,7 +171,9 @@
         "done": "Selesai",
         "cancel": "Batal",
         "hint": "Area putih menampilkan, area hitam menyembunyikan"
-      }
+      },
+      "removeFile": "Hapus File",
+      "removeFileConfirm": "Apakah Anda yakin ingin menghapus file ini?"
     },
     "autoSaved": "Otomatis disimpan ke Aset",
     "autoSavedDesc": "Menyimpan {{count}} output ke Aset Saya",
@@ -226,7 +228,8 @@
       "noPreview": "Tidak ada pratinjau",
       "seedsGenerated": "Seed dibuat secara otomatis",
       "settings": "Pengaturan batch"
-    }
+    },
+    "input": "Input"
   },
   "history": {
     "title": "Riwayat",
@@ -244,15 +247,15 @@
     "generationDetails": "Detail Generasi",
     "select": "Pilih",
     "selectionDone": "Selesai",
-    "deleteSelected": "Hapus ({{count}})",
-    "bulkDeleteConfirmTitle": "Hapus item riwayat",
-    "bulkDeleteConfirmDesc": "Yakin ingin menghapus {{count}} prediksi? Tindakan ini tidak dapat dibatalkan.",
-    "deleteConfirmTitle": "Hapus item riwayat",
-    "deleteConfirmDesc": "Yakin ingin menghapus prediksi ini? Tindakan ini tidak dapat dibatalkan.",
-    "deleted": "Item riwayat dihapus",
-    "deletedBulk": "Item riwayat dihapus",
-    "deletedBulkDesc": "{{count}} item riwayat dihapus",
-    "deleteFailed": "Gagal menghapus item riwayat",
+    "deleteSelected": "Hapus",
+    "bulkDeleteConfirmTitle": "Hapus Prediksi",
+    "bulkDeleteConfirmDesc": "Apakah Anda yakin ingin menghapus {{count}} prediksi? Tindakan ini tidak dapat dibatalkan.",
+    "deleteConfirmTitle": "Hapus Prediksi",
+    "deleteConfirmDesc": "Apakah Anda yakin ingin menghapus prediksi ini? Tindakan ini tidak dapat dibatalkan.",
+    "deleted": "Prediksi dihapus",
+    "deletedBulk": "Prediksi dihapus",
+    "deletedBulkDesc": "{{count}} prediksi dihapus",
+    "deleteFailed": "Gagal menghapus prediksi",
     "model": "Model",
     "created": "Dibuat",
     "executionTime": "Waktu Eksekusi",
@@ -271,18 +274,7 @@
       "noInputsTitle": "Tidak dapat menyimpan template",
       "noInputsDesc": "Parameter input hanya tersedia untuk prediksi yang dibuat di aplikasi ini. Coba jalankan prediksi baru terlebih dahulu."
     },
-    "hasInputs": "Dapat disimpan sebagai template",
-    "select": "Pilih",
-    "selectionDone": "Selesai",
-    "deleteSelected": "Hapus",
-    "bulkDeleteConfirmTitle": "Hapus Prediksi",
-    "bulkDeleteConfirmDesc": "Apakah Anda yakin ingin menghapus {{count}} prediksi? Tindakan ini tidak dapat dibatalkan.",
-    "deleteConfirmTitle": "Hapus Prediksi",
-    "deleteConfirmDesc": "Apakah Anda yakin ingin menghapus prediksi ini? Tindakan ini tidak dapat dibatalkan.",
-    "deleted": "Prediksi dihapus",
-    "deletedBulk": "Prediksi dihapus",
-    "deletedBulkDesc": "{{count}} prediksi dihapus",
-    "deleteFailed": "Gagal menghapus prediksi"
+    "hasInputs": "Dapat disimpan sebagai template"
   },
   "templates": {
     "title": "Template",
@@ -626,22 +618,25 @@
       "enhanceFace": "Tingkatkan kualitas wajah"
     },
     "faceEnhancer": {
-      "title": "Peningkat Wajah",
-      "description": "Tingkatkan dan pulihkan kualitas wajah menggunakan AI",
-      "selectImage": "Pilih gambar dengan wajah",
-      "orDragDrop": "atau seret dan lepas",
-      "enhance": "Tingkatkan",
-      "download": "Unduh",
+      "title": "Penyempurna Wajah",
+      "description": "Sempurnakan dan pulihkan wajah dalam foto menggunakan AI",
+      "selectImage": "Seret gambar ke sini",
+      "modelsInfo": "Menggunakan model YOLO + GFPGAN",
+      "inputImage": "Gambar input",
+      "selectImageWithFaces": "Pilih gambar dengan wajah untuk disempurnakan",
+      "enhance": "Sempurnakan wajah",
+      "enhancing": "Menyempurnakan wajah...",
+      "detecting": "Mendeteksi wajah...",
+      "downloading": "Mengunduh model...",
+      "loading": "Memuat model...",
       "processing": "Memproses...",
-      "original": "Asli",
-      "enhanced": "Ditingkatkan",
-      "sideBySide": "Berdampingan",
-      "comparison": "Perbandingan geser",
-      "dragToCompare": "Seret untuk membandingkan",
-      "detecting": "Mendeteksi wajah",
-      "enhancing": "Meningkatkan wajah",
-      "noFaces": "Tidak ada wajah terdeteksi dalam gambar",
-      "facesFound": "{{count}} wajah terdeteksi"
+      "download": "Unduh",
+      "newImage": "Gambar baru",
+      "result": "Hasil",
+      "facesEnhanced": "{{count}} wajah disempurnakan",
+      "noFacesFound": "Tidak ada wajah ditemukan",
+      "invalidFile": "Pilih file gambar yang valid",
+      "firstTimeDownload": "Pertama kali? Model akan diunduh (~350MB)"
     },
     "faceSwapper": {
       "title": "Penukar Wajah",
@@ -746,99 +741,6 @@
       "confirm": "Kembali"
     },
     "videoConverter": {
-      "title": "Video Converter",
-      "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
-      "selectVideo": "Select Video",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace video",
-      "supportedFormats": "Supports MP4, WebM, MOV, AVI, MKV",
-      "convert": "Convert",
-      "converting": "Converting...",
-      "original": "Original",
-      "outputSettings": "Output Settings",
-      "format": "Format",
-      "quality": "Quality",
-      "resolution": "Resolution",
-      "convertedSize": "Converted Size",
-      "converted": "Converted"
-    },
-    "audioConverter": {
-      "title": "Audio Converter",
-      "description": "Convert audio between formats (MP3, AAC, FLAC, WAV)",
-      "selectAudio": "Select Audio",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace audio",
-      "supportedFormats": "Supports MP3, M4A, OGG, WAV, FLAC",
-      "convert": "Convert",
-      "converting": "Converting...",
-      "original": "Original",
-      "converted": "Converted",
-      "playOriginal": "Play original",
-      "playConverted": "Play converted"
-    },
-    "imageConverter": {
-      "title": "Image Converter",
-      "description": "Convert images between formats (JPG, PNG, WebP, GIF)",
-      "selectImages": "Select Images",
-      "orDragDrop": "or drag and drop",
-      "dropToAdd": "Drop to add images",
-      "supportedFormats": "Supports JPG, PNG, WebP, GIF, BMP",
-      "addMore": "Add More",
-      "convert": "Convert",
-      "converting": "Converting...",
-      "quality": "Quality",
-      "downloadAll": "Download All"
-    },
-    "mediaTrimmer": {
-      "title": "Media Trimmer",
-      "description": "Trim videos or audio to a specific duration",
-      "selectMedia": "Select Media",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace media",
-      "supportedFormats": "Supports video and audio files",
-      "trim": "Trim",
-      "trimming": "Trimming...",
-      "originalDuration": "Original",
-      "selectedDuration": "Selected",
-      "trimmedSize": "Trimmed Size",
-      "playingOriginal": "Playing original",
-      "playingTrimmed": "Playing trimmed"
-    },
-    "mediaMerger": {
-      "title": "Media Merger",
-      "description": "Merge multiple video or audio files into one",
-      "selectFiles": "Select Files",
-      "orDragDrop": "or drag and drop",
-      "dropToAdd": "Drop to add files",
-      "supportedFormats": "Supports video and audio files",
-      "addMore": "Add More",
-      "merge": "Merge",
-      "merging": "Merging...",
-      "merged": "Merged",
-      "totalDuration": "Total Duration",
-      "sameFormatNote": "Files must have the same format for lossless merging"
-    },
-    "ffmpeg": {
-      "loading": "Loading FFmpeg",
-      "converting": "Converting",
-      "merging": "Merging",
-      "trimming": "Trimming"
-    },
-    "segmentAnything": {
-      "title": "Segmentasi Apa Saja",
-      "description": "Pilih dan potong objek apa saja dengan satu klik",
-      "selectImage": "Pilih Gambar",
-      "orDragDrop": "atau seret dan lepas",
-      "processing": "Memproses gambar...",
-      "hoverToPreview": "Arahkan kursor ke objek untuk pratinjau segmentasi",
-      "clickToRefine": "Klik untuk menambahkan lebih banyak titik, klik kanan untuk mengecualikan area",
-      "resetImage": "Reset gambar",
-      "clearPoints": "Hapus titik",
-      "clearPointsTooltip": "Hapus semua titik dan kembali ke mode pratinjau hover",
-      "cutMask": "Potong Mask",
-      "hint": "Klik kiri untuk menyertakan, klik kanan untuk mengecualikan area"
-    },
-    "videoConverter": {
       "title": "Konverter Video",
       "description": "Konversi video antar format"
     },
@@ -909,30 +811,46 @@
       "invalidFile": "Pilih file video atau audio yang valid",
       "minFiles": "Tambahkan minimal 2 file untuk digabung"
     },
-    "faceEnhancer": {
-      "title": "Penyempurna Wajah",
-      "description": "Sempurnakan dan pulihkan wajah dalam foto menggunakan AI",
-      "selectImage": "Seret gambar ke sini",
-      "modelsInfo": "Menggunakan model YOLO + GFPGAN",
-      "inputImage": "Gambar input",
-      "selectImageWithFaces": "Pilih gambar dengan wajah untuk disempurnakan",
-      "enhance": "Sempurnakan wajah",
-      "enhancing": "Menyempurnakan wajah...",
-      "detecting": "Mendeteksi wajah...",
-      "downloading": "Mengunduh model...",
-      "loading": "Memuat model...",
-      "processing": "Memproses...",
-      "download": "Unduh",
-      "newImage": "Gambar baru",
-      "result": "Hasil",
-      "facesEnhanced": "{{count}} wajah disempurnakan",
-      "noFacesFound": "Tidak ada wajah ditemukan",
-      "invalidFile": "Pilih file gambar yang valid",
-      "firstTimeDownload": "Pertama kali? Model akan diunduh (~350MB)"
+    "ffmpeg": {
+      "loading": "Loading FFmpeg",
+      "converting": "Converting",
+      "merging": "Merging",
+      "trimming": "Trimming"
+    },
+    "segmentAnything": {
+      "title": "Segmentasi Apa Saja",
+      "description": "Pilih dan potong objek apa saja dengan satu klik",
+      "selectImage": "Pilih Gambar",
+      "orDragDrop": "atau seret dan lepas",
+      "processing": "Memproses gambar...",
+      "hoverToPreview": "Arahkan kursor ke objek untuk pratinjau segmentasi",
+      "clickToRefine": "Klik untuk menambahkan lebih banyak titik, klik kanan untuk mengecualikan area",
+      "resetImage": "Reset gambar",
+      "clearPoints": "Hapus titik",
+      "clearPointsTooltip": "Hapus semua titik dan kembali ke mode pratinjau hover",
+      "cutMask": "Potong Mask",
+      "hint": "Klik kiri untuk menyertakan, klik kanan untuk mengecualikan area"
     }
   },
   "game": {
     "waitingLong": "Menunggu lama? Main mini game!",
     "clickToPlay": "Klik untuk mulai"
+  },
+  "videoConverter": {
+    "title": "Konverter Video",
+    "description": "Konversi video antar format menggunakan browser Anda",
+    "invalidFile": "Silakan pilih file video yang valid",
+    "input": "Video Input",
+    "inputDesc": "Pilih atau seret file video untuk dikonversi",
+    "dropzone": "Klik atau seret video ke sini",
+    "supportedFormats": "Mendukung MP4, WebM, MOV, AVI",
+    "settings": "Pengaturan",
+    "outputFormat": "Format Output",
+    "convert": "Konversi Video",
+    "converting": "Mengkonversi...",
+    "noCodecSupport": "Tidak ditemukan codec video yang didukung",
+    "result": "Hasil",
+    "codecUsed": "Codec yang digunakan",
+    "download": "Unduh"
   }
 }

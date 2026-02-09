@@ -171,7 +171,9 @@
         "done": "Fertig",
         "cancel": "Abbrechen",
         "hint": "Weiße Bereiche zeigen an, schwarze verbergen"
-      }
+      },
+      "removeFile": "Datei entfernen",
+      "removeFileConfirm": "Sind Sie sicher, dass Sie diese Datei entfernen möchten?"
     },
     "autoSaved": "Automatisch in Assets gespeichert",
     "autoSavedDesc": "{{count}} Ausgabe(n) in Meine Assets gespeichert",
@@ -226,7 +228,8 @@
       "noPreview": "Keine Vorschau",
       "seedsGenerated": "Seeds automatisch generiert",
       "settings": "Stapeleinstellungen"
-    }
+    },
+    "input": "Eingabe"
   },
   "history": {
     "title": "Verlauf",
@@ -244,15 +247,15 @@
     "generationDetails": "Generierungsdetails",
     "select": "Auswählen",
     "selectionDone": "Fertig",
-    "deleteSelected": "Löschen ({{count}})",
-    "bulkDeleteConfirmTitle": "Verlaufseinträge löschen",
+    "deleteSelected": "Löschen",
+    "bulkDeleteConfirmTitle": "Vorhersagen löschen",
     "bulkDeleteConfirmDesc": "Möchten Sie {{count}} Vorhersage(n) wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
-    "deleteConfirmTitle": "Verlaufseintrag löschen",
+    "deleteConfirmTitle": "Vorhersage löschen",
     "deleteConfirmDesc": "Möchten Sie diese Vorhersage wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
-    "deleted": "Verlaufseintrag gelöscht",
-    "deletedBulk": "Verlaufseinträge gelöscht",
-    "deletedBulkDesc": "{{count}} Verlaufseintrag(e) gelöscht",
-    "deleteFailed": "Verlaufseintrag konnte nicht gelöscht werden",
+    "deleted": "Vorhersage gelöscht",
+    "deletedBulk": "Vorhersagen gelöscht",
+    "deletedBulkDesc": "{{count}} Vorhersage(n) gelöscht",
+    "deleteFailed": "Löschen der Vorhersage fehlgeschlagen",
     "model": "Modell",
     "created": "Erstellt",
     "executionTime": "Ausführungszeit",
@@ -271,18 +274,7 @@
       "noInputsTitle": "Vorlage kann nicht gespeichert werden",
       "noInputsDesc": "Eingabeparameter sind nur für Vorhersagen verfügbar, die in dieser App erstellt wurden. Versuchen Sie zuerst, eine neue Vorhersage auszuführen."
     },
-    "hasInputs": "Kann als Vorlage gespeichert werden",
-    "select": "Auswählen",
-    "selectionDone": "Fertig",
-    "deleteSelected": "Löschen",
-    "bulkDeleteConfirmTitle": "Vorhersagen löschen",
-    "bulkDeleteConfirmDesc": "Möchten Sie {{count}} Vorhersage(n) wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
-    "deleteConfirmTitle": "Vorhersage löschen",
-    "deleteConfirmDesc": "Möchten Sie diese Vorhersage wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
-    "deleted": "Vorhersage gelöscht",
-    "deletedBulk": "Vorhersagen gelöscht",
-    "deletedBulkDesc": "{{count}} Vorhersage(n) gelöscht",
-    "deleteFailed": "Löschen der Vorhersage fehlgeschlagen"
+    "hasInputs": "Kann als Vorlage gespeichert werden"
   },
   "templates": {
     "title": "Vorlagen",
@@ -627,21 +619,24 @@
     },
     "faceEnhancer": {
       "title": "Gesichtsverbesserung",
-      "description": "Verbessern und restaurieren Sie Gesichtsqualität mit KI",
-      "selectImage": "Bild mit Gesichtern auswählen",
-      "orDragDrop": "oder Drag & Drop",
-      "enhance": "Verbessern",
-      "download": "Herunterladen",
+      "description": "Gesichter in Fotos mit KI verbessern und restaurieren",
+      "selectImage": "Bild hierher ziehen",
+      "modelsInfo": "Verwendet YOLO + GFPGAN Modelle",
+      "inputImage": "Eingabebild",
+      "selectImageWithFaces": "Wählen Sie ein Bild mit Gesichtern zur Verbesserung",
+      "enhance": "Gesichter verbessern",
+      "enhancing": "Verbessere Gesichter...",
+      "detecting": "Erkenne Gesichter...",
+      "downloading": "Lade Modelle herunter...",
+      "loading": "Lade Modelle...",
       "processing": "Verarbeitung...",
-      "original": "Original",
-      "enhanced": "Verbessert",
-      "sideBySide": "Nebeneinander",
-      "comparison": "Schieberegler-Vergleich",
-      "dragToCompare": "Zum Vergleichen ziehen",
-      "detecting": "Gesichter erkennen",
-      "enhancing": "Gesichter verbessern",
-      "noFaces": "Keine Gesichter im Bild erkannt",
-      "facesFound": "{{count}} Gesicht(er) erkannt"
+      "download": "Herunterladen",
+      "newImage": "Neues Bild",
+      "result": "Ergebnis",
+      "facesEnhanced": "{{count}} Gesicht(er) verbessert",
+      "noFacesFound": "Keine Gesichter gefunden",
+      "invalidFile": "Bitte wählen Sie eine gültige Bilddatei",
+      "firstTimeDownload": "Erstes Mal? Modelle werden heruntergeladen (~350MB)"
     },
     "faceSwapper": {
       "title": "Gesichtertausch",
@@ -744,114 +739,6 @@
       "hint": "Linksklick zum Einschließen, Rechtsklick zum Ausschließen von Bereichen"
     },
     "videoConverter": {
-      "title": "Videokonverter",
-      "description": "Videos zwischen Formaten konvertieren"
-    },
-    "audioConverter": {
-      "title": "Audiokonverter",
-      "description": "Konvertierung zwischen MP3- und WAV-Formaten",
-      "selectAudio": "Klicken oder MP3/WAV-Datei hierher ziehen",
-      "supportedFormats": "MP3 ↔ WAV Konvertierung",
-      "converting": "Konvertiere...",
-      "convert": "Konvertieren",
-      "download": "Herunterladen",
-      "complete": "Abgeschlossen",
-      "outputFormat": "Ausgabeformat",
-      "bitrate": "Bitrate",
-      "noFileSelected": "Keine Datei ausgewählt"
-    },
-    "imageConverter": {
-      "title": "Bildkonverter",
-      "description": "Bilder in JPG, PNG oder WebP konvertieren",
-      "selectImage": "Klicken oder Bild hierher ziehen",
-      "supportedFormats": "Beliebiges Bild → JPG/PNG/WebP",
-      "converting": "Konvertiere...",
-      "convert": "Konvertieren",
-      "download": "Herunterladen",
-      "complete": "Abgeschlossen",
-      "outputFormat": "Ausgabeformat",
-      "quality": "Qualität",
-      "noFileSelected": "Keine Datei ausgewählt"
-    },
-    "mediaTrimmer": {
-      "title": "Medien-Trimmer",
-      "description": "Videos und Audios auf die gewünschte Länge zuschneiden",
-      "selectMedia": "Mediendatei hierher ziehen",
-      "supportedFormats": "Unterstützt Video- und Audiodateien",
-      "inputMedia": "Eingabemedien",
-      "selectMediaFile": "Datei zum Zuschneiden auswählen",
-      "trimSettings": "Schnitteinstellungen",
-      "selectRange": "Start- und Endzeit auswählen",
-      "startTime": "Startzeit",
-      "endTime": "Endzeit",
-      "timeFormat": "Format: m:ss.d oder Sekunden",
-      "outputDuration": "Ausgabedauer",
-      "duration": "Dauer",
-      "trim": "Zuschneiden",
-      "trimming": "Zuschneiden...",
-      "download": "Herunterladen",
-      "newMedia": "Neue Datei",
-      "result": "Ergebnis",
-      "invalidFile": "Bitte wählen Sie eine gültige Video- oder Audiodatei",
-      "invalidRange": "Endzeit muss größer als Startzeit sein"
-    },
-    "mediaMerger": {
-      "title": "Medien-Zusammenführer",
-      "description": "Mehrere Videos oder Audios zu einer Datei zusammenführen",
-      "selectMedia": "Dateien hierher ziehen",
-      "supportedFormats": "Unterstützt Video- und Audiodateien",
-      "addFiles": "Dateien hinzufügen",
-      "inputFiles": "Eingabedateien",
-      "dragToReorder": "Ziehen zum Sortieren",
-      "noFiles": "Keine Dateien",
-      "addFilesDesc": "Videos oder Audios zum Zusammenführen hinzufügen",
-      "outputFormat": "Ausgabeformat",
-      "merge": "Zusammenführen",
-      "merging": "Zusammenführen...",
-      "download": "Herunterladen",
-      "clear": "Löschen",
-      "result": "Ergebnis",
-      "invalidFile": "Bitte wählen Sie gültige Video- oder Audiodateien",
-      "minFiles": "Mindestens 2 Dateien zum Zusammenführen hinzufügen"
-    },
-    "faceEnhancer": {
-      "title": "Gesichtsverbesserung",
-      "description": "Gesichter in Fotos mit KI verbessern und restaurieren",
-      "selectImage": "Bild hierher ziehen",
-      "modelsInfo": "Verwendet YOLO + GFPGAN Modelle",
-      "inputImage": "Eingabebild",
-      "selectImageWithFaces": "Wählen Sie ein Bild mit Gesichtern zur Verbesserung",
-      "enhance": "Gesichter verbessern",
-      "enhancing": "Verbessere Gesichter...",
-      "detecting": "Erkenne Gesichter...",
-      "downloading": "Lade Modelle herunter...",
-      "loading": "Lade Modelle...",
-      "processing": "Verarbeitung...",
-      "download": "Herunterladen",
-      "newImage": "Neues Bild",
-      "result": "Ergebnis",
-      "facesEnhanced": "{{count}} Gesicht(er) verbessert",
-      "noFacesFound": "Keine Gesichter gefunden",
-      "invalidFile": "Bitte wählen Sie eine gültige Bilddatei",
-      "firstTimeDownload": "Erstes Mal? Modelle werden heruntergeladen (~350MB)"
-    },
-    "progress": {
-      "downloading": "Modell herunterladen",
-      "loading": "Modell laden",
-      "processing": "Verarbeitung",
-      "processingFrames": "Frames verarbeiten",
-      "encoding": "Kodierung",
-      "finalizing": "Fertigstellung",
-      "overall": "Gesamt",
-      "remaining": "verbleibend"
-    },
-    "backWarning": {
-      "title": "Verarbeitung läuft",
-      "description": "Eine Aufgabe wird gerade verarbeitet. Möchten Sie wirklich zurückgehen? Dies wird den aktuellen Vorgang abbrechen.",
-      "cancel": "Abbrechen",
-      "confirm": "Zurück"
-    },
-    "videoConverter": {
       "title": "Video-Konverter",
       "description": "Videos zwischen Formaten konvertieren (MP4, WebM, MOV, AVI)",
       "selectVideo": "Video auswählen",
@@ -922,6 +809,22 @@
       "totalDuration": "Gesamtdauer",
       "sameFormatNote": "Dateien müssen das gleiche Format für verlustfreie Zusammenführung haben"
     },
+    "progress": {
+      "downloading": "Modell herunterladen",
+      "loading": "Modell laden",
+      "processing": "Verarbeitung",
+      "processingFrames": "Frames verarbeiten",
+      "encoding": "Kodierung",
+      "finalizing": "Fertigstellung",
+      "overall": "Gesamt",
+      "remaining": "verbleibend"
+    },
+    "backWarning": {
+      "title": "Verarbeitung läuft",
+      "description": "Eine Aufgabe wird gerade verarbeitet. Möchten Sie wirklich zurückgehen? Dies wird den aktuellen Vorgang abbrechen.",
+      "cancel": "Abbrechen",
+      "confirm": "Zurück"
+    },
     "ffmpeg": {
       "loading": "FFmpeg wird geladen",
       "converting": "Konvertierung",
@@ -932,5 +835,22 @@
   "game": {
     "waitingLong": "Lange Wartezeit? Spiel ein Mini-Spiel!",
     "clickToPlay": "Klicken zum Starten"
+  },
+  "videoConverter": {
+    "title": "Video-Konverter",
+    "description": "Videos zwischen Formaten mit Ihrem Browser konvertieren",
+    "invalidFile": "Bitte wählen Sie eine gültige Videodatei",
+    "input": "Eingabevideo",
+    "inputDesc": "Wählen oder ziehen Sie eine Videodatei zum Konvertieren",
+    "dropzone": "Klicken oder Video hierher ziehen",
+    "supportedFormats": "Unterstützt MP4, WebM, MOV, AVI",
+    "settings": "Einstellungen",
+    "outputFormat": "Ausgabeformat",
+    "convert": "Video konvertieren",
+    "converting": "Konvertierung...",
+    "noCodecSupport": "Kein unterstützter Video-Codec gefunden",
+    "result": "Ergebnis",
+    "codecUsed": "Verwendeter Codec",
+    "download": "Herunterladen"
   }
 }

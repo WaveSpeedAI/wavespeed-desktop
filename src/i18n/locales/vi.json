@@ -170,7 +170,9 @@
         "done": "Xong",
         "cancel": "Hủy",
         "hint": "Vùng trắng hiển thị, vùng đen ẩn đi"
-      }
+      },
+      "removeFile": "Xóa tệp",
+      "removeFileConfirm": "Bạn có chắc chắn muốn xóa tệp này không?"
     },
     "autoSaved": "Đã tự động lưu vào Tài sản",
     "autoSavedDesc": "Đã lưu {{count}} đầu ra vào Tài sản của tôi",
@@ -225,7 +227,8 @@
       "viewResults": "Xem kết quả",
       "playWhileWaiting": "Chơi trong khi chờ",
       "quit": "Thoát"
-    }
+    },
+    "input": "Đầu vào"
   },
   "history": {
     "title": "Lịch sử",
@@ -808,5 +811,22 @@
       "merging": "Merging",
       "trimming": "Trimming"
     }
+  },
+  "videoConverter": {
+    "title": "Trình Chuyển Đổi Video",
+    "description": "Chuyển đổi video giữa các định dạng bằng trình duyệt của bạn",
+    "invalidFile": "Vui lòng chọn tệp video hợp lệ",
+    "input": "Video Đầu Vào",
+    "inputDesc": "Chọn hoặc kéo tệp video để chuyển đổi",
+    "dropzone": "Nhấp hoặc kéo video vào đây",
+    "supportedFormats": "Hỗ trợ MP4, WebM, MOV, AVI",
+    "settings": "Cài Đặt",
+    "outputFormat": "Định Dạng Đầu Ra",
+    "convert": "Chuyển Đổi Video",
+    "converting": "Đang chuyển đổi...",
+    "noCodecSupport": "Không tìm thấy codec video được hỗ trợ",
+    "result": "Kết Quả",
+    "codecUsed": "Codec đã sử dụng",
+    "download": "Tải Xuống"
   }
 }

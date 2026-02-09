@@ -38,7 +38,6 @@ jobs:
           # Files that have mobile overrides (alias in mobile/vite.config.ts)
           OVERRIDE_MAP=(
             "src/pages/SettingsPage.tsx|mobile/src/pages/SettingsPage.tsx"
-            "src/i18n/index.ts|mobile/src/i18n/index.ts"
           )
 
           CHANGED_FILES=$(git diff --name-only "$PREV_TAG" "$CURRENT_TAG")

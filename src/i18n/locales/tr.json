@@ -171,7 +171,9 @@
         "done": "Tamamla",
         "cancel": "İptal",
         "hint": "Beyaz alanlar gösterir, siyah alanlar gizler"
-      }
+      },
+      "removeFile": "Dosyayı Kaldır",
+      "removeFileConfirm": "Bu dosyayı kaldırmak istediğinizden emin misiniz?"
     },
     "autoSaved": "Varlıklara otomatik kaydedildi",
     "autoSavedDesc": "{{count}} çıktı Varlıklarım'a kaydedildi",
@@ -226,7 +228,8 @@
       "noPreview": "Önizleme yok",
       "seedsGenerated": "Tohumlar otomatik oluşturuldu",
       "settings": "Toplu ayarları"
-    }
+    },
+    "input": "Giriş"
   },
   "history": {
     "title": "Geçmiş",
@@ -243,16 +246,16 @@
     "disablePreviews": "Önizlemeleri devre dışı bırak",
     "generationDetails": "Oluşturma Detayları",
     "select": "Seç",
-    "selectionDone": "Bitti",
-    "deleteSelected": "Sil ({{count}})",
-    "bulkDeleteConfirmTitle": "Geçmiş öğelerini sil",
+    "selectionDone": "Tamamlandı",
+    "deleteSelected": "Sil",
+    "bulkDeleteConfirmTitle": "Tahminleri Sil",
     "bulkDeleteConfirmDesc": "{{count}} tahmini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
-    "deleteConfirmTitle": "Geçmiş öğesini sil",
+    "deleteConfirmTitle": "Tahmini Sil",
     "deleteConfirmDesc": "Bu tahmini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
-    "deleted": "Geçmiş öğesi silindi",
-    "deletedBulk": "Geçmiş öğeleri silindi",
-    "deletedBulkDesc": "{{count}} geçmiş öğesi silindi",
-    "deleteFailed": "Geçmiş öğesi silinemedi",
+    "deleted": "Tahmin silindi",
+    "deletedBulk": "Tahminler silindi",
+    "deletedBulkDesc": "{{count}} tahmin silindi",
+    "deleteFailed": "Tahmin silinemedi",
     "model": "Model",
     "created": "Oluşturulma",
     "executionTime": "Çalışma Süresi",
@@ -271,18 +274,7 @@
       "noInputsTitle": "Şablon kaydedilemiyor",
       "noInputsDesc": "Giriş parametreleri yalnızca bu uygulamada yapılan tahminler için kullanılabilir. Önce yeni bir tahmin çalıştırmayı deneyin."
     },
-    "hasInputs": "Şablon olarak kaydedilebilir",
-    "select": "Seç",
-    "selectionDone": "Tamamlandı",
-    "deleteSelected": "Sil",
-    "bulkDeleteConfirmTitle": "Tahminleri Sil",
-    "bulkDeleteConfirmDesc": "{{count}} tahmini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
-    "deleteConfirmTitle": "Tahmini Sil",
-    "deleteConfirmDesc": "Bu tahmini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
-    "deleted": "Tahmin silindi",
-    "deletedBulk": "Tahminler silindi",
-    "deletedBulkDesc": "{{count}} tahmin silindi",
-    "deleteFailed": "Tahmin silinemedi"
+    "hasInputs": "Şablon olarak kaydedilebilir"
   },
   "templates": {
     "title": "Şablonlar",
@@ -626,22 +618,25 @@
       "enhanceFace": "Yüz kalitesini artır"
     },
     "faceEnhancer": {
-      "title": "Yüz Geliştirici",
-      "description": "Yapay zeka kullanarak yüz kalitesini iyileştirin ve onarın",
-      "selectImage": "Yüzlü bir görsel seçin",
-      "orDragDrop": "veya sürükle bırak",
-      "enhance": "Geliştir",
-      "download": "İndir",
+      "title": "Yüz İyileştirici",
+      "description": "Fotoğraflardaki yüzleri AI ile iyileştirin ve onarın",
+      "selectImage": "Görsel sürükleyin",
+      "modelsInfo": "YOLO + GFPGAN modelleri kullanılır",
+      "inputImage": "Giriş görseli",
+      "selectImageWithFaces": "İyileştirilecek yüzleri içeren bir görsel seçin",
+      "enhance": "Yüzleri iyileştir",
+      "enhancing": "Yüzler iyileştiriliyor...",
+      "detecting": "Yüzler tespit ediliyor...",
+      "downloading": "Modeller indiriliyor...",
+      "loading": "Modeller yükleniyor...",
       "processing": "İşleniyor...",
-      "original": "Orijinal",
-      "enhanced": "Geliştirilmiş",
-      "sideBySide": "Yan yana",
-      "comparison": "Kaydırmalı karşılaştırma",
-      "dragToCompare": "Karşılaştırmak için sürükleyin",
-      "detecting": "Yüzler algılanıyor",
-      "enhancing": "Yüzler geliştiriliyor",
-      "noFaces": "Görselde yüz algılanmadı",
-      "facesFound": "{{count}} yüz algılandı"
+      "download": "İndir",
+      "newImage": "Yeni görsel",
+      "result": "Sonuç",
+      "facesEnhanced": "{{count}} yüz iyileştirildi",
+      "noFacesFound": "Yüz bulunamadı",
+      "invalidFile": "Geçerli bir görsel dosyası seçin",
+      "firstTimeDownload": "İlk kez mi? Modeller indirilecek (~350MB)"
     },
     "faceSwapper": {
       "title": "Yüz Değiştirici",
@@ -744,114 +739,6 @@
       "hint": "Dahil etmek için sol tık, hariç tutmak için sağ tık"
     },
     "videoConverter": {
-      "title": "Video Dönüştürücü",
-      "description": "Videoları formatlar arasında dönüştürün"
-    },
-    "audioConverter": {
-      "title": "Ses Dönüştürücü",
-      "description": "MP3 ve WAV formatları arasında dönüştürme",
-      "selectAudio": "MP3/WAV dosyasını tıklayın veya sürükleyin",
-      "supportedFormats": "MP3 ↔ WAV dönüştürme",
-      "converting": "Dönüştürülüyor...",
-      "convert": "Dönüştür",
-      "download": "İndir",
-      "complete": "Tamamlandı",
-      "outputFormat": "Çıkış formatı",
-      "bitrate": "Bit hızı",
-      "noFileSelected": "Dosya seçilmedi"
-    },
-    "imageConverter": {
-      "title": "Görsel Dönüştürücü",
-      "description": "Görselleri JPG, PNG veya WebP'ye dönüştürün",
-      "selectImage": "Görsel tıklayın veya sürükleyin",
-      "supportedFormats": "Herhangi bir görsel → JPG/PNG/WebP",
-      "converting": "Dönüştürülüyor...",
-      "convert": "Dönüştür",
-      "download": "İndir",
-      "complete": "Tamamlandı",
-      "outputFormat": "Çıkış formatı",
-      "quality": "Kalite",
-      "noFileSelected": "Dosya seçilmedi"
-    },
-    "mediaTrimmer": {
-      "title": "Medya Kırpıcı",
-      "description": "Video ve ses dosyalarını istediğiniz uzunlukta kırpın",
-      "selectMedia": "Medya dosyasını buraya sürükleyin",
-      "supportedFormats": "Video ve ses dosyalarını destekler",
-      "inputMedia": "Giriş medyası",
-      "selectMediaFile": "Kırpılacak dosyayı seçin",
-      "trimSettings": "Kırpma ayarları",
-      "selectRange": "Başlangıç ve bitiş zamanını seçin",
-      "startTime": "Başlangıç zamanı",
-      "endTime": "Bitiş zamanı",
-      "timeFormat": "Format: m:ss.d veya saniye",
-      "outputDuration": "Çıkış süresi",
-      "duration": "Süre",
-      "trim": "Kırp",
-      "trimming": "Kırpılıyor...",
-      "download": "İndir",
-      "newMedia": "Yeni dosya",
-      "result": "Kırpma sonucu",
-      "invalidFile": "Geçerli bir video veya ses dosyası seçin",
-      "invalidRange": "Bitiş zamanı başlangıç zamanından büyük olmalı"
-    },
-    "mediaMerger": {
-      "title": "Medya Birleştirici",
-      "description": "Birden fazla video veya ses dosyasını birleştirin",
-      "selectMedia": "Dosyaları buraya sürükleyin",
-      "supportedFormats": "Video ve ses dosyalarını destekler",
-      "addFiles": "Dosya ekle",
-      "inputFiles": "Giriş dosyaları",
-      "dragToReorder": "Sıralamak için sürükleyin",
-      "noFiles": "Dosya yok",
-      "addFilesDesc": "Birleştirmek için video veya ses ekleyin",
-      "outputFormat": "Çıkış formatı",
-      "merge": "Birleştir",
-      "merging": "Birleştiriliyor...",
-      "download": "İndir",
-      "clear": "Temizle",
-      "result": "Sonuç",
-      "invalidFile": "Geçerli video veya ses dosyaları seçin",
-      "minFiles": "Birleştirmek için en az 2 dosya ekleyin"
-    },
-    "faceEnhancer": {
-      "title": "Yüz İyileştirici",
-      "description": "Fotoğraflardaki yüzleri AI ile iyileştirin ve onarın",
-      "selectImage": "Görsel sürükleyin",
-      "modelsInfo": "YOLO + GFPGAN modelleri kullanılır",
-      "inputImage": "Giriş görseli",
-      "selectImageWithFaces": "İyileştirilecek yüzleri içeren bir görsel seçin",
-      "enhance": "Yüzleri iyileştir",
-      "enhancing": "Yüzler iyileştiriliyor...",
-      "detecting": "Yüzler tespit ediliyor...",
-      "downloading": "Modeller indiriliyor...",
-      "loading": "Modeller yükleniyor...",
-      "processing": "İşleniyor...",
-      "download": "İndir",
-      "newImage": "Yeni görsel",
-      "result": "Sonuç",
-      "facesEnhanced": "{{count}} yüz iyileştirildi",
-      "noFacesFound": "Yüz bulunamadı",
-      "invalidFile": "Geçerli bir görsel dosyası seçin",
-      "firstTimeDownload": "İlk kez mi? Modeller indirilecek (~350MB)"
-    },
-    "progress": {
-      "downloading": "Model indiriliyor",
-      "loading": "Model yükleniyor",
-      "processing": "İşleniyor",
-      "processingFrames": "Kareler işleniyor",
-      "encoding": "Kodlanıyor",
-      "finalizing": "Tamamlanıyor",
-      "overall": "Genel",
-      "remaining": "kaldı"
-    },
-    "backWarning": {
-      "title": "İşlem Devam Ediyor",
-      "description": "Bir görev şu anda işleniyor. Geri dönmek istediğinizden emin misiniz? Bu, mevcut işlemi iptal edecektir.",
-      "cancel": "İptal",
-      "confirm": "Geri Dön"
-    },
-    "videoConverter": {
       "title": "Video Converter",
       "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
       "selectVideo": "Select Video",
@@ -922,6 +809,22 @@
       "totalDuration": "Total Duration",
       "sameFormatNote": "Files must have the same format for lossless merging"
     },
+    "progress": {
+      "downloading": "Model indiriliyor",
+      "loading": "Model yükleniyor",
+      "processing": "İşleniyor",
+      "processingFrames": "Kareler işleniyor",
+      "encoding": "Kodlanıyor",
+      "finalizing": "Tamamlanıyor",
+      "overall": "Genel",
+      "remaining": "kaldı"
+    },
+    "backWarning": {
+      "title": "İşlem Devam Ediyor",
+      "description": "Bir görev şu anda işleniyor. Geri dönmek istediğinizden emin misiniz? Bu, mevcut işlemi iptal edecektir.",
+      "cancel": "İptal",
+      "confirm": "Geri Dön"
+    },
     "ffmpeg": {
       "loading": "Loading FFmpeg",
       "converting": "Converting",
@@ -932,5 +835,22 @@
   "game": {
     "waitingLong": "Çok mu bekliyorsunuz? Mini oyun oynayın!",
     "clickToPlay": "Başlamak için tıklayın"
+  },
+  "videoConverter": {
+    "title": "Video Dönüştürücü",
+    "description": "Tarayıcınızı kullanarak videoları formatlar arasında dönüştürün",
+    "invalidFile": "Lütfen geçerli bir video dosyası seçin",
+    "input": "Giriş Videosu",
+    "inputDesc": "Dönüştürmek için bir video dosyası seçin veya sürükleyin",
+    "dropzone": "Videoyu buraya tıklayın veya sürükleyin",
+    "supportedFormats": "MP4, WebM, MOV, AVI desteklenir",
+    "settings": "Ayarlar",
+    "outputFormat": "Çıkış Formatı",
+    "convert": "Videoyu Dönüştür",
+    "converting": "Dönüştürülüyor...",
+    "noCodecSupport": "Desteklenen video codec bulunamadı",
+    "result": "Sonuç",
+    "codecUsed": "Kullanılan codec",
+    "download": "İndir"
   }
 }

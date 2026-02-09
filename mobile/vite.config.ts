@@ -88,8 +88,6 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      // i18n module (explicit path for directory import)
-      '@/i18n': path.resolve(__dirname, '../src/i18n/index'),
       // Mobile-specific overrides (must come before @/)
       '@/pages/SettingsPage': path.resolve(__dirname, './src/pages/SettingsPage'),
       // Mobile-specific code (must come before @/ to avoid prefix matching issues)

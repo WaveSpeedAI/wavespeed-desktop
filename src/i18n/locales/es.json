@@ -171,7 +171,9 @@
         "done": "Listo",
         "cancel": "Cancelar",
         "hint": "Las áreas blancas revelan, las negras ocultan"
-      }
+      },
+      "removeFile": "Eliminar archivo",
+      "removeFileConfirm": "¿Está seguro de que desea eliminar este archivo?"
     },
     "autoSaved": "Guardado automáticamente en Recursos",
     "autoSavedDesc": "Se guardaron {{count}} salida(s) en Mis Recursos",
@@ -226,7 +228,8 @@
       "noPreview": "Sin vista previa",
       "seedsGenerated": "Semillas generadas automáticamente",
       "settings": "Configuración de lote"
-    }
+    },
+    "input": "Entrada"
   },
   "history": {
     "title": "Historial",
@@ -243,16 +246,16 @@
     "disablePreviews": "Desactivar vistas previas",
     "generationDetails": "Detalles de generación",
     "select": "Seleccionar",
-    "selectionDone": "Listo",
-    "deleteSelected": "Eliminar ({{count}})",
-    "bulkDeleteConfirmTitle": "Eliminar elementos del historial",
-    "bulkDeleteConfirmDesc": "¿Seguro que deseas eliminar {{count}} predicción(es)? Esta acción no se puede deshacer.",
-    "deleteConfirmTitle": "Eliminar elemento del historial",
-    "deleteConfirmDesc": "¿Seguro que deseas eliminar esta predicción? Esta acción no se puede deshacer.",
-    "deleted": "Elemento del historial eliminado",
-    "deletedBulk": "Elementos del historial eliminados",
-    "deletedBulkDesc": "Se eliminaron {{count}} elemento(s) del historial",
-    "deleteFailed": "No se pudo eliminar el elemento del historial",
+    "selectionDone": "Hecho",
+    "deleteSelected": "Eliminar",
+    "bulkDeleteConfirmTitle": "Eliminar predicciones",
+    "bulkDeleteConfirmDesc": "¿Estás seguro de que deseas eliminar {{count}} predicción(es)? Esta acción no se puede deshacer.",
+    "deleteConfirmTitle": "Eliminar predicción",
+    "deleteConfirmDesc": "¿Estás seguro de que deseas eliminar esta predicción? Esta acción no se puede deshacer.",
+    "deleted": "Predicción eliminada",
+    "deletedBulk": "Predicciones eliminadas",
+    "deletedBulkDesc": "Se eliminaron {{count}} predicción(es)",
+    "deleteFailed": "Error al eliminar predicción",
     "model": "Modelo",
     "created": "Creado",
     "executionTime": "Tiempo de ejecución",
@@ -271,18 +274,7 @@
       "noInputsTitle": "No se puede guardar la plantilla",
       "noInputsDesc": "Los parámetros de entrada solo están disponibles para predicciones realizadas en esta aplicación. Intenta ejecutar una nueva predicción primero."
     },
-    "hasInputs": "Se puede guardar como plantilla",
-    "select": "Seleccionar",
-    "selectionDone": "Hecho",
-    "deleteSelected": "Eliminar",
-    "bulkDeleteConfirmTitle": "Eliminar predicciones",
-    "bulkDeleteConfirmDesc": "¿Estás seguro de que deseas eliminar {{count}} predicción(es)? Esta acción no se puede deshacer.",
-    "deleteConfirmTitle": "Eliminar predicción",
-    "deleteConfirmDesc": "¿Estás seguro de que deseas eliminar esta predicción? Esta acción no se puede deshacer.",
-    "deleted": "Predicción eliminada",
-    "deletedBulk": "Predicciones eliminadas",
-    "deletedBulkDesc": "Se eliminaron {{count}} predicción(es)",
-    "deleteFailed": "Error al eliminar predicción"
+    "hasInputs": "Se puede guardar como plantilla"
   },
   "templates": {
     "title": "Plantillas",
@@ -626,22 +618,25 @@
       "enhanceFace": "Mejorar calidad de cara"
     },
     "faceEnhancer": {
-      "title": "Mejorador de Rostros",
-      "description": "Mejora y restaura la calidad del rostro usando IA",
-      "selectImage": "Selecciona una imagen con rostros",
-      "orDragDrop": "o arrastra y suelta",
-      "enhance": "Mejorar",
-      "download": "Descargar",
+      "title": "Mejorador de rostros",
+      "description": "Mejora y restaura rostros en fotos usando IA",
+      "selectImage": "Arrastra una imagen aquí",
+      "modelsInfo": "Usa modelos YOLO + GFPGAN",
+      "inputImage": "Imagen de entrada",
+      "selectImageWithFaces": "Selecciona una imagen con rostros para mejorar",
+      "enhance": "Mejorar rostros",
+      "enhancing": "Mejorando rostros...",
+      "detecting": "Detectando rostros...",
+      "downloading": "Descargando modelos...",
+      "loading": "Cargando modelos...",
       "processing": "Procesando...",
-      "original": "Original",
-      "enhanced": "Mejorado",
-      "sideBySide": "Lado a lado",
-      "comparison": "Comparación deslizante",
-      "dragToCompare": "Arrastra para comparar",
-      "detecting": "Detectando rostros",
-      "enhancing": "Mejorando rostros",
-      "noFaces": "No se detectaron rostros en la imagen",
-      "facesFound": "{{count}} rostro(s) detectado(s)"
+      "download": "Descargar",
+      "newImage": "Nueva imagen",
+      "result": "Resultado",
+      "facesEnhanced": "{{count}} rostro(s) mejorado(s)",
+      "noFacesFound": "No se encontraron rostros",
+      "invalidFile": "Selecciona un archivo de imagen válido",
+      "firstTimeDownload": "¿Primera vez? Los modelos se descargarán (~350MB)"
     },
     "faceSwapper": {
       "title": "Intercambiador de Rostros",
@@ -744,114 +739,6 @@
       "hint": "Clic izquierdo para incluir, clic derecho para excluir áreas"
     },
     "videoConverter": {
-      "title": "Convertidor de Video",
-      "description": "Convierte videos entre formatos"
-    },
-    "audioConverter": {
-      "title": "Convertidor de Audio",
-      "description": "Convierte entre formatos MP3 y WAV",
-      "selectAudio": "Arrastra archivos MP3/WAV aquí",
-      "supportedFormats": "Conversión MP3 ↔ WAV",
-      "inputAudio": "Audio de entrada",
-      "outputFormat": "Formato de salida",
-      "bitrate": "Tasa de bits",
-      "convert": "Convertir",
-      "converting": "Convirtiendo...",
-      "result": "Resultado",
-      "invalidFile": "Por favor selecciona un archivo MP3 o WAV"
-    },
-    "imageConverter": {
-      "title": "Convertidor de Imágenes",
-      "description": "Convierte imágenes a JPG, PNG o WebP",
-      "selectImage": "Arrastra una imagen aquí",
-      "supportedFormats": "Cualquier imagen → JPG/PNG/WebP",
-      "inputImage": "Imagen de entrada",
-      "outputFormat": "Formato de salida",
-      "quality": "Calidad",
-      "convert": "Convertir",
-      "converting": "Convirtiendo...",
-      "result": "Resultado",
-      "invalidFile": "Por favor selecciona un archivo de imagen válido"
-    },
-    "mediaTrimmer": {
-      "title": "Recortador de medios",
-      "description": "Recorta videos y audios a la duración deseada",
-      "selectMedia": "Arrastra archivos multimedia aquí",
-      "supportedFormats": "Soporta archivos de video y audio",
-      "inputMedia": "Medio de entrada",
-      "selectMediaFile": "Selecciona un archivo para recortar",
-      "trimSettings": "Configuración de recorte",
-      "selectRange": "Selecciona tiempo de inicio y fin",
-      "startTime": "Tiempo de inicio",
-      "endTime": "Tiempo de fin",
-      "timeFormat": "Formato: m:ss.d o segundos",
-      "outputDuration": "Duración de salida",
-      "duration": "Duración",
-      "trim": "Recortar",
-      "trimming": "Recortando...",
-      "download": "Descargar",
-      "newMedia": "Nuevo archivo",
-      "result": "Resultado del recorte",
-      "invalidFile": "Selecciona un archivo de video o audio válido",
-      "invalidRange": "El tiempo de fin debe ser mayor que el de inicio"
-    },
-    "mediaMerger": {
-      "title": "Fusionador de medios",
-      "description": "Combina múltiples videos o audios en uno solo",
-      "selectMedia": "Arrastra archivos aquí",
-      "supportedFormats": "Soporta archivos de video y audio",
-      "addFiles": "Agregar archivos",
-      "inputFiles": "Archivos de entrada",
-      "dragToReorder": "Arrastra para reordenar",
-      "noFiles": "Sin archivos",
-      "addFilesDesc": "Agrega videos o audios para fusionar",
-      "outputFormat": "Formato de salida",
-      "merge": "Fusionar",
-      "merging": "Fusionando...",
-      "download": "Descargar",
-      "clear": "Limpiar",
-      "result": "Resultado de la fusión",
-      "invalidFile": "Selecciona archivos de video o audio válidos",
-      "minFiles": "Agrega al menos 2 archivos para fusionar"
-    },
-    "faceEnhancer": {
-      "title": "Mejorador de rostros",
-      "description": "Mejora y restaura rostros en fotos usando IA",
-      "selectImage": "Arrastra una imagen aquí",
-      "modelsInfo": "Usa modelos YOLO + GFPGAN",
-      "inputImage": "Imagen de entrada",
-      "selectImageWithFaces": "Selecciona una imagen con rostros para mejorar",
-      "enhance": "Mejorar rostros",
-      "enhancing": "Mejorando rostros...",
-      "detecting": "Detectando rostros...",
-      "downloading": "Descargando modelos...",
-      "loading": "Cargando modelos...",
-      "processing": "Procesando...",
-      "download": "Descargar",
-      "newImage": "Nueva imagen",
-      "result": "Resultado",
-      "facesEnhanced": "{{count}} rostro(s) mejorado(s)",
-      "noFacesFound": "No se encontraron rostros",
-      "invalidFile": "Selecciona un archivo de imagen válido",
-      "firstTimeDownload": "¿Primera vez? Los modelos se descargarán (~350MB)"
-    },
-    "progress": {
-      "downloading": "Descargando modelo",
-      "loading": "Cargando modelo",
-      "processing": "Procesando",
-      "processingFrames": "Procesando frames",
-      "encoding": "Codificando",
-      "finalizing": "Finalizando",
-      "overall": "General",
-      "remaining": "restante"
-    },
-    "backWarning": {
-      "title": "Procesamiento en Curso",
-      "description": "Una tarea está en proceso. ¿Estás seguro de que quieres volver? Esto cancelará la operación actual.",
-      "cancel": "Cancelar",
-      "confirm": "Volver"
-    },
-    "videoConverter": {
       "title": "Conversor de Video",
       "description": "Convierte videos entre formatos (MP4, WebM, MOV, AVI)",
       "selectVideo": "Seleccionar Video",
@@ -922,6 +809,22 @@
       "totalDuration": "Duración Total",
       "sameFormatNote": "Los archivos deben tener el mismo formato para fusión sin pérdida"
     },
+    "progress": {
+      "downloading": "Descargando modelo",
+      "loading": "Cargando modelo",
+      "processing": "Procesando",
+      "processingFrames": "Procesando frames",
+      "encoding": "Codificando",
+      "finalizing": "Finalizando",
+      "overall": "General",
+      "remaining": "restante"
+    },
+    "backWarning": {
+      "title": "Procesamiento en Curso",
+      "description": "Una tarea está en proceso. ¿Estás seguro de que quieres volver? Esto cancelará la operación actual.",
+      "cancel": "Cancelar",
+      "confirm": "Volver"
+    },
     "ffmpeg": {
       "loading": "Cargando FFmpeg",
       "converting": "Convirtiendo",
@@ -932,5 +835,22 @@
   "game": {
     "waitingLong": "¿Esperando mucho? ¡Juega un mini juego!",
     "clickToPlay": "Haz clic para empezar"
+  },
+  "videoConverter": {
+    "title": "Convertidor de Video",
+    "description": "Convierte videos entre formatos usando tu navegador",
+    "invalidFile": "Por favor selecciona un archivo de video válido",
+    "input": "Video de Entrada",
+    "inputDesc": "Selecciona o arrastra un archivo de video para convertir",
+    "dropzone": "Haz clic o arrastra el video aquí",
+    "supportedFormats": "Soporta MP4, WebM, MOV, AVI",
+    "settings": "Configuración",
+    "outputFormat": "Formato de Salida",
+    "convert": "Convertir Video",
+    "converting": "Convirtiendo...",
+    "noCodecSupport": "No se encontró un códec de video compatible",
+    "result": "Resultado",
+    "codecUsed": "Códec utilizado",
+    "download": "Descargar"
   }
 }

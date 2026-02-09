@@ -396,6 +396,36 @@ export function AssetsPage() {
     }
   }, [])
 
+  // Navigate to previous/next asset in preview (with loop support)
+  const navigateAsset = useCallback((direction: 'prev' | 'next') => {
+    if (!previewAsset || paginatedAssets.length <= 1) return
+    const currentIdx = paginatedAssets.findIndex(a => a.id === previewAsset.id)
+    if (currentIdx === -1) return
+    let newIdx: number
+    if (direction === 'prev') {
+      newIdx = currentIdx === 0 ? paginatedAssets.length - 1 : currentIdx - 1
+    } else {
+      newIdx = currentIdx === paginatedAssets.length - 1 ? 0 : currentIdx + 1
+    }
+    setPreviewAsset(paginatedAssets[newIdx])
+  }, [previewAsset, paginatedAssets])
+
+  // Keyboard navigation for preview dialog
+  useEffect(() => {
+    if (!previewAsset) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        navigateAsset('prev')
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        navigateAsset('next')
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [previewAsset, navigateAsset])
+
   const AssetCard = ({ asset, assetKey }: { asset: AssetMetadata; assetKey: string }) => {
     const { ref, isInView } = useInView<HTMLDivElement>()
     const assetUrl = getAssetUrl(asset)
@@ -812,12 +842,40 @@ export function AssetsPage() {
       <Dialog open={!!previewAsset} onOpenChange={() => setPreviewAsset(null)}>
         <DialogContent className="max-w-4xl max-h-[90vh]">
           <DialogHeader>
-            <DialogTitle>{previewAsset?.fileName}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              {previewAsset?.fileName}
+              {paginatedAssets.length > 1 && previewAsset && (
+                <span className="text-sm font-normal text-muted-foreground">
+                  ({paginatedAssets.findIndex(a => a.id === previewAsset.id) + 1}/{paginatedAssets.length})
+                </span>
+              )}
+            </DialogTitle>
             <DialogDescription>
               {previewAsset?.modelId} · {previewAsset && formatDate(previewAsset.createdAt)}
             </DialogDescription>
           </DialogHeader>
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 overflow-auto relative">
+            {/* Navigation buttons */}
+            {paginatedAssets.length > 1 && (
+              <>
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  onClick={() => navigateAsset('prev')}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full opacity-80 hover:opacity-100"
+                >
+                  <span className="text-xl">◀</span>
+                </Button>
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  onClick={() => navigateAsset('next')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full opacity-80 hover:opacity-100"
+                >
+                  <span className="text-xl">▶</span>
+                </Button>
+              </>
+            )}
             {previewAsset?.type === 'image' && (
               <img
                 src={getAssetUrl(previewAsset)}

@@ -37,6 +37,7 @@
   },
   "nav": {
     "home": "Home",
+    "featuredModels": "Featured Models",
     "models": "Models",
     "playground": "Playground",
     "history": "History",
@@ -52,6 +53,11 @@
     "explore": "Explore",
     "getStarted": "Get Started",
     "tryFreeTools": "Try Free Tools",
+    "featuredModels": {
+      "title": "Featured Models",
+      "description": "Trending AI models handpicked for you",
+      "badge": "Hot"
+    },
     "features": {
       "models": {
         "title": "Model Browser",

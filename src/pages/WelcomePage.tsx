@@ -10,9 +10,20 @@ import {
   Wand2,
   Zap,
   ArrowRight,
-  Sparkles
+  Sparkles,
+  Star
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+// Check if running in Capacitor native environment
+const isCapacitorNative = () => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return !!(window as any).Capacitor?.isNativePlatform?.()
+  } catch {
+    return false
+  }
+}
 
 interface FeatureCardProps {
   icon: React.ReactNode
@@ -77,8 +88,18 @@ function FeatureCard({ icon, title, description, gradient, shapeGradient, href, 
 export function WelcomePage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const isMobile = isCapacitorNative()
 
   const features: FeatureCardProps[] = [
+    {
+      icon: <Star className="h-6 w-6 text-amber-600 dark:text-amber-400" />,
+      title: t('welcome.featuredModels.title'),
+      description: t('welcome.featuredModels.description'),
+      gradient: 'bg-gradient-to-br from-amber-500/40 via-orange-500/20 to-transparent',
+      shapeGradient: 'from-amber-500/40 to-orange-500/30',
+      href: '/featured-models',
+      badge: t('welcome.featuredModels.badge')
+    },
     {
       icon: <Boxes className="h-6 w-6 text-blue-600 dark:text-blue-400" />,
       title: t('welcome.features.models.title'),
@@ -120,7 +141,8 @@ export function WelcomePage() {
       shapeGradient: 'from-teal-500/40 to-cyan-500/30',
       href: '/assets'
     },
-    {
+    // Z-Image: hidden on mobile (no local SD model support)
+    ...(!isMobile ? [{
       icon: <Zap className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />,
       title: t('welcome.features.zImage.title'),
       description: t('welcome.features.zImage.description'),
@@ -128,7 +150,7 @@ export function WelcomePage() {
       shapeGradient: 'from-yellow-500/40 to-amber-500/30',
       href: '/z-image',
       badge: t('welcome.features.zImage.badge')
-    },
+    }] : []),
     {
       icon: <Wand2 className="h-6 w-6 text-orange-600 dark:text-orange-400" />,
       title: t('welcome.features.freeTools.title'),
@@ -152,7 +174,7 @@ export function WelcomePage() {
               <Sparkles className="relative h-9 w-9 text-primary" />
             </div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
-              WaveSpeed Desktop
+              {isMobile ? 'WaveSpeed' : navigator.userAgent.toLowerCase().includes('electron') ? 'WaveSpeed Desktop' : 'WaveSpeedAI Studio'}
             </h1>
           </div>
           <p className="text-base text-muted-foreground max-w-lg mx-auto">

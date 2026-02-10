@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import { MobileLayout } from '@mobile/components/layout/MobileLayout'
+import { WelcomePage } from '@/pages/WelcomePage'
+import { FeaturedModelsPage } from '@/pages/FeaturedModelsPage'
 import { ModelsPage } from '@/pages/ModelsPage'
 import { MobilePlaygroundPage } from '@mobile/pages/MobilePlaygroundPage'
 import { MobileTemplatesPage } from '@mobile/pages/MobileTemplatesPage'
@@ -33,10 +35,11 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<MobileLayout />}>
-        <Route index element={<Navigate to="/models" replace />} />
+        <Route index element={<WelcomePage />} />
+        <Route path="featured-models" element={<FeaturedModelsPage />} />
         <Route path="models" element={<ModelsPage />} />
         <Route path="playground" element={<MobilePlaygroundPage />} />
-        <Route path="playground/:modelId" element={<MobilePlaygroundPage />} />
+        <Route path="playground/*" element={<MobilePlaygroundPage />} />
         <Route path="templates" element={<MobileTemplatesPage />} />
         <Route path="history" element={<MobileHistoryPage />} />
         <Route path="free-tools" element={<MobileFreeToolsPage />} />

@@ -36,6 +36,7 @@
   },
   "nav": {
     "home": "Ana Sayfa",
+    "featuredModels": "Öne Çıkan Modeller",
     "models": "Modeller",
     "playground": "Oyun Alanı",
     "history": "Geçmiş",
@@ -51,6 +52,11 @@
     "explore": "Keşfet",
     "getStarted": "Başla",
     "tryFreeTools": "Ücretsiz Araçları Dene",
+    "featuredModels": {
+      "title": "Öne Çıkan Modeller",
+      "description": "Sizin için seçilmiş popüler AI modelleri",
+      "badge": "Popüler"
+    },
     "features": {
       "models": {
         "title": "Model Tarayıcı",

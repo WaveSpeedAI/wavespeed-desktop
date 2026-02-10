@@ -36,6 +36,7 @@
   },
   "nav": {
     "home": "홈",
+    "featuredModels": "추천 모델",
     "models": "모델",
     "playground": "플레이그라운드",
     "history": "기록",
@@ -51,6 +52,11 @@
     "explore": "탐색",
     "getStarted": "시작하기",
     "tryFreeTools": "무료 도구 체험",
+    "featuredModels": {
+      "title": "추천 모델",
+      "description": "엄선된 인기 AI 모델",
+      "badge": "인기"
+    },
     "features": {
       "models": {
         "title": "모델 브라우저",

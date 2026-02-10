@@ -36,6 +36,7 @@
   },
   "nav": {
     "home": "ホーム",
+    "featuredModels": "注目モデル",
     "models": "モデル",
     "playground": "プレイグラウンド",
     "history": "履歴",
@@ -51,6 +52,11 @@
     "explore": "探索",
     "getStarted": "始める",
     "tryFreeTools": "無料ツールを試す",
+    "featuredModels": {
+      "title": "注目のモデル",
+      "description": "厳選されたトレンドAIモデル",
+      "badge": "注目"
+    },
     "features": {
       "models": {
         "title": "モデルブラウザ",

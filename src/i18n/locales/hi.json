@@ -36,6 +36,7 @@
   },
   "nav": {
     "home": "होम",
+    "featuredModels": "चुनिंदा मॉडल",
     "models": "मॉडल",
     "playground": "प्लेग्राउंड",
     "history": "इतिहास",
@@ -51,6 +52,11 @@
     "explore": "अन्वेषण करें",
     "getStarted": "शुरू करें",
     "tryFreeTools": "मुफ्त उपकरण आज़माएं",
+    "featuredModels": {
+      "title": "चुनिंदा मॉडल",
+      "description": "आपके लिए चुने गए लोकप्रिय AI मॉडल",
+      "badge": "लोकप्रिय"
+    },
     "features": {
       "models": {
         "title": "मॉडल ब्राउज़र",

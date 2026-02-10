@@ -137,6 +137,23 @@ export function HistoryPage() {
     setTimeout(() => setCopiedId(false), 2000)
   }
 
+  // Navigate to previous/next history item (with loop support)
+  const navigateHistory = useCallback((direction: 'prev' | 'next') => {
+    if (!selectedItem || items.length <= 1) return
+
+    const currentIdx = items.findIndex(item => item.id === selectedItem.id)
+    if (currentIdx === -1) return
+
+    let newIdx: number
+    if (direction === 'prev') {
+      newIdx = currentIdx === 0 ? items.length - 1 : currentIdx - 1
+    } else {
+      newIdx = currentIdx === items.length - 1 ? 0 : currentIdx + 1
+    }
+
+    setSelectedItem(items[newIdx])
+  }, [selectedItem, items])
+
   const fetchHistory = useCallback(async () => {
     if (!isValidated) return
 
@@ -419,13 +436,13 @@ export function HistoryPage() {
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-cyan-500/10 to-transparent rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
       
       {/* Header */}
-      <div className="page-header px-6 py-4 relative z-10">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">{t('history.title')}</h1>
-            <p className="text-muted-foreground text-sm mt-0.5">{t('history.description')}</p>
+      <div className="page-header px-4 md:px-6 py-4 pt-14 md:pt-4 relative z-10">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div className="flex items-baseline gap-3">
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight">{t('history.title')}</h1>
+            <p className="text-muted-foreground text-xs md:text-sm">{t('history.description')}</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {isSelectionMode && selectedIds.size > 0 && (
               <Button
                 variant="destructive"
@@ -453,7 +470,7 @@ export function HistoryPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3 flex-wrap">
           <Select
             value={statusFilter}
             onValueChange={(value) => {
@@ -587,10 +604,38 @@ export function HistoryPage() {
       <Dialog open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
-            <DialogTitle>{t('history.generationDetails')}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              {t('history.generationDetails')}
+              {items.length > 1 && (
+                <span className="text-sm font-normal text-muted-foreground">
+                  ({items.findIndex(item => item.id === selectedItem?.id) + 1}/{items.length})
+                </span>
+              )}
+            </DialogTitle>
           </DialogHeader>
           {selectedItem && (
-            <div className="flex-1 overflow-y-auto space-y-4">
+            <div className="flex-1 overflow-y-auto space-y-4 relative">
+              {/* Navigation buttons on sides */}
+              {items.length > 1 && (
+                <>
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    onClick={() => navigateHistory('prev')}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full opacity-80 hover:opacity-100"
+                  >
+                    <span className="text-xl">◀</span>
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    onClick={() => navigateHistory('next')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full opacity-80 hover:opacity-100"
+                  >
+                    <span className="text-xl">▶</span>
+                  </Button>
+                </>
+              )}
               <div className="flex justify-end">
                 <Button
                   variant="destructive"

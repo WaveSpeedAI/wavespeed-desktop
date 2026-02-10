@@ -9,11 +9,6 @@ import {
   DialogContent,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { Download, CheckCircle2, XCircle, ExternalLink, Copy, Check, Loader2 } from 'lucide-react'
 import { AudioPlayer } from '@/components/shared/AudioPlayer'
 import { useAssetsStore, detectAssetType, generateDownloadFilename } from '@/stores/assetsStore'
@@ -211,6 +206,9 @@ export function BatchOutputGrid({
     }
   }, [results.length])
 
+  // Check if truly running in Electron (not web polyfill)
+  const isElectron = navigator.userAgent.toLowerCase().includes('electron')
+
   const handleDownload = async (url: string, predictionId?: string, resultIndex: number = 0) => {
     const filename = generateDownloadFilename({
       modelId,
@@ -220,7 +218,7 @@ export function BatchOutputGrid({
     })
 
     // Use Electron API if available (desktop)
-    if (window.electronAPI?.downloadFile) {
+    if (isElectron && window.electronAPI?.downloadFile) {
       const result = await window.electronAPI.downloadFile(url, filename)
       if (!result.success && !result.canceled) {
         console.error('Download failed:', result.error)
@@ -247,21 +245,57 @@ export function BatchOutputGrid({
       return
     }
 
-    // Browser fallback: open in new tab
-    window.open(url, '_blank')
+    // Web mode: fetch as blob and trigger download
+    try {
+      const response = await fetch(url)
+      const blob = await response.blob()
+      const blobUrl = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = blobUrl
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(blobUrl)
+    } catch (err) {
+      console.error('Download failed:', err)
+      window.open(url, '_blank')
+    }
   }
 
   const handleDownloadAll = async () => {
+    // Collect all URLs with their metadata
+    const downloads: { url: string; predictionId?: string; index: number }[] = []
     for (const result of results) {
       if (result.error) continue
-      for (let outputIndex = 0; outputIndex < result.outputs.length; outputIndex++) {
-        const output = result.outputs[outputIndex]
+      for (let i = 0; i < result.outputs.length; i++) {
+        const output = result.outputs[i]
         if (typeof output === 'string' && isUrl(output)) {
-          await handleDownload(output, result.prediction?.id, outputIndex)
+          downloads.push({ url: output, predictionId: result.prediction?.id, index: downloads.length })
         }
       }
     }
+
+    if (downloads.length === 0) return
+
+    toast({
+      description: `Downloading ${downloads.length} files...`,
+      duration: 2000,
+    })
+
+    // Download all with small delay between each
+    for (const { url, predictionId, index } of downloads) {
+      await handleDownload(url, predictionId, index)
+      // Small delay to prevent overwhelming the browser
+      await new Promise(resolve => setTimeout(resolve, 300))
+    }
+
+    toast({
+      description: `Downloaded ${downloads.length} files`,
+      duration: 2000,
+    })
   }
+
 
   const handleCopy = async (url: string, index: number) => {
     try {
@@ -305,6 +339,26 @@ export function BatchOutputGrid({
     return null
   }
 
+  // Get successful results for navigation
+  const successfulResults = results.filter(r => !r.error).sort((a, b) => a.index - b.index)
+
+  // Navigate to previous/next result (with loop support)
+  const navigateResult = useCallback((direction: 'prev' | 'next') => {
+    if (!selectedResult || successfulResults.length <= 1) return
+
+    const currentIdx = successfulResults.findIndex(r => r.index === selectedResult.index)
+    if (currentIdx === -1) return
+
+    let newIdx: number
+    if (direction === 'prev') {
+      newIdx = currentIdx === 0 ? successfulResults.length - 1 : currentIdx - 1
+    } else {
+      newIdx = currentIdx === successfulResults.length - 1 ? 0 : currentIdx + 1
+    }
+
+    setSelectedResult(successfulResults[newIdx])
+  }, [selectedResult, successfulResults])
+
   return (
     <div className={cn('flex flex-col h-full', className)}>
       {/* Header */}
@@ -312,9 +366,9 @@ export function BatchOutputGrid({
         <div className="flex items-center gap-3">
           <h3 className="text-sm font-medium flex items-center gap-2">
             {isRunning && <Loader2 className="h-4 w-4 animate-spin" />}
-            {t('playground.batch.results')} ({completedCount + failedCount}/{total})
+            <span className="hidden md:inline">{t('playground.batch.results')}</span> ({completedCount + failedCount}/{total})
           </h3>
-          <div className="flex items-center gap-2 text-xs">
+          <div className="hidden md:flex items-center gap-2 text-xs">
             {completedCount > 0 && (
               <span className="flex items-center gap-1 text-green-600">
                 <CheckCircle2 className="h-3 w-3" />
@@ -329,30 +383,32 @@ export function BatchOutputGrid({
             )}
           </div>
           {isRunning && (
-            <Progress value={progress} className="h-2 w-24" />
+            <Progress value={progress} className="h-2 w-16 md:w-24" />
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 md:gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={handleDownloadAll}
             disabled={completedCount === 0 || isRunning}
+            className="text-xs md:text-sm"
           >
-            <Download className="h-3 w-3 mr-1" />
-            {t('playground.batch.downloadAll')}
+            <Download className="h-3 w-3 md:mr-1" />
+            <span className="hidden md:inline">{t('playground.batch.downloadAll')}</span>
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={onClear}
             disabled={isRunning}
+            className="text-xs md:text-sm"
           >
-            {t('playground.batch.clearResults')}
+            <span className="hidden md:inline">{t('playground.batch.clearResults')}</span>
+            <span className="md:hidden">Clear</span>
           </Button>
         </div>
       </div>
-
       {/* Results Grid - dynamic columns based on item count with minimum cell size */}
       <ScrollArea className="flex-1">
         <div className={cn(
@@ -476,24 +532,28 @@ export function BatchOutputGrid({
           </div>
           {selectedResult && (
             <div className="flex-1 overflow-auto relative">
-              {/* Navigation buttons overlaid on content */}
+              {/* Navigation buttons on sides */}
               {successfulResults.length > 1 && (
                 <>
-                  <button
+                  <Button
+                    size="icon"
+                    variant="secondary"
                     onClick={() => navigateResult('prev')}
-                    className="sticky top-1/2 -translate-y-1/2 float-left z-10 ml-2 h-10 w-10 rounded-full bg-black/30 text-white flex items-center justify-center active:bg-black/60 transition-colors"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full opacity-80 hover:opacity-100 active:bg-black/60"
                   >
-                    <span className="text-lg">◀</span>
-                  </button>
-                  <button
+                    <span className="text-xl">◀</span>
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="secondary"
                     onClick={() => navigateResult('next')}
-                    className="sticky top-1/2 -translate-y-1/2 float-right z-10 mr-2 h-10 w-10 rounded-full bg-black/30 text-white flex items-center justify-center active:bg-black/60 transition-colors"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full opacity-80 hover:opacity-100 active:bg-black/60"
                   >
-                    <span className="text-lg">▶</span>
-                  </button>
+                    <span className="text-xl">▶</span>
+                  </Button>
                 </>
               )}
-              <div className="space-y-4 p-6 clear-both">
+              <div className="space-y-4 p-6">
                 {selectedResult.outputs.map((output, outputIndex) => {
                   const isObject = typeof output === 'object' && output !== null
                   const outputStr = isObject ? JSON.stringify(output, null, 2) : String(output)
@@ -502,81 +562,69 @@ export function BatchOutputGrid({
                   const isAudio = !isObject && isAudioUrl(outputStr)
 
                   return (
-                    <div key={outputIndex} className="relative group">
-                      {isImage && (
-                        <img
-                          src={outputStr}
-                          alt={`Output ${outputIndex + 1}`}
-                          className="max-w-full rounded-lg"
-                        />
-                      )}
-                      {isVideo && (
-                        <video
-                          src={outputStr}
-                          controls
-                          playsInline
-                          preload="auto"
-                          className="max-w-full rounded-lg"
-                        />
-                      )}
-                      {isAudio && (
-                        <AudioPlayer src={outputStr} />
-                      )}
-                      {isObject && (
-                        <pre className="p-4 bg-muted rounded-lg text-sm overflow-auto max-h-96">
-                          {outputStr}
-                        </pre>
-                      )}
-                      {!isImage && !isVideo && !isAudio && !isObject && (
-                        <p className="text-sm break-all">{outputStr}</p>
-                      )}
+                    <div key={outputIndex} className="space-y-2">
+                      {/* Media content */}
+                      <div className="relative">
+                        {isImage && (
+                          <img
+                            src={outputStr}
+                            alt={`Output ${outputIndex + 1}`}
+                            className="max-w-full rounded-lg"
+                          />
+                        )}
+                        {isVideo && (
+                          <video
+                            src={outputStr}
+                            controls
+                            playsInline
+                            preload="auto"
+                            className="max-w-full rounded-lg"
+                          />
+                        )}
+                        {isAudio && (
+                          <AudioPlayer src={outputStr} />
+                        )}
+                        {isObject && (
+                          <pre className="p-4 bg-muted rounded-lg text-sm overflow-auto max-h-96">
+                            {outputStr}
+                          </pre>
+                        )}
+                        {!isImage && !isVideo && !isAudio && !isObject && (
+                          <p className="text-sm break-all">{outputStr}</p>
+                        )}
+                      </div>
 
-                      {/* Actions */}
+                      {/* Actions - always visible below content */}
                       {!isObject && (
-                        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                size="icon"
-                                variant="secondary"
-                                className="h-8 w-8"
-                                onClick={() => handleCopy(outputStr, selectedResult.index * 100 + outputIndex)}
-                              >
-                                {copiedIndex === selectedResult.index * 100 + outputIndex ? (
-                                  <Check className="h-4 w-4" />
-                                ) : (
-                                  <Copy className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>{t('common.copy')}</TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                size="icon"
-                                variant="secondary"
-                                className="h-8 w-8"
-                                onClick={() => window.open(outputStr, '_blank')}
-                              >
-                                <ExternalLink className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>{t('common.openInBrowser')}</TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                size="icon"
-                                variant="secondary"
-                                className="h-8 w-8"
-                                onClick={() => handleDownload(outputStr, selectedResult.prediction?.id, outputIndex)}
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>{t('common.download')}</TooltipContent>
-                          </Tooltip>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDownload(outputStr, selectedResult.prediction?.id, outputIndex)}
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            {t('common.download')}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleCopy(outputStr, selectedResult.index * 100 + outputIndex)}
+                          >
+                            {copiedIndex === selectedResult.index * 100 + outputIndex ? (
+                              <Check className="h-4 w-4 mr-2" />
+                            ) : (
+                              <Copy className="h-4 w-4 mr-2" />
+                            )}
+                            {copiedIndex === selectedResult.index * 100 + outputIndex ? 'Copied!' : t('common.copy')}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => window.open(outputStr, '_blank')}
+                          >
+                            <ExternalLink className="h-4 w-4 mr-2" />
+                            {t('common.openInBrowser')}
+                          </Button>
                         </div>
                       )}
                     </div>

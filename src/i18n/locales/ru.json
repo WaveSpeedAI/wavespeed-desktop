@@ -36,6 +36,7 @@
   },
   "nav": {
     "home": "Главная",
+    "featuredModels": "Рекомендуемые модели",
     "models": "Модели",
     "playground": "Playground",
     "history": "История",
@@ -51,6 +52,11 @@
     "explore": "Исследовать",
     "getStarted": "Начать",
     "tryFreeTools": "Попробовать бесплатные инструменты",
+    "featuredModels": {
+      "title": "Избранные модели",
+      "description": "Популярные ИИ-модели, отобранные для вас",
+      "badge": "Хит"
+    },
     "features": {
       "models": {
         "title": "Браузер моделей",

@@ -36,6 +36,7 @@
   },
   "nav": {
     "home": "Accueil",
+    "featuredModels": "Modèles en vedette",
     "models": "Modèles",
     "playground": "Playground",
     "history": "Historique",
@@ -51,6 +52,11 @@
     "explore": "Explorer",
     "getStarted": "Commencer",
     "tryFreeTools": "Essayer les Outils Gratuits",
+    "featuredModels": {
+      "title": "Modèles en vedette",
+      "description": "Modèles IA tendance sélectionnés pour vous",
+      "badge": "Tendance"
+    },
     "features": {
       "models": {
         "title": "Explorateur de Modèles",

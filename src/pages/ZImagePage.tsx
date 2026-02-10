@@ -23,9 +23,11 @@ import type { PredictionResult } from '@/types/prediction'
 import type { SamplingMethod, Scheduler } from '@/types/stable-diffusion'
 import type { ProgressDetail } from '@/types/progress'
 
-// Check if running in Electron environment
+// Check if running in Electron environment (not web polyfill)
 function isElectronAvailable(): boolean {
-  return typeof window !== 'undefined' && !!window.electronAPI?.sdListModels
+  return typeof window !== 'undefined' &&
+    navigator.userAgent.toLowerCase().includes('electron') &&
+    !!window.electronAPI?.sdListModels
 }
 
 const PHASES = [
@@ -39,6 +41,9 @@ const PHASES = [
 export function ZImagePage() {
   const { t } = useTranslation()
   const electronAvailable = isElectronAvailable()
+
+  // Mobile view state for tab switching
+  const [mobileView, setMobileView] = useState<'config' | 'output'>('config')
 
   // Create ZImage model for DynamicForm
   const [zImageModel] = useState(() => createZImageModel())
@@ -171,6 +176,7 @@ export function ZImagePage() {
   }, [electronAvailable])
 
   const isLowVramGpu = vramMb !== null && vramMb < 16000
+  const hasWindowsGpu = accelerationInfo?.platform === 'win32' && accelerationInfo.arch === 'x64' && (accelerationInfo.acceleration !== 'CPU' || vramMb !== null)
 
   useEffect(() => {
     if (!isLowVramGpu) return
@@ -258,6 +264,7 @@ export function ZImagePage() {
 
     setIsGenerating(true)
     reset()
+    setMobileView('output') // Auto-switch to output on mobile
 
     let modelPath = sdModelState?.isDownloaded ? sdModelState.localPath : null
 
@@ -433,19 +440,43 @@ export function ZImagePage() {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex items-center gap-4 border-b px-6 py-4">
+      <div className="flex items-center gap-2 md:gap-4 border-b px-4 md:px-6 py-3 md:py-4">
         <div className="flex items-center gap-2">
           <Zap className="h-5 w-5" />
-          <h1 className="text-xl font-semibold">{t('zImage.title')}</h1>
+          <h1 className="text-lg md:text-xl font-semibold">{t('zImage.title')}</h1>
         </div>
-        <span className="text-sm text-muted-foreground">{t('zImage.subtitle')}</span>
+        <span className="hidden md:inline text-sm text-muted-foreground">{t('zImage.subtitle')}</span>
       </div>
 
-      {/* Content - Two Column Layout */}
+      {/* Mobile Tab Switcher */}
+      <div className="md:hidden flex border-b bg-muted/30">
+        <button
+          onClick={() => setMobileView('config')}
+          className={`flex-1 py-2 text-sm font-medium transition-colors ${
+            mobileView === 'config'
+              ? 'border-b-2 border-primary text-primary'
+              : 'text-muted-foreground'
+          }`}
+        >
+          Input
+        </button>
+        <button
+          onClick={() => setMobileView('output')}
+          className={`flex-1 py-2 text-sm font-medium transition-colors ${
+            mobileView === 'output'
+              ? 'border-b-2 border-primary text-primary'
+              : 'text-muted-foreground'
+          }`}
+        >
+          Output
+        </button>
+      </div>
+
+      {/* Content - Two Column Layout (Desktop) / Single Column (Mobile) */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left Panel - Form */}
-        <div className="w-[420px] flex flex-col border-r bg-muted/30">
-          <div className="flex-1 overflow-hidden p-4">
+        <div className={`w-full md:w-[420px] flex flex-col md:border-r bg-muted/30 ${mobileView === 'config' ? 'flex' : 'hidden md:flex'}`}>
+          <div className="flex-1 overflow-auto p-4">
             {accelerationInfo?.platform === 'darwin' && accelerationInfo.arch !== 'arm64' && (
               <Alert variant="destructive" className="mb-3">
                 <AlertCircle className="h-4 w-4" />
@@ -482,7 +513,7 @@ export function ZImagePage() {
               </Alert>
             )}
 
-            {accelerationInfo?.platform === 'win32' && accelerationInfo.arch === 'x64' && (
+            {accelerationInfo?.platform === 'win32' && accelerationInfo.arch === 'x64' && !hasWindowsGpu && (
               <Alert className="mb-3">
                 <AlertCircle className="h-4 w-4 text-yellow-500" />
                 <AlertDescription className="text-sm">
@@ -568,7 +599,7 @@ export function ZImagePage() {
         </div>
 
         {/* Right Panel - Output */}
-        <div className="flex-1 min-w-0 flex flex-col">
+        <div className={`flex-1 min-w-0 flex-col ${mobileView === 'output' ? 'flex' : 'hidden md:flex'}`}>
           <OutputDisplay
             prediction={prediction}
             outputs={outputs}

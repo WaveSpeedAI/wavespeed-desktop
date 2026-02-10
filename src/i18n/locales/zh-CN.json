@@ -37,6 +37,7 @@
   },
   "nav": {
     "home": "首页",
+    "featuredModels": "模型精选",
     "models": "模型",
     "playground": "演练场",
     "history": "历史记录",
@@ -52,6 +53,11 @@
     "explore": "探索",
     "getStarted": "开始使用",
     "tryFreeTools": "试用免费工具",
+    "featuredModels": {
+      "title": "模型精选",
+      "description": "为你精选的热门 AI 模型",
+      "badge": "热门"
+    },
     "features": {
       "models": {
         "title": "模型浏览",

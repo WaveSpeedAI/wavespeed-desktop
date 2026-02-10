@@ -36,6 +36,7 @@
   },
   "nav": {
     "home": "Startseite",
+    "featuredModels": "Empfohlene Modelle",
     "models": "Modelle",
     "playground": "Playground",
     "history": "Verlauf",
@@ -51,6 +52,11 @@
     "explore": "Erkunden",
     "getStarted": "Loslegen",
     "tryFreeTools": "Kostenlose Tools ausprobieren",
+    "featuredModels": {
+      "title": "Ausgewählte Modelle",
+      "description": "Handverlesene KI-Modelle im Trend",
+      "badge": "Beliebt"
+    },
     "features": {
       "models": {
         "title": "Modell-Browser",

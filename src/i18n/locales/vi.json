@@ -35,6 +35,7 @@
   },
   "nav": {
     "home": "Trang chủ",
+    "featuredModels": "Mô hình nổi bật",
     "models": "Mô hình",
     "playground": "Sân chơi",
     "history": "Lịch sử",
@@ -50,6 +51,11 @@
     "explore": "Khám phá",
     "getStarted": "Bắt đầu",
     "tryFreeTools": "Dùng thử Công cụ Miễn phí",
+    "featuredModels": {
+      "title": "Mô hình nổi bật",
+      "description": "Các mô hình AI thịnh hành được chọn lọc cho bạn",
+      "badge": "Hot"
+    },
     "features": {
       "models": {
         "title": "Trình duyệt Mô hình",

@@ -317,14 +317,14 @@ export function ModelsPage() {
   const parentRef = useRef<HTMLDivElement>(null)
   const [columns, setColumns] = useState(4)
 
-  // Calculate columns based on container width
+  // Calculate columns based on container width (mobile-first breakpoints)
   useEffect(() => {
     const updateColumns = () => {
       if (parentRef.current) {
         const width = parentRef.current.offsetWidth
-        if (width >= 1280) setColumns(4)
-        else if (width >= 1024) setColumns(3)
-        else if (width >= 640) setColumns(2)
+        if (width >= 1024) setColumns(4)
+        else if (width >= 768) setColumns(3)
+        else if (width >= 480) setColumns(2)
         else setColumns(1)
       }
     }

@@ -36,6 +36,7 @@
   },
   "nav": {
     "home": "Inicio",
+    "featuredModels": "Modelos destacados",
     "models": "Modelos",
     "playground": "Playground",
     "history": "Historial",
@@ -51,6 +52,11 @@
     "explore": "Explorar",
     "getStarted": "Comenzar",
     "tryFreeTools": "Probar Herramientas Gratis",
+    "featuredModels": {
+      "title": "Modelos Destacados",
+      "description": "Modelos de IA populares seleccionados para ti",
+      "badge": "Popular"
+    },
     "features": {
       "models": {
         "title": "Explorador de Modelos",

@@ -35,6 +35,7 @@
   },
   "nav": {
     "home": "หน้าแรก",
+    "featuredModels": "โมเดลแนะนำ",
     "models": "โมเดล",
     "playground": "สนามทดสอบ",
     "history": "ประวัติ",
@@ -50,6 +51,11 @@
     "explore": "สำรวจ",
     "getStarted": "เริ่มต้นใช้งาน",
     "tryFreeTools": "ลองเครื่องมือฟรี",
+    "featuredModels": {
+      "title": "โมเดลแนะนำ",
+      "description": "โมเดล AI ยอดนิยมที่คัดสรรมาเพื่อคุณ",
+      "badge": "ยอดนิยม"
+    },
     "features": {
       "models": {
         "title": "เบราว์เซอร์โมเดล",

@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ChevronLeft, Zap, Sun, Moon } from 'lucide-react'
+import { ChevronLeft, Zap, Home, Sun, Moon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useThemeStore } from '@/stores/themeStore'
 import { cn } from '@/lib/utils'
@@ -83,7 +83,7 @@ export function MobileHeader() {
   return (
     <header className="mobile-header">
       <div className="flex items-center justify-between h-12 px-4">
-        {/* Left side - Back button or Logo */}
+        {/* Left side - Back button, Home button, or Logo */}
         <div className="flex items-center gap-2 min-w-[40px]">
           {showBackButton ? (
             <Button
@@ -94,12 +94,21 @@ export function MobileHeader() {
             >
               <ChevronLeft className="h-5 w-5" />
             </Button>
-          ) : (
+          ) : location.pathname === '/' ? (
             <div className="flex items-center gap-2">
               <div className="gradient-bg rounded-lg p-1">
                 <Zap className="h-4 w-4 text-white" />
               </div>
             </div>
+          ) : (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 -ml-2"
+              onClick={() => navigate('/')}
+            >
+              <Home className="h-5 w-5" />
+            </Button>
           )}
         </div>
 

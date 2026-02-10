@@ -366,7 +366,7 @@ export function FileUpload({
                 <Button
                   variant="destructive"
                   size="icon"
-                  className="absolute top-0.5 right-0.5 h-5 w-5"
+                  className="absolute top-0.5 right-0.5 h-5 w-5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                   onClick={(e) => {
                     e.stopPropagation()
                     confirmDelete(index)

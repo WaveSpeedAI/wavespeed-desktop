@@ -36,6 +36,7 @@
   },
   "nav": {
     "home": "Beranda",
+    "featuredModels": "Model Unggulan",
     "models": "Model",
     "playground": "Playground",
     "history": "Riwayat",
@@ -51,6 +52,11 @@
     "explore": "Jelajahi",
     "getStarted": "Mulai",
     "tryFreeTools": "Coba Alat Gratis",
+    "featuredModels": {
+      "title": "Model Unggulan",
+      "description": "Model AI populer yang dipilih untuk Anda",
+      "badge": "Populer"
+    },
     "features": {
       "models": {
         "title": "Browser Model",

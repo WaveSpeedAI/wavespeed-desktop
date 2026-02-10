@@ -36,6 +36,7 @@
   },
   "nav": {
     "home": "Home",
+    "featuredModels": "Modelli in evidenza",
     "models": "Modelli",
     "playground": "Playground",
     "history": "Cronologia",
@@ -51,6 +52,11 @@
     "explore": "Esplora",
     "getStarted": "Inizia",
     "tryFreeTools": "Prova gli Strumenti Gratuiti",
+    "featuredModels": {
+      "title": "Modelli in evidenza",
+      "description": "Modelli AI di tendenza selezionati per te",
+      "badge": "Trend"
+    },
     "features": {
       "models": {
         "title": "Browser Modelli",

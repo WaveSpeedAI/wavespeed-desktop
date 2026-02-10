@@ -31,7 +31,8 @@ type ViewTab = 'input' | 'output'
 
 export function MobilePlaygroundPage() {
   const { t } = useTranslation()
-  const { modelId } = useParams()
+  const params = useParams()
+  const modelId = params['*'] || params.modelId
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
   const { models } = useModelsStore()

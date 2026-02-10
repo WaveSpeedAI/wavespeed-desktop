@@ -35,6 +35,7 @@
   },
   "nav": {
     "home": "Laman Utama",
+    "featuredModels": "Model Pilihan",
     "models": "Model",
     "playground": "Playground",
     "history": "Sejarah",
@@ -50,6 +51,11 @@
     "explore": "Terokai",
     "getStarted": "Mula",
     "tryFreeTools": "Cuba Alat Percuma",
+    "featuredModels": {
+      "title": "Model Pilihan",
+      "description": "Model AI popular yang dipilih untuk anda",
+      "badge": "Popular"
+    },
     "features": {
       "models": {
         "title": "Pelayar Model",

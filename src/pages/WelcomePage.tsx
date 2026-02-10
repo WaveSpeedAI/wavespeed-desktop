@@ -133,14 +133,15 @@ export function WelcomePage() {
       shapeGradient: 'from-emerald-500/40 to-green-500/30',
       href: '/history'
     },
-    {
+    // Assets: hidden on mobile (mobile downloads directly to device)
+    ...(!isMobile ? [{
       icon: <FolderHeart className="h-6 w-6 text-teal-600 dark:text-teal-400" />,
       title: t('welcome.features.assets.title'),
       description: t('welcome.features.assets.description'),
       gradient: 'bg-gradient-to-br from-teal-500/40 via-cyan-500/20 to-transparent',
       shapeGradient: 'from-teal-500/40 to-cyan-500/30',
       href: '/assets'
-    },
+    }] : []),
     // Z-Image: hidden on mobile (no local SD model support)
     ...(!isMobile ? [{
       icon: <Zap className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />,
@@ -174,7 +175,7 @@ export function WelcomePage() {
               <Sparkles className="relative h-9 w-9 text-primary" />
             </div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
-              {isMobile ? 'WaveSpeed' : navigator.userAgent.toLowerCase().includes('electron') ? 'WaveSpeed Desktop' : 'WaveSpeedAI Studio'}
+              {isMobile ? 'WaveSpeed Mobile' : navigator.userAgent.toLowerCase().includes('electron') ? 'WaveSpeed Desktop' : 'WaveSpeedAI Studio'}
             </h1>
           </div>
           <p className="text-base text-muted-foreground max-w-lg mx-auto">

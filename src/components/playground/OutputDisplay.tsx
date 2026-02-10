@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { PredictionResult } from '@/types/prediction'
 import { useAssetsStore, detectAssetType, generateDownloadFilename } from '@/stores/assetsStore'
@@ -85,7 +85,7 @@ interface OutputDisplayProps {
 export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, hideGameButton }: OutputDisplayProps) {
   const { t } = useTranslation()
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
-  const [fullscreenMedia, setFullscreenMedia] = useState<{ url: string; type: 'image' | 'video' } | null>(null)
+  const [fullscreenIndex, setFullscreenIndex] = useState<number | null>(null)
   const [savedIndexes, setSavedIndexes] = useState<Set<number>>(new Set())
   const [savingIndex, setSavingIndex] = useState<number | null>(null)
   const autoSavedRef = useRef<string | null>(null)
@@ -97,6 +97,45 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
   const prevOutputsLengthRef = useRef(0)
 
   const { settings, loadSettings, saveAsset, hasAssetForPrediction } = useAssetsStore()
+
+  // Build list of media outputs for fullscreen navigation
+  const mediaOutputs = useMemo(() => {
+    return outputs
+      .map((output, index) => {
+        if (typeof output !== 'string') return null
+        const str = String(output)
+        if (isImageUrl(str)) return { index, url: str, type: 'image' as const }
+        if (isVideoUrl(str)) return { index, url: str, type: 'video' as const }
+        return null
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null)
+  }, [outputs])
+
+  const fullscreenMedia = fullscreenIndex !== null
+    ? mediaOutputs.find(m => m.index === fullscreenIndex) ?? null
+    : null
+
+  // Keyboard navigation for fullscreen preview
+  useEffect(() => {
+    if (fullscreenIndex === null) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        const curPos = mediaOutputs.findIndex(m => m.index === fullscreenIndex)
+        if (curPos === -1 || mediaOutputs.length <= 1) return
+        const newPos = curPos === 0 ? mediaOutputs.length - 1 : curPos - 1
+        setFullscreenIndex(mediaOutputs[newPos].index)
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        const curPos = mediaOutputs.findIndex(m => m.index === fullscreenIndex)
+        if (curPos === -1 || mediaOutputs.length <= 1) return
+        const newPos = curPos === mediaOutputs.length - 1 ? 0 : curPos + 1
+        setFullscreenIndex(mediaOutputs[newPos].index)
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [fullscreenIndex, mediaOutputs])
 
   // Load settings on mount
   useEffect(() => {
@@ -406,7 +445,7 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
                   className="max-w-full max-h-full object-contain cursor-pointer hover:opacity-90 transition-opacity"
                   style={{ maxWidth: 'min(100%, var(--max-w, 100%))', maxHeight: 'min(100%, var(--max-h, 100%))' }}
                   loading="lazy"
-                  onClick={() => setFullscreenMedia({ url: outputStr, type: 'image' })}
+                  onClick={() => setFullscreenIndex(index)}
                   onLoad={(e) => {
                     const img = e.currentTarget
                     // Limit upscaling to 2x natural size
@@ -531,17 +570,48 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
       </div>
 
       {/* Fullscreen Preview Dialog */}
-      <Dialog open={!!fullscreenMedia} onOpenChange={() => setFullscreenMedia(null)}>
+      <Dialog open={fullscreenIndex !== null} onOpenChange={() => setFullscreenIndex(null)}>
         <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 border-0 bg-black flex items-center justify-center" hideCloseButton>
           <DialogTitle className="sr-only">Fullscreen Preview</DialogTitle>
           <Button
             variant="ghost"
             size="icon"
             className="absolute top-4 right-4 z-50 text-white hover:bg-white/20 h-10 w-10 [filter:drop-shadow(0_0_2px_rgba(0,0,0,0.8))_drop-shadow(0_0_4px_rgba(0,0,0,0.5))]"
-            onClick={() => setFullscreenMedia(null)}
+            onClick={() => setFullscreenIndex(null)}
           >
             <X className="h-6 w-6" />
           </Button>
+          {/* Navigation arrows */}
+          {mediaOutputs.length > 1 && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-50 text-white hover:bg-white/20 h-10 w-10 [filter:drop-shadow(0_0_2px_rgba(0,0,0,0.8))_drop-shadow(0_0_4px_rgba(0,0,0,0.5))]"
+                onClick={() => {
+                  const curPos = mediaOutputs.findIndex(m => m.index === fullscreenIndex)
+                  if (curPos === -1) return
+                  const newPos = curPos === 0 ? mediaOutputs.length - 1 : curPos - 1
+                  setFullscreenIndex(mediaOutputs[newPos].index)
+                }}
+              >
+                <span className="text-xl">◀</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-50 text-white hover:bg-white/20 h-10 w-10 [filter:drop-shadow(0_0_2px_rgba(0,0,0,0.8))_drop-shadow(0_0_4px_rgba(0,0,0,0.5))]"
+                onClick={() => {
+                  const curPos = mediaOutputs.findIndex(m => m.index === fullscreenIndex)
+                  if (curPos === -1) return
+                  const newPos = curPos === mediaOutputs.length - 1 ? 0 : curPos + 1
+                  setFullscreenIndex(mediaOutputs[newPos].index)
+                }}
+              >
+                <span className="text-xl">▶</span>
+              </Button>
+            </>
+          )}
           {fullscreenMedia?.type === 'image' && (
             <img
               src={fullscreenMedia.url}
@@ -556,6 +626,12 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
               autoPlay
               className="max-w-full max-h-full object-contain"
             />
+          )}
+          {/* Counter */}
+          {mediaOutputs.length > 1 && fullscreenMedia && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 text-white/80 text-sm [filter:drop-shadow(0_0_2px_rgba(0,0,0,0.8))]">
+              {mediaOutputs.findIndex(m => m.index === fullscreenIndex) + 1} / {mediaOutputs.length}
+            </div>
           )}
         </DialogContent>
       </Dialog>

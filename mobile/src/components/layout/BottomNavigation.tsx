@@ -39,7 +39,14 @@ const navItems: NavItem[] = [
   },
 ]
 
-export function BottomNavigation() {
+// Paths that work without API key
+const publicNavPaths = ['/settings', '/free-tools']
+
+interface BottomNavigationProps {
+  isValidated?: boolean
+}
+
+export function BottomNavigation({ isValidated = true }: BottomNavigationProps) {
   const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
@@ -49,6 +56,15 @@ export function BottomNavigation() {
       return item.matchPaths.some(p => location.pathname.startsWith(p))
     }
     return location.pathname === item.path || location.pathname.startsWith(item.path + '/')
+  }
+
+  const handleNavClick = (path: string) => {
+    // When not validated, only allow public nav paths; redirect others to welcome page
+    if (!isValidated && !publicNavPaths.some(p => path === p || path.startsWith(p + '/'))) {
+      navigate('/')
+      return
+    }
+    navigate(path)
   }
 
   return (
@@ -61,7 +77,7 @@ export function BottomNavigation() {
           return (
             <button
               key={item.path}
-              onClick={() => navigate(item.path)}
+              onClick={() => handleNavClick(item.path)}
               className={cn(
                 'bottom-nav-item ripple',
                 active && 'active'

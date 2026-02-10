@@ -452,6 +452,7 @@
   "settings": {
     "title": "设置",
     "description": "配置您的 WaveSpeed Desktop 应用程序",
+    "mobileDescription": "配置您的 WaveSpeed Mobile 应用程序",
     "apiKey": {
       "title": "API 密钥",
       "description": "输入您的 WaveSpeed API 密钥以访问模型",

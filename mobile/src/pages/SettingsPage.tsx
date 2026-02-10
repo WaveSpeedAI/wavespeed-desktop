@@ -920,9 +920,9 @@ export function SettingsPage() {
 
   return (
     <div className="container max-w-2xl py-8 px-4">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">{t('settings.title')}</h1>
-        <p className="text-muted-foreground mt-2">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">{t('settings.title')}</h1>
+        <p className="text-muted-foreground text-sm mt-1">
           {t('settings.mobileDescription')}
         </p>
       </div>
@@ -1122,60 +1122,51 @@ export function SettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <button
-              className="flex items-center gap-3 text-left hover:bg-muted/50 -ml-2 px-2 py-1 rounded-md transition-colors"
+              className="flex items-center gap-2 text-left hover:bg-muted/50 -ml-2 px-2 py-1 rounded-md transition-colors min-w-0 flex-1"
               onClick={() => setShowCacheDialog(true)}
               disabled={cacheSize === 0}
             >
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2">
-                  <Database className="h-4 w-4 text-muted-foreground" />
-                  <Label className="cursor-pointer">{t('settings.cache.aiModels')}</Label>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {t('settings.cache.aiModelsDesc')}
+              <Database className="h-4 w-4 text-muted-foreground shrink-0" />
+              <div className="min-w-0">
+                <Label className="cursor-pointer text-sm">{t('settings.cache.aiModels')}</Label>
+                <p className="text-xs text-muted-foreground truncate">
+                  {cacheSize !== null
+                    ? cacheSize > 0
+                      ? formatSize(cacheSize)
+                      : t('settings.cache.empty')
+                    : t('settings.cache.calculating')}
                 </p>
               </div>
               {cacheSize !== null && cacheSize > 0 && (
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
               )}
             </button>
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground">
-                {cacheSize !== null
-                  ? cacheSize > 0
-                    ? formatSize(cacheSize)
-                    : t('settings.cache.empty')
-                  : t('settings.cache.calculating')}
-              </span>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleClearCache}
-                disabled={isClearingCache || cacheSize === 0}
-              >
-                {isClearingCache ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <>
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    {t('settings.cache.clear')}
-                  </>
-                )}
-              </Button>
-            </div>
+            <Button
+              variant="destructive"
+              size="sm"
+              className="shrink-0"
+              onClick={handleClearCache}
+              disabled={isClearingCache || cacheSize === 0}
+            >
+              {isClearingCache ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4" />
+              )}
+            </Button>
           </div>
 
           {/* Download Models Section */}
           <div className="border-t pt-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
+            <div className="flex items-center justify-between gap-2">
+              <div className="space-y-0.5 min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <Download className="h-4 w-4 text-muted-foreground" />
-                  <Label>{t('settings.cache.predownload')}</Label>
+                  <Download className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <Label className="text-sm">{t('settings.cache.predownload')}</Label>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground truncate">
                   {t('settings.cache.predownloadDesc')}
                 </p>
               </div>
@@ -1183,19 +1174,19 @@ export function SettingsPage() {
                 <Button
                   variant="outline"
                   size="sm"
+                  className="shrink-0"
                   onClick={handleCancelDownload}
                 >
-                  <X className="mr-2 h-4 w-4" />
-                  {t('common.cancel')}
+                  <X className="h-4 w-4" />
                 </Button>
               ) : (
                 <Button
                   variant="outline"
                   size="sm"
+                  className="shrink-0"
                   onClick={handleDownloadModels}
                 >
-                  <Download className="mr-2 h-4 w-4" />
-                  {t('settings.cache.downloadModels')}
+                  <Download className="h-4 w-4" />
                 </Button>
               )}
             </div>
@@ -1327,13 +1318,13 @@ export function SettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
+          <div className="flex items-center justify-between gap-3">
+            <div className="space-y-1 min-w-0">
               <p className="text-sm font-medium">
                 {t('settings.about.version')}: {currentVersion}
               </p>
               {updateInfo && (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground truncate">
                   {updateInfo.hasUpdate
                     ? t('settings.updates.available', { version: updateInfo.latestVersion })
                     : t('settings.updates.notAvailable', { version: currentVersion })}
@@ -1342,19 +1333,15 @@ export function SettingsPage() {
             </div>
             <Button
               variant="outline"
+              size="sm"
+              className="shrink-0"
               onClick={handleCheckForUpdates}
               disabled={isCheckingUpdate}
             >
               {isCheckingUpdate ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {t('settings.updates.checking')}
-                </>
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <>
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  {t('settings.updates.checkForUpdates')}
-                </>
+                <RefreshCw className="h-4 w-4" />
               )}
             </Button>
           </div>

@@ -454,6 +454,7 @@
   "settings": {
     "title": "Settings",
     "description": "Configure your WaveSpeed Desktop application",
+    "mobileDescription": "Configure your WaveSpeed Mobile application",
     "apiKey": {
       "title": "API Key",
       "description": "Enter your WaveSpeed API key to access the models",

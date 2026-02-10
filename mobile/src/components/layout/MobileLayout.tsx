@@ -51,7 +51,7 @@ export function MobileLayout() {
   }, [location.pathname, visitedPages])
 
   // Pages that don't require API key
-  const publicPaths = ['/', '/settings', '/templates', '/assets', '/free-tools']
+  const publicPaths = ['/', '/featured-models', '/settings', '/templates', '/assets', '/free-tools']
   const isPublicPage = publicPaths.some(path =>
     location.pathname === path || location.pathname.startsWith(path + '/')
   )
@@ -85,7 +85,11 @@ export function MobileLayout() {
   const isFreeToolsPage = freeToolsPaths.includes(location.pathname)
 
   // Welcome page content for users without API key
-  const welcomeContent = <WelcomePage />
+  const welcomeContent = (
+    <div className="h-full overflow-auto">
+      <WelcomePage />
+    </div>
+  )
 
   return (
     <TooltipProvider>
@@ -162,8 +166,8 @@ export function MobileLayout() {
           )}
         </main>
 
-        {/* Bottom navigation */}
-        <BottomNavigation />
+        {/* Bottom navigation - always visible, redirects to welcome when no API key */}
+        <BottomNavigation isValidated={isValidated} />
 
         <Toaster />
       </div>

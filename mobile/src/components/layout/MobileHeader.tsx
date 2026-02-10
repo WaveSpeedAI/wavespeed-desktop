@@ -24,8 +24,7 @@ const pageTitles: Record<string, string> = {
 
 // Pages that should show a back button in the header
 // Note: Free tools sub-pages are NOT included because those pages have their own back buttons
-const pagesWithBackButton = [
-  '/settings',
+const pagesWithBackButton: string[] = [
 ]
 
 export function MobileHeader() {

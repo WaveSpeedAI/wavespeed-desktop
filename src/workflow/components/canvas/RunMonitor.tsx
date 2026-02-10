@@ -8,13 +8,18 @@ import { useExecutionStore, type RunSession } from '../../stores/execution.store
 import { historyIpc } from '../../ipc/ipc-client'
 import type { NodeStatus, NodeExecutionRecord } from '@/workflow/types/execution'
 
-export function RunMonitor() {
+export function RunMonitor({ workflowId }: { workflowId?: string | null }) {
   const runSessions = useExecutionStore(s => s.runSessions)
   const showRunMonitor = useExecutionStore(s => s.showRunMonitor)
   const toggleRunMonitor = useExecutionStore(s => s.toggleRunMonitor)
   const nodeStatuses = useExecutionStore(s => s.nodeStatuses)
   const progressMap = useExecutionStore(s => s.progressMap)
   const cancelAll = useExecutionStore(s => s.cancelAll)
+
+  // Filter sessions to current workflow (empty if no workflow loaded)
+  const filteredSessions = workflowId
+    ? runSessions.filter(s => s.workflowId === workflowId)
+    : []
 
   if (!showRunMonitor) return null
 
@@ -26,10 +31,10 @@ export function RunMonitor() {
           <button onClick={toggleRunMonitor} className="text-muted-foreground hover:text-foreground text-sm">✕</button>
         </div>
         <div className="flex-1 overflow-y-auto">
-          {runSessions.length === 0 && (
+          {filteredSessions.length === 0 && (
             <div className="p-6 text-center text-xs text-muted-foreground">No runs yet</div>
           )}
-          {runSessions.map(session => (
+          {filteredSessions.map(session => (
             <SessionCard key={session.id} session={session} nodeStatuses={nodeStatuses}
               progressMap={progressMap} onCancel={() => cancelAll(session.workflowId)} />
           ))}

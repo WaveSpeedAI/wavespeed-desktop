@@ -119,6 +119,8 @@ export function registerStorageIpc(): void {
           }
         } else if (nodeType === 'input/media-upload') {
           label = '📁 Upload'
+        } else if (nodeType === 'input/text-input') {
+          label = '✏️ Text'
         }
 
         return {

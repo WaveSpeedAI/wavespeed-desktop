@@ -4,11 +4,12 @@
  * Each parameter is a row with a left Handle, label, and inline control.
  * Media fields support file upload with progress/error states and click-to-preview.
  */
-import React, { memo, useMemo, useState, useCallback, useRef } from 'react'
+import React, { memo, useMemo, useState, useCallback, useRef, useEffect } from 'react'
 import { Handle, Position, useReactFlow, type NodeProps } from 'reactflow'
 import { useExecutionStore } from '../../stores/execution.store'
 import { useWorkflowStore } from '../../stores/workflow.store'
 import { useUIStore } from '../../stores/ui.store'
+import { WorkflowPromptOptimizer } from './WorkflowPromptOptimizer'
 // Status constants (kept for edge component compatibility)
 // import { NODE_STATUS_COLORS, NODE_STATUS_BORDER } from '@/workflow/constants'
 import type { NodeStatus } from '@/workflow/types/execution'
@@ -367,6 +368,17 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
           />
         )}
 
+        {/* Text Input node — special UI */}
+        {data.nodeType === 'input/text-input' && (
+          <TextInputBody
+            params={data.params}
+            onParamChange={(updates) => {
+              const newParams = { ...data.params, ...updates }
+              updateNodeParams(id, newParams)
+            }}
+          />
+        )}
+
         {isAITask && !hasSchema && (
           <div className="mx-2 text-center py-4 text-[hsl(var(--muted-foreground))] text-xs italic border border-dashed border-[hsl(var(--border))] rounded-lg my-1">
             Click this node, then select a model →
@@ -401,7 +413,9 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
                 const edge = edges.find(e => e.target === id && e.targetHandle === hid)
                 if (edge) useWorkflowStore.getState().removeEdge(edge.id)
               }}
-              onChange={v => setParam(p.name, v)} />
+              onChange={v => setParam(p.name, v)}
+              optimizerSettings={(data.params.__optimizerSettings as Record<string, unknown>) ?? {}}
+              onOptimizerSettingsChange={v => setParam('__optimizerSettings', v)} />
           )
         })}
 
@@ -425,7 +439,9 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
                     const edge = edges.find(e => e.target === id && e.targetHandle === hid)
                     if (edge) useWorkflowStore.getState().removeEdge(edge.id)
                   }}
-                  onChange={v => setParam(p.name, v)} />
+                  onChange={v => setParam(p.name, v)}
+              optimizerSettings={(data.params.__optimizerSettings as Record<string, unknown>) ?? {}}
+              onOptimizerSettingsChange={v => setParam('__optimizerSettings', v)} />
               )
             })}
           </>
@@ -443,8 +459,8 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
           )
         })}
 
-        {/* Hide defParams for media-upload nodes (handled by MediaUploadBody) */}
-        {data.nodeType !== 'input/media-upload' && defParams.map(p => {
+        {/* Hide defParams for nodes with custom body UI */}
+        {data.nodeType !== 'input/media-upload' && data.nodeType !== 'input/text-input' && defParams.map(p => {
           const hid = `param-${p.key}`
           const conn = connectedSet.has(hid)
           return (
@@ -499,7 +515,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
           <div className="px-3 pb-2 pt-1 border-t border-[hsl(var(--border))]">
             <div className="flex items-center gap-1.5 mb-1.5">
               <span className="text-[10px] text-green-400 font-medium">
-                Results {latestOnly ? '(latest)' : `(${visibleGroups.length}/${resultGroups.length})`}
+                Results ({displayGroups.length}/{resultGroups.length})
               </span>
               <div className="flex-1" />
               {/* Show all — always clickable, clears hidden + turns off latest */}
@@ -600,12 +616,14 @@ function Row({ children, handleId, handleType, connected, media }: {
    ParamRow — one row per regular (non-media) schema parameter
    ══════════════════════════════════════════════════════════════════════ */
 
-function ParamRow({ nodeId, schema, value, connected, onChange, onDisconnect, edges, nodes }: {
+function ParamRow({ nodeId, schema, value, connected, onChange, onDisconnect, edges, nodes, optimizerSettings, onOptimizerSettingsChange }: {
   nodeId: string; schema: ModelParamSchema; value: unknown; connected: boolean
   onChange: (v: unknown) => void
   onDisconnect?: () => void
   edges?: Array<{ id: string; source: string; target: string; targetHandle?: string | null }>
   nodes?: Array<{ id: string; data: { label?: string } }>
+  optimizerSettings?: Record<string, unknown>
+  onOptimizerSettingsChange?: (settings: Record<string, unknown>) => void
 }) {
   const label = schema.label ?? formatLabel(schema.name)
   const ft = schema.fieldType ?? (TEXTAREA_NAMES.has(schema.name.toLowerCase()) ? 'textarea' : undefined)
@@ -620,12 +638,21 @@ function ParamRow({ nodeId, schema, value, connected, onChange, onDisconnect, ed
 
   // ── Textarea: full-width below label ──
   if (ft === 'textarea') {
+    const isPromptField = schema.name.toLowerCase() === 'prompt'
     return (
       <div className="relative px-3 py-1">
         <Handle type="target" position={Position.Left} id={handleId} style={{ ...handleLeft(connected), top: 16 }} />
         <label className="pl-2 flex items-center gap-1 mb-1 text-xs font-medium text-blue-400">
           {label}{schema.required && <span className="text-red-400">*</span>}
           {schema.description && <Tip text={schema.description} />}
+          {isPromptField && !connected && (
+            <WorkflowPromptOptimizer
+              currentPrompt={String(cur ?? '')}
+              onOptimized={v => onChange(v)}
+              quickSettings={optimizerSettings}
+              onQuickSettingsChange={onOptimizerSettingsChange}
+            />
+          )}
         </label>
         <div className="pl-2">
           {connected ? <LinkedBadge nodeId={nodeId} handleId={handleId} edges={edges} nodes={nodes} onDisconnect={onDisconnect} /> : (
@@ -1185,6 +1212,152 @@ function MediaUploadBody({ params, onBatchChange, onPreview }: {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
+   TextInputBody — dedicated UI for Text Input nodes
+   Features: rich textarea, Prompt Optimizer, Prompt Library (snippets)
+   ══════════════════════════════════════════════════════════════════════ */
+
+const SNIPPETS_KEY = 'wavespeed_prompt_snippets'
+interface PromptSnippet { id: string; name: string; text: string }
+
+function loadSnippets(): PromptSnippet[] {
+  try { return JSON.parse(localStorage.getItem(SNIPPETS_KEY) || '[]') } catch { return [] }
+}
+
+function TextInputBody({ params, onParamChange }: {
+  params: Record<string, unknown>
+  onParamChange: (updates: Record<string, unknown>) => void
+}) {
+  const text = String(params.text ?? '')
+  const [snippetOpen, setSnippetOpen] = useState(false)
+  const [showSaveInput, setShowSaveInput] = useState(false)
+  const [saveName, setSaveName] = useState('')
+  const [snippets, setSnippets] = useState<PromptSnippet[]>(loadSnippets)
+  const snippetRef = useRef<HTMLDivElement>(null)
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!snippetOpen) return
+    const handler = (e: MouseEvent) => {
+      if (snippetRef.current && !snippetRef.current.contains(e.target as Node)) {
+        setSnippetOpen(false)
+        setShowSaveInput(false)
+      }
+    }
+    const timer = setTimeout(() => document.addEventListener('mousedown', handler), 50)
+    return () => { clearTimeout(timer); document.removeEventListener('mousedown', handler) }
+  }, [snippetOpen])
+
+  const doSave = () => {
+    if (!saveName.trim() || !text.trim()) return
+    const updated = [{ id: `snp-${Date.now()}`, name: saveName.trim(), text }, ...snippets]
+    setSnippets(updated)
+    localStorage.setItem(SNIPPETS_KEY, JSON.stringify(updated))
+    setSaveName('')
+    setShowSaveInput(false)
+  }
+
+  const doLoad = (s: PromptSnippet) => {
+    onParamChange({ text: s.text })
+    setSnippetOpen(false)
+  }
+
+  const doDelete = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation()
+    const updated = snippets.filter(s => s.id !== id)
+    setSnippets(updated)
+    localStorage.setItem(SNIPPETS_KEY, JSON.stringify(updated))
+  }
+
+  return (
+    <div className="px-3 py-2" onClick={e => e.stopPropagation()}>
+      {/* Toolbar */}
+      <div className="flex items-center gap-0.5 mb-1.5">
+        {/* Snippet Library */}
+        <div className="relative" ref={snippetRef}>
+          <button onClick={() => { setSnippetOpen(!snippetOpen); setShowSaveInput(false) }}
+            title="Prompt Library"
+            className={`flex items-center justify-center w-6 h-6 rounded-md transition-colors
+              ${snippetOpen ? 'bg-blue-500/20 text-blue-400' : 'hover:bg-[hsl(var(--accent))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'}`}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+          </button>
+
+          {snippetOpen && (
+            <div className="absolute top-7 left-0 z-[100] w-52 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--popover))] text-[hsl(var(--popover-foreground))] shadow-xl"
+              onClick={e => e.stopPropagation()}>
+              {/* Save Current */}
+              {!showSaveInput ? (
+                <button onClick={() => setShowSaveInput(true)} disabled={!text.trim()}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-[11px] hover:bg-[hsl(var(--accent))] transition-colors disabled:opacity-40 disabled:cursor-not-allowed rounded-t-lg">
+                  <span>💾</span> <span>Save Current</span>
+                </button>
+              ) : (
+                <div className="px-2 py-2 flex gap-1">
+                  <input type="text" value={saveName} onChange={e => setSaveName(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') doSave(); e.stopPropagation() }}
+                    placeholder="Name..." autoFocus
+                    className="flex-1 rounded border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1 text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500/50" />
+                  <button onClick={doSave} disabled={!saveName.trim()}
+                    className="px-2 py-1 rounded text-[10px] font-medium bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-40 transition-colors">
+                    Save
+                  </button>
+                </div>
+              )}
+
+              {snippets.length > 0 && <div className="mx-2 h-px bg-[hsl(var(--border))]" />}
+
+              {/* Snippet List */}
+              <div className="max-h-[180px] overflow-y-auto py-0.5">
+                {snippets.map(s => (
+                  <div key={s.id}
+                    className="flex items-center gap-1 px-3 py-1.5 hover:bg-[hsl(var(--accent))] transition-colors cursor-pointer group"
+                    onClick={() => doLoad(s)}>
+                    <span className="flex-1 text-[11px] truncate" title={s.text}>{s.name}</span>
+                    <button onClick={e => doDelete(e, s.id)}
+                      className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 transition-all text-[11px] px-0.5">
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {snippets.length === 0 && (
+                <div className="px-3 py-3 text-[10px] text-[hsl(var(--muted-foreground))] text-center">
+                  No saved snippets
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Prompt Optimizer */}
+        <WorkflowPromptOptimizer
+          currentPrompt={text}
+          onOptimized={(optimized) => onParamChange({ text: optimized })}
+          quickSettings={(params.__optimizerSettings as Record<string, unknown>) ?? {}}
+          onQuickSettingsChange={(settings) => onParamChange({ __optimizerSettings: settings })}
+        />
+
+        <div className="flex-1" />
+
+        {/* Character count */}
+        <span className="text-[9px] text-[hsl(var(--muted-foreground))]">{text.length} chars</span>
+      </div>
+
+      {/* Textarea */}
+      <textarea
+        value={text}
+        onChange={e => onParamChange({ text: e.target.value })}
+        placeholder="Enter text or prompt..."
+        rows={4}
+        className="nodrag w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2.5 py-2 text-xs text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500 placeholder:text-[hsl(var(--muted-foreground))] resize-y min-h-[80px] max-h-[400px]"
+      />
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════════════════════════════════
    LoraRow — inline LoRA editor (path + scale, add/remove)
    ══════════════════════════════════════════════════════════════════════ */
 
@@ -1314,9 +1487,29 @@ function JsonRow({ nodeId, schema, value, connected, onChange, edges, nodes }: {
    ══════════════════════════════════════════════════════════════════════ */
 
 function ResultThumb({ url, onPreview, onDownload }: { url: string; onPreview: (src: string) => void; onDownload: (url: string) => void }) {
-  const is3D = url.match(/\.(glb|gltf)(\?.*)?$/i)
-  const isImage = url.match(/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i)
-  const isVideo = url.match(/\.(mp4|webm|mov)(\?.*)?$/i)
+  // Detect if the result is plain text (not a URL)
+  const isUrl = /^https?:\/\//i.test(url) || /^blob:/i.test(url)
+  const is3D = isUrl && url.match(/\.(glb|gltf)(\?.*)?$/i)
+  const isImage = isUrl && url.match(/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i)
+  const isVideo = isUrl && url.match(/\.(mp4|webm|mov)(\?.*)?$/i)
+
+  // Plain text result — show inline text preview
+  if (!isUrl) {
+    return (
+      <div className="flex-1 min-w-[80px] rounded border border-[hsl(var(--border))] bg-[hsl(var(--muted))] p-2 cursor-default"
+        onClick={e => e.stopPropagation()}>
+        <div className="text-[10px] text-[hsl(var(--foreground))] leading-snug line-clamp-4 break-words whitespace-pre-wrap">
+          {url}
+        </div>
+        {url.length > 200 && (
+          <button onClick={e => { e.stopPropagation(); onPreview(url) }}
+            className="mt-1 text-[9px] text-blue-400 hover:text-blue-300 transition-colors">
+            Show full text
+          </button>
+        )}
+      </div>
+    )
+  }
 
   if (isImage) {
     return (

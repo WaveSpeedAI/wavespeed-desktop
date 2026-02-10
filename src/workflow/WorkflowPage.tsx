@@ -477,18 +477,20 @@ export function WorkflowPage() {
         {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Right: Run All first, then actions */}
-        {isRunning && (
-          <Button variant="destructive" size="sm" className="h-7 text-xs"
-            onClick={() => { if (workflowId) useExecutionStore.getState().cancelAll(workflowId) }}>
-            Cancel All
+        {/* Right: Run All + Cancel All */}
+        <div className="flex items-center gap-1.5">
+          {isRunning && (
+            <Button variant="destructive" size="sm" className="h-7 px-3 text-xs"
+              onClick={() => { if (workflowId) useExecutionStore.getState().cancelAll(workflowId) }}>
+              Cancel All
+            </Button>
+          )}
+          <Button variant="default" size="sm" className="h-7 px-3 text-xs"
+            disabled={nodes.length === 0 || isRunning}
+            onClick={handleRunAll}>
+            {isRunning ? 'Running...' : 'Run All'}
           </Button>
-        )}
-        <Button variant="default" size="sm" className="h-7 text-xs"
-          disabled={nodes.length === 0 || isRunning}
-          onClick={handleRunAll}>
-          {isRunning ? 'Running...' : 'Run All'}
-        </Button>
+        </div>
 
         {/* Monitor toggle */}
         <MonitorToggleBtn />
@@ -502,7 +504,7 @@ export function WorkflowPage() {
       </div>
 
       {/* ── Run Monitor panel ─────────────────────────────────── */}
-      <RunMonitor />
+      <RunMonitor workflowId={workflowId} />
 
       {/* ── Main content ───────────────────────────────────────── */}
       <div className="flex flex-1 overflow-hidden relative">

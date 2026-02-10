@@ -339,26 +339,6 @@ export function BatchOutputGrid({
     return null
   }
 
-  // Get successful results for navigation
-  const successfulResults = results.filter(r => !r.error).sort((a, b) => a.index - b.index)
-
-  // Navigate to previous/next result (with loop support)
-  const navigateResult = useCallback((direction: 'prev' | 'next') => {
-    if (!selectedResult || successfulResults.length <= 1) return
-
-    const currentIdx = successfulResults.findIndex(r => r.index === selectedResult.index)
-    if (currentIdx === -1) return
-
-    let newIdx: number
-    if (direction === 'prev') {
-      newIdx = currentIdx === 0 ? successfulResults.length - 1 : currentIdx - 1
-    } else {
-      newIdx = currentIdx === successfulResults.length - 1 ? 0 : currentIdx + 1
-    }
-
-    setSelectedResult(successfulResults[newIdx])
-  }, [selectedResult, successfulResults])
-
   return (
     <div className={cn('flex flex-col h-full', className)}>
       {/* Header */}

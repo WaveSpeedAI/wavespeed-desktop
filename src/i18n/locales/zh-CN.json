@@ -42,6 +42,7 @@
     "assets": "我的资产",
     "zImage": "Z-Image",
     "freeTools": "免费工具",
+    "workflow": "工作流",
     "settings": "设置",
     "collapse": "收起"
   },
@@ -80,6 +81,11 @@
         "title": "免费工具",
         "description": "本地运行的强大 AI 工具 - 无需 API 密钥",
         "badge": "免费"
+      },
+      "workflow": {
+        "title": "工作流",
+        "description": "使用可视化节点编辑器构建 AI 管线",
+        "badge": "新"
       }
     }
   },
@@ -810,5 +816,34 @@
       "merging": "合并中",
       "trimming": "裁剪中"
     }
+  },
+  "workflow": {
+    "workflows": "工作流",
+    "newWorkflow": "新建工作流",
+    "untitled": "未命名工作流",
+    "save": "保存",
+    "unsaved": "未保存",
+    "nodes": "节点",
+    "config": "配置",
+    "results": "结果",
+    "cost": "费用",
+    "settings": "设置",
+    "runAll": "全部运行",
+    "runNode": "运行节点",
+    "continueFrom": "从此继续",
+    "retry": "重试",
+    "cancel": "取消",
+    "noWorkflows": "暂无工作流",
+    "create": "创建",
+    "open": "打开",
+    "delete": "删除",
+    "selectNode": "选择节点进行配置",
+    "noExecutions": "暂无执行记录",
+    "budgetExceeded": "超出预算",
+    "dailySpend": "今日花费",
+    "perExecutionLimit": "单次执行限额",
+    "dailyLimit": "每日限额",
+    "editBudget": "编辑预算",
+    "refreshModels": "刷新模型"
   }
 }

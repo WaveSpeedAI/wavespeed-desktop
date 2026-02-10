@@ -9,6 +9,7 @@ import {
   FolderHeart,
   Wand2,
   Zap,
+  GitBranch,
   ArrowRight,
   Sparkles
 } from 'lucide-react'
@@ -137,6 +138,15 @@ export function WelcomePage() {
       shapeGradient: 'from-orange-500/40 to-amber-500/30',
       href: '/free-tools',
       badge: t('welcome.features.freeTools.badge')
+    },
+    {
+      icon: <GitBranch className="h-6 w-6 text-blue-600 dark:text-blue-400" />,
+      title: t('welcome.features.workflow.title'),
+      description: t('welcome.features.workflow.description'),
+      gradient: 'bg-gradient-to-br from-blue-500/40 via-indigo-500/20 to-transparent',
+      shapeGradient: 'from-blue-500/40 to-indigo-500/30',
+      href: '/workflow',
+      badge: t('welcome.features.workflow.badge')
     }
   ]
 

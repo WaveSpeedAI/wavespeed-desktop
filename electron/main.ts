@@ -11,6 +11,17 @@ import http from 'http'
 import { pathToFileURL } from 'url'
 import { SDGenerator } from './lib/sdGenerator'
 import log from 'electron-log'
+import { initWorkflowModule, closeWorkflowDatabase } from './workflow'
+
+// Suppress Chromium's noisy ffmpeg pixel format warnings (harmless, caused by video thumbnail decoding)
+// These come from GPU/renderer processes' stderr and cannot be disabled via command-line switches.
+// Filter them at the process level:
+const originalStderrWrite = process.stderr.write.bind(process.stderr)
+process.stderr.write = (chunk: string | Uint8Array, ...args: unknown[]): boolean => {
+  const str = typeof chunk === 'string' ? chunk : chunk.toString()
+  if (str.includes('Unsupported pixel format') || str.includes('ffmpeg_common.cc')) return true
+  return (originalStderrWrite as (...a: unknown[]) => boolean)(chunk, ...args)
+}
 
 // Linux-specific flags
 if (process.platform === 'linux') {
@@ -1768,6 +1779,11 @@ app.whenReady().then(() => {
 
   createWindow()
 
+  // Initialize workflow module (sql.js DB, node registry, IPC handlers)
+  initWorkflowModule().catch(err => {
+    console.error('[Workflow] Failed to initialize:', err)
+  })
+
   // Setup auto-updater after window is created
   setupAutoUpdater()
 
@@ -1799,6 +1815,7 @@ app.on('before-quit', () => {
 })
 
 app.on('window-all-closed', () => {
+  closeWorkflowDatabase()
   if (process.platform !== 'darwin') {
     app.quit()
   }

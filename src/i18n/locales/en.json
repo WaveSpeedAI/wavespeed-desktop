@@ -42,6 +42,7 @@
     "assets": "My Assets",
     "zImage": "Z-Image",
     "freeTools": "Free Tools",
+    "workflow": "Workflow",
     "settings": "Settings",
     "collapse": "Collapse"
   },
@@ -80,6 +81,11 @@
         "title": "Free Tools",
         "description": "Powerful AI tools that run locally - no API key needed",
         "badge": "Free"
+      },
+      "workflow": {
+        "title": "Workflow",
+        "description": "Build visual AI pipelines with node-based editor",
+        "badge": "New"
       }
     }
   },
@@ -810,5 +816,34 @@
       "merging": "Merging",
       "trimming": "Trimming"
     }
+  },
+  "workflow": {
+    "workflows": "Workflows",
+    "newWorkflow": "New Workflow",
+    "untitled": "Untitled Workflow",
+    "save": "Save",
+    "unsaved": "unsaved",
+    "nodes": "Nodes",
+    "config": "Config",
+    "results": "Results",
+    "cost": "Cost",
+    "settings": "Settings",
+    "runAll": "Run All",
+    "runNode": "Run Node",
+    "continueFrom": "Continue From",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "noWorkflows": "No workflows yet",
+    "create": "Create",
+    "open": "Open",
+    "delete": "Delete",
+    "selectNode": "Select a node to configure",
+    "noExecutions": "No executions yet",
+    "budgetExceeded": "Budget exceeded",
+    "dailySpend": "Daily Spend",
+    "perExecutionLimit": "Per-Execution Limit",
+    "dailyLimit": "Daily Limit",
+    "editBudget": "Edit Budget",
+    "refreshModels": "Refresh Models"
   }
 }

@@ -9,7 +9,8 @@ export default defineConfig({
       rollupOptions: {
         input: {
           index: resolve(__dirname, 'electron/main.ts')
-        }
+        },
+        external: ['sql.js']
       }
     }
   },
@@ -35,6 +36,9 @@ export default defineConfig({
       rollupOptions: {
         input: resolve(__dirname, 'index.html')
       }
+    },
+    optimizeDeps: {
+      exclude: ['@google/model-viewer']
     },
     server: {
       port: 5173,

@@ -32,6 +32,7 @@
   "dependencies": {
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@ffmpeg/util": "^0.12.2",
+    "@google/model-viewer": "^4.1.0",
     "@huggingface/transformers": "^3.8.1",
     "@imgly/background-removal": "^1.7.0",
     "@radix-ui/react-alert-dialog": "^1.1.15",
@@ -66,6 +67,7 @@
     "https-proxy-agent": "^7.0.6",
     "i18next": "^25.7.1",
     "i18next-browser-languagedetector": "^8.2.0",
+    "json-stable-stringify": "^1.1.1",
     "lucide-react": "^0.454.0",
     "mp4-muxer": "^5.2.2",
     "onnxruntime-web": "1.21.0",
@@ -74,11 +76,14 @@
     "react-dropzone": "^14.2.9",
     "react-i18next": "^16.3.5",
     "react-router-dom": "^6.28.0",
+    "reactflow": "^11.11.4",
+    "sql.js": "^1.13.0",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
     "upscaler": "^1.0.0-beta.19",
+    "uuid": "^10.0.0",
     "webm-muxer": "^5.1.4",
-    "zustand": "^5.0.1"
+    "zustand": "^4.5.7"
   },
   "overrides": {
     "onnxruntime-web": "1.21.0"
@@ -86,9 +91,11 @@
   "devDependencies": {
     "@electron-toolkit/utils": "^3.0.0",
     "@types/adm-zip": "^0.5.7",
+    "@types/json-stable-stringify": "^1.0.36",
     "@types/node": "^22.9.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
+    "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react": "^4.3.3",
     "autoprefixer": "^10.4.20",
     "electron": "^33.4.11",

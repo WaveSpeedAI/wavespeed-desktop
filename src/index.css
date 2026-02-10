@@ -356,3 +356,12 @@
   animation: particle 12s ease-in-out infinite;
   animation-delay: -6s;
 }
+
+/* Workflow node running pulse — visible glow breathe */
+@keyframes pulse-subtle {
+  0%, 100% { box-shadow: 0 0 8px rgba(59,130,246,.2); }
+  50% { box-shadow: 0 0 25px rgba(59,130,246,.5), 0 0 50px rgba(59,130,246,.15); }
+}
+.animate-pulse-subtle {
+  animation: pulse-subtle 1.8s ease-in-out infinite;
+}

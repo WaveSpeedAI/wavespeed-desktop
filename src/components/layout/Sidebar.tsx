@@ -20,6 +20,7 @@ import {
   PanelLeft,
   FolderHeart,
   Sparkles,
+  GitBranch,
   X
 } from 'lucide-react'
 
@@ -77,6 +78,12 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
       titleKey: 'nav.freeTools',
       href: '/free-tools',
       icon: Sparkles,
+      matchPrefix: true
+    },
+    {
+      titleKey: 'nav.workflow',
+      href: '/workflow',
+      icon: GitBranch,
       matchPrefix: true
     }
   ]

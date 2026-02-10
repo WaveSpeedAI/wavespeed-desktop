@@ -11,62 +11,160 @@ on:
   workflow_dispatch:  # Allow manual trigger anytime
 
 jobs:
-  # Warn if desktop files with mobile overrides were modified
-  check-overrides:
+  # Check for potential mobile sync issues — blocks mobile build if issues found
+  check-mobile-sync:
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Full history for tag comparison
+          fetch-depth: 0
 
-      - name: Check for override conflicts
+      - name: Check for mobile sync issues
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          # Find the previous tag
           CURRENT_TAG=${GITHUB_REF#refs/tags/}
           PREV_TAG=$(git tag --sort=-version:refname | grep '^v[0-9]' | grep -v "^${CURRENT_TAG}$" | head -1)
 
           if [ -z "$PREV_TAG" ]; then
-            echo "No previous tag found, skipping override check"
+            echo "No previous tag found, skipping sync check"
             exit 0
           fi
 
           echo "Comparing $PREV_TAG → $CURRENT_TAG"
+          CHANGED_FILES=$(git diff --name-only "$PREV_TAG" "$CURRENT_TAG")
+          WARNINGS=0
+          ISSUES=""
 
-          # Files that have mobile overrides (alias in mobile/vite.config.ts)
+          echo ""
+          echo "═══════════════════════════════════════════════"
+          echo "  Mobile Sync Check"
+          echo "═══════════════════════════════════════════════"
+
+          # ─── Check 1: Override files (mobile has its own version) ───
+          echo ""
+          echo "▶ Check 1: Override file sync"
           OVERRIDE_MAP=(
             "src/pages/SettingsPage.tsx|mobile/src/pages/SettingsPage.tsx"
           )
-
-          CHANGED_FILES=$(git diff --name-only "$PREV_TAG" "$CURRENT_TAG")
-          HAS_WARNING=false
-
           for entry in "${OVERRIDE_MAP[@]}"; do
             DESKTOP_FILE="${entry%%|*}"
             MOBILE_FILE="${entry##*|}"
             if echo "$CHANGED_FILES" | grep -q "^${DESKTOP_FILE}$"; then
-              HAS_WARNING=true
-              echo "::warning file=${DESKTOP_FILE}::⚠️ This file was modified but has a mobile override at ${MOBILE_FILE}. Changes will NOT apply to mobile. Please review and manually sync if needed."
+              WARNINGS=$((WARNINGS + 1))
+              MSG="**Override Sync**: \`${DESKTOP_FILE}\` was modified but mobile uses its own version at \`${MOBILE_FILE}\`. Changes will NOT apply to mobile — please review and manually sync."
+              ISSUES="${ISSUES}\n- ${MSG}"
+              echo "::warning file=${DESKTOP_FILE}::⚠️ ${MSG}"
             fi
           done
 
-          if [ "$HAS_WARNING" = true ]; then
-            echo ""
-            echo "=============================================="
-            echo "⚠️  MOBILE OVERRIDE SYNC REQUIRED"
-            echo "=============================================="
-            echo "Some desktop files with mobile overrides were modified."
-            echo "The mobile build will proceed, but those changes"
-            echo "will NOT appear in the mobile app."
-            echo "Please manually sync the mobile override files."
-            echo "=============================================="
-          else
-            echo "✅ No override conflicts detected"
+          # ─── Check 2: New routes in desktop App.tsx ───
+          echo ""
+          echo "▶ Check 2: Route sync"
+          if echo "$CHANGED_FILES" | grep -q "^src/App.tsx$"; then
+            PREV_ROUTES=$(git show "$PREV_TAG":src/App.tsx 2>/dev/null | grep -oP 'path="[^"]*"' | sort)
+            CURR_ROUTES=$(git show "$CURRENT_TAG":src/App.tsx 2>/dev/null | grep -oP 'path="[^"]*"' | sort)
+            NEW_ROUTES=$(comm -13 <(echo "$PREV_ROUTES") <(echo "$CURR_ROUTES"))
+
+            if [ -n "$NEW_ROUTES" ]; then
+              WARNINGS=$((WARNINGS + 1))
+              MSG="**Route Sync**: New routes added to desktop \`src/App.tsx\` but missing from \`mobile/src/App.tsx\`: \`${NEW_ROUTES}\`"
+              ISSUES="${ISSUES}\n- ${MSG}"
+              echo "::warning file=src/App.tsx::⚠️ ${MSG}"
+            fi
           fi
 
+          # ─── Check 3: New dependencies in root package.json ───
+          echo ""
+          echo "▶ Check 3: Dependency sync"
+          if echo "$CHANGED_FILES" | grep -q "^package.json$"; then
+            PREV_DEPS=$(git show "$PREV_TAG":package.json 2>/dev/null | node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.log(Object.keys(d.dependencies||{}).sort().join('\n'))")
+            CURR_DEPS=$(git show "$CURRENT_TAG":package.json 2>/dev/null | node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.log(Object.keys(d.dependencies||{}).sort().join('\n'))")
+            NEW_DEPS=$(comm -13 <(echo "$PREV_DEPS") <(echo "$CURR_DEPS"))
+
+            if [ -n "$NEW_DEPS" ]; then
+              MOBILE_DEPS=$(cat mobile/package.json | node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.log(Object.keys(d.dependencies||{}).sort().join('\n'))")
+              MISSING=""
+              while IFS= read -r dep; do
+                if [ -n "$dep" ] && ! echo "$MOBILE_DEPS" | grep -q "^${dep}$"; then
+                  MISSING="$MISSING \`$dep\`"
+                fi
+              done <<< "$NEW_DEPS"
+
+              if [ -n "$MISSING" ]; then
+                WARNINGS=$((WARNINGS + 1))
+                MSG="**Dependency Sync**: New desktop dependencies missing from \`mobile/package.json\`:${MISSING}"
+                ISSUES="${ISSUES}\n- ${MSG}"
+                echo "::warning file=package.json::⚠️ ${MSG}"
+              fi
+            fi
+          fi
+
+          # ─── Check 4: New i18n keys used but not defined ───
+          echo ""
+          echo "▶ Check 4: i18n key consistency"
+          if echo "$CHANGED_FILES" | grep -q "^src/i18n/locales/en.json$"; then
+            if ! node -e "JSON.parse(require('fs').readFileSync('src/i18n/locales/en.json','utf8'))" 2>/dev/null; then
+              WARNINGS=$((WARNINGS + 1))
+              MSG="**i18n**: \`en.json\` has invalid JSON syntax"
+              ISSUES="${ISSUES}\n- ${MSG}"
+              echo "::warning file=src/i18n/locales/en.json::⚠️ ${MSG}"
+            fi
+          fi
+
+          # ─── Check 5: New pages created but not routed in mobile ───
+          echo ""
+          echo "▶ Check 5: New page detection"
+          NEW_PAGES=$(echo "$CHANGED_FILES" | grep "^src/pages/.*\.tsx$" | while read f; do
+            git show "$PREV_TAG":"$f" >/dev/null 2>&1 || echo "$f"
+          done)
+          if [ -n "$NEW_PAGES" ]; then
+            for page_file in $NEW_PAGES; do
+              page_name=$(basename "$page_file" .tsx)
+              if ! grep -q "$page_name" mobile/src/App.tsx 2>/dev/null; then
+                WARNINGS=$((WARNINGS + 1))
+                MSG="**New Page**: \`${page_name}\` was added but is not referenced in \`mobile/src/App.tsx\`. Add a route if this page should be accessible on mobile."
+                ISSUES="${ISSUES}\n- ${MSG}"
+                echo "::warning file=${page_file}::⚠️ ${MSG}"
+              fi
+            done
+          fi
+
+          # ─── Summary ───
+          echo ""
+          echo "═══════════════════════════════════════════════"
+          if [ "$WARNINGS" -gt 0 ]; then
+            echo "  ⚠️  $WARNINGS sync warning(s) found"
+            echo "  Mobile build is BLOCKED until these are resolved."
+            echo "  Desktop build is NOT affected."
+            echo "═══════════════════════════════════════════════"
+
+            # Create GitHub Issue to notify team
+            ISSUE_BODY=$(printf "## ⚠️ Mobile Sync Check Failed for ${CURRENT_TAG}\n\nThe following issues were detected when comparing \`${PREV_TAG}\` → \`${CURRENT_TAG}\`:\n\n${ISSUES}\n\n---\n\n**Mobile build has been blocked.** Desktop release is not affected.\n\nPlease fix the issues above and re-tag to trigger a new mobile release.\n\nTriggered by: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}")
+
+            # Ensure label exists (ignore error if already exists)
+            gh label create "mobile-sync" --color "d93f0b" --description "Mobile sync check failures" 2>/dev/null || true
+
+            gh issue create \
+              --title "🚨 Mobile sync issues found in ${CURRENT_TAG}" \
+              --body "$ISSUE_BODY" \
+              --label "mobile-sync"
+
+            exit 1
+          else
+            echo "  ✅ No sync issues detected"
+          fi
+          echo "═══════════════════════════════════════════════"
+
   build-android:
+    needs: check-mobile-sync
+    # Run even if check-mobile-sync was skipped (non-tag builds), but not if it failed
+    if: always() && (needs.check-mobile-sync.result == 'success' || needs.check-mobile-sync.result == 'skipped')
     runs-on: ubuntu-latest
 
     steps:
@@ -187,8 +285,8 @@ jobs:
           if-no-files-found: ignore
 
   release:
-    needs: build-android
-    if: startsWith(github.ref, 'refs/tags/v') && needs.build-android.result == 'success'
+    needs: [check-mobile-sync, build-android]
+    if: always() && startsWith(github.ref, 'refs/tags/v') && needs.build-android.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: write

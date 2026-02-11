@@ -88,6 +88,12 @@ export const executionIpc = {
 export const historyIpc = {
   list: (nodeId: string): Promise<NodeExecutionRecord[]> =>
     invoke('history:list', { nodeId }),
+  /** Delete a single execution record and its local result files */
+  delete: (executionId: string): Promise<void> =>
+    invoke('history:delete', { executionId }),
+  /** Delete ALL execution records for a node and their local result files */
+  deleteAll: (nodeId: string): Promise<void> =>
+    invoke('history:delete-all', { nodeId }),
   setCurrent: (nodeId: string, executionId: string): Promise<void> =>
     invoke('history:set-current', { nodeId, executionId }),
   star: (executionId: string, starred: boolean): Promise<void> =>

@@ -52,6 +52,7 @@ export interface ExecutionState {
   restoreResultsForNodes: (nodeIds: string[]) => Promise<void>
   initListeners: () => void
   fetchLastResult: (nodeId: string, force?: boolean) => void
+  clearNodeResults: (nodeId: string) => void
 }
 
 export const useExecutionStore = create<ExecutionState>((set, get) => ({
@@ -277,6 +278,16 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
         }
       }
     } catch { /* ignore */ }
+  },
+
+  clearNodeResults: (nodeId) => {
+    set(state => {
+      const newResults = { ...state.lastResults }
+      delete newResults[nodeId]
+      const newFetched = new Set(state._fetchedNodes)
+      newFetched.delete(nodeId)
+      return { lastResults: newResults, _fetchedNodes: newFetched }
+    })
   },
 
   initListeners: () => {

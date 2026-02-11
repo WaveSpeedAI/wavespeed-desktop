@@ -4,16 +4,20 @@
  * (images, videos, 3D models). Matches the node's inline results design.
  */
 import { useEffect, useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useUIStore } from '../../stores/ui.store'
 import { useExecutionStore } from '../../stores/execution.store'
+import { useWorkflowStore } from '../../stores/workflow.store'
 import { historyIpc } from '../../ipc/ipc-client'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import type { NodeExecutionRecord } from '@/workflow/types/execution'
 
 export function ResultsPanel() {
+  const { t } = useTranslation()
   const selectedNodeId = useUIStore(s => s.selectedNodeId)
   const openPreview = useUIStore(s => s.openPreview)
   const nodeStatuses = useExecutionStore(s => s.nodeStatuses)
+  const clearNodeResults = useExecutionStore(s => s.clearNodeResults)
   const [records, setRecords] = useState<NodeExecutionRecord[]>([])
   const [prevStatus, setPrevStatus] = useState<string>('idle')
 
@@ -34,6 +38,36 @@ export function ResultsPanel() {
     if (prevStatus === 'running' && currentStatus !== 'running') setTimeout(loadRecords, 1500)
     setPrevStatus(currentStatus)
   }, [selectedNodeId, nodeStatuses, loadRecords, prevStatus])
+
+  /** Delete a single execution record + files, refresh list */
+  const handleDeleteOne = useCallback(async (executionId: string) => {
+    try {
+      await historyIpc.delete(executionId)
+      setRecords(prev => prev.filter(r => r.id !== executionId))
+      // Also refresh in-memory store
+      if (selectedNodeId) clearNodeResults(selectedNodeId)
+    } catch (err) {
+      console.error('Failed to delete execution:', err)
+    }
+  }, [selectedNodeId, clearNodeResults])
+
+  /** Delete ALL execution records + files for this node */
+  const handleDeleteAll = useCallback(async () => {
+    if (!selectedNodeId) return
+    try {
+      await historyIpc.deleteAll(selectedNodeId)
+      setRecords([])
+      clearNodeResults(selectedNodeId)
+      // Also clear hidden runs metadata from node params
+      const node = useWorkflowStore.getState().nodes.find(n => n.id === selectedNodeId)
+      if (node) {
+        const { __hiddenRuns: _, __showLatestOnly: _2, ...rest } = node.data.params as Record<string, unknown>
+        useWorkflowStore.getState().updateNodeParams(selectedNodeId, rest)
+      }
+    } catch (err) {
+      console.error('Failed to delete all executions:', err)
+    }
+  }, [selectedNodeId, clearNodeResults])
 
   if (!selectedNodeId) {
     return <div className="p-4 text-muted-foreground text-sm text-center">Select a node to view results</div>
@@ -83,18 +117,27 @@ export function ResultsPanel() {
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex justify-between items-center px-3 pt-3 pb-2">
-        <h3 className="text-sm font-semibold">Results ({records.length})</h3>
-        {currentNodeStatus && (
-          <span className={`text-[10px] px-1.5 py-0.5 rounded
-            ${currentNodeStatus === 'running' ? 'bg-blue-500/20 text-blue-400' :
-              currentNodeStatus === 'confirmed' ? 'bg-green-500/20 text-green-400' :
-              currentNodeStatus === 'error' ? 'bg-red-500/20 text-red-400' :
-              'bg-muted text-muted-foreground'}`}>
-            {currentNodeStatus === 'running' ? 'Running...' :
-             currentNodeStatus === 'confirmed' ? 'Done' :
-             currentNodeStatus === 'error' ? 'Error' : 'Idle'}
-          </span>
-        )}
+        <h3 className="text-sm font-semibold">{t('workflow.results', 'Results')} ({records.length})</h3>
+        <div className="flex items-center gap-2">
+          {records.length > 0 && (
+            <button onClick={handleDeleteAll}
+              className="text-[10px] text-red-400/70 hover:text-red-400 transition-colors"
+              title={t('workflow.clearAllResults', 'Clear all results and delete files')}>
+              {t('workflow.clearAll', 'Clear all')}
+            </button>
+          )}
+          {currentNodeStatus && (
+            <span className={`text-[10px] px-1.5 py-0.5 rounded
+              ${currentNodeStatus === 'running' ? 'bg-blue-500/20 text-blue-400' :
+                currentNodeStatus === 'confirmed' ? 'bg-green-500/20 text-green-400' :
+                currentNodeStatus === 'error' ? 'bg-red-500/20 text-red-400' :
+                'bg-muted text-muted-foreground'}`}>
+              {currentNodeStatus === 'running' ? 'Running...' :
+               currentNodeStatus === 'confirmed' ? 'Done' :
+               currentNodeStatus === 'error' ? 'Error' : 'Idle'}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Execution list */}
@@ -120,6 +163,11 @@ export function ResultsPanel() {
                   <span className="text-[9px] text-muted-foreground">
                     {new Date(rec.createdAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                   </span>
+                  <button onClick={() => handleDeleteOne(rec.id)}
+                    className="text-[10px] text-muted-foreground hover:text-red-400 transition-colors ml-1"
+                    title={t('workflow.deleteResult', 'Delete this result and files')}>
+                    ✕
+                  </button>
                 </div>
 
                 {/* Duration + cost */}

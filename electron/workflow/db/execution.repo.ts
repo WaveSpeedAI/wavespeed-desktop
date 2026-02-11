@@ -59,6 +59,18 @@ export function updateExecutionStarred(executionId: string, starred: boolean): v
   persistDatabase()
 }
 
+export function deleteExecution(executionId: string): void {
+  const db = getDatabase()
+  db.run('DELETE FROM node_executions WHERE id = ?', [executionId])
+  persistDatabase()
+}
+
+export function deleteExecutionsByNodeId(nodeId: string): void {
+  const db = getDatabase()
+  db.run('DELETE FROM node_executions WHERE node_id = ?', [nodeId])
+  persistDatabase()
+}
+
 export function findByCache(nodeId: string, inputHash: string, paramsHash: string): NodeExecutionRecord | null {
   const db = getDatabase()
   const result = db.exec(

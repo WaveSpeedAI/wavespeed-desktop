@@ -71,7 +71,9 @@ const NODE_INPUT_ACCEPT_RULES: Record<string, string | Record<string, string>> =
 
 /* ── handle styles ───────────────────────────────────────────────────── */
 
-/** Left-side input handle — absolute positioned to sit on the node border */
+/** Left-side input handle — absolute positioned to sit on the node border.
+ *  zIndex 40 keeps handles above the resize edge zones (z-20/z-30) so that
+ *  dragging from a handle always starts a connection, never a resize. */
 const handleLeft = (_connected: boolean, media = false): React.CSSProperties => ({
   width: HANDLE_SIZE, height: HANDLE_SIZE, borderRadius: '50%',
   border: '2px solid hsl(var(--background))',
@@ -79,6 +81,7 @@ const handleLeft = (_connected: boolean, media = false): React.CSSProperties => 
   left: -HANDLE_SIZE / 2 - 1,
   top: '50%', transform: 'translateY(-50%)',
   position: 'absolute',
+  zIndex: 40,
 })
 
 /** Right-side output handle */
@@ -89,6 +92,7 @@ const handleRight = (): React.CSSProperties => ({
   right: -HANDLE_SIZE / 2 - 1,
   top: '50%', transform: 'translateY(-50%)',
   position: 'absolute',
+  zIndex: 40,
 })
 
 /* ── main component ──────────────────────────────────────────────────── */
@@ -107,7 +111,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
   const updateNodeData = useWorkflowStore(s => s.updateNodeData)
   const workflowId = useWorkflowStore(s => s.workflowId)
   const isDirty = useWorkflowStore(s => s.isDirty)
-  const { runNode, cancelNode, retryNode } = useExecutionStore()
+  const { runNode, cancelNode, retryNode, clearNodeResults } = useExecutionStore()
   const openPreview = useUIStore(s => s.openPreview)
   const allNodes = useWorkflowStore(s => s.nodes)
   const allLastResults = useExecutionStore(s => s.lastResults)
@@ -932,6 +936,22 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
                 {t('workflow.results', 'Results')} ({displayGroups.length}/{resultGroups.length})
               </span>
               <div className="flex-1" />
+              {/* Clear all results + delete files */}
+              <button onClick={async e => {
+                  e.stopPropagation()
+                  try {
+                    const { historyIpc } = await import('../../ipc/ipc-client')
+                    await historyIpc.deleteAll(id)
+                  } catch { /* best-effort */ }
+                  clearNodeResults(id)
+                  // Also clear hidden runs metadata from params
+                  const { __hiddenRuns: _, __showLatestOnly: _2, ...rest } = data.params as Record<string, unknown>
+                  updateNodeParams(id, rest)
+                }}
+                className="text-[9px] text-red-400/70 hover:text-red-400 transition-colors"
+                title={t('workflow.clearAllResults', 'Clear all results')}>
+                {t('workflow.clearAll', 'Clear all')}
+              </button>
               {/* Show all — always clickable, clears hidden + turns off latest */}
               <button onClick={e => { e.stopPropagation(); showAllRuns() }}
                 className="text-[9px] text-blue-400 hover:text-blue-300 transition-colors">
@@ -1000,6 +1020,8 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
       <div className="absolute top-[14px] right-5 text-[11px] font-medium text-blue-400/80">{t('workflow.outputLowercase', 'output')}</div>
 
       {/* ── Resize handles — 4 edges + 4 corners ────────────────── */}
+      {/* Only shown when selected to avoid interfering with handle connections */}
+      {selected && <>
       {/* Edges */}
       <div onMouseDown={e => onEdgeResizeStart(e,  1,  0)} className="nodrag absolute top-2 right-0 bottom-2 w-[5px] cursor-ew-resize z-20 hover:bg-blue-500/20" />
       <div onMouseDown={e => onEdgeResizeStart(e, -1,  0)} className="nodrag absolute top-2 left-0  bottom-2 w-[5px] cursor-ew-resize z-20 hover:bg-blue-500/20" />
@@ -1010,6 +1032,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
       <div onMouseDown={e => onEdgeResizeStart(e, -1,  1)} className="nodrag absolute bottom-0 left-0  w-3 h-3 cursor-sw-resize z-30" />
       <div onMouseDown={e => onEdgeResizeStart(e,  1, -1)} className="nodrag absolute top-0    right-0 w-3 h-3 cursor-ne-resize z-30" />
       <div onMouseDown={e => onEdgeResizeStart(e, -1, -1)} className="nodrag absolute top-0    left-0  w-3 h-3 cursor-nw-resize z-30" />
+      </>}
       </div>
     </div>
   )

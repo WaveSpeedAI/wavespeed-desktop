@@ -238,6 +238,26 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
       }
 
       items.push({ label: '', action: () => {}, divider: true })
+      // Clear results + delete files — only show when node has results
+      const hasResults = (useExecutionStore.getState().lastResults[nodeId] ?? []).length > 0
+      if (hasResults) {
+        items.push({
+          label: t('workflow.clearResults', 'Clear Results'), icon: '🧹',
+          action: async () => {
+            try {
+              const { historyIpc } = await import('../../ipc/ipc-client')
+              await historyIpc.deleteAll(nodeId)
+            } catch { /* best-effort */ }
+            useExecutionStore.getState().clearNodeResults(nodeId)
+            // Also clear hidden runs metadata from node params
+            const node = useWorkflowStore.getState().nodes.find(n => n.id === nodeId)
+            if (node) {
+              const { __hiddenRuns: _, __showLatestOnly: _2, ...rest } = node.data.params as Record<string, unknown>
+              useWorkflowStore.getState().updateNodeParams(nodeId, rest)
+            }
+          }
+        })
+      }
       items.push({
         label: t('common.copy', 'Copy'), icon: '📋', shortcut: 'Ctrl+C',
         action: () => { const n = nodes.find(n => n.id === nodeId); if (n) localStorage.setItem('copiedNode', JSON.stringify(n)) }

@@ -933,7 +933,7 @@
       },
       "input/media-upload": {
         "label": "Upload",
-        "outputs": { "output": { "label": "Media URL" } }
+        "outputs": { "output": { "label": "URL" } }
       },
       "input/text-input": {
         "label": "Text",
@@ -941,7 +941,7 @@
       },
       "output/preview": {
         "label": "Preview",
-        "inputs": { "input": { "label": "Media URL" } },
+        "inputs": { "input": { "label": "URL" } },
         "params": {
           "autoDetect": { "label": "Auto-detect Type" },
           "forceType": {
@@ -950,7 +950,8 @@
               "auto": "Auto",
               "image": "Image",
               "video": "Video",
-              "audio": "Audio"
+              "audio": "Audio",
+              "3d": "3D Model"
             }
           }
         }
@@ -958,7 +959,7 @@
       "output/file": {
         "label": "File Export",
         "inputs": {
-          "url": { "label": "Media URL" },
+          "url": { "label": "URL" },
           "content": { "label": "Content (legacy)" }
         },
         "params": {

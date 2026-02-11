@@ -247,12 +247,30 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
     ]).map(r => r.item).slice(0, 8)
   }, [availableModels, modelSearchQuery])
 
+  const removeEdgesByIds = useWorkflowStore(s => s.removeEdgesByIds)
+
   const handleInlineSelectModel = useCallback((model: WaveSpeedModel) => {
+    // Smart edge pruning: keep edges whose param name exists in the new model, remove the rest
     if (currentModelId) {
-      const hasConnections = edges.some(e => e.source === id || e.target === id)
-      if (hasConnections) {
-        setModelSwitchBlocked(true)
-        return
+      const newParamNames = new Set(model.inputSchema.map(p => p.name))
+      const edgesToRemove = edges.filter(e => {
+        // Output edges (this node is source): always keep
+        if (e.source === id) return false
+        // Input edges (this node is target)
+        if (e.target === id) {
+          const th = e.targetHandle ?? ''
+          // Static input handles (input-xxx): always keep
+          if (th.startsWith('input-')) return false
+          // Model param handles (param-xxx): keep if new model has the same param name
+          if (th.startsWith('param-')) {
+            const paramName = th.slice('param-'.length)
+            return !newParamNames.has(paramName)
+          }
+        }
+        return false
+      })
+      if (edgesToRemove.length > 0) {
+        removeEdgesByIds(edgesToRemove.map(e => e.id))
       }
     }
 
@@ -285,7 +303,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
 
     setModelSearchQuery('')
     setModelSwitchBlocked(false)
-  }, [currentModelId, data.params, edges, id, updateNodeData, updateNodeParams])
+  }, [currentModelId, data.params, edges, id, updateNodeData, updateNodeParams, removeEdgesByIds])
 
   useEffect(() => {
     if (!isAITask) return
@@ -399,6 +417,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
   const inlinePreviewIsImage = /^data:image\//i.test(inlineInputPreviewUrl) || /\.(jpg|jpeg|png|gif|webp|bmp|svg|avif)$/.test(inlinePreviewDetectSource)
   const inlinePreviewIsVideo = /^data:video\//i.test(inlineInputPreviewUrl) || /\.(mp4|webm|mov|avi|mkv)$/.test(inlinePreviewDetectSource)
   const inlinePreviewIsAudio = /^data:audio\//i.test(inlineInputPreviewUrl) || /\.(mp3|wav|ogg|flac|aac|m4a)$/.test(inlinePreviewDetectSource)
+  const inlinePreviewIs3D = /\.(glb|gltf)$/.test(inlinePreviewDetectSource)
 
   // If enabled, optimize prompt/text once right before running.
   const optimizeOnRunIfEnabled = useCallback(async () => {
@@ -871,6 +890,12 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
               {inlinePreviewIsAudio && (
                 <audio src={inlineInputPreviewUrl} controls className="w-full max-h-10 rounded-lg border border-[hsl(var(--border))]" />
               )}
+              {inlinePreviewIs3D && (
+                <Inline3DViewer
+                  src={inlineInputPreviewUrl}
+                  onClick={() => openPreview(inlineInputPreviewUrl)}
+                />
+              )}
             </div>
           </div>
         )}
@@ -1035,6 +1060,43 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
       </>}
       </div>
     </div>
+  )
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Inline3DViewer — lightweight inline 3D model preview using @google/model-viewer
+   ══════════════════════════════════════════════════════════════════════ */
+
+function Inline3DViewer({ src, onClick }: { src: string; onClick?: () => void }) {
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    import('@google/model-viewer').catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    if (!containerRef.current) return
+    const el = document.createElement('model-viewer') as HTMLElement
+    el.setAttribute('src', src)
+    el.setAttribute('camera-controls', '')
+    el.setAttribute('auto-rotate', '')
+    el.setAttribute('shadow-intensity', '1')
+    el.setAttribute('environment-image', 'neutral')
+    el.style.width = '100%'
+    el.style.height = '100%'
+    el.style.borderRadius = '8px'
+    el.style.background = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)'
+    containerRef.current.innerHTML = ''
+    containerRef.current.appendChild(el)
+    return () => { if (containerRef.current) containerRef.current.innerHTML = '' }
+  }, [src])
+
+  return (
+    <div
+      ref={containerRef}
+      onClick={e => { e.stopPropagation(); onClick?.() }}
+      className="w-full aspect-square rounded-lg border border-[hsl(var(--border))] overflow-hidden cursor-pointer hover:ring-2 hover:ring-blue-500/40 transition-shadow"
+    />
   )
 }
 

@@ -4,17 +4,18 @@
 import { BaseNodeHandler, type NodeExecutionContext, type NodeExecutionResult } from '../base'
 import type { NodeTypeDefinition } from '../../../../src/workflow/types/node-defs'
 
-export type PreviewContentType = 'image' | 'video' | 'audio' | 'unknown'
+export type PreviewContentType = 'image' | 'video' | 'audio' | '3d' | 'unknown'
 
 export const previewDisplayDef: NodeTypeDefinition = {
   type: 'output/preview', category: 'output', label: 'Preview', icon: '👀',
-  inputs: [{ key: 'input', label: 'Media URL', dataType: 'url', required: true }],
+  inputs: [{ key: 'input', label: 'URL', dataType: 'url', required: true }],
   outputs: [],
   params: [
     { key: 'autoDetect', label: 'Auto-detect Type', type: 'boolean', default: true },
     { key: 'forceType', label: 'Force Type', type: 'select', default: 'auto', options: [
       { label: 'Auto', value: 'auto' }, { label: 'Image', value: 'image' },
-      { label: 'Video', value: 'video' }, { label: 'Audio', value: 'audio' }
+      { label: 'Video', value: 'video' }, { label: 'Audio', value: 'audio' },
+      { label: '3D Model', value: '3d' }
     ]}
   ]
 }
@@ -43,6 +44,7 @@ function detectContentType(url: string): PreviewContentType {
   if (/\.(jpg|jpeg|png|gif|webp|bmp|svg|avif)$/.test(p)) return 'image'
   if (/\.(mp4|webm|mov|avi|mkv)$/.test(p)) return 'video'
   if (/\.(mp3|wav|ogg|flac|aac|m4a)$/.test(p)) return 'audio'
+  if (/\.(glb|gltf)$/.test(p)) return '3d'
   if (p.includes('/image') || p.includes('img')) return 'image'
   if (p.includes('/video') || p.includes('vid')) return 'video'
   if (p.includes('/audio') || p.includes('/tts') || p.includes('/music')) return 'audio'

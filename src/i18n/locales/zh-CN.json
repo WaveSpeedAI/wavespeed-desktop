@@ -933,7 +933,7 @@
       },
       "input/media-upload": {
         "label": "上传",
-        "outputs": { "output": { "label": "媒体 URL" } }
+        "outputs": { "output": { "label": "URL" } }
       },
       "input/text-input": {
         "label": "文本",
@@ -941,7 +941,7 @@
       },
       "output/preview": {
         "label": "预览",
-        "inputs": { "input": { "label": "媒体 URL" } },
+        "inputs": { "input": { "label": "URL" } },
         "params": {
           "autoDetect": { "label": "自动识别类型" },
           "forceType": {
@@ -950,7 +950,8 @@
               "auto": "自动",
               "image": "图片",
               "video": "视频",
-              "audio": "音频"
+              "audio": "音频",
+              "3d": "3D 模型"
             }
           }
         }
@@ -958,7 +959,7 @@
       "output/file": {
         "label": "文件导出",
         "inputs": {
-          "url": { "label": "媒体 URL" },
+          "url": { "label": "URL" },
           "content": { "label": "内容（兼容）" }
         },
         "params": {

@@ -13,7 +13,7 @@ import { randomUUID } from 'crypto'
 export const fileExportDef: NodeTypeDefinition = {
   type: 'output/file', category: 'output', label: 'File Export', icon: '💾',
   inputs: [
-    { key: 'url', label: 'Media URL', dataType: 'url', required: true },
+    { key: 'url', label: 'URL', dataType: 'url', required: true },
     { key: 'content', label: 'Content (legacy)', dataType: 'any', required: false }
   ],
   outputs: [],

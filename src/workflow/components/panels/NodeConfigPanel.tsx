@@ -197,15 +197,31 @@ function AITaskModelSelector({ params, onChange }: { params: Record<string, unkn
   const displayResults = hasSearchQuery ? fzfResults : categoryFilteredModels
 
   const edges = useWorkflowStore(s => s.edges)
+  const removeEdgesByIds = useWorkflowStore(s => s.removeEdgesByIds)
   const [switchBlockedMsg, setSwitchBlockedMsg] = useState(false)
 
   const handleSelectModel = useCallback((model: WaveSpeedModel) => {
-    // Check if this node has any connections — must disconnect before switching models
+    // Smart edge pruning: keep edges whose param name exists in the new model, remove the rest
     if (selectedNodeId && currentModelId) {
-      const hasConnections = edges.some(e => e.source === selectedNodeId || e.target === selectedNodeId)
-      if (hasConnections) {
-        setSwitchBlockedMsg(true)
-        return
+      const newParamNames = new Set(model.inputSchema.map(p => p.name))
+      const edgesToRemove = edges.filter(e => {
+        // Output edges (this node is source): always keep
+        if (e.source === selectedNodeId) return false
+        // Input edges (this node is target)
+        if (e.target === selectedNodeId) {
+          const th = e.targetHandle ?? ''
+          // Static input handles (input-xxx): always keep
+          if (th.startsWith('input-')) return false
+          // Model param handles (param-xxx): keep if new model has the same param name
+          if (th.startsWith('param-')) {
+            const paramName = th.slice('param-'.length)
+            return !newParamNames.has(paramName)
+          }
+        }
+        return false
+      })
+      if (edgesToRemove.length > 0) {
+        removeEdgesByIds(edgesToRemove.map(e => e.id))
       }
     }
 
@@ -250,7 +266,7 @@ function AITaskModelSelector({ params, onChange }: { params: Record<string, unkn
     onChange('modelId', model.modelId)
     pushRecentModel(model)
     setRecentModels(getRecentModels())
-  }, [onChange, selectedNodeId, updateNodeData, edges, currentModelId])
+  }, [onChange, selectedNodeId, updateNodeData, edges, currentModelId, removeEdgesByIds])
 
   // Opt 24: Resolve recent model IDs to full objects
   const resolvedRecent = useMemo(() => {

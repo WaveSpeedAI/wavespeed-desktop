@@ -98,6 +98,7 @@ export interface WorkflowState {
   duplicateNode: (nodeId: string) => string
   addEdge: (connection: Connection) => void
   removeEdge: (edgeId: string) => void
+  removeEdgesByIds: (edgeIds: string[]) => void
   updateNodeParams: (nodeId: string, params: Record<string, unknown>) => void
   updateNodeData: (nodeId: string, data: Record<string, unknown>) => void
   onNodesChange: (changes: NodeChange[]) => void
@@ -225,6 +226,15 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     const { nodes, edges } = get()
     pushUndo({ nodes, edges })
     set(state => ({ edges: state.edges.filter(e => e.id !== edgeId), isDirty: true, canUndo: true, canRedo: false }))
+  },
+
+  removeEdgesByIds: (edgeIds) => {
+    if (edgeIds.length === 0) return
+    if (getActiveExecutions().size > 0) return
+    const { nodes, edges } = get()
+    pushUndo({ nodes, edges })
+    const removeSet = new Set(edgeIds)
+    set(state => ({ edges: state.edges.filter(e => !removeSet.has(e.id)), isDirty: true, canUndo: true, canRedo: false }))
   },
 
   updateNodeParams: (nodeId, params) => {

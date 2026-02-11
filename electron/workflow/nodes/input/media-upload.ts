@@ -18,7 +18,7 @@ export const mediaUploadDef: NodeTypeDefinition = {
   icon: '📁',
   inputs: [],
   outputs: [
-    { key: 'output', label: 'Media URL', dataType: 'url', required: true }
+    { key: 'output', label: 'URL', dataType: 'url', required: true }
   ],
   params: [
     // uploadedUrl is set by the renderer after file upload completes

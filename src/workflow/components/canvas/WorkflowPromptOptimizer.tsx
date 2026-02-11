@@ -12,6 +12,7 @@
  * "Optimize with Image" opens a dialog for image-to-prompt generation.
  */
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useModelsStore } from '@/stores/modelsStore'
 import { apiClient } from '@/api/client'
 import { schemaToFormFields, getDefaultValues, type FormFieldConfig } from '@/lib/schemaToForm'
@@ -110,6 +111,7 @@ export function WorkflowPromptOptimizer({
   inactive = false,
   disabled
 }: WorkflowPromptOptimizerProps) {
+  const { t } = useTranslation()
   const [isOptimizing, setIsOptimizing] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [imageDialogOpen, setImageDialogOpen] = useState(false)
@@ -175,7 +177,7 @@ export function WorkflowPromptOptimizer({
       const result = await apiClient.optimizePrompt({ ...resolvedSettings, text: textToSend })
       onOptimized(result)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Optimization failed')
+      setError(err instanceof Error ? err.message : t('workflow.promptOptimizer.optimizationFailed', 'Optimization failed'))
     } finally {
       setIsOptimizing(false)
     }
@@ -192,7 +194,7 @@ export function WorkflowPromptOptimizer({
       onOptimized(result)
       setDropdownOpen(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Optimization failed')
+      setError(err instanceof Error ? err.message : t('workflow.promptOptimizer.optimizationFailed', 'Optimization failed'))
     } finally {
       setIsOptimizing(false)
     }
@@ -214,10 +216,12 @@ export function WorkflowPromptOptimizer({
       >
         <div className="mb-2 flex items-center justify-between">
           <span className="text-[10px] font-semibold uppercase tracking-wide text-[hsl(var(--muted-foreground))]">
-            {inactive ? 'Optimize Params (preset only)' : 'Optimize Params'}
+            {inactive
+              ? t('workflow.promptOptimizer.optimizeParamsPresetOnly', 'Optimize Params (preset only)')
+              : t('workflow.promptOptimizer.optimizeParams', 'Optimize Params')}
           </span>
           {optimizerModel?.base_price !== undefined && (
-            <span className="text-[10px] text-blue-400/80">${optimizerModel.base_price.toFixed(3)}/run</span>
+            <span className="text-[10px] text-blue-400/80">${optimizerModel.base_price.toFixed(3)}/{t('workflow.promptOptimizer.perRun', 'run')}</span>
           )}
         </div>
 
@@ -230,7 +234,7 @@ export function WorkflowPromptOptimizer({
             ))
           ) : (
             <div className="flex items-center justify-between">
-              <span className="text-[11px] text-[hsl(var(--muted-foreground))]">Mode</span>
+              <span className="text-[11px] text-[hsl(var(--muted-foreground))]">{t('workflow.promptOptimizer.mode', 'Mode')}</span>
               <PillToggle options={['image', 'video']}
                 value={String(quickSettings.mode ?? 'image')}
                 onChange={v => setSetting('mode', v)} />
@@ -241,11 +245,11 @@ export function WorkflowPromptOptimizer({
         {!hideTextField && (
           <div className="mt-2">
             <div className="mb-1 text-[10px] font-medium text-[hsl(var(--muted-foreground))]">
-              {textField?.label || 'Text'}
+              {textField?.label || t('workflow.promptOptimizer.text', 'Text')}
             </div>
             <textarea value={optimizerText}
               onChange={e => setSetting('text', e.target.value)}
-              placeholder={textField?.placeholder || textField?.description || 'Text to expand or use as context...'}
+              placeholder={textField?.placeholder || textField?.description || t('workflow.promptOptimizer.textPlaceholder', 'Text to expand or use as context...')}
               rows={2}
               className="nodrag w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1.5 text-[11px] text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500 placeholder:text-[hsl(var(--muted-foreground))] resize-y min-h-[40px] max-h-[120px]" />
           </div>
@@ -262,14 +266,14 @@ export function WorkflowPromptOptimizer({
           <button
             type="button"
             onClick={() => onOptimizeOnRunChange?.(!optimizeOnRun)}
-            title="Optimize automatically when clicking Run"
+            title={t('workflow.promptOptimizer.autoOnRunTitle', 'Optimize automatically when clicking Run')}
             className={`h-5 rounded-md border px-2.5 text-[10px] font-semibold transition-colors ${
               optimizeOnRun
                 ? 'border-blue-500/50 bg-blue-500/20 text-blue-300'
                 : 'border-[hsl(var(--border))] bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
             }`}
           >
-            Auto on Run
+            {t('workflow.promptOptimizer.autoOnRun', 'Auto on Run')}
           </button>
         )}
 
@@ -282,7 +286,7 @@ export function WorkflowPromptOptimizer({
               {/* Left: Quick Optimize */}
               <button onClick={handleQuickOptimize}
                 disabled={disabled || isOptimizing || !currentPrompt.trim()}
-                title={`Quick Optimize (${modeSummary})`}
+                title={t('workflow.promptOptimizer.quickOptimizeTitle', { mode: modeSummary, defaultValue: `Quick Optimize (${modeSummary})` })}
                 className="flex items-center justify-center w-6 h-5 text-[hsl(var(--muted-foreground))] hover:text-blue-400 hover:bg-blue-500/15 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
                 {isOptimizing ? <SpinnerIcon /> : <SparklesIcon />}
               </button>
@@ -296,7 +300,7 @@ export function WorkflowPromptOptimizer({
                   dropdownOpen ? 'text-blue-400 bg-blue-500/15' : 'text-[hsl(var(--muted-foreground))] hover:text-blue-400 hover:bg-blue-500/15'
                 }`}
               >
-                {menuLabel || 'Params'}
+                {menuLabel || t('workflow.promptOptimizer.params', 'Params')}
               </button>
               <div className="w-px h-3.5 bg-[hsl(var(--border))]" />
             </>
@@ -327,9 +331,9 @@ export function WorkflowPromptOptimizer({
 
           {/* Prompt Preview (readonly) */}
           <div className="px-3 pt-2.5 pb-1">
-            <div className="text-[10px] text-[hsl(var(--muted-foreground))] font-medium mb-1">Prompt</div>
+            <div className="text-[10px] text-[hsl(var(--muted-foreground))] font-medium mb-1">{t('workflow.promptOptimizer.prompt', 'Prompt')}</div>
             <div className="text-[11px] leading-snug text-[hsl(var(--foreground))] line-clamp-2 break-words opacity-70 italic">
-              {currentPrompt.trim() ? `"${currentPrompt.slice(0, 80)}${currentPrompt.length > 80 ? '...' : ''}"` : '(empty)'}
+              {currentPrompt.trim() ? `"${currentPrompt.slice(0, 80)}${currentPrompt.length > 80 ? '...' : ''}"` : t('workflow.promptOptimizer.emptyPrompt', '(empty)')}
             </div>
           </div>
 
@@ -345,7 +349,7 @@ export function WorkflowPromptOptimizer({
               ))
             ) : (
               <div className="flex items-center justify-between">
-                <span className="text-[11px] text-[hsl(var(--muted-foreground))]">Mode</span>
+                <span className="text-[11px] text-[hsl(var(--muted-foreground))]">{t('workflow.promptOptimizer.mode', 'Mode')}</span>
                 <PillToggle options={['image', 'video']}
                   value={String(quickSettings.mode ?? 'image')}
                   onChange={v => setSetting('mode', v)} />
@@ -356,11 +360,11 @@ export function WorkflowPromptOptimizer({
           {/* Optimizer Text param (persisted, defaults to empty) */}
           <div className="px-3 pb-2">
             <div className="text-[10px] text-[hsl(var(--muted-foreground))] font-medium mb-1">
-              {textField?.label || 'Text'}
+              {textField?.label || t('workflow.promptOptimizer.text', 'Text')}
             </div>
             <textarea value={optimizerText}
               onChange={e => setSetting('text', e.target.value)}
-              placeholder={textField?.placeholder || textField?.description || 'Text to expand or use as context...'}
+              placeholder={textField?.placeholder || textField?.description || t('workflow.promptOptimizer.textPlaceholder', 'Text to expand or use as context...')}
               rows={2}
               className="nodrag w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1.5 text-[11px] text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500 placeholder:text-[hsl(var(--muted-foreground))] resize-y min-h-[40px] max-h-[120px]" />
             {textField?.description && (
@@ -373,7 +377,7 @@ export function WorkflowPromptOptimizer({
             <button onClick={handleDropdownOptimize}
               disabled={isOptimizing || (!optimizerText.trim() && !currentPrompt.trim())}
               className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-md bg-blue-500 text-white text-[11px] font-medium hover:bg-blue-600 disabled:opacity-40 transition-colors">
-              {isOptimizing ? <><SpinnerIcon /> Optimizing...</> : <><SparklesIcon /> Optimize</>}
+              {isOptimizing ? <><SpinnerIcon /> {t('workflow.promptOptimizer.optimizing', 'Optimizing...')}</> : <><SparklesIcon /> {t('workflow.promptOptimizer.optimize', 'Optimize')}</>}
               {!isOptimizing && optimizerModel?.base_price !== undefined && (
                 <span className="opacity-70 text-[10px] font-normal">(${optimizerModel.base_price.toFixed(3)})</span>
               )}
@@ -387,7 +391,7 @@ export function WorkflowPromptOptimizer({
             onClick={() => { setDropdownOpen(false); setImageDialogOpen(true) }}
             className="w-full flex items-center gap-2 px-3 py-2 text-[11px] hover:bg-[hsl(var(--accent))] transition-colors rounded-b-lg text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]">
             <ImageIcon />
-            <span>Optimize with Image...</span>
+            <span>{t('workflow.promptOptimizer.optimizeWithImage', 'Optimize with Image...')}</span>
           </button>
         </div>
       )}
@@ -485,13 +489,14 @@ function QuickField({ field, value, onChange }: {
 function PillToggle({ options, value, onChange }: {
   options: string[]; value: string; onChange: (v: unknown) => void
 }) {
+  const { t } = useTranslation()
   return (
     <div className="flex rounded-md border border-[hsl(var(--border))] overflow-hidden">
       {options.map(o => (
         <button key={o} onClick={() => onChange(o)}
           className={`px-2 py-0.5 text-[10px] font-medium transition-colors capitalize
             ${value === o ? 'bg-blue-500 text-white' : 'hover:bg-[hsl(var(--accent))]'}`}>
-          {o}
+          {t(`workflow.promptOptimizer.modeOptions.${o}`, o)}
         </button>
       ))}
     </div>
@@ -508,6 +513,7 @@ function ImageOptimizeDialog({ currentPrompt, defaultMode, onOptimized, onClose 
   onOptimized: (result: string) => void
   onClose: () => void
 }) {
+  const { t } = useTranslation()
   const [isOptimizing, setIsOptimizing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [values, setValues] = useState<Record<string, unknown>>({})
@@ -526,7 +532,7 @@ function ImageOptimizeDialog({ currentPrompt, defaultMode, onOptimized, onClose 
 
   const handleOptimize = async () => {
     if (!values.text && !values.image) {
-      setError('Please enter text or provide an image')
+      setError(t('workflow.promptOptimizer.imageDialog.enterTextOrImage', 'Please enter text or provide an image'))
       return
     }
     setIsOptimizing(true)
@@ -539,7 +545,7 @@ function ImageOptimizeDialog({ currentPrompt, defaultMode, onOptimized, onClose 
       const result = await apiClient.optimizePrompt(params)
       onOptimized(result)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to optimize')
+      setError(err instanceof Error ? err.message : t('workflow.promptOptimizer.imageDialog.optimizeFailed', 'Failed to optimize'))
     } finally {
       setIsOptimizing(false)
     }
@@ -555,10 +561,10 @@ function ImageOptimizeDialog({ currentPrompt, defaultMode, onOptimized, onClose 
         {/* Header */}
         <div className="flex items-center gap-2 px-5 py-4 border-b border-[hsl(var(--border))]">
           <ImageIcon size={18} className="text-green-400" />
-          <span className="font-semibold text-sm">Optimize with Image</span>
+          <span className="font-semibold text-sm">{t('workflow.promptOptimizer.imageDialog.title', 'Optimize with Image')}</span>
           {optimizerModel?.base_price !== undefined && (
             <span className="text-[11px] text-[hsl(var(--muted-foreground))]">
-              (${optimizerModel.base_price.toFixed(3)}/run)
+              (${optimizerModel.base_price.toFixed(3)}/{t('workflow.promptOptimizer.perRun', 'run')})
             </span>
           )}
           <div className="flex-1" />
@@ -571,11 +577,11 @@ function ImageOptimizeDialog({ currentPrompt, defaultMode, onOptimized, onClose 
         {!optimizerModel ? (
           <div className="px-5 py-8 text-center text-[hsl(var(--muted-foreground))]">
             <SpinnerIcon size={20} className="mx-auto mb-2" />
-            <p className="text-xs">Loading optimizer...</p>
+            <p className="text-xs">{t('workflow.promptOptimizer.imageDialog.loadingOptimizer', 'Loading optimizer...')}</p>
           </div>
         ) : allFields.length === 0 ? (
           <div className="px-5 py-8 text-center text-[hsl(var(--muted-foreground))] text-xs">
-            Unable to load optimizer configuration
+            {t('workflow.promptOptimizer.imageDialog.loadConfigFailed', 'Unable to load optimizer configuration')}
           </div>
         ) : (
           <ScrollArea className="max-h-[60vh]">
@@ -600,14 +606,14 @@ function ImageOptimizeDialog({ currentPrompt, defaultMode, onOptimized, onClose 
         <div className="flex justify-end gap-2 px-5 py-3 border-t border-[hsl(var(--border))]">
           <button onClick={onClose} disabled={isOptimizing}
             className="px-3 py-1.5 rounded-md border border-[hsl(var(--border))] text-xs hover:bg-[hsl(var(--accent))] transition-colors disabled:opacity-50">
-            Cancel
+            {t('workflow.cancel', 'Cancel')}
           </button>
           <button onClick={handleOptimize} disabled={isOptimizing}
             className="px-4 py-1.5 rounded-md bg-green-600 text-white text-xs font-medium hover:bg-green-700 disabled:opacity-50 transition-colors flex items-center gap-1.5">
             {isOptimizing ? (
-              <><SpinnerIcon size={12} /> Optimizing...</>
+              <><SpinnerIcon size={12} /> {t('workflow.promptOptimizer.optimizing', 'Optimizing...')}</>
             ) : (
-              <><ImageIcon size={12} /> Optimize</>
+              <><ImageIcon size={12} /> {t('workflow.promptOptimizer.optimize', 'Optimize')}</>
             )}
           </button>
         </div>

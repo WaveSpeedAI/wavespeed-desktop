@@ -31,6 +31,10 @@ export function registerStorageIpc(): void {
     return getStorage().saveUploadedFile(args.workflowId, args.nodeId, args.filename, Buffer.from(args.data))
   })
 
+  ipcMain.handle('storage:save-node-output', async (_event, args: { workflowId: string; nodeId: string; prefix: string; ext: string; data: Buffer }) => {
+    return getStorage().saveNodeOutput(args.workflowId, args.nodeId, args.prefix, args.ext, Buffer.from(args.data))
+  })
+
   ipcMain.handle('storage:copy-uploaded-file', async (_event, args: { workflowId: string; nodeId: string; sourcePath: string }) => {
     return getStorage().copyUploadedFile(args.workflowId, args.nodeId, args.sourcePath)
   })

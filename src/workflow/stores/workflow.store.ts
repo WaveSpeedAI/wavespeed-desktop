@@ -14,7 +14,7 @@ import {
   applyEdgeChanges
 } from 'reactflow'
 import { v4 as uuid } from 'uuid'
-import { workflowIpc } from '../ipc/ipc-client'
+import { workflowIpc, registryIpc } from '../ipc/ipc-client'
 import type { WorkflowNode, WorkflowEdge } from '@/workflow/types/workflow'
 
 /** Lazy getter to avoid circular import with execution.store */
@@ -312,11 +312,31 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
 
   loadWorkflow: async (id) => {
     const wf = await workflowIpc.load(id)
+    let defMap = new Map<string, { params: unknown[]; inputs: unknown[]; outputs: unknown[]; icon: string; label: string }>()
+    try {
+      const defs = await registryIpc.getAll()
+      defMap = new Map(
+        defs.map(def => [
+          def.type,
+          {
+            params: def.params ?? [],
+            inputs: def.inputs ?? [],
+            outputs: def.outputs ?? [],
+            icon: def.icon ?? '',
+            label: def.label ?? def.type
+          }
+        ])
+      )
+    } catch {
+      // Keep empty map as fallback; nodes still load with persisted params.
+    }
+
     const rfNodes: ReactFlowNode[] = wf.graphDefinition.nodes.map(n => {
       // Restore modelInputSchema and label from saved params metadata
       const meta = (n.params as Record<string, unknown>).__meta as Record<string, unknown> | undefined
       const modelInputSchema = meta?.modelInputSchema as unknown[] | undefined
-      const label = (meta?.label as string) || n.nodeType
+      const def = defMap.get(n.nodeType)
+      const label = (meta?.label as string) || (def ? `${def.icon} ${def.label}` : n.nodeType)
       // Strip __meta from the params passed to the node
       const { __meta: _, ...cleanParams } = n.params as Record<string, unknown>
       return {
@@ -326,9 +346,9 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
           params: cleanParams,
           label,
           modelInputSchema: modelInputSchema ?? [],
-          paramDefinitions: [],
-          inputDefinitions: [],
-          outputDefinitions: []
+          paramDefinitions: def?.params ?? [],
+          inputDefinitions: def?.inputs ?? [],
+          outputDefinitions: def?.outputs ?? []
         }
       }
     })

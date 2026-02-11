@@ -13,6 +13,8 @@ export interface UIState {
   showSettings: boolean
   showNodePalette: boolean
   previewSrc: string | null
+  previewItems: string[]
+  previewIndex: number
   /** Naming dialog state */
   showNamingDialog: boolean
   namingDialogDefault: string
@@ -23,7 +25,9 @@ export interface UIState {
   toggleResults: () => void
   toggleSettings: () => void
   toggleNodePalette: () => void
-  openPreview: (src: string) => void
+  openPreview: (src: string, items?: string[]) => void
+  prevPreview: () => void
+  nextPreview: () => void
   closePreview: () => void
   /** Show naming dialog and return a promise that resolves with the name or null */
   promptWorkflowName: (defaultName?: string) => Promise<string | null>
@@ -37,6 +41,8 @@ export const useUIStore = create<UIState>((set, get) => ({
   showSettings: false,
   showNodePalette: true,
   previewSrc: null,
+  previewItems: [],
+  previewIndex: -1,
   showNamingDialog: false,
   namingDialogDefault: '',
   namingDialogResolve: null,
@@ -50,8 +56,26 @@ export const useUIStore = create<UIState>((set, get) => ({
   toggleResults: () => set(s => ({ showResults: !s.showResults })),
   toggleSettings: () => set(s => ({ showSettings: !s.showSettings, selectedNodeId: s.showSettings ? s.selectedNodeId : null })),
   toggleNodePalette: () => set(s => ({ showNodePalette: !s.showNodePalette })),
-  openPreview: (src) => set({ previewSrc: src }),
-  closePreview: () => set({ previewSrc: null }),
+  openPreview: (src, items) => set(() => {
+    const list = Array.isArray(items) && items.length > 0 ? items : [src]
+    const idx = Math.max(0, list.indexOf(src))
+    return {
+      previewSrc: src,
+      previewItems: list,
+      previewIndex: idx
+    }
+  }),
+  prevPreview: () => set(s => {
+    if (s.previewItems.length <= 1 || s.previewIndex < 0) return {}
+    const nextIndex = (s.previewIndex - 1 + s.previewItems.length) % s.previewItems.length
+    return { previewIndex: nextIndex, previewSrc: s.previewItems[nextIndex] ?? s.previewSrc }
+  }),
+  nextPreview: () => set(s => {
+    if (s.previewItems.length <= 1 || s.previewIndex < 0) return {}
+    const nextIndex = (s.previewIndex + 1) % s.previewItems.length
+    return { previewIndex: nextIndex, previewSrc: s.previewItems[nextIndex] ?? s.previewSrc }
+  }),
+  closePreview: () => set({ previewSrc: null, previewItems: [], previewIndex: -1 }),
 
   promptWorkflowName: (defaultName = '') => {
     return new Promise<string | null>(resolve => {

@@ -194,6 +194,19 @@ export class FileStorageService {
 
   /* ─── User uploads ──────────────────────────────────────────── */
 
+  /**
+   * Save node output (e.g. from renderer-based free-tool) to media_output/nodeId/.
+   * Returns the local file path.
+   */
+  saveNodeOutput(workflowId: string, nodeId: string, prefix: string, ext: string, data: Buffer): string {
+    const dir = this.ensureDir(this.getNodeOutputDir(workflowId, nodeId))
+    const safeExt = ext.startsWith('.') ? ext : `.${ext}`
+    const filename = `${prefix}_${timestamp()}${safeExt}`
+    const filePath = path.join(dir, filename)
+    fs.writeFileSync(filePath, data)
+    return filePath
+  }
+
   saveUploadedFile(workflowId: string, nodeId: string, filename: string, data: Buffer): string {
     this.ensureNodeUploadDir(workflowId, nodeId)
     let targetName = filename

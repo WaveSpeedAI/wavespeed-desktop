@@ -51,6 +51,25 @@ export function ResultsPanel() {
     return rec.resultPath ? [rec.resultPath] : []
   }
 
+  const isImageUrl = (url: string): boolean => {
+    const normalized = (() => {
+      if (/^local-asset:\/\//i.test(url)) {
+        try {
+          return decodeURIComponent(url.replace(/^local-asset:\/\//i, '')).toLowerCase().split('?')[0]
+        } catch {
+          return url.toLowerCase().split('?')[0]
+        }
+      }
+      return url.toLowerCase().split('?')[0]
+    })()
+    return Boolean(normalized.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg|avif)$/i))
+  }
+
+  const panelImageUrls = records
+    .filter(rec => rec.status === 'success')
+    .flatMap(rec => getUrls(rec))
+    .filter(isImageUrl)
+
   const handleDownload = (url: string) => {
     const filename = url.split('/').pop() || 'result'
     if (window.electronAPI?.downloadFile) {
@@ -114,14 +133,25 @@ export function ResultsPanel() {
                 {urls.length > 0 && (
                   <div className="p-2 flex gap-2 flex-wrap">
                     {urls.map((url, ui) => {
-                      const is3D = url.match(/\.(glb|gltf)(\?.*)?$/i)
-                      const isImage = url.match(/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i)
-                      const isVideo = url.match(/\.(mp4|webm|mov)(\?.*)?$/i)
+                      const normalized = (() => {
+                        if (/^local-asset:\/\//i.test(url)) {
+                          try {
+                            return decodeURIComponent(url.replace(/^local-asset:\/\//i, '')).toLowerCase().split('?')[0]
+                          } catch {
+                            return url.toLowerCase().split('?')[0]
+                          }
+                        }
+                        return url.toLowerCase().split('?')[0]
+                      })()
+                      const is3D = normalized.match(/\.(glb|gltf)$/i)
+                      const isImage = normalized.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg|avif)$/i)
+                      const isVideo = normalized.match(/\.(mp4|webm|mov|avi|mkv)$/i)
+                      const isAudio = normalized.match(/\.(mp3|wav|ogg|flac|aac|m4a)$/i)
 
                       if (isImage) {
                         return (
                           <div key={ui} className="relative group flex-1 min-w-[100px]">
-                            <img src={url} alt="" onClick={() => openPreview(url)}
+                            <img src={url} alt="" onClick={() => openPreview(url, panelImageUrls)}
                               className="w-full max-h-[160px] rounded border border-[hsl(var(--border))] object-contain cursor-pointer hover:ring-2 hover:ring-blue-500/40 bg-black/10" />
                             <button onClick={() => handleDownload(url)}
                               className="absolute top-1 right-1 w-6 h-6 rounded bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80">
@@ -155,6 +185,14 @@ export function ResultsPanel() {
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
                               </div>
                             </div>
+                          </div>
+                        )
+                      }
+
+                      if (isAudio) {
+                        return (
+                          <div key={ui} className="flex-1 min-w-[100px] rounded border border-[hsl(var(--border))] bg-[hsl(var(--muted))] p-2">
+                            <audio src={url} controls className="w-full" />
                           </div>
                         )
                       }

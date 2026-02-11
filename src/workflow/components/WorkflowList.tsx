@@ -79,9 +79,17 @@ export function WorkflowList({ onClose, onOpen }: WorkflowListProps) {
 
   const totalDiskUsage = Object.values(diskUsage).reduce((sum, v) => sum + v, 0)
 
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [onClose])
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="w-[480px] max-h-[70vh] rounded-xl border border-border bg-card p-6 shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
+      <div className="w-[480px] max-h-[70vh] rounded-xl border border-border bg-card p-6 shadow-xl" onClick={e => e.stopPropagation()}>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-base font-semibold">Workflows</h2>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-lg">✕</button>

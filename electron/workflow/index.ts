@@ -25,6 +25,7 @@ import { registerModelsIpc } from './ipc/models.ipc'
 import { registerStorageIpc } from './ipc/storage.ipc'
 import { registerUploadIpc } from './ipc/upload.ipc'
 import { registerSettingsIpc } from './ipc/settings.ipc'
+import { registerFreeToolIpc } from './ipc/free-tool.ipc'
 
 export async function initWorkflowModule(): Promise<void> {
   console.log('[Workflow] Initializing workflow module...')
@@ -75,6 +76,7 @@ export async function initWorkflowModule(): Promise<void> {
   registerStorageIpc()
   registerUploadIpc()
   registerSettingsIpc()
+  registerFreeToolIpc()
 
   console.log('[Workflow] Module initialized successfully')
 }

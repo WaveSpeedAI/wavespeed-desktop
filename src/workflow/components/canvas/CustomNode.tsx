@@ -5,16 +5,22 @@
  * Media fields support file upload with progress/error states and click-to-preview.
  */
 import React, { memo, useMemo, useState, useCallback, useRef, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Handle, Position, useReactFlow, type NodeProps } from 'reactflow'
 import { useExecutionStore } from '../../stores/execution.store'
 import { useWorkflowStore } from '../../stores/workflow.store'
 import { useUIStore } from '../../stores/ui.store'
 import { WorkflowPromptOptimizer } from './WorkflowPromptOptimizer'
 import { apiClient } from '@/api/client'
+import { MaskEditor } from '@/components/playground/MaskEditor'
+import { SegmentPointPicker, type SegmentPoint } from '../SegmentPointPicker'
+import { Paintbrush, MousePointer2 } from 'lucide-react'
+import { modelsIpc } from '../../ipc/ipc-client'
+import { fuzzySearch } from '@/lib/fuzzySearch'
 // Status constants (kept for edge component compatibility)
 // import { NODE_STATUS_COLORS, NODE_STATUS_BORDER } from '@/workflow/constants'
 import type { NodeStatus } from '@/workflow/types/execution'
-import type { ParamDefinition, PortDefinition, ModelParamSchema } from '@/workflow/types/node-defs'
+import type { ParamDefinition, PortDefinition, ModelParamSchema, WaveSpeedModel } from '@/workflow/types/node-defs'
 
 /* ── types ───────────────────────────────────────────────────────────── */
 
@@ -37,6 +43,29 @@ const ACCENT_MEDIA = '#4ade80'
 const TEXTAREA_NAMES = new Set([
   'prompt', 'negative_prompt', 'text', 'description', 'content', 'system_prompt',
 ])
+
+/**
+ * Centralized file-picker accept rules by workflow node type.
+ * Keep node-specific constraints here to avoid scattered if/else logic.
+ */
+const NODE_INPUT_ACCEPT_RULES: Record<string, string | Record<string, string>> = {
+  'free-tool/image-enhancer': { input: 'image/*' },
+  'free-tool/background-remover': { input: 'image/*' },
+  'free-tool/face-enhancer': { input: 'image/*' },
+  'free-tool/video-enhancer': { input: 'video/*' },
+  'free-tool/face-swapper': { source: 'image/*', target: 'image/*' },
+  'free-tool/image-eraser': { input: 'image/*', mask: 'image/*' },
+  'free-tool/segment-anything': { input: 'image/*' },
+  'free-tool/image-converter': { input: 'image/*' },
+  'free-tool/video-converter': { input: 'video/*' },
+  'free-tool/audio-converter': { input: 'audio/*' },
+  'free-tool/media-trimmer': { input: 'video/*,audio/*' },
+  'free-tool/media-merger': {
+    first: 'video/*,audio/*',
+    second: 'video/*,audio/*'
+  },
+  'input/media-upload': { output: 'image/*,video/*,audio/*' }
+}
 
 /* ── handle styles ───────────────────────────────────────────────────── */
 
@@ -67,15 +96,22 @@ const MIN_NODE_HEIGHT = 80
 const DEFAULT_NODE_WIDTH = 380
 
 function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) {
+  const { t } = useTranslation()
   const status = useExecutionStore(s => s.nodeStatuses[id] ?? 'idle') as NodeStatus
   const progress = useExecutionStore(s => s.progressMap[id])
   const errorMessage = useExecutionStore(s => s.errorMessages[id])
   const edges = useWorkflowStore(s => s.edges)
   const updateNodeParams = useWorkflowStore(s => s.updateNodeParams)
+  const updateNodeData = useWorkflowStore(s => s.updateNodeData)
   const workflowId = useWorkflowStore(s => s.workflowId)
+  const isDirty = useWorkflowStore(s => s.isDirty)
   const { runNode, cancelNode, retryNode } = useExecutionStore()
   const openPreview = useUIStore(s => s.openPreview)
   const [hovered, setHovered] = useState(false)
+  const [segmentPointPickerOpen, setSegmentPointPickerOpen] = useState(false)
+  const [modelSearchQuery, setModelSearchQuery] = useState('')
+  const [availableModels, setAvailableModels] = useState<WaveSpeedModel[]>([])
+  const [modelSwitchBlocked, setModelSwitchBlocked] = useState(false)
 
   // ── Resizable dimensions (use ref + direct DOM for zero-lag) ──
   const savedWidth = (data.params.__nodeWidth as number) ?? DEFAULT_NODE_WIDTH
@@ -83,6 +119,13 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
   const nodeRef = useRef<HTMLDivElement>(null)
   const [resizing, setResizing] = useState(false)
   const { getViewport, setNodes } = useReactFlow()
+  const nodeLabel = t(`workflow.nodeDefs.${data.nodeType}.label`, data.label)
+  const localizeInputLabel = useCallback((key: string, fallback: string) =>
+    t(`workflow.nodeDefs.${data.nodeType}.inputs.${key}.label`, fallback), [data.nodeType, t])
+  const localizeParamLabel = useCallback((key: string, fallback: string) =>
+    t(`workflow.nodeDefs.${data.nodeType}.params.${key}.label`, fallback), [data.nodeType, t])
+  const localizeParamDescription = useCallback((key: string, fallback?: string) =>
+    fallback ? t(`workflow.nodeDefs.${data.nodeType}.params.${key}.description`, fallback) : undefined, [data.nodeType, t])
 
   /**
    * Resize handler for edges and corners.
@@ -176,13 +219,82 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
 
   const isAITask = data.nodeType === 'ai-task/run'
   const hasSchema = schema.length > 0
+  const currentModelId = String(data.params.modelId ?? '').trim()
+  const currentModelDisplayName = useMemo(() => {
+    const rawLabel = String(data.label ?? '').trim()
+    if (rawLabel.startsWith('🤖')) return rawLabel.replace(/^🤖\s*/, '')
+    if (!currentModelId) return ''
+    const parts = currentModelId.split('/')
+    return parts[parts.length - 1] || currentModelId
+  }, [data.label, currentModelId])
+  const modelSearchResults = useMemo(() => {
+    const q = modelSearchQuery.trim()
+    if (!q) return []
+    return fuzzySearch(availableModels, q, (m) => [
+      m.displayName,
+      m.modelId,
+      m.category,
+      m.provider
+    ]).map(r => r.item).slice(0, 8)
+  }, [availableModels, modelSearchQuery])
+
+  const handleInlineSelectModel = useCallback((model: WaveSpeedModel) => {
+    if (currentModelId) {
+      const hasConnections = edges.some(e => e.source === id || e.target === id)
+      if (hasConnections) {
+        setModelSwitchBlocked(true)
+        return
+      }
+    }
+
+    const internalParams: Record<string, unknown> = {}
+    for (const [k, v] of Object.entries(data.params ?? {})) {
+      if (k.startsWith('__')) internalParams[k] = v
+    }
+    delete internalParams.__hiddenRuns
+
+    const nextParams: Record<string, unknown> = { ...internalParams, modelId: model.modelId }
+    for (const p of model.inputSchema) {
+      if (p.default !== undefined) nextParams[p.name] = p.default
+    }
+
+    updateNodeParams(id, nextParams)
+    updateNodeData(id, {
+      modelInputSchema: model.inputSchema,
+      label: `🤖 ${model.displayName}`
+    })
+
+    const execStore = useExecutionStore.getState()
+    execStore.updateNodeStatus(id, 'idle')
+    useExecutionStore.setState(s => {
+      const newResults = { ...s.lastResults }
+      delete newResults[id]
+      const newFetched = new Set(s._fetchedNodes)
+      newFetched.delete(id)
+      return { lastResults: newResults, _fetchedNodes: newFetched }
+    })
+
+    setModelSearchQuery('')
+    setModelSwitchBlocked(false)
+  }, [currentModelId, data.params, edges, id, updateNodeData, updateNodeParams])
+
+  useEffect(() => {
+    if (!isAITask) return
+    let cancelled = false
+    modelsIpc.list().then((m) => {
+      if (!cancelled) setAvailableModels(m ?? [])
+    }).catch(() => {
+      if (!cancelled) setAvailableModels([])
+    })
+    return () => { cancelled = true }
+  }, [isAITask])
 
   const mediaParams = useMemo(() => schema.filter(p => p.mediaType && p.fieldType !== 'loras'), [schema])
   const loraParams = useMemo(() => schema.filter(p => p.fieldType === 'loras'), [schema])
   const jsonParams = useMemo(() => schema.filter(p => p.fieldType === 'json'), [schema])
   const requiredParams = useMemo(() => schema.filter(p => !p.mediaType && p.fieldType !== 'loras' && p.fieldType !== 'json' && p.name !== 'modelId' && (p.required || !p.hidden)), [schema])
   const optionalParams = useMemo(() => schema.filter(p => !p.mediaType && p.fieldType !== 'loras' && p.fieldType !== 'json' && p.name !== 'modelId' && !p.required && p.hidden), [schema])
-  const defParams = paramDefs.filter(p => p.connectable !== false && p.key !== 'modelId' && p.dataType !== undefined)
+  const defParams = paramDefs.filter(p => p.key !== 'modelId')
   const [showOptional, setShowOptional] = useState(false)
 
   // All execution result groups for inline preview (newest first)
@@ -216,7 +328,8 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
 
   const ensureWorkflowId = async () => {
     let wfId = workflowId
-    if (!wfId) {
+    // Executor reads from persisted workflow DB, so save first when dirty.
+    if (!wfId || isDirty) {
       await saveWorkflow()
       wfId = useWorkflowStore.getState().workflowId
     }
@@ -296,23 +409,23 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
           {running ? (
             <button onClick={onRun}
               className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[11px] font-medium shadow-lg backdrop-blur-sm bg-red-500 text-white hover:bg-red-600 transition-all">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg> Stop
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg> {t('workflow.stop', 'Stop')}
             </button>
           ) : (
             <>
               <button onClick={onRun}
                 className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium shadow-lg backdrop-blur-sm bg-blue-500 text-white hover:bg-blue-600 transition-all"
-                title="Run this node">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 20,12 6,21"/></svg> Run
+                title={t('workflow.runNode', 'Run Node')}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 20,12 6,21"/></svg> {t('workflow.run', 'Run')}
               </button>
               <button onClick={onRunFromHere}
                 className="flex items-center justify-center w-8 h-8 rounded-full shadow-lg backdrop-blur-sm bg-green-600 text-white hover:bg-green-700 transition-all"
-                title="Run from here (this node + all downstream)">
+                title={t('workflow.continueFrom', 'Continue From')}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="4,4 14,12 4,20"/><polygon points="12,4 22,12 12,20"/></svg>
               </button>
               <button onClick={onDelete}
                 className="flex items-center justify-center w-8 h-8 rounded-full shadow-lg backdrop-blur-sm bg-[hsl(var(--muted))] text-muted-foreground hover:bg-red-500/20 hover:text-red-400 transition-all"
-                title="Delete node">
+                title={t('workflow.delete', 'Delete')}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
                 </svg>
@@ -350,7 +463,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
             status === 'error' ? 'bg-red-500' :
             status === 'unconfirmed' ? 'bg-orange-500' :
             'bg-[hsl(var(--muted-foreground))] opacity-30'}`} />
-        <span className="font-semibold text-[13px] flex-1 truncate">{data.label}</span>
+        <span className="font-semibold text-[13px] flex-1 truncate">{nodeLabel}</span>
       </div>
 
       {/* ── Running status bar — prominent, always visible when running ── */}
@@ -361,7 +474,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
               <circle cx="12" cy="12" r="10" strokeDasharray="60" strokeDashoffset="20" />
             </svg>
             <span className="text-[11px] text-blue-400 font-medium flex-1">
-              {progress?.message || 'Running...'}
+              {progress?.message || t('workflow.running', 'Running...')}
             </span>
             {progress && <span className="text-[10px] text-blue-400/70">{Math.round(progress.progress)}%</span>}
           </div>
@@ -383,7 +496,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
             <button
               onClick={(e) => { e.stopPropagation(); if (workflowId) retryNode(workflowId, id) }}
               className="text-[10px] text-red-400 font-medium hover:text-red-300 transition-colors flex items-center gap-1 flex-shrink-0 ml-1"
-              title="Click to retry"
+              title={t('workflow.retry', 'Retry')}
             >
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
@@ -419,9 +532,58 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
           />
         )}
 
+        {isAITask && currentModelId && (
+          <div className="mx-2 mb-1 p-2 rounded-lg border border-blue-500/20 bg-blue-500/8">
+            <div className="text-[11px] text-blue-200 truncate">
+              <span className="text-blue-300/85 mr-1">{t('workflow.currentModel', 'Current model')}:</span>
+              <span className="font-semibold">{currentModelDisplayName || currentModelId}</span>
+            </div>
+          </div>
+        )}
+
+        {isAITask && (
+          <div className="mx-2 mb-1">
+            <input
+              type="text"
+              value={modelSearchQuery}
+              onChange={e => {
+                setModelSearchQuery(e.target.value)
+                if (modelSwitchBlocked) setModelSwitchBlocked(false)
+              }}
+              placeholder={t('workflow.modelSelector.searchAllPlaceholder', 'Search all models (fzf syntax)...')}
+              className="w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1.5 text-[11px] text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50"
+              onClick={e => e.stopPropagation()}
+            />
+            {modelSearchQuery.trim() && (
+              <div className="mt-1 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] max-h-[170px] overflow-y-auto">
+                {modelSearchResults.map(model => (
+                  <button
+                    key={model.modelId}
+                    onClick={e => { e.stopPropagation(); handleInlineSelectModel(model) }}
+                    className="w-full text-left px-2 py-1.5 hover:bg-[hsl(var(--accent))] transition-colors border-b border-[hsl(var(--border))]/40 last:border-b-0"
+                  >
+                    <div className="text-[11px] font-medium truncate">{model.displayName}</div>
+                    <div className="text-[10px] text-muted-foreground truncate">{model.category} · {model.provider}</div>
+                  </button>
+                ))}
+                {modelSearchResults.length === 0 && (
+                  <div className="px-2 py-2 text-[10px] text-muted-foreground text-center">
+                    {t('workflow.modelSelector.noModelsFound', 'No models found')}
+                  </div>
+                )}
+              </div>
+            )}
+            {modelSwitchBlocked && (
+              <div className="mt-1 text-[10px] text-amber-300">
+                {t('workflow.modelSelector.disconnectBeforeSwitch', 'Please disconnect this node before switching model.')}
+              </div>
+            )}
+          </div>
+        )}
+
         {isAITask && !hasSchema && (
           <div className="mx-2 text-center py-4 text-[hsl(var(--muted-foreground))] text-xs italic border border-dashed border-[hsl(var(--border))] rounded-lg my-1">
-            Click this node, then select a model →
+            {t('workflow.nodeDefs.ai-task/run.emptyHint', 'Click this node, then select a model →')}
           </div>
         )}
 
@@ -466,7 +628,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
               <button onClick={e => { e.stopPropagation(); setShowOptional(!showOptional) }}
                 className="text-[10px] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
                 <span className="text-[8px]">{showOptional ? '▼' : '▶'}</span>
-                {showOptional ? 'Hide' : 'Show'} {optionalParams.length} optional
+                {showOptional ? t('workflow.hide', 'Hide') : t('workflow.show', 'Show')} {optionalParams.length} {t('workflow.optional', 'optional')}
               </button>
             </div>
             {showOptional && optionalParams.map(p => {
@@ -492,22 +654,106 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
           const conn = connectedSet.has(hid)
           return (
             <Row key={inp.key} handleId={hid} handleType="target" connected={conn} media>
-              <span className={`text-xs ${conn ? 'text-green-400 font-semibold' : 'text-[hsl(var(--muted-foreground))]'}`}>
-                {inp.label}{inp.required && <span className="text-red-400"> *</span>}
-              </span>
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className={`text-xs ${conn ? 'text-green-400 font-semibold' : 'text-[hsl(var(--muted-foreground))]'}`}>
+                  {localizeInputLabel(inp.key, inp.label)}{inp.required && <span className="text-red-400"> *</span>}
+                </span>
+                {conn
+                  ? <ConnectedInputControl nodeId={id} handleId={hid} edges={edges} nodes={useWorkflowStore.getState().nodes} onPreview={openPreview} />
+                  : <InputPortControl
+                      nodeId={id}
+                      port={inp}
+                      value={data.params[inp.key]}
+                      onChange={v => setParam(inp.key, v)}
+                      onPreview={openPreview}
+                      referenceImageUrl={data.nodeType === 'free-tool/image-eraser' && inp.key === 'mask' ? String(data.params.input ?? '') : undefined}
+                      showDrawMaskButton={data.nodeType === 'free-tool/image-eraser' && inp.key === 'mask'}
+                    />}
+              </div>
             </Row>
           )
         })}
 
+        {/* Segment Anything: Pick points by clicking */}
+        {data.nodeType === 'free-tool/segment-anything' && (
+          <div className="px-3 py-1">
+            <div className="pl-2 flex items-center justify-between gap-2 w-full">
+              <span className="text-xs text-[hsl(var(--muted-foreground))] flex-shrink-0">
+                {t('workflow.pointsLabel')}
+              </span>
+              <button
+                type="button"
+                title={String(data.params.input ?? '').trim() ? t('workflow.pickPoints') : t('workflow.pickPointsNeedInput')}
+                disabled={!String(data.params.input ?? '').trim()}
+                onClick={e => {
+                  e.stopPropagation()
+                  if (String(data.params.input ?? '').trim()) setSegmentPointPickerOpen(true)
+                }}
+                className={`nodrag flex-shrink-0 flex items-center gap-1.5 px-2 py-1 rounded-md border border-[hsl(var(--border))] text-xs transition-colors ${
+                  String(data.params.input ?? '').trim()
+                    ? 'cursor-pointer bg-blue-500/15 text-blue-400 hover:bg-blue-500/25'
+                    : 'cursor-not-allowed opacity-50'
+                }`}
+              >
+                <MousePointer2 className="h-4 w-4" />
+                {t('workflow.pickPoints')}
+                {(() => {
+                  try {
+                    const pts = data.params.__segmentPoints as string | undefined
+                    if (!pts) return null
+                    const arr = JSON.parse(pts) as SegmentPoint[]
+                    return Array.isArray(arr) && arr.length > 0 ? (
+                      <span className="text-[10px] opacity-75">({arr.length})</span>
+                    ) : null
+                  } catch {
+                    return null
+                  }
+                })()}
+              </button>
+            </div>
+            {segmentPointPickerOpen && String(data.params.input ?? '').trim() && (
+              <SegmentPointPicker
+                referenceImageUrl={String(data.params.input)}
+                onComplete={(points: SegmentPoint[]) => {
+                  updateNodeParams(id, { ...data.params, __segmentPoints: JSON.stringify(points) })
+                  setSegmentPointPickerOpen(false)
+                }}
+                onClose={() => setSegmentPointPickerOpen(false)}
+              />
+            )}
+          </div>
+        )}
+
         {/* Hide defParams for nodes with custom body UI */}
         {data.nodeType !== 'input/media-upload' && data.nodeType !== 'input/text-input' && defParams.map(p => {
           const hid = `param-${p.key}`
-          const conn = connectedSet.has(hid)
+          const canConnect = p.connectable !== false && p.dataType !== undefined
+          const conn = canConnect ? connectedSet.has(hid) : false
+
+          if (!canConnect) {
+            return (
+              <div key={p.key} className="px-3 py-1">
+                <div className="pl-2 flex items-center justify-between gap-2 w-full">
+                  <span className="text-xs text-[hsl(var(--muted-foreground))] flex-shrink-0">
+                    {localizeParamLabel(p.key, p.label)}
+                    {localizeParamDescription(p.key, p.description) && <Tip text={String(localizeParamDescription(p.key, p.description))} />}
+                  </span>
+                  <DefParamControl nodeId={id} param={p} value={data.params[p.key]} onChange={v => setParam(p.key, v)} />
+                </div>
+              </div>
+            )
+          }
+
           return (
             <Row key={p.key} handleId={hid} handleType="target" connected={conn}>
               <div className="flex items-center justify-between gap-2 w-full">
-                <span className="text-xs text-[hsl(var(--muted-foreground))] flex-shrink-0">{p.label}</span>
-                {conn ? <LinkedBadge nodeId={id} handleId={hid} edges={edges} nodes={useWorkflowStore.getState().nodes} /> : <DefParamControl param={p} value={data.params[p.key]} onChange={v => setParam(p.key, v)} />}
+                <span className="text-xs text-[hsl(var(--muted-foreground))] flex-shrink-0">
+                  {localizeParamLabel(p.key, p.label)}
+                  {localizeParamDescription(p.key, p.description) && <Tip text={String(localizeParamDescription(p.key, p.description))} />}
+                </span>
+                {conn
+                  ? <LinkedBadge nodeId={id} handleId={hid} edges={edges} nodes={useWorkflowStore.getState().nodes} />
+                  : <DefParamControl nodeId={id} param={p} value={data.params[p.key]} onChange={v => setParam(p.key, v)} />}
               </div>
             </Row>
           )
@@ -551,26 +797,42 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
           displayGroups = visibleGroups
         }
 
+        const isImageUrl = (url: string): boolean => {
+          const normalized = (() => {
+            if (/^local-asset:\/\//i.test(url)) {
+              try {
+                return decodeURIComponent(url.replace(/^local-asset:\/\//i, '')).toLowerCase().split('?')[0]
+              } catch {
+                return url.toLowerCase().split('?')[0]
+              }
+            }
+            return url.toLowerCase().split('?')[0]
+          })()
+          return Boolean(normalized.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg|avif)$/i))
+        }
+
+        const allDisplayImageUrls = displayGroups.flatMap(g => g.urls).filter(isImageUrl)
+
         return (
           <div className="px-3 pb-2 pt-1 border-t border-[hsl(var(--border))]">
             <div className="flex items-center gap-1.5 mb-1.5">
               <span className="text-[10px] text-green-400 font-medium">
-                Results ({displayGroups.length}/{resultGroups.length})
+                {t('workflow.results', 'Results')} ({displayGroups.length}/{resultGroups.length})
               </span>
               <div className="flex-1" />
               {/* Show all — always clickable, clears hidden + turns off latest */}
               <button onClick={e => { e.stopPropagation(); showAllRuns() }}
                 className="text-[9px] text-blue-400 hover:text-blue-300 transition-colors">
-                Show all
+                {t('workflow.showAll', 'Show all')}
               </button>
               {/* Latest-only toggle */}
               <button onClick={toggleLatest}
                 className={`flex items-center gap-1 text-[9px] transition-colors ${latestOnly ? 'text-blue-400' : 'text-muted-foreground hover:text-foreground'}`}
-                title={latestOnly ? 'Show all runs' : 'Show latest only'}>
+                title={latestOnly ? t('workflow.showAllRuns', 'Show all runs') : t('workflow.showLatestOnly', 'Show latest only')}>
                 <span className={`w-6 h-3 rounded-full relative transition-colors ${latestOnly ? 'bg-blue-500' : 'bg-muted-foreground/30'}`}>
                   <span className={`absolute top-0.5 w-2 h-2 rounded-full bg-white transition-transform ${latestOnly ? 'left-3.5' : 'left-0.5'}`} />
                 </span>
-                <span>Latest</span>
+                <span>{t('workflow.latest', 'Latest')}</span>
               </button>
             </div>
             <div className="space-y-2">
@@ -579,7 +841,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
                 return (
                   <div key={group.time} className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] overflow-hidden">
                     <div className="flex items-center gap-2 px-2.5 py-1.5 bg-[hsl(var(--muted))]">
-                      {isNewest && <span className="text-[10px] text-green-400 font-semibold">Latest</span>}
+                      {isNewest && <span className="text-[10px] text-green-400 font-semibold">{t('workflow.latest', 'Latest')}</span>}
                       <span className="text-[10px] text-foreground/80 font-medium">
                         {new Date(group.time).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                       </span>
@@ -587,13 +849,20 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
                       {group.cost != null && group.cost > 0 && <span className="text-[10px] text-amber-400/80 font-medium">💰 ${group.cost.toFixed(4)}</span>}
                       <div className="flex-1" />
                       <button onClick={e => { e.stopPropagation(); hideRun(group.time) }}
-                        className="text-[10px] text-muted-foreground hover:text-red-400 transition-colors" title="Hide this run">
+                        className="text-[10px] text-muted-foreground hover:text-red-400 transition-colors" title={t('workflow.hideRun', 'Hide this run')}>
                         ✕
                       </button>
                     </div>
                     <div className="p-1.5 flex gap-1.5 flex-wrap">
                       {group.urls.map((url, ui) => (
-                        <ResultThumb key={`${url}-${ui}`} url={url} onPreview={openPreview} onDownload={handleDownload} />
+                        <ResultThumb
+                          key={`${url}-${ui}`}
+                          url={url}
+                          onPreview={(src) => {
+                            openPreview(src, isImageUrl(src) ? allDisplayImageUrls : undefined)
+                          }}
+                          onDownload={handleDownload}
+                        />
                       ))}
                     </div>
                   </div>
@@ -602,9 +871,9 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
               {/* Empty state */}
               {displayGroups.length === 0 && (
                 <div className="text-center py-3 text-[10px] text-muted-foreground">
-                  {latestOnly && newestHidden ? 'Latest result hidden.' : 'No visible results.'}
+                  {latestOnly && newestHidden ? t('workflow.latestHidden', 'Latest result hidden.') : t('workflow.noVisibleResults', 'No visible results.')}
                   <button onClick={e => { e.stopPropagation(); showAllRuns() }}
-                    className="text-blue-400 hover:text-blue-300 ml-1">Show all</button>
+                    className="text-blue-400 hover:text-blue-300 ml-1">{t('workflow.showAll', 'Show all')}</button>
                 </div>
               )}
             </div>
@@ -615,8 +884,8 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
       {/* ── Output handle — top-right, aligned with title bar ───── */}
       <Handle type="source" position={Position.Right} id="output"
         style={{ ...handleRight(), top: 22 }}
-        title="Output" />
-      <div className="absolute top-[14px] right-5 text-[11px] font-medium text-blue-400/80">output</div>
+        title={t('workflow.output', 'Output')} />
+      <div className="absolute top-[14px] right-5 text-[11px] font-medium text-blue-400/80">{t('workflow.outputLowercase', 'output')}</div>
 
       {/* ── Resize handles — 4 edges + 4 corners ────────────────── */}
       {/* Edges */}
@@ -810,6 +1079,7 @@ function MediaRow({ nodeId, schema, value, connected, connectedSet, onChange, on
   edges?: Array<{ id: string; source: string; target: string; targetHandle?: string | null }>
   nodes?: Array<{ id: string; data: { label?: string } }>
 }) {
+  const { t } = useTranslation()
   const disconnectHandle = (handleId: string) => {
     const edge = edges?.find(e => e.target === nodeId && e.targetHandle === handleId)
     if (edge) useWorkflowStore.getState().removeEdge(edge.id)
@@ -836,7 +1106,7 @@ function MediaRow({ nodeId, schema, value, connected, connectedSet, onChange, on
       setTimeout(() => setUploadState('idle'), 2000)
     } catch (err) {
       setUploadState('error')
-      setUploadError(err instanceof Error ? err.message : 'Upload failed')
+      setUploadError(err instanceof Error ? err.message : t('workflow.mediaUpload.uploadFailed', 'Upload failed'))
     }
   }
 
@@ -888,7 +1158,7 @@ function MediaRow({ nodeId, schema, value, connected, connectedSet, onChange, on
                   <span className="text-[10px] text-[hsl(var(--muted-foreground))] w-5 flex-shrink-0">[{i + 1}]</span>
                   {conn ? <LinkedBadge nodeId={nodeId} handleId={hid} edges={edges} nodes={nodes} onDisconnect={() => disconnectHandle(hid)} /> : (
                     <>
-                      <input type="text" value={v || ''} placeholder="URL…"
+                      <input type="text" value={v || ''} placeholder={t('workflow.mediaUpload.urlShortPlaceholder', 'URL...')}
                         onChange={e => { const a = [...items]; a[i] = e.target.value; onChange(a) }}
                         onClick={e => e.stopPropagation()}
                         className={`flex-1 rounded-md border bg-[hsl(var(--background))] px-2 py-1 text-[11px] text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 ${urlValid ? 'border-[hsl(var(--border))] focus:ring-green-500/50' : 'border-red-500 focus:ring-red-500/50'}`} />
@@ -898,13 +1168,13 @@ function MediaRow({ nodeId, schema, value, connected, connectedSet, onChange, on
                   )}
                   {canDeleteIndex(i) ? (
                     <button onClick={e => { e.stopPropagation(); onChange(items.slice(0, -1)) }}
-                      className="text-red-400/70 hover:text-red-400 text-sm px-0.5" title="Remove last">✕</button>
+                      className="text-red-400/70 hover:text-red-400 text-sm px-0.5" title={t('workflow.removeLast', 'Remove last')}>✕</button>
                   ) : (
                     <div className="w-4" />
                   )}
                 </div>
                 {!urlValid && v.trim() && (
-                  <div className="pl-7 text-[9px] text-red-400 mt-0.5">Invalid URL</div>
+                  <div className="pl-7 text-[9px] text-red-400 mt-0.5">{t('workflow.invalidUrl', 'Invalid URL')}</div>
                 )}
                 {isPreviewable(v) && schema.mediaType === 'image' && (
                   <div className="pl-6 mt-0.5">
@@ -920,7 +1190,7 @@ function MediaRow({ nodeId, schema, value, connected, connectedSet, onChange, on
         <div className="px-3 py-0.5">
           <button onClick={e => { e.stopPropagation(); onChange([...items, '']) }}
             className="w-full py-1.5 ml-2 rounded-md border border-dashed border-blue-500/30 text-[11px] font-medium text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 hover:border-blue-500/50 transition-colors">
-            + Add
+            + {t('workflow.add', 'Add')}
           </button>
         </div>
       </>
@@ -943,12 +1213,15 @@ function MediaRow({ nodeId, schema, value, connected, connectedSet, onChange, on
         {connected ? <LinkedBadge nodeId={nodeId} handleId={handleId} edges={edges} nodes={nodes} onDisconnect={() => disconnectHandle(handleId)} /> : (
           <>
             <div className="flex items-center gap-1">
-              <input type="text" value={sval} placeholder={`Enter ${label.toLowerCase()}…`}
+              <input
+                type="text"
+                value={sval}
+                placeholder={t('workflow.enterField', { field: label.toLowerCase(), defaultValue: `Enter ${label.toLowerCase()}...` })}
                 onChange={e => onChange(e.target.value)} onClick={e => e.stopPropagation()}
                 className={`flex-1 rounded-md border bg-[hsl(var(--background))] px-2 py-1.5 text-xs text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 ${urlValid ? 'border-[hsl(var(--border))] focus:ring-green-500/50' : 'border-red-500 focus:ring-red-500/50'}`} />
               <FileBtn accept={acceptType} uploading={uploadState === 'uploading'} onFile={f => doUpload(f, url => onChange(url))} />
             </div>
-            {!urlValid && sval.trim() && <div className="text-[9px] text-red-400 mt-0.5">Invalid URL</div>}
+            {!urlValid && sval.trim() && <div className="text-[9px] text-red-400 mt-0.5">{t('workflow.invalidUrl', 'Invalid URL')}</div>}
             {/* Preview for any valid URL (including after upload) */}
             {isPreviewable(sval) && schema.mediaType === 'image' && (
               <img src={sval} alt="" onClick={e => { e.stopPropagation(); onPreview(sval) }}
@@ -969,32 +1242,154 @@ function MediaRow({ nodeId, schema, value, connected, connectedSet, onChange, on
    ══════════════════════════════════════════════════════════════════════ */
 
 /** Shows "linked to NodeLabel" with a lock icon; click lock to disconnect */
-function LinkedBadge({ nodeId, handleId, edges, nodes, onDisconnect }: {
+function LinkedBadge({ nodeId, handleId, edges, nodes, onDisconnect, onPreview }: {
   nodeId?: string; handleId?: string
-  edges?: Array<{ id: string; source: string; target: string; targetHandle?: string | null }>
-  nodes?: Array<{ id: string; data: { label?: string } }>
+  edges?: Array<{ id: string; source: string; sourceHandle?: string | null; target: string; targetHandle?: string | null }>
+  nodes?: Array<{ id: string; data: { label?: string; nodeType?: string; params?: Record<string, unknown> } }>
   onDisconnect?: () => void
+  onPreview?: (src: string) => void
 }) {
+  const { t } = useTranslation()
+  const lastResults = useExecutionStore(s => s.lastResults)
   if (!nodeId || !handleId || !edges || !nodes) {
-    return <span className="inline-flex items-center gap-1 text-[11px] text-blue-400 italic"><LockIcon /> linked</span>
+    return <span className="inline-flex items-center gap-1 text-[11px] text-blue-400 italic"><LockIcon /> {t('workflow.linked', 'linked')}</span>
   }
   const edge = edges.find(e => e.target === nodeId && e.targetHandle === handleId)
   if (!edge) {
-    return <span className="inline-flex items-center gap-1 text-[11px] text-blue-400 italic"><LockIcon /> linked</span>
+    return <span className="inline-flex items-center gap-1 text-[11px] text-blue-400 italic"><LockIcon /> {t('workflow.linked', 'linked')}</span>
   }
   const sourceNode = nodes.find(n => n.id === edge.source)
   const sourceName = sourceNode?.data?.label || edge.source.slice(0, 8)
+  const latestResultUrl = lastResults[edge.source]?.[0]?.urls?.[0]
+  const previewUrl = (() => {
+    if (latestResultUrl && (/^https?:\/\//i.test(latestResultUrl) || /^blob:/i.test(latestResultUrl) || /^local-asset:\/\//i.test(latestResultUrl) || /^data:/i.test(latestResultUrl))) {
+      return latestResultUrl
+    }
+    const params = sourceNode?.data?.params
+    const nodeType = sourceNode?.data?.nodeType
+    if (nodeType === 'input/media-upload') {
+      const uploadedUrl = String(params?.uploadedUrl ?? '')
+      if (uploadedUrl && (/^https?:\/\//i.test(uploadedUrl) || /^blob:/i.test(uploadedUrl) || /^local-asset:\/\//i.test(uploadedUrl) || /^data:/i.test(uploadedUrl))) {
+        return uploadedUrl
+      }
+    }
+    return ''
+  })()
+
   return (
     <span className="inline-flex items-center gap-1 text-[11px] text-blue-400 italic">
       {onDisconnect ? (
         <button onClick={e => { e.stopPropagation(); onDisconnect() }}
-          title="Unlock: disconnect this link"
+          title={t('workflow.disconnectLink', 'Unlock: disconnect this link')}
           className="hover:text-red-400 transition-colors">
           <LockIcon />
         </button>
       ) : <LockIcon />}
-      linked to <span className="font-medium not-italic truncate max-w-[100px]">{sourceName}</span>
+      {t('workflow.linkedTo', 'linked to')} <span className="font-medium not-italic truncate max-w-[100px]">{sourceName}</span>
+      {onPreview && previewUrl && (
+        <button
+          onClick={e => { e.stopPropagation(); onPreview(previewUrl) }}
+          title={t('workflow.previewUpstreamOutput', 'Preview upstream output')}
+          className="not-italic text-blue-300 hover:text-blue-100 transition-colors"
+        >
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        </button>
+      )}
     </span>
+  )
+}
+
+function ConnectedInputControl({
+  nodeId,
+  handleId,
+  edges,
+  nodes,
+  onPreview
+}: {
+  nodeId?: string
+  handleId?: string
+  edges?: Array<{ id: string; source: string; sourceHandle?: string | null; target: string; targetHandle?: string | null }>
+  nodes?: Array<{ id: string; data: { label?: string; nodeType?: string; params?: Record<string, unknown> } }>
+  onPreview?: (src: string) => void
+}) {
+  const lastResults = useExecutionStore(s => s.lastResults)
+
+  if (!nodeId || !handleId || !edges || !nodes) {
+    return <LinkedBadge />
+  }
+
+  const edge = edges.find(e => e.target === nodeId && e.targetHandle === handleId)
+  if (!edge) return <LinkedBadge />
+
+  const sourceNode = nodes.find(n => n.id === edge.source)
+  const sourceParams = sourceNode?.data?.params ?? {}
+  const latestResultUrl = lastResults[edge.source]?.[0]?.urls?.[0] ?? ''
+
+  const pickPreviewUrl = (): string => {
+    const isMediaLike = (u: string) =>
+      /^https?:\/\//i.test(u) || /^blob:/i.test(u) || /^local-asset:\/\//i.test(u) || /^data:/i.test(u)
+
+    if (latestResultUrl && isMediaLike(latestResultUrl)) return latestResultUrl
+
+    // Media upload node and common source-node params fallback
+    const candidates = [
+      String(sourceParams.uploadedUrl ?? ''),
+      String(sourceParams.output ?? ''),
+      String(sourceParams.input ?? ''),
+      String(sourceParams.url ?? '')
+    ]
+    for (const c of candidates) {
+      if (c && isMediaLike(c)) return c
+    }
+    return ''
+  }
+
+  const previewUrl = pickPreviewUrl()
+  const detectSource = previewUrl
+    ? (/^local-asset:\/\//i.test(previewUrl)
+        ? (() => {
+            try {
+              return decodeURIComponent(previewUrl.replace(/^local-asset:\/\//i, '')).toLowerCase()
+            } catch {
+              return previewUrl.toLowerCase()
+            }
+          })()
+        : previewUrl.toLowerCase()
+      ).split('?')[0]
+    : ''
+  const isImage = /^data:image\//i.test(previewUrl) || /\.(jpg|jpeg|png|gif|webp|bmp|svg|avif)$/.test(detectSource)
+  const isVideo = /^data:video\//i.test(previewUrl) || /\.(mp4|webm|mov|avi|mkv)$/.test(detectSource)
+  const isAudio = /^data:audio\//i.test(previewUrl) || /\.(mp3|wav|ogg|flac|aac|m4a)$/.test(detectSource)
+
+  return (
+    <div className="w-full max-w-[220px] space-y-1.5">
+      <LinkedBadge nodeId={nodeId} handleId={handleId} edges={edges} nodes={nodes} onPreview={onPreview} />
+      {previewUrl && onPreview && (
+        <div className="mt-1" onClick={e => e.stopPropagation()}>
+          {isImage && (
+            <img
+              src={previewUrl}
+              alt=""
+              onClick={e => { e.stopPropagation(); onPreview(previewUrl) }}
+              className="max-h-[80px] rounded-md border border-[hsl(var(--border))] object-contain cursor-pointer hover:ring-2 hover:ring-blue-500/40 transition-shadow bg-black/5"
+            />
+          )}
+          {isVideo && (
+            <video
+              src={previewUrl}
+              controls
+              className="max-h-[80px] rounded-md border border-[hsl(var(--border))] object-contain"
+            />
+          )}
+          {isAudio && (
+            <audio src={previewUrl} controls className="w-full max-h-10 rounded-md border border-[hsl(var(--border))]" />
+          )}
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -1007,9 +1402,10 @@ function LockIcon() {
 }
 
 function UploadStatusBadge({ state, error }: { state: string; error: string }) {
-  if (state === 'uploading') return <span className="ml-auto text-[10px] text-blue-400 animate-pulse">Uploading…</span>
-  if (state === 'success') return <span className="ml-auto text-[10px] text-green-400">✓ Uploaded</span>
-  if (state === 'error') return <span className="ml-auto text-[10px] text-red-400" title={error}>✕ Failed</span>
+  const { t } = useTranslation()
+  if (state === 'uploading') return <span className="ml-auto text-[10px] text-blue-400 animate-pulse">{t('workflow.mediaUpload.uploadingShort', 'Uploading...')}</span>
+  if (state === 'success') return <span className="ml-auto text-[10px] text-green-400">✓ {t('workflow.mediaUpload.uploaded', 'Uploaded')}</span>
+  if (state === 'error') return <span className="ml-auto text-[10px] text-red-400" title={error}>✕ {t('workflow.mediaUpload.failed', 'Failed')}</span>
   return null
 }
 
@@ -1075,16 +1471,288 @@ function Tip({ text }: { text: string }) {
   )
 }
 
-function DefParamControl({ param, value, onChange }: { param: ParamDefinition; value: unknown; onChange: (v: unknown) => void }) {
+function DefParamControl({ nodeId, param, value, onChange }: { nodeId: string; param: ParamDefinition; value: unknown; onChange: (v: unknown) => void }) {
+  const { t } = useTranslation()
   const cls = 'rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1.5 text-xs text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50'
   const cur = value ?? param.default
+  const workflowId = useWorkflowStore(s => s.workflowId)
+  const saveWorkflow = useWorkflowStore(s => s.saveWorkflow)
+  const nodeType = useWorkflowStore(s => s.nodes.find(n => n.id === nodeId)?.data?.nodeType as string | undefined)
+  const [uploading, setUploading] = useState(false)
+
+  const ensureWorkflowId = useCallback(async () => {
+    let wfId = workflowId
+    if (!wfId) {
+      await saveWorkflow()
+      wfId = useWorkflowStore.getState().workflowId
+    }
+    return wfId
+  }, [workflowId, saveWorkflow])
+
   if (param.type === 'select' && param.options) {
-    return <select value={String(cur ?? '')} onChange={e => onChange(e.target.value)} className={`nodrag ${cls} max-w-[160px]`} onClick={e => e.stopPropagation()}>{param.options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select>
+    return (
+      <select value={String(cur ?? '')} onChange={e => onChange(e.target.value)} className={`nodrag ${cls} max-w-[160px]`} onClick={e => e.stopPropagation()}>
+        {param.options.map(o => (
+          <option key={o.value} value={o.value}>
+            {t(`workflow.nodeDefs.${nodeType}.params.${param.key}.options.${o.value}`, o.label)}
+          </option>
+        ))}
+      </select>
+    )
+  }
+  if (param.type === 'file') {
+    const textVal = String(cur ?? '')
+    const handleFile = async (file: File) => {
+      try {
+        setUploading(true)
+        const wfId = await ensureWorkflowId()
+        if (!wfId) throw new Error('Workflow not saved yet.')
+        const { storageIpc } = await import('../../ipc/ipc-client')
+        const data = await file.arrayBuffer()
+        const localPath = await storageIpc.saveUploadedFile(wfId, nodeId, file.name, data)
+        onChange(`local-asset://${encodeURIComponent(localPath)}`)
+      } catch (error) {
+        console.error('Local upload failed:', error)
+      } finally {
+        setUploading(false)
+      }
+    }
+    return (
+      <div className="flex items-center gap-1.5 w-full max-w-[220px]">
+        <input
+          type="text"
+          value={textVal}
+          onChange={e => onChange(e.target.value)}
+          placeholder={t('workflow.localFileOrUrl', 'Local file or URL')}
+          className={`${cls} flex-1`}
+          onClick={e => e.stopPropagation()}
+        />
+        <label className={`flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-md border border-[hsl(var(--border))] cursor-pointer transition-colors ${uploading ? 'bg-blue-500/25 animate-pulse' : 'bg-blue-500/15 text-blue-400 hover:bg-blue-500/25'}`}
+          onClick={e => e.stopPropagation()}>
+          {uploading ? (
+            <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" strokeDasharray="60" strokeDashoffset="20" /></svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+          )}
+          <input type="file" className="hidden" disabled={uploading}
+            onChange={e => {
+              const f = e.target.files?.[0]
+              if (f) handleFile(f)
+            }}
+            onClick={e => e.stopPropagation()} />
+        </label>
+      </div>
+    )
   }
   if (param.type === 'boolean') return <ToggleSwitch checked={Boolean(cur)} onChange={onChange} />
   if (param.type === 'number' || param.type === 'slider') return <NumberInput value={cur as number | undefined} min={param.validation?.min} max={param.validation?.max} step={param.validation?.step ?? 1} onChange={onChange} />
   if (param.type === 'textarea') return <textarea value={String(cur ?? '')} onChange={e => onChange(e.target.value)} className={`nodrag ${cls} w-full min-h-[40px] resize-y max-h-[300px]`} onClick={e => e.stopPropagation()} />
   return <input type="text" value={String(cur ?? '')} onChange={e => onChange(e.target.value)} className={`${cls} max-w-[160px]`} onClick={e => e.stopPropagation()} />
+}
+
+function InputPortControl({
+  nodeId,
+  port,
+  value,
+  onChange,
+  onPreview,
+  referenceImageUrl,
+  showDrawMaskButton
+}: {
+  nodeId: string
+  port: PortDefinition
+  value: unknown
+  onChange: (v: unknown) => void
+  onPreview?: (src: string) => void
+  referenceImageUrl?: string
+  showDrawMaskButton?: boolean
+}) {
+  const { t } = useTranslation()
+  const nodeType = useWorkflowStore(s => s.nodes.find(n => n.id === nodeId)?.data?.nodeType as string | undefined)
+  const workflowId = useWorkflowStore(s => s.workflowId)
+  const saveWorkflow = useWorkflowStore(s => s.saveWorkflow)
+  const [uploading, setUploading] = useState(false)
+  const [maskEditorOpen, setMaskEditorOpen] = useState(false)
+  const [drawingMask, setDrawingMask] = useState(false)
+  const textVal = String(value ?? '')
+  const cls = 'rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1.5 text-xs text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50'
+
+  // Detect media type for preview (local-asset, http, blob)
+  const detectSource = textVal
+    ? (/^local-asset:\/\//i.test(textVal)
+        ? (() => {
+            try {
+              return decodeURIComponent(textVal.replace(/^local-asset:\/\//i, '')).toLowerCase()
+            } catch {
+              return textVal.toLowerCase()
+            }
+          })()
+        : textVal.toLowerCase()
+    ).split('?')[0]
+    : ''
+  const isPreviewableUrl = /^https?:\/\//i.test(textVal) || /^blob:/i.test(textVal) || /^local-asset:\/\//i.test(textVal) || /^data:/i.test(textVal)
+  const isImageByExt = /\.(jpg|jpeg|png|gif|webp|bmp|svg|avif)$/.test(detectSource)
+  const isVideoByExt = /\.(mp4|webm|mov|avi|mkv)$/.test(detectSource)
+  const isAudioByExt = /\.(mp3|wav|ogg|flac|aac|m4a)$/.test(detectSource)
+  const isDataImage = /^data:image\//i.test(textVal)
+  const isDataVideo = /^data:video\//i.test(textVal)
+  const isDataAudio = /^data:audio\//i.test(textVal)
+  const typeHint = String(port.dataType ?? '')
+  const isImage = isDataImage || (isPreviewableUrl && (isImageByExt || (typeHint === 'image' && !isVideoByExt && !isAudioByExt)))
+  const isVideo = isDataVideo || (isPreviewableUrl && (isVideoByExt || (typeHint === 'video' && !isImageByExt && !isAudioByExt)))
+  const isAudio = isDataAudio || (isPreviewableUrl && (isAudioByExt || (typeHint === 'audio' && !isImageByExt && !isVideoByExt)))
+
+  const ensureWorkflowId = useCallback(async () => {
+    let wfId = workflowId
+    if (!wfId) {
+      await saveWorkflow()
+      wfId = useWorkflowStore.getState().workflowId
+    }
+    return wfId
+  }, [workflowId, saveWorkflow])
+
+  const nodeRule = nodeType ? NODE_INPUT_ACCEPT_RULES[nodeType] : undefined
+  const acceptFromRule = typeof nodeRule === 'string'
+    ? nodeRule
+    : nodeRule?.[port.key]
+
+  const accept = acceptFromRule
+    ?? (port.dataType === 'image'
+      ? 'image/*'
+      : port.dataType === 'video'
+        ? 'video/*'
+        : port.dataType === 'audio'
+          ? 'audio/*'
+          : '*/*')
+
+  const canUpload = port.dataType === 'image'
+    || port.dataType === 'video'
+    || port.dataType === 'audio'
+    || port.dataType === 'url'
+    || port.dataType === 'any'
+
+  const handleFile = async (file: File) => {
+    try {
+      setUploading(true)
+      const wfId = await ensureWorkflowId()
+      if (!wfId) throw new Error('Workflow not saved yet.')
+      const { storageIpc } = await import('../../ipc/ipc-client')
+      const data = await file.arrayBuffer()
+      const localPath = await storageIpc.saveUploadedFile(wfId, nodeId, file.name, data)
+      onChange(`local-asset://${encodeURIComponent(localPath)}`)
+    } catch (error) {
+      console.error('Input upload failed:', error)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleDrawMaskOpen = useCallback(() => {
+    if (!referenceImageUrl?.trim()) return
+    setMaskEditorOpen(true)
+  }, [referenceImageUrl])
+
+  const handleMaskComplete = useCallback(async (blob: Blob) => {
+    try {
+      setDrawingMask(true)
+      const wfId = await ensureWorkflowId()
+      if (!wfId) throw new Error('Workflow not saved yet.')
+      const { storageIpc } = await import('../../ipc/ipc-client')
+      const data = await blob.arrayBuffer()
+      const localPath = await storageIpc.saveUploadedFile(wfId, nodeId, 'mask-drawn.png', data)
+      onChange(`local-asset://${encodeURIComponent(localPath)}`)
+      setMaskEditorOpen(false)
+    } catch (error) {
+      console.error('Mask save failed:', error)
+    } finally {
+      setDrawingMask(false)
+    }
+  }, [ensureWorkflowId, nodeId, onChange])
+
+  return (
+    <div className="w-full max-w-[220px] space-y-1.5">
+      <div className="flex items-center gap-1.5">
+        <input
+          type="text"
+          value={textVal}
+          onChange={e => onChange(e.target.value)}
+          placeholder={t('workflow.localFileOrUrl', 'Local file or URL')}
+          className={`${cls} flex-1`}
+          onClick={e => e.stopPropagation()}
+        />
+        {showDrawMaskButton && (
+          <button
+            type="button"
+            title={referenceImageUrl?.trim() ? t('workflow.drawMask') : t('workflow.drawMaskNeedInput')}
+            disabled={!referenceImageUrl?.trim() || drawingMask}
+            onClick={e => { e.stopPropagation(); handleDrawMaskOpen() }}
+            className={`flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-md border border-[hsl(var(--border))] transition-colors nodrag ${
+              referenceImageUrl?.trim()
+                ? 'cursor-pointer bg-purple-500/15 text-purple-400 hover:bg-purple-500/25'
+                : 'cursor-not-allowed opacity-50'
+            } ${drawingMask ? 'animate-pulse' : ''}`}
+          >
+            {drawingMask ? (
+              <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" strokeDasharray="60" strokeDashoffset="20" /></svg>
+            ) : (
+              <Paintbrush className="h-4 w-4" />
+            )}
+          </button>
+        )}
+        {canUpload && (
+          <label className={`flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-md border border-[hsl(var(--border))] cursor-pointer transition-colors ${uploading ? 'bg-blue-500/25 animate-pulse' : 'bg-blue-500/15 text-blue-400 hover:bg-blue-500/25'}`}
+            onClick={e => e.stopPropagation()}>
+            {uploading ? (
+              <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" strokeDasharray="60" strokeDashoffset="20" /></svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+            )}
+            <input type="file" accept={accept} className="hidden" disabled={uploading}
+              onChange={e => {
+                const f = e.target.files?.[0]
+                if (f) handleFile(f)
+              }}
+              onClick={e => e.stopPropagation()} />
+          </label>
+        )}
+      </div>
+      {/* Preview for uploaded / URL media */}
+      {textVal.trim() && (isImage || isVideo || isAudio) && (
+        <div className="mt-1" onClick={e => e.stopPropagation()}>
+          {isImage && (
+            <img
+              src={textVal}
+              alt=""
+              onClick={e => { e.stopPropagation(); onPreview?.(textVal) }}
+              className="max-h-[80px] rounded-md border border-[hsl(var(--border))] object-contain cursor-pointer hover:ring-2 hover:ring-blue-500/40 transition-shadow bg-black/5"
+            />
+          )}
+          {isVideo && (
+            <video
+              src={textVal}
+              controls
+              className="max-h-[80px] rounded-md border border-[hsl(var(--border))] object-contain"
+            />
+          )}
+          {isAudio && (
+            <audio src={textVal} controls className="w-full max-h-10 rounded-md border border-[hsl(var(--border))]" />
+          )}
+        </div>
+      )}
+      {maskEditorOpen && referenceImageUrl?.trim() && (
+        <MaskEditor
+          referenceImageUrl={referenceImageUrl}
+          onComplete={handleMaskComplete}
+          onClose={() => setMaskEditorOpen(false)}
+          disabled={drawingMask}
+        />
+      )}
+    </div>
+  )
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -1097,6 +1765,7 @@ function MediaUploadBody({ params, onBatchChange, onPreview }: {
   onBatchChange: (updates: Record<string, unknown>) => void
   onPreview: (src: string) => void
 }) {
+  const { t } = useTranslation()
   const uploadedUrl = String(params.uploadedUrl ?? '')
   const mediaType = String(params.mediaType ?? '')
   const fileName = String(params.fileName ?? '')
@@ -1125,7 +1794,7 @@ function MediaUploadBody({ params, onBatchChange, onPreview }: {
       setTimeout(() => setUploadState('idle'), 2000)
     } catch (err) {
       setUploadState('error')
-      setUploadError(err instanceof Error ? err.message : 'Upload failed')
+      setUploadError(err instanceof Error ? err.message : t('workflow.mediaUpload.uploadFailed', 'Upload failed'))
     }
   }
 
@@ -1138,7 +1807,7 @@ function MediaUploadBody({ params, onBatchChange, onPreview }: {
   const handleUrlSubmit = () => {
     const url = urlInput.trim()
     if (!url) return
-    try { new URL(url) } catch { setUploadError('Invalid URL'); setUploadState('error'); return }
+    try { new URL(url) } catch { setUploadError(t('workflow.mediaUpload.invalidUrl', 'Invalid URL')); setUploadState('error'); return }
     const ext = url.split('/').pop()?.split('?')[0] ?? 'file'
     onBatchChange({ uploadedUrl: url, fileName: ext, mediaType: detectMediaType(ext) })
     setUrlInput('')
@@ -1169,7 +1838,7 @@ function MediaUploadBody({ params, onBatchChange, onPreview }: {
             <audio src={uploadedUrl} controls className="w-full" onClick={e => e.stopPropagation()} />
           ) : (
             <div className="p-3 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted))] text-xs text-center">
-              {fileName || 'File uploaded'}
+              {fileName || t('workflow.mediaUpload.fileUploaded', 'File uploaded')}
             </div>
           )}
         </div>
@@ -1177,10 +1846,10 @@ function MediaUploadBody({ params, onBatchChange, onPreview }: {
         {/* File info */}
         <div className="flex items-center gap-1.5">
           <span className="text-[10px] text-muted-foreground truncate flex-1" title={fileName}>{fileName}</span>
-          {uploadState === 'success' && <span className="text-[10px] text-green-400">Uploaded</span>}
+          {uploadState === 'success' && <span className="text-[10px] text-green-400">{t('workflow.mediaUpload.uploaded', 'Uploaded')}</span>}
           <button onClick={e => { e.stopPropagation(); handleClear() }}
             className="text-[10px] text-red-400 hover:text-red-300 transition-colors">
-            Clear
+            {t('workflow.mediaUpload.clear', 'Clear')}
           </button>
         </div>
 
@@ -1205,24 +1874,24 @@ function MediaUploadBody({ params, onBatchChange, onPreview }: {
       >
         {uploadState === 'uploading' ? (
           <div className="py-2">
-            <div className="text-xs text-blue-400 animate-pulse mb-1">Uploading...</div>
+            <div className="text-xs text-blue-400 animate-pulse mb-1">{t('workflow.mediaUpload.uploading', 'Uploading...')}</div>
             <div className="text-[10px] text-muted-foreground">{fileName}</div>
           </div>
         ) : (
           <>
             <div className="text-2xl mb-1">📁</div>
             <div className="text-xs text-muted-foreground mb-2">
-              Drop file here or click to browse
+              {t('workflow.mediaUpload.dropOrBrowse', 'Drop file here or click to browse')}
             </div>
             <div className="flex gap-1.5 justify-center">
               <label className="px-3 py-1 rounded-md text-[11px] font-medium bg-blue-500/15 text-blue-400 hover:bg-blue-500/25 cursor-pointer transition-colors">
-                Browse
+                {t('workflow.mediaUpload.browse', 'Browse')}
                 <input type="file" accept="image/*,video/*,audio/*" className="hidden"
                   onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f) }} />
               </label>
               <button onClick={() => setShowUrlInput(!showUrlInput)}
                 className="px-3 py-1 rounded-md text-[11px] font-medium bg-[hsl(var(--muted))] text-muted-foreground hover:text-foreground transition-colors">
-                Paste URL
+                {t('workflow.mediaUpload.pasteUrl', 'Paste URL')}
               </button>
             </div>
           </>
@@ -1234,11 +1903,11 @@ function MediaUploadBody({ params, onBatchChange, onPreview }: {
         <div className="mt-2 flex gap-1">
           <input type="text" value={urlInput} onChange={e => setUrlInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleUrlSubmit()}
-            placeholder="https://..." autoFocus
+            placeholder={t('workflow.mediaUpload.urlPlaceholder', 'https://...')} autoFocus
             className="flex-1 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1 text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500/50" />
           <button onClick={handleUrlSubmit}
             className="px-2 py-1 rounded-md text-[10px] font-medium bg-blue-500 text-white hover:bg-blue-600 transition-colors">
-            OK
+            {t('common.ok', 'OK')}
           </button>
         </div>
       )}
@@ -1250,7 +1919,7 @@ function MediaUploadBody({ params, onBatchChange, onPreview }: {
 
       {/* Supported formats hint */}
       <div className="mt-2 text-[9px] text-muted-foreground/50 text-center">
-        Image, Video, Audio
+        {t('workflow.mediaUpload.supportedTypes', 'Image, Video, Audio')}
       </div>
     </div>
   )
@@ -1272,6 +1941,7 @@ function TextInputBody({ params, onParamChange }: {
   params: Record<string, unknown>
   onParamChange: (updates: Record<string, unknown>) => void
 }) {
+  const { t } = useTranslation()
   const text = String(params.text ?? '')
   const [snippetOpen, setSnippetOpen] = useState(false)
   const [showSaveInput, setShowSaveInput] = useState(false)
@@ -1371,7 +2041,7 @@ function TextInputBody({ params, onParamChange }: {
         }
       })
     } catch (err) {
-      setOptimizeError(err instanceof Error ? err.message : 'Optimize failed')
+      setOptimizeError(err instanceof Error ? err.message : t('workflow.textInput.optimizeFailed', 'Optimize failed'))
     } finally {
       setIsOptimizing(false)
     }
@@ -1384,7 +2054,7 @@ function TextInputBody({ params, onParamChange }: {
         {/* Snippet Library */}
         <div className="relative" ref={snippetRef}>
           <button onClick={() => { setSnippetOpen(!snippetOpen); setShowSaveInput(false) }}
-            title="Prompt Library"
+            title={t('workflow.textInput.promptLibrary', 'Prompt Library')}
             className={`flex items-center justify-center w-6 h-6 rounded-md transition-colors
               ${snippetOpen ? 'bg-blue-500/20 text-blue-400' : 'hover:bg-[hsl(var(--accent))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'}`}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1399,17 +2069,17 @@ function TextInputBody({ params, onParamChange }: {
               {!showSaveInput ? (
                 <button onClick={() => setShowSaveInput(true)} disabled={!text.trim()}
                   className="w-full flex items-center gap-2 px-3 py-2 text-[11px] hover:bg-[hsl(var(--accent))] transition-colors disabled:opacity-40 disabled:cursor-not-allowed rounded-t-lg">
-                  <span>💾</span> <span>Save Current</span>
+                  <span>💾</span> <span>{t('workflow.textInput.saveCurrent', 'Save Current')}</span>
                 </button>
               ) : (
                 <div className="px-2 py-2 flex gap-1">
                   <input type="text" value={saveName} onChange={e => setSaveName(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') doSave(); e.stopPropagation() }}
-                    placeholder="Name..." autoFocus
+                    placeholder={t('workflow.textInput.namePlaceholder', 'Name...')} autoFocus
                     className="flex-1 rounded border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1 text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500/50" />
                   <button onClick={doSave} disabled={!saveName.trim()}
                     className="px-2 py-1 rounded text-[10px] font-medium bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-40 transition-colors">
-                    Save
+                    {t('workflow.save', 'Save')}
                   </button>
                 </div>
               )}
@@ -1433,7 +2103,7 @@ function TextInputBody({ params, onParamChange }: {
 
               {snippets.length === 0 && (
                 <div className="px-3 py-3 text-[10px] text-[hsl(var(--muted-foreground))] text-center">
-                  No saved snippets
+                  {t('workflow.textInput.noSavedSnippets', 'No saved snippets')}
                 </div>
               )}
             </div>
@@ -1447,21 +2117,21 @@ function TextInputBody({ params, onParamChange }: {
             onClick={handleManualOptimize}
             disabled={isOptimizing || !text.trim()}
             className="inline-flex h-6 items-center gap-1 rounded-md border border-blue-500/45 bg-blue-500/20 px-2.5 text-[10px] font-semibold text-blue-200 shadow-sm transition-all hover:bg-blue-500/30 hover:shadow-blue-500/20 disabled:cursor-not-allowed disabled:opacity-40"
-            title="Optimize text now"
+            title={t('workflow.textInput.optimizeNowTitle', 'Optimize text now')}
           >
             {isOptimizing ? (
               <>
                 <svg className="animate-spin" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <circle cx="12" cy="12" r="10" strokeDasharray="60" strokeDashoffset="20" />
                 </svg>
-                Optimizing...
+                {t('workflow.textInput.optimizing', 'Optimizing...')}
               </>
             ) : (
               <>
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/>
                 </svg>
-                Optimize now
+                {t('workflow.textInput.optimizeNow', 'Optimize now')}
               </>
             )}
           </button>
@@ -1473,30 +2143,30 @@ function TextInputBody({ params, onParamChange }: {
                 ? 'border-emerald-500/55 bg-emerald-500/20 text-emerald-200 shadow-sm'
                 : 'border-[hsl(var(--border))] bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
             }`}
-            title="Only optimize when Run is clicked"
+            title={t('workflow.textInput.autoOnRunTitle', 'Only optimize when Run is clicked')}
           >
             <span className={`inline-block h-1.5 w-1.5 rounded-full ${optimizeOnRun ? 'bg-emerald-300' : 'bg-[hsl(var(--muted-foreground))]/70'}`} />
-            Auto on Run
+            {t('workflow.textInput.autoOnRun', 'Auto on Run')}
           </button>
         </div>
 
         <div className="flex-1" />
 
         {/* Character count */}
-        <span className="text-[9px] text-[hsl(var(--muted-foreground))]">{text.length} chars</span>
+        <span className="text-[9px] text-[hsl(var(--muted-foreground))]">{text.length} {t('workflow.textInput.chars', 'chars')}</span>
       </div>
 
       <div className="mb-1 flex items-center justify-between rounded-md border border-[hsl(var(--border))]/70 bg-[hsl(var(--muted))]/20 px-2 py-1">
         {optimizeOnRun ? (
-          <span className="text-[10px] font-medium text-emerald-300">Enabled: optimize on Run</span>
+          <span className="text-[10px] font-medium text-emerald-300">{t('workflow.textInput.optimizeOnRunEnabled', 'Enabled: optimize on Run')}</span>
         ) : (
-          <span className="text-[10px] font-medium text-[hsl(var(--muted-foreground))]">Default: no optimization (run with original text)</span>
+          <span className="text-[10px] font-medium text-[hsl(var(--muted-foreground))]">{t('workflow.textInput.optimizeOffHint', 'Default: no optimization (run with original text)')}</span>
         )}
       </div>
 
       {manualOptimizedLocked && (
         <div className="mb-1 rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[10px] text-amber-300">
-          Manually optimized. Auto-on-run will be skipped until text changes.
+          {t('workflow.textInput.manualOptimizedHint', 'Manually optimized. Auto-on-run will be skipped until text changes.')}
         </div>
       )}
       {optimizeError && (
@@ -1532,7 +2202,7 @@ function TextInputBody({ params, onParamChange }: {
             __optimizerSettings: rest
           })
         }}
-        placeholder="Enter text or prompt..."
+        placeholder={t('workflow.textInput.enterTextOrPrompt', 'Enter text or prompt...')}
         rows={4}
         className="nodrag w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2.5 py-2 text-xs text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500 placeholder:text-[hsl(var(--muted-foreground))] resize-y min-h-[80px] max-h-[400px]"
       />
@@ -1670,11 +2340,23 @@ function JsonRow({ nodeId, schema, value, connected, onChange, edges, nodes }: {
    ══════════════════════════════════════════════════════════════════════ */
 
 function ResultThumb({ url, onPreview, onDownload }: { url: string; onPreview: (src: string) => void; onDownload: (url: string) => void }) {
+  const detectSource = (() => {
+    if (/^local-asset:\/\//i.test(url)) {
+      try {
+        return decodeURIComponent(url.replace(/^local-asset:\/\//i, '')).toLowerCase()
+      } catch {
+        return url.toLowerCase()
+      }
+    }
+    return url.toLowerCase()
+  })().split('?')[0]
+
   // Detect if the result is plain text (not a URL)
-  const isUrl = /^https?:\/\//i.test(url) || /^blob:/i.test(url)
-  const is3D = isUrl && url.match(/\.(glb|gltf)(\?.*)?$/i)
-  const isImage = isUrl && url.match(/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i)
-  const isVideo = isUrl && url.match(/\.(mp4|webm|mov)(\?.*)?$/i)
+  const isUrl = /^https?:\/\//i.test(url) || /^blob:/i.test(url) || /^local-asset:\/\//i.test(url)
+  const is3D = isUrl && /\.(glb|gltf)$/.test(detectSource)
+  const isImage = isUrl && /\.(jpg|jpeg|png|gif|webp|bmp|svg|avif)$/.test(detectSource)
+  const isVideo = isUrl && /\.(mp4|webm|mov|avi|mkv)$/.test(detectSource)
+  const isAudio = isUrl && /\.(mp3|wav|ogg|flac|aac|m4a)$/.test(detectSource)
 
   // Plain text result — show inline text preview
   if (!isUrl) {
@@ -1731,6 +2413,14 @@ function ResultThumb({ url, onPreview, onDownload }: { url: string; onPreview: (
             <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
           </div>
         </div>
+      </div>
+    )
+  }
+
+  if (isAudio) {
+    return (
+      <div className="flex-1 min-w-[80px] rounded border border-[hsl(var(--border))] bg-[hsl(var(--muted))] p-2">
+        <audio src={url} controls className="w-full" onClick={e => e.stopPropagation()} />
       </div>
     )
   }

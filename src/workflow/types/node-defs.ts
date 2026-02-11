@@ -25,7 +25,7 @@ export interface ParamDefinition {
   description?: string
 }
 
-export type NodeCategory = 'input' | 'ai-task' | 'ai-generation' | 'processing' | 'control' | 'output'
+export type NodeCategory = 'input' | 'ai-task' | 'ai-generation' | 'free-tool' | 'processing' | 'control' | 'output'
 
 export interface NodeTypeDefinition {
   type: string

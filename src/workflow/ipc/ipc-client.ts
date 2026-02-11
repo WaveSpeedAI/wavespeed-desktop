@@ -176,6 +176,15 @@ export const storageIpc = {
     rawInvoke('storage:delete-node-outputs', { workflowId, nodeId }) as Promise<void>
 }
 
+// ─── Free-tool (renderer execution) IPC ─────────────────────────────────────
+
+export const freeToolIpc = {
+  complete: (payload: { requestId: string; workflowId: string; nodeId: string; outputData: string; outputExt: string; outputPrefix: string }) =>
+    rawInvoke('free-tool:complete', payload),
+  error: (payload: { requestId: string; error: string }) =>
+    rawInvoke('free-tool:error', payload)
+}
+
 // ─── Upload IPC ──────────────────────────────────────────────────────────────
 
 export const uploadIpc = {
@@ -196,7 +205,8 @@ export const ipcClient = {
   registry: registryIpc,
   models: modelsIpc,
   storage: storageIpc,
-  upload: uploadIpc
+  upload: uploadIpc,
+  freeTool: freeToolIpc
 }
 
 export default ipcClient

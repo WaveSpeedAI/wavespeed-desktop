@@ -1,7 +1,7 @@
 /**
  * Context menu — polished dropdown for node/canvas right-click actions.
  */
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 
 export interface ContextMenuItem {
   label: string
@@ -17,11 +17,14 @@ export interface ContextMenuItem {
 interface ContextMenuProps {
   x: number
   y: number
-  items: ContextMenuItem[]
+  items?: ContextMenuItem[]
   onClose: () => void
+  width?: number
+  estimatedHeight?: number
+  children?: ReactNode
 }
 
-export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
+export function ContextMenu({ x, y, items = [], onClose, width = 200, estimatedHeight, children }: ContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -40,8 +43,8 @@ export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
 
   // Adjust position to stay within viewport
   const adjustedStyle = (() => {
-    const menuWidth = 200
-    const menuHeight = items.length * 36
+    const menuWidth = width
+    const menuHeight = estimatedHeight ?? Math.max(120, items.length * 36)
     const left = x + menuWidth > window.innerWidth ? x - menuWidth : x
     const top = y + menuHeight > window.innerHeight ? y - menuHeight : y
     return { left: Math.max(4, left), top: Math.max(4, top) }
@@ -50,10 +53,10 @@ export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
   return (
     <div
       ref={menuRef}
-      className="fixed z-[1000] min-w-[180px] rounded-lg border border-border bg-popover/95 backdrop-blur-sm py-1 text-popover-foreground shadow-xl"
+      className={`fixed z-[1000] rounded-lg border border-border bg-popover/95 backdrop-blur-sm text-popover-foreground shadow-xl ${children ? '' : 'py-1 min-w-[180px]'}`}
       style={adjustedStyle}
     >
-      {items.map((item, index) => {
+      {children ?? items.map((item, index) => {
         if (item.divider) {
           return <div key={`div-${index}`} className="my-1 mx-2 h-px bg-border" />
         }

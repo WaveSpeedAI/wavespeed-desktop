@@ -22,6 +22,8 @@ import { fuzzySearch } from '@/lib/fuzzySearch'
 import type { NodeStatus } from '@/workflow/types/execution'
 import type { ParamDefinition, PortDefinition, ModelParamSchema, WaveSpeedModel } from '@/workflow/types/node-defs'
 
+import { CompInput, CompTextarea } from './composition-input'
+
 /* ── types ───────────────────────────────────────────────────────────── */
 
 interface CustomNodeData {
@@ -1080,7 +1082,7 @@ function ParamRow({ nodeId, schema, value, connected, onChange, onDisconnect, ed
         </label>
         <div className="pl-2">
           {connected ? <LinkedBadge nodeId={nodeId} handleId={handleId} edges={edges} nodes={nodes} onDisconnect={onDisconnect} /> : (
-            <textarea value={String(cur ?? '')} onChange={e => onChange(e.target.value)}
+            <CompTextarea value={String(cur ?? '')} onChange={e => onChange(e.target.value)}
               placeholder={schema.placeholder ?? schema.description ?? label} rows={3}
               className={`nodrag ${inputCls} resize-y min-h-[60px] max-h-[300px]`}
               onClick={e => e.stopPropagation()} />
@@ -1170,7 +1172,7 @@ function ParamRow({ nodeId, schema, value, connected, onChange, onDisconnect, ed
                 )}
               </>
             ) : (
-              <input type="text" value={String(cur ?? '')} onChange={e => onChange(e.target.value)}
+              <CompInput type="text" value={String(cur ?? '')} onChange={e => onChange(e.target.value)}
                 placeholder={schema.placeholder ?? schema.description ?? label} className={`${inputCls} max-w-[180px] text-right`} />
             )}
         </div>
@@ -1268,7 +1270,7 @@ function MediaRow({ nodeId, schema, value, connected, connectedSet, onChange, on
                   <span className="text-[10px] text-[hsl(var(--muted-foreground))] w-5 flex-shrink-0">[{i + 1}]</span>
                   {conn ? <LinkedBadge nodeId={nodeId} handleId={hid} edges={edges} nodes={nodes} onDisconnect={() => disconnectHandle(hid)} /> : (
                     <>
-                      <input type="text" value={v || ''} placeholder={t('workflow.mediaUpload.urlShortPlaceholder', 'URL...')}
+                      <CompInput type="text" value={v || ''} placeholder={t('workflow.mediaUpload.urlShortPlaceholder', 'URL...')}
                         onChange={e => { const a = [...items]; a[i] = e.target.value; onChange(a) }}
                         onClick={e => e.stopPropagation()}
                         className={`flex-1 rounded-md border bg-[hsl(var(--background))] px-2 py-1 text-[11px] text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 ${urlValid ? 'border-[hsl(var(--border))] focus:ring-green-500/50' : 'border-red-500 focus:ring-red-500/50'}`} />
@@ -1323,7 +1325,7 @@ function MediaRow({ nodeId, schema, value, connected, connectedSet, onChange, on
         {connected ? <LinkedBadge nodeId={nodeId} handleId={handleId} edges={edges} nodes={nodes} onDisconnect={() => disconnectHandle(handleId)} /> : (
           <>
             <div className="flex items-center gap-1">
-              <input
+              <CompInput
                 type="text"
                 value={sval}
                 placeholder={t('workflow.enterField', { field: label.toLowerCase(), defaultValue: `Enter ${label.toLowerCase()}...` })}
@@ -1639,7 +1641,7 @@ function DefParamControl({ nodeId, param, value, onChange }: { nodeId: string; p
     return (
       <div className="w-full max-w-[260px] space-y-1.5">
         <div className="flex items-center gap-1.5">
-          <input
+          <CompInput
             type="text"
             value={textVal}
             onChange={e => onChange(e.target.value)}
@@ -1705,7 +1707,7 @@ function DefParamControl({ nodeId, param, value, onChange }: { nodeId: string; p
     }
     return (
       <div className="flex items-center gap-1.5 w-full max-w-[220px]">
-        <input
+        <CompInput
           type="text"
           value={textVal}
           onChange={e => onChange(e.target.value)}
@@ -1734,8 +1736,8 @@ function DefParamControl({ nodeId, param, value, onChange }: { nodeId: string; p
   }
   if (param.type === 'boolean') return <ToggleSwitch checked={Boolean(cur)} onChange={onChange} />
   if (param.type === 'number' || param.type === 'slider') return <NumberInput value={cur as number | undefined} min={param.validation?.min} max={param.validation?.max} step={param.validation?.step ?? 1} onChange={onChange} />
-  if (param.type === 'textarea') return <textarea value={String(cur ?? '')} onChange={e => onChange(e.target.value)} className={`nodrag ${cls} w-full min-h-[40px] resize-y max-h-[300px]`} onClick={e => e.stopPropagation()} />
-  return <input type="text" value={String(cur ?? '')} onChange={e => onChange(e.target.value)} className={`${cls} max-w-[160px]`} onClick={e => e.stopPropagation()} />
+  if (param.type === 'textarea') return <CompTextarea value={String(cur ?? '')} onChange={e => onChange(e.target.value)} className={`nodrag ${cls} w-full min-h-[40px] resize-y max-h-[300px]`} onClick={e => e.stopPropagation()} />
+  return <CompInput type="text" value={String(cur ?? '')} onChange={e => onChange(e.target.value)} className={`${cls} max-w-[160px]`} onClick={e => e.stopPropagation()} />
 }
 
 function InputPortControl({
@@ -1862,7 +1864,7 @@ function InputPortControl({
   return (
     <div className="w-full space-y-2">
       <div className="flex items-center gap-1.5">
-        <input
+        <CompInput
           type="text"
           value={textVal}
           onChange={e => onChange(e.target.value)}
@@ -2089,8 +2091,11 @@ function MediaUploadBody({ params, onBatchChange, onPreview }: {
       {/* URL input */}
       {showUrlInput && (
         <div className="mt-2 flex gap-1">
-          <input type="text" value={urlInput} onChange={e => setUrlInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleUrlSubmit()}
+          <CompInput type="text" value={urlInput} onChange={e => setUrlInput(e.target.value)}
+            onKeyDown={e => {
+              const composing = e.nativeEvent.isComposing || e.key === 'Process'
+              if (!composing && e.key === 'Enter') handleUrlSubmit()
+            }}
             placeholder={t('workflow.mediaUpload.urlPlaceholder', 'https://...')} autoFocus
             className="flex-1 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1 text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500/50" />
           <button onClick={handleUrlSubmit}
@@ -2261,8 +2266,12 @@ function TextInputBody({ params, onParamChange }: {
                 </button>
               ) : (
                 <div className="px-2 py-2 flex gap-1">
-                  <input type="text" value={saveName} onChange={e => setSaveName(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') doSave(); e.stopPropagation() }}
+                  <CompInput type="text" value={saveName} onChange={e => setSaveName(e.target.value)}
+                    onKeyDown={e => {
+                      const composing = e.nativeEvent.isComposing || e.key === 'Process'
+                      if (!composing && e.key === 'Enter') doSave()
+                      e.stopPropagation()
+                    }}
                     placeholder={t('workflow.textInput.namePlaceholder', 'Name...')} autoFocus
                     className="flex-1 rounded border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1 text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500/50" />
                   <button onClick={doSave} disabled={!saveName.trim()}
@@ -2381,7 +2390,7 @@ function TextInputBody({ params, onParamChange }: {
       />
 
       {/* Textarea */}
-      <textarea
+      <CompTextarea
         value={text}
         onChange={e => {
           const { lastManualOptimizedText: _manual, ...rest } = optimizerSettings
@@ -2448,9 +2457,12 @@ function LoraRow({ schema, value, onChange }: {
         ))}
         {items.length < maxItems && (
           <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
-            <input type="text" value={inputPath} placeholder="user/repo or .safetensors URL"
+            <CompInput type="text" value={inputPath} placeholder="user/repo or .safetensors URL"
               onChange={e => setInputPath(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && addLora()}
+              onKeyDown={e => {
+                const composing = e.nativeEvent.isComposing || e.key === 'Process'
+                if (!composing && e.key === 'Enter') addLora()
+              }}
               className="flex-1 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1 text-[11px] text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-purple-500/50 placeholder:text-[hsl(var(--muted-foreground))]" />
             <button onClick={addLora} disabled={!inputPath.trim()}
               className="px-2 py-1 rounded-md text-[10px] font-medium bg-purple-500/15 text-purple-400 hover:bg-purple-500/25 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex-shrink-0">
@@ -2512,7 +2524,7 @@ function JsonRow({ nodeId, schema, value, connected, onChange, edges, nodes }: {
       </label>
       <div className="pl-2">
         {connected ? <LinkedBadge nodeId={nodeId} handleId={handleId} edges={edges} nodes={nodes} onDisconnect={onDisconnect} /> : (
-          <textarea value={displayValue} onChange={e => handleChange(e.target.value)}
+          <CompTextarea value={displayValue} onChange={e => handleChange(e.target.value)}
             placeholder={schema.placeholder ?? `e.g. [1, 2, 3] or {"key": "value"}`}
             rows={3} onClick={e => e.stopPropagation()}
             className="nodrag w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1.5 text-xs text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-orange-500/50 focus:border-orange-500 placeholder:text-[hsl(var(--muted-foreground))] resize-y min-h-[48px] max-h-[300px] font-mono" />

@@ -5,6 +5,7 @@
 import { memo, useState } from 'react'
 import { type NodeProps } from 'reactflow'
 import { useWorkflowStore } from '../../stores/workflow.store'
+import { CompInput, CompTextarea } from './composition-input'
 
 interface AnnotationData {
   nodeType: string
@@ -42,10 +43,10 @@ function AnnotationNodeComponent({ id, data, selected }: NodeProps<AnnotationDat
     >
       {editing ? (
         <div className="space-y-2" onClick={e => e.stopPropagation()}>
-          <input type="text" value={title} onChange={e => setField('title', e.target.value)}
+          <CompInput type="text" value={title} onChange={e => setField('title', e.target.value)}
             placeholder="Note title…" autoFocus
             className="w-full bg-transparent font-bold text-sm outline-none border-b border-[hsl(var(--border))] pb-1 text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))]" />
-          <textarea value={body} onChange={e => setField('body', e.target.value)}
+          <CompTextarea value={body} onChange={e => setField('body', e.target.value)}
             placeholder="Write a note…" rows={3}
             className="w-full bg-transparent text-xs outline-none resize-y min-h-[40px] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))]" />
           <div className="flex items-center gap-1">

@@ -69,6 +69,19 @@ function pushUndo(s: Snapshot) {
   redoStack = [] // any new change clears redo
 }
 
+/** Time-debounced undo push — avoids creating a snapshot on every keystroke
+ *  during rapid text editing (especially CJK IME input). */
+let _lastUndoPushTime = 0
+const UNDO_DEBOUNCE_MS = 600
+
+function pushUndoDebounced(s: Snapshot) {
+  const now = Date.now()
+  if (now - _lastUndoPushTime > UNDO_DEBOUNCE_MS) {
+    pushUndo(s)
+    _lastUndoPushTime = now
+  }
+}
+
 /* ── Store ─────────────────────────────────────────────────────────────── */
 
 export interface WorkflowState {
@@ -216,15 +229,11 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
 
   updateNodeParams: (nodeId, params) => {
     const { nodes, edges } = get()
-    pushUndo({ nodes, edges })
+    pushUndoDebounced({ nodes, edges })
     set(state => ({
       nodes: state.nodes.map(n => n.id === nodeId ? { ...n, data: { ...n.data, params } } : n),
       isDirty: true, canUndo: true, canRedo: false
     }))
-    setTimeout(() => {
-      const state = get()
-      if (state.workflowId) state.saveWorkflow().catch(console.error)
-    }, 300)
   },
 
   updateNodeData: (nodeId, dataUpdate) => {
@@ -232,10 +241,6 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       nodes: state.nodes.map(n => n.id === nodeId ? { ...n, data: { ...n.data, ...dataUpdate } } : n),
       isDirty: true
     }))
-    setTimeout(() => {
-      const state = get()
-      if (state.workflowId) state.saveWorkflow().catch(console.error)
-    }, 300)
   },
 
   onNodesChange: (changes) => {

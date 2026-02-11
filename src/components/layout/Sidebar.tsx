@@ -23,6 +23,7 @@ import {
   GitBranch,
   X
 } from 'lucide-react'
+import appIcon from '../../../build/icon.png'
 
 interface SidebarProps {
   collapsed: boolean
@@ -146,9 +147,12 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
           collapsed && !isMobileOpen ? "justify-center px-2" : "gap-3 px-5"
         )}
       >
-        <div className="gradient-bg rounded-xl p-2 shadow-sm">
-          <Zap className="h-5 w-5 text-white" style={{ flexShrink: 0 }} />
-        </div>
+        <img
+          src={appIcon}
+          alt="WaveSpeed"
+          className="h-10 w-10 rounded-xl shadow-sm object-cover"
+          style={{ flexShrink: 0 }}
+        />
         {(!collapsed || isMobileOpen) && (
           <div className="min-w-0">
             <span className="block whitespace-nowrap text-lg font-bold gradient-text">WaveSpeed</span>

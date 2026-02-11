@@ -6,9 +6,9 @@
       <stop offset="100%" stop-color="#0b2f8a"/>
     </radialGradient>
     <linearGradient id="glyph" x1="32%" y1="18%" x2="78%" y2="82%">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="52%" stop-color="#d9f1ff"/>
-      <stop offset="100%" stop-color="#9be7ff"/>
+      <stop offset="0%" stop-color="#d6f4ff"/>
+      <stop offset="52%" stop-color="#b8e6fb"/>
+      <stop offset="100%" stop-color="#83d6f7"/>
     </linearGradient>
     <linearGradient id="ring" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#7ee3ff"/>
@@ -22,51 +22,56 @@
                 0 0 0 0 1.00
                 0 0 0 0.32 0"/>
     </filter>
+    <clipPath id="plateClip">
+      <rect x="64" y="64" width="896" height="896" rx="196" ry="196"/>
+    </clipPath>
   </defs>
 
   <!-- Icon plate -->
-  <rect x="102" y="102" width="820" height="820" rx="170" ry="170" fill="url(#bg)"/>
+  <rect x="64" y="64" width="896" height="896" rx="196" ry="196" fill="url(#bg)"/>
 
-  <!-- Top-left light -->
-  <ellipse cx="320" cy="260" rx="240" ry="165" fill="#ffffff" opacity="0.14"/>
+  <g clip-path="url(#plateClip)">
+    <!-- Top-left light -->
+    <ellipse cx="320" cy="260" rx="240" ry="165" fill="#8fd7ff" opacity="0.16"/>
 
-  <!-- Orbit ring -->
-  <path
-    d="M 282 590 C 330 748, 540 814, 706 694
-       C 790 634, 805 539, 752 452
-       C 708 380, 618 340, 518 338"
-    fill="none"
-    stroke="url(#ring)"
-    stroke-width="40"
-    stroke-linecap="round"
-    opacity="0.95"
-  />
+    <!-- Orbit ring -->
+    <path
+      d="M 282 590 C 330 748, 540 814, 706 694
+         C 790 634, 805 539, 752 452
+         C 708 380, 618 340, 518 338"
+      fill="none"
+      stroke="url(#ring)"
+      stroke-width="40"
+      stroke-linecap="round"
+      opacity="0.95"
+    />
 
-  <!-- Wave + lightning core glyph -->
-  <path
-    d="M 595 230
-       C 560 305, 518 391, 484 461
-       C 558 445, 615 456, 661 491
-       C 608 587, 555 682, 503 778
-       C 523 700, 543 627, 561 562
-       C 486 566, 423 551, 367 519
-       C 436 423, 506 327, 575 231
-       Z"
-    fill="url(#glyph)"
-  />
+    <!-- Wave + lightning core glyph -->
+    <path
+      d="M 595 230
+         C 560 305, 518 391, 484 461
+         C 558 445, 615 456, 661 491
+         C 608 587, 555 682, 503 778
+         C 523 700, 543 627, 561 562
+         C 486 566, 423 551, 367 519
+         C 436 423, 506 327, 575 231
+         Z"
+      fill="url(#glyph)"
+    />
 
-  <!-- Core glow -->
-  <path
-    d="M 590 255
-       C 555 324, 524 384, 494 442
-       C 550 435, 598 444, 640 469
-       C 595 547, 548 630, 506 705
-       C 521 646, 534 598, 548 548
-       C 487 550, 441 542, 394 519
-       C 458 430, 523 340, 587 251
-       Z"
-    fill="#9be7ff"
-    opacity="0.32"
-    filter="url(#softGlow)"
-  />
+    <!-- Core glow -->
+    <path
+      d="M 590 255
+         C 555 324, 524 384, 494 442
+         C 550 435, 598 444, 640 469
+         C 595 547, 548 630, 506 705
+         C 521 646, 534 598, 548 548
+         C 487 550, 441 542, 394 519
+         C 458 430, 523 340, 587 251
+         Z"
+      fill="#9be7ff"
+      opacity="0.32"
+      filter="url(#softGlow)"
+    />
+  </g>
 </svg>

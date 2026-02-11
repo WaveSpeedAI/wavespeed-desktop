@@ -15,7 +15,7 @@ import { RunMonitor } from './components/canvas/RunMonitor'
 import { useWorkflowStore } from './stores/workflow.store'
 import { useExecutionStore } from './stores/execution.store'
 import { useUIStore } from './stores/ui.store'
-import { registryIpc, modelsIpc, storageIpc, costIpc } from './ipc/ipc-client'
+import { registryIpc, modelsIpc, storageIpc, costIpc, workflowIpc } from './ipc/ipc-client'
 import { useFreeToolListener } from './hooks/useFreeToolListener'
 import { useModelsStore } from '@/stores/modelsStore'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
@@ -32,6 +32,39 @@ interface TabSnapshot {
   nodes: unknown[]
   edges: unknown[]
   isDirty: boolean
+}
+
+interface PersistedWorkflowSession {
+  version: 1
+  activeTabId: string
+  tabIdCounter: number
+  tabs: TabSnapshot[]
+}
+
+const WORKFLOW_SESSION_STORAGE_KEY = 'wavespeed_workflow_session_v1'
+
+function parseTabIndex(tabId: string): number {
+  const m = /^tab-(\d+)$/.exec(tabId)
+  return m ? Number(m[1]) : 1
+}
+
+function sanitizeTabSnapshots(input: unknown): TabSnapshot[] {
+  if (!Array.isArray(input)) return []
+  const tabs: TabSnapshot[] = []
+  for (const raw of input) {
+    if (!raw || typeof raw !== 'object') continue
+    const r = raw as Record<string, unknown>
+    if (typeof r.tabId !== 'string') continue
+    tabs.push({
+      tabId: r.tabId,
+      workflowId: typeof r.workflowId === 'string' ? r.workflowId : null,
+      workflowName: typeof r.workflowName === 'string' ? r.workflowName : 'Untitled Workflow',
+      nodes: Array.isArray(r.nodes) ? r.nodes : [],
+      edges: Array.isArray(r.edges) ? r.edges : [],
+      isDirty: Boolean(r.isDirty)
+    })
+  }
+  return tabs
 }
 
 let tabIdCounter = 1
@@ -80,8 +113,14 @@ export function WorkflowPage() {
   const canNavigatePreview = previewIsImage && previewItems.length > 1
 
   useEffect(() => {
-    if (!previewSrc || !canNavigatePreview) return
+    if (!previewSrc) return
     const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        closePreview()
+        return
+      }
+      if (!canNavigatePreview) return
       if (e.key === 'ArrowLeft') {
         e.preventDefault()
         prevPreview()
@@ -92,7 +131,7 @@ export function WorkflowPage() {
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [previewSrc, canNavigatePreview, prevPreview, nextPreview])
+  }, [previewSrc, canNavigatePreview, prevPreview, nextPreview, closePreview])
 
   // Unified save handler with visual feedback
   const handleSave = useCallback(async () => {
@@ -122,6 +161,8 @@ export function WorkflowPage() {
     { tabId: `tab-${tabIdCounter}`, workflowId: null, workflowName: 'Untitled Workflow', nodes: [], edges: [], isDirty: false }
   ])
   const [activeTabId, setActiveTabId] = useState(`tab-${tabIdCounter}`)
+  const [startupSessionReady, setStartupSessionReady] = useState(false)
+  const [restoredFromPersistedSession, setRestoredFromPersistedSession] = useState(false)
   const [hasRestoredLastWorkflow, setHasRestoredLastWorkflow] = useState(false)
 
   // Save current store state into the active tab snapshot
@@ -192,6 +233,48 @@ export function WorkflowPage() {
     }
   }, [tabs, doCloseTab])
 
+  // Restore previous editing session (tabs + active tab + canvas state) on startup.
+  useEffect(() => {
+    if (startupSessionReady) return
+
+    let restored = false
+    try {
+      const raw = localStorage.getItem(WORKFLOW_SESSION_STORAGE_KEY)
+      if (raw) {
+        const parsed = JSON.parse(raw) as Partial<PersistedWorkflowSession>
+        const restoredTabs = sanitizeTabSnapshots(parsed.tabs)
+        if (restoredTabs.length > 0) {
+          const restoredActiveTabId = typeof parsed.activeTabId === 'string' &&
+            restoredTabs.some(t => t.tabId === parsed.activeTabId)
+            ? parsed.activeTabId
+            : restoredTabs[0].tabId
+
+          setTabs(restoredTabs)
+          setActiveTabId(restoredActiveTabId)
+
+          const active = restoredTabs.find(t => t.tabId === restoredActiveTabId) ?? restoredTabs[0]
+          useWorkflowStore.setState({
+            workflowId: active.workflowId,
+            workflowName: active.workflowName,
+            nodes: active.nodes as ReturnType<typeof useWorkflowStore.getState>['nodes'],
+            edges: active.edges as ReturnType<typeof useWorkflowStore.getState>['edges'],
+            isDirty: active.isDirty
+          })
+
+          const maxTabIndex = restoredTabs.reduce((max, t) => Math.max(max, parseTabIndex(t.tabId)), 1)
+          const persistedCounter = typeof parsed.tabIdCounter === 'number' ? parsed.tabIdCounter : 1
+          tabIdCounter = Math.max(tabIdCounter, maxTabIndex, persistedCounter)
+          restored = true
+        }
+      }
+    } catch {
+      // Ignore malformed localStorage data and fallback to normal startup flow.
+    }
+
+    setRestoredFromPersistedSession(restored)
+    setStartupSessionReady(true)
+  }, [startupSessionReady])
+
   // Keep active tab snapshot in sync
   useEffect(() => {
     setTabs(prev => prev.map(t =>
@@ -201,8 +284,24 @@ export function WorkflowPage() {
     ))
   }, [activeTabId, workflowId, workflowName, nodes, edges, isDirty])
 
+  // Persist current editing session for next app restart.
+  useEffect(() => {
+    if (!startupSessionReady) return
+    const timer = setTimeout(() => {
+      const payload: PersistedWorkflowSession = {
+        version: 1,
+        activeTabId,
+        tabIdCounter,
+        tabs
+      }
+      localStorage.setItem(WORKFLOW_SESSION_STORAGE_KEY, JSON.stringify(payload))
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [startupSessionReady, tabs, activeTabId])
+
   // Auto-restore last workflow on first mount
   useEffect(() => {
+    if (!startupSessionReady || restoredFromPersistedSession) return
     if (hasRestoredLastWorkflow) return
     setHasRestoredLastWorkflow(true)
     const lastId = localStorage.getItem('wavespeed_last_workflow_id')
@@ -212,7 +311,7 @@ export function WorkflowPage() {
         localStorage.removeItem('wavespeed_last_workflow_id')
       })
     }
-  }, [hasRestoredLastWorkflow, loadWorkflow])
+  }, [startupSessionReady, restoredFromPersistedSession, hasRestoredLastWorkflow, loadWorkflow])
 
   // Persist current workflow ID for next session restore
   useEffect(() => {
@@ -266,6 +365,28 @@ export function WorkflowPage() {
   // Daily spend tracking — data fetched for future budget display
   const [, setDailySpend] = useState(0)
   const [, setDailyLimit] = useState(100)
+  const estimateNodeIdsSignature = useMemo(
+    () => [...nodes.map(n => n.id)].sort().join('|'),
+    [nodes]
+  )
+  const costEstimateSignature = useMemo(() => {
+    // Only include cost-relevant node fields and ignore UI-only/internal keys
+    // so moving/resizing nodes won't trigger cost re-estimation.
+    return nodes
+      .map((n) => {
+        const rawParams = (n.data?.params ?? {}) as Record<string, unknown>
+        const sanitizedEntries = Object.entries(rawParams)
+          .filter(([key]) => !key.startsWith('__'))
+          .sort(([a], [b]) => a.localeCompare(b))
+        return JSON.stringify({
+          id: n.id,
+          nodeType: n.data?.nodeType ?? '',
+          params: sanitizedEntries
+        })
+      })
+      .sort()
+      .join('|')
+  }, [nodes])
 
   // API key state
   const apiKey = useApiKeyStore(s => s.apiKey)
@@ -326,15 +447,16 @@ export function WorkflowPage() {
 
   // Cost estimate (debounced)
   useEffect(() => {
-    if (!workflowId || nodes.length === 0) { setEstimatedCost(null); return }
+    const nodeIds = estimateNodeIdsSignature ? estimateNodeIdsSignature.split('|') : []
+    if (!workflowId || nodeIds.length === 0) { setEstimatedCost(null); return }
     const t = setTimeout(async () => {
       try {
-        const est = await costIpc.estimate(workflowId, nodes.map(n => n.id))
+        const est = await costIpc.estimate(workflowId, nodeIds)
         setEstimatedCost(est.totalEstimated)
       } catch { setEstimatedCost(null) }
     }, 800)
     return () => clearTimeout(t)
-  }, [workflowId, nodes])
+  }, [workflowId, estimateNodeIdsSignature, costEstimateSignature])
 
   useEffect(() => {
     if (!workflowId) return
@@ -350,8 +472,17 @@ export function WorkflowPage() {
   // Run All — with node labels for monitor
   const handleRunAll = async (times = 1) => {
     let wfId = workflowId
+    let workflowExists = false
+    if (wfId) {
+      try {
+        await workflowIpc.load(wfId)
+        workflowExists = true
+      } catch {
+        workflowExists = false
+      }
+    }
     // Executor reads from persisted workflow DB, so save first when dirty.
-    if (!wfId || isDirty) {
+    if (!wfId || isDirty || !workflowExists) {
       if (nodes.length === 0) return
       await saveWorkflow()
       wfId = useWorkflowStore.getState().workflowId
@@ -372,6 +503,13 @@ export function WorkflowPage() {
           await runAll(wfId, workflowName, nodeLabels)
         }
       }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      setExecToast({
+        type: 'error',
+        msg: message || t('workflow.runFailed', 'Run failed')
+      })
+      setTimeout(() => setExecToast(null), 4000)
     } finally {
       setIsBatchRunning(false)
     }
@@ -528,7 +666,7 @@ export function WorkflowPage() {
 
         {/* Right: Run controls */}
         <div className="flex items-center gap-1.5">
-          <div className="relative flex items-center rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--muted))]/40 overflow-hidden">
+          <div className="relative flex items-center rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--muted))]/40">
             <button
               className="h-8 px-3 text-xs font-medium text-foreground hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={nodes.length === 0 || isRunning || isBatchRunning || (runTarget === 'selected' && !selectedNodeId)}

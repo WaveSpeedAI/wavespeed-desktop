@@ -963,7 +963,7 @@
         },
         "params": {
           "outputDir": { "label": "输出目录" },
-          "filename": { "label": "文件名" },
+          "filename": { "label": "文件名前缀" },
           "format": {
             "label": "格式",
             "options": {

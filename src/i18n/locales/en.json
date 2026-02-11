@@ -963,7 +963,7 @@
         },
         "params": {
           "outputDir": { "label": "Output Directory" },
-          "filename": { "label": "Filename" },
+          "filename": { "label": "Filename Prefix" },
           "format": {
             "label": "Format",
             "options": {

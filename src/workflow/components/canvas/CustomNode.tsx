@@ -107,6 +107,8 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
   const isDirty = useWorkflowStore(s => s.isDirty)
   const { runNode, cancelNode, retryNode } = useExecutionStore()
   const openPreview = useUIStore(s => s.openPreview)
+  const allNodes = useWorkflowStore(s => s.nodes)
+  const allLastResults = useExecutionStore(s => s.lastResults)
   const [hovered, setHovered] = useState(false)
   const [segmentPointPickerOpen, setSegmentPointPickerOpen] = useState(false)
   const [modelSearchQuery, setModelSearchQuery] = useState('')
@@ -227,6 +229,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
     const parts = currentModelId.split('/')
     return parts[parts.length - 1] || currentModelId
   }, [data.label, currentModelId])
+  const isPreviewNode = data.nodeType === 'output/preview'
   const modelSearchResults = useMemo(() => {
     const q = modelSearchQuery.trim()
     if (!q) return []
@@ -335,6 +338,61 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
     }
     return wfId
   }
+
+  const inlineInputPreviewUrl = useMemo(() => {
+    if (!isPreviewNode) return ''
+    const isMediaLike = (u: string) =>
+      /^https?:\/\//i.test(u) || /^blob:/i.test(u) || /^local-asset:\/\//i.test(u) || /^data:/i.test(u) || /^file:\/\//i.test(u)
+
+    const pickFromSourceNode = (sourceNodeId: string): string => {
+      const latest = allLastResults[sourceNodeId]?.[0]?.urls?.[0] ?? ''
+      if (latest && isMediaLike(latest)) return latest
+
+      const sourceNode = allNodes.find(n => n.id === sourceNodeId)
+      const sourceParams = sourceNode?.data?.params as Record<string, unknown> | undefined
+      const candidates = [
+        String(sourceParams?.uploadedUrl ?? ''),
+        String(sourceParams?.output ?? ''),
+        String(sourceParams?.input ?? ''),
+        String(sourceParams?.url ?? '')
+      ]
+      for (const c of candidates) {
+        if (c && isMediaLike(c)) return c
+      }
+      return ''
+    }
+
+    for (const inp of inputDefs) {
+      const hid = `input-${inp.key}`
+      const edge = edges.find(e => e.target === id && e.targetHandle === hid)
+      if (edge) {
+        const upstream = pickFromSourceNode(edge.source)
+        if (upstream) return upstream
+      } else {
+        const localVal = String(data.params[inp.key] ?? '')
+        if (localVal && isMediaLike(localVal)) return localVal
+      }
+    }
+
+    return ''
+  }, [allLastResults, allNodes, data.params, edges, id, inputDefs, isPreviewNode])
+
+  const inlinePreviewDetectSource = useMemo(() => {
+    if (!inlineInputPreviewUrl) return ''
+    const lowered = /^local-asset:\/\//i.test(inlineInputPreviewUrl)
+      ? (() => {
+          try {
+            return decodeURIComponent(inlineInputPreviewUrl.replace(/^local-asset:\/\//i, '')).toLowerCase()
+          } catch {
+            return inlineInputPreviewUrl.toLowerCase()
+          }
+        })()
+      : inlineInputPreviewUrl.toLowerCase()
+    return lowered.split('?')[0]
+  }, [inlineInputPreviewUrl])
+  const inlinePreviewIsImage = /^data:image\//i.test(inlineInputPreviewUrl) || /\.(jpg|jpeg|png|gif|webp|bmp|svg|avif)$/.test(inlinePreviewDetectSource)
+  const inlinePreviewIsVideo = /^data:video\//i.test(inlineInputPreviewUrl) || /\.(mp4|webm|mov|avi|mkv)$/.test(inlinePreviewDetectSource)
+  const inlinePreviewIsAudio = /^data:audio\//i.test(inlineInputPreviewUrl) || /\.(mp3|wav|ogg|flac|aac|m4a)$/.test(inlinePreviewDetectSource)
 
   // If enabled, optimize prompt/text once right before running.
   const optimizeOnRunIfEnabled = useCallback(async () => {
@@ -652,15 +710,16 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
         {inputDefs.map(inp => {
           const hid = `input-${inp.key}`
           const conn = connectedSet.has(hid)
-          return (
-            <Row key={inp.key} handleId={hid} handleType="target" connected={conn} media>
-              <div className="flex items-center justify-between gap-2 w-full">
-                <span className={`text-xs ${conn ? 'text-green-400 font-semibold' : 'text-[hsl(var(--muted-foreground))]'}`}>
-                  {localizeInputLabel(inp.key, inp.label)}{inp.required && <span className="text-red-400"> *</span>}
-                </span>
-                {conn
-                  ? <ConnectedInputControl nodeId={id} handleId={hid} edges={edges} nodes={useWorkflowStore.getState().nodes} onPreview={openPreview} />
-                  : <InputPortControl
+          if (!isPreviewNode) {
+            return (
+              <Row key={inp.key} handleId={hid} handleType="target" connected={conn} media>
+                <div className="flex items-center justify-between gap-2 w-full">
+                  <span className={`text-xs ${conn ? 'text-green-400 font-semibold' : 'text-[hsl(var(--muted-foreground))]'}`}>
+                    {localizeInputLabel(inp.key, inp.label)}{inp.required && <span className="text-red-400"> *</span>}
+                  </span>
+                  {conn
+                    ? <ConnectedInputControl nodeId={id} handleId={hid} edges={edges} nodes={useWorkflowStore.getState().nodes} onPreview={openPreview} />
+                    : <InputPortControl
                       nodeId={id}
                       port={inp}
                       value={data.params[inp.key]}
@@ -669,6 +728,31 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
                       referenceImageUrl={data.nodeType === 'free-tool/image-eraser' && inp.key === 'mask' ? String(data.params.input ?? '') : undefined}
                       showDrawMaskButton={data.nodeType === 'free-tool/image-eraser' && inp.key === 'mask'}
                     />}
+                </div>
+              </Row>
+            )
+          }
+
+          return (
+            <Row key={inp.key} handleId={hid} handleType="target" connected={conn} media>
+              <div className="w-full min-w-0 space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className={`text-xs ${conn ? 'text-green-400 font-semibold' : 'text-[hsl(var(--muted-foreground))]'}`}>
+                    {localizeInputLabel(inp.key, inp.label)}{inp.required && <span className="text-red-400"> *</span>}
+                  </span>
+                </div>
+                {conn
+                  ? <ConnectedInputControl nodeId={id} handleId={hid} edges={edges} nodes={useWorkflowStore.getState().nodes} onPreview={openPreview} showPreview={false} />
+                  : <InputPortControl
+                    nodeId={id}
+                    port={inp}
+                    value={data.params[inp.key]}
+                    onChange={v => setParam(inp.key, v)}
+                    onPreview={openPreview}
+                    referenceImageUrl={data.nodeType === 'free-tool/image-eraser' && inp.key === 'mask' ? String(data.params.input ?? '') : undefined}
+                    showDrawMaskButton={data.nodeType === 'free-tool/image-eraser' && inp.key === 'mask'}
+                    showPreview={false}
+                  />}
               </div>
             </Row>
           )
@@ -758,6 +842,32 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
             </Row>
           )
         })}
+
+        {/* Unified input preview area — always rendered near the bottom */}
+        {isPreviewNode && inlineInputPreviewUrl && (
+          <div className="px-3 pb-2">
+            <div className="mt-1" onClick={e => e.stopPropagation()}>
+              {inlinePreviewIsImage && (
+                <img
+                  src={inlineInputPreviewUrl}
+                  alt=""
+                  onClick={e => { e.stopPropagation(); openPreview(inlineInputPreviewUrl) }}
+                  className="w-full max-h-[4096px] rounded-lg border border-[hsl(var(--border))] object-contain cursor-pointer hover:ring-2 hover:ring-blue-500/40 transition-shadow bg-black/5"
+                />
+              )}
+              {inlinePreviewIsVideo && (
+                <video
+                  src={inlineInputPreviewUrl}
+                  controls
+                  className="w-full max-h-[4096px] rounded-lg border border-[hsl(var(--border))] object-contain"
+                />
+              )}
+              {inlinePreviewIsAudio && (
+                <audio src={inlineInputPreviewUrl} controls className="w-full max-h-10 rounded-lg border border-[hsl(var(--border))]" />
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── Results — grouped by execution run ─────────────────── */}
@@ -1307,13 +1417,15 @@ function ConnectedInputControl({
   handleId,
   edges,
   nodes,
-  onPreview
+  onPreview,
+  showPreview = true
 }: {
   nodeId?: string
   handleId?: string
   edges?: Array<{ id: string; source: string; sourceHandle?: string | null; target: string; targetHandle?: string | null }>
   nodes?: Array<{ id: string; data: { label?: string; nodeType?: string; params?: Record<string, unknown> } }>
   onPreview?: (src: string) => void
+  showPreview?: boolean
 }) {
   const lastResults = useExecutionStore(s => s.lastResults)
 
@@ -1365,27 +1477,27 @@ function ConnectedInputControl({
   const isAudio = /^data:audio\//i.test(previewUrl) || /\.(mp3|wav|ogg|flac|aac|m4a)$/.test(detectSource)
 
   return (
-    <div className="w-full max-w-[220px] space-y-1.5">
+    <div className="w-full space-y-2">
       <LinkedBadge nodeId={nodeId} handleId={handleId} edges={edges} nodes={nodes} onPreview={onPreview} />
-      {previewUrl && onPreview && (
+      {showPreview && previewUrl && onPreview && (
         <div className="mt-1" onClick={e => e.stopPropagation()}>
           {isImage && (
             <img
               src={previewUrl}
               alt=""
               onClick={e => { e.stopPropagation(); onPreview(previewUrl) }}
-              className="max-h-[80px] rounded-md border border-[hsl(var(--border))] object-contain cursor-pointer hover:ring-2 hover:ring-blue-500/40 transition-shadow bg-black/5"
+              className="w-full max-h-[420px] rounded-lg border border-[hsl(var(--border))] object-contain cursor-pointer hover:ring-2 hover:ring-blue-500/40 transition-shadow bg-black/5"
             />
           )}
           {isVideo && (
             <video
               src={previewUrl}
               controls
-              className="max-h-[80px] rounded-md border border-[hsl(var(--border))] object-contain"
+              className="w-full max-h-[420px] rounded-lg border border-[hsl(var(--border))] object-contain"
             />
           )}
           {isAudio && (
-            <audio src={previewUrl} controls className="w-full max-h-10 rounded-md border border-[hsl(var(--border))]" />
+            <audio src={previewUrl} controls className="w-full max-h-10 rounded-lg border border-[hsl(var(--border))]" />
           )}
         </div>
       )}
@@ -1479,6 +1591,8 @@ function DefParamControl({ nodeId, param, value, onChange }: { nodeId: string; p
   const saveWorkflow = useWorkflowStore(s => s.saveWorkflow)
   const nodeType = useWorkflowStore(s => s.nodes.find(n => n.id === nodeId)?.data?.nodeType as string | undefined)
   const [uploading, setUploading] = useState(false)
+  const [selectingDir, setSelectingDir] = useState(false)
+  const [openingDir, setOpeningDir] = useState(false)
 
   const ensureWorkflowId = useCallback(async () => {
     let wfId = workflowId
@@ -1488,6 +1602,78 @@ function DefParamControl({ nodeId, param, value, onChange }: { nodeId: string; p
     }
     return wfId
   }, [workflowId, saveWorkflow])
+
+  if (nodeType === 'output/file' && param.key === 'outputDir') {
+    const textVal = String(cur ?? '')
+    const handlePickDirectory = async () => {
+      try {
+        setSelectingDir(true)
+        const result = await window.electronAPI?.selectDirectory?.()
+        if (result?.success && result.path) onChange(result.path)
+      } catch (error) {
+        console.error('Select directory failed:', error)
+      } finally {
+        setSelectingDir(false)
+      }
+    }
+
+    const handleOpenDirectory = async () => {
+      try {
+        setOpeningDir(true)
+        const dir = textVal.trim()
+        if (dir) {
+          await window.electronAPI?.openFileLocation?.(dir)
+          return
+        }
+        const wfId = await ensureWorkflowId()
+        if (!wfId) return
+        const { storageIpc } = await import('../../ipc/ipc-client')
+        await storageIpc.openWorkflowFolder(wfId)
+      } catch (error) {
+        console.error('Open output folder failed:', error)
+      } finally {
+        setOpeningDir(false)
+      }
+    }
+
+    return (
+      <div className="w-full max-w-[260px] space-y-1.5">
+        <div className="flex items-center gap-1.5">
+          <input
+            type="text"
+            value={textVal}
+            onChange={e => onChange(e.target.value)}
+            placeholder={t('workflow.nodeDefs.output/file.params.outputDir.placeholder', '留空使用工作流默认输出目录')}
+            className={`${cls} flex-1`}
+            onClick={e => e.stopPropagation()}
+          />
+          <button
+            type="button"
+            onClick={e => { e.stopPropagation(); handlePickDirectory() }}
+            title={t('workflow.selectDirectory', '选择目录')}
+            className={`flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-md border border-[hsl(var(--border))] transition-colors ${
+              selectingDir ? 'bg-blue-500/25 animate-pulse text-blue-300' : 'bg-blue-500/15 text-blue-400 hover:bg-blue-500/25'
+            }`}
+          >
+            📂
+          </button>
+          <button
+            type="button"
+            onClick={e => { e.stopPropagation(); handleOpenDirectory() }}
+            title={textVal.trim() ? t('workflow.openFolder', '打开文件夹') : t('workflow.openWorkflowFolder', '打开工作流目录')}
+            className={`flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-md border border-[hsl(var(--border))] transition-colors ${
+              openingDir ? 'bg-blue-500/25 animate-pulse text-blue-300' : 'bg-blue-500/15 text-blue-400 hover:bg-blue-500/25'
+            }`}
+          >
+            ↗
+          </button>
+        </div>
+        <div className="text-[10px] text-muted-foreground truncate" title={textVal || t('workflow.outputDirFallbackHint', '未设置：将导出到工作流默认目录')}>
+          {textVal || t('workflow.outputDirFallbackHint', '未设置：将导出到工作流默认目录')}
+        </div>
+      </div>
+    )
+  }
 
   if (param.type === 'select' && param.options) {
     return (
@@ -1559,7 +1745,8 @@ function InputPortControl({
   onChange,
   onPreview,
   referenceImageUrl,
-  showDrawMaskButton
+  showDrawMaskButton,
+  showPreview = true
 }: {
   nodeId: string
   port: PortDefinition
@@ -1568,6 +1755,7 @@ function InputPortControl({
   onPreview?: (src: string) => void
   referenceImageUrl?: string
   showDrawMaskButton?: boolean
+  showPreview?: boolean
 }) {
   const { t } = useTranslation()
   const nodeType = useWorkflowStore(s => s.nodes.find(n => n.id === nodeId)?.data?.nodeType as string | undefined)
@@ -1672,7 +1860,7 @@ function InputPortControl({
   }, [ensureWorkflowId, nodeId, onChange])
 
   return (
-    <div className="w-full max-w-[220px] space-y-1.5">
+    <div className="w-full space-y-2">
       <div className="flex items-center gap-1.5">
         <input
           type="text"
@@ -1721,25 +1909,25 @@ function InputPortControl({
         )}
       </div>
       {/* Preview for uploaded / URL media */}
-      {textVal.trim() && (isImage || isVideo || isAudio) && (
+      {showPreview && textVal.trim() && (isImage || isVideo || isAudio) && (
         <div className="mt-1" onClick={e => e.stopPropagation()}>
           {isImage && (
             <img
               src={textVal}
               alt=""
               onClick={e => { e.stopPropagation(); onPreview?.(textVal) }}
-              className="max-h-[80px] rounded-md border border-[hsl(var(--border))] object-contain cursor-pointer hover:ring-2 hover:ring-blue-500/40 transition-shadow bg-black/5"
+              className="w-full max-h-[420px] rounded-lg border border-[hsl(var(--border))] object-contain cursor-pointer hover:ring-2 hover:ring-blue-500/40 transition-shadow bg-black/5"
             />
           )}
           {isVideo && (
             <video
               src={textVal}
               controls
-              className="max-h-[80px] rounded-md border border-[hsl(var(--border))] object-contain"
+              className="w-full max-h-[420px] rounded-lg border border-[hsl(var(--border))] object-contain"
             />
           )}
           {isAudio && (
-            <audio src={textVal} controls className="w-full max-h-10 rounded-md border border-[hsl(var(--border))]" />
+            <audio src={textVal} controls className="w-full max-h-10 rounded-lg border border-[hsl(var(--border))]" />
           )}
         </div>
       )}

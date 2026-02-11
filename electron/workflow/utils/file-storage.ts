@@ -22,6 +22,15 @@ import type { GraphDefinition } from '../../../src/workflow/types/workflow'
 
 const ROOT_DIR_NAME = 'workflow-data'
 
+function getWorkflowDataRoot(): string {
+  // Packaged app runs inside app.asar (read-only); use userData for writes.
+  if (app.isPackaged) {
+    return path.join(app.getPath('userData'), ROOT_DIR_NAME)
+  }
+  // Keep dev behavior as-is for easier debugging.
+  return path.join(app.getAppPath(), ROOT_DIR_NAME)
+}
+
 function sanitizeName(name: string): string {
   return name.replace(/[<>:"/\\|?*]/g, '_').replace(/\s+/g, '_').trim() || 'unnamed'
 }
@@ -64,7 +73,7 @@ export class FileStorageService {
       this.rootPath = basePath
     } else {
       try {
-        this.rootPath = path.join(app.getAppPath(), ROOT_DIR_NAME)
+        this.rootPath = getWorkflowDataRoot()
       } catch {
         this.rootPath = path.join(process.cwd(), ROOT_DIR_NAME)
       }

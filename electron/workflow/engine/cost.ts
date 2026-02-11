@@ -5,10 +5,10 @@ import { getBudgetConfig, setBudgetConfig, getDailySpend, addDailySpend } from '
 import type { BudgetConfig, CostEstimate } from '../../../src/workflow/types/ipc'
 
 export class CostService {
-  estimate(nodeIds: string[], nodeTypes: Map<string, string>, costPerType: Map<string, number>): CostEstimate {
+  estimate(nodeIds: string[], nodeTypes: Map<string, string>, costByNodeId: Map<string, number>): CostEstimate {
     const breakdown = nodeIds.map(nodeId => {
       const nodeType = nodeTypes.get(nodeId) ?? 'unknown'
-      const estimated = costPerType.get(nodeType) ?? 0
+      const estimated = costByNodeId.get(nodeId) ?? 0
       return { nodeId, nodeType, estimated }
     })
     const totalEstimated = breakdown.reduce((sum, b) => sum + b.estimated, 0)

@@ -21,12 +21,15 @@ export function registerCostIpc(): void {
     if (!costService || !registry) throw new Error('Cost service not initialized')
     const nodes = getNodesByWorkflowId(args.workflowId)
     const nodeTypes = new Map(nodes.map(n => [n.id, n.nodeType]))
-    const costPerType = new Map<string, number>()
+    const costByNodeId = new Map<string, number>()
     for (const n of nodes) {
       const handler = registry.getHandler(n.nodeType)
-      if (handler) costPerType.set(n.nodeType, handler.estimateCost(n.params))
+      if (handler) {
+        // Must estimate per node (not per nodeType), because same type may use different modelId/cost.
+        costByNodeId.set(n.id, handler.estimateCost(n.params))
+      }
     }
-    return costService.estimate(args.nodeIds, nodeTypes, costPerType)
+    return costService.estimate(args.nodeIds, nodeTypes, costByNodeId)
   })
 
   ipcMain.handle('cost:get-budget', async (): Promise<BudgetConfig> => {

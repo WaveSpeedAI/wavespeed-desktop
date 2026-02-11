@@ -45,12 +45,15 @@ export class ExecutionEngine {
     const simpleEdges = edges.map(e => ({ sourceNodeId: e.sourceNodeId, targetNodeId: e.targetNodeId }))
 
     const nodeTypes = new Map(nodes.map(n => [n.id, n.nodeType]))
-    const costPerType = new Map<string, number>()
+    const costByNodeId = new Map<string, number>()
     for (const n of nodes) {
       const handler = this.registry.getHandler(n.nodeType)
-      if (handler) costPerType.set(n.nodeType, handler.estimateCost(n.params))
+      if (handler) {
+        // Estimate by node ID so multiple ai-task/run nodes with different models are summed correctly.
+        costByNodeId.set(n.id, handler.estimateCost(n.params))
+      }
     }
-    const estimate = this.costService.estimate(nodeIds, nodeTypes, costPerType)
+    const estimate = this.costService.estimate(nodeIds, nodeTypes, costByNodeId)
     if (!estimate.withinBudget) {
       throw new Error(`Budget exceeded: ${estimate.reason}`)
     }

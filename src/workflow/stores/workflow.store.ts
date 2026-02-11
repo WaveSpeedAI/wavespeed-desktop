@@ -23,10 +23,33 @@ function getActiveExecutions(): Set<string> {
     // Dynamic import resolved at runtime, not at module load
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const mod = require('./execution.store')
-    return mod.useExecutionStore?.getState()?.activeExecutions ?? new Set()
+    const executionStore = resolveStoreExport<{ activeExecutions: Set<string> }>(mod, 'useExecutionStore')
+    return executionStore?.getState().activeExecutions ?? new Set()
   } catch {
     return new Set()
   }
+}
+
+type StoreWithGetState<TState> = {
+  getState: () => TState
+}
+
+function resolveStoreExport<TState>(mod: unknown, name: string): StoreWithGetState<TState> | null {
+  if (!mod || typeof mod !== 'object') return null
+  const moduleObj = mod as Record<string, unknown>
+  const direct = moduleObj[name] as StoreWithGetState<TState> | undefined
+  if (direct && typeof direct.getState === 'function') return direct
+
+  const defaultExport = moduleObj.default as Record<string, unknown> | undefined
+  if (!defaultExport || typeof defaultExport !== 'object') return null
+
+  const nested = defaultExport[name] as StoreWithGetState<TState> | undefined
+  if (nested && typeof nested.getState === 'function') return nested
+
+  const defaultStore = defaultExport as unknown as StoreWithGetState<TState>
+  if (typeof defaultStore.getState === 'function') return defaultStore
+
+  return null
 }
 
 /* ── Undo / Redo history (snapshot-based) ──────────────────────────────── */
@@ -266,13 +289,29 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
 
     // Don't save unnamed workflows — prompt user for a name via UI dialog
     if (!workflowName || workflowName === 'Untitled Workflow') {
-      const { promptWorkflowName } = await import('./ui.store').then(m => m.useUIStore.getState())
+      const uiStoreModule = await import('./ui.store')
+      const uiStore = resolveStoreExport<{ promptWorkflowName: (defaultName?: string) => Promise<string | null> }>(uiStoreModule, 'useUIStore')
+      const promptWorkflowName = uiStore?.getState().promptWorkflowName
+      if (typeof promptWorkflowName !== 'function') {
+        throw new Error('Workflow naming dialog is unavailable')
+      }
       const name = await promptWorkflowName(workflowName || '')
       if (!name || !name.trim() || name.trim() === 'Untitled Workflow') return
       set({ workflowName: name.trim() })
     }
 
     const finalName = get().workflowName
+
+    // Session restore may carry a stale workflowId (e.g. after reinstall or DB path migration).
+    // Validate it before save; if not found, create a new workflow on this save.
+    if (workflowId) {
+      try {
+        await workflowIpc.load(workflowId)
+      } catch {
+        workflowId = null
+        set({ workflowId: null })
+      }
+    }
 
     // Auto-create workflow on first save (lazy creation)
     if (!workflowId) {
@@ -360,8 +399,9 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
 
     // Restore previous execution results for all nodes
     try {
-      const { useExecutionStore } = await import('./execution.store')
-      useExecutionStore.getState().restoreResultsForNodes(rfNodes.map(n => n.id))
+      const executionStoreModule = await import('./execution.store')
+      const executionStore = resolveStoreExport<{ restoreResultsForNodes: (nodeIds: string[]) => Promise<void> }>(executionStoreModule, 'useExecutionStore')
+      executionStore?.getState().restoreResultsForNodes(rfNodes.map(n => n.id))
     } catch { /* ignore */ }
   },
 

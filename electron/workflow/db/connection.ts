@@ -14,12 +14,21 @@ const DB_FILENAME = 'workflow.db'
 let db: SqlJsDatabase | null = null
 let dbPath: string = ''
 
+function getWorkflowDataRoot(): string {
+  // Packaged app runs from app.asar (read-only). Persist workflow data in userData.
+  if (app.isPackaged) {
+    return join(app.getPath('userData'), 'workflow-data')
+  }
+  // In dev mode keep current behavior for easier local inspection.
+  return join(app.getAppPath(), 'workflow-data')
+}
+
 export type { SqlJsDatabase }
 
 export function getDatabasePath(): string {
   if (!dbPath) {
     try {
-      dbPath = join(app.getAppPath(), 'workflow-data', DB_FILENAME)
+      dbPath = join(getWorkflowDataRoot(), DB_FILENAME)
     } catch {
       dbPath = join(process.cwd(), 'workflow-data', DB_FILENAME)
     }

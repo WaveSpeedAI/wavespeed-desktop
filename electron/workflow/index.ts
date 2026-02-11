@@ -30,6 +30,10 @@ import { registerFreeToolIpc } from './ipc/free-tool.ipc'
 export async function initWorkflowModule(): Promise<void> {
   console.log('[Workflow] Initializing workflow module...')
 
+  // Register lightweight model IPC first to avoid startup race:
+  // renderer may call models:sync before DB initialization completes.
+  registerModelsIpc()
+
   // 1. Open database and ensure storage directories
   await openDatabase()
   const fileStorage = getFileStorageInstance()
@@ -72,7 +76,6 @@ export async function initWorkflowModule(): Promise<void> {
   registerExecutionIpc()
   registerHistoryIpc()
   registerCostIpc()
-  registerModelsIpc()
   registerStorageIpc()
   registerUploadIpc()
   registerSettingsIpc()

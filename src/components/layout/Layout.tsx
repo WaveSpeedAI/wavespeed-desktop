@@ -274,7 +274,7 @@ export function Layout() {
       <div className="flex h-screen overflow-hidden relative">
         {/* Mobile menu button */}
         <button
-          className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-background/80 backdrop-blur border shadow-lg md:hidden"
+          className="fixed left-3 top-3 z-50 rounded-lg border border-border/70 bg-background/85 p-2 shadow-lg backdrop-blur md:hidden"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           aria-label="Toggle menu"
         >
@@ -296,7 +296,7 @@ export function Layout() {
           isMobileOpen={mobileMenuOpen}
           onMobileClose={() => setMobileMenuOpen(false)}
         />
-        <main className="flex-1 overflow-hidden relative pl-14 md:pl-0">
+        <main className="relative flex-1 overflow-hidden md:pl-0">
           {requiresLogin ? loginContent : (
             <>
               {/* Regular routes via Outlet */}

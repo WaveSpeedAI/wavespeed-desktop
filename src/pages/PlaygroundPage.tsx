@@ -28,7 +28,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { RotateCcw, Loader2, Plus, X, BookOpen, Save, Globe } from 'lucide-react'
+import { RotateCcw, Loader2, Plus, X, BookOpen, Save, Globe, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/useToast'
 
@@ -323,11 +323,11 @@ export function PlaygroundPage() {
   }
 
   return (
-    <div className="flex h-full flex-col pt-12 md:pt-0">
+    <div className="flex h-full flex-col bg-gradient-to-b from-background via-background to-muted/20 pt-12 md:pt-0">
       {/* Tab Bar */}
-      <div className="page-header">
+      <div className="page-header bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/55">
         <ScrollArea className="w-full">
-          <div className="flex items-center">
+          <div className="flex items-center px-2 py-1.5">
             {tabs.map((tab) => (
               <div
                 key={tab.id}
@@ -336,11 +336,11 @@ export function PlaygroundPage() {
                 tabIndex={0}
                 onKeyDown={(e) => e.key === 'Enter' && handleTabClick(tab.id)}
                 className={cn(
-                  'group relative flex items-center gap-2 border-r px-4 py-2 text-sm transition-colors cursor-pointer',
-                  'hover:bg-muted/50',
+                  'group relative mx-1 flex h-9 items-center gap-2 rounded-lg border px-3 text-sm transition-all cursor-pointer',
+                  'hover:border-border hover:bg-muted/60',
                   tab.id === activeTabId
-                    ? 'bg-background border-b-2 border-b-primary'
-                    : 'text-muted-foreground'
+                    ? 'border-primary/30 bg-primary/10 text-foreground shadow-sm'
+                    : 'border-transparent text-muted-foreground'
                 )}
               >
                 {tab.isRunning && (
@@ -369,10 +369,10 @@ export function PlaygroundPage() {
               </div>
             ))}
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={handleNewTab}
-              className="h-8 px-3"
+              className="ml-1 h-8 rounded-lg border-dashed px-3"
             >
               <Plus className="h-4 w-4" />
             </Button>
@@ -385,7 +385,7 @@ export function PlaygroundPage() {
       {activeTab ? (
         <div className="flex flex-col flex-1 overflow-hidden">
           {/* Mobile Tab Switcher */}
-          <div className="md:hidden flex border-b bg-muted/30">
+          <div className="md:hidden flex border-b bg-background/80 backdrop-blur">
             <button
               onClick={() => setMobileView('config')}
               className={cn(
@@ -410,16 +410,19 @@ export function PlaygroundPage() {
             </button>
           </div>
 
-          <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
+          <div className="flex flex-1 flex-col overflow-hidden md:flex-row md:gap-3 md:p-3">
             {/* Left Panel - Configuration */}
             <div className={cn(
-              "w-full md:w-[420px] md:max-w-[420px] md:flex-none flex flex-col border-b md:border-b-0 md:border-r bg-muted/30 overflow-y-auto",
+              "w-full md:w-[430px] md:max-w-[430px] md:flex-none flex flex-col border-b bg-card/70 md:overflow-hidden md:rounded-xl md:border md:shadow-sm",
               // Mobile: show/hide based on mobileView, full height on mobile
               mobileView === 'config' ? "flex flex-1" : "hidden md:flex"
             )}>
             {/* Model Selector */}
-            <div className="p-4 border-b">
-              <label className="text-sm font-semibold mb-2 block text-foreground">{t('history.model')}</label>
+            <div className="border-b bg-background/60 p-4">
+              <div className="mb-2 flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <label className="block text-sm font-semibold text-foreground">{t('history.model')}</label>
+              </div>
               <ModelSelector
                 models={models}
                 value={activeTab.selectedModel?.model_id}
@@ -429,7 +432,7 @@ export function PlaygroundPage() {
             </div>
 
             {/* Parameters */}
-            <div className="flex-1 overflow-hidden px-4 py-2">
+            <div className="flex-1 overflow-hidden px-4 py-3">
               {activeTab.selectedModel ? (
                 <DynamicForm
                   model={activeTab.selectedModel}
@@ -449,7 +452,7 @@ export function PlaygroundPage() {
             </div>
 
             {/* Actions */}
-            <div className="p-4 border-t bg-muted/30">
+            <div className="border-t bg-background/80 p-4">
               <div className="flex gap-2">
                 <div className="flex-1">
                   <BatchControls
@@ -498,11 +501,11 @@ export function PlaygroundPage() {
 
           {/* Right Panel - Output */}
           <div className={cn(
-            "flex-1 flex flex-col min-w-0 overflow-hidden",
+            "flex-1 flex flex-col min-w-0 overflow-hidden md:rounded-xl md:border md:bg-card/75 md:shadow-sm",
             // Mobile: show/hide based on mobileView
             mobileView === 'output' ? "flex" : "hidden md:flex"
           )}>
-            <div className="px-4 py-3 border-b bg-muted/30 flex items-center justify-between">
+            <div className="flex items-center justify-between border-b bg-background/60 px-4 py-3">
               <div className="flex items-center gap-2">
                 <h2 className="font-semibold text-lg">{t('playground.output')}</h2>
                 {activeTab.selectedModel && (
@@ -515,6 +518,7 @@ export function PlaygroundPage() {
                     variant="outline"
                     size="sm"
                     onClick={handleViewWebPage}
+                    className="bg-background/80"
                   >
                     <Globe className="mr-2 h-4 w-4" />
                     {t('playground.webPage')}
@@ -523,6 +527,7 @@ export function PlaygroundPage() {
                     variant="outline"
                     size="sm"
                     onClick={handleViewDocs}
+                    className="bg-background/80"
                   >
                     <BookOpen className="mr-2 h-4 w-4" />
                     {t('playground.docs')}
@@ -530,7 +535,7 @@ export function PlaygroundPage() {
                 </div>
               )}
             </div>
-            <div className="flex-1 p-5 overflow-hidden">
+            <div className="flex-1 overflow-hidden p-5 md:p-6">
               {/* Batch Results - shown while running or when completed */}
               {(activeTab.batchState?.isRunning || activeTab.batchResults.length > 0) ? (
                 <BatchOutputGrid

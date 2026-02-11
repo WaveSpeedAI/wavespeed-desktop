@@ -108,10 +108,10 @@ export function ModelSelector({ models, value, onChange, disabled }: ModelSelect
             onClick={() => !disabled && setIsOpen(!isOpen)}
             disabled={disabled}
             className={cn(
-              "flex h-10 w-full items-center justify-between rounded-md border border-input bg-white dark:bg-card px-3 py-2 text-sm transition-colors",
-              "focus:outline-none focus:border-primary",
+              "flex h-11 w-full items-center justify-between rounded-lg border border-input/80 bg-background px-3 py-2 text-sm transition-all",
+              "focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/15",
               "disabled:cursor-not-allowed disabled:opacity-50",
-              isOpen && "border-primary"
+              isOpen && "border-primary/50 shadow-sm ring-2 ring-primary/10"
             )}
           >
             <span className={cn("truncate", !selectedModel && "text-muted-foreground")}>
@@ -129,7 +129,7 @@ export function ModelSelector({ models, value, onChange, disabled }: ModelSelect
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute z-50 mt-1 w-full rounded-md border bg-white dark:bg-card shadow-md animate-in fade-in-0 zoom-in-95">
+        <div className="absolute z-50 mt-1.5 w-full rounded-xl border border-border/80 bg-popover shadow-xl animate-in fade-in-0 zoom-in-95">
           {/* Search input */}
           <div className="flex items-center border-b px-3">
             <Search className="h-4 w-4 shrink-0 opacity-50" />
@@ -140,7 +140,7 @@ export function ModelSelector({ models, value, onChange, disabled }: ModelSelect
               onChange={(e) => setLocalSearch(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={t('playground.searchModels')}
-              className="flex h-10 w-full bg-transparent py-3 px-2 text-sm outline-none placeholder:text-muted-foreground"
+              className="flex h-10 w-full bg-transparent px-2 py-3 text-sm outline-none placeholder:text-muted-foreground"
             />
             {localSearch && (
               <button
@@ -154,7 +154,7 @@ export function ModelSelector({ models, value, onChange, disabled }: ModelSelect
           </div>
 
           {/* Model list */}
-          <div ref={listRef} className="max-h-60 overflow-auto p-1">
+          <div ref={listRef} className="max-h-72 overflow-auto p-1.5">
             {filteredModels.length === 0 ? (
               <div className="py-6 text-center text-sm text-muted-foreground">
                 {t('models.noResults')}
@@ -166,10 +166,10 @@ export function ModelSelector({ models, value, onChange, disabled }: ModelSelect
                   type="button"
                   onClick={() => handleSelect(model.model_id)}
                   className={cn(
-                    "relative flex w-full cursor-pointer select-none items-center rounded-sm py-2 px-2 text-sm outline-none",
+                    "relative flex w-full cursor-pointer select-none items-center rounded-lg px-2.5 py-2 text-sm outline-none",
                     "hover:bg-accent hover:text-accent-foreground",
                     "focus:bg-accent focus:text-accent-foreground",
-                    model.model_id === value && "bg-accent"
+                    model.model_id === value && "bg-primary/10 text-foreground"
                   )}
                 >
                   <Check

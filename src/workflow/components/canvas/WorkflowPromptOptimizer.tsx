@@ -29,6 +29,19 @@ interface WorkflowPromptOptimizerProps {
   /** Persisted quick settings object (mode, style, etc.) */
   quickSettings?: Record<string, unknown>
   onQuickSettingsChange?: (settings: Record<string, unknown>) => void
+  /** Workflow-only: optimize automatically when Run is clicked */
+  optimizeOnRun?: boolean
+  onOptimizeOnRunChange?: (enabled: boolean) => void
+  /** UI visibility controls */
+  showRunToggle?: boolean
+  showQuickOptimize?: boolean
+  menuLabel?: string
+  /** Render params panel directly in node body */
+  inlinePanel?: boolean
+  /** Hide optimizer text field (use parent text input only) */
+  hideTextField?: boolean
+  /** Show as inactive preset style when optimization is off */
+  inactive?: boolean
   disabled?: boolean
 }
 
@@ -83,7 +96,19 @@ function useOptimizerFields() {
    ══════════════════════════════════════════════════════════════════════ */
 
 export function WorkflowPromptOptimizer({
-  currentPrompt, onOptimized, quickSettings = {}, onQuickSettingsChange, disabled
+  currentPrompt,
+  onOptimized,
+  quickSettings = {},
+  onQuickSettingsChange,
+  optimizeOnRun = false,
+  onOptimizeOnRunChange,
+  showRunToggle = true,
+  showQuickOptimize = true,
+  menuLabel,
+  inlinePanel = false,
+  hideTextField = false,
+  inactive = false,
+  disabled
 }: WorkflowPromptOptimizerProps) {
   const [isOptimizing, setIsOptimizing] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -113,14 +138,22 @@ export function WorkflowPromptOptimizer({
     onQuickSettingsChange?.({ ...quickSettings, [key]: value })
   }, [quickSettings, onQuickSettingsChange])
 
-  // Close dropdown on outside click
+  // Close dropdown on outside pointer/key events
   useEffect(() => {
     if (!dropdownOpen) return
-    const handler = (e: MouseEvent) => {
+    const pointerHandler = (e: PointerEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) setDropdownOpen(false)
     }
-    const timer = setTimeout(() => document.addEventListener('mousedown', handler), 50)
-    return () => { clearTimeout(timer); document.removeEventListener('mousedown', handler) }
+    const keyHandler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setDropdownOpen(false)
+    }
+    // capture=true prevents inner stopPropagation from blocking close
+    window.addEventListener('pointerdown', pointerHandler, true)
+    window.addEventListener('keydown', keyHandler)
+    return () => {
+      window.removeEventListener('pointerdown', pointerHandler, true)
+      window.removeEventListener('keydown', keyHandler)
+    }
   }, [dropdownOpen])
 
   // Auto-clear error
@@ -168,29 +201,115 @@ export function WorkflowPromptOptimizer({
   // Mode summary for tooltip
   const modeSummary = resolvedSettings.mode ? String(resolvedSettings.mode) : 'image'
 
+  // Inline mode: render settings directly (no dropdown trigger)
+  if (inlinePanel) {
+    return (
+      <div
+        className={`mt-1 rounded-lg border p-2 transition-opacity ${
+          inactive
+            ? 'border-[hsl(var(--border))]/70 bg-[hsl(var(--muted))]/25 opacity-70'
+            : 'border-[hsl(var(--border))] bg-[hsl(var(--muted))]/40'
+        }`}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="mb-2 flex items-center justify-between">
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-[hsl(var(--muted-foreground))]">
+            {inactive ? 'Optimize Params (preset only)' : 'Optimize Params'}
+          </span>
+          {optimizerModel?.base_price !== undefined && (
+            <span className="text-[10px] text-blue-400/80">${optimizerModel.base_price.toFixed(3)}/run</span>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          {quickFields.length > 0 ? (
+            quickFields.map(field => (
+              <QuickField key={field.name} field={field}
+                value={resolvedSettings[field.name]}
+                onChange={v => setSetting(field.name, v)} />
+            ))
+          ) : (
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] text-[hsl(var(--muted-foreground))]">Mode</span>
+              <PillToggle options={['image', 'video']}
+                value={String(quickSettings.mode ?? 'image')}
+                onChange={v => setSetting('mode', v)} />
+            </div>
+          )}
+        </div>
+
+        {!hideTextField && (
+          <div className="mt-2">
+            <div className="mb-1 text-[10px] font-medium text-[hsl(var(--muted-foreground))]">
+              {textField?.label || 'Text'}
+            </div>
+            <textarea value={optimizerText}
+              onChange={e => setSetting('text', e.target.value)}
+              placeholder={textField?.placeholder || textField?.description || 'Text to expand or use as context...'}
+              rows={2}
+              className="nodrag w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1.5 text-[11px] text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500 placeholder:text-[hsl(var(--muted-foreground))] resize-y min-h-[40px] max-h-[120px]" />
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className="relative inline-flex" ref={containerRef} onClick={e => e.stopPropagation()}>
-      {/* ── Split Button ───────────────────────────────────── */}
-      <div className={`flex items-center rounded-md border overflow-hidden transition-colors
-        ${isOptimizing ? 'border-blue-500/50 bg-blue-500/10' : 'border-[hsl(var(--border))] hover:border-blue-500/30'}`}>
+      <div className="flex items-center gap-1.5">
+        {/* Prominent run-time auto optimize toggle */}
+        {showRunToggle && (
+          <button
+            type="button"
+            onClick={() => onOptimizeOnRunChange?.(!optimizeOnRun)}
+            title="Optimize automatically when clicking Run"
+            className={`h-5 rounded-md border px-2.5 text-[10px] font-semibold transition-colors ${
+              optimizeOnRun
+                ? 'border-blue-500/50 bg-blue-500/20 text-blue-300'
+                : 'border-[hsl(var(--border))] bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
+            }`}
+          >
+            Auto on Run
+          </button>
+        )}
 
-        {/* Left: Quick Optimize */}
-        <button onClick={handleQuickOptimize}
-          disabled={disabled || isOptimizing || !currentPrompt.trim()}
-          title={`Quick Optimize (${modeSummary})`}
-          className="flex items-center justify-center w-6 h-5 text-[hsl(var(--muted-foreground))] hover:text-blue-400 hover:bg-blue-500/15 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
-          {isOptimizing ? <SpinnerIcon /> : <SparklesIcon />}
-        </button>
+        {/* ── Split Button ───────────────────────────────────── */}
+        <div className={`flex items-center rounded-md border overflow-hidden transition-colors
+          ${isOptimizing ? 'border-blue-500/50 bg-blue-500/10' : 'border-[hsl(var(--border))] hover:border-blue-500/30'}`}>
 
-        <div className="w-px h-3.5 bg-[hsl(var(--border))]" />
+          {showQuickOptimize ? (
+            <>
+              {/* Left: Quick Optimize */}
+              <button onClick={handleQuickOptimize}
+                disabled={disabled || isOptimizing || !currentPrompt.trim()}
+                title={`Quick Optimize (${modeSummary})`}
+                className="flex items-center justify-center w-6 h-5 text-[hsl(var(--muted-foreground))] hover:text-blue-400 hover:bg-blue-500/15 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                {isOptimizing ? <SpinnerIcon /> : <SparklesIcon />}
+              </button>
+              <div className="w-px h-3.5 bg-[hsl(var(--border))]" />
+            </>
+          ) : (
+            <>
+              <button
+                onClick={e => { e.stopPropagation(); setDropdownOpen(!dropdownOpen) }}
+                className={`h-5 px-2 text-[10px] font-semibold transition-colors ${
+                  dropdownOpen ? 'text-blue-400 bg-blue-500/15' : 'text-[hsl(var(--muted-foreground))] hover:text-blue-400 hover:bg-blue-500/15'
+                }`}
+              >
+                {menuLabel || 'Params'}
+              </button>
+              <div className="w-px h-3.5 bg-[hsl(var(--border))]" />
+            </>
+          )}
 
-        {/* Right: Dropdown Toggle */}
-        <button
-          onClick={e => { e.stopPropagation(); setDropdownOpen(!dropdownOpen) }}
-          className={`flex items-center justify-center w-4 h-5 transition-colors
-            ${dropdownOpen ? 'text-blue-400 bg-blue-500/15' : 'text-[hsl(var(--muted-foreground))] hover:text-blue-400 hover:bg-blue-500/15'}`}>
-          <ChevronIcon />
-        </button>
+          {/* Right: Dropdown Toggle */}
+          <button
+            onClick={e => { e.stopPropagation(); setDropdownOpen(!dropdownOpen) }}
+            className={`flex items-center justify-center w-4 h-5 transition-colors
+              ${dropdownOpen ? 'text-blue-400 bg-blue-500/15' : 'text-[hsl(var(--muted-foreground))] hover:text-blue-400 hover:bg-blue-500/15'}`}>
+            <ChevronIcon />
+          </button>
+        </div>
       </div>
 
       {/* ── Error Toast ────────────────────────────────────── */}

@@ -10,6 +10,7 @@ import { useExecutionStore } from '../../stores/execution.store'
 import { useWorkflowStore } from '../../stores/workflow.store'
 import { useUIStore } from '../../stores/ui.store'
 import { WorkflowPromptOptimizer } from './WorkflowPromptOptimizer'
+import { apiClient } from '@/api/client'
 // Status constants (kept for edge component compatibility)
 // import { NODE_STATUS_COLORS, NODE_STATUS_BORDER } from '@/workflow/constants'
 import type { NodeStatus } from '@/workflow/types/execution'
@@ -222,8 +223,46 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
     return wfId
   }
 
+  // If enabled, optimize prompt/text once right before running.
+  const optimizeOnRunIfEnabled = useCallback(async () => {
+    const settings = (data.params.__optimizerSettings as Record<string, unknown> | undefined) ?? {}
+    const enabled = Boolean(settings.optimizeOnRun ?? settings.autoOptimize)
+    if (!enabled) return
+
+    const fieldToOptimize: 'text' | 'prompt' | null = (() => {
+      if (data.nodeType === 'input/text-input') return 'text'
+      if (typeof data.params.prompt === 'string') return 'prompt'
+      if (typeof data.params.text === 'string') return 'text'
+      return null
+    })()
+    if (!fieldToOptimize) return
+
+    const sourceText = String(data.params[fieldToOptimize] ?? '')
+    if (!sourceText.trim()) return
+
+    // If current text was manually optimized, skip auto optimize on run.
+    const lastManualOptimizedText = typeof settings.lastManualOptimizedText === 'string'
+      ? settings.lastManualOptimizedText
+      : ''
+    if (lastManualOptimizedText && lastManualOptimizedText === sourceText) return
+
+    const { optimizeOnRun: _opt, autoOptimize: _legacy, lastManualOptimizedText: _manual, ...settingsForApi } = settings
+
+    try {
+      const optimized = await apiClient.optimizePrompt({ ...settingsForApi, text: sourceText })
+      if (optimized && optimized !== sourceText) {
+        updateNodeParams(id, { ...data.params, [fieldToOptimize]: optimized })
+      }
+    } catch (err) {
+      console.warn('Optimize on run failed:', err)
+    }
+  }, [data.nodeType, data.params, id, updateNodeParams])
+
   const onRun = async (e: React.MouseEvent) => {
     e.stopPropagation()
+    if (!running) {
+      await optimizeOnRunIfEnabled()
+    }
     const wfId = await ensureWorkflowId()
     if (!wfId) return
     running ? cancelNode(wfId, id) : runNode(wfId, id)
@@ -231,6 +270,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
 
   const onRunFromHere = async (e: React.MouseEvent) => {
     e.stopPropagation()
+    await optimizeOnRunIfEnabled()
     const wfId = await ensureWorkflowId()
     if (!wfId) return
     continueFrom(wfId, id)
@@ -651,6 +691,11 @@ function ParamRow({ nodeId, schema, value, connected, onChange, onDisconnect, ed
               onOptimized={v => onChange(v)}
               quickSettings={optimizerSettings}
               onQuickSettingsChange={onOptimizerSettingsChange}
+              optimizeOnRun={Boolean(optimizerSettings?.optimizeOnRun ?? optimizerSettings?.autoOptimize)}
+              onOptimizeOnRunChange={(enabled) => {
+                const { autoOptimize: _legacy, ...rest } = optimizerSettings ?? {}
+                onOptimizerSettingsChange?.({ ...rest, optimizeOnRun: enabled })
+              }}
             />
           )}
         </label>
@@ -1233,18 +1278,44 @@ function TextInputBody({ params, onParamChange }: {
   const [saveName, setSaveName] = useState('')
   const [snippets, setSnippets] = useState<PromptSnippet[]>(loadSnippets)
   const snippetRef = useRef<HTMLDivElement>(null)
+  const [isOptimizing, setIsOptimizing] = useState(false)
+  const [optimizeError, setOptimizeError] = useState('')
+
+  const optimizerSettings = ((params.__optimizerSettings as Record<string, unknown> | undefined) ?? {})
+  const optimizeOnRun = Boolean(optimizerSettings.optimizeOnRun ?? optimizerSettings.autoOptimize ?? false)
+  const manualOptimizedLocked = typeof optimizerSettings.lastManualOptimizedText === 'string'
+    && optimizerSettings.lastManualOptimizedText === text
+
+  const updateOptimizerSettings = (next: Record<string, unknown>) => {
+    onParamChange({ __optimizerSettings: next })
+  }
+
+  const toggleOptimizeOnRun = () => {
+    const { autoOptimize: _legacy, ...rest } = optimizerSettings
+    updateOptimizerSettings({ ...rest, optimizeOnRun: !optimizeOnRun })
+  }
 
   // Close dropdown on outside click
   useEffect(() => {
     if (!snippetOpen) return
-    const handler = (e: MouseEvent) => {
+    const pointerHandler = (e: PointerEvent) => {
       if (snippetRef.current && !snippetRef.current.contains(e.target as Node)) {
         setSnippetOpen(false)
         setShowSaveInput(false)
       }
     }
-    const timer = setTimeout(() => document.addEventListener('mousedown', handler), 50)
-    return () => { clearTimeout(timer); document.removeEventListener('mousedown', handler) }
+    const keyHandler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSnippetOpen(false)
+        setShowSaveInput(false)
+      }
+    }
+    window.addEventListener('pointerdown', pointerHandler, true)
+    window.addEventListener('keydown', keyHandler)
+    return () => {
+      window.removeEventListener('pointerdown', pointerHandler, true)
+      window.removeEventListener('keydown', keyHandler)
+    }
   }, [snippetOpen])
 
   const doSave = () => {
@@ -1257,7 +1328,11 @@ function TextInputBody({ params, onParamChange }: {
   }
 
   const doLoad = (s: PromptSnippet) => {
-    onParamChange({ text: s.text })
+    const { lastManualOptimizedText: _manual, ...rest } = optimizerSettings
+    onParamChange({
+      text: s.text,
+      __optimizerSettings: rest
+    })
     setSnippetOpen(false)
   }
 
@@ -1266,6 +1341,40 @@ function TextInputBody({ params, onParamChange }: {
     const updated = snippets.filter(s => s.id !== id)
     setSnippets(updated)
     localStorage.setItem(SNIPPETS_KEY, JSON.stringify(updated))
+  }
+
+  const handleManualOptimize = async () => {
+    if (!text.trim() || isOptimizing) return
+
+    setIsOptimizing(true)
+    setOptimizeError('')
+    try {
+      const {
+        optimizeOnRun: _opt,
+        autoOptimize: _legacy,
+        lastManualOptimizedText: _manual,
+        ...settingsForApi
+      } = optimizerSettings
+
+      const optimized = await apiClient.optimizePrompt({
+        ...settingsForApi,
+        text
+      })
+
+      const { autoOptimize: _legacy2, ...rest } = optimizerSettings
+      onParamChange({
+        text: optimized,
+        __optimizerSettings: {
+          ...rest,
+          optimizeOnRun,
+          lastManualOptimizedText: optimized
+        }
+      })
+    } catch (err) {
+      setOptimizeError(err instanceof Error ? err.message : 'Optimize failed')
+    } finally {
+      setIsOptimizing(false)
+    }
   }
 
   return (
@@ -1331,13 +1440,45 @@ function TextInputBody({ params, onParamChange }: {
           )}
         </div>
 
-        {/* Prompt Optimizer */}
-        <WorkflowPromptOptimizer
-          currentPrompt={text}
-          onOptimized={(optimized) => onParamChange({ text: optimized })}
-          quickSettings={(params.__optimizerSettings as Record<string, unknown>) ?? {}}
-          onQuickSettingsChange={(settings) => onParamChange({ __optimizerSettings: settings })}
-        />
+        {/* Manual optimize + auto-on-run controls */}
+        <div className="ml-1 flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={handleManualOptimize}
+            disabled={isOptimizing || !text.trim()}
+            className="inline-flex h-6 items-center gap-1 rounded-md border border-blue-500/45 bg-blue-500/20 px-2.5 text-[10px] font-semibold text-blue-200 shadow-sm transition-all hover:bg-blue-500/30 hover:shadow-blue-500/20 disabled:cursor-not-allowed disabled:opacity-40"
+            title="Optimize text now"
+          >
+            {isOptimizing ? (
+              <>
+                <svg className="animate-spin" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <circle cx="12" cy="12" r="10" strokeDasharray="60" strokeDashoffset="20" />
+                </svg>
+                Optimizing...
+              </>
+            ) : (
+              <>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/>
+                </svg>
+                Optimize now
+              </>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={toggleOptimizeOnRun}
+            className={`inline-flex h-6 items-center gap-1.5 rounded-md border px-2.5 text-[10px] font-semibold transition-all ${
+              optimizeOnRun
+                ? 'border-emerald-500/55 bg-emerald-500/20 text-emerald-200 shadow-sm'
+                : 'border-[hsl(var(--border))] bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
+            }`}
+            title="Only optimize when Run is clicked"
+          >
+            <span className={`inline-block h-1.5 w-1.5 rounded-full ${optimizeOnRun ? 'bg-emerald-300' : 'bg-[hsl(var(--muted-foreground))]/70'}`} />
+            Auto on Run
+          </button>
+        </div>
 
         <div className="flex-1" />
 
@@ -1345,10 +1486,52 @@ function TextInputBody({ params, onParamChange }: {
         <span className="text-[9px] text-[hsl(var(--muted-foreground))]">{text.length} chars</span>
       </div>
 
+      <div className="mb-1 flex items-center justify-between rounded-md border border-[hsl(var(--border))]/70 bg-[hsl(var(--muted))]/20 px-2 py-1">
+        {optimizeOnRun ? (
+          <span className="text-[10px] font-medium text-emerald-300">Enabled: optimize on Run</span>
+        ) : (
+          <span className="text-[10px] font-medium text-[hsl(var(--muted-foreground))]">Default: no optimization (run with original text)</span>
+        )}
+      </div>
+
+      {manualOptimizedLocked && (
+        <div className="mb-1 rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[10px] text-amber-300">
+          Manually optimized. Auto-on-run will be skipped until text changes.
+        </div>
+      )}
+      {optimizeError && (
+        <div className="mb-1 rounded-md border border-red-500/30 bg-red-500/10 px-2 py-1 text-[10px] text-red-300">
+          {optimizeError}
+        </div>
+      )}
+
+      <WorkflowPromptOptimizer
+        currentPrompt={text}
+        onOptimized={(optimized) => onParamChange({ text: optimized })}
+        quickSettings={optimizerSettings}
+        onQuickSettingsChange={(settings) => onParamChange({ __optimizerSettings: settings })}
+        optimizeOnRun={optimizeOnRun}
+        onOptimizeOnRunChange={(enabled) => {
+          const { autoOptimize: _legacy, ...rest } = optimizerSettings
+          onParamChange({ __optimizerSettings: { ...rest, optimizeOnRun: enabled } })
+        }}
+        showRunToggle={false}
+        showQuickOptimize={false}
+        inlinePanel
+        hideTextField
+        inactive={!optimizeOnRun}
+      />
+
       {/* Textarea */}
       <textarea
         value={text}
-        onChange={e => onParamChange({ text: e.target.value })}
+        onChange={e => {
+          const { lastManualOptimizedText: _manual, ...rest } = optimizerSettings
+          onParamChange({
+            text: e.target.value,
+            __optimizerSettings: rest
+          })
+        }}
         placeholder="Enter text or prompt..."
         rows={4}
         className="nodrag w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2.5 py-2 text-xs text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500 placeholder:text-[hsl(var(--muted-foreground))] resize-y min-h-[80px] max-h-[400px]"

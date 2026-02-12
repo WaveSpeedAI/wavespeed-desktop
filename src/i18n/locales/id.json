@@ -29,12 +29,14 @@
     "success": "Berhasil",
     "warning": "Peringatan",
     "selectAll": "Pilih semua",
+    "deselectAll": "Batalkan pilihan",
     "retry": "Coba Lagi",
     "downloadFailed": "Unduhan gagal. Silakan periksa koneksi jaringan Anda.",
     "openInBrowser": "Buka di browser"
   },
   "nav": {
     "home": "Beranda",
+    "featuredModels": "Model Unggulan",
     "models": "Model",
     "playground": "Playground",
     "history": "Riwayat",
@@ -50,6 +52,11 @@
     "explore": "Jelajahi",
     "getStarted": "Mulai",
     "tryFreeTools": "Coba Alat Gratis",
+    "featuredModels": {
+      "title": "Model Unggulan",
+      "description": "Model AI populer yang dipilih untuk Anda",
+      "badge": "Populer"
+    },
     "features": {
       "models": {
         "title": "Browser Model",
@@ -170,7 +177,9 @@
         "done": "Selesai",
         "cancel": "Batal",
         "hint": "Area putih menampilkan, area hitam menyembunyikan"
-      }
+      },
+      "removeFile": "Hapus File",
+      "removeFileConfirm": "Apakah Anda yakin ingin menghapus file ini?"
     },
     "autoSaved": "Otomatis disimpan ke Aset",
     "autoSavedDesc": "Menyimpan {{count}} output ke Aset Saya",
@@ -225,7 +234,8 @@
       "noPreview": "Tidak ada pratinjau",
       "seedsGenerated": "Seed dibuat secara otomatis",
       "settings": "Pengaturan batch"
-    }
+    },
+    "input": "Input"
   },
   "history": {
     "title": "Riwayat",
@@ -243,21 +253,34 @@
     "generationDetails": "Detail Generasi",
     "select": "Pilih",
     "selectionDone": "Selesai",
-    "deleteSelected": "Hapus ({{count}})",
-    "bulkDeleteConfirmTitle": "Hapus item riwayat",
-    "bulkDeleteConfirmDesc": "Yakin ingin menghapus {{count}} prediksi? Tindakan ini tidak dapat dibatalkan.",
-    "deleteConfirmTitle": "Hapus item riwayat",
-    "deleteConfirmDesc": "Yakin ingin menghapus prediksi ini? Tindakan ini tidak dapat dibatalkan.",
-    "deleted": "Item riwayat dihapus",
-    "deletedBulk": "Item riwayat dihapus",
-    "deletedBulkDesc": "{{count}} item riwayat dihapus",
-    "deleteFailed": "Gagal menghapus item riwayat",
+    "deleteSelected": "Hapus",
+    "bulkDeleteConfirmTitle": "Hapus Prediksi",
+    "bulkDeleteConfirmDesc": "Apakah Anda yakin ingin menghapus {{count}} prediksi? Tindakan ini tidak dapat dibatalkan.",
+    "deleteConfirmTitle": "Hapus Prediksi",
+    "deleteConfirmDesc": "Apakah Anda yakin ingin menghapus prediksi ini? Tindakan ini tidak dapat dibatalkan.",
+    "deleted": "Prediksi dihapus",
+    "deletedBulk": "Prediksi dihapus",
+    "deletedBulkDesc": "{{count}} prediksi dihapus",
+    "deleteFailed": "Gagal menghapus prediksi",
     "model": "Model",
     "created": "Dibuat",
     "executionTime": "Waktu Eksekusi",
     "predictionId": "ID Prediksi",
     "notAvailable": "Riwayat Tidak Tersedia",
-    "notAvailableDesc": "API riwayat prediksi saat ini tidak tersedia."
+    "notAvailableDesc": "API riwayat prediksi saat ini tidak tersedia.",
+    "saveTemplate": {
+      "button": "Simpan sebagai template",
+      "dialogTitle": "Simpan sebagai template",
+      "nameLabel": "Nama template",
+      "namePlaceholder": "Masukkan nama template",
+      "duplicateName": "Template dengan nama ini sudah ada",
+      "success": "Template disimpan",
+      "successDesc": "Template Anda berhasil disimpan",
+      "error": "Gagal menyimpan",
+      "noInputsTitle": "Tidak dapat menyimpan template",
+      "noInputsDesc": "Parameter input hanya tersedia untuk prediksi yang dibuat di aplikasi ini. Coba jalankan prediksi baru terlebih dahulu."
+    },
+    "hasInputs": "Dapat disimpan sebagai template"
   },
   "templates": {
     "title": "Template",
@@ -423,6 +446,7 @@
   "settings": {
     "title": "Pengaturan",
     "description": "Konfigurasikan aplikasi WaveSpeed Desktop Anda",
+    "mobileDescription": "Konfigurasikan aplikasi WaveSpeed Mobile Anda",
     "apiKey": {
       "title": "Kunci API",
       "description": "Masukkan kunci API WaveSpeed Anda untuk mengakses model",
@@ -536,7 +560,9 @@
     "about": {
       "title": "Tentang",
       "description": "WaveSpeed Desktop - Playground Model AI",
+      "mobileDescription": "WaveSpeed Mobile - Playground Model AI",
       "aboutText": "Aplikasi desktop open-source untuk menjalankan model AI dengan API WaveSpeed.",
+      "mobileAboutText": "Aplikasi mobile open-source untuk menjalankan model AI dengan API WaveSpeed.",
       "viewOnGitHub": "Lihat di GitHub"
     }
   },
@@ -598,22 +624,25 @@
       "enhanceFace": "Tingkatkan kualitas wajah"
     },
     "faceEnhancer": {
-      "title": "Peningkat Wajah",
-      "description": "Tingkatkan dan pulihkan kualitas wajah menggunakan AI",
-      "selectImage": "Pilih gambar dengan wajah",
-      "orDragDrop": "atau seret dan lepas",
-      "enhance": "Tingkatkan",
-      "download": "Unduh",
+      "title": "Penyempurna Wajah",
+      "description": "Sempurnakan dan pulihkan wajah dalam foto menggunakan AI",
+      "selectImage": "Seret gambar ke sini",
+      "modelsInfo": "Menggunakan model YOLO + GFPGAN",
+      "inputImage": "Gambar input",
+      "selectImageWithFaces": "Pilih gambar dengan wajah untuk disempurnakan",
+      "enhance": "Sempurnakan wajah",
+      "enhancing": "Menyempurnakan wajah...",
+      "detecting": "Mendeteksi wajah...",
+      "downloading": "Mengunduh model...",
+      "loading": "Memuat model...",
       "processing": "Memproses...",
-      "original": "Asli",
-      "enhanced": "Ditingkatkan",
-      "sideBySide": "Berdampingan",
-      "comparison": "Perbandingan geser",
-      "dragToCompare": "Seret untuk membandingkan",
-      "detecting": "Mendeteksi wajah",
-      "enhancing": "Meningkatkan wajah",
-      "noFaces": "Tidak ada wajah terdeteksi dalam gambar",
-      "facesFound": "{{count}} wajah terdeteksi"
+      "download": "Unduh",
+      "newImage": "Gambar baru",
+      "result": "Hasil",
+      "facesEnhanced": "{{count}} wajah disempurnakan",
+      "noFacesFound": "Tidak ada wajah ditemukan",
+      "invalidFile": "Pilih file gambar yang valid",
+      "firstTimeDownload": "Pertama kali? Model akan diunduh (~350MB)"
     },
     "faceSwapper": {
       "title": "Penukar Wajah",
@@ -718,77 +747,75 @@
       "confirm": "Kembali"
     },
     "videoConverter": {
-      "title": "Video Converter",
-      "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
-      "selectVideo": "Select Video",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace video",
-      "supportedFormats": "Supports MP4, WebM, MOV, AVI, MKV",
-      "convert": "Convert",
-      "converting": "Converting...",
-      "original": "Original",
-      "outputSettings": "Output Settings",
-      "format": "Format",
-      "quality": "Quality",
-      "resolution": "Resolution",
-      "convertedSize": "Converted Size",
-      "converted": "Converted"
+      "title": "Konverter Video",
+      "description": "Konversi video antar format"
     },
     "audioConverter": {
-      "title": "Audio Converter",
-      "description": "Convert audio between formats (MP3, AAC, FLAC, WAV)",
-      "selectAudio": "Select Audio",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace audio",
-      "supportedFormats": "Supports MP3, M4A, OGG, WAV, FLAC",
-      "convert": "Convert",
-      "converting": "Converting...",
-      "original": "Original",
-      "converted": "Converted",
-      "playOriginal": "Play original",
-      "playConverted": "Play converted"
+      "title": "Konverter Audio",
+      "description": "Konversi antara format MP3 dan WAV",
+      "selectAudio": "Klik atau seret file MP3/WAV ke sini",
+      "supportedFormats": "Konversi MP3 ↔ WAV",
+      "converting": "Mengkonversi...",
+      "convert": "Konversi",
+      "download": "Unduh",
+      "complete": "Selesai",
+      "outputFormat": "Format output",
+      "bitrate": "Bitrate",
+      "noFileSelected": "Tidak ada file dipilih"
     },
     "imageConverter": {
-      "title": "Image Converter",
-      "description": "Convert images between formats (JPG, PNG, WebP, GIF)",
-      "selectImages": "Select Images",
-      "orDragDrop": "or drag and drop",
-      "dropToAdd": "Drop to add images",
-      "supportedFormats": "Supports JPG, PNG, WebP, GIF, BMP",
-      "addMore": "Add More",
-      "convert": "Convert",
-      "converting": "Converting...",
-      "quality": "Quality",
-      "downloadAll": "Download All"
+      "title": "Konverter Gambar",
+      "description": "Konversi gambar ke JPG, PNG, atau WebP",
+      "selectImage": "Klik atau seret gambar ke sini",
+      "supportedFormats": "Gambar apa saja → JPG/PNG/WebP",
+      "converting": "Mengkonversi...",
+      "convert": "Konversi",
+      "download": "Unduh",
+      "complete": "Selesai",
+      "outputFormat": "Format output",
+      "quality": "Kualitas",
+      "noFileSelected": "Tidak ada file dipilih"
     },
     "mediaTrimmer": {
-      "title": "Media Trimmer",
-      "description": "Trim videos or audio to a specific duration",
-      "selectMedia": "Select Media",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace media",
-      "supportedFormats": "Supports video and audio files",
-      "trim": "Trim",
-      "trimming": "Trimming...",
-      "originalDuration": "Original",
-      "selectedDuration": "Selected",
-      "trimmedSize": "Trimmed Size",
-      "playingOriginal": "Playing original",
-      "playingTrimmed": "Playing trimmed"
+      "title": "Pemotong Media",
+      "description": "Potong video dan audio sesuai durasi yang diinginkan",
+      "selectMedia": "Seret file media ke sini",
+      "supportedFormats": "Mendukung file video dan audio",
+      "inputMedia": "Media input",
+      "selectMediaFile": "Pilih file untuk dipotong",
+      "trimSettings": "Pengaturan potong",
+      "selectRange": "Pilih waktu mulai dan selesai",
+      "startTime": "Waktu mulai",
+      "endTime": "Waktu selesai",
+      "timeFormat": "Format: m:ss.d atau detik",
+      "outputDuration": "Durasi output",
+      "duration": "Durasi",
+      "trim": "Potong",
+      "trimming": "Memotong...",
+      "download": "Unduh",
+      "newMedia": "File baru",
+      "result": "Hasil pemotongan",
+      "invalidFile": "Pilih file video atau audio yang valid",
+      "invalidRange": "Waktu selesai harus lebih besar dari waktu mulai"
     },
     "mediaMerger": {
-      "title": "Media Merger",
-      "description": "Merge multiple video or audio files into one",
-      "selectFiles": "Select Files",
-      "orDragDrop": "or drag and drop",
-      "dropToAdd": "Drop to add files",
-      "supportedFormats": "Supports video and audio files",
-      "addMore": "Add More",
-      "merge": "Merge",
-      "merging": "Merging...",
-      "merged": "Merged",
-      "totalDuration": "Total Duration",
-      "sameFormatNote": "Files must have the same format for lossless merging"
+      "title": "Penggabung Media",
+      "description": "Gabungkan beberapa video atau audio menjadi satu",
+      "selectMedia": "Seret file ke sini",
+      "supportedFormats": "Mendukung file video dan audio",
+      "addFiles": "Tambah file",
+      "inputFiles": "File input",
+      "dragToReorder": "Seret untuk mengurutkan",
+      "noFiles": "Tidak ada file",
+      "addFilesDesc": "Tambahkan video atau audio untuk digabung",
+      "outputFormat": "Format output",
+      "merge": "Gabung",
+      "merging": "Menggabung...",
+      "download": "Unduh",
+      "clear": "Hapus",
+      "result": "Hasil",
+      "invalidFile": "Pilih file video atau audio yang valid",
+      "minFiles": "Tambahkan minimal 2 file untuk digabung"
     },
     "ffmpeg": {
       "loading": "Loading FFmpeg",
@@ -810,5 +837,26 @@
       "cutMask": "Potong Mask",
       "hint": "Klik kiri untuk menyertakan, klik kanan untuk mengecualikan area"
     }
+  },
+  "game": {
+    "waitingLong": "Menunggu lama? Main mini game!",
+    "clickToPlay": "Klik untuk mulai"
+  },
+  "videoConverter": {
+    "title": "Konverter Video",
+    "description": "Konversi video antar format menggunakan browser Anda",
+    "invalidFile": "Silakan pilih file video yang valid",
+    "input": "Video Input",
+    "inputDesc": "Pilih atau seret file video untuk dikonversi",
+    "dropzone": "Klik atau seret video ke sini",
+    "supportedFormats": "Mendukung MP4, WebM, MOV, AVI",
+    "settings": "Pengaturan",
+    "outputFormat": "Format Output",
+    "convert": "Konversi Video",
+    "converting": "Mengkonversi...",
+    "noCodecSupport": "Tidak ditemukan codec video yang didukung",
+    "result": "Hasil",
+    "codecUsed": "Codec yang digunakan",
+    "download": "Unduh"
   }
 }

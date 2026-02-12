@@ -111,7 +111,7 @@ export function Layout() {
   }, [location.pathname, visitedPages])
 
   // Pages that don't require API key
-  const publicPaths = ['/', '/settings', '/templates', '/assets', '/free-tools', '/z-image']
+  const publicPaths = ['/', '/featured-models', '/settings', '/templates', '/assets', '/free-tools', '/z-image']
   const isPublicPage = publicPaths.some(path =>
     path === '/'
       ? location.pathname === '/'

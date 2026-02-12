@@ -35,6 +35,7 @@
   },
   "nav": {
     "home": "Laman Utama",
+    "featuredModels": "Model Pilihan",
     "models": "Model",
     "playground": "Playground",
     "history": "Sejarah",
@@ -50,6 +51,11 @@
     "explore": "Terokai",
     "getStarted": "Mula",
     "tryFreeTools": "Cuba Alat Percuma",
+    "featuredModels": {
+      "title": "Model Pilihan",
+      "description": "Model AI popular yang dipilih untuk anda",
+      "badge": "Popular"
+    },
     "features": {
       "models": {
         "title": "Pelayar Model",
@@ -170,7 +176,9 @@
         "done": "Selesai",
         "cancel": "Batal",
         "hint": "Kawasan putih mendedahkan, kawasan hitam menyembunyikan"
-      }
+      },
+      "removeFile": "Buang Fail",
+      "removeFileConfirm": "Adakah anda pasti mahu membuang fail ini?"
     },
     "autoSaved": "Disimpan automatik ke Aset",
     "autoSavedDesc": "Menyimpan {{count}} output ke Aset Saya",
@@ -225,7 +233,8 @@
       "noPreview": "Tiada pratonton",
       "seedsGenerated": "Benih dijana secara automatik",
       "settings": "Tetapan kelompok"
-    }
+    },
+    "input": "Input"
   },
   "history": {
     "title": "Sejarah",
@@ -808,5 +817,22 @@
       "merging": "Merging",
       "trimming": "Trimming"
     }
+  },
+  "videoConverter": {
+    "title": "Penukar Video",
+    "description": "Tukar video antara format menggunakan pelayar anda",
+    "invalidFile": "Sila pilih fail video yang sah",
+    "input": "Video Input",
+    "inputDesc": "Pilih atau seret fail video untuk ditukar",
+    "dropzone": "Klik atau seret video ke sini",
+    "supportedFormats": "Menyokong MP4, WebM, MOV, AVI",
+    "settings": "Tetapan",
+    "outputFormat": "Format Output",
+    "convert": "Tukar Video",
+    "converting": "Menukar...",
+    "noCodecSupport": "Tiada codec video yang disokong ditemui",
+    "result": "Hasil",
+    "codecUsed": "Codec yang digunakan",
+    "download": "Muat turun"
   }
 }

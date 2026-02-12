@@ -138,7 +138,7 @@ export function SizeSelector({ value, onChange, disabled, min = 256, max = 1536 
   return (
     <div className="space-y-3">
       {/* Preset buttons */}
-      <div className="flex gap-1">
+      <div className="flex flex-wrap gap-1.5">
         {availablePresets.map((preset) => (
           <Button
             key={`${preset.width}x${preset.height}`}

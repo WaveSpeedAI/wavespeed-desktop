@@ -196,10 +196,9 @@ export function PlaygroundPage() {
   }, [modelId, models, tabs.length, createTab])
 
   // Set model from URL param when navigating
-  // Only sync model if the active tab has no model selected yet
-  // This avoids race condition during tab switching where URL and activeTab update at different times
+  // Sync model when URL modelId differs from current active tab's model
   useEffect(() => {
-    if (modelId && models.length > 0 && activeTab && !activeTab.selectedModel) {
+    if (modelId && models.length > 0 && activeTab) {
       // Try to decode, but use original if decoding fails (for paths with slashes)
       let decodedId = modelId
       try {
@@ -207,9 +206,12 @@ export function PlaygroundPage() {
       } catch {
         // Use original modelId if decoding fails
       }
-      const model = models.find(m => m.model_id === decodedId)
-      if (model) {
-        setSelectedModel(model)
+      const currentModelId = activeTab.selectedModel?.model_id
+      if (currentModelId !== decodedId) {
+        const model = models.find(m => m.model_id === decodedId)
+        if (model) {
+          setSelectedModel(model)
+        }
       }
     }
   }, [modelId, models, activeTab, setSelectedModel])

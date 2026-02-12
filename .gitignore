@@ -72,6 +72,7 @@ tmp/
 temp/
 *.tmp
 *.temp
+tmpclaude-*
 
 # Package manager locks (keep one, ignore others if switching)
 # Uncomment the ones you don't use:
@@ -97,3 +98,14 @@ workflow-data/
 
 # Test build outputs
 out-test/
+README.zh-CN.md
+
+# Mobile (Capacitor/Android)
+mobile/SESSION_LOG*.md
+mobile/android/app/build/
+mobile/android/.gradle/
+mobile/android/build/
+mobile/android/local.properties
+mobile/android/.idea/
+mobile/android/*.iml
+mobile/dist/

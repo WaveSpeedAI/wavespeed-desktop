@@ -29,12 +29,14 @@
     "success": "सफलता",
     "warning": "चेतावनी",
     "selectAll": "सभी चुनें",
+    "deselectAll": "सभी अचयनित करें",
     "retry": "पुनः प्रयास करें",
     "downloadFailed": "डाउनलोड विफल। कृपया अपना नेटवर्क कनेक्शन जांचें।",
     "openInBrowser": "ब्राउज़र में खोलें"
   },
   "nav": {
     "home": "होम",
+    "featuredModels": "चुनिंदा मॉडल",
     "models": "मॉडल",
     "playground": "प्लेग्राउंड",
     "history": "इतिहास",
@@ -50,6 +52,11 @@
     "explore": "अन्वेषण करें",
     "getStarted": "शुरू करें",
     "tryFreeTools": "मुफ्त उपकरण आज़माएं",
+    "featuredModels": {
+      "title": "चुनिंदा मॉडल",
+      "description": "आपके लिए चुने गए लोकप्रिय AI मॉडल",
+      "badge": "लोकप्रिय"
+    },
     "features": {
       "models": {
         "title": "मॉडल ब्राउज़र",
@@ -170,7 +177,9 @@
         "done": "पूर्ण",
         "cancel": "रद्द करें",
         "hint": "सफेद क्षेत्र दिखाते हैं, काले क्षेत्र छुपाते हैं"
-      }
+      },
+      "removeFile": "फ़ाइल हटाएं",
+      "removeFileConfirm": "क्या आप वाकई इस फ़ाइल को हटाना चाहते हैं?"
     },
     "autoSaved": "संपत्तियों में ऑटो-सेव किया गया",
     "autoSavedDesc": "मेरी संपत्तियों में {{count}} आउटपुट सहेजे गए",
@@ -225,7 +234,8 @@
       "noPreview": "कोई पूर्वावलोकन नहीं",
       "seedsGenerated": "सीड स्वचालित रूप से जनरेट किए गए",
       "settings": "बैच सेटिंग्स"
-    }
+    },
+    "input": "इनपुट"
   },
   "history": {
     "title": "इतिहास",
@@ -241,23 +251,36 @@
     "loadPreviews": "प्रीव्यू लोड करें",
     "disablePreviews": "प्रीव्यू अक्षम करें",
     "generationDetails": "जनरेशन विवरण",
-    "select": "चयन करें",
-    "selectionDone": "पूर्ण",
-    "deleteSelected": "हटाएं ({{count}})",
-    "bulkDeleteConfirmTitle": "इतिहास आइटम हटाएं",
-    "bulkDeleteConfirmDesc": "क्या आप वाकई {{count}} भविष्यवाणी(यों) को हटाना चाहते हैं? यह कार्रवाई वापस नहीं की जा सकती।",
-    "deleteConfirmTitle": "इतिहास आइटम हटाएं",
-    "deleteConfirmDesc": "क्या आप वाकई इस भविष्यवाणी को हटाना चाहते हैं? यह कार्रवाई वापस नहीं की जा सकती।",
-    "deleted": "इतिहास आइटम हटाया गया",
-    "deletedBulk": "इतिहास आइटम हटाए गए",
-    "deletedBulkDesc": "{{count}} इतिहास आइटम हटाए गए",
-    "deleteFailed": "इतिहास आइटम हटाने में विफल",
+    "select": "चुनें",
+    "selectionDone": "हो गया",
+    "deleteSelected": "हटाएं",
+    "bulkDeleteConfirmTitle": "भविष्यवाणियां हटाएं",
+    "bulkDeleteConfirmDesc": "क्या आप वाकई {{count}} भविष्यवाणी(याँ) हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।",
+    "deleteConfirmTitle": "भविष्यवाणी हटाएं",
+    "deleteConfirmDesc": "क्या आप वाकई इस भविष्यवाणी को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।",
+    "deleted": "भविष्यवाणी हटा दी गई",
+    "deletedBulk": "भविष्यवाणियां हटा दी गईं",
+    "deletedBulkDesc": "{{count}} भविष्यवाणी(याँ) हटा दी गईं",
+    "deleteFailed": "भविष्यवाणी हटाने में विफल",
     "model": "मॉडल",
     "created": "बनाया गया",
     "executionTime": "निष्पादन समय",
     "predictionId": "भविष्यवाणी ID",
     "notAvailable": "इतिहास उपलब्ध नहीं",
-    "notAvailableDesc": "भविष्यवाणी इतिहास API इस समय उपलब्ध नहीं है।"
+    "notAvailableDesc": "भविष्यवाणी इतिहास API इस समय उपलब्ध नहीं है।",
+    "saveTemplate": {
+      "button": "टेम्पलेट के रूप में सहेजें",
+      "dialogTitle": "टेम्पलेट के रूप में सहेजें",
+      "nameLabel": "टेम्पलेट नाम",
+      "namePlaceholder": "टेम्पलेट नाम दर्ज करें",
+      "duplicateName": "इस नाम का एक टेम्पलेट पहले से मौजूद है",
+      "success": "टेम्पलेट सहेजा गया",
+      "successDesc": "आपका टेम्पलेट सफलतापूर्वक सहेजा गया",
+      "error": "सहेजने में विफल",
+      "noInputsTitle": "टेम्पलेट सहेजा नहीं जा सकता",
+      "noInputsDesc": "इनपुट पैरामीटर केवल इस ऐप में की गई भविष्यवाणियों के लिए उपलब्ध हैं। पहले एक नई भविष्यवाणी चलाने का प्रयास करें।"
+    },
+    "hasInputs": "टेम्पलेट के रूप में सहेजा जा सकता है"
   },
   "templates": {
     "title": "टेम्पलेट",
@@ -423,6 +446,7 @@
   "settings": {
     "title": "सेटिंग्स",
     "description": "अपना WaveSpeed Desktop एप्लिकेशन कॉन्फ़िगर करें",
+    "mobileDescription": "अपना WaveSpeed Mobile एप्लिकेशन कॉन्फ़िगर करें",
     "apiKey": {
       "title": "API कुंजी",
       "description": "मॉडल एक्सेस करने के लिए अपनी WaveSpeed API कुंजी दर्ज करें",
@@ -536,7 +560,9 @@
     "about": {
       "title": "के बारे में",
       "description": "WaveSpeed Desktop - AI मॉडल प्लेग्राउंड",
+      "mobileDescription": "WaveSpeed Mobile - AI मॉडल प्लेग्राउंड",
       "aboutText": "WaveSpeed API के साथ AI मॉडल चलाने के लिए एक ओपन-सोर्स डेस्कटॉप एप्लिकेशन।",
+      "mobileAboutText": "WaveSpeed API के साथ AI मॉडल चलाने के लिए एक ओपन-सोर्स मोबाइल एप्लिकेशन।",
       "viewOnGitHub": "GitHub पर देखें"
     }
   },
@@ -599,21 +625,24 @@
     },
     "faceEnhancer": {
       "title": "फेस एन्हांसर",
-      "description": "AI का उपयोग करके चेहरे की गुणवत्ता बढ़ाएं और पुनर्स्थापित करें",
-      "selectImage": "चेहरों वाली छवि चुनें",
-      "orDragDrop": "या ड्रैग और ड्रॉप करें",
-      "enhance": "बेहतर बनाएं",
-      "download": "डाउनलोड",
-      "processing": "प्रसंस्करण...",
-      "original": "मूल",
-      "enhanced": "बेहतर",
-      "sideBySide": "साथ-साथ",
-      "comparison": "स्लाइडर तुलना",
-      "dragToCompare": "तुलना के लिए खींचें",
-      "detecting": "चेहरे पहचान रहे हैं",
-      "enhancing": "चेहरे बेहतर बना रहे हैं",
-      "noFaces": "छवि में कोई चेहरा नहीं मिला",
-      "facesFound": "{{count}} चेहरे मिले"
+      "description": "AI की मदद से फोटो में चेहरों को बेहतर और पुनर्स्थापित करें",
+      "selectImage": "छवि यहाँ खींचें",
+      "modelsInfo": "YOLO + GFPGAN AI मॉडल का उपयोग करता है",
+      "inputImage": "इनपुट छवि",
+      "selectImageWithFaces": "बेहतर करने के लिए चेहरों वाली छवि चुनें",
+      "enhance": "चेहरे बेहतर करें",
+      "enhancing": "चेहरे बेहतर हो रहे हैं...",
+      "detecting": "चेहरे खोजे जा रहे हैं...",
+      "downloading": "मॉडल डाउनलोड हो रहे हैं...",
+      "loading": "मॉडल लोड हो रहे हैं...",
+      "processing": "प्रोसेसिंग...",
+      "download": "डाउनलोड करें",
+      "newImage": "नई छवि",
+      "result": "परिणाम",
+      "facesEnhanced": "{{count}} चेहरे बेहतर किए गए",
+      "noFacesFound": "कोई चेहरा नहीं मिला",
+      "invalidFile": "कृपया एक वैध छवि फ़ाइल चुनें",
+      "firstTimeDownload": "पहली बार? मॉडल डाउनलोड होंगे (~350MB)"
     },
     "faceSwapper": {
       "title": "फेस स्वैपर",
@@ -715,22 +744,6 @@
       "cutMask": "मास्क काटें",
       "hint": "शामिल करने के लिए लेफ्ट-क्लिक, बाहर करने के लिए राइट-क्लिक"
     },
-    "progress": {
-      "downloading": "मॉडल डाउनलोड हो रहा है",
-      "loading": "मॉडल लोड हो रहा है",
-      "processing": "प्रोसेसिंग",
-      "processingFrames": "फ्रेम प्रोसेस हो रहे हैं",
-      "encoding": "एनकोडिंग",
-      "finalizing": "अंतिम चरण",
-      "overall": "समग्र",
-      "remaining": "शेष"
-    },
-    "backWarning": {
-      "title": "प्रक्रिया जारी है",
-      "description": "एक कार्य वर्तमान में संसाधित हो रहा है। क्या आप वाकई वापस जाना चाहते हैं? यह वर्तमान ऑपरेशन को रद्द कर देगा।",
-      "cancel": "रद्द करें",
-      "confirm": "वापस जाएं"
-    },
     "videoConverter": {
       "title": "Video Converter",
       "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
@@ -802,11 +815,48 @@
       "totalDuration": "Total Duration",
       "sameFormatNote": "Files must have the same format for lossless merging"
     },
+    "progress": {
+      "downloading": "मॉडल डाउनलोड हो रहा है",
+      "loading": "मॉडल लोड हो रहा है",
+      "processing": "प्रोसेसिंग",
+      "processingFrames": "फ्रेम प्रोसेस हो रहे हैं",
+      "encoding": "एनकोडिंग",
+      "finalizing": "अंतिम चरण",
+      "overall": "समग्र",
+      "remaining": "शेष"
+    },
+    "backWarning": {
+      "title": "प्रक्रिया जारी है",
+      "description": "एक कार्य वर्तमान में संसाधित हो रहा है। क्या आप वाकई वापस जाना चाहते हैं? यह वर्तमान ऑपरेशन को रद्द कर देगा।",
+      "cancel": "रद्द करें",
+      "confirm": "वापस जाएं"
+    },
     "ffmpeg": {
       "loading": "Loading FFmpeg",
       "converting": "Converting",
       "merging": "Merging",
       "trimming": "Trimming"
     }
+  },
+  "game": {
+    "waitingLong": "ज़्यादा इंतज़ार? एक मिनी गेम खेलें!",
+    "clickToPlay": "शुरू करने के लिए क्लिक करें"
+  },
+  "videoConverter": {
+    "title": "वीडियो कनवर्टर",
+    "description": "अपने ब्राउज़र का उपयोग करके वीडियो को फॉर्मेट के बीच कनवर्ट करें",
+    "invalidFile": "कृपया एक वैध वीडियो फ़ाइल चुनें",
+    "input": "इनपुट वीडियो",
+    "inputDesc": "कनवर्ट करने के लिए एक वीडियो फ़ाइल चुनें या खींचें",
+    "dropzone": "क्लिक करें या वीडियो यहां खींचें",
+    "supportedFormats": "MP4, WebM, MOV, AVI समर्थित",
+    "settings": "सेटिंग्स",
+    "outputFormat": "आउटपुट फॉर्मेट",
+    "convert": "वीडियो कनवर्ट करें",
+    "converting": "कनवर्ट हो रहा है...",
+    "noCodecSupport": "कोई समर्थित वीडियो कोडेक नहीं मिला",
+    "result": "परिणाम",
+    "codecUsed": "उपयोग किया गया कोडेक",
+    "download": "डाउनलोड"
   }
 }

@@ -31,10 +31,13 @@
     "done": "完成",
     "retry": "重试",
     "downloadFailed": "下载失败。请检查您的网络连接。",
-    "openInBrowser": "在浏览器中打开"
+    "openInBrowser": "在浏览器中打开",
+    "settings": "设置",
+    "clearAll": "全部清除"
   },
   "nav": {
     "home": "首页",
+    "featuredModels": "模型精选",
     "models": "模型",
     "playground": "演练场",
     "history": "历史记录",
@@ -51,6 +54,11 @@
     "explore": "探索",
     "getStarted": "开始使用",
     "tryFreeTools": "试用免费工具",
+    "featuredModels": {
+      "title": "模型精选",
+      "description": "为你精选的热门 AI 模型",
+      "badge": "热门"
+    },
     "features": {
       "models": {
         "title": "模型浏览",
@@ -176,7 +184,9 @@
         "done": "完成",
         "cancel": "取消",
         "hint": "白色区域显示，黑色区域隐藏"
-      }
+      },
+      "removeFile": "移除文件",
+      "removeFileConfirm": "确定要移除这个文件吗？"
     },
     "autoSaved": "已自动保存到资产",
     "autoSavedDesc": "已保存 {{count}} 个输出到我的资产",
@@ -199,7 +209,7 @@
       "optimize": "优化"
     },
     "flappyBird": {
-      "clickToStart": "点击或按空格键开始游戏",
+      "clickToStart": "点击开始游戏",
       "viewResults": "查看结果",
       "playWhileWaiting": "边等边玩",
       "quit": "退出"
@@ -231,7 +241,8 @@
       "noPreview": "无可用预览",
       "seedsGenerated": "种子已自动生成",
       "settings": "批量设置"
-    }
+    },
+    "input": "输入"
   },
   "history": {
     "title": "历史记录",
@@ -242,7 +253,8 @@
       "completed": "已完成",
       "failed": "失败",
       "processing": "处理中",
-      "created": "已创建"
+      "created": "已创建",
+      "archived": "已归档"
     },
     "loadPreviews": "加载预览",
     "disablePreviews": "禁用预览",
@@ -263,7 +275,24 @@
     "executionTime": "执行时间",
     "predictionId": "预测 ID",
     "notAvailable": "历史记录不可用",
-    "notAvailableDesc": "预测历史 API 当前不可用。"
+    "downloadComplete": "下载完成",
+    "downloadCompleteDesc": "已下载 {{count}} 个文件",
+    "downloadFailed": "下载失败",
+    "downloadFailedDesc": "{{count}} 个文件下载失败",
+    "notAvailableDesc": "预测历史 API 当前不可用。",
+    "hasInputs": "有可用参数",
+    "saveTemplate": {
+      "button": "保存为模板",
+      "dialogTitle": "保存模板",
+      "nameLabel": "模板名称",
+      "namePlaceholder": "输入模板名称...",
+      "duplicateName": "该名称已存在",
+      "noInputsTitle": "无法保存模板",
+      "noInputsDesc": "没有找到此预测的输入参数",
+      "success": "模板已保存",
+      "successDesc": "您可以在模板页面使用它",
+      "error": "保存模板失败"
+    }
   },
   "templates": {
     "title": "模板",
@@ -429,6 +458,7 @@
   "settings": {
     "title": "设置",
     "description": "配置您的 WaveSpeed Desktop 应用程序",
+    "mobileDescription": "配置您的 WaveSpeed Mobile 应用程序",
     "apiKey": {
       "title": "API 密钥",
       "description": "输入您的 WaveSpeed API 密钥以访问模型",
@@ -502,7 +532,27 @@
       "clearFailed": "清除缓存失败",
       "zImageAuxiliary": "Z-Image 辅助模型",
       "zImageModels": "Z-Image 模型",
-      "zImageBinary": "Z-Image 二进制"
+      "zImageBinary": "Z-Image 二进制",
+      "predownload": "预下载模型",
+      "predownloadDesc": "提前下载 AI 模型以便离线使用",
+      "downloadModels": "下载模型",
+      "downloadPartial": "部分下载完成",
+      "downloadPartialDesc": "部分模型下载成功",
+      "downloadComplete": "下载完成",
+      "downloadCompleteDesc": "所有模型下载成功",
+      "downloadCancelled": "下载已取消",
+      "downloadCancelledDesc": "模型下载已取消",
+      "alreadyCached": "已缓存",
+      "downloaded": "已下载",
+      "overallProgress": "总进度",
+      "models": {
+        "ffmpegJs": "FFmpeg 核心 (JS)",
+        "ffmpegWasm": "FFmpeg 核心 (WASM)",
+        "backgroundRemover": "背景移除",
+        "imageEraser": "图片擦除 (LaMa)",
+        "samEncoder": "SAM 视觉编码器",
+        "samDecoder": "SAM 提示解码器"
+      }
     },
     "downloads": {
       "title": "下载",
@@ -537,13 +587,21 @@
       "devModeDesc": "开发模式下已禁用自动更新。",
       "checkFailed": "检查更新失败",
       "downloadFailed": "下载失败",
-      "downloadFailedDesc": "下载更新失败。"
+      "downloadFailedDesc": "下载更新失败。",
+      "downloadComplete": "下载完成",
+      "openToInstall": "请打开 {{filename}} 进行安装",
+      "installInstructions": "安装说明",
+      "findInDownloads": "APK 已保存到 Download 文件夹，请在文件管理器中打开 {{filename}} 进行安装",
+      "downloadProgress": "正在下载... {{progress}}%"
     },
     "about": {
       "title": "关于",
       "description": "WaveSpeed Desktop - AI 模型演练场",
       "aboutText": "一个用于运行 WaveSpeed API AI 模型的开源桌面应用程序。",
-      "viewOnGitHub": "在 GitHub 上查看"
+      "viewOnGitHub": "在 GitHub 上查看",
+      "version": "版本",
+      "mobileDescription": "WaveSpeed Mobile - 移动端 AI 工具",
+      "mobileAboutText": "一个用于运行 WaveSpeed API AI 模型的开源移动应用程序。"
     }
   },
   "apiKeyRequired": {
@@ -606,20 +664,31 @@
     "faceEnhancer": {
       "title": "人脸增强",
       "description": "使用 AI 增强和修复人脸质量",
-      "selectImage": "选择包含人脸的图片",
+      "inputImage": "输入图片",
+      "selectImage": "点击或拖放图片到此处",
+      "selectImageWithFaces": "选择包含人脸的图片进行增强",
       "orDragDrop": "或拖放文件",
-      "enhance": "增强",
+      "modelsInfo": "使用 YOLO + GFPGAN AI 模型",
+      "enhance": "增强人脸",
       "download": "下载",
+      "downloading": "下载模型中...",
+      "loading": "加载模型中...",
       "processing": "处理中...",
       "original": "原始",
       "enhanced": "增强后",
       "sideBySide": "并排对比",
       "comparison": "滑块对比",
       "dragToCompare": "拖动对比",
-      "detecting": "检测人脸",
-      "enhancing": "增强人脸",
+      "detecting": "检测人脸中...",
+      "enhancing": "增强人脸中...",
       "noFaces": "图片中未检测到人脸",
-      "facesFound": "检测到 {{count}} 张人脸"
+      "noFacesFound": "未检测到人脸",
+      "facesFound": "检测到 {{count}} 张人脸",
+      "facesEnhanced": "已增强 {{count}} 张人脸",
+      "result": "增强结果",
+      "newImage": "新图片",
+      "firstTimeDownload": "首次使用需要下载模型（约350MB）",
+      "invalidFile": "请选择有效的图片文件"
     },
     "faceSwapper": {
       "title": "人脸替换",
@@ -705,6 +774,7 @@
       "undoEdit": "撤销移除",
       "redoEdit": "重做移除",
       "hint": "在要移除的物体上绘制，然后点击移除物体",
+      "hintMobile": "在要移除的区域上绘制",
       "resultPlaceholder": "结果将显示在这里"
     },
     "segmentAnything": {
@@ -714,12 +784,15 @@
       "orDragDrop": "或拖放文件",
       "processing": "处理图片中...",
       "hoverToPreview": "悬停在对象上预览分割效果",
+      "hoverToPreviewMobile": "点击对象开始选择",
       "clickToRefine": "点击添加更多点，右键点击排除区域",
+      "clickToRefineMobile": "点击添加更多选区",
       "resetImage": "重置图片",
       "clearPoints": "清除点",
       "clearPointsTooltip": "清除所有点并返回悬停预览模式",
       "cutMask": "裁剪蒙版",
-      "hint": "左键点击包含区域，右键点击排除区域"
+      "hint": "左键点击包含区域，右键点击排除区域",
+      "hintMobile": "点击添加选区，长按排除区域"
     },
     "progress": {
       "downloading": "下载模型中",
@@ -739,75 +812,104 @@
     },
     "videoConverter": {
       "title": "视频转换器",
-      "description": "在多种格式之间转换视频（MP4、WebM、MOV、AVI）",
-      "selectVideo": "选择视频",
+      "description": "使用浏览器在不同格式之间转换视频",
+      "inputVideo": "输入视频",
+      "selectVideo": "点击或拖放视频到此处",
+      "selectVideoDesc": "选择或拖放要转换的视频文件",
       "orDragDrop": "或拖放文件",
       "dropToReplace": "拖放以替换视频",
-      "supportedFormats": "支持 MP4、WebM、MOV、AVI、MKV",
-      "convert": "转换",
+      "supportedFormats": "支持 MP4、WebM、MOV、AVI",
+      "convert": "转换视频",
       "converting": "转换中...",
       "original": "原始",
       "outputSettings": "输出设置",
+      "outputFormat": "输出格式",
       "format": "格式",
       "quality": "质量",
       "resolution": "分辨率",
       "convertedSize": "转换后大小",
-      "converted": "已转换"
+      "converted": "已转换",
+      "result": "转换结果",
+      "codecUsed": "使用编解码器",
+      "invalidFile": "请选择有效的视频文件"
     },
     "audioConverter": {
       "title": "音频转换器",
-      "description": "在多种格式之间转换音频（MP3、AAC、FLAC、WAV）",
-      "selectAudio": "选择音频",
+      "description": "MP3 与 WAV 格式互转",
+      "inputAudio": "输入音频",
+      "selectAudio": "点击或拖放 MP3/WAV 文件到此处",
       "orDragDrop": "或拖放文件",
       "dropToReplace": "拖放以替换音频",
-      "supportedFormats": "支持 MP3、M4A、OGG、WAV、FLAC",
-      "convert": "转换",
+      "supportedFormats": "MP3 ↔ WAV 转换",
+      "outputFormat": "输出格式",
+      "bitrate": "比特率",
+      "convert": "转换音频",
       "converting": "转换中...",
       "original": "原始",
       "converted": "已转换",
+      "result": "转换结果",
       "playOriginal": "播放原始",
-      "playConverted": "播放转换后"
+      "playConverted": "播放转换后",
+      "invalidFile": "请选择 MP3 或 WAV 文件"
     },
     "imageConverter": {
       "title": "图片转换器",
-      "description": "在多种格式之间转换图片（JPG、PNG、WebP、GIF）",
+      "description": "在 JPG、PNG、WebP 格式之间转换图片",
+      "inputImage": "输入图片",
+      "selectImage": "点击或拖放图片到此处",
       "selectImages": "选择图片",
       "orDragDrop": "或拖放文件",
       "dropToAdd": "拖放以添加图片",
-      "supportedFormats": "支持 JPG、PNG、WebP、GIF、BMP",
+      "supportedFormats": "JPG、PNG、WebP、GIF、BMP → JPG/PNG/WebP",
+      "outputFormat": "输出格式",
       "addMore": "添加更多",
-      "convert": "转换",
+      "convert": "转换图片",
       "converting": "转换中...",
       "quality": "质量",
-      "downloadAll": "全部下载"
+      "result": "转换结果",
+      "downloadAll": "全部下载",
+      "invalidFile": "请选择有效的图片文件"
     },
     "mediaTrimmer": {
       "title": "媒体裁剪器",
-      "description": "将视频或音频裁剪到特定时长",
-      "selectMedia": "选择媒体",
+      "description": "裁剪视频或音频到指定时长",
+      "inputMedia": "输入媒体",
+      "selectMedia": "点击或拖放视频/音频到此处",
       "orDragDrop": "或拖放文件",
       "dropToReplace": "拖放以替换媒体",
-      "supportedFormats": "支持视频和音频文件",
-      "trim": "裁剪",
+      "supportedFormats": "MP4、WebM、MOV、AVI、MP3、WAV、OGG",
+      "trimSettings": "裁剪设置",
+      "selectRange": "选择开始和结束时间",
+      "startTime": "开始时间",
+      "endTime": "结束时间",
+      "timeFormat": "格式：m:ss.d 或秒数",
+      "outputDuration": "输出时长",
+      "trim": "裁剪媒体",
       "trimming": "裁剪中...",
       "originalDuration": "原始时长",
       "selectedDuration": "已选时长",
       "trimmedSize": "裁剪后大小",
+      "result": "裁剪结果",
       "playingOriginal": "播放原始",
-      "playingTrimmed": "播放裁剪后"
+      "playingTrimmed": "播放裁剪后",
+      "invalidFile": "请选择有效的视频或音频文件"
     },
     "mediaMerger": {
       "title": "媒体合并器",
       "description": "将多个视频或音频文件合并为一个",
-      "selectFiles": "选择文件",
+      "inputMedia": "输入文件",
+      "selectFiles": "点击或拖放文件到此处",
       "orDragDrop": "或拖放文件",
       "dropToAdd": "拖放以添加文件",
-      "supportedFormats": "支持视频和音频文件",
-      "addMore": "添加更多",
-      "merge": "合并",
+      "supportedFormats": "添加多个视频或音频文件进行合并",
+      "addMore": "添加更多文件",
+      "files": "个文件",
+      "merge": "合并文件",
       "merging": "合并中...",
       "merged": "已合并",
+      "result": "合并结果",
       "totalDuration": "总时长",
+      "sameTypeRequired": "所有文件必须是相同类型（视频或音频）",
       "sameFormatNote": "文件必须具有相同格式才能无损合并"
     },
     "ffmpeg": {
@@ -815,7 +917,31 @@
       "converting": "转换中",
       "merging": "合并中",
       "trimming": "裁剪中"
-    }
+    },
+    "downloadSuccess": "已保存到下载文件夹",
+    "downloadStarted": "下载已开始",
+    "downloadFailed": "下载失败"
+  },
+  "game": {
+    "waitingLong": "等待时间较长",
+    "clickToPlay": "点击玩个小游戏打发时间"
+  },
+  "videoConverter": {
+    "title": "视频转换器",
+    "description": "在浏览器中转换视频格式",
+    "invalidFile": "请选择有效的视频文件",
+    "input": "输入视频",
+    "inputDesc": "选择或拖拽视频文件进行转换",
+    "dropzone": "点击或拖拽视频到此处",
+    "supportedFormats": "支持 MP4, WebM, MOV, AVI",
+    "settings": "设置",
+    "outputFormat": "输出格式",
+    "convert": "转换视频",
+    "converting": "转换中...",
+    "noCodecSupport": "未找到支持的视频编码器",
+    "result": "结果",
+    "codecUsed": "使用的编码器",
+    "download": "下载"
   },
   "workflow": {
     "workflows": "工作流",

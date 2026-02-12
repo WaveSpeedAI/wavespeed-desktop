@@ -16,6 +16,59 @@ import { toast } from '@/hooks/useToast'
 import { cn } from '@/lib/utils'
 import type { BatchResult, BatchQueueItem } from '@/types/batch'
 
+// Check if running in Capacitor native environment
+const isCapacitorNative = () => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return !!(window as any).Capacitor?.isNativePlatform?.()
+  } catch {
+    return false
+  }
+}
+
+// Mobile download helper using Capacitor
+const mobileDownload = async (url: string, filename: string): Promise<{ success: boolean; error?: string }> => {
+  try {
+    // Dynamic imports for Capacitor modules (vite-ignore to prevent desktop build errors)
+    const { CapacitorHttp } = await import(/* @vite-ignore */ '@capacitor/core')
+    const { Filesystem, Directory } = await import(/* @vite-ignore */ '@capacitor/filesystem')
+
+    // Fetch file using CapacitorHttp (bypasses CORS)
+    const response = await CapacitorHttp.get({
+      url,
+      responseType: 'blob'
+    })
+
+    if (response.status !== 200) {
+      return { success: false, error: `HTTP ${response.status}` }
+    }
+
+    // Create Downloads directory
+    const directory = 'Downloads'
+    try {
+      await Filesystem.mkdir({
+        path: directory,
+        directory: Directory.Documents,
+        recursive: true
+      })
+    } catch {
+      // Directory might already exist
+    }
+
+    // Save file
+    const filePath = `${directory}/${filename}`
+    await Filesystem.writeFile({
+      path: filePath,
+      data: response.data as string,
+      directory: Directory.Documents
+    })
+
+    return { success: true }
+  } catch (error) {
+    return { success: false, error: (error as Error).message }
+  }
+}
+
 interface BatchOutputGridProps {
   results: BatchResult[]
   modelId?: string
@@ -30,16 +83,38 @@ function isUrl(str: string): boolean {
   return str.startsWith('http://') || str.startsWith('https://')
 }
 
+function getUrlExtension(url: string): string | null {
+  try {
+    // Parse URL and get pathname (ignoring query params)
+    const urlObj = new URL(url)
+    const pathname = urlObj.pathname.toLowerCase()
+    // Get the last segment and extract extension
+    const lastSegment = pathname.split('/').pop() || ''
+    const match = lastSegment.match(/\.([a-z0-9]+)$/)
+    return match ? match[1] : null
+  } catch {
+    // Fallback for invalid URLs
+    const match = url.match(/\.([a-z0-9]+)(?:\?.*)?$/i)
+    return match ? match[1].toLowerCase() : null
+  }
+}
+
 function isImageUrl(url: string): boolean {
-  return isUrl(url) && /\.(jpg|jpeg|png|gif|webp|bmp)(\?.*)?$/i.test(url)
+  if (!isUrl(url)) return false
+  const ext = getUrlExtension(url)
+  return ext !== null && ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'avif'].includes(ext)
 }
 
 function isVideoUrl(url: string): boolean {
-  return isUrl(url) && /\.(mp4|webm|mov|avi|mkv)(\?.*)?$/i.test(url)
+  if (!isUrl(url)) return false
+  const ext = getUrlExtension(url)
+  return ext !== null && ['mp4', 'webm', 'mov', 'avi', 'mkv', 'ogv', 'm4v'].includes(ext)
 }
 
 function isAudioUrl(url: string): boolean {
-  return isUrl(url) && /\.(mp3|wav|ogg|flac|aac|m4a|wma)(\?.*)?$/i.test(url)
+  if (!isUrl(url)) return false
+  const ext = getUrlExtension(url)
+  return ext !== null && ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a', 'wma', 'opus'].includes(ext)
 }
 
 export function BatchOutputGrid({
@@ -142,29 +217,49 @@ export function BatchOutputGrid({
       resultIndex
     })
 
+    // Use Electron API if available (desktop)
     if (isElectron && window.electronAPI?.downloadFile) {
       const result = await window.electronAPI.downloadFile(url, filename)
       if (!result.success && !result.canceled) {
         console.error('Download failed:', result.error)
       }
-    } else {
-      // Web mode: fetch as blob and trigger download
-      try {
-        const response = await fetch(url)
-        const blob = await response.blob()
-        const blobUrl = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = blobUrl
-        a.download = filename
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        URL.revokeObjectURL(blobUrl)
-      } catch (err) {
-        console.error('Download failed:', err)
-        // Fallback: open in new tab
-        window.open(url, '_blank')
+      return
+    }
+
+    // Use Capacitor if available (mobile native)
+    if (isCapacitorNative()) {
+      const result = await mobileDownload(url, filename)
+      if (result.success) {
+        toast({
+          title: t('common.success'),
+          description: t('freeTools.downloadSuccess')
+        })
+      } else {
+        console.error('Mobile download failed:', result.error)
+        toast({
+          title: t('common.error'),
+          description: result.error || 'Download failed',
+          variant: 'destructive'
+        })
       }
+      return
+    }
+
+    // Web mode: fetch as blob and trigger download
+    try {
+      const response = await fetch(url)
+      const blob = await response.blob()
+      const blobUrl = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = blobUrl
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(blobUrl)
+    } catch (err) {
+      console.error('Download failed:', err)
+      window.open(url, '_blank')
     }
   }
 
@@ -212,18 +307,6 @@ export function BatchOutputGrid({
     }
   }
 
-  // Get first media output for thumbnail
-  const getFirstMedia = (result: BatchResult) => {
-    for (const output of result.outputs) {
-      if (typeof output === 'string') {
-        if (isImageUrl(output)) return { url: output, type: 'image' as const }
-        if (isVideoUrl(output)) return { url: output, type: 'video' as const }
-        if (isAudioUrl(output)) return { url: output, type: 'audio' as const }
-      }
-    }
-    return null
-  }
-
   // Get successful results for navigation
   const successfulResults = results.filter(r => !r.error).sort((a, b) => a.index - b.index)
 
@@ -243,6 +326,34 @@ export function BatchOutputGrid({
 
     setSelectedResult(successfulResults[newIdx])
   }, [selectedResult, successfulResults])
+
+  // Keyboard navigation for detail dialog
+  useEffect(() => {
+    if (!selectedResult) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        navigateResult('prev')
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        navigateResult('next')
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [selectedResult, navigateResult])
+
+  // Get first media output for thumbnail
+  const getFirstMedia = (result: BatchResult) => {
+    for (const output of result.outputs) {
+      if (typeof output === 'string') {
+        if (isImageUrl(output)) return { url: output, type: 'image' as const }
+        if (isVideoUrl(output)) return { url: output, type: 'video' as const }
+        if (isAudioUrl(output)) return { url: output, type: 'audio' as const }
+      }
+    }
+    return null
+  }
 
   return (
     <div className={cn('flex flex-col h-full', className)}>
@@ -350,7 +461,13 @@ export function BatchOutputGrid({
                       src={media.url}
                       className="w-full h-full object-cover"
                       muted
-                      preload="metadata"
+                      playsInline
+                      preload="auto"
+                      onLoadedData={(e) => {
+                        // Seek to first frame to show preview
+                        const video = e.currentTarget
+                        video.currentTime = 0.1
+                      }}
                     />
                   ) : media?.type === 'audio' ? (
                     <div className="text-muted-foreground text-xs">Audio</div>
@@ -418,7 +535,7 @@ export function BatchOutputGrid({
                     size="icon"
                     variant="secondary"
                     onClick={() => navigateResult('prev')}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full opacity-80 hover:opacity-100"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full opacity-80 hover:opacity-100 active:bg-black/60"
                   >
                     <ChevronLeft className="h-5 w-5" />
                   </Button>
@@ -426,7 +543,7 @@ export function BatchOutputGrid({
                     size="icon"
                     variant="secondary"
                     onClick={() => navigateResult('next')}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full opacity-80 hover:opacity-100"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full opacity-80 hover:opacity-100 active:bg-black/60"
                   >
                     <ChevronRight className="h-5 w-5" />
                   </Button>
@@ -455,6 +572,8 @@ export function BatchOutputGrid({
                           <video
                             src={outputStr}
                             controls
+                            playsInline
+                            preload="auto"
                             className="max-w-full rounded-lg"
                           />
                         )}

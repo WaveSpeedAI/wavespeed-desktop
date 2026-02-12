@@ -141,7 +141,10 @@ class WaveSpeedClient {
       maxContentLength: Infinity, // Allow large response content
       headers: {
         'Content-Type': 'application/json',
-        'X-Client-Name': 'wavespeed-desktop',
+        'X-Client-Name': (() => {
+          const os = getOperatingSystem()
+          return os === 'android' || os === 'ios' ? 'wavespeed-mobile' : 'wavespeed-desktop'
+        })(),
         'X-Client-Version': version,
         'X-Client-OS': getOperatingSystem()
       }
@@ -207,6 +210,23 @@ class WaveSpeedClient {
       return response.data.data
     } catch (error) {
       throw createAPIError(error, 'Failed to get result')
+    }
+  }
+
+  // Get prediction details including inputs (if available from API)
+  async getPredictionDetails(predictionId: string): Promise<PredictionResult & { input?: Record<string, unknown> }> {
+    try {
+      const response = await this.client.get<PredictionResponse>(`/api/v3/predictions/${predictionId}/result`)
+      if (response.data.code !== 200) {
+        throw new APIError(response.data.message || 'Failed to get prediction details', {
+          code: response.data.code,
+          details: response.data
+        })
+      }
+      // The API might return 'input' field with the original inputs
+      return response.data.data as PredictionResult & { input?: Record<string, unknown> }
+    } catch (error) {
+      throw createAPIError(error, 'Failed to get prediction details')
     }
   }
 

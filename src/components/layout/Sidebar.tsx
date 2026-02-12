@@ -22,9 +22,17 @@ import {
   FolderHeart,
   Sparkles,
   GitBranch,
+  Star,
   X
 } from 'lucide-react'
 import appIcon from '../../../build/icon.png'
+
+interface NavItem {
+  titleKey: string
+  href: string
+  icon: React.ComponentType<{ className?: string }>
+  matchPrefix?: boolean
+}
 
 interface SidebarProps {
   collapsed: boolean
@@ -51,11 +59,16 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
     }
   }, [collapsed])
 
-  const createItems = [
+  const createItems: NavItem[] = [
     {
       titleKey: 'nav.home',
       href: '/',
       icon: Home
+    },
+    {
+      titleKey: 'nav.featuredModels',
+      href: '/featured-models',
+      icon: Star
     },
     {
       titleKey: 'nav.models',
@@ -70,7 +83,7 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
     },
   ]
 
-  const manageItems = [
+  const manageItems: NavItem[] = [
     {
       titleKey: 'nav.templates',
       href: '/templates',
@@ -88,7 +101,7 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
     }
   ]
 
-  const toolsItems = [
+  const toolsItems: NavItem[] = [
     {
       titleKey: 'nav.workflow',
       href: '/workflow',
@@ -109,7 +122,7 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
   ]
 
   // Check if a nav item is active
-  const isActive = (item: { href: string; matchPrefix?: boolean }) => {
+  const isActive = (item: NavItem) => {
     if (item.matchPrefix) {
       return location.pathname === item.href || location.pathname.startsWith(item.href + '/')
     }

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
-import { Mic, X, RotateCcw, Check, Loader2, Play, Pause } from 'lucide-react'
+import { Mic, Square, X, RotateCcw, Check, Loader2, Play, Pause } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface AudioRecorderProps {
@@ -22,9 +22,10 @@ export function AudioRecorder({ onRecord, onClose, disabled }: AudioRecorderProp
   const audioContextRef = useRef<AudioContext | null>(null)
   const animationRef = useRef<number | null>(null)
 
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isRecording, setIsRecording] = useState(false)
+  const [isMicReady, setIsMicReady] = useState(false)
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null)
   const [recordedUrl, setRecordedUrl] = useState<string | null>(null)
   const [duration, setDuration] = useState(0)
@@ -32,139 +33,159 @@ export function AudioRecorder({ onRecord, onClose, disabled }: AudioRecorderProp
   const [currentTime, setCurrentTime] = useState(0)
   const [audioDuration, setAudioDuration] = useState(0)
 
-  // Start microphone and waveform on mount
-  useEffect(() => {
-    let mounted = true
-    let localStream: MediaStream | null = null
-    let localAudioContext: AudioContext | null = null
-    let localAnimationId: number | null = null
+  // Refs for cleanup
+  const mountedRef = useRef(true)
 
-    const drawWaveform = (analyser: AnalyserNode) => {
-      if (!canvasRef.current || !mounted) return
+  // Draw waveform visualization
+  const drawWaveform = (analyser: AnalyserNode) => {
+    if (!canvasRef.current || !mountedRef.current) return
 
-      const canvas = canvasRef.current
-      const ctx = canvas.getContext('2d')
-      if (!ctx) return
+    const canvas = canvasRef.current
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
 
-      // Get computed colors from CSS variables
-      const computedStyle = getComputedStyle(document.documentElement)
-      const mutedColor = computedStyle.getPropertyValue('--muted').trim()
-      const primaryColor = computedStyle.getPropertyValue('--primary').trim()
+    // Get computed colors from CSS variables
+    const computedStyle = getComputedStyle(document.documentElement)
+    const mutedColor = computedStyle.getPropertyValue('--muted').trim()
+    const primaryColor = computedStyle.getPropertyValue('--primary').trim()
 
-      const bufferLength = analyser.frequencyBinCount
-      const dataArray = new Uint8Array(bufferLength)
+    const bufferLength = analyser.frequencyBinCount
+    const dataArray = new Uint8Array(bufferLength)
 
-      const draw = () => {
-        if (!mounted) return
-        localAnimationId = requestAnimationFrame(draw)
-        animationRef.current = localAnimationId
+    const draw = () => {
+      if (!mountedRef.current) return
+      const animId = requestAnimationFrame(draw)
+      animationRef.current = animId
 
-        analyser.getByteTimeDomainData(dataArray)
+      analyser.getByteTimeDomainData(dataArray)
 
-        // Use computed colors or fallback
-        ctx.fillStyle = mutedColor ? `hsl(${mutedColor})` : '#1f1f23'
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
+      // Use computed colors or fallback
+      ctx.fillStyle = mutedColor ? `hsl(${mutedColor})` : '#1f1f23'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-        ctx.lineWidth = 2
-        ctx.strokeStyle = primaryColor ? `hsl(${primaryColor})` : '#3b82f6'
-        ctx.beginPath()
+      ctx.lineWidth = 2
+      ctx.strokeStyle = primaryColor ? `hsl(${primaryColor})` : '#3b82f6'
+      ctx.beginPath()
 
-        const sliceWidth = canvas.width / bufferLength
-        let x = 0
+      const sliceWidth = canvas.width / bufferLength
+      let x = 0
 
-        for (let i = 0; i < bufferLength; i++) {
-          const v = dataArray[i] / 128.0
-          const y = (v * canvas.height) / 2
+      for (let i = 0; i < bufferLength; i++) {
+        const v = dataArray[i] / 128.0
+        const y = (v * canvas.height) / 2
 
-          if (i === 0) {
-            ctx.moveTo(x, y)
-          } else {
-            ctx.lineTo(x, y)
-          }
-
-          x += sliceWidth
+        if (i === 0) {
+          ctx.moveTo(x, y)
+        } else {
+          ctx.lineTo(x, y)
         }
 
-        ctx.lineTo(canvas.width, canvas.height / 2)
-        ctx.stroke()
+        x += sliceWidth
       }
 
-      draw()
+      ctx.lineTo(canvas.width, canvas.height / 2)
+      ctx.stroke()
     }
 
-    const startMicrophone = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-          video: false
-        })
+    draw()
+  }
 
-        if (!mounted) {
-          stream.getTracks().forEach(track => track.stop())
-          return
+  // Request microphone access (called when user clicks record)
+  const requestMicrophoneAccess = async () => {
+    if (isMicReady || isLoading) return true // Already ready or loading
+
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      // Check if mediaDevices API is available
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setError(t('playground.capture.micError'))
+        setIsLoading(false)
+        return false
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: false
+      })
+
+      if (!mountedRef.current) {
+        stream.getTracks().forEach(track => track.stop())
+        return false
+      }
+
+      streamRef.current = stream
+
+      // Set up audio analyzer for waveform
+      const audioContext = new AudioContext()
+      audioContextRef.current = audioContext
+
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume()
+      }
+
+      const source = audioContext.createMediaStreamSource(stream)
+      const analyser = audioContext.createAnalyser()
+      analyser.fftSize = 2048
+      source.connect(analyser)
+      analyserRef.current = analyser
+
+      setIsLoading(false)
+      setIsMicReady(true)
+
+      // Start waveform after a short delay to ensure canvas is rendered
+      setTimeout(() => {
+        if (mountedRef.current && analyserRef.current) {
+          drawWaveform(analyserRef.current)
         }
+      }, 100)
 
-        localStream = stream
-        streamRef.current = stream
+      return true
+    } catch (err) {
+      if (!mountedRef.current) return false
 
-        // Set up audio analyzer for waveform
-        const audioContext = new AudioContext()
-        localAudioContext = audioContext
-        audioContextRef.current = audioContext
+      console.error('Microphone error:', err)
 
-        if (audioContext.state === 'suspended') {
-          await audioContext.resume()
-        }
-
-        const source = audioContext.createMediaStreamSource(stream)
-        const analyser = audioContext.createAnalyser()
-        analyser.fftSize = 2048
-        source.connect(analyser)
-        analyserRef.current = analyser
-
-        if (mounted) {
-          setIsLoading(false)
-          // Start waveform after a short delay to ensure canvas is rendered
-          setTimeout(() => {
-            if (mounted && analyserRef.current) {
-              drawWaveform(analyserRef.current)
-            }
-          }, 100)
-        }
-      } catch (err) {
-        if (!mounted) return
-
-        console.error('Microphone error:', err)
-        if (err instanceof Error) {
-          if (err.name === 'NotAllowedError') {
-            setError(t('playground.capture.micPermissionDenied'))
-          } else if (err.name === 'NotFoundError') {
-            setError(t('playground.capture.noMicFound'))
-          } else {
-            setError(t('playground.capture.micError'))
-          }
+      if (err instanceof Error) {
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          setError(t('playground.capture.micPermissionDenied'))
+        } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+          setError(t('playground.capture.noMicFound'))
+        } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+          setError(t('playground.capture.micInUse'))
+        } else if (err.name === 'OverconstrainedError') {
+          setError(t('playground.capture.noMicFound'))
+        } else if (err.name === 'SecurityError') {
+          setError(t('playground.capture.micPermissionDenied'))
         } else {
           setError(t('playground.capture.micError'))
         }
-        setIsLoading(false)
+      } else {
+        setError(t('playground.capture.micError'))
       }
+      setIsLoading(false)
+      return false
     }
+  }
 
-    startMicrophone()
+  // Cleanup on unmount
+  useEffect(() => {
+    mountedRef.current = true
 
     return () => {
-      mounted = false
-      if (localStream) {
-        localStream.getTracks().forEach(track => track.stop())
+      mountedRef.current = false
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop())
       }
-      if (localAnimationId) {
-        cancelAnimationFrame(localAnimationId)
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
       }
-      if (localAudioContext) {
-        localAudioContext.close()
+      if (audioContextRef.current) {
+        audioContextRef.current.close()
       }
     }
-  }, [t])
+  }, [])
 
   // Cleanup recorded URL on unmount
   useEffect(() => {
@@ -175,7 +196,13 @@ export function AudioRecorder({ onRecord, onClose, disabled }: AudioRecorderProp
     }
   }, [recordedUrl])
 
-  const startRecording = () => {
+  const startRecording = async () => {
+    // Request microphone access if not ready
+    if (!isMicReady) {
+      const success = await requestMicrophoneAccess()
+      if (!success) return
+    }
+
     if (!streamRef.current) return
 
     chunksRef.current = []
@@ -403,12 +430,21 @@ export function AudioRecorder({ onRecord, onClose, disabled }: AudioRecorderProp
           <div className="space-y-3">
             {/* Waveform visualization or audio player */}
             {!recordedUrl ? (
-              <canvas
-                ref={canvasRef}
-                width={400}
-                height={80}
-                className="w-full h-20 rounded bg-muted"
-              />
+              isMicReady ? (
+                <canvas
+                  ref={canvasRef}
+                  width={400}
+                  height={80}
+                  className="w-full h-20 rounded bg-muted"
+                />
+              ) : (
+                <div className="flex items-center justify-center h-20 rounded bg-muted">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Mic className="h-5 w-5" />
+                    <span className="text-sm">{t('playground.capture.tapToRecord')}</span>
+                  </div>
+                </div>
+              )
             ) : (
               <div className="bg-background rounded-lg p-4 space-y-3">
                 <audio
@@ -529,7 +565,11 @@ export function AudioRecorder({ onRecord, onClose, disabled }: AudioRecorderProp
             )}
             title={isRecording ? t('playground.capture.stopRecording') : t('playground.capture.startRecording')}
           >
-            {!isRecording && <Mic className="h-5 w-5" />}
+            {isRecording ? (
+              <Square className="h-5 w-5" />
+            ) : (
+              <Mic className="h-5 w-5" />
+            )}
           </Button>
         ) : (
           <>

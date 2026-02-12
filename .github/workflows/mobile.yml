@@ -1,0 +1,311 @@
+name: Mobile Build
+
+on:
+  push:
+    tags:
+      - 'v*'  # Unified release: same tag as desktop
+    branches:
+      - 'main'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:  # Allow manual trigger anytime
+
+jobs:
+  # Check for potential mobile sync issues — blocks mobile build if issues found
+  check-mobile-sync:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for mobile sync issues
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          CURRENT_TAG=${GITHUB_REF#refs/tags/}
+          PREV_TAG=$(git tag --sort=-version:refname | grep '^v[0-9]' | grep -v "^${CURRENT_TAG}$" | head -1)
+
+          if [ -z "$PREV_TAG" ]; then
+            echo "No previous tag found, skipping sync check"
+            exit 0
+          fi
+
+          echo "Comparing $PREV_TAG → $CURRENT_TAG"
+          CHANGED_FILES=$(git diff --name-only "$PREV_TAG" "$CURRENT_TAG")
+          WARNINGS=0
+          ISSUES=""
+
+          echo ""
+          echo "═══════════════════════════════════════════════"
+          echo "  Mobile Sync Check"
+          echo "═══════════════════════════════════════════════"
+
+          # ─── Check 1: Override files (mobile has its own version) ───
+          echo ""
+          echo "▶ Check 1: Override file sync"
+          OVERRIDE_MAP=(
+            "src/pages/SettingsPage.tsx|mobile/src/pages/SettingsPage.tsx"
+          )
+          for entry in "${OVERRIDE_MAP[@]}"; do
+            DESKTOP_FILE="${entry%%|*}"
+            MOBILE_FILE="${entry##*|}"
+            if echo "$CHANGED_FILES" | grep -q "^${DESKTOP_FILE}$"; then
+              WARNINGS=$((WARNINGS + 1))
+              MSG="**Override Sync**: \`${DESKTOP_FILE}\` was modified but mobile uses its own version at \`${MOBILE_FILE}\`. Changes will NOT apply to mobile — please review and manually sync."
+              ISSUES="${ISSUES}\n- ${MSG}"
+              echo "::warning file=${DESKTOP_FILE}::⚠️ ${MSG}"
+            fi
+          done
+
+          # ─── Check 2: New routes in desktop App.tsx ───
+          echo ""
+          echo "▶ Check 2: Route sync"
+          if echo "$CHANGED_FILES" | grep -q "^src/App.tsx$"; then
+            PREV_ROUTES=$(git show "$PREV_TAG":src/App.tsx 2>/dev/null | grep -oP 'path="[^"]*"' | sort)
+            CURR_ROUTES=$(git show "$CURRENT_TAG":src/App.tsx 2>/dev/null | grep -oP 'path="[^"]*"' | sort)
+            NEW_ROUTES=$(comm -13 <(echo "$PREV_ROUTES") <(echo "$CURR_ROUTES"))
+
+            if [ -n "$NEW_ROUTES" ]; then
+              WARNINGS=$((WARNINGS + 1))
+              MSG="**Route Sync**: New routes added to desktop \`src/App.tsx\` but missing from \`mobile/src/App.tsx\`: \`${NEW_ROUTES}\`"
+              ISSUES="${ISSUES}\n- ${MSG}"
+              echo "::warning file=src/App.tsx::⚠️ ${MSG}"
+            fi
+          fi
+
+          # ─── Check 3: New dependencies in root package.json ───
+          echo ""
+          echo "▶ Check 3: Dependency sync"
+          if echo "$CHANGED_FILES" | grep -q "^package.json$"; then
+            PREV_DEPS=$(git show "$PREV_TAG":package.json 2>/dev/null | node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.log(Object.keys(d.dependencies||{}).sort().join('\n'))")
+            CURR_DEPS=$(git show "$CURRENT_TAG":package.json 2>/dev/null | node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.log(Object.keys(d.dependencies||{}).sort().join('\n'))")
+            NEW_DEPS=$(comm -13 <(echo "$PREV_DEPS") <(echo "$CURR_DEPS"))
+
+            if [ -n "$NEW_DEPS" ]; then
+              MOBILE_DEPS=$(cat mobile/package.json | node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.log(Object.keys(d.dependencies||{}).sort().join('\n'))")
+              MISSING=""
+              while IFS= read -r dep; do
+                if [ -n "$dep" ] && ! echo "$MOBILE_DEPS" | grep -q "^${dep}$"; then
+                  MISSING="$MISSING \`$dep\`"
+                fi
+              done <<< "$NEW_DEPS"
+
+              if [ -n "$MISSING" ]; then
+                WARNINGS=$((WARNINGS + 1))
+                MSG="**Dependency Sync**: New desktop dependencies missing from \`mobile/package.json\`:${MISSING}"
+                ISSUES="${ISSUES}\n- ${MSG}"
+                echo "::warning file=package.json::⚠️ ${MSG}"
+              fi
+            fi
+          fi
+
+          # ─── Check 4: New i18n keys used but not defined ───
+          echo ""
+          echo "▶ Check 4: i18n key consistency"
+          if echo "$CHANGED_FILES" | grep -q "^src/i18n/locales/en.json$"; then
+            if ! node -e "JSON.parse(require('fs').readFileSync('src/i18n/locales/en.json','utf8'))" 2>/dev/null; then
+              WARNINGS=$((WARNINGS + 1))
+              MSG="**i18n**: \`en.json\` has invalid JSON syntax"
+              ISSUES="${ISSUES}\n- ${MSG}"
+              echo "::warning file=src/i18n/locales/en.json::⚠️ ${MSG}"
+            fi
+          fi
+
+          # ─── Check 5: New pages created but not routed in mobile ───
+          echo ""
+          echo "▶ Check 5: New page detection"
+          NEW_PAGES=$(echo "$CHANGED_FILES" | grep "^src/pages/.*\.tsx$" | while read f; do
+            git show "$PREV_TAG":"$f" >/dev/null 2>&1 || echo "$f"
+          done)
+          if [ -n "$NEW_PAGES" ]; then
+            for page_file in $NEW_PAGES; do
+              page_name=$(basename "$page_file" .tsx)
+              if ! grep -q "$page_name" mobile/src/App.tsx 2>/dev/null; then
+                WARNINGS=$((WARNINGS + 1))
+                MSG="**New Page**: \`${page_name}\` was added but is not referenced in \`mobile/src/App.tsx\`. Add a route if this page should be accessible on mobile."
+                ISSUES="${ISSUES}\n- ${MSG}"
+                echo "::warning file=${page_file}::⚠️ ${MSG}"
+              fi
+            done
+          fi
+
+          # ─── Summary ───
+          echo ""
+          echo "═══════════════════════════════════════════════"
+          if [ "$WARNINGS" -gt 0 ]; then
+            echo "  ⚠️  $WARNINGS sync warning(s) found"
+            echo "  Mobile build is BLOCKED until these are resolved."
+            echo "  Desktop build is NOT affected."
+            echo "═══════════════════════════════════════════════"
+
+            # Create GitHub Issue to notify team
+            ISSUE_BODY=$(printf "## ⚠️ Mobile Sync Check Failed for ${CURRENT_TAG}\n\nThe following issues were detected when comparing \`${PREV_TAG}\` → \`${CURRENT_TAG}\`:\n\n${ISSUES}\n\n---\n\n**Mobile build has been blocked.** Desktop release is not affected.\n\nPlease fix the issues above and re-tag to trigger a new mobile release.\n\nTriggered by: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}")
+
+            # Ensure label exists (ignore error if already exists)
+            gh label create "mobile-sync" --color "d93f0b" --description "Mobile sync check failures" 2>/dev/null || true
+
+            gh issue create \
+              --title "🚨 Mobile sync issues found in ${CURRENT_TAG}" \
+              --body "$ISSUE_BODY" \
+              --label "mobile-sync"
+
+            exit 1
+          else
+            echo "  ✅ No sync issues detected"
+          fi
+          echo "═══════════════════════════════════════════════"
+
+  build-android:
+    needs: check-mobile-sync
+    # Run even if check-mobile-sync was skipped (non-tag builds), but not if it failed
+    if: always() && (needs.check-mobile-sync.result == 'success' || needs.check-mobile-sync.result == 'skipped')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Sync version from root package.json
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          # Read version from root package.json
+          VERSION=$(node -p "require('./package.json').version")
+          echo "Syncing version: $VERSION"
+
+          # Update mobile/package.json
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('mobile/package.json', 'utf8'));
+            pkg.version = '$VERSION';
+            fs.writeFileSync('mobile/package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+          echo "✅ mobile/package.json → $VERSION"
+
+          # Update build.gradle versionName and versionCode
+          # versionCode formula: major * 10000 + minor * 100 + patch
+          MAJOR=$(echo $VERSION | cut -d. -f1)
+          MINOR=$(echo $VERSION | cut -d. -f2)
+          PATCH=$(echo $VERSION | cut -d. -f3)
+          VERSION_CODE=$((MAJOR * 10000 + MINOR * 100 + PATCH))
+
+          sed -i "s/versionCode [0-9]*/versionCode $VERSION_CODE/" mobile/android/app/build.gradle
+          sed -i "s/versionName \"[^\"]*\"/versionName \"$VERSION\"/" mobile/android/app/build.gradle
+          echo "✅ build.gradle → versionName $VERSION, versionCode $VERSION_CODE"
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install mobile dependencies
+        working-directory: mobile
+        run: npm ci
+
+      - name: Build web assets
+        working-directory: mobile
+        run: npm run build
+
+      - name: Sync Capacitor
+        working-directory: mobile
+        run: npx cap sync android
+
+      - name: Make gradlew executable
+        working-directory: mobile/android
+        run: chmod +x ./gradlew
+
+      - name: Build Debug APK
+        working-directory: mobile/android
+        run: ./gradlew assembleDebug
+
+      - name: Build Release APK
+        if: startsWith(github.ref, 'refs/tags/v')
+        working-directory: mobile/android
+        run: ./gradlew assembleRelease
+
+      - name: Rename APKs
+        run: |
+          # Extract version from tag, fallback to "dev"
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION="dev"
+          fi
+
+          # Rename debug APK
+          if [ -f mobile/android/app/build/outputs/apk/debug/app-debug.apk ]; then
+            mv mobile/android/app/build/outputs/apk/debug/app-debug.apk \
+               mobile/android/app/build/outputs/apk/debug/WaveSpeed-Mobile-${VERSION}-debug.apk
+          fi
+          # Rename release APK + create a fixed-name copy for README download link
+          if [ -f mobile/android/app/build/outputs/apk/release/app-release.apk ]; then
+            mv mobile/android/app/build/outputs/apk/release/app-release.apk \
+               mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile-${VERSION}.apk
+            cp mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile-${VERSION}.apk \
+               mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile.apk
+          fi
+          # Also handle unsigned release APK
+          if [ -f mobile/android/app/build/outputs/apk/release/app-release-unsigned.apk ]; then
+            mv mobile/android/app/build/outputs/apk/release/app-release-unsigned.apk \
+               mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile-${VERSION}-unsigned.apk
+          fi
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: wavespeed-mobile-debug
+          path: mobile/android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+      - name: Upload Release APK
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/upload-artifact@v4
+        with:
+          name: wavespeed-mobile-release
+          path: mobile/android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: ignore
+
+  release:
+    needs: [check-mobile-sync, build-android]
+    if: always() && startsWith(github.ref, 'refs/tags/v') && needs.build-android.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List artifacts
+        run: find artifacts -type f -name "*.apk"
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/wavespeed-mobile-release/*.apk
+          draft: false
+          prerelease: ${{ contains(github.ref, '-beta') || contains(github.ref, '-alpha') || contains(github.ref, '-rc') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

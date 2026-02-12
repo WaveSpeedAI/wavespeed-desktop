@@ -5,8 +5,8 @@ import { apiClient } from '@/api/client'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { Upload, X, Loader2, FileVideo, FileAudio, Image, FileArchive, File as FileIcon, Camera, Video, Mic, Brush } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
+import { Upload, X, Loader2, FileVideo, FileAudio, Image, FileArchive, File as FileIcon, Camera, Video, Mic, Brush, Trash2 } from 'lucide-react'
 import { CameraCapture } from './CameraCapture'
 import { VideoRecorder } from './VideoRecorder'
 import { AudioRecorder } from './AudioRecorder'
@@ -46,6 +46,7 @@ export function FileUpload({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [previewType, setPreviewType] = useState<'image' | 'video' | 'audio' | null>(null)
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null)
+  const [deleteIndex, setDeleteIndex] = useState<number | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
 
   // Convert value to array for consistent handling
@@ -256,6 +257,11 @@ export function FileUpload({
     } else {
       onChange('')
     }
+    setDeleteIndex(null)
+  }
+
+  const confirmDelete = (index: number) => {
+    setDeleteIndex(index)
   }
 
   const getFileIcon = () => {
@@ -363,7 +369,7 @@ export function FileUpload({
                   className="absolute top-0.5 right-0.5 h-5 w-5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                   onClick={(e) => {
                     e.stopPropagation()
-                    removeFile(index)
+                    confirmDelete(index)
                   }}
                   disabled={disabled}
                 >
@@ -577,6 +583,35 @@ export function FileUpload({
               />
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteIndex !== null} onOpenChange={(open) => !open && setDeleteIndex(null)}>
+        <DialogContent className="max-w-[90vw] sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t('playground.capture.removeFile', 'Remove File')}</DialogTitle>
+            <DialogDescription>
+              {t('playground.capture.removeFileConfirm', 'Are you sure you want to remove this file?')}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-row gap-2">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => setDeleteIndex(null)}
+            >
+              {t('common.cancel', 'Cancel')}
+            </Button>
+            <Button
+              variant="destructive"
+              className="flex-1"
+              onClick={() => deleteIndex !== null && removeFile(deleteIndex)}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              {t('common.delete', 'Delete')}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

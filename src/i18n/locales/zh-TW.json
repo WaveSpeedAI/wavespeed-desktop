@@ -28,6 +28,7 @@
     "success": "成功",
     "warning": "警告",
     "selectAll": "全選",
+    "deselectAll": "取消全選",
     "done": "完成",
     "retry": "重試",
     "downloadFailed": "下載失敗。請檢查您的網路連線。",
@@ -35,6 +36,7 @@
   },
   "nav": {
     "home": "首頁",
+    "featuredModels": "模型精選",
     "models": "模型",
     "playground": "演練場",
     "history": "歷史紀錄",
@@ -50,6 +52,11 @@
     "explore": "探索",
     "getStarted": "開始使用",
     "tryFreeTools": "試用免費工具",
+    "featuredModels": {
+      "title": "模型精選",
+      "description": "為你精選的熱門 AI 模型",
+      "badge": "熱門"
+    },
     "features": {
       "models": {
         "title": "模型瀏覽",
@@ -115,6 +122,13 @@
     "noOutputs": "尚無輸出",
     "configureAndRun": "設定模型並點擊執行以產生",
     "generating": "產生中...",
+    "imageCopied": "圖片已複製到剪貼簿",
+    "urlCopied": "連結已複製到剪貼簿",
+    "copyFailed": "複製失敗",
+    "copyImage": "複製圖片",
+    "copyUrl": "複製連結",
+    "copy": "複製",
+    "download": "下載",
     "saveAsTemplate": "儲存為範本",
     "saveTemplate": "儲存範本",
     "saveTemplateDesc": "為 {{model}} 儲存目前設定",
@@ -170,7 +184,9 @@
         "done": "完成",
         "cancel": "取消",
         "hint": "白色區域顯示，黑色區域隱藏"
-      }
+      },
+      "removeFile": "移除檔案",
+      "removeFileConfirm": "確定要移除這個檔案嗎？"
     },
     "autoSaved": "已自動儲存至資產",
     "autoSavedDesc": "已儲存 {{count}} 個輸出至我的資產",
@@ -225,7 +241,8 @@
       "noPreview": "無可用預覽",
       "seedsGenerated": "種子已自動產生",
       "settings": "批次設定"
-    }
+    },
+    "input": "輸入"
   },
   "history": {
     "title": "歷史紀錄",
@@ -241,23 +258,41 @@
     "loadPreviews": "載入預覽",
     "disablePreviews": "停用預覽",
     "generationDetails": "產生詳情",
-    "select": "選取",
+    "select": "選擇",
     "selectionDone": "完成",
-    "deleteSelected": "刪除 ({{count}})",
-    "bulkDeleteConfirmTitle": "刪除歷史記錄",
-    "bulkDeleteConfirmDesc": "確定要刪除 {{count}} 筆預測嗎？此操作無法復原。",
-    "deleteConfirmTitle": "刪除歷史記錄",
-    "deleteConfirmDesc": "確定要刪除此預測嗎？此操作無法復原。",
-    "deleted": "歷史記錄已刪除",
-    "deletedBulk": "歷史記錄已刪除",
-    "deletedBulkDesc": "已刪除 {{count}} 筆歷史記錄",
-    "deleteFailed": "刪除歷史記錄失敗",
+    "deleteSelected": "刪除",
+    "bulkDeleteConfirmTitle": "刪除預測記錄",
+    "bulkDeleteConfirmDesc": "確定要刪除 {{count}} 條預測記錄嗎？此操作無法撤銷。",
+    "deleteConfirmTitle": "刪除預測記錄",
+    "deleteConfirmDesc": "確定要刪除此預測記錄嗎？此操作無法撤銷。",
+    "deleted": "預測記錄已刪除",
+    "deletedBulk": "預測記錄已刪除",
+    "deletedBulkDesc": "已刪除 {{count}} 條預測記錄",
+    "deleteFailed": "刪除預測記錄失敗",
     "model": "模型",
     "created": "建立時間",
     "executionTime": "執行時間",
     "predictionId": "預測 ID",
     "notAvailable": "歷史紀錄不可用",
-    "notAvailableDesc": "預測歷史 API 目前不可用。"
+    "notAvailableDesc": "預測歷史 API 目前不可用。",
+    "saveTemplate": {
+      "button": "儲存為範本",
+      "dialogTitle": "儲存為範本",
+      "nameLabel": "範本名稱",
+      "namePlaceholder": "輸入範本名稱",
+      "duplicateName": "已存在同名範本",
+      "success": "範本已儲存",
+      "successDesc": "您的範本已成功儲存",
+      "error": "儲存失敗",
+      "noInputsTitle": "無法儲存範本",
+      "noInputsDesc": "輸入參數僅適用於在此應用程式中進行的預測。請先執行新的預測。"
+    },
+    "hasInputs": "可儲存為範本",
+    "downloadComplete": "下載完成",
+    "downloadCompleteDesc": "已下載 {{count}} 個檔案",
+    "downloadFailed": "下載失敗",
+    "downloadFailedDesc": "{{count}} 個檔案下載失敗",
+    "longPressHint": "長按選擇"
   },
   "templates": {
     "title": "範本",
@@ -423,6 +458,7 @@
   "settings": {
     "title": "設定",
     "description": "設定您的 WaveSpeed Desktop 應用程式",
+    "mobileDescription": "設定您的 WaveSpeed Mobile 應用程式",
     "apiKey": {
       "title": "API 金鑰",
       "description": "輸入您的 WaveSpeed API 金鑰以存取模型",
@@ -536,7 +572,9 @@
     "about": {
       "title": "關於",
       "description": "WaveSpeed Desktop - AI 模型演練場",
+      "mobileDescription": "WaveSpeed Mobile - AI 模型演練場",
       "aboutText": "一個用於執行 WaveSpeed API AI 模型的開源桌面應用程式。",
+      "mobileAboutText": "一個用於執行 WaveSpeed API AI 模型的開源行動應用程式。",
       "viewOnGitHub": "在 GitHub 上檢視"
     }
   },
@@ -599,21 +637,24 @@
     },
     "faceEnhancer": {
       "title": "人臉增強",
-      "description": "使用 AI 增強和修復人臉品質",
-      "selectImage": "選擇包含人臉的圖片",
-      "orDragDrop": "或拖放檔案",
-      "enhance": "增強",
-      "download": "下載",
+      "description": "使用 AI 增強和修復照片中的人臉",
+      "selectImage": "點擊或拖曳圖片到這裡",
+      "modelsInfo": "使用 YOLO + GFPGAN AI 模型",
+      "inputImage": "輸入圖片",
+      "selectImageWithFaces": "選擇一張包含人臉的圖片進行增強",
+      "enhance": "增強人臉",
+      "enhancing": "正在增強人臉...",
+      "detecting": "偵測人臉中...",
+      "downloading": "下載模型中...",
+      "loading": "載入模型中...",
       "processing": "處理中...",
-      "original": "原始",
-      "enhanced": "增強後",
-      "sideBySide": "並排對比",
-      "comparison": "滑桿對比",
-      "dragToCompare": "拖曳對比",
-      "detecting": "偵測人臉",
-      "enhancing": "增強人臉",
-      "noFaces": "圖片中未偵測到人臉",
-      "facesFound": "偵測到 {{count}} 張人臉"
+      "download": "下載",
+      "newImage": "新圖片",
+      "result": "增強結果",
+      "facesEnhanced": "已增強 {{count}} 張人臉",
+      "noFacesFound": "未偵測到人臉",
+      "invalidFile": "請選擇有效的圖片檔案",
+      "firstTimeDownload": "首次使用？模型將會下載（約 350MB）"
     },
     "faceSwapper": {
       "title": "人臉替換",
@@ -715,22 +756,6 @@
       "cutMask": "裁剪遮罩",
       "hint": "左鍵點擊包含區域，右鍵點擊排除區域"
     },
-    "progress": {
-      "downloading": "下載模型中",
-      "loading": "載入模型中",
-      "processing": "處理中",
-      "processingFrames": "處理幀中",
-      "encoding": "編碼中",
-      "finalizing": "完成中",
-      "overall": "總進度",
-      "remaining": "剩餘"
-    },
-    "backWarning": {
-      "title": "正在處理中",
-      "description": "任務正在處理中。確定要返回嗎？這將取消當前操作。",
-      "cancel": "取消",
-      "confirm": "返回"
-    },
     "videoConverter": {
       "title": "影片轉換器",
       "description": "在多種格式之間轉換影片（MP4、WebM、MOV、AVI）",
@@ -802,12 +827,49 @@
       "totalDuration": "總時長",
       "sameFormatNote": "檔案必須具有相同格式才能無損合併"
     },
+    "progress": {
+      "downloading": "下載模型中",
+      "loading": "載入模型中",
+      "processing": "處理中",
+      "processingFrames": "處理幀中",
+      "encoding": "編碼中",
+      "finalizing": "完成中",
+      "overall": "總進度",
+      "remaining": "剩餘"
+    },
+    "backWarning": {
+      "title": "正在處理中",
+      "description": "任務正在處理中。確定要返回嗎？這將取消當前操作。",
+      "cancel": "取消",
+      "confirm": "返回"
+    },
     "ffmpeg": {
       "loading": "載入 FFmpeg",
       "converting": "轉換中",
       "merging": "合併中",
       "trimming": "裁剪中"
     }
+  },
+  "game": {
+    "waitingLong": "等很久了？來局小遊戲！",
+    "clickToPlay": "點擊開始"
+  },
+  "videoConverter": {
+    "title": "影片轉換器",
+    "description": "在瀏覽器中轉換影片格式",
+    "invalidFile": "請選擇有效的影片檔案",
+    "input": "輸入影片",
+    "inputDesc": "選擇或拖曳影片檔案進行轉換",
+    "dropzone": "點擊或拖曳影片到此處",
+    "supportedFormats": "支援 MP4, WebM, MOV, AVI",
+    "settings": "設定",
+    "outputFormat": "輸出格式",
+    "convert": "轉換影片",
+    "converting": "轉換中...",
+    "noCodecSupport": "未找到支援的影片編碼器",
+    "result": "結果",
+    "codecUsed": "使用的編碼器",
+    "download": "下載"
   },
   "workflow": {
     "workflows": "工作流程",

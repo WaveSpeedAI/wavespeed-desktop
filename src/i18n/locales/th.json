@@ -35,6 +35,7 @@
   },
   "nav": {
     "home": "หน้าแรก",
+    "featuredModels": "โมเดลแนะนำ",
     "models": "โมเดล",
     "playground": "สนามทดสอบ",
     "history": "ประวัติ",
@@ -50,6 +51,11 @@
     "explore": "สำรวจ",
     "getStarted": "เริ่มต้นใช้งาน",
     "tryFreeTools": "ลองเครื่องมือฟรี",
+    "featuredModels": {
+      "title": "โมเดลแนะนำ",
+      "description": "โมเดล AI ยอดนิยมที่คัดสรรมาเพื่อคุณ",
+      "badge": "ยอดนิยม"
+    },
     "features": {
       "models": {
         "title": "เบราว์เซอร์โมเดล",
@@ -170,7 +176,9 @@
         "done": "เสร็จ",
         "cancel": "ยกเลิก",
         "hint": "พื้นที่สีขาวแสดง พื้นที่สีดำซ่อน"
-      }
+      },
+      "removeFile": "ลบไฟล์",
+      "removeFileConfirm": "คุณแน่ใจหรือไม่ว่าต้องการลบไฟล์นี้?"
     },
     "autoSaved": "บันทึกอัตโนมัติไปยังทรัพย์สิน",
     "autoSavedDesc": "บันทึก {{count}} ผลลัพธ์ไปยังทรัพย์สินของฉัน",
@@ -225,7 +233,8 @@
       "viewResults": "ดูผลลัพธ์",
       "playWhileWaiting": "เล่นขณะรอ",
       "quit": "ออก"
-    }
+    },
+    "input": "อินพุต"
   },
   "history": {
     "title": "ประวัติ",
@@ -808,5 +817,22 @@
       "merging": "Merging",
       "trimming": "Trimming"
     }
+  },
+  "videoConverter": {
+    "title": "ตัวแปลงวิดีโอ",
+    "description": "แปลงวิดีโอระหว่างรูปแบบโดยใช้เบราว์เซอร์ของคุณ",
+    "invalidFile": "กรุณาเลือกไฟล์วิดีโอที่ถูกต้อง",
+    "input": "วิดีโออินพุต",
+    "inputDesc": "เลือกหรือลากไฟล์วิดีโอเพื่อแปลง",
+    "dropzone": "คลิกหรือลากวิดีโอมาที่นี่",
+    "supportedFormats": "รองรับ MP4, WebM, MOV, AVI",
+    "settings": "การตั้งค่า",
+    "outputFormat": "รูปแบบเอาต์พุต",
+    "convert": "แปลงวิดีโอ",
+    "converting": "กำลังแปลง...",
+    "noCodecSupport": "ไม่พบตัวแปลงสัญญาณวิดีโอที่รองรับ",
+    "result": "ผลลัพธ์",
+    "codecUsed": "ตัวแปลงสัญญาณที่ใช้",
+    "download": "ดาวน์โหลด"
   }
 }

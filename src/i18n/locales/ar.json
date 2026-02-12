@@ -35,6 +35,7 @@
   },
   "nav": {
     "home": "الرئيسية",
+    "featuredModels": "النماذج المميزة",
     "models": "النماذج",
     "playground": "ساحة التجربة",
     "history": "السجل",
@@ -50,6 +51,11 @@
     "explore": "استكشف",
     "getStarted": "ابدأ",
     "tryFreeTools": "جرب الأدوات المجانية",
+    "featuredModels": {
+      "title": "نماذج مميزة",
+      "description": "نماذج ذكاء اصطناعي رائجة مختارة لك",
+      "badge": "رائج"
+    },
     "features": {
       "models": {
         "title": "متصفح النماذج",
@@ -170,7 +176,9 @@
         "done": "تم",
         "cancel": "إلغاء",
         "hint": "المناطق البيضاء تكشف، المناطق السوداء تخفي"
-      }
+      },
+      "removeFile": "إزالة الملف",
+      "removeFileConfirm": "هل أنت متأكد أنك تريد إزالة هذا الملف؟"
     },
     "autoSaved": "تم الحفظ التلقائي في الأصول",
     "autoSavedDesc": "تم حفظ {{count}} مخرجات في أصولي",
@@ -225,7 +233,8 @@
       "viewResults": "عرض النتائج",
       "playWhileWaiting": "العب أثناء الانتظار",
       "quit": "خروج"
-    }
+    },
+    "input": "إدخال"
   },
   "history": {
     "title": "السجل",
@@ -808,5 +817,22 @@
       "merging": "Merging",
       "trimming": "Trimming"
     }
+  },
+  "videoConverter": {
+    "title": "محول الفيديو",
+    "description": "تحويل مقاطع الفيديو بين الصيغ باستخدام متصفحك",
+    "invalidFile": "الرجاء تحديد ملف فيديو صالح",
+    "input": "فيديو الإدخال",
+    "inputDesc": "حدد أو اسحب ملف فيديو للتحويل",
+    "dropzone": "انقر أو اسحب الفيديو هنا",
+    "supportedFormats": "يدعم MP4، WebM، MOV، AVI",
+    "settings": "الإعدادات",
+    "outputFormat": "صيغة الإخراج",
+    "convert": "تحويل الفيديو",
+    "converting": "جاري التحويل...",
+    "noCodecSupport": "لم يتم العثور على برنامج ترميز فيديو مدعوم",
+    "result": "النتيجة",
+    "codecUsed": "برنامج الترميز المستخدم",
+    "download": "تحميل"
   }
 }

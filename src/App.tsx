@@ -8,6 +8,7 @@ import { TemplatesPage } from '@/pages/TemplatesPage'
 import { HistoryPage } from '@/pages/HistoryPage'
 import { AssetsPage } from '@/pages/AssetsPage'
 import { SettingsPage } from '@/pages/SettingsPage'
+import { FeaturedModelsPage } from '@/pages/FeaturedModelsPage'
 import { FreeToolsPage } from '@/pages/FreeToolsPage'
 import { ZImagePage } from '@/pages/ZImagePage'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
@@ -61,6 +62,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<WelcomePage />} />
+        <Route path="featured-models" element={<FeaturedModelsPage />} />
         <Route path="models" element={<ModelsPage />} />
         <Route path="playground" element={<PlaygroundPage />} />
         <Route path="playground/*" element={<PlaygroundPage />} />

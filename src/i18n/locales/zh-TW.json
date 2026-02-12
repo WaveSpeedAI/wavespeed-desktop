@@ -32,7 +32,9 @@
     "done": "完成",
     "retry": "重試",
     "downloadFailed": "下載失敗。請檢查您的網路連線。",
-    "openInBrowser": "在瀏覽器中開啟"
+    "openInBrowser": "在瀏覽器中開啟",
+    "settings": "設定",
+    "clearAll": "全部清除"
   },
   "nav": {
     "home": "首頁",
@@ -45,7 +47,9 @@
     "zImage": "Z-Image",
     "freeTools": "免費工具",
     "settings": "設定",
-    "collapse": "收合"
+    "collapse": "收合",
+    "workflow": "工作流",
+    "expand": "展開"
   },
   "welcome": {
     "tagline": "觸手可及的 AI 創意工具",
@@ -87,6 +91,11 @@
         "title": "免費工具",
         "description": "本機執行的強大 AI 工具 - 無需 API 金鑰",
         "badge": "免費"
+      },
+      "workflow": {
+        "title": "工作流",
+        "description": "使用可視化節點編輯器構建 AI 管線",
+        "badge": "新"
       }
     }
   },
@@ -186,7 +195,9 @@
         "hint": "白色區域顯示，黑色區域隱藏"
       },
       "removeFile": "移除檔案",
-      "removeFileConfirm": "確定要移除這個檔案嗎？"
+      "removeFileConfirm": "確定要移除這個檔案嗎？",
+      "micInUse": "麥克風正被其他應用程式使用",
+      "tapToRecord": "點擊開始錄製"
     },
     "autoSaved": "已自動儲存至資產",
     "autoSavedDesc": "已儲存 {{count}} 個輸出至我的資產",
@@ -253,7 +264,8 @@
       "completed": "已完成",
       "failed": "失敗",
       "processing": "處理中",
-      "created": "已建立"
+      "created": "已建立",
+      "archived": "已歸檔"
     },
     "loadPreviews": "載入預覽",
     "disablePreviews": "停用預覽",
@@ -443,7 +455,7 @@
       }
     },
     "errors": {
-      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "desktopRequired": "此功能需要桌面應用程式。請下載 WaveSpeed Desktop 或嘗試線上版本。",
       "generationCancelled": "生成已取消"
     },
     "tips": {
@@ -474,7 +486,7 @@
       "invalidDesc": "無法驗證 API 金鑰。請檢查後重試。",
       "cleared": "API 金鑰已清除",
       "clearedDesc": "您的 API 金鑰已被移除。",
-      "itemDeleted": "Cache item deleted",
+      "itemDeleted": "快取項目已刪除",
       "error": "錯誤",
       "errorDesc": "儲存 API 金鑰失敗。"
     },
@@ -532,7 +544,27 @@
       "clearFailed": "清除快取失敗",
       "zImageAuxiliary": "Z-Image 輔助模型",
       "zImageModels": "Z-Image 模型",
-      "zImageBinary": "Z-Image 二進位"
+      "zImageBinary": "Z-Image 二進位",
+      "predownload": "預先下載模型",
+      "predownloadDesc": "預先下載 AI 模型以供離線使用",
+      "downloadModels": "下載模型",
+      "downloadPartial": "部分下載完成",
+      "downloadPartialDesc": "部分模型下載成功",
+      "downloadComplete": "下載完成",
+      "downloadCompleteDesc": "所有模型下載成功",
+      "downloadCancelled": "下載已取消",
+      "downloadCancelledDesc": "模型下載已取消",
+      "alreadyCached": "已快取",
+      "downloaded": "已下載",
+      "overallProgress": "總進度",
+      "models": {
+        "ffmpegJs": "FFmpeg 核心 (JS)",
+        "ffmpegWasm": "FFmpeg 核心 (WASM)",
+        "backgroundRemover": "背景移除",
+        "imageEraser": "圖片擦除 (LaMa)",
+        "samEncoder": "SAM 視覺編碼器",
+        "samDecoder": "SAM 提示解碼器"
+      }
     },
     "downloads": {
       "title": "下載",
@@ -567,7 +599,12 @@
       "devModeDesc": "開發模式下已停用自動更新。",
       "checkFailed": "檢查更新失敗",
       "downloadFailed": "下載失敗",
-      "downloadFailedDesc": "下載更新失敗。"
+      "downloadFailedDesc": "下載更新失敗。",
+      "downloadComplete": "下載完成",
+      "openToInstall": "請打開 {{filename}} 進行安裝",
+      "installInstructions": "安裝說明",
+      "findInDownloads": "APK 已保存到下載資料夾，請在檔案管理器中打開 {{filename}} 進行安裝",
+      "downloadProgress": "正在下載... {{progress}}%"
     },
     "about": {
       "title": "關於",
@@ -575,7 +612,8 @@
       "mobileDescription": "WaveSpeed Mobile - AI 模型演練場",
       "aboutText": "一個用於執行 WaveSpeed API AI 模型的開源桌面應用程式。",
       "mobileAboutText": "一個用於執行 WaveSpeed API AI 模型的開源行動應用程式。",
-      "viewOnGitHub": "在 GitHub 上檢視"
+      "viewOnGitHub": "在 GitHub 上檢視",
+      "version": "版本"
     }
   },
   "apiKeyRequired": {
@@ -654,7 +692,15 @@
       "facesEnhanced": "已增強 {{count}} 張人臉",
       "noFacesFound": "未偵測到人臉",
       "invalidFile": "請選擇有效的圖片檔案",
-      "firstTimeDownload": "首次使用？模型將會下載（約 350MB）"
+      "firstTimeDownload": "首次使用？模型將會下載（約 350MB）",
+      "orDragDrop": "或拖放檔案",
+      "original": "原始",
+      "enhanced": "增強後",
+      "sideBySide": "並排對比",
+      "comparison": "滑塊對比",
+      "dragToCompare": "拖動對比",
+      "noFaces": "圖片中未檢測到人臉",
+      "facesFound": "檢測到 {{count}} 張人臉"
     },
     "faceSwapper": {
       "title": "人臉替換",
@@ -665,12 +711,12 @@
       "selectTarget": "選擇目標圖像",
       "sourceHint": "要複製的人臉身份",
       "targetHint": "要替換人臉的圖像",
-      "orDragDrop": "or drag and drop",
+      "orDragDrop": "或拖放檔案",
       "noSourceFace": "來源圖像中未偵測到人臉",
       "noTargetFaces": "目標圖像中未偵測到人臉",
       "clickToSelect": "點擊人臉選擇要替換的目標",
       "facesSelected": "已選擇 {{selected}}/{{total}} 張人臉",
-      "sourceSelected": "Face {{selected}}/{{total}} selected",
+      "sourceSelected": "已選擇人臉 {{selected}}/{{total}}",
       "faceDetected": "已偵測到人臉",
       "swapFaces": "替換人臉",
       "processing": "處理中...",
@@ -740,7 +786,8 @@
       "undoEdit": "撤銷移除",
       "redoEdit": "重做移除",
       "hint": "在要移除的物體上繪製，然後點擊移除物體",
-      "resultPlaceholder": "結果將顯示在這裡"
+      "resultPlaceholder": "結果將顯示在這裡",
+      "hintMobile": "在要移除的區域上繪製"
     },
     "segmentAnything": {
       "title": "智慧分割",
@@ -754,7 +801,10 @@
       "clearPoints": "清除點",
       "clearPointsTooltip": "清除所有點並返回懸停預覽模式",
       "cutMask": "裁剪遮罩",
-      "hint": "左鍵點擊包含區域，右鍵點擊排除區域"
+      "hint": "左鍵點擊包含區域，右鍵點擊排除區域",
+      "hoverToPreviewMobile": "點擊物件開始選擇",
+      "clickToRefineMobile": "點擊添加更多選區",
+      "hintMobile": "點擊添加選區，長按排除區域"
     },
     "videoConverter": {
       "title": "影片轉換器",
@@ -770,7 +820,14 @@
       "format": "格式",
       "quality": "品質",
       "resolution": "解析度",
-      "convertedSize": "轉換後大小"
+      "convertedSize": "轉換後大小",
+      "inputVideo": "輸入影片",
+      "selectVideoDesc": "選擇或拖放要轉換的影片檔案",
+      "outputFormat": "輸出格式",
+      "converted": "已轉換",
+      "result": "轉換結果",
+      "codecUsed": "使用編碼器",
+      "invalidFile": "請選擇有效的影片檔案"
     },
     "audioConverter": {
       "title": "音訊轉換器",
@@ -783,7 +840,13 @@
       "converting": "轉換中...",
       "converted": "已轉換",
       "playOriginal": "播放原始",
-      "playConverted": "播放轉換後"
+      "playConverted": "播放轉換後",
+      "inputAudio": "輸入音訊",
+      "outputFormat": "輸出格式",
+      "bitrate": "位元率",
+      "original": "原始",
+      "result": "轉換結果",
+      "invalidFile": "請選擇 MP3 或 WAV 檔案"
     },
     "imageConverter": {
       "title": "圖片轉換器",
@@ -796,7 +859,12 @@
       "convert": "轉換",
       "converting": "轉換中...",
       "quality": "品質",
-      "downloadAll": "全部下載"
+      "downloadAll": "全部下載",
+      "inputImage": "輸入圖片",
+      "selectImage": "點擊或拖放圖片到此處",
+      "outputFormat": "輸出格式",
+      "result": "轉換結果",
+      "invalidFile": "請選擇有效的圖片檔案"
     },
     "mediaTrimmer": {
       "title": "媒體裁剪器",
@@ -811,7 +879,16 @@
       "selectedDuration": "已選時長",
       "trimmedSize": "裁剪後大小",
       "playingOriginal": "播放原始",
-      "playingTrimmed": "播放裁剪後"
+      "playingTrimmed": "播放裁剪後",
+      "inputMedia": "輸入媒體",
+      "trimSettings": "裁剪設定",
+      "selectRange": "選擇開始和結束時間",
+      "startTime": "開始時間",
+      "endTime": "結束時間",
+      "timeFormat": "格式：m:ss.d 或秒數",
+      "outputDuration": "輸出時長",
+      "result": "裁剪結果",
+      "invalidFile": "請選擇有效的影片或音訊檔案"
     },
     "mediaMerger": {
       "title": "媒體合併器",
@@ -825,7 +902,11 @@
       "merging": "合併中...",
       "merged": "已合併",
       "totalDuration": "總時長",
-      "sameFormatNote": "檔案必須具有相同格式才能無損合併"
+      "sameFormatNote": "檔案必須具有相同格式才能無損合併",
+      "inputMedia": "輸入檔案",
+      "files": "個檔案",
+      "result": "合併結果",
+      "sameTypeRequired": "所有檔案必須是相同類型（影片或音訊）"
     },
     "progress": {
       "downloading": "下載模型中",
@@ -848,7 +929,10 @@
       "converting": "轉換中",
       "merging": "合併中",
       "trimming": "裁剪中"
-    }
+    },
+    "downloadSuccess": "已保存到下載資料夾",
+    "downloadStarted": "下載已開始",
+    "downloadFailed": "下載失敗"
   },
   "game": {
     "waitingLong": "等很久了？來局小遊戲！",
@@ -941,23 +1025,127 @@
       "control": "控制"
     },
     "nodeDefs": {
-      "ai-task/run": { "label": "執行模型" },
-      "input/media-upload": { "label": "上傳" },
-      "input/text-input": { "label": "文字" },
-      "output/preview": { "label": "預覽" },
-      "output/file": { "label": "檔案匯出" },
-      "free-tool/image-enhancer": { "label": "圖片增強" },
-      "free-tool/background-remover": { "label": "背景移除" },
-      "free-tool/face-enhancer": { "label": "人臉增強" },
-      "free-tool/video-enhancer": { "label": "影片增強" },
-      "free-tool/face-swapper": { "label": "換臉" },
-      "free-tool/image-eraser": { "label": "圖像擦除" },
-      "free-tool/segment-anything": { "label": "任意分割" },
-      "free-tool/video-converter": { "label": "影片轉換" },
-      "free-tool/audio-converter": { "label": "音訊轉換" },
-      "free-tool/image-converter": { "label": "圖片轉換" },
-      "free-tool/media-trimmer": { "label": "媒體裁剪" },
-      "free-tool/media-merger": { "label": "媒體合併" }
+      "ai-task/run": {
+        "label": "執行模型",
+        "emptyHint": "點擊此節點，然後選擇模型 →",
+        "params": {
+          "modelId": {
+            "label": "模型"
+          }
+        }
+      },
+      "input/media-upload": {
+        "label": "上傳",
+        "outputs": {
+          "output": {
+            "label": "URL"
+          }
+        }
+      },
+      "input/text-input": {
+        "label": "文字",
+        "params": {
+          "text": {
+            "label": "文字"
+          }
+        }
+      },
+      "output/preview": {
+        "label": "預覽",
+        "inputs": {
+          "input": {
+            "label": "URL"
+          }
+        },
+        "params": {
+          "autoDetect": {
+            "label": "自動檢測類型"
+          },
+          "forceType": {
+            "label": "強制類型",
+            "options": {
+              "auto": "自動",
+              "image": "圖片",
+              "video": "影片",
+              "audio": "音訊",
+              "3d": "3D 模型"
+            }
+          }
+        }
+      },
+      "output/file": {
+        "label": "檔案匯出",
+        "inputs": {
+          "url": {
+            "label": "URL"
+          }
+        },
+        "params": {
+          "outputDir": {
+            "label": "輸出目錄"
+          },
+          "filename": {
+            "label": "檔案名前置"
+          },
+          "format": {
+            "label": "格式",
+            "options": {
+              "auto": "自動",
+              "mp4": "MP4",
+              "png": "PNG",
+              "jpg": "JPG",
+              "mp3": "MP3",
+              "wav": "WAV"
+            }
+          }
+        }
+      },
+      "free-tool/image-enhancer": {
+        "label": "圖片增強"
+      },
+      "free-tool/background-remover": {
+        "label": "背景移除"
+      },
+      "free-tool/face-enhancer": {
+        "label": "人臉增強"
+      },
+      "free-tool/video-enhancer": {
+        "label": "影片增強"
+      },
+      "free-tool/face-swapper": {
+        "label": "換臉"
+      },
+      "free-tool/image-eraser": {
+        "label": "圖像擦除"
+      },
+      "free-tool/segment-anything": {
+        "label": "智慧分割",
+        "params": {
+          "pointX": {
+            "label": "點 X",
+            "description": "分割點歸一化 X 坐標（0-1）"
+          },
+          "pointY": {
+            "label": "點 Y",
+            "description": "分割點歸一化 Y 坐標（0-1）"
+          }
+        }
+      },
+      "free-tool/video-converter": {
+        "label": "影片轉換"
+      },
+      "free-tool/audio-converter": {
+        "label": "音訊轉換"
+      },
+      "free-tool/image-converter": {
+        "label": "圖片轉換"
+      },
+      "free-tool/media-trimmer": {
+        "label": "媒體裁剪"
+      },
+      "free-tool/media-merger": {
+        "label": "媒體合併"
+      }
     },
     "modelSelector": {
       "allCategory": "全部",
@@ -1038,6 +1226,43 @@
         "loadingOptimizer": "正在載入優化器...",
         "loadConfigFailed": "無法載入優化器設定"
       }
-    }
+    },
+    "saved": "已保存",
+    "saving": "保存中...",
+    "saveFailed": "保存失敗",
+    "savedAt": "已保存",
+    "cost": "費用",
+    "settings": "設定",
+    "running": "執行中...",
+    "cancelAll": "取消全部",
+    "import": "導入",
+    "export": "導出",
+    "imported": "已導入",
+    "importFailed": "導入失敗",
+    "exported": "導出成功",
+    "exportFailed": "導出失敗",
+    "estimated": "費用",
+    "noExecutions": "暫無執行記錄",
+    "budgetExceeded": "超出預算",
+    "dailySpend": "每日支出",
+    "perExecutionLimit": "每次執行限制",
+    "dailyLimit": "每日限制",
+    "editBudget": "編輯預算",
+    "refreshModels": "重新整理模型",
+    "linked": "已連結",
+    "linkedTo": "已連結至",
+    "disconnectLink": "解鎖：斷開此連結",
+    "previewUpstreamOutput": "預覽上游輸出",
+    "localFileOrUrl": "本機檔案或 URL",
+    "showAll": "全部顯示",
+    "showAllRuns": "顯示全部執行",
+    "showLatestOnly": "僅顯示最新",
+    "latest": "最新",
+    "latestHidden": "最新結果已隱藏。",
+    "noVisibleResults": "沒有可見結果。",
+    "hideRun": "隱藏本次執行",
+    "show": "顯示",
+    "hide": "隱藏",
+    "optional": "可選"
   }
 }

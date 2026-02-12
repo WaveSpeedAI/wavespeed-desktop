@@ -33,7 +33,8 @@
     "downloadFailed": "下载失败。请检查您的网络连接。",
     "openInBrowser": "在浏览器中打开",
     "settings": "设置",
-    "clearAll": "全部清除"
+    "clearAll": "全部清除",
+    "deselectAll": "取消全选"
   },
   "nav": {
     "home": "首页",
@@ -47,7 +48,8 @@
     "freeTools": "免费工具",
     "workflow": "工作流",
     "settings": "设置",
-    "collapse": "收起"
+    "collapse": "收起",
+    "expand": "展开"
   },
   "welcome": {
     "tagline": "触手可及的 AI 创意工具",
@@ -186,7 +188,9 @@
         "hint": "白色区域显示，黑色区域隐藏"
       },
       "removeFile": "移除文件",
-      "removeFileConfirm": "确定要移除这个文件吗？"
+      "removeFileConfirm": "确定要移除这个文件吗？",
+      "micInUse": "麦克风正被其他应用使用",
+      "tapToRecord": "点击开始录制"
     },
     "autoSaved": "已自动保存到资产",
     "autoSavedDesc": "已保存 {{count}} 个输出到我的资产",
@@ -242,7 +246,14 @@
       "seedsGenerated": "种子已自动生成",
       "settings": "批量设置"
     },
-    "input": "输入"
+    "input": "输入",
+    "imageCopied": "图片已复制到剪贴板",
+    "urlCopied": "链接已复制到剪贴板",
+    "copyFailed": "复制失败",
+    "copyImage": "复制图片",
+    "copyUrl": "复制链接",
+    "copy": "复制",
+    "download": "下载"
   },
   "history": {
     "title": "历史记录",
@@ -292,7 +303,8 @@
       "success": "模板已保存",
       "successDesc": "您可以在模板页面使用它",
       "error": "保存模板失败"
-    }
+    },
+    "longPressHint": "长按选择"
   },
   "templates": {
     "title": "模板",
@@ -474,7 +486,7 @@
       "invalidDesc": "无法验证 API 密钥。请检查后重试。",
       "cleared": "API 密钥已清除",
       "clearedDesc": "您的 API 密钥已被移除。",
-      "itemDeleted": "Cache item deleted",
+      "itemDeleted": "缓存项已删除",
       "error": "错误",
       "errorDesc": "保存 API 密钥失败。"
     },
@@ -699,12 +711,12 @@
       "selectTarget": "选择目标图像",
       "sourceHint": "要复制的人脸身份",
       "targetHint": "要替换人脸的图像",
-      "orDragDrop": "or drag and drop",
+      "orDragDrop": "或拖放文件",
       "noSourceFace": "源图像中未检测到人脸",
       "noTargetFaces": "目标图像中未检测到人脸",
       "clickToSelect": "点击人脸选择要替换的目标",
       "facesSelected": "已选择 {{selected}}/{{total}} 张人脸",
-      "sourceSelected": "Face {{selected}}/{{total}} selected",
+      "sourceSelected": "已选择人脸 {{selected}}/{{total}}",
       "faceDetected": "已检测到人脸",
       "swapFaces": "替换人脸",
       "processing": "处理中...",
@@ -1054,22 +1066,38 @@
         "label": "执行模型",
         "emptyHint": "点击此节点，然后选择模型 →",
         "params": {
-          "modelId": { "label": "模型" }
+          "modelId": {
+            "label": "模型"
+          }
         }
       },
       "input/media-upload": {
         "label": "上传",
-        "outputs": { "output": { "label": "URL" } }
+        "outputs": {
+          "output": {
+            "label": "URL"
+          }
+        }
       },
       "input/text-input": {
         "label": "文本",
-        "params": { "text": { "label": "文本" } }
+        "params": {
+          "text": {
+            "label": "文本"
+          }
+        }
       },
       "output/preview": {
         "label": "预览",
-        "inputs": { "input": { "label": "URL" } },
+        "inputs": {
+          "input": {
+            "label": "URL"
+          }
+        },
         "params": {
-          "autoDetect": { "label": "自动识别类型" },
+          "autoDetect": {
+            "label": "自动识别类型"
+          },
           "forceType": {
             "label": "强制类型",
             "options": {
@@ -1085,11 +1113,17 @@
       "output/file": {
         "label": "文件导出",
         "inputs": {
-          "url": { "label": "URL" }
+          "url": {
+            "label": "URL"
+          }
         },
         "params": {
-          "outputDir": { "label": "输出目录" },
-          "filename": { "label": "文件名前缀" },
+          "outputDir": {
+            "label": "输出目录"
+          },
+          "filename": {
+            "label": "文件名前缀"
+          },
           "format": {
             "label": "格式",
             "options": {
@@ -1103,14 +1137,26 @@
           }
         }
       },
-      "free-tool/image-enhancer": { "label": "图片增强" },
-      "free-tool/background-remover": { "label": "背景移除" },
-      "free-tool/face-enhancer": { "label": "人脸增强" },
-      "free-tool/video-enhancer": { "label": "视频增强" },
-      "free-tool/face-swapper": { "label": "换脸" },
-      "free-tool/image-eraser": { "label": "图像擦除" },
+      "free-tool/image-enhancer": {
+        "label": "图片增强"
+      },
+      "free-tool/background-remover": {
+        "label": "背景移除"
+      },
+      "free-tool/face-enhancer": {
+        "label": "人脸增强"
+      },
+      "free-tool/video-enhancer": {
+        "label": "视频增强"
+      },
+      "free-tool/face-swapper": {
+        "label": "换脸"
+      },
+      "free-tool/image-eraser": {
+        "label": "图像擦除"
+      },
       "free-tool/segment-anything": {
-        "label": "任意分割",
+        "label": "智能分割",
         "params": {
           "pointX": {
             "label": "点 X",
@@ -1122,11 +1168,21 @@
           }
         }
       },
-      "free-tool/video-converter": { "label": "视频转换" },
-      "free-tool/audio-converter": { "label": "音频转换" },
-      "free-tool/image-converter": { "label": "图片转换" },
-      "free-tool/media-trimmer": { "label": "媒体裁剪" },
-      "free-tool/media-merger": { "label": "媒体合并" }
+      "free-tool/video-converter": {
+        "label": "视频转换"
+      },
+      "free-tool/audio-converter": {
+        "label": "音频转换"
+      },
+      "free-tool/image-converter": {
+        "label": "图片转换"
+      },
+      "free-tool/media-trimmer": {
+        "label": "媒体裁剪"
+      },
+      "free-tool/media-merger": {
+        "label": "媒体合并"
+      }
     },
     "modelSelector": {
       "allCategory": "全部",

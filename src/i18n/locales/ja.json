@@ -32,7 +32,9 @@
     "done": "完了",
     "retry": "再試行",
     "downloadFailed": "ダウンロードに失敗しました。ネットワーク接続を確認してください。",
-    "openInBrowser": "ブラウザで開く"
+    "openInBrowser": "ブラウザで開く",
+    "settings": "設定",
+    "clearAll": "すべてクリア"
   },
   "nav": {
     "home": "ホーム",
@@ -45,7 +47,9 @@
     "zImage": "Z-Image",
     "freeTools": "無料ツール",
     "settings": "設定",
-    "collapse": "折りたたむ"
+    "collapse": "折りたたむ",
+    "workflow": "ワークフロー",
+    "expand": "展開"
   },
   "welcome": {
     "tagline": "すぐに使えるAIクリエイティブツール",
@@ -87,6 +91,11 @@
         "title": "無料ツール",
         "description": "ローカルで動作する強力なAIツール - APIキー不要",
         "badge": "無料"
+      },
+      "workflow": {
+        "title": "ワークフロー",
+        "description": "ノードベースのエディターでビジュアルAIパイプラインを構築",
+        "badge": "新着"
       }
     }
   },
@@ -179,7 +188,9 @@
         "hint": "白い部分は表示、黒い部分は非表示"
       },
       "removeFile": "ファイルを削除",
-      "removeFileConfirm": "このファイルを削除してもよろしいですか？"
+      "removeFileConfirm": "このファイルを削除してもよろしいですか？",
+      "micInUse": "マイクは他のアプリケーションで使用中です",
+      "tapToRecord": "タップして録音を開始"
     },
     "autoSaved": "アセットに自動保存されました",
     "autoSavedDesc": "{{count}}個の出力をマイアセットに保存しました",
@@ -235,7 +246,14 @@
       "seedsGenerated": "シードを自動生成しました",
       "settings": "バッチ設定"
     },
-    "input": "入力"
+    "input": "入力",
+    "imageCopied": "画像をクリップボードにコピーしました",
+    "urlCopied": "URLをクリップボードにコピーしました",
+    "copyFailed": "コピーに失敗しました",
+    "copyImage": "画像をコピー",
+    "copyUrl": "URLをコピー",
+    "copy": "コピー",
+    "download": "ダウンロード"
   },
   "history": {
     "title": "履歴",
@@ -246,7 +264,8 @@
       "completed": "完了",
       "failed": "失敗",
       "processing": "処理中",
-      "created": "作成済み"
+      "created": "作成済み",
+      "archived": "アーカイブ済み"
     },
     "loadPreviews": "プレビューを読み込む",
     "disablePreviews": "プレビューを無効化",
@@ -436,7 +455,7 @@
       }
     },
     "errors": {
-      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "desktopRequired": "この機能にはデスクトップアプリが必要です。WaveSpeed Desktopをダウンロードするか、オンライン版をお試しください。",
       "generationCancelled": "生成がキャンセルされました"
     },
     "tips": {
@@ -467,7 +486,7 @@
       "invalidDesc": "APIキーを検証できませんでした。確認して再試行してください。",
       "cleared": "APIキーをクリアしました",
       "clearedDesc": "APIキーが削除されました。",
-      "itemDeleted": "Cache item deleted",
+      "itemDeleted": "キャッシュ項目を削除しました",
       "error": "エラー",
       "errorDesc": "APIキーの保存に失敗しました。"
     },
@@ -525,7 +544,27 @@
       "clearFailed": "キャッシュのクリアに失敗しました",
       "zImageAuxiliary": "Z-Image 補助モデル",
       "zImageModels": "Z-Image モデル",
-      "zImageBinary": "Z-Image バイナリ"
+      "zImageBinary": "Z-Image バイナリ",
+      "predownload": "モデルを事前ダウンロード",
+      "predownloadDesc": "オフライン使用のため事前にAIモデルをダウンロード",
+      "downloadModels": "モデルをダウンロード",
+      "downloadPartial": "一部のダウンロードが完了しました",
+      "downloadPartialDesc": "一部のモデルのダウンロードに成功しました",
+      "downloadComplete": "ダウンロード完了",
+      "downloadCompleteDesc": "すべてのモデルのダウンロードに成功しました",
+      "downloadCancelled": "ダウンロードがキャンセルされました",
+      "downloadCancelledDesc": "モデルのダウンロードがキャンセルされました",
+      "alreadyCached": "すでにキャッシュ済み",
+      "downloaded": "ダウンロード済み",
+      "overallProgress": "全体の進行状況",
+      "models": {
+        "ffmpegJs": "FFmpegコア (JS)",
+        "ffmpegWasm": "FFmpegコア (WASM)",
+        "backgroundRemover": "背景除去",
+        "imageEraser": "画像消し (LaMa)",
+        "samEncoder": "SAMビジョンエンコーダー",
+        "samDecoder": "SAMプロンプトデコーダー"
+      }
     },
     "downloads": {
       "title": "ダウンロード",
@@ -560,7 +599,12 @@
       "devModeDesc": "開発モードでは自動更新が無効です。",
       "checkFailed": "更新の確認に失敗しました",
       "downloadFailed": "ダウンロードに失敗しました",
-      "downloadFailedDesc": "更新のダウンロードに失敗しました。"
+      "downloadFailedDesc": "更新のダウンロードに失敗しました。",
+      "downloadComplete": "ダウンロード完了",
+      "openToInstall": "インストールするには{{filename}}を開いてください",
+      "installInstructions": "インストール手順",
+      "findInDownloads": "APKがダウンロードフォルダに保存されました。インストールするにはファイルマネージャーで{{filename}}を開いてください",
+      "downloadProgress": "ダウンロード中... {{progress}}%"
     },
     "about": {
       "title": "このアプリについて",
@@ -568,7 +612,8 @@
       "mobileDescription": "WaveSpeed Mobile - AIモデルプレイグラウンド",
       "aboutText": "WaveSpeed APIを使用してAIモデルを実行するためのオープンソースデスクトップアプリケーション。",
       "mobileAboutText": "WaveSpeed APIを使用してAIモデルを実行するためのオープンソースモバイルアプリケーション。",
-      "viewOnGitHub": "GitHubで見る"
+      "viewOnGitHub": "GitHubで見る",
+      "version": "バージョン"
     }
   },
   "apiKeyRequired": {
@@ -647,7 +692,15 @@
       "facesEnhanced": "{{count}}件の顔を補正しました",
       "noFacesFound": "顔が見つかりません",
       "invalidFile": "有効な画像ファイルを選択してください",
-      "firstTimeDownload": "初回はモデルをダウンロードします（約350MB）"
+      "firstTimeDownload": "初回はモデルをダウンロードします（約350MB）",
+      "orDragDrop": "またはドラッグ＆ドロップ",
+      "original": "元",
+      "enhanced": "增强後",
+      "sideBySide": "並列比較",
+      "comparison": "スライダー比較",
+      "dragToCompare": "ドラッグして比較",
+      "noFaces": "画像で顔が検出されませんでした",
+      "facesFound": "{{count}}枚の顔を検出"
     },
     "faceSwapper": {
       "title": "顔入れ替え",
@@ -658,12 +711,12 @@
       "selectTarget": "ターゲット画像を選択",
       "sourceHint": "コピーする顔のアイデンティティ",
       "targetHint": "顔を入れ替える画像",
-      "orDragDrop": "or drag and drop",
+      "orDragDrop": "またはドラッグ＆ドロップ",
       "noSourceFace": "ソース画像に顔が検出されませんでした",
       "noTargetFaces": "ターゲット画像に顔が検出されませんでした",
       "clickToSelect": "顔をクリックして入れ替え対象を選択",
       "facesSelected": "{{selected}}/{{total}}個の顔を選択",
-      "sourceSelected": "Face {{selected}}/{{total}} selected",
+      "sourceSelected": "顔 {{selected}}/{{total}} を選択",
       "faceDetected": "顔を検出",
       "swapFaces": "顔を入れ替え",
       "processing": "処理中...",
@@ -733,7 +786,8 @@
       "undoEdit": "削除を元に戻す",
       "redoEdit": "削除をやり直す",
       "hint": "削除したいオブジェクトの上に描いてから、オブジェクトを削除をクリック",
-      "resultPlaceholder": "結果がここに表示されます"
+      "resultPlaceholder": "結果がここに表示されます",
+      "hintMobile": "削除する領域に描画"
     },
     "segmentAnything": {
       "title": "セグメント・エニシング",
@@ -747,7 +801,10 @@
       "clearPoints": "ポイントをクリア",
       "clearPointsTooltip": "すべてのポイントをクリアしてホバープレビューモードに戻る",
       "cutMask": "マスクを切り抜き",
-      "hint": "左クリックで含める領域、右クリックで除外する領域を指定"
+      "hint": "左クリックで含める領域、右クリックで除外する領域を指定",
+      "hoverToPreviewMobile": "タップしてオブジェクトを選択開始",
+      "clickToRefineMobile": "タップしてポイントを追加",
+      "hintMobile": "タップで含める、長押しで除外"
     },
     "videoConverter": {
       "title": "ビデオ変換",
@@ -763,7 +820,14 @@
       "format": "形式",
       "quality": "品質",
       "resolution": "解像度",
-      "convertedSize": "変換後サイズ"
+      "convertedSize": "変換後サイズ",
+      "inputVideo": "入力動画",
+      "selectVideoDesc": "変換する動画ファイルを選択またはドラッグ",
+      "outputFormat": "出力形式",
+      "converted": "変換済み",
+      "result": "変換結果",
+      "codecUsed": "使用コーデック",
+      "invalidFile": "有効な動画ファイルを選択してください"
     },
     "audioConverter": {
       "title": "オーディオ変換",
@@ -776,7 +840,13 @@
       "converting": "変換中...",
       "converted": "変換済み",
       "playOriginal": "オリジナルを再生",
-      "playConverted": "変換後を再生"
+      "playConverted": "変換後を再生",
+      "inputAudio": "入力音声",
+      "outputFormat": "出力形式",
+      "bitrate": "ビットレート",
+      "original": "元",
+      "result": "結果",
+      "invalidFile": "MP3またはWAVファイルを選択してください"
     },
     "imageConverter": {
       "title": "画像変換",
@@ -789,7 +859,12 @@
       "convert": "変換",
       "converting": "変換中...",
       "quality": "品質",
-      "downloadAll": "すべてダウンロード"
+      "downloadAll": "すべてダウンロード",
+      "inputImage": "入力画像",
+      "selectImage": "クリックまたは画像をドラッグしてここに",
+      "outputFormat": "出力形式",
+      "result": "結果",
+      "invalidFile": "有効な画像ファイルを選択してください"
     },
     "mediaTrimmer": {
       "title": "メディアトリミング",
@@ -804,7 +879,16 @@
       "selectedDuration": "選択範囲",
       "trimmedSize": "トリミング後サイズ",
       "playingOriginal": "オリジナルを再生中",
-      "playingTrimmed": "トリミング後を再生中"
+      "playingTrimmed": "トリミング後を再生中",
+      "inputMedia": "入力メディア",
+      "trimSettings": "トリム設定",
+      "selectRange": "開始と終了時刻を選択",
+      "startTime": "開始時刻",
+      "endTime": "終了時刻",
+      "timeFormat": "形式: m:ss.d または秒",
+      "outputDuration": "出力時間",
+      "result": "トリム結果",
+      "invalidFile": "有効な動画または音声ファイルを選択してください"
     },
     "mediaMerger": {
       "title": "メディア結合",
@@ -818,7 +902,11 @@
       "merging": "結合中...",
       "merged": "結合済み",
       "totalDuration": "合計時間",
-      "sameFormatNote": "ロスレス結合には同じ形式のファイルが必要です"
+      "sameFormatNote": "ロスレス結合には同じ形式のファイルが必要です",
+      "inputMedia": "入力ファイル",
+      "files": "ファイル",
+      "result": "結合結果",
+      "sameTypeRequired": "すべてのファイルは同じタイプ（動画または音声）である必要があります"
     },
     "progress": {
       "downloading": "モデルをダウンロード中",
@@ -841,7 +929,10 @@
       "converting": "変換中",
       "merging": "結合中",
       "trimming": "トリミング中"
-    }
+    },
+    "downloadSuccess": "ダウンロードフォルダに保存しました",
+    "downloadStarted": "ダウンロードを開始しました",
+    "downloadFailed": "ダウンロード失敗"
   },
   "game": {
     "waitingLong": "待ち時間が長い？ミニゲームで遊ぼう！",
@@ -934,23 +1025,127 @@
       "control": "制御"
     },
     "nodeDefs": {
-      "ai-task/run": { "label": "モデル実行" },
-      "input/media-upload": { "label": "アップロード" },
-      "input/text-input": { "label": "テキスト" },
-      "output/preview": { "label": "プレビュー" },
-      "output/file": { "label": "ファイル書き出し" },
-      "free-tool/image-enhancer": { "label": "画像強調" },
-      "free-tool/background-remover": { "label": "背景除去" },
-      "free-tool/face-enhancer": { "label": "顔補正" },
-      "free-tool/video-enhancer": { "label": "動画強調" },
-      "free-tool/face-swapper": { "label": "フェイススワップ" },
-      "free-tool/image-eraser": { "label": "画像消去" },
-      "free-tool/segment-anything": { "label": "Segment Anything" },
-      "free-tool/video-converter": { "label": "動画変換" },
-      "free-tool/audio-converter": { "label": "音声変換" },
-      "free-tool/image-converter": { "label": "画像変換" },
-      "free-tool/media-trimmer": { "label": "メディアトリミング" },
-      "free-tool/media-merger": { "label": "メディア結合" }
+      "ai-task/run": {
+        "label": "モデル実行",
+        "emptyHint": "このノードをクリックし、モデルを選択 →",
+        "params": {
+          "modelId": {
+            "label": "モデル"
+          }
+        }
+      },
+      "input/media-upload": {
+        "label": "アップロード",
+        "outputs": {
+          "output": {
+            "label": "URL"
+          }
+        }
+      },
+      "input/text-input": {
+        "label": "テキスト",
+        "params": {
+          "text": {
+            "label": "テキスト"
+          }
+        }
+      },
+      "output/preview": {
+        "label": "プレビュー",
+        "inputs": {
+          "input": {
+            "label": "URL"
+          }
+        },
+        "params": {
+          "autoDetect": {
+            "label": "タイプを自動検出"
+          },
+          "forceType": {
+            "label": "強制タイプ",
+            "options": {
+              "auto": "自動",
+              "image": "画像",
+              "video": "動画",
+              "audio": "音声",
+              "3d": "3Dモデル"
+            }
+          }
+        }
+      },
+      "output/file": {
+        "label": "ファイル書き出し",
+        "inputs": {
+          "url": {
+            "label": "URL"
+          }
+        },
+        "params": {
+          "outputDir": {
+            "label": "出力ディレクトリ"
+          },
+          "filename": {
+            "label": "ファイル名プレフィックス"
+          },
+          "format": {
+            "label": "形式",
+            "options": {
+              "auto": "自動",
+              "mp4": "MP4",
+              "png": "PNG",
+              "jpg": "JPG",
+              "mp3": "MP3",
+              "wav": "WAV"
+            }
+          }
+        }
+      },
+      "free-tool/image-enhancer": {
+        "label": "画像強調"
+      },
+      "free-tool/background-remover": {
+        "label": "背景除去"
+      },
+      "free-tool/face-enhancer": {
+        "label": "顔補正"
+      },
+      "free-tool/video-enhancer": {
+        "label": "動画強調"
+      },
+      "free-tool/face-swapper": {
+        "label": "フェイススワップ"
+      },
+      "free-tool/image-eraser": {
+        "label": "画像消去"
+      },
+      "free-tool/segment-anything": {
+        "label": "セグメントAnything",
+        "params": {
+          "pointX": {
+            "label": "ポイント X",
+            "description": "セグメントポイントの正規化X (0-1)"
+          },
+          "pointY": {
+            "label": "ポイント Y",
+            "description": "セグメントポイントの正規化Y (0-1)"
+          }
+        }
+      },
+      "free-tool/video-converter": {
+        "label": "動画変換"
+      },
+      "free-tool/audio-converter": {
+        "label": "音声変換"
+      },
+      "free-tool/image-converter": {
+        "label": "画像変換"
+      },
+      "free-tool/media-trimmer": {
+        "label": "メディアトリミング"
+      },
+      "free-tool/media-merger": {
+        "label": "メディア結合"
+      }
     },
     "modelSelector": {
       "allCategory": "すべて",
@@ -1031,6 +1226,43 @@
         "loadingOptimizer": "最適化器を読み込み中...",
         "loadConfigFailed": "最適化器の設定を読み込めません"
       }
-    }
+    },
+    "saved": "保存済み",
+    "saving": "保存中...",
+    "saveFailed": "保存に失敗しました",
+    "savedAt": "保存済み",
+    "cost": "コスト",
+    "settings": "設定",
+    "running": "実行中...",
+    "cancelAll": "すべてキャンセル",
+    "import": "インポート",
+    "export": "エクスポート",
+    "imported": "インポート済み",
+    "importFailed": "インポートに失敗しました",
+    "exported": "エクスポートに成功しました",
+    "exportFailed": "エクスポートに失敗しました",
+    "estimated": "推定コスト",
+    "noExecutions": "実行履歴がまだありません",
+    "budgetExceeded": "予算超過",
+    "dailySpend": "1日の支出",
+    "perExecutionLimit": "実行ごとの制限",
+    "dailyLimit": "1日の制限",
+    "editBudget": "予算を編集",
+    "refreshModels": "モデルを更新",
+    "linked": "リンク済み",
+    "linkedTo": "にリンク済み",
+    "disconnectLink": "ロック解除：このリンクを切断",
+    "previewUpstreamOutput": "上流の出力をプレビュー",
+    "localFileOrUrl": "ローカルファイルまたはURL",
+    "showAll": "すべて表示",
+    "showAllRuns": "すべての実行を表示",
+    "showLatestOnly": "最新のみ表示",
+    "latest": "最新",
+    "latestHidden": "最新の結果は非表示です。",
+    "noVisibleResults": "表示する結果がありません。",
+    "hideRun": "この実行を非表示",
+    "show": "表示",
+    "hide": "非表示",
+    "optional": "オプション"
   }
 }

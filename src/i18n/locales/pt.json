@@ -32,7 +32,9 @@
     "done": "Concluído",
     "retry": "Tentar novamente",
     "downloadFailed": "Falha no download. Por favor, verifique sua conexão de rede.",
-    "openInBrowser": "Abrir no navegador"
+    "openInBrowser": "Abrir no navegador",
+    "settings": "Configurações",
+    "clearAll": "Limpar tudo"
   },
   "nav": {
     "home": "Início",
@@ -40,12 +42,14 @@
     "models": "Modelos",
     "playground": "Playground",
     "history": "Histórico",
-    "templates": "Templates",
+    "templates": "Modelos",
     "assets": "Meus Recursos",
     "zImage": "Z-Image",
     "freeTools": "Ferramentas Grátis",
     "settings": "Configurações",
-    "collapse": "Recolher"
+    "collapse": "Recolher",
+    "workflow": "Fluxo de trabalho",
+    "expand": "Expandir"
   },
   "welcome": {
     "tagline": "Ferramentas Criativas de IA ao Seu Alcance",
@@ -67,7 +71,7 @@
         "description": "Espaço de trabalho multi-abas para executar modelos com parâmetros personalizados"
       },
       "templates": {
-        "title": "Templates",
+        "title": "Modelos",
         "description": "Salve e reutilize suas configurações favoritas"
       },
       "history": {
@@ -87,6 +91,11 @@
         "title": "Ferramentas Grátis",
         "description": "Ferramentas de IA poderosas que rodam localmente - sem necessidade de chave API",
         "badge": "Grátis"
+      },
+      "workflow": {
+        "title": "Fluxo de trabalho",
+        "description": "Construa pipelines de IA visuais com editor baseado em nós",
+        "badge": "Novo"
       }
     }
   },
@@ -132,7 +141,7 @@
     "savedAs": "Salvo como \"{{name}}\"",
     "resetForm": "Redefinir formulário",
     "webPage": "Página Web",
-    "docs": "Docs",
+    "docs": "Documentação",
     "noTabs": "Nenhuma aba do playground aberta",
     "tabs": {
       "newTab": "Nova Aba",
@@ -179,7 +188,9 @@
         "hint": "Áreas brancas revelam, pretas ocultam"
       },
       "removeFile": "Remover arquivo",
-      "removeFileConfirm": "Tem certeza de que deseja remover este arquivo?"
+      "removeFileConfirm": "Tem certeza de que deseja remover este arquivo?",
+      "micInUse": "O microfone está a ser utilizado por outra aplicação",
+      "tapToRecord": "Toque para começar a gravar"
     },
     "autoSaved": "Salvo automaticamente nos Recursos",
     "autoSavedDesc": "{{count}} saída(s) salva(s) nos Meus Recursos",
@@ -235,7 +246,14 @@
       "seedsGenerated": "Sementes geradas automaticamente",
       "settings": "Configurações de lote"
     },
-    "input": "Entrada"
+    "input": "Entrada",
+    "imageCopied": "Imagem copiada para a área de transferência",
+    "urlCopied": "URL copiada para a área de transferência",
+    "copyFailed": "Falha ao copiar",
+    "copyImage": "Copiar imagem",
+    "copyUrl": "Copiar URL",
+    "copy": "Copiar",
+    "download": "Descarregar"
   },
   "history": {
     "title": "Histórico",
@@ -246,7 +264,8 @@
       "completed": "Concluído",
       "failed": "Falhou",
       "processing": "Processando",
-      "created": "Criado"
+      "created": "Criado",
+      "archived": "Arquivado"
     },
     "loadPreviews": "Carregar pré-visualizações",
     "disablePreviews": "Desativar pré-visualizações",
@@ -280,10 +299,15 @@
       "noInputsTitle": "Não é possível salvar o template",
       "noInputsDesc": "Os parâmetros de entrada estão disponíveis apenas para previsões feitas neste aplicativo. Tente executar uma nova previsão primeiro."
     },
-    "hasInputs": "Pode ser salvo como template"
+    "hasInputs": "Pode ser salvo como template",
+    "downloadComplete": "Download concluído",
+    "downloadCompleteDesc": "{{count}} ficheiro(s) transferido(s)",
+    "downloadFailed": "Download falhou",
+    "downloadFailedDesc": "{{count}} ficheiro(s) falhou na transferência",
+    "longPressHint": "Prima e mantenha para selecionar"
   },
   "templates": {
-    "title": "Templates",
+    "title": "Modelos",
     "description": "Gerenciar suas configurações salvas do playground",
     "searchPlaceholder": "Pesquisar templates...",
     "noTemplates": "Nenhum template ainda",
@@ -292,7 +316,7 @@
     "noResultsDesc": "Tente um termo de pesquisa diferente",
     "goToPlayground": "Ir para Playground",
     "newTemplate": "Novo Template",
-    "templateCount": "{{count}} template(s)",
+    "templateCount": "{{count}} modelos",
     "use": "Usar",
     "rename": "Renomear",
     "renameTemplate": "Renomear Template",
@@ -431,7 +455,7 @@
       }
     },
     "errors": {
-      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "desktopRequired": "Esta funcionalidade requer a aplicação de secretária. Descarregue o WaveSpeed Desktop ou experimente a versão online.",
       "generationCancelled": "Geração cancelada"
     },
     "tips": {
@@ -462,7 +486,7 @@
       "invalidDesc": "A chave API não pôde ser validada. Verifique e tente novamente.",
       "cleared": "Chave API removida",
       "clearedDesc": "Sua chave API foi removida.",
-      "itemDeleted": "Cache item deleted",
+      "itemDeleted": "Item de cache eliminado",
       "error": "Erro",
       "errorDesc": "Falha ao salvar a chave API."
     },
@@ -520,10 +544,30 @@
       "clearFailed": "Falha ao limpar o cache",
       "zImageAuxiliary": "Modelos auxiliares do Z-Image",
       "zImageModels": "Modelos do Z-Image",
-      "zImageBinary": "Binário do Z-Image"
+      "zImageBinary": "Binário do Z-Image",
+      "predownload": "Pré-transferir modelos",
+      "predownloadDesc": "Transferir modelos de IA antecipadamente para uso offline",
+      "downloadModels": "Transferir modelos",
+      "downloadPartial": "Transferência parcial concluída",
+      "downloadPartialDesc": "Alguns modelos transferidos com sucesso",
+      "downloadComplete": "Transferência concluída",
+      "downloadCompleteDesc": "Todos os modelos transferidos com sucesso",
+      "downloadCancelled": "Transferência cancelada",
+      "downloadCancelledDesc": "A transferência do modelo foi cancelada",
+      "alreadyCached": "Já em cache",
+      "downloaded": "Transferido",
+      "overallProgress": "Progresso geral",
+      "models": {
+        "ffmpegJs": "Núcleo FFmpeg (JS)",
+        "ffmpegWasm": "Núcleo FFmpeg (WASM)",
+        "backgroundRemover": "Removedor de fundo",
+        "imageEraser": "Borracha de imagem (LaMa)",
+        "samEncoder": "Codificador de visão SAM",
+        "samDecoder": "Descodificador de prompt SAM"
+      }
     },
     "downloads": {
-      "title": "Downloads",
+      "title": "Transferências",
       "description": "Configurar downloads de modelos de IA",
       "downloadTimeout": "Tempo Limite de Download",
       "downloadTimeoutDesc": "Tempo máximo de espera ao baixar modelos de IA",
@@ -535,7 +579,7 @@
       "channel": "Canal de Atualização",
       "stable": "Estável",
       "stableDesc": "Receber versões estáveis com recursos testados.",
-      "nightly": "Nightly",
+      "nightly": "Noturno",
       "nightlyDesc": "Receber builds nightly com os recursos mais recentes (pode ser instável).",
       "autoCheck": "Verificar atualizações automaticamente",
       "autoCheckDesc": "Verificar atualizações automaticamente ao iniciar o app.",
@@ -555,7 +599,12 @@
       "devModeDesc": "Atualização automática desativada no modo de desenvolvimento.",
       "checkFailed": "Falha na verificação de atualização",
       "downloadFailed": "Falha no download",
-      "downloadFailedDesc": "Falha ao baixar a atualização."
+      "downloadFailedDesc": "Falha ao baixar a atualização.",
+      "downloadComplete": "Transferência concluída",
+      "openToInstall": "Por favor abra {{filename}} para instalar",
+      "installInstructions": "Instruções de instalação",
+      "findInDownloads": "APK guardado na pasta Transferências. Abra {{filename}} no gestor de ficheiros para instalar",
+      "downloadProgress": "A transferir... {{progress}}%"
     },
     "about": {
       "title": "Sobre",
@@ -563,7 +612,8 @@
       "mobileDescription": "WaveSpeed Mobile - Playground de Modelos IA",
       "aboutText": "Um aplicativo desktop de código aberto para executar modelos de IA com a API WaveSpeed.",
       "mobileAboutText": "Um aplicativo móvel de código aberto para executar modelos de IA com a API WaveSpeed.",
-      "viewOnGitHub": "Ver no GitHub"
+      "viewOnGitHub": "Ver no GitHub",
+      "version": "Versão"
     }
   },
   "apiKeyRequired": {
@@ -642,7 +692,15 @@
       "facesEnhanced": "{{count}} rosto(s) melhorado(s)",
       "noFacesFound": "Nenhum rosto encontrado",
       "invalidFile": "Selecione um arquivo de imagem válido",
-      "firstTimeDownload": "Primeira vez? Os modelos serão baixados (~350MB)"
+      "firstTimeDownload": "Primeira vez? Os modelos serão baixados (~350MB)",
+      "orDragDrop": "ou arrastar e soltar",
+      "original": "Original",
+      "enhanced": "Melhorado",
+      "sideBySide": "Lado a lado",
+      "comparison": "Comparação",
+      "dragToCompare": "Arrastar para comparar",
+      "noFaces": "Nenhum rosto detectado na imagem",
+      "facesFound": "{{count}} rosto(s) detectado(s)"
     },
     "faceSwapper": {
       "title": "Troca de Rostos",
@@ -653,12 +711,12 @@
       "selectTarget": "Selecionar imagem destino",
       "sourceHint": "A identidade do rosto a copiar",
       "targetHint": "Imagem onde os rostos serão substituídos",
-      "orDragDrop": "or drag and drop",
+      "orDragDrop": "ou arrastar e soltar",
       "noSourceFace": "Nenhum rosto detectado na imagem fonte",
       "noTargetFaces": "Nenhum rosto detectado na imagem destino",
       "clickToSelect": "Clique nos rostos para selecionar quais trocar",
       "facesSelected": "{{selected}}/{{total}} rosto(s) selecionado(s)",
-      "sourceSelected": "Face {{selected}}/{{total}} selected",
+      "sourceSelected": "Rosto {{selected}}/{{total}} selecionado",
       "faceDetected": "Rosto detectado",
       "swapFaces": "Trocar Rostos",
       "processing": "Processando...",
@@ -728,7 +786,8 @@
       "undoEdit": "Desfazer remoção",
       "redoEdit": "Refazer remoção",
       "hint": "Desenhe sobre os objetos que deseja remover, depois clique em Remover Objetos",
-      "resultPlaceholder": "O resultado aparecerá aqui"
+      "resultPlaceholder": "O resultado aparecerá aqui",
+      "hintMobile": "Desenhe na área a remover"
     },
     "segmentAnything": {
       "title": "Segmentar Qualquer Coisa",
@@ -742,78 +801,112 @@
       "clearPoints": "Limpar pontos",
       "clearPointsTooltip": "Limpar todos os pontos e voltar ao modo de visualização ao passar o mouse",
       "cutMask": "Recortar máscara",
-      "hint": "Clique esquerdo para incluir, clique direito para excluir áreas"
+      "hint": "Clique esquerdo para incluir, clique direito para excluir áreas",
+      "hoverToPreviewMobile": "Toque no objeto para começar a selecionar",
+      "clickToRefineMobile": "Toque para adicionar mais pontos",
+      "hintMobile": "Toque para incluir, mantenha pressionado para excluir"
     },
     "videoConverter": {
-      "title": "Video Converter",
+      "title": "Conversor de vídeo",
       "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
       "selectVideo": "Select Video",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace video",
+      "orDragDrop": "ou arrastar e soltar",
+      "dropToReplace": "Soltar para substituir vídeo",
       "supportedFormats": "Supports MP4, WebM, MOV, AVI, MKV",
       "convert": "Convert",
-      "converting": "Converting...",
+      "converting": "A converter...",
       "original": "Original",
-      "outputSettings": "Output Settings",
-      "format": "Format",
-      "quality": "Quality",
-      "resolution": "Resolution",
-      "convertedSize": "Converted Size"
+      "outputSettings": "Definições de saída",
+      "format": "Formato",
+      "quality": "Qualidade",
+      "resolution": "Resolução",
+      "convertedSize": "Tamanho convertido",
+      "inputVideo": "Vídeo de entrada",
+      "selectVideoDesc": "Selecione ou arraste um ficheiro de vídeo para converter",
+      "outputFormat": "Formato de saída",
+      "converted": "Convertido",
+      "result": "Resultado da conversão",
+      "codecUsed": "Codec utilizado",
+      "invalidFile": "Selecione um ficheiro de vídeo válido"
     },
     "audioConverter": {
-      "title": "Audio Converter",
+      "title": "Conversor de áudio",
       "description": "Convert audio between formats (MP3, AAC, FLAC, WAV)",
       "selectAudio": "Select Audio",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace audio",
+      "orDragDrop": "ou arrastar e soltar",
+      "dropToReplace": "Soltar para substituir áudio",
       "supportedFormats": "Supports MP3, M4A, OGG, WAV, FLAC",
       "convert": "Convert",
-      "converting": "Converting...",
-      "converted": "Converted",
-      "playOriginal": "Play original",
-      "playConverted": "Play converted"
+      "converting": "A converter...",
+      "converted": "Convertido",
+      "playOriginal": "Reproduzir original",
+      "playConverted": "Reproduzir convertido",
+      "inputAudio": "Áudio de entrada",
+      "outputFormat": "Formato de saída",
+      "bitrate": "Taxa de bits",
+      "original": "Original",
+      "result": "Resultado",
+      "invalidFile": "Selecione um ficheiro MP3 ou WAV"
     },
     "imageConverter": {
-      "title": "Image Converter",
+      "title": "Conversor de imagens",
       "description": "Convert images between formats (JPG, PNG, WebP, GIF)",
-      "selectImages": "Select Images",
-      "orDragDrop": "or drag and drop",
-      "dropToAdd": "Drop to add images",
+      "selectImages": "Clique ou arraste imagens aqui",
+      "orDragDrop": "ou arrastar e soltar",
+      "dropToAdd": "Soltar para adicionar",
       "supportedFormats": "Supports JPG, PNG, WebP, GIF, BMP",
-      "addMore": "Add More",
+      "addMore": "Adicionar mais",
       "convert": "Convert",
-      "converting": "Converting...",
-      "quality": "Quality",
-      "downloadAll": "Download All"
+      "converting": "A converter...",
+      "quality": "Qualidade",
+      "downloadAll": "Descarregar tudo",
+      "inputImage": "Imagem de entrada",
+      "selectImage": "Clique ou arraste uma imagem aqui",
+      "outputFormat": "Formato de saída",
+      "result": "Resultado",
+      "invalidFile": "Selecione um ficheiro de imagem válido"
     },
     "mediaTrimmer": {
-      "title": "Media Trimmer",
-      "description": "Trim videos or audio to a specific duration",
+      "title": "Cortador de mídia",
+      "description": "Cortar início e fim de vídeo ou áudio",
       "selectMedia": "Select Media",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace media",
+      "orDragDrop": "ou arrastar e soltar",
+      "dropToReplace": "Soltar para substituir ficheiro",
       "supportedFormats": "Supports video and audio files",
       "trim": "Trim",
-      "trimming": "Trimming...",
-      "originalDuration": "Original",
-      "selectedDuration": "Selected",
-      "trimmedSize": "Trimmed Size",
-      "playingOriginal": "Playing original",
-      "playingTrimmed": "Playing trimmed"
+      "trimming": "A cortar...",
+      "originalDuration": "Duração original",
+      "selectedDuration": "Duração selecionada",
+      "trimmedSize": "Tamanho após corte",
+      "playingOriginal": "Reproduzir original",
+      "playingTrimmed": "Reproduzir após corte",
+      "inputMedia": "Média de entrada",
+      "trimSettings": "Definições de corte",
+      "selectRange": "Selecionar hora de início e fim",
+      "startTime": "Hora de início",
+      "endTime": "Hora de fim",
+      "timeFormat": "Formato: m:ss.d ou segundos",
+      "outputDuration": "Duração de saída",
+      "result": "Resultado cortado",
+      "invalidFile": "Selecione um ficheiro de vídeo ou áudio válido"
     },
     "mediaMerger": {
-      "title": "Media Merger",
-      "description": "Merge multiple video or audio files into one",
+      "title": "Fusionador de mídia",
+      "description": "Fundir vários ficheiros de vídeo ou áudio por ordem",
       "selectFiles": "Select Files",
-      "orDragDrop": "or drag and drop",
-      "dropToAdd": "Drop to add files",
+      "orDragDrop": "ou arrastar e soltar",
+      "dropToAdd": "Soltar para adicionar",
       "supportedFormats": "Supports video and audio files",
       "addMore": "Add More",
       "merge": "Merge",
-      "merging": "Merging...",
-      "merged": "Merged",
-      "totalDuration": "Total Duration",
-      "sameFormatNote": "Files must have the same format for lossless merging"
+      "merging": "A fundir...",
+      "merged": "Fundido",
+      "totalDuration": "Duração total",
+      "sameFormatNote": "Recomendado: ficheiros do mesmo formato",
+      "inputMedia": "Ficheiros de entrada",
+      "files": "ficheiros",
+      "result": "Resultado fundido",
+      "sameTypeRequired": "Todos os ficheiros devem ser do mesmo tipo (vídeo ou áudio)"
     },
     "progress": {
       "downloading": "Baixando modelo",
@@ -832,11 +925,14 @@
       "confirm": "Voltar"
     },
     "ffmpeg": {
-      "loading": "Loading FFmpeg",
-      "converting": "Converting",
-      "merging": "Merging",
-      "trimming": "Trimming"
-    }
+      "loading": "A carregar...",
+      "converting": "A converter...",
+      "merging": "A fundir...",
+      "trimming": "A cortar..."
+    },
+    "downloadSuccess": "Guardado na pasta Transferências",
+    "downloadStarted": "Transferência iniciada",
+    "downloadFailed": "Transferência falhou"
   },
   "game": {
     "waitingLong": "Esperando demais? Jogue um mini jogo!",
@@ -858,5 +954,315 @@
     "result": "Resultado",
     "codecUsed": "Codec utilizado",
     "download": "Baixar"
+  },
+  "workflow": {
+    "workflows": "Fluxos de trabalho",
+    "newWorkflow": "Novo fluxo",
+    "untitled": "Sem título",
+    "save": "Guardar",
+    "saved": "Guardado",
+    "saving": "A guardar...",
+    "saveFailed": "Falha ao guardar",
+    "savedAt": "Guardado",
+    "unsaved": "Não guardado",
+    "nodes": "Nós",
+    "config": "Configuração",
+    "results": "Resultados",
+    "cost": "Custo",
+    "settings": "Configurações",
+    "runAll": "Executar tudo",
+    "run": "Executar",
+    "runTarget": "Executar alvo",
+    "runTargetAll": "Executar todos os nós",
+    "runTargetSelected": "Executar nó selecionado",
+    "runCount": "Número de execuções",
+    "stop": "Parar",
+    "running": "A executar...",
+    "cancelAll": "Cancelar tudo",
+    "import": "Importar",
+    "export": "Exportar",
+    "imported": "Importado",
+    "importFailed": "Falha ao importar",
+    "exported": "Exportado com sucesso",
+    "exportFailed": "Falha ao exportar",
+    "estimated": "Custo estimado",
+    "fitView": "Ajustar vista",
+    "previousImage": "Imagem anterior",
+    "nextImage": "Imagem seguinte",
+    "previewNavHint": "Use ← / → para navegar ({{current}}/{{total}})",
+    "clickAnywhereToClose": "Clique em qualquer lugar para fechar",
+    "runNode": "Executar nó",
+    "modelSelection": "Seleção de modelo",
+    "annotationHint": "Clique duas vezes na nota para editar.",
+    "continueFrom": "Continuar daqui",
+    "retry": "Tentar novamente",
+    "cancel": "Cancelar",
+    "noWorkflows": "Ainda sem fluxos",
+    "create": "Criar",
+    "open": "Abrir",
+    "paste": "Colar",
+    "addNode": "Adicionar nó",
+    "addNote": "Adicionar nota",
+    "note": "Nota",
+    "deleteConnection": "Eliminar ligação",
+    "add": "Adicionar",
+    "delete": "Eliminar",
+    "currentModel": "Modelo atual",
+    "modelIdLabel": "ID do modelo",
+    "selectNode": "Selecione um nó para configurar",
+    "noExecutions": "Ainda sem execuções",
+    "budgetExceeded": "Orçamento excedido",
+    "dailySpend": "Gasto diário",
+    "perExecutionLimit": "Limite por execução",
+    "dailyLimit": "Limite diário",
+    "editBudget": "Editar orçamento",
+    "refreshModels": "Atualizar modelos",
+    "drawMask": "Desenhar máscara",
+    "drawMaskNeedInput": "Defina a imagem de entrada primeiro",
+    "segmentPointPicker": {
+      "title": "Selecionar pontos de segmentação",
+      "hint": "Clique esquerdo = incluir, clique direito = excluir",
+      "points": "pontos",
+      "clear": "Limpar",
+      "done": "Concluído"
+    },
+    "pickPoints": "Selecionar pontos",
+    "pickPointsNeedInput": "Defina a imagem de entrada primeiro",
+    "pointsLabel": "Pontos de segmentação",
+    "linked": "Ligado",
+    "linkedTo": "Ligado a",
+    "disconnectLink": "Desbloquear: desligar esta ligação",
+    "previewUpstreamOutput": "Pré-visualizar saída upstream",
+    "localFileOrUrl": "Ficheiro local ou URL",
+    "showAll": "Mostrar tudo",
+    "showAllRuns": "Mostrar todas as execuções",
+    "showLatestOnly": "Mostrar apenas o mais recente",
+    "latest": "Mais recente",
+    "latestHidden": "Resultado mais recente oculto.",
+    "noVisibleResults": "Sem resultados visíveis.",
+    "hideRun": "Ocultar esta execução",
+    "output": "Saída",
+    "outputLowercase": "Saída",
+    "invalidUrl": "URL inválida",
+    "removeLast": "Remover último",
+    "enterField": "Introduza {{field}}...",
+    "show": "Mostrar",
+    "hide": "Ocultar",
+    "optional": "Opcional",
+    "searchNodesPlaceholder": "Pesquisar nós...",
+    "dragOrClickToAdd": "Arraste para a tela ou clique para adicionar",
+    "noNodesAvailable": "Nenhum nó disponível",
+    "nodeCategory": {
+      "recent": "Recentes",
+      "input": "Entrada",
+      "ai-task": "Tarefa IA",
+      "free-tool": "Ferramentas gratuitas",
+      "output": "Saída",
+      "processing": "Processamento",
+      "control": "Controlo"
+    },
+    "nodeDefs": {
+      "ai-task/run": {
+        "label": "Executar modelo",
+        "emptyHint": "Clique neste nó, depois selecione um modelo →",
+        "params": {
+          "modelId": {
+            "label": "Modelo"
+          }
+        }
+      },
+      "input/media-upload": {
+        "label": "Carregar",
+        "outputs": {
+          "output": {
+            "label": "URL"
+          }
+        }
+      },
+      "input/text-input": {
+        "label": "Texto",
+        "params": {
+          "text": {
+            "label": "Texto"
+          }
+        }
+      },
+      "output/preview": {
+        "label": "Pré-visualização",
+        "inputs": {
+          "input": {
+            "label": "URL"
+          }
+        },
+        "params": {
+          "autoDetect": {
+            "label": "Detetar tipo automaticamente"
+          },
+          "forceType": {
+            "label": "Forçar tipo",
+            "options": {
+              "auto": "Automático",
+              "image": "Imagem",
+              "video": "Vídeo",
+              "audio": "Áudio",
+              "3d": "Modelo 3D"
+            }
+          }
+        }
+      },
+      "output/file": {
+        "label": "Exportar ficheiro",
+        "inputs": {
+          "url": {
+            "label": "URL"
+          }
+        },
+        "params": {
+          "outputDir": {
+            "label": "Diretório de saída"
+          },
+          "filename": {
+            "label": "Prefixo do nome"
+          },
+          "format": {
+            "label": "Formato",
+            "options": {
+              "auto": "Automático",
+              "mp4": "MP4",
+              "png": "PNG",
+              "jpg": "JPG",
+              "mp3": "MP3",
+              "wav": "WAV"
+            }
+          }
+        }
+      },
+      "free-tool/image-enhancer": {
+        "label": "Melhorador de imagem"
+      },
+      "free-tool/background-remover": {
+        "label": "Removedor de fundo"
+      },
+      "free-tool/face-enhancer": {
+        "label": "Melhorador de rosto"
+      },
+      "free-tool/video-enhancer": {
+        "label": "Melhorador de vídeo"
+      },
+      "free-tool/face-swapper": {
+        "label": "Trocador de rostos"
+      },
+      "free-tool/image-eraser": {
+        "label": "Borracha de imagem"
+      },
+      "free-tool/segment-anything": {
+        "label": "Segmentar qualquer coisa",
+        "params": {
+          "pointX": {
+            "label": "Ponto X",
+            "description": "Coordenada X normalizada (0-1) para ponto de segmentação"
+          },
+          "pointY": {
+            "label": "Ponto Y",
+            "description": "Coordenada Y normalizada (0-1) para ponto de segmentação"
+          }
+        }
+      },
+      "free-tool/video-converter": {
+        "label": "Conversor de vídeo"
+      },
+      "free-tool/audio-converter": {
+        "label": "Conversor de áudio"
+      },
+      "free-tool/image-converter": {
+        "label": "Conversor de imagem"
+      },
+      "free-tool/media-trimmer": {
+        "label": "Cortador de mídia"
+      },
+      "free-tool/media-merger": {
+        "label": "Fusionador de mídia"
+      }
+    },
+    "modelSelector": {
+      "allCategory": "Todos",
+      "noModelsLoaded": "Nenhum modelo carregado. Clique em \"Atualizar modelos\" abaixo.",
+      "loadFailed": "Falha ao carregar modelos.",
+      "refreshFailed": "Falha ao atualizar modelos.",
+      "loadingModels": "A carregar modelos...",
+      "loadingHint": "Pode demorar alguns segundos no primeiro arranque",
+      "recent": "Recentes",
+      "searchPlaceholder": "Pesquisar modelos...",
+      "searchAllPlaceholder": "Pesquisar todos os modelos...",
+      "refreshTooltip": "Atualizar catálogo de modelos",
+      "refreshing": "A actualizar...",
+      "noModelsFound": "Nenhum modelo encontrado",
+      "disconnectBeforeSwitch": "Por favor desligue este nó antes de mudar de modelo.",
+      "selectCategory": "Selecione uma categoria",
+      "cannotSwitchTitle": "Não é possível mudar de modelo",
+      "cannotSwitchDesc": "Este nó tem ligações ativas. Por favor desligue todas as arestas antes de mudar de modelo."
+    },
+    "mediaUpload": {
+      "uploadFailed": "Falha ao carregar",
+      "invalidUrl": "URL inválida",
+      "fileUploaded": "Ficheiro carregado",
+      "uploaded": "Carregado",
+      "clear": "Limpar",
+      "uploading": "A carregar...",
+      "uploadingShort": "A carregar...",
+      "failed": "Falhou",
+      "dropOrBrowse": "Arraste o ficheiro para aqui ou clique para procurar",
+      "browse": "Procurar",
+      "pasteUrl": "Colar URL",
+      "urlPlaceholder": "https://...",
+      "urlShortPlaceholder": "URL...",
+      "supportedTypes": "Imagem, Vídeo, Áudio"
+    },
+    "textInput": {
+      "promptLibrary": "Biblioteca de prompts",
+      "saveCurrent": "Guardar atual",
+      "namePlaceholder": "Nome...",
+      "noSavedSnippets": "Sem fragmentos guardados",
+      "optimizeFailed": "Otimização falhou",
+      "optimizeNowTitle": "Otimizar texto agora",
+      "optimizing": "A otimizar...",
+      "optimizeNow": "Otimizar agora",
+      "autoOnRunTitle": "Otimizar apenas ao clicar em Executar",
+      "autoOnRun": "Automático ao executar",
+      "chars": "caracteres",
+      "optimizeOnRunEnabled": "Ativado: otimizar ao executar",
+      "optimizeOffHint": "Padrão: sem otimização (executar com texto original)",
+      "manualOptimizedHint": "Otimizado manualmente. A otimização automática será ignorada até o texto mudar.",
+      "enterTextOrPrompt": "Introduza texto ou prompt..."
+    },
+    "promptOptimizer": {
+      "optimizationFailed": "Otimização falhou",
+      "optimizeParams": "Otimizar parâmetros",
+      "optimizeParamsPresetOnly": "Otimizar parâmetros (apenas preset)",
+      "perRun": "execução",
+      "mode": "Modo",
+      "text": "Texto",
+      "textPlaceholder": "Texto para expandir ou como contexto...",
+      "autoOnRunTitle": "Otimizar automaticamente ao clicar em Executar",
+      "autoOnRun": "Automático ao executar",
+      "quickOptimizeTitle": "Otimização rápida ({{mode}})",
+      "params": "Parâmetros",
+      "prompt": "Prompt",
+      "emptyPrompt": "(vazio)",
+      "optimizing": "A otimizar...",
+      "optimize": "Otimizar",
+      "optimizeWithImage": "Otimizar com imagem...",
+      "modeOptions": {
+        "image": "Imagem",
+        "video": "Vídeo"
+      },
+      "imageDialog": {
+        "title": "Otimizar com imagem",
+        "enterTextOrImage": "Introduza texto ou forneça uma imagem",
+        "optimizeFailed": "Otimização falhou",
+        "loadingOptimizer": "A carregar otimizador...",
+        "loadConfigFailed": "Não foi possível carregar a configuração do otimizador"
+      }
+    }
   }
 }

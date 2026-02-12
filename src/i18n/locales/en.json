@@ -30,6 +30,7 @@
     "success": "Success",
     "warning": "Warning",
     "selectAll": "Select All",
+    "deselectAll": "Deselect All",
     "downloadFailed": "Download failed. Please check your network connection.",
     "openInBrowser": "Open in browser",
     "settings": "Settings",
@@ -47,7 +48,8 @@
     "freeTools": "Free Tools",
     "workflow": "Workflow",
     "settings": "Settings",
-    "collapse": "Collapse"
+    "collapse": "Collapse",
+    "expand": "Expand"
   },
   "welcome": {
     "tagline": "AI-Powered Creative Tools at Your Fingertips",
@@ -244,7 +246,14 @@
       "seedsGenerated": "Seeds auto-generated",
       "settings": "Batch Settings"
     },
-    "input": "Input"
+    "input": "Input",
+    "imageCopied": "Image copied to clipboard",
+    "urlCopied": "URL copied to clipboard",
+    "copyFailed": "Copy failed",
+    "copyImage": "Copy image",
+    "copyUrl": "Copy URL",
+    "copy": "Copy",
+    "download": "Download"
   },
   "history": {
     "title": "History",
@@ -283,6 +292,7 @@
     "downloadFailed": "Download Failed",
     "downloadFailedDesc": "{{count}} file(s) failed to download",
     "hasInputs": "Has available inputs",
+    "longPressHint": "Long press to select",
     "saveTemplate": {
       "button": "Save as Template",
       "dialogTitle": "Save Template",

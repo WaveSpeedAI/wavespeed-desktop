@@ -28,6 +28,7 @@
     "success": "Sucesso",
     "warning": "Aviso",
     "selectAll": "Selecionar tudo",
+    "deselectAll": "Desmarcar tudo",
     "done": "Concluído",
     "retry": "Tentar novamente",
     "downloadFailed": "Falha no download. Por favor, verifique sua conexão de rede.",
@@ -35,6 +36,7 @@
   },
   "nav": {
     "home": "Início",
+    "featuredModels": "Modelos em destaque",
     "models": "Modelos",
     "playground": "Playground",
     "history": "Histórico",
@@ -50,6 +52,11 @@
     "explore": "Explorar",
     "getStarted": "Começar",
     "tryFreeTools": "Experimente Ferramentas Grátis",
+    "featuredModels": {
+      "title": "Modelos em Destaque",
+      "description": "Modelos de IA populares selecionados para você",
+      "badge": "Popular"
+    },
     "features": {
       "models": {
         "title": "Navegador de Modelos",
@@ -170,7 +177,9 @@
         "done": "Concluído",
         "cancel": "Cancelar",
         "hint": "Áreas brancas revelam, pretas ocultam"
-      }
+      },
+      "removeFile": "Remover arquivo",
+      "removeFileConfirm": "Tem certeza de que deseja remover este arquivo?"
     },
     "autoSaved": "Salvo automaticamente nos Recursos",
     "autoSavedDesc": "{{count}} saída(s) salva(s) nos Meus Recursos",
@@ -225,7 +234,8 @@
       "noPreview": "Sem prévia",
       "seedsGenerated": "Sementes geradas automaticamente",
       "settings": "Configurações de lote"
-    }
+    },
+    "input": "Entrada"
   },
   "history": {
     "title": "Histórico",
@@ -243,21 +253,34 @@
     "generationDetails": "Detalhes da Geração",
     "select": "Selecionar",
     "selectionDone": "Concluído",
-    "deleteSelected": "Excluir ({{count}})",
-    "bulkDeleteConfirmTitle": "Excluir itens do histórico",
+    "deleteSelected": "Excluir",
+    "bulkDeleteConfirmTitle": "Excluir previsões",
     "bulkDeleteConfirmDesc": "Tem certeza de que deseja excluir {{count}} previsão(ões)? Esta ação não pode ser desfeita.",
-    "deleteConfirmTitle": "Excluir item do histórico",
+    "deleteConfirmTitle": "Excluir previsão",
     "deleteConfirmDesc": "Tem certeza de que deseja excluir esta previsão? Esta ação não pode ser desfeita.",
-    "deleted": "Item do histórico excluído",
-    "deletedBulk": "Itens do histórico excluídos",
-    "deletedBulkDesc": "{{count}} item(ns) do histórico excluído(s)",
-    "deleteFailed": "Falha ao excluir o item do histórico",
+    "deleted": "Previsão excluída",
+    "deletedBulk": "Previsões excluídas",
+    "deletedBulkDesc": "{{count}} previsão(ões) excluída(s)",
+    "deleteFailed": "Falha ao excluir previsão",
     "model": "Modelo",
     "created": "Criado",
     "executionTime": "Tempo de Execução",
     "predictionId": "ID da Previsão",
     "notAvailable": "Histórico Não Disponível",
-    "notAvailableDesc": "A API de histórico de previsões não está disponível no momento."
+    "notAvailableDesc": "A API de histórico de previsões não está disponível no momento.",
+    "saveTemplate": {
+      "button": "Salvar como template",
+      "dialogTitle": "Salvar como template",
+      "nameLabel": "Nome do template",
+      "namePlaceholder": "Digite o nome do template",
+      "duplicateName": "Já existe um template com este nome",
+      "success": "Template salvo",
+      "successDesc": "Seu template foi salvo com sucesso",
+      "error": "Falha ao salvar",
+      "noInputsTitle": "Não é possível salvar o template",
+      "noInputsDesc": "Os parâmetros de entrada estão disponíveis apenas para previsões feitas neste aplicativo. Tente executar uma nova previsão primeiro."
+    },
+    "hasInputs": "Pode ser salvo como template"
   },
   "templates": {
     "title": "Templates",
@@ -423,6 +446,7 @@
   "settings": {
     "title": "Configurações",
     "description": "Configure seu aplicativo WaveSpeed Desktop",
+    "mobileDescription": "Configure seu aplicativo WaveSpeed Mobile",
     "apiKey": {
       "title": "Chave API",
       "description": "Digite sua chave API WaveSpeed para acessar os modelos",
@@ -536,7 +560,9 @@
     "about": {
       "title": "Sobre",
       "description": "WaveSpeed Desktop - Playground de Modelos IA",
+      "mobileDescription": "WaveSpeed Mobile - Playground de Modelos IA",
       "aboutText": "Um aplicativo desktop de código aberto para executar modelos de IA com a API WaveSpeed.",
+      "mobileAboutText": "Um aplicativo móvel de código aberto para executar modelos de IA com a API WaveSpeed.",
       "viewOnGitHub": "Ver no GitHub"
     }
   },
@@ -598,22 +624,25 @@
       "enhanceFace": "Melhorar qualidade do rosto"
     },
     "faceEnhancer": {
-      "title": "Melhorador de Rostos",
-      "description": "Melhore e restaure a qualidade dos rostos usando IA",
-      "selectImage": "Selecione uma imagem com rostos",
-      "orDragDrop": "ou arraste e solte",
-      "enhance": "Melhorar",
-      "download": "Baixar",
+      "title": "Melhorador de rostos",
+      "description": "Melhore e restaure rostos em fotos usando IA",
+      "selectImage": "Arraste uma imagem aqui",
+      "modelsInfo": "Usa modelos YOLO + GFPGAN",
+      "inputImage": "Imagem de entrada",
+      "selectImageWithFaces": "Selecione uma imagem com rostos para melhorar",
+      "enhance": "Melhorar rostos",
+      "enhancing": "Melhorando rostos...",
+      "detecting": "Detectando rostos...",
+      "downloading": "Baixando modelos...",
+      "loading": "Carregando modelos...",
       "processing": "Processando...",
-      "original": "Original",
-      "enhanced": "Melhorado",
-      "sideBySide": "Lado a lado",
-      "comparison": "Comparação deslizante",
-      "dragToCompare": "Arraste para comparar",
-      "detecting": "Detectando rostos",
-      "enhancing": "Melhorando rostos",
-      "noFaces": "Nenhum rosto detectado na imagem",
-      "facesFound": "{{count}} rosto(s) detectado(s)"
+      "download": "Baixar",
+      "newImage": "Nova imagem",
+      "result": "Resultado",
+      "facesEnhanced": "{{count}} rosto(s) melhorado(s)",
+      "noFacesFound": "Nenhum rosto encontrado",
+      "invalidFile": "Selecione um arquivo de imagem válido",
+      "firstTimeDownload": "Primeira vez? Os modelos serão baixados (~350MB)"
     },
     "faceSwapper": {
       "title": "Troca de Rostos",
@@ -715,22 +744,6 @@
       "cutMask": "Recortar máscara",
       "hint": "Clique esquerdo para incluir, clique direito para excluir áreas"
     },
-    "progress": {
-      "downloading": "Baixando modelo",
-      "loading": "Carregando modelo",
-      "processing": "Processando",
-      "processingFrames": "Processando frames",
-      "encoding": "Codificando",
-      "finalizing": "Finalizando",
-      "overall": "Geral",
-      "remaining": "restante"
-    },
-    "backWarning": {
-      "title": "Processamento em Andamento",
-      "description": "Uma tarefa está sendo processada. Tem certeza que deseja voltar? Isso cancelará a operação atual.",
-      "cancel": "Cancelar",
-      "confirm": "Voltar"
-    },
     "videoConverter": {
       "title": "Video Converter",
       "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
@@ -802,11 +815,48 @@
       "totalDuration": "Total Duration",
       "sameFormatNote": "Files must have the same format for lossless merging"
     },
+    "progress": {
+      "downloading": "Baixando modelo",
+      "loading": "Carregando modelo",
+      "processing": "Processando",
+      "processingFrames": "Processando frames",
+      "encoding": "Codificando",
+      "finalizing": "Finalizando",
+      "overall": "Geral",
+      "remaining": "restante"
+    },
+    "backWarning": {
+      "title": "Processamento em Andamento",
+      "description": "Uma tarefa está sendo processada. Tem certeza que deseja voltar? Isso cancelará a operação atual.",
+      "cancel": "Cancelar",
+      "confirm": "Voltar"
+    },
     "ffmpeg": {
       "loading": "Loading FFmpeg",
       "converting": "Converting",
       "merging": "Merging",
       "trimming": "Trimming"
     }
+  },
+  "game": {
+    "waitingLong": "Esperando demais? Jogue um mini jogo!",
+    "clickToPlay": "Clique para começar"
+  },
+  "videoConverter": {
+    "title": "Conversor de Vídeo",
+    "description": "Converta vídeos entre formatos usando seu navegador",
+    "invalidFile": "Por favor selecione um arquivo de vídeo válido",
+    "input": "Vídeo de Entrada",
+    "inputDesc": "Selecione ou arraste um arquivo de vídeo para converter",
+    "dropzone": "Clique ou arraste o vídeo aqui",
+    "supportedFormats": "Suporta MP4, WebM, MOV, AVI",
+    "settings": "Configurações",
+    "outputFormat": "Formato de Saída",
+    "convert": "Converter Vídeo",
+    "converting": "Convertendo...",
+    "noCodecSupport": "Nenhum codec de vídeo suportado encontrado",
+    "result": "Resultado",
+    "codecUsed": "Codec utilizado",
+    "download": "Baixar"
   }
 }

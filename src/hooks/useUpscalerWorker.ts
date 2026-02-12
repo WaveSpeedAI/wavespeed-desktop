@@ -186,5 +186,17 @@ export function useUpscalerWorker(options: UseUpscalerWorkerOptions = {}) {
     createWorker()
   }, [createWorker])
 
-  return { loadModel, upscale, dispose, hasFailed, retryWorker }
+  // Cancel ongoing processing by terminating and recreating the worker
+  const cancel = useCallback(() => {
+    // Clear all pending callbacks
+    callbacksRef.current.clear()
+    // Terminate and recreate worker
+    if (workerRef.current) {
+      workerRef.current.terminate()
+      workerRef.current = null
+    }
+    createWorker()
+  }, [createWorker])
+
+  return { loadModel, upscale, dispose, hasFailed, retryWorker, cancel }
 }

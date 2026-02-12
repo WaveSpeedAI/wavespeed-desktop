@@ -20,6 +20,7 @@ import {
   PanelLeft,
   FolderHeart,
   Sparkles,
+  Star,
   X
 } from 'lucide-react'
 
@@ -41,6 +42,11 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
       titleKey: 'nav.home',
       href: '/',
       icon: Home
+    },
+    {
+      titleKey: 'nav.featuredModels',
+      href: '/featured-models',
+      icon: Star
     },
     {
       titleKey: 'nav.models',

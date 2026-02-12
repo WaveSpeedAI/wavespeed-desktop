@@ -28,6 +28,7 @@
     "success": "Başarılı",
     "warning": "Uyarı",
     "selectAll": "Tümünü seç",
+    "deselectAll": "Tümünü kaldır",
     "done": "Tamamlandı",
     "retry": "Yeniden Dene",
     "downloadFailed": "İndirme başarısız. Lütfen ağ bağlantınızı kontrol edin.",
@@ -35,6 +36,7 @@
   },
   "nav": {
     "home": "Ana Sayfa",
+    "featuredModels": "Öne Çıkan Modeller",
     "models": "Modeller",
     "playground": "Oyun Alanı",
     "history": "Geçmiş",
@@ -50,6 +52,11 @@
     "explore": "Keşfet",
     "getStarted": "Başla",
     "tryFreeTools": "Ücretsiz Araçları Dene",
+    "featuredModels": {
+      "title": "Öne Çıkan Modeller",
+      "description": "Sizin için seçilmiş popüler AI modelleri",
+      "badge": "Popüler"
+    },
     "features": {
       "models": {
         "title": "Model Tarayıcı",
@@ -170,7 +177,9 @@
         "done": "Tamamla",
         "cancel": "İptal",
         "hint": "Beyaz alanlar gösterir, siyah alanlar gizler"
-      }
+      },
+      "removeFile": "Dosyayı Kaldır",
+      "removeFileConfirm": "Bu dosyayı kaldırmak istediğinizden emin misiniz?"
     },
     "autoSaved": "Varlıklara otomatik kaydedildi",
     "autoSavedDesc": "{{count}} çıktı Varlıklarım'a kaydedildi",
@@ -225,7 +234,8 @@
       "noPreview": "Önizleme yok",
       "seedsGenerated": "Tohumlar otomatik oluşturuldu",
       "settings": "Toplu ayarları"
-    }
+    },
+    "input": "Giriş"
   },
   "history": {
     "title": "Geçmiş",
@@ -242,22 +252,35 @@
     "disablePreviews": "Önizlemeleri devre dışı bırak",
     "generationDetails": "Oluşturma Detayları",
     "select": "Seç",
-    "selectionDone": "Bitti",
-    "deleteSelected": "Sil ({{count}})",
-    "bulkDeleteConfirmTitle": "Geçmiş öğelerini sil",
+    "selectionDone": "Tamamlandı",
+    "deleteSelected": "Sil",
+    "bulkDeleteConfirmTitle": "Tahminleri Sil",
     "bulkDeleteConfirmDesc": "{{count}} tahmini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
-    "deleteConfirmTitle": "Geçmiş öğesini sil",
+    "deleteConfirmTitle": "Tahmini Sil",
     "deleteConfirmDesc": "Bu tahmini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
-    "deleted": "Geçmiş öğesi silindi",
-    "deletedBulk": "Geçmiş öğeleri silindi",
-    "deletedBulkDesc": "{{count}} geçmiş öğesi silindi",
-    "deleteFailed": "Geçmiş öğesi silinemedi",
+    "deleted": "Tahmin silindi",
+    "deletedBulk": "Tahminler silindi",
+    "deletedBulkDesc": "{{count}} tahmin silindi",
+    "deleteFailed": "Tahmin silinemedi",
     "model": "Model",
     "created": "Oluşturulma",
     "executionTime": "Çalışma Süresi",
     "predictionId": "Tahmin ID",
     "notAvailable": "Geçmiş Mevcut Değil",
-    "notAvailableDesc": "Tahmin geçmişi API'si şu anda mevcut değil."
+    "notAvailableDesc": "Tahmin geçmişi API'si şu anda mevcut değil.",
+    "saveTemplate": {
+      "button": "Şablon olarak kaydet",
+      "dialogTitle": "Şablon olarak kaydet",
+      "nameLabel": "Şablon adı",
+      "namePlaceholder": "Şablon adını girin",
+      "duplicateName": "Bu isimde bir şablon zaten mevcut",
+      "success": "Şablon kaydedildi",
+      "successDesc": "Şablonunuz başarıyla kaydedildi",
+      "error": "Kaydetme başarısız",
+      "noInputsTitle": "Şablon kaydedilemiyor",
+      "noInputsDesc": "Giriş parametreleri yalnızca bu uygulamada yapılan tahminler için kullanılabilir. Önce yeni bir tahmin çalıştırmayı deneyin."
+    },
+    "hasInputs": "Şablon olarak kaydedilebilir"
   },
   "templates": {
     "title": "Şablonlar",
@@ -423,6 +446,7 @@
   "settings": {
     "title": "Ayarlar",
     "description": "WaveSpeed Desktop uygulamanızı yapılandırın",
+    "mobileDescription": "WaveSpeed Mobile uygulamanızı yapılandırın",
     "apiKey": {
       "title": "API Anahtarı",
       "description": "Modellere erişmek için WaveSpeed API anahtarınızı girin",
@@ -536,7 +560,9 @@
     "about": {
       "title": "Hakkında",
       "description": "WaveSpeed Desktop - AI Model Oyun Alanı",
+      "mobileDescription": "WaveSpeed Mobile - AI Model Oyun Alanı",
       "aboutText": "WaveSpeed API ile AI modelleri çalıştırmak için açık kaynaklı bir masaüstü uygulaması.",
+      "mobileAboutText": "WaveSpeed API ile AI modelleri çalıştırmak için açık kaynaklı bir mobil uygulama.",
       "viewOnGitHub": "GitHub'da Görüntüle"
     }
   },
@@ -598,22 +624,25 @@
       "enhanceFace": "Yüz kalitesini artır"
     },
     "faceEnhancer": {
-      "title": "Yüz Geliştirici",
-      "description": "Yapay zeka kullanarak yüz kalitesini iyileştirin ve onarın",
-      "selectImage": "Yüzlü bir görsel seçin",
-      "orDragDrop": "veya sürükle bırak",
-      "enhance": "Geliştir",
-      "download": "İndir",
+      "title": "Yüz İyileştirici",
+      "description": "Fotoğraflardaki yüzleri AI ile iyileştirin ve onarın",
+      "selectImage": "Görsel sürükleyin",
+      "modelsInfo": "YOLO + GFPGAN modelleri kullanılır",
+      "inputImage": "Giriş görseli",
+      "selectImageWithFaces": "İyileştirilecek yüzleri içeren bir görsel seçin",
+      "enhance": "Yüzleri iyileştir",
+      "enhancing": "Yüzler iyileştiriliyor...",
+      "detecting": "Yüzler tespit ediliyor...",
+      "downloading": "Modeller indiriliyor...",
+      "loading": "Modeller yükleniyor...",
       "processing": "İşleniyor...",
-      "original": "Orijinal",
-      "enhanced": "Geliştirilmiş",
-      "sideBySide": "Yan yana",
-      "comparison": "Kaydırmalı karşılaştırma",
-      "dragToCompare": "Karşılaştırmak için sürükleyin",
-      "detecting": "Yüzler algılanıyor",
-      "enhancing": "Yüzler geliştiriliyor",
-      "noFaces": "Görselde yüz algılanmadı",
-      "facesFound": "{{count}} yüz algılandı"
+      "download": "İndir",
+      "newImage": "Yeni görsel",
+      "result": "Sonuç",
+      "facesEnhanced": "{{count}} yüz iyileştirildi",
+      "noFacesFound": "Yüz bulunamadı",
+      "invalidFile": "Geçerli bir görsel dosyası seçin",
+      "firstTimeDownload": "İlk kez mi? Modeller indirilecek (~350MB)"
     },
     "faceSwapper": {
       "title": "Yüz Değiştirici",
@@ -715,22 +744,6 @@
       "cutMask": "Maskeyi kes",
       "hint": "Dahil etmek için sol tık, hariç tutmak için sağ tık"
     },
-    "progress": {
-      "downloading": "Model indiriliyor",
-      "loading": "Model yükleniyor",
-      "processing": "İşleniyor",
-      "processingFrames": "Kareler işleniyor",
-      "encoding": "Kodlanıyor",
-      "finalizing": "Tamamlanıyor",
-      "overall": "Genel",
-      "remaining": "kaldı"
-    },
-    "backWarning": {
-      "title": "İşlem Devam Ediyor",
-      "description": "Bir görev şu anda işleniyor. Geri dönmek istediğinizden emin misiniz? Bu, mevcut işlemi iptal edecektir.",
-      "cancel": "İptal",
-      "confirm": "Geri Dön"
-    },
     "videoConverter": {
       "title": "Video Converter",
       "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
@@ -802,11 +815,48 @@
       "totalDuration": "Total Duration",
       "sameFormatNote": "Files must have the same format for lossless merging"
     },
+    "progress": {
+      "downloading": "Model indiriliyor",
+      "loading": "Model yükleniyor",
+      "processing": "İşleniyor",
+      "processingFrames": "Kareler işleniyor",
+      "encoding": "Kodlanıyor",
+      "finalizing": "Tamamlanıyor",
+      "overall": "Genel",
+      "remaining": "kaldı"
+    },
+    "backWarning": {
+      "title": "İşlem Devam Ediyor",
+      "description": "Bir görev şu anda işleniyor. Geri dönmek istediğinizden emin misiniz? Bu, mevcut işlemi iptal edecektir.",
+      "cancel": "İptal",
+      "confirm": "Geri Dön"
+    },
     "ffmpeg": {
       "loading": "Loading FFmpeg",
       "converting": "Converting",
       "merging": "Merging",
       "trimming": "Trimming"
     }
+  },
+  "game": {
+    "waitingLong": "Çok mu bekliyorsunuz? Mini oyun oynayın!",
+    "clickToPlay": "Başlamak için tıklayın"
+  },
+  "videoConverter": {
+    "title": "Video Dönüştürücü",
+    "description": "Tarayıcınızı kullanarak videoları formatlar arasında dönüştürün",
+    "invalidFile": "Lütfen geçerli bir video dosyası seçin",
+    "input": "Giriş Videosu",
+    "inputDesc": "Dönüştürmek için bir video dosyası seçin veya sürükleyin",
+    "dropzone": "Videoyu buraya tıklayın veya sürükleyin",
+    "supportedFormats": "MP4, WebM, MOV, AVI desteklenir",
+    "settings": "Ayarlar",
+    "outputFormat": "Çıkış Formatı",
+    "convert": "Videoyu Dönüştür",
+    "converting": "Dönüştürülüyor...",
+    "noCodecSupport": "Desteklenen video codec bulunamadı",
+    "result": "Sonuç",
+    "codecUsed": "Kullanılan codec",
+    "download": "İndir"
   }
 }

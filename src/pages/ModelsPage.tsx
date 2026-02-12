@@ -398,7 +398,7 @@ export function ModelsPage() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-baseline gap-3">
             <h1 className="text-2xl font-bold tracking-tight">{t('models.title')}</h1>
-            <p className="text-muted-foreground text-sm">{t('models.description')}</p>
+            <p className="text-muted-foreground text-sm hidden md:block">{t('models.description')}</p>
           </div>
           <Button variant="outline" size="sm" onClick={() => fetchModels(true)}>
             <RefreshCw className="mr-2 h-4 w-4" />

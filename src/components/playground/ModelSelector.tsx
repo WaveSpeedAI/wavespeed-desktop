@@ -41,15 +41,34 @@ export function ModelSelector({ models, value, onChange, disabled }: ModelSelect
   }, [localSearch])
 
   // Filter models using debounced search with fuzzy matching
+  // When no search: sort by selected model's provider prefix first, then alphabetically
   const filteredModels = useMemo(() => {
-    if (!debouncedSearch.trim()) return models
+    if (!debouncedSearch.trim()) {
+      const selectedId = value || ''
+      const selectedPrefix = selectedId.split('/')[0]
+      // Family = first two path segments (e.g. "wavespeed-ai/wan-2.2-spicy")
+      const getFamily = (id: string) => id.split('/').slice(0, 2).join('/')
+      const selectedFamily = getFamily(selectedId)
+      const isSameFamily = (id: string) => getFamily(id) === selectedFamily
+      const isSameProvider = (id: string) => id.split('/')[0] === selectedPrefix
+
+      return [...models].sort((a, b) => {
+        const af = isSameFamily(a.model_id), bf = isSameFamily(b.model_id)
+        if (af && !bf) return -1
+        if (!af && bf) return 1
+        const ap = isSameProvider(a.model_id), bp = isSameProvider(b.model_id)
+        if (ap && !bp) return -1
+        if (!ap && bp) return 1
+        return a.name.localeCompare(b.name)
+      })
+    }
     const results = fuzzySearch(models, debouncedSearch, (model) => [
       model.name,
       model.model_id,
       model.description || ''
     ])
     return results.map(r => r.item)
-  }, [models, debouncedSearch])
+  }, [models, debouncedSearch, value])
 
   // Close dropdown when clicking outside
   useEffect(() => {

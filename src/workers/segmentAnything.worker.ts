@@ -1,8 +1,15 @@
 import { env, SamModel, AutoProcessor, RawImage, Tensor } from '@huggingface/transformers'
 
 env.allowLocalModels = false
-// Align WASM files with the @huggingface/transformers onnxruntime-web dependency.
-env.backends.onnx.wasm!.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0-dev.20250409-89f8206ba4/dist/'
+
+// Detect mobile environment (Android/iOS WebView)
+const isMobile = /android|iphone|ipad/i.test(navigator.userAgent)
+
+if (!isMobile) {
+  // Align WASM files with the @huggingface/transformers onnxruntime-web dependency.
+  // On mobile, use the bundled WASM for reliability (no CDN dependency).
+  env.backends.onnx.wasm!.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0-dev.20250409-89f8206ba4/dist/'
+}
 
 const MODEL_ID = 'Xenova/slimsam-77-uniform'
 
@@ -34,7 +41,12 @@ async function loadModel(id: number): Promise<void> {
     return
   }
 
-  device = await hasWebGPU() ? 'webgpu' : 'wasm'
+  // On mobile, always use WASM for stability (WebGPU in Android WebView is unreliable)
+  if (isMobile) {
+    device = 'wasm'
+  } else {
+    device = await hasWebGPU() ? 'webgpu' : 'wasm'
+  }
   self.postMessage({ type: 'phase', payload: { phase: 'download', id } })
 
   const fileProgress: Record<string, { loaded: number; total: number }> = {}

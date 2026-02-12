@@ -28,6 +28,7 @@
     "success": "成功",
     "warning": "警告",
     "selectAll": "すべて選択",
+    "deselectAll": "選択解除",
     "done": "完了",
     "retry": "再試行",
     "downloadFailed": "ダウンロードに失敗しました。ネットワーク接続を確認してください。",
@@ -35,6 +36,7 @@
   },
   "nav": {
     "home": "ホーム",
+    "featuredModels": "注目モデル",
     "models": "モデル",
     "playground": "プレイグラウンド",
     "history": "履歴",
@@ -50,6 +52,11 @@
     "explore": "探索",
     "getStarted": "始める",
     "tryFreeTools": "無料ツールを試す",
+    "featuredModels": {
+      "title": "注目のモデル",
+      "description": "厳選されたトレンドAIモデル",
+      "badge": "注目"
+    },
     "features": {
       "models": {
         "title": "モデルブラウザ",
@@ -170,7 +177,9 @@
         "done": "完了",
         "cancel": "キャンセル",
         "hint": "白い部分は表示、黒い部分は非表示"
-      }
+      },
+      "removeFile": "ファイルを削除",
+      "removeFileConfirm": "このファイルを削除してもよろしいですか？"
     },
     "autoSaved": "アセットに自動保存されました",
     "autoSavedDesc": "{{count}}個の出力をマイアセットに保存しました",
@@ -225,7 +234,8 @@
       "noPreview": "プレビューなし",
       "seedsGenerated": "シードを自動生成しました",
       "settings": "バッチ設定"
-    }
+    },
+    "input": "入力"
   },
   "history": {
     "title": "履歴",
@@ -243,21 +253,39 @@
     "generationDetails": "生成の詳細",
     "select": "選択",
     "selectionDone": "完了",
-    "deleteSelected": "削除 ({{count}})",
-    "bulkDeleteConfirmTitle": "履歴を削除",
-    "bulkDeleteConfirmDesc": "{{count}} 件の予測を削除しますか？この操作は取り消せません。",
-    "deleteConfirmTitle": "履歴を削除",
-    "deleteConfirmDesc": "この予測を削除しますか？この操作は取り消せません。",
-    "deleted": "履歴を削除しました",
-    "deletedBulk": "履歴を削除しました",
-    "deletedBulkDesc": "{{count}} 件の履歴を削除しました",
-    "deleteFailed": "履歴の削除に失敗しました",
+    "deleteSelected": "削除",
+    "bulkDeleteConfirmTitle": "予測を削除",
+    "bulkDeleteConfirmDesc": "{{count}}件の予測を削除しますか？この操作は元に戻せません。",
+    "deleteConfirmTitle": "予測を削除",
+    "deleteConfirmDesc": "この予測を削除しますか？この操作は元に戻せません。",
+    "deleted": "予測を削除しました",
+    "deletedBulk": "予測を削除しました",
+    "deletedBulkDesc": "{{count}}件の予測を削除しました",
+    "deleteFailed": "予測の削除に失敗しました",
     "model": "モデル",
     "created": "作成日時",
     "executionTime": "実行時間",
     "predictionId": "予測ID",
     "notAvailable": "履歴を利用できません",
-    "notAvailableDesc": "予測履歴APIは現在利用できません。"
+    "notAvailableDesc": "予測履歴APIは現在利用できません。",
+    "saveTemplate": {
+      "button": "テンプレートとして保存",
+      "dialogTitle": "テンプレートとして保存",
+      "nameLabel": "テンプレート名",
+      "namePlaceholder": "テンプレート名を入力",
+      "duplicateName": "同じ名前のテンプレートが既に存在します",
+      "success": "テンプレートを保存しました",
+      "successDesc": "テンプレートが正常に保存されました",
+      "error": "保存に失敗しました",
+      "noInputsTitle": "テンプレートを保存できません",
+      "noInputsDesc": "入力パラメータは、このアプリで行った予測のみ利用可能です。先に新しい予測を実行してください。"
+    },
+    "hasInputs": "テンプレートとして保存可能",
+    "downloadComplete": "ダウンロード完了",
+    "downloadCompleteDesc": "{{count}}件のファイルをダウンロードしました",
+    "downloadFailed": "ダウンロード失敗",
+    "downloadFailedDesc": "{{count}}件のファイルのダウンロードに失敗しました",
+    "longPressHint": "長押しで選択"
   },
   "templates": {
     "title": "テンプレート",
@@ -423,6 +451,7 @@
   "settings": {
     "title": "設定",
     "description": "WaveSpeed Desktopアプリケーションの設定",
+    "mobileDescription": "WaveSpeed Mobileアプリケーションの設定",
     "apiKey": {
       "title": "APIキー",
       "description": "モデルにアクセスするためのWaveSpeed APIキーを入力",
@@ -536,7 +565,9 @@
     "about": {
       "title": "このアプリについて",
       "description": "WaveSpeed Desktop - AIモデルプレイグラウンド",
+      "mobileDescription": "WaveSpeed Mobile - AIモデルプレイグラウンド",
       "aboutText": "WaveSpeed APIを使用してAIモデルを実行するためのオープンソースデスクトップアプリケーション。",
+      "mobileAboutText": "WaveSpeed APIを使用してAIモデルを実行するためのオープンソースモバイルアプリケーション。",
       "viewOnGitHub": "GitHubで見る"
     }
   },
@@ -599,21 +630,24 @@
     },
     "faceEnhancer": {
       "title": "顔補正",
-      "description": "AIを使用して顔の画質を向上・修復",
-      "selectImage": "顔が含まれる画像を選択",
-      "orDragDrop": "またはドラッグ＆ドロップ",
-      "enhance": "補正",
-      "download": "ダウンロード",
+      "description": "AIで写真の顔を補正・修復",
+      "selectImage": "画像をここにドラッグ",
+      "modelsInfo": "YOLO + GFPGAN AIモデルを使用",
+      "inputImage": "入力画像",
+      "selectImageWithFaces": "補正する顔が含まれる画像を選択",
+      "enhance": "顔を補正",
+      "enhancing": "顔を補正中...",
+      "detecting": "顔を検出中...",
+      "downloading": "モデルをダウンロード中...",
+      "loading": "モデルを読み込み中...",
       "processing": "処理中...",
-      "original": "オリジナル",
-      "enhanced": "補正後",
-      "sideBySide": "並べて比較",
-      "comparison": "スライダー比較",
-      "dragToCompare": "ドラッグして比較",
-      "detecting": "顔を検出中",
-      "enhancing": "顔を補正中",
-      "noFaces": "画像内に顔が検出されませんでした",
-      "facesFound": "{{count}}個の顔を検出"
+      "download": "ダウンロード",
+      "newImage": "新規画像",
+      "result": "補正結果",
+      "facesEnhanced": "{{count}}件の顔を補正しました",
+      "noFacesFound": "顔が見つかりません",
+      "invalidFile": "有効な画像ファイルを選択してください",
+      "firstTimeDownload": "初回はモデルをダウンロードします（約350MB）"
     },
     "faceSwapper": {
       "title": "顔入れ替え",
@@ -715,22 +749,6 @@
       "cutMask": "マスクを切り抜き",
       "hint": "左クリックで含める領域、右クリックで除外する領域を指定"
     },
-    "progress": {
-      "downloading": "モデルをダウンロード中",
-      "loading": "モデルを読み込み中",
-      "processing": "処理中",
-      "processingFrames": "フレーム処理中",
-      "encoding": "エンコード中",
-      "finalizing": "最終処理中",
-      "overall": "全体",
-      "remaining": "残り"
-    },
-    "backWarning": {
-      "title": "処理中",
-      "description": "タスクは現在処理中です。戻りますか？現在の操作はキャンセルされます。",
-      "cancel": "キャンセル",
-      "confirm": "戻る"
-    },
     "videoConverter": {
       "title": "ビデオ変換",
       "description": "動画形式を変換（MP4、WebM、MOV、AVI）",
@@ -802,11 +820,48 @@
       "totalDuration": "合計時間",
       "sameFormatNote": "ロスレス結合には同じ形式のファイルが必要です"
     },
+    "progress": {
+      "downloading": "モデルをダウンロード中",
+      "loading": "モデルを読み込み中",
+      "processing": "処理中",
+      "processingFrames": "フレーム処理中",
+      "encoding": "エンコード中",
+      "finalizing": "最終処理中",
+      "overall": "全体",
+      "remaining": "残り"
+    },
+    "backWarning": {
+      "title": "処理中",
+      "description": "タスクは現在処理中です。戻りますか？現在の操作はキャンセルされます。",
+      "cancel": "キャンセル",
+      "confirm": "戻る"
+    },
     "ffmpeg": {
       "loading": "FFmpegを読み込み中",
       "converting": "変換中",
       "merging": "結合中",
       "trimming": "トリミング中"
     }
+  },
+  "game": {
+    "waitingLong": "待ち時間が長い？ミニゲームで遊ぼう！",
+    "clickToPlay": "クリックして開始"
+  },
+  "videoConverter": {
+    "title": "動画コンバーター",
+    "description": "ブラウザで動画形式を変換",
+    "invalidFile": "有効な動画ファイルを選択してください",
+    "input": "入力動画",
+    "inputDesc": "変換する動画ファイルを選択またはドラッグ",
+    "dropzone": "クリックまたは動画をここにドラッグ",
+    "supportedFormats": "MP4, WebM, MOV, AVI対応",
+    "settings": "設定",
+    "outputFormat": "出力形式",
+    "convert": "動画を変換",
+    "converting": "変換中...",
+    "noCodecSupport": "サポートされているコーデックが見つかりません",
+    "result": "結果",
+    "codecUsed": "使用コーデック",
+    "download": "ダウンロード"
   }
 }

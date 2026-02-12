@@ -11,6 +11,8 @@ interface ProcessingProgressProps {
   showOverall?: boolean
   showEta?: boolean
   className?: string
+  /** Maximum number of phases to show dots for (default: 4). Set to 0 to always hide. */
+  maxPhaseDots?: number
 }
 
 function PhaseIndicator({ phase }: { phase: ProcessingPhase }) {
@@ -73,7 +75,8 @@ export function ProcessingProgress({
   showPhases = true,
   showOverall = true,
   showEta = true,
-  className
+  className,
+  maxPhaseDots = 4
 }: ProcessingProgressProps) {
   const { t } = useTranslation()
   const { phases, currentPhaseIndex, overallProgress, eta, isActive } = progress
@@ -86,6 +89,9 @@ export function ProcessingProgress({
       ? t(currentPhase.labelKey)
       : ''
 
+  // Hide phase dots if too many phases
+  const shouldShowPhaseDots = showPhases && phases.length > 1 && phases.length <= maxPhaseDots
+
   if (!isActive && overallProgress === 0) {
     return null
   }
@@ -94,8 +100,8 @@ export function ProcessingProgress({
     <div className={cn('space-y-2', className)}>
       {/* Single row: phase dots + current phase label + progress + ETA */}
       <div className="flex items-center gap-3">
-        {/* Phase indicators */}
-        {showPhases && phases.length > 1 && (
+        {/* Phase indicators - only show if not too many */}
+        {shouldShowPhaseDots && (
           <div className="flex items-center gap-0.5 shrink-0">
             {phases.map((phase, index) => (
               <div key={phase.id} className="flex items-center">

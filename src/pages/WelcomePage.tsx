@@ -122,13 +122,13 @@ export function WelcomePage() {
       href: '/assets'
     },
     {
-      icon: <Zap className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />,
-      title: t('welcome.features.zImage.title'),
-      description: t('welcome.features.zImage.description'),
-      gradient: 'bg-gradient-to-br from-yellow-500/40 via-amber-500/20 to-transparent',
-      shapeGradient: 'from-yellow-500/40 to-amber-500/30',
-      href: '/z-image',
-      badge: t('welcome.features.zImage.badge')
+      icon: <GitBranch className="h-6 w-6 text-blue-600 dark:text-blue-400" />,
+      title: t('welcome.features.workflow.title'),
+      description: t('welcome.features.workflow.description'),
+      gradient: 'bg-gradient-to-br from-blue-500/40 via-indigo-500/20 to-transparent',
+      shapeGradient: 'from-blue-500/40 to-indigo-500/30',
+      href: '/workflow',
+      badge: t('welcome.features.workflow.badge')
     },
     {
       icon: <Wand2 className="h-6 w-6 text-orange-600 dark:text-orange-400" />,
@@ -140,13 +140,13 @@ export function WelcomePage() {
       badge: t('welcome.features.freeTools.badge')
     },
     {
-      icon: <GitBranch className="h-6 w-6 text-blue-600 dark:text-blue-400" />,
-      title: t('welcome.features.workflow.title'),
-      description: t('welcome.features.workflow.description'),
-      gradient: 'bg-gradient-to-br from-blue-500/40 via-indigo-500/20 to-transparent',
-      shapeGradient: 'from-blue-500/40 to-indigo-500/30',
-      href: '/workflow',
-      badge: t('welcome.features.workflow.badge')
+      icon: <Zap className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />,
+      title: t('welcome.features.zImage.title'),
+      description: t('welcome.features.zImage.description'),
+      gradient: 'bg-gradient-to-br from-yellow-500/40 via-amber-500/20 to-transparent',
+      shapeGradient: 'from-yellow-500/40 to-amber-500/30',
+      href: '/z-image',
+      badge: t('welcome.features.zImage.badge')
     }
   ]
 

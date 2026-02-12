@@ -90,9 +90,10 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
 
   const toolsItems = [
     {
-      titleKey: 'nav.zImage',
-      href: '/z-image',
-      icon: Zap
+      titleKey: 'nav.workflow',
+      href: '/workflow',
+      icon: GitBranch,
+      matchPrefix: true
     },
     {
       titleKey: 'nav.freeTools',
@@ -101,10 +102,9 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
       matchPrefix: true
     },
     {
-      titleKey: 'nav.workflow',
-      href: '/workflow',
-      icon: GitBranch,
-      matchPrefix: true
+      titleKey: 'nav.zImage',
+      href: '/z-image',
+      icon: Zap
     }
   ]
 
@@ -118,8 +118,8 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
 
   const navGroups = [
     { key: 'create', label: 'Create', items: createItems },
-    { key: 'manage', label: 'Manage', items: manageItems },
     { key: 'tools', label: 'Tools', items: toolsItems },
+    { key: 'manage', label: 'Manage', items: manageItems },
   ]
 
   const bottomNavItems = [

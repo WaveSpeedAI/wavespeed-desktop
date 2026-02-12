@@ -615,7 +615,7 @@ export function WorkflowPage() {
       )}
 
       {/* ── Toolbar — unified header ──────────────────────────── */}
-      <div className="flex items-center border-b border-border bg-card px-3 py-1.5 gap-1.5 min-h-[40px]">
+      <div className="flex items-center border-b border-border bg-card py-1.5 gap-1.5 min-h-[40px]">
         {/* Left: Panel toggles */}
         <button onClick={toggleWorkflowPanel}
           className={`h-7 px-3 rounded-md text-xs font-medium transition-colors ${showWorkflowPanel ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`}>
@@ -690,7 +690,7 @@ export function WorkflowPage() {
         {/* Cost info */}
         {estimatedCost !== null && estimatedCost > 0 && (
           <span className="text-[11px] text-muted-foreground ml-2">
-            {t('workflow.estimated', 'Est.')}{' '}
+            {t('workflow.estimated', 'Cost')}{' '}
             <span className="font-medium text-blue-400">${estimatedCost.toFixed(4)}</span>
           </span>
         )}
@@ -802,11 +802,9 @@ export function WorkflowPage() {
                   {t('workflow.results', 'Results')}
                 </button>
               </div>
-              <div className="flex-1 overflow-hidden min-w-0">
-                <ScrollArea className="h-full w-full">
-                  {rightTab === 'config' && <NodeConfigPanel paramDefs={paramDefs} />}
-                  {rightTab === 'results' && <ResultsPanel />}
-                </ScrollArea>
+              <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 scrollbar-auto-hide">
+                {rightTab === 'config' && <NodeConfigPanel paramDefs={paramDefs} />}
+                {rightTab === 'results' && <ResultsPanel />}
               </div>
             </>
           ) : null}

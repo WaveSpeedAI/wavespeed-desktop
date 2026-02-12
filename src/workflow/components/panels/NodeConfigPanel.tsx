@@ -10,7 +10,6 @@ import { useUIStore } from '../../stores/ui.store'
 import { modelsIpc } from '../../ipc/ipc-client'
 import { useModelsStore } from '@/stores/modelsStore'
 import { Input } from '@/components/ui/input'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import type { ParamDefinition, WaveSpeedModel } from '@/workflow/types/node-defs'
 import { fuzzySearch } from '@/lib/fuzzySearch'
 
@@ -338,7 +337,7 @@ function AITaskModelSelector({ params, onChange }: { params: Record<string, unkn
 
       {/* Top-level model search */}
       <div className="flex items-center gap-1.5 mb-2">
-        <div className="relative flex-1">
+        <div className="relative flex-1 min-w-0">
           <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
           </svg>
@@ -352,10 +351,12 @@ function AITaskModelSelector({ params, onChange }: { params: Record<string, unkn
         <button
           onClick={handleRefreshModels}
           disabled={loading || refreshingCatalog}
-          className="h-8 px-2 rounded-md border border-[hsl(var(--border))] text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-          title={t('workflow.modelSelector.refreshTooltip', 'Refresh model catalog')}
+          className="h-8 w-8 flex-shrink-0 flex items-center justify-center rounded-md border border-[hsl(var(--border))] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          title={refreshingCatalog ? t('workflow.modelSelector.refreshing', 'Refreshing...') : t('workflow.refreshModels', 'Refresh Models')}
         >
-          {refreshingCatalog ? t('workflow.modelSelector.refreshing', 'Refreshing...') : t('workflow.refreshModels', 'Refresh Models')}
+          <svg className={refreshingCatalog ? 'animate-spin' : ''} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M2 11.5a10 10 0 0 1 18.8-4.3"/><path d="M22 12.5a10 10 0 0 1-18.8 4.2"/>
+          </svg>
         </button>
       </div>
 
@@ -399,8 +400,8 @@ function AITaskModelSelector({ params, onChange }: { params: Record<string, unkn
       {/* Category tags — color-coded by type */}
       {!hasSearchQuery && (
         <>
-          <div className="mb-2 pb-1 max-h-[140px] overflow-y-auto overflow-x-hidden">
-            <div className="flex gap-1 flex-wrap pb-1">
+          <div className="mb-2 pb-1 max-h-[140px] overflow-y-auto scrollbar-auto-hide">
+            <div className="flex gap-1 flex-wrap pr-1">
               {categories.map(cat => {
                 const colors = getCategoryColor(cat)
                 return (
@@ -418,10 +419,11 @@ function AITaskModelSelector({ params, onChange }: { params: Record<string, unkn
       )}
 
       {/* Model list */}
-      <ScrollArea className="h-[260px]">
+      <div className="h-[260px] overflow-y-auto overflow-x-hidden scrollbar-auto-hide">
         {loading && <div className="text-[10px] text-blue-400 animate-pulse px-2 py-1">{t('workflow.modelSelector.refreshing', 'Refreshing...')}</div>}
         {displayResults.slice(0, 50).map(model => (
           <div key={model.modelId} onClick={() => handleSelectModel(model)}
+            title={model.displayName}
             className={`p-2 rounded-md cursor-pointer text-xs transition-colors mb-0.5 overflow-hidden
               ${resolvedSelectedModel?.modelId === model.modelId
                 ? 'bg-primary/10 border border-primary/40'
@@ -438,7 +440,7 @@ function AITaskModelSelector({ params, onChange }: { params: Record<string, unkn
             {hasSearchQuery ? t('workflow.modelSelector.noModelsFound', 'No models found') : t('workflow.modelSelector.selectCategory', 'Select a category')}
           </div>
         )}
-      </ScrollArea>
+      </div>
 
       {/* Switch blocked dialog */}
       {switchBlockedMsg && (

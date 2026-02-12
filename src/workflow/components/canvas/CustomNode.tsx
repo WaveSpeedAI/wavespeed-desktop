@@ -750,12 +750,12 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
             return (
               <Row key={inp.key} handleId={hid} handleType="target" connected={conn} media>
                 <div className="flex items-center justify-between gap-2 w-full">
-                  <span className={`text-xs ${conn ? 'text-green-400 font-semibold' : 'text-[hsl(var(--muted-foreground))]'}`}>
+                  <span className={`text-xs whitespace-nowrap flex-shrink-0 ${conn ? 'text-green-400 font-semibold' : 'text-[hsl(var(--muted-foreground))]'}`}>
                     {localizeInputLabel(inp.key, inp.label)}{inp.required && <span className="text-red-400"> *</span>}
                   </span>
                   {conn
                     ? <ConnectedInputControl nodeId={id} handleId={hid} edges={edges} nodes={useWorkflowStore.getState().nodes} onPreview={openPreview} />
-                    : <InputPortControl
+                    : <div className="flex-1 min-w-0"><InputPortControl
                       nodeId={id}
                       port={inp}
                       value={data.params[inp.key]}
@@ -763,7 +763,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
                       onPreview={openPreview}
                       referenceImageUrl={data.nodeType === 'free-tool/image-eraser' && inp.key === 'mask' ? String(data.params.input ?? '') : undefined}
                       showDrawMaskButton={data.nodeType === 'free-tool/image-eraser' && inp.key === 'mask'}
-                    />}
+                    /></div>}
                 </div>
               </Row>
             )

@@ -119,6 +119,22 @@
   background: hsl(var(--muted-foreground) / 0.4);
 }
 
+/* Auto-hide scrollbar: invisible by default, visible on hover or scroll */
+.scrollbar-auto-hide::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.scrollbar-auto-hide:hover::-webkit-scrollbar-thumb,
+.scrollbar-auto-hide:active::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.25);
+}
+
+.scrollbar-auto-hide::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.45);
+}
+
 /* Gradient utilities */
 @layer utilities {
   .gradient-text {

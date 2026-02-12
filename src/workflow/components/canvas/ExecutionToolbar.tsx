@@ -96,7 +96,7 @@ export function ExecutionToolbar() {
       {/* Cost estimate (Opt 22) */}
       {estimatedCost !== null && estimatedCost > 0 && (
         <span className="text-[11px] text-[hsl(var(--muted-foreground))] px-2 py-0.5 rounded bg-[hsl(var(--muted))]">
-          Est. <span className="font-semibold text-blue-400">${estimatedCost.toFixed(4)}</span>
+          Cost <span className="font-semibold text-blue-400">${estimatedCost.toFixed(4)}</span>
         </span>
       )}
 

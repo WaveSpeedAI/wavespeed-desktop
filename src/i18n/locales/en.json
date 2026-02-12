@@ -847,7 +847,7 @@
     "importFailed": "Import failed",
     "exported": "Exported successfully",
     "exportFailed": "Export failed",
-    "estimated": "Est.",
+    "estimated": "Cost",
     "fitView": "Fit View",
     "previousImage": "Previous image",
     "nextImage": "Next image",
@@ -928,22 +928,38 @@
         "label": "Run Model",
         "emptyHint": "Click this node, then select a model →",
         "params": {
-          "modelId": { "label": "Model" }
+          "modelId": {
+            "label": "Model"
+          }
         }
       },
       "input/media-upload": {
         "label": "Upload",
-        "outputs": { "output": { "label": "URL" } }
+        "outputs": {
+          "output": {
+            "label": "URL"
+          }
+        }
       },
       "input/text-input": {
         "label": "Text",
-        "params": { "text": { "label": "Text" } }
+        "params": {
+          "text": {
+            "label": "Text"
+          }
+        }
       },
       "output/preview": {
         "label": "Preview",
-        "inputs": { "input": { "label": "URL" } },
+        "inputs": {
+          "input": {
+            "label": "URL"
+          }
+        },
         "params": {
-          "autoDetect": { "label": "Auto-detect Type" },
+          "autoDetect": {
+            "label": "Auto-detect Type"
+          },
           "forceType": {
             "label": "Force Type",
             "options": {
@@ -959,11 +975,17 @@
       "output/file": {
         "label": "File Export",
         "inputs": {
-          "url": { "label": "URL" }
+          "url": {
+            "label": "URL"
+          }
         },
         "params": {
-          "outputDir": { "label": "Output Directory" },
-          "filename": { "label": "Filename Prefix" },
+          "outputDir": {
+            "label": "Output Directory"
+          },
+          "filename": {
+            "label": "Filename Prefix"
+          },
           "format": {
             "label": "Format",
             "options": {
@@ -977,12 +999,24 @@
           }
         }
       },
-      "free-tool/image-enhancer": { "label": "Image Enhancer" },
-      "free-tool/background-remover": { "label": "Background Remover" },
-      "free-tool/face-enhancer": { "label": "Face Enhancer" },
-      "free-tool/video-enhancer": { "label": "Video Enhancer" },
-      "free-tool/face-swapper": { "label": "Face Swapper" },
-      "free-tool/image-eraser": { "label": "Image Eraser" },
+      "free-tool/image-enhancer": {
+        "label": "Image Enhancer"
+      },
+      "free-tool/background-remover": {
+        "label": "Background Remover"
+      },
+      "free-tool/face-enhancer": {
+        "label": "Face Enhancer"
+      },
+      "free-tool/video-enhancer": {
+        "label": "Video Enhancer"
+      },
+      "free-tool/face-swapper": {
+        "label": "Face Swapper"
+      },
+      "free-tool/image-eraser": {
+        "label": "Image Eraser"
+      },
       "free-tool/segment-anything": {
         "label": "Segment Anything",
         "params": {
@@ -996,11 +1030,21 @@
           }
         }
       },
-      "free-tool/video-converter": { "label": "Video Converter" },
-      "free-tool/audio-converter": { "label": "Audio Converter" },
-      "free-tool/image-converter": { "label": "Image Converter" },
-      "free-tool/media-trimmer": { "label": "Media Trimmer" },
-      "free-tool/media-merger": { "label": "Media Merger" }
+      "free-tool/video-converter": {
+        "label": "Video Converter"
+      },
+      "free-tool/audio-converter": {
+        "label": "Audio Converter"
+      },
+      "free-tool/image-converter": {
+        "label": "Image Converter"
+      },
+      "free-tool/media-trimmer": {
+        "label": "Media Trimmer"
+      },
+      "free-tool/media-merger": {
+        "label": "Media Merger"
+      }
     },
     "modelSelector": {
       "allCategory": "All",

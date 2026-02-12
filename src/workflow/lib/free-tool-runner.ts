@@ -249,7 +249,7 @@ export async function runFaceEnhancer(
       reject(new Error(ev.message || 'Worker error'))
     }
 
-    worker.postMessage({ type: 'init', payload: { id: 0, timeout: 120000 } })
+    worker.postMessage({ type: 'init', payload: { id: 0, timeout: 600000 } })
   })
 }
 
@@ -421,7 +421,7 @@ export async function runFaceSwapper(
       }
     }
     worker.onmessage = handler
-    worker.postMessage({ type: 'init', payload: { id: 0, timeout: 120000, enableEnhancement: false } })
+    worker.postMessage({ type: 'init', payload: { id: 0, timeout: 600000, enableEnhancement: false } })
   })
 
   onProgress?.(10, 'Initializing models...')
@@ -603,7 +603,7 @@ export async function runImageEraser(
       reject(new Error(ev.message || 'Worker error'))
     }
 
-    worker.postMessage({ type: 'init', payload: { id: 0, timeout: 120000 } })
+    worker.postMessage({ type: 'init', payload: { id: 0, timeout: 600000 } })
   })
 }
 

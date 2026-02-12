@@ -49,6 +49,7 @@ export type IpcChannels = {
   'workflow:save': { args: SaveWorkflowInput; result: void }
   'workflow:load': { args: { id: string }; result: Workflow }
   'workflow:list': { args: void; result: WorkflowSummary[] }
+  'workflow:rename': { args: { id: string; name: string }; result: void }
   'workflow:delete': { args: { id: string }; result: void }
   'execution:run-all': { args: { workflowId: string }; result: void }
   'execution:run-node': { args: { workflowId: string; nodeId: string }; result: void }

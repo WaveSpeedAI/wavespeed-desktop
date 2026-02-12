@@ -202,6 +202,46 @@ export function WorkflowPage() {
     setActiveTabId(newTabId)
   }, [saveCurrentTabSnapshot])
 
+  // Tab rename — inline editing
+  const [editingTabId, setEditingTabId] = useState<string | null>(null)
+  const [editingTabName, setEditingTabName] = useState('')
+  const renameWorkflow = useWorkflowStore(s => s.renameWorkflow)
+
+  const startRenameTab = useCallback((tabId: string) => {
+    const tab = tabs.find(t => t.tabId === tabId)
+    if (!tab) return
+    setEditingTabId(tabId)
+    setEditingTabName(tab.workflowName)
+  }, [tabs])
+
+  const commitRenameTab = useCallback(async () => {
+    if (!editingTabId) return
+    const trimmed = editingTabName.trim()
+    if (!trimmed) {
+      setEditingTabId(null)
+      return
+    }
+    // Update tab snapshot
+    setTabs(prev => prev.map(t => t.tabId === editingTabId ? { ...t, workflowName: trimmed } : t))
+    // If it's the active tab, also update the store and persist to backend
+    if (editingTabId === activeTabId) {
+      await renameWorkflow(trimmed)
+      invalidateWorkflowListCache()
+    } else {
+      // For non-active tabs, persist directly via IPC if it has a workflowId
+      const tab = tabs.find(t => t.tabId === editingTabId)
+      if (tab?.workflowId) {
+        workflowIpc.rename(tab.workflowId, trimmed).catch(console.error)
+        invalidateWorkflowListCache()
+      }
+    }
+    setEditingTabId(null)
+  }, [editingTabId, editingTabName, activeTabId, renameWorkflow, tabs])
+
+  const cancelRenameTab = useCallback(() => {
+    setEditingTabId(null)
+  }, [])
+
   // Close tab — with unsaved changes confirmation
   const [confirmCloseTabId, setConfirmCloseTabId] = useState<string | null>(null)
 
@@ -603,6 +643,7 @@ export function WorkflowPage() {
 
         {tabs.map(tab => {
           const isActive = tab.tabId === activeTabId
+          const isEditing = editingTabId === tab.tabId
           return (
             <div key={tab.tabId}
               onClick={() => switchTab(tab.tabId)}
@@ -611,9 +652,26 @@ export function WorkflowPage() {
                   ? 'bg-[hsl(var(--card))] text-foreground'
                   : 'bg-transparent text-muted-foreground hover:bg-[hsl(var(--muted))] hover:text-foreground'}`}
             >
-              <span className="truncate flex-1">{tab.workflowName}</span>
-              {tab.isDirty && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />}
-              {tabs.length > 1 && (
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={editingTabName}
+                  onChange={e => setEditingTabName(e.target.value)}
+                  onBlur={commitRenameTab}
+                  onKeyDown={e => {
+                    e.stopPropagation()
+                    if (e.key === 'Enter') commitRenameTab()
+                    if (e.key === 'Escape') cancelRenameTab()
+                  }}
+                  onClick={e => e.stopPropagation()}
+                  autoFocus
+                  className="flex-1 min-w-0 bg-transparent border-b border-primary text-xs outline-none px-0 py-0"
+                />
+              ) : (
+                <span className="truncate flex-1" onDoubleClick={e => { e.stopPropagation(); startRenameTab(tab.tabId) }}>{tab.workflowName}</span>
+              )}
+              {!isEditing && tab.isDirty && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />}
+              {!isEditing && tabs.length > 1 && (
                 <button onClick={(e) => closeTab(tab.tabId, e)}
                   className="w-4 h-4 flex items-center justify-center rounded-sm text-[10px] text-muted-foreground hover:text-foreground hover:bg-accent/80 opacity-0 group-hover:opacity-100 transition-opacity">
                   ✕

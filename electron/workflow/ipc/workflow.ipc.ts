@@ -26,6 +26,10 @@ export function registerWorkflowIpc(): void {
     return workflowRepo.listWorkflows()
   })
 
+  ipcMain.handle('workflow:rename', async (_event, args: { id: string; name: string }): Promise<void> => {
+    workflowRepo.renameWorkflow(args.id, args.name)
+  })
+
   ipcMain.handle('workflow:delete', async (_event, args: { id: string }): Promise<void> => {
     workflowRepo.deleteWorkflow(args.id)
   })

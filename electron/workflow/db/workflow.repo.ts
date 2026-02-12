@@ -103,6 +103,18 @@ export function updateWorkflow(id: string, name: string, graphDefinition: GraphD
   getFileStorage().saveWorkflowSnapshot(id, name, graphDefinition)
 }
 
+export function renameWorkflow(id: string, newName: string): void {
+  const db = getDatabase()
+  const now = new Date().toISOString()
+  db.run('UPDATE workflows SET name = ?, updated_at = ? WHERE id = ?', [newName, now, id])
+  persistDatabase()
+  // Update file storage name mapping and snapshot
+  const existing = getWorkflowById(id)
+  if (existing) {
+    getFileStorage().saveWorkflowSnapshot(id, newName, existing.graphDefinition)
+  }
+}
+
 export function deleteWorkflow(id: string): void {
   const db = getDatabase()
   db.run('DELETE FROM workflows WHERE id = ?', [id])

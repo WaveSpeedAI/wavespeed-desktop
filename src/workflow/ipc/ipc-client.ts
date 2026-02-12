@@ -54,6 +54,8 @@ export const workflowIpc = {
     invoke('workflow:load', { id }),
   list: (): Promise<WorkflowSummary[]> =>
     invoke('workflow:list', undefined as void),
+  rename: (id: string, name: string): Promise<void> =>
+    invoke('workflow:rename', { id, name }),
   delete: (id: string): Promise<void> =>
     invoke('workflow:delete', { id })
 }

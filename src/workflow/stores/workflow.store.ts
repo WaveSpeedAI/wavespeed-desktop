@@ -109,6 +109,7 @@ export interface WorkflowState {
   loadWorkflow: (id: string) => Promise<void>
   newWorkflow: (name: string) => Promise<void>
   setWorkflowName: (name: string) => void
+  renameWorkflow: (newName: string) => Promise<void>
   reset: () => void
 }
 
@@ -426,6 +427,14 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   },
 
   setWorkflowName: (name) => set({ workflowName: name, isDirty: true }),
+
+  renameWorkflow: async (newName) => {
+    const { workflowId } = get()
+    set({ workflowName: newName })
+    if (workflowId) {
+      await workflowIpc.rename(workflowId, newName)
+    }
+  },
 
   reset: () => set({
     nodes: [], edges: [], workflowId: null, workflowName: 'Untitled Workflow', isDirty: false

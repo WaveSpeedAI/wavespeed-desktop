@@ -28,6 +28,8 @@ export function WorkflowList({ onClose, onOpen }: WorkflowListProps) {
   const [diskUsage, setDiskUsage] = useState<Record<string, number>>({})
   const [newName, setNewName] = useState('')
   const [cleaning, setCleaning] = useState<string | null>(null)
+  const [renamingId, setRenamingId] = useState<string | null>(null)
+  const [renamingValue, setRenamingValue] = useState('')
   const { loadWorkflow, newWorkflow } = useWorkflowStore()
 
   const refresh = () => {
@@ -61,6 +63,28 @@ export function WorkflowList({ onClose, onOpen }: WorkflowListProps) {
   const handleDelete = async (id: string) => {
     await workflowIpc.delete(id)
     await storageIpc.deleteWorkflowFiles(id).catch(() => {})
+    refresh()
+  }
+
+  const startRename = (wf: WorkflowSummary) => {
+    setRenamingId(wf.id)
+    setRenamingValue(wf.name)
+  }
+
+  const commitRename = async () => {
+    if (!renamingId) return
+    const trimmed = renamingValue.trim()
+    if (!trimmed) {
+      setRenamingId(null)
+      return
+    }
+    await workflowIpc.rename(renamingId, trimmed)
+    // If this workflow is currently active in the store, update its name too
+    const currentId = useWorkflowStore.getState().workflowId
+    if (currentId === renamingId) {
+      useWorkflowStore.getState().setWorkflowName(trimmed)
+    }
+    setRenamingId(null)
     refresh()
   }
 
@@ -107,7 +131,22 @@ export function WorkflowList({ onClose, onOpen }: WorkflowListProps) {
             return (
               <div key={wf.id} className="flex justify-between items-start py-2.5 border-b border-border gap-2">
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-sm truncate">{wf.name}</div>
+                  {renamingId === wf.id ? (
+                    <input
+                      type="text"
+                      value={renamingValue}
+                      onChange={e => setRenamingValue(e.target.value)}
+                      onBlur={commitRename}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') commitRename()
+                        if (e.key === 'Escape') setRenamingId(null)
+                      }}
+                      autoFocus
+                      className="w-full font-semibold text-sm bg-transparent border-b border-primary outline-none"
+                    />
+                  ) : (
+                    <div className="font-semibold text-sm truncate cursor-pointer" onDoubleClick={() => startRename(wf)}>{wf.name}</div>
+                  )}
                   <div className="text-[11px] text-muted-foreground flex items-center gap-2">
                     <span>{wf.nodeCount} nodes</span>
                     <span>·</span>
@@ -122,6 +161,7 @@ export function WorkflowList({ onClose, onOpen }: WorkflowListProps) {
                 </div>
                 <div className="flex gap-1 flex-shrink-0">
                   <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => handleOpen(wf.id)}>Open</Button>
+                  <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => startRename(wf)}>Rename</Button>
                   {usage !== undefined && usage > 0 && (
                     <Button variant="outline" size="sm" className="h-7 text-[10px] text-orange-400" disabled={cleaning === wf.id}
                       onClick={() => handleCleanOutputs(wf.id)}>

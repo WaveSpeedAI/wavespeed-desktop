@@ -911,7 +911,7 @@
     "show": "显示",
     "hide": "隐藏",
     "optional": "可选项",
-    "searchNodesPlaceholder": "搜索节点（支持 fzf 语法）...",
+    "searchNodesPlaceholder": "搜索节点...",
     "dragOrClickToAdd": "拖拽到画布或点击添加",
     "noNodesAvailable": "暂无可用节点",
     "nodeCategory": {
@@ -959,8 +959,7 @@
       "output/file": {
         "label": "文件导出",
         "inputs": {
-          "url": { "label": "URL" },
-          "content": { "label": "内容（兼容）" }
+          "url": { "label": "URL" }
         },
         "params": {
           "outputDir": { "label": "输出目录" },
@@ -1012,7 +1011,7 @@
       "loadingHint": "首次启动可能需要几秒钟",
       "recent": "最近使用",
       "searchPlaceholder": "搜索模型...",
-      "searchAllPlaceholder": "搜索所有模型（支持 fzf 语法）...",
+      "searchAllPlaceholder": "搜索所有模型...",
       "refreshTooltip": "刷新模型目录",
       "refreshing": "刷新中...",
       "noModelsFound": "未找到模型",

@@ -245,9 +245,23 @@ function AITaskModelSelector({ params, onChange }: { params: Record<string, unkn
 
       // Update node: new schema + clean params
       useWorkflowStore.getState().updateNodeParams(selectedNodeId, newParams)
+
+      // Auto-deduplicate label when multiple nodes use the same model
+      const allNodes = useWorkflowStore.getState().nodes
+      const baseName = model.displayName
+      const otherLabels = allNodes
+        .filter(n => n.id !== selectedNodeId && n.data?.nodeType === 'ai-task/run')
+        .map(n => String(n.data?.label ?? ''))
+      let finalLabel = `🤖 ${baseName}`
+      if (otherLabels.includes(finalLabel)) {
+        let idx = 2
+        while (otherLabels.includes(`🤖 ${baseName} (${idx})`)) idx++
+        finalLabel = `🤖 ${baseName} (${idx})`
+      }
+
       updateNodeData(selectedNodeId, {
         modelInputSchema: model.inputSchema,
-        label: `🤖 ${model.displayName}`
+        label: finalLabel
       })
 
       // Clear results and status for this node
@@ -319,17 +333,22 @@ function AITaskModelSelector({ params, onChange }: { params: Record<string, unkn
   }
 
   return (
-    <div className="overflow-hidden min-w-0">
+    <div className="overflow-hidden min-w-0 w-full">
       {error && <div className="text-destructive text-xs p-2 mb-3 rounded border border-destructive bg-destructive/10">{error}</div>}
 
-      {/* Top-level all-models fzf search */}
+      {/* Top-level model search */}
       <div className="flex items-center gap-1.5 mb-2">
-        <Input
-          placeholder={t('workflow.modelSelector.searchAllPlaceholder', 'Search all models (fzf syntax)...')}
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          className="h-8 text-xs"
-        />
+        <div className="relative flex-1">
+          <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+          </svg>
+          <Input
+            placeholder={t('workflow.modelSelector.searchAllPlaceholder', 'Search all models...')}
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="h-8 text-xs pl-8"
+          />
+        </div>
         <button
           onClick={handleRefreshModels}
           disabled={loading || refreshingCatalog}
@@ -369,7 +388,7 @@ function AITaskModelSelector({ params, onChange }: { params: Record<string, unkn
               <div className="font-medium truncate">{r.displayName}</div>
               <div className="flex items-center gap-1.5">
                 <span className="text-muted-foreground text-[10px] truncate">{r.category}</span>
-                {r.costPerRun != null && <span className="text-[10px] text-blue-400 flex-shrink-0">${r.costPerRun.toFixed(4)}</span>}
+                {r.costPerRun != null && <span className="text-[10px] text-blue-600 dark:text-blue-400 flex-shrink-0">${r.costPerRun.toFixed(4)}</span>}
               </div>
             </div>
           ))}
@@ -380,20 +399,20 @@ function AITaskModelSelector({ params, onChange }: { params: Record<string, unkn
       {/* Category tags — color-coded by type */}
       {!hasSearchQuery && (
         <>
-          <ScrollArea className="mb-2 pb-1">
+          <div className="mb-2 pb-1 max-h-[140px] overflow-y-auto overflow-x-hidden">
             <div className="flex gap-1 flex-wrap pb-1">
               {categories.map(cat => {
                 const colors = getCategoryColor(cat)
                 return (
                   <button key={cat} onClick={() => setSelectedCategory(cat)}
-                    className={`px-2 py-0.5 rounded-full text-[10px] whitespace-nowrap transition-colors flex-shrink-0 font-medium
+                    className={`px-2 py-0.5 rounded-full text-[10px] whitespace-nowrap transition-colors font-medium
                       ${selectedCategory === cat ? colors.active : colors.idle}`}>
                     {cat}
                   </button>
                 )
               })}
             </div>
-          </ScrollArea>
+          </div>
           <div className="border-b border-border mb-2" />
         </>
       )}
@@ -410,7 +429,7 @@ function AITaskModelSelector({ params, onChange }: { params: Record<string, unkn
             <div className="font-medium truncate">{model.displayName}</div>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="text-[10px] text-muted-foreground truncate">{model.category}</span>
-              {model.costPerRun != null && <span className="text-[10px] text-blue-400 flex-shrink-0">${model.costPerRun.toFixed(4)}</span>}
+              {model.costPerRun != null && <span className="text-[10px] text-blue-600 dark:text-blue-400 flex-shrink-0">${model.costPerRun.toFixed(4)}</span>}
             </div>
           </div>
         ))}

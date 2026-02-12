@@ -44,9 +44,17 @@ export function Layout() {
   const location = useLocation()
   const hasShownUpdateToast = useRef(false)
 
-  // Close mobile menu when route changes
+  // Close mobile menu when route changes; auto-collapse sidebar for workflow
+  const prevPathRef = useRef(location.pathname)
   useEffect(() => {
     setMobileMenuOpen(false)
+    // Auto-collapse when entering workflow, auto-expand when leaving
+    if (location.pathname === '/workflow' && prevPathRef.current !== '/workflow') {
+      setSidebarCollapsed(true)
+    } else if (location.pathname !== '/workflow' && prevPathRef.current === '/workflow') {
+      setSidebarCollapsed(false)
+    }
+    prevPathRef.current = location.pathname
   }, [location.pathname])
 
   // Track which persistent pages have been visited (to delay initial mount)

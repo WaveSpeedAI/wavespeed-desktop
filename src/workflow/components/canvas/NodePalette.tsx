@@ -116,7 +116,7 @@ export function NodePalette({ definitions }: NodePaletteProps) {
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
-          placeholder={t('workflow.searchNodesPlaceholder', 'Search nodes (fzf syntax)...')}
+          placeholder={t('workflow.searchNodesPlaceholder', 'Search nodes...')}
           className="w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1.5 text-xs text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50"
         />
       </div>

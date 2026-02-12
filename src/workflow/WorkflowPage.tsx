@@ -72,7 +72,6 @@ let tabIdCounter = 1
 export function WorkflowPage() {
   const { t } = useTranslation()
   const [nodeDefs, setNodeDefs] = useState<NodeTypeDefinition[]>([])
-  const [showWorkflowList, setShowWorkflowList] = useState(false)
   const workflowName = useWorkflowStore(s => s.workflowName)
   const workflowId = useWorkflowStore(s => s.workflowId)
   const isDirty = useWorkflowStore(s => s.isDirty)
@@ -80,8 +79,8 @@ export function WorkflowPage() {
   const edges = useWorkflowStore(s => s.edges)
   const saveWorkflow = useWorkflowStore(s => s.saveWorkflow)
   const loadWorkflow = useWorkflowStore(s => s.loadWorkflow)
-  const { showNodePalette,
-    toggleNodePalette, selectedNodeId, previewSrc, previewItems, previewIndex, prevPreview, nextPreview, closePreview,
+  const { showNodePalette, showWorkflowPanel,
+    toggleNodePalette, toggleWorkflowPanel, selectedNodeId, previewSrc, previewItems, previewIndex, prevPreview, nextPreview, closePreview,
     showNamingDialog, namingDialogDefault, resolveNamingDialog } = useUIStore()
   const { runAll, runNode, cancelAll, activeExecutions } = useExecutionStore()
   const initListeners = useExecutionStore(s => s.initListeners)
@@ -94,8 +93,6 @@ export function WorkflowPage() {
   const [saveToastMsg, setSaveToastMsg] = useState('')
   const [execToast, setExecToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
   const [runCount, setRunCount] = useState(1)
-  const [runTarget, setRunTarget] = useState<'all' | 'selected'>('all')
-  const [showRunTargetMenu, setShowRunTargetMenu] = useState(false)
   const [isBatchRunning, setIsBatchRunning] = useState(false)
   const runCancelRef = useRef(false)
   const normalizedPreviewSrc = useMemo(() => {
@@ -534,14 +531,9 @@ export function WorkflowPage() {
     try {
       for (let i = 0; i < runTimes; i++) {
         if (runCancelRef.current) break
-        if (runTarget === 'selected') {
-          if (!selectedNodeId) break
-          await runNode(wfId, selectedNodeId)
-        } else {
-          const nodeLabels: Record<string, string> = {}
-          for (const n of nodes) { nodeLabels[n.id] = n.data?.label || n.data?.nodeType || n.id.slice(0, 8) }
-          await runAll(wfId, workflowName, nodeLabels)
-        }
+        const nodeLabels: Record<string, string> = {}
+        for (const n of nodes) { nodeLabels[n.id] = n.data?.label || n.data?.nodeType || n.id.slice(0, 8) }
+        await runAll(wfId, workflowName, nodeLabels)
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
@@ -622,83 +614,67 @@ export function WorkflowPage() {
         </div>
       )}
 
-      {/* ── Tab bar (Chrome-style) ─────────────────────────────── */}
-      <div className="flex items-end bg-[hsl(var(--background))] pt-1 px-1 gap-px min-h-[36px]">
-        {/* History dropdown */}
-        <HistoryDropdown onOpen={async (id) => {
-          // If already open in a tab, switch to it
-          const existingTab = tabs.find(t => t.workflowId === id)
-          if (existingTab) {
-            switchTab(existingTab.tabId)
-            return
-          }
-          // Otherwise open in a new tab
-          saveCurrentTabSnapshot()
-          tabIdCounter++
-          const newTabId = `tab-${tabIdCounter}`
-          setTabs(prev => [...prev, { tabId: newTabId, workflowId: null, workflowName: 'Loading...', nodes: [], edges: [], isDirty: false }])
-          setActiveTabId(newTabId)
-          await loadWorkflow(id)
-        }} />
-
-        {tabs.map(tab => {
-          const isActive = tab.tabId === activeTabId
-          const isEditing = editingTabId === tab.tabId
-          return (
-            <div key={tab.tabId}
-              onClick={() => switchTab(tab.tabId)}
-              className={`group flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 rounded-t-lg cursor-pointer text-xs select-none min-w-[120px] max-w-[200px] transition-colors
-                ${isActive
-                  ? 'bg-[hsl(var(--card))] text-foreground'
-                  : 'bg-transparent text-muted-foreground hover:bg-[hsl(var(--muted))] hover:text-foreground'}`}
-            >
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={editingTabName}
-                  onChange={e => setEditingTabName(e.target.value)}
-                  onBlur={commitRenameTab}
-                  onKeyDown={e => {
-                    e.stopPropagation()
-                    if (e.key === 'Enter') commitRenameTab()
-                    if (e.key === 'Escape') cancelRenameTab()
-                  }}
-                  onClick={e => e.stopPropagation()}
-                  autoFocus
-                  className="flex-1 min-w-0 bg-transparent border-b border-primary text-xs outline-none px-0 py-0"
-                />
-              ) : (
-                <span className="truncate flex-1" onDoubleClick={e => { e.stopPropagation(); startRenameTab(tab.tabId) }}>{tab.workflowName}</span>
-              )}
-              {!isEditing && tab.isDirty && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />}
-              {!isEditing && tabs.length > 1 && (
-                <button onClick={(e) => closeTab(tab.tabId, e)}
-                  className="w-4 h-4 flex items-center justify-center rounded-sm text-[10px] text-muted-foreground hover:text-foreground hover:bg-accent/80 opacity-0 group-hover:opacity-100 transition-opacity">
-                  ✕
-                </button>
-              )}
-            </div>
-          )
-        })}
-        {/* New tab button */}
-        <button onClick={addTab}
-          className="flex items-center justify-center w-7 h-7 mb-0.5 rounded text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--muted))] transition-colors text-sm"
-          title="New workflow tab">
-          +
-        </button>
-      </div>
-
-      {/* ── Toolbar ────────────────────────────────────────────── */}
-      <div className="flex items-center border-b border-border bg-card px-3 py-1 gap-1.5 min-h-[36px]">
+      {/* ── Toolbar — unified header ──────────────────────────── */}
+      <div className="flex items-center border-b border-border bg-card px-3 py-1.5 gap-1.5 min-h-[40px]">
         {/* Left: Panel toggles */}
-        <button onClick={toggleNodePalette}
-          className={`px-2 py-1 text-xs transition-colors ${showNodePalette ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
-          {t('workflow.nodes', 'Nodes')}
-        </button>
-        <button onClick={() => setShowWorkflowList(true)}
-          className="px-2 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+        <button onClick={toggleWorkflowPanel}
+          className={`h-7 px-3 rounded-md text-xs font-medium transition-colors ${showWorkflowPanel ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`}>
           {t('workflow.workflows', 'Workflows')}
         </button>
+        <button onClick={toggleNodePalette}
+          className={`h-7 px-3 rounded-md text-xs font-medium transition-colors ${showNodePalette ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`}>
+          {t('workflow.nodes', 'Nodes')}
+        </button>
+        <div className="w-px h-5 bg-border mx-1" />
+
+        {/* Tabs — inline, scrollable */}
+        <div className="flex items-center gap-px overflow-x-auto flex-shrink min-w-0">
+          {tabs.map(tab => {
+            const isActive = tab.tabId === activeTabId
+            const isEditing = editingTabId === tab.tabId
+            return (
+              <div key={tab.tabId}
+                onClick={() => switchTab(tab.tabId)}
+                className={`group flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-md cursor-pointer text-xs select-none max-w-[160px] transition-colors
+                  ${isActive
+                    ? 'bg-accent text-foreground'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
+              >
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editingTabName}
+                    onChange={e => setEditingTabName(e.target.value)}
+                    onBlur={commitRenameTab}
+                    onKeyDown={e => {
+                      e.stopPropagation()
+                      if (e.key === 'Enter') commitRenameTab()
+                      if (e.key === 'Escape') cancelRenameTab()
+                    }}
+                    onClick={e => e.stopPropagation()}
+                    autoFocus
+                    className="flex-1 min-w-0 bg-transparent border-b border-primary text-xs outline-none px-0 py-0"
+                  />
+                ) : (
+                  <span className="truncate flex-1" onDoubleClick={e => { e.stopPropagation(); startRenameTab(tab.tabId) }}>{tab.workflowName}</span>
+                )}
+                {!isEditing && tab.isDirty && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />}
+                {!isEditing && tabs.length > 1 && (
+                  <button onClick={(e) => closeTab(tab.tabId, e)}
+                    className="w-4 h-4 flex items-center justify-center rounded-sm text-[10px] text-muted-foreground hover:text-foreground hover:bg-accent/80 opacity-0 group-hover:opacity-100 transition-opacity">
+                    ✕
+                  </button>
+                )}
+              </div>
+            )
+          })}
+          <button onClick={addTab}
+            className="flex items-center justify-center w-6 h-6 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors text-sm flex-shrink-0"
+            title={t('workflow.newTab', 'New tab')}>
+            +
+          </button>
+        </div>
+
         <div className="w-px h-5 bg-border mx-1" />
 
         {/* Last saved indicator */}
@@ -724,62 +700,44 @@ export function WorkflowPage() {
 
         {/* Right: Run controls */}
         <div className="flex items-center gap-1.5">
-          <div className="relative flex items-center rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--muted))]/40">
+          <div className="flex items-center rounded-lg overflow-hidden shadow-sm">
+            {/* Run button */}
             <button
-              className="h-8 px-3 text-xs font-medium text-foreground hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={nodes.length === 0 || isRunning || isBatchRunning || (runTarget === 'selected' && !selectedNodeId)}
+              className="h-8 px-3.5 flex items-center gap-1.5 bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={nodes.length === 0 || isRunning || isBatchRunning}
               onClick={() => handleRunAll(runCount)}
             >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                <polygon points="6,3 20,12 6,21" />
+              </svg>
               {isRunning || isBatchRunning ? t('workflow.running', 'Running...') : t('workflow.run', 'Run')}
             </button>
-            <button
-              className="h-8 w-7 border-l border-[hsl(var(--border))] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-              onClick={() => setShowRunTargetMenu(v => !v)}
-              title={t('workflow.runTarget', 'Run target')}
-            >
-              ▾
-            </button>
-            {showRunTargetMenu && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setShowRunTargetMenu(false)} />
-                <div className="absolute right-0 top-[36px] z-50 w-40 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--popover))] shadow-xl py-1">
-                  <button
-                    className={`w-full text-left px-3 py-1.5 text-xs hover:bg-accent ${runTarget === 'all' ? 'text-primary font-medium' : 'text-foreground'}`}
-                    onClick={() => { setRunTarget('all'); setShowRunTargetMenu(false) }}
-                  >
-                    {t('workflow.runTargetAll', 'Run All Nodes')}
-                  </button>
-                  <button
-                    className={`w-full text-left px-3 py-1.5 text-xs hover:bg-accent ${runTarget === 'selected' ? 'text-primary font-medium' : 'text-foreground'}`}
-                    onClick={() => { setRunTarget('selected'); setShowRunTargetMenu(false) }}
-                  >
-                    {t('workflow.runTargetSelected', 'Run Selected Node')}
-                  </button>
-                </div>
-              </>
-            )}
+            {/* Run count */}
+            <div className="h-8 flex items-center bg-[hsl(var(--muted))] border-l border-[hsl(var(--border))]">
+              <input
+                type="number"
+                min={1}
+                max={99}
+                value={runCount}
+                onChange={e => setRunCount(Math.max(1, Math.min(99, Number(e.target.value) || 1)))}
+                className="w-10 h-full bg-transparent px-1 text-xs text-center text-foreground focus:outline-none"
+                title={t('workflow.runCount', 'Run count')}
+              />
+            </div>
           </div>
-          <div className="flex items-center rounded-md border border-[hsl(var(--border))] overflow-hidden h-8">
-            <input
-              type="number"
-              min={1}
-              max={99}
-              value={runCount}
-              onChange={e => setRunCount(Math.max(1, Math.min(99, Number(e.target.value) || 1)))}
-              className="w-14 h-full bg-transparent px-2 text-xs text-center focus:outline-none"
-              title={t('workflow.runCount', 'Run count')}
-            />
-          </div>
+          {/* Cancel button */}
           {(isRunning || isBatchRunning) && (
             <button
-              className="h-8 w-8 rounded-md bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
+              className="h-8 w-8 rounded-lg flex items-center justify-center bg-red-900/60 text-red-300 hover:bg-red-800/70 transition-colors"
               onClick={() => {
                 runCancelRef.current = true
                 if (workflowId) cancelAll(workflowId)
               }}
               title={t('workflow.cancelAll', 'Cancel All')}
             >
-              ✕
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
             </button>
           )}
           <button
@@ -807,10 +765,27 @@ export function WorkflowPage() {
 
       {/* ── Main content ───────────────────────────────────────── */}
       <div className="flex flex-1 overflow-hidden relative">
-        {/* Node palette as overlay so it doesn't shift the canvas layout */}
+        {/* Left panels as overlay so they don't shift the canvas layout */}
         {showNodePalette && (
           <div className="absolute top-0 left-0 bottom-0 z-30">
             <NodePalette definitions={nodeDefs} />
+          </div>
+        )}
+        {showWorkflowPanel && (
+          <div className="absolute top-0 left-0 bottom-0 z-30">
+            <WorkflowList onOpen={async (id) => {
+              const existingTab = tabs.find(t => t.workflowId === id)
+              if (existingTab) {
+                switchTab(existingTab.tabId)
+              } else {
+                saveCurrentTabSnapshot()
+                tabIdCounter++
+                const newTabId = `tab-${tabIdCounter}`
+                setTabs(prev => [...prev, { tabId: newTabId, workflowId: null, workflowName: 'Loading...', nodes: [], edges: [], isDirty: false }])
+                setActiveTabId(newTabId)
+                await loadWorkflow(id)
+              }
+            }} />
           </div>
         )}
         <WorkflowCanvas nodeDefs={nodeDefs} />
@@ -838,26 +813,11 @@ export function WorkflowPage() {
         </ResizableSidebar>}
       </div>
 
-      {showWorkflowList && <WorkflowList onClose={() => setShowWorkflowList(false)} onOpen={async (id) => {
-        const existingTab = tabs.find(t => t.workflowId === id)
-        if (existingTab) {
-          switchTab(existingTab.tabId)
-        } else {
-          saveCurrentTabSnapshot()
-          tabIdCounter++
-          const newTabId = `tab-${tabIdCounter}`
-          setTabs(prev => [...prev, { tabId: newTabId, workflowId: null, workflowName: 'Loading...', nodes: [], edges: [], isDirty: false }])
-          setActiveTabId(newTabId)
-          await loadWorkflow(id)
-        }
-        setShowWorkflowList(false)
-      }} />}
-
       {/* Preview overlay — covers the canvas area only (absolute within the page) */}
       {previewSrc && (
         <div className="absolute inset-0 z-[999] flex flex-col bg-black/85"
           onClick={closePreview} style={{ cursor: 'default' }}>
-          <div className="flex-1 flex items-center justify-center p-6 min-h-0">
+          <div className="flex-1 flex items-center justify-center p-6 min-h-0 overflow-hidden">
             {normalizedPreviewSrc.match(/\.(glb|gltf)(\?.*)?$/i) ? (
               <ModelViewerOverlay src={previewSrc} />
             ) : normalizedPreviewSrc.match(/\.(mp4|webm|mov|avi|mkv)(\?.*)?$/i) ? (
@@ -868,7 +828,7 @@ export function WorkflowPage() {
                 <audio src={previewSrc} controls autoPlay className="w-full" />
               </div>
             ) : (
-              <div className="relative max-w-[80%] max-h-full" onClick={e => e.stopPropagation()}>
+              <div className="relative max-w-[80%] max-h-full flex items-center justify-center" onClick={e => e.stopPropagation()}>
                 {canNavigatePreview && (
                   <button
                     className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/45 text-white hover:bg-black/65 transition-colors"
@@ -879,7 +839,7 @@ export function WorkflowPage() {
                   </button>
                 )}
                 <img src={previewSrc} alt="Preview"
-                  className="max-w-full max-h-full rounded-xl shadow-2xl object-contain" />
+                  className="max-w-full rounded-xl shadow-2xl object-contain" style={{ maxHeight: 'calc(100vh - 120px)' }} />
                 {canNavigatePreview && (
                   <button
                     className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/45 text-white hover:bg-black/65 transition-colors"
@@ -957,7 +917,7 @@ export function WorkflowPage() {
 /* ── Resizable Sidebar ─────────────────────────────────────────────── */
 
 function ResizableSidebar({ children }: { children: React.ReactNode }) {
-  const [basis, setBasis] = useState(320)
+  const [basis, setBasis] = useState(300)
   const [dragging, setDragging] = useState(false)
 
   const onMouseDown = useCallback((e: React.MouseEvent) => {
@@ -968,7 +928,7 @@ function ResizableSidebar({ children }: { children: React.ReactNode }) {
 
     const onMove = (ev: MouseEvent) => {
       const delta = startX - ev.clientX
-      setBasis(Math.max(320, Math.min(600, startBasis + delta)))
+      setBasis(Math.max(260, Math.min(600, startBasis + delta)))
     }
     const onUp = () => {
       setDragging(false)
@@ -982,7 +942,7 @@ function ResizableSidebar({ children }: { children: React.ReactNode }) {
   return (
     <div
       className="flex flex-col bg-card overflow-hidden border-l border-border relative flex-shrink-0"
-      style={{ width: basis, minWidth: 360 }}
+      style={{ width: basis, minWidth: 260 }}
     >
       <div
         onMouseDown={onMouseDown}
@@ -1044,104 +1004,6 @@ const CACHE_TTL = 30_000 // refresh after 30 seconds
 export function invalidateWorkflowListCache() {
   _workflowListCache = null
   _workflowListCacheTime = 0
-}
-
-function HistoryDropdown({ onOpen }: { onOpen: (id: string) => void }) {
-  const [open, setOpen] = useState(false)
-  const [workflows, setWorkflows] = useState<Array<{ id: string; name: string; updatedAt: string }>>(_workflowListCache ?? [])
-  const [loading, setLoading] = useState(false)
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
-
-  const fetchList = () => {
-    setLoading(true)
-    import('./ipc/ipc-client').then(({ workflowIpc }) => {
-      workflowIpc.list().then(list => {
-        const mapped = (list ?? []).map(w => ({ id: w.id, name: w.name, updatedAt: w.updatedAt }))
-        _workflowListCache = mapped
-        _workflowListCacheTime = Date.now()
-        setWorkflows(mapped)
-        setLoading(false)
-      })
-    })
-  }
-
-  useEffect(() => {
-    if (!open) return
-    const isFresh = _workflowListCache && (Date.now() - _workflowListCacheTime < CACHE_TTL)
-    if (isFresh) {
-      setWorkflows(_workflowListCache!)
-      return
-    }
-    fetchList()
-  }, [open])
-
-  const handleDelete = async (id: string) => {
-    try {
-      const { workflowIpc, storageIpc } = await import('./ipc/ipc-client')
-      await workflowIpc.delete(id)
-      await storageIpc.deleteWorkflowFiles(id).catch(() => {})
-      invalidateWorkflowListCache()
-      setConfirmDeleteId(null)
-      fetchList()
-    } catch (err) { console.error('Delete failed:', err) }
-  }
-
-  return (
-    <div className="relative">
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex items-center justify-center w-7 h-7 mb-0.5 rounded text-muted-foreground hover:text-foreground hover:bg-[hsl(var(--muted))] transition-colors text-sm"
-        title="Open saved workflow">
-        ☰
-      </button>
-      {open && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute top-full left-0 mt-1 z-50 w-[260px] rounded-lg border border-border bg-card shadow-xl py-1 max-h-[300px] overflow-y-auto">
-            {loading && workflows.length === 0 && (
-              <div className="px-3 py-2 text-xs text-muted-foreground animate-pulse">Loading...</div>
-            )}
-            {!loading && workflows.length === 0 && (
-              <div className="px-3 py-2 text-xs text-muted-foreground">No saved workflows</div>
-            )}
-            {workflows.map(wf => (
-              <div key={wf.id} className="flex items-center hover:bg-accent transition-colors group">
-                <button
-                  onClick={() => { onOpen(wf.id); setOpen(false) }}
-                  className="flex-1 text-left px-3 py-1.5 text-xs min-w-0">
-                  <div className="font-medium truncate">{wf.name}</div>
-                  <div className="text-[10px] text-muted-foreground">{new Date(wf.updatedAt).toLocaleString()}</div>
-                </button>
-                <button onClick={e => { e.stopPropagation(); setConfirmDeleteId(wf.id) }}
-                  className="px-2 py-1 text-muted-foreground/40 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0"
-                  title="Delete workflow">
-                  ✕
-                </button>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-
-      {/* Delete confirmation */}
-      {confirmDeleteId && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60" onClick={() => setConfirmDeleteId(null)}>
-          <div className="w-[340px] rounded-xl border border-border bg-card p-5 shadow-xl" onClick={e => e.stopPropagation()}>
-            <h3 className="text-sm font-semibold mb-1">Delete Workflow</h3>
-            <p className="text-xs text-muted-foreground mb-4">
-              Are you sure you want to delete "{workflows.find(w => w.id === confirmDeleteId)?.name}"? This action cannot be undone.
-            </p>
-            <div className="flex justify-end gap-2">
-              <button onClick={() => setConfirmDeleteId(null)}
-                className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">Cancel</button>
-              <button onClick={() => handleDelete(confirmDeleteId)}
-                className="px-4 py-1.5 rounded-md text-xs font-medium bg-red-500 text-white hover:bg-red-600 transition-colors">Delete</button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  )
 }
 
 /* ── Monitor Toggle Button ─────────────────────────────────────────── */

@@ -38,9 +38,9 @@ interface CustomNodeData {
 
 /* ── constants ───────────────────────────────────────────────────────── */
 
-const HANDLE_SIZE = 14
-const ACCENT = '#60a5fa'
-const ACCENT_MEDIA = '#4ade80'
+const HANDLE_SIZE = 12
+const ACCENT = 'hsl(var(--primary))'
+const ACCENT_MEDIA = 'hsl(142 71% 45%)'
 
 const TEXTAREA_NAMES = new Set([
   'prompt', 'negative_prompt', 'text', 'description', 'content', 'system_prompt',
@@ -76,7 +76,7 @@ const NODE_INPUT_ACCEPT_RULES: Record<string, string | Record<string, string>> =
  *  dragging from a handle always starts a connection, never a resize. */
 const handleLeft = (_connected: boolean, media = false): React.CSSProperties => ({
   width: HANDLE_SIZE, height: HANDLE_SIZE, borderRadius: '50%',
-  border: '2px solid hsl(var(--background))',
+  border: '2px solid hsl(var(--card))',
   background: media ? ACCENT_MEDIA : ACCENT,
   left: -HANDLE_SIZE / 2 - 1,
   top: '50%', transform: 'translateY(-50%)',
@@ -87,7 +87,7 @@ const handleLeft = (_connected: boolean, media = false): React.CSSProperties => 
 /** Right-side output handle */
 const handleRight = (): React.CSSProperties => ({
   width: HANDLE_SIZE, height: HANDLE_SIZE, borderRadius: '50%',
-  border: '2px solid hsl(var(--background))',
+  border: '2px solid hsl(var(--card))',
   background: ACCENT,
   right: -HANDLE_SIZE / 2 - 1,
   top: '50%', transform: 'translateY(-50%)',
@@ -127,7 +127,9 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
   const nodeRef = useRef<HTMLDivElement>(null)
   const [resizing, setResizing] = useState(false)
   const { getViewport, setNodes } = useReactFlow()
-  const nodeLabel = t(`workflow.nodeDefs.${data.nodeType}.label`, data.label)
+  const nodeLabel = data.nodeType === 'ai-task/run' && data.label && String(data.label).startsWith('🤖')
+    ? String(data.label)
+    : t(`workflow.nodeDefs.${data.nodeType}.label`, data.label)
   const localizeInputLabel = useCallback((key: string, fallback: string) =>
     t(`workflow.nodeDefs.${data.nodeType}.inputs.${key}.label`, fallback), [data.nodeType, t])
   const localizeParamLabel = useCallback((key: string, fallback: string) =>
@@ -286,9 +288,22 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
     }
 
     updateNodeParams(id, nextParams)
+
+    // Auto-deduplicate label when multiple nodes use the same model
+    const baseName = model.displayName
+    const otherLabels = allNodes
+      .filter(n => n.id !== id && n.data?.nodeType === 'ai-task/run')
+      .map(n => String(n.data?.label ?? ''))
+    let finalLabel = `🤖 ${baseName}`
+    if (otherLabels.includes(finalLabel)) {
+      let idx = 2
+      while (otherLabels.includes(`🤖 ${baseName} (${idx})`)) idx++
+      finalLabel = `🤖 ${baseName} (${idx})`
+    }
+
     updateNodeData(id, {
       modelInputSchema: model.inputSchema,
-      label: `🤖 ${model.displayName}`
+      label: finalLabel
     })
 
     const execStore = useExecutionStore.getState()
@@ -303,7 +318,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
 
     setModelSearchQuery('')
     setModelSwitchBlocked(false)
-  }, [currentModelId, data.params, edges, id, updateNodeData, updateNodeParams, removeEdgesByIds])
+  }, [currentModelId, data.params, edges, id, updateNodeData, updateNodeParams, removeEdgesByIds, allNodes])
 
   useEffect(() => {
     if (!isAITask) return
@@ -615,28 +630,24 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
           />
         )}
 
-        {isAITask && currentModelId && (
-          <div className="mx-2 mb-1 p-2 rounded-lg border border-blue-500/20 bg-blue-500/8">
-            <div className="text-[11px] text-blue-200 truncate">
-              <span className="text-blue-300/85 mr-1">{t('workflow.currentModel', 'Current model')}:</span>
-              <span className="font-semibold">{currentModelDisplayName || currentModelId}</span>
-            </div>
-          </div>
-        )}
-
         {isAITask && (
-          <div className="mx-2 mb-1">
-            <input
-              type="text"
-              value={modelSearchQuery}
-              onChange={e => {
-                setModelSearchQuery(e.target.value)
-                if (modelSwitchBlocked) setModelSwitchBlocked(false)
-              }}
-              placeholder={t('workflow.modelSelector.searchAllPlaceholder', 'Search all models (fzf syntax)...')}
-              className="w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1.5 text-[11px] text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50"
-              onClick={e => e.stopPropagation()}
-            />
+          <div className="px-3 mb-1">
+            <div className="relative pl-2">
+              <svg className="absolute left-[18px] top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))]" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+              </svg>
+              <input
+                type="text"
+                value={modelSearchQuery}
+                onChange={e => {
+                  setModelSearchQuery(e.target.value)
+                  if (modelSwitchBlocked) setModelSwitchBlocked(false)
+                }}
+                placeholder={t('workflow.modelSelector.searchAllPlaceholder', 'Search all models...')}
+                className="w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] pl-6 pr-2 py-1.5 text-[11px] text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50"
+                onClick={e => e.stopPropagation()}
+              />
+            </div>
             {modelSearchQuery.trim() && (
               <div className="mt-1 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] max-h-[170px] overflow-y-auto">
                 {modelSearchResults.map(model => (
@@ -2398,7 +2409,7 @@ function TextInputBody({ params, onParamChange }: {
             type="button"
             onClick={handleManualOptimize}
             disabled={isOptimizing || !text.trim()}
-            className="inline-flex h-6 items-center gap-1 rounded-md border border-blue-500/45 bg-blue-500/20 px-2.5 text-[10px] font-semibold text-blue-200 shadow-sm transition-all hover:bg-blue-500/30 hover:shadow-blue-500/20 disabled:cursor-not-allowed disabled:opacity-40"
+            className="inline-flex h-6 items-center gap-1 rounded-md border border-blue-500/45 bg-blue-500/15 px-2.5 text-[10px] font-semibold text-blue-600 dark:text-blue-200 shadow-sm transition-all hover:bg-blue-500/25 hover:shadow-blue-500/20 disabled:cursor-not-allowed disabled:opacity-30 disabled:border-[hsl(var(--border))] disabled:bg-[hsl(var(--muted))] disabled:text-[hsl(var(--muted-foreground))] disabled:shadow-none"
             title={t('workflow.textInput.optimizeNowTitle', 'Optimize text now')}
           >
             {isOptimizing ? (
@@ -2422,12 +2433,12 @@ function TextInputBody({ params, onParamChange }: {
             onClick={toggleOptimizeOnRun}
             className={`inline-flex h-6 items-center gap-1.5 rounded-md border px-2.5 text-[10px] font-semibold transition-all ${
               optimizeOnRun
-                ? 'border-emerald-500/55 bg-emerald-500/20 text-emerald-200 shadow-sm'
+                ? 'border-emerald-500/55 bg-emerald-500/15 text-emerald-600 dark:text-emerald-200 shadow-sm'
                 : 'border-[hsl(var(--border))] bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
             }`}
             title={t('workflow.textInput.autoOnRunTitle', 'Only optimize when Run is clicked')}
           >
-            <span className={`inline-block h-1.5 w-1.5 rounded-full ${optimizeOnRun ? 'bg-emerald-300' : 'bg-[hsl(var(--muted-foreground))]/70'}`} />
+            <span className={`inline-block h-1.5 w-1.5 rounded-full ${optimizeOnRun ? 'bg-emerald-500 dark:bg-emerald-300' : 'bg-[hsl(var(--muted-foreground))]/70'}`} />
             {t('workflow.textInput.autoOnRun', 'Auto on Run')}
           </button>
         </div>

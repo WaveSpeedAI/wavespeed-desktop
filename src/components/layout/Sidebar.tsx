@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
@@ -37,6 +38,18 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
   const { t } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
+
+  // Suppress tooltips during collapse/expand animation to prevent stale popups
+  const [tooltipReady, setTooltipReady] = useState(true)
+  const prevCollapsed = useRef(collapsed)
+  useEffect(() => {
+    if (prevCollapsed.current !== collapsed) {
+      setTooltipReady(false)
+      const timer = setTimeout(() => setTooltipReady(true), 350)
+      prevCollapsed.current = collapsed
+      return () => clearTimeout(timer)
+    }
+  }, [collapsed])
 
   const createItems = [
     {
@@ -120,10 +133,10 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
   return (
     <div
       className={cn(
-        "flex h-full flex-col border-r border-border/70 bg-background/95 backdrop-blur transition-transform duration-300",
+        "flex h-full flex-col border-r border-border/70 bg-background/95 backdrop-blur transition-all duration-300",
         // Desktop styles
         "hidden md:flex",
-        collapsed ? "w-20" : "w-64",
+        collapsed ? "w-20" : "w-52",
         // Mobile styles - fixed positioned drawer
         isMobileOpen && "!flex fixed inset-y-0 left-0 z-50 w-72 shadow-2xl"
       )}
@@ -174,8 +187,9 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
 
               {group.items.map((item) => {
                 const active = isActive(item)
+                const showTooltip = collapsed && !isMobileOpen && tooltipReady
                 return (
-                  <Tooltip key={item.href} delayDuration={0}>
+                  <Tooltip key={item.href} delayDuration={0} open={showTooltip ? undefined : false}>
                     <TooltipTrigger asChild>
                       <button
                         onClick={() => {
@@ -201,7 +215,7 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
                         {(!collapsed || isMobileOpen) && <span>{t(item.titleKey)}</span>}
                       </button>
                     </TooltipTrigger>
-                    {collapsed && !isMobileOpen && (
+                    {showTooltip && (
                       <TooltipContent side="right">
                         {t(item.titleKey)}
                       </TooltipContent>
@@ -219,8 +233,9 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
         <nav className="flex flex-col gap-1">
           {bottomNavItems.map((item) => {
             const active = location.pathname === item.href
+            const showTooltip = collapsed && !isMobileOpen && tooltipReady
             return (
-              <Tooltip key={item.href} delayDuration={0}>
+              <Tooltip key={item.href} delayDuration={0} open={showTooltip ? undefined : false}>
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => navigate(item.href)}
@@ -237,7 +252,7 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
                     {(!collapsed || isMobileOpen) && <span>{t(item.titleKey)}</span>}
                   </button>
                 </TooltipTrigger>
-                {collapsed && !isMobileOpen && (
+                {showTooltip && (
                   <TooltipContent side="right">
                     {t(item.titleKey)}
                   </TooltipContent>
@@ -249,7 +264,7 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
 
         {/* Toggle Button - hidden on mobile */}
         {!isMobileOpen && (
-          <Tooltip delayDuration={0}>
+          <Tooltip delayDuration={0} open={collapsed && tooltipReady ? undefined : false}>
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
@@ -270,6 +285,7 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
                 )}
               </Button>
             </TooltipTrigger>
+            <TooltipContent side="right">{t('nav.expand', 'Expand')}</TooltipContent>
           </Tooltip>
         )}
       </div>

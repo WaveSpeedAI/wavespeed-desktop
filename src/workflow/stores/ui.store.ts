@@ -12,6 +12,7 @@ export interface UIState {
   showResults: boolean
   showSettings: boolean
   showNodePalette: boolean
+  showWorkflowPanel: boolean
   previewSrc: string | null
   previewItems: string[]
   previewIndex: number
@@ -25,6 +26,7 @@ export interface UIState {
   toggleResults: () => void
   toggleSettings: () => void
   toggleNodePalette: () => void
+  toggleWorkflowPanel: () => void
   openPreview: (src: string, items?: string[]) => void
   prevPreview: () => void
   nextPreview: () => void
@@ -40,6 +42,7 @@ export const useUIStore = create<UIState>((set, get) => ({
   showResults: false,
   showSettings: false,
   showNodePalette: true,
+  showWorkflowPanel: false,
   previewSrc: null,
   previewItems: [],
   previewIndex: -1,
@@ -55,7 +58,8 @@ export const useUIStore = create<UIState>((set, get) => ({
   toggleNodeConfig: () => set(s => ({ showNodeConfig: !s.showNodeConfig })),
   toggleResults: () => set(s => ({ showResults: !s.showResults })),
   toggleSettings: () => set(s => ({ showSettings: !s.showSettings, selectedNodeId: s.showSettings ? s.selectedNodeId : null })),
-  toggleNodePalette: () => set(s => ({ showNodePalette: !s.showNodePalette })),
+  toggleNodePalette: () => set(s => ({ showNodePalette: !s.showNodePalette, showWorkflowPanel: false })),
+  toggleWorkflowPanel: () => set(s => ({ showWorkflowPanel: !s.showWorkflowPanel, showNodePalette: false })),
   openPreview: (src, items) => set(() => {
     const list = Array.isArray(items) && items.length > 0 ? items : [src]
     const idx = Math.max(0, list.indexOf(src))

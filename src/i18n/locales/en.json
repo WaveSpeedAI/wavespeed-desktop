@@ -911,7 +911,7 @@
     "show": "Show",
     "hide": "Hide",
     "optional": "optional",
-    "searchNodesPlaceholder": "Search nodes (fzf syntax)...",
+    "searchNodesPlaceholder": "Search nodes...",
     "dragOrClickToAdd": "Drag to canvas or click to add",
     "noNodesAvailable": "No nodes available",
     "nodeCategory": {
@@ -959,8 +959,7 @@
       "output/file": {
         "label": "File Export",
         "inputs": {
-          "url": { "label": "URL" },
-          "content": { "label": "Content (legacy)" }
+          "url": { "label": "URL" }
         },
         "params": {
           "outputDir": { "label": "Output Directory" },
@@ -1012,7 +1011,7 @@
       "loadingHint": "This may take a few seconds on first launch",
       "recent": "Recent",
       "searchPlaceholder": "Search models...",
-      "searchAllPlaceholder": "Search all models (fzf syntax)...",
+      "searchAllPlaceholder": "Search all models...",
       "refreshTooltip": "Refresh model catalog",
       "refreshing": "Refreshing...",
       "noModelsFound": "No models found",

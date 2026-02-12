@@ -96,10 +96,12 @@ export function ProcessingProgress({
     return null
   }
 
+  const progressValue = showOverall && phases.length > 1 ? overallProgress : currentPhase?.progress || 0
+
   return (
-    <div className={cn('space-y-2', className)}>
-      {/* Single row: phase dots + current phase label + progress + ETA */}
-      <div className="flex items-center gap-3">
+    <div className={cn('space-y-1.5', className)}>
+      {/* Top row: phase dots + label + ETA + percentage */}
+      <div className="flex items-center gap-2">
         {/* Phase indicators - only show if not too many */}
         {shouldShowPhaseDots && (
           <div className="flex items-center gap-0.5 shrink-0">
@@ -123,29 +125,24 @@ export function ProcessingProgress({
 
         {/* Current phase label with spinner */}
         {currentLabel && (
-          <span className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">
             {isActive && currentPhase?.status === 'active' && (
-              <Loader2 className="h-3 w-3 animate-spin" />
+              <Loader2 className="h-3 w-3 animate-spin shrink-0" />
             )}
             {currentPhase?.status === 'completed' && (
-              <Check className="h-3 w-3 text-primary" />
+              <Check className="h-3 w-3 text-primary shrink-0" />
             )}
-            {currentLabel}
+            <span className="truncate">{currentLabel}</span>
             {!isComplete && currentPhase?.detail && formatDetail(currentPhase.detail) && (
-              <span className="text-muted-foreground/60">
+              <span className="text-muted-foreground/60 shrink-0">
                 ({formatDetail(currentPhase.detail)})
               </span>
             )}
           </span>
         )}
 
-        {/* Progress bar - fills remaining space */}
-        <div className="flex-1 min-w-0">
-          <Progress
-            value={showOverall && phases.length > 1 ? overallProgress : currentPhase?.progress || 0}
-            className="h-1.5"
-          />
-        </div>
+        {/* Spacer */}
+        <div className="flex-1" />
 
         {/* Percentage and ETA */}
         <div className="flex items-center gap-2 shrink-0 text-xs">
@@ -153,10 +150,16 @@ export function ProcessingProgress({
             <span className="text-muted-foreground/60">~{eta}</span>
           )}
           <span className="font-medium w-12 text-right">
-            {(showOverall && phases.length > 1 ? overallProgress : currentPhase?.progress || 0).toFixed(1)}%
+            {progressValue.toFixed(1)}%
           </span>
         </div>
       </div>
+
+      {/* Progress bar - full width on its own row */}
+      <Progress
+        value={progressValue}
+        className="h-1.5"
+      />
     </div>
   )
 }

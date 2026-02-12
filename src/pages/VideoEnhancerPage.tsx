@@ -419,7 +419,7 @@ export function VideoEnhancerPage() {
 
   return (
     <div
-      className="p-8 relative"
+      className="p-4 md:p-8 relative"
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       onDragEnter={handleDragEnter}
@@ -436,8 +436,8 @@ export function VideoEnhancerPage() {
           </div>
         </div>
       )}
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
+      {/* Header - hidden on mobile (MobileHeader already shows title) */}
+      <div className="hidden md:flex items-center gap-4 mb-8">
         <Button
           variant="ghost"
           size="icon"
@@ -454,6 +454,15 @@ export function VideoEnhancerPage() {
           </p>
         </div>
       </div>
+      {/* Mobile back button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="md:hidden mb-2 -ml-1"
+        onClick={handleBack}
+      >
+        <ArrowLeft className="h-5 w-5" />
+      </Button>
 
       {/* Upload area */}
       {!videoUrl && (
@@ -497,9 +506,9 @@ export function VideoEnhancerPage() {
 
       {/* Video preview area */}
       {videoUrl && (
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           {/* Controls */}
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-wrap items-center gap-3 md:gap-4">
             <Button
               variant="outline"
               onClick={() => fileInputRef.current?.click()}

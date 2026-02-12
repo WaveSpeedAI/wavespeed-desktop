@@ -244,6 +244,22 @@ export function BatchOutputGrid({
     setSelectedResult(successfulResults[newIdx])
   }, [selectedResult, successfulResults])
 
+  // Keyboard navigation for detail dialog
+  useEffect(() => {
+    if (!selectedResult) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        navigateResult('prev')
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        navigateResult('next')
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [selectedResult, navigateResult])
+
   return (
     <div className={cn('flex flex-col h-full', className)}>
       {/* Header */}

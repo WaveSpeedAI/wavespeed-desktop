@@ -154,6 +154,22 @@ export function HistoryPage() {
     setSelectedItem(items[newIdx])
   }, [selectedItem, items])
 
+  // Keyboard navigation for detail dialog
+  useEffect(() => {
+    if (!selectedItem) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        navigateHistory('prev')
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        navigateHistory('next')
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [selectedItem, navigateHistory])
+
   const fetchHistory = useCallback(async () => {
     if (!isValidated) return
 

@@ -56,6 +56,7 @@ export function MobilePlaygroundPage() {
 
   const activeTab = getActiveTab()
   const templateLoadedRef = useRef<string | null>(null)
+  const pendingTemplateRef = useRef<{ values: Record<string, unknown>, name: string } | null>(null)
   const prevOutputsLengthRef = useRef(0)
   const lastSavedPredictionRef = useRef<string | null>(null)
 
@@ -130,18 +131,25 @@ export function MobilePlaygroundPage() {
     if (templateId && templatesLoaded && activeTab && templateLoadedRef.current !== templateId) {
       const template = templates.find(t => t.id === templateId)
       if (template) {
-        setFormValues(template.values)
         templateLoadedRef.current = templateId
-        // Switch to input view when loading template
         setActiveView('input')
-        toast({
-          title: t('playground.templateLoaded'),
-          description: t('playground.loadedTemplate', { name: template.name }),
-        })
+        // Store template values as pending — they will be applied in handleSetDefaults
+        // after DynamicForm loads the model schema and sets default values.
+        // This avoids the race condition where defaults overwrite template values.
+        pendingTemplateRef.current = { values: template.values, name: template.name }
+        // If model is already correct and form fields exist, apply immediately
+        if (activeTab.selectedModel?.model_id === template.modelId && activeTab.formFields.length > 0) {
+          setFormValues(template.values)
+          pendingTemplateRef.current = null
+          toast({
+            title: t('playground.templateLoaded'),
+            description: t('playground.loadedTemplate', { name: template.name }),
+          })
+        }
         setSearchParams({}, { replace: true })
       }
     }
-  }, [searchParams, templates, templatesLoaded, activeTab, setFormValues, setSearchParams])
+  }, [searchParams, templates, templatesLoaded, activeTab, setFormValues, setSearchParams, t])
 
   const handleSaveTemplate = () => {
     if (!activeTab?.selectedModel || !newTemplateName.trim()) return
@@ -186,7 +194,17 @@ export function MobilePlaygroundPage() {
 
   const handleSetDefaults = useCallback((defaults: Record<string, unknown>) => {
     setFormValues(defaults)
-  }, [setFormValues])
+    // Apply pending template values after defaults are set (overrides defaults)
+    if (pendingTemplateRef.current) {
+      const { values, name } = pendingTemplateRef.current
+      pendingTemplateRef.current = null
+      setFormValues(values)
+      toast({
+        title: t('playground.templateLoaded'),
+        description: t('playground.loadedTemplate', { name }),
+      })
+    }
+  }, [setFormValues, t])
 
   const handleRun = async () => {
     // Switch to output view immediately so user can play game while waiting

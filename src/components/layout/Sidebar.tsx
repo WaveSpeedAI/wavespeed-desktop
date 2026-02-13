@@ -182,7 +182,6 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
         {(!collapsed || isMobileOpen) && (
           <div className="min-w-0">
             <span className="block whitespace-nowrap text-lg font-bold gradient-text">WaveSpeed</span>
-            <span className="block whitespace-nowrap text-[11px] text-muted-foreground">AI Creative Studio</span>
           </div>
         )}
       </div>
@@ -233,14 +232,16 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
                         
                         <item.icon className="h-4 w-4 shrink-0 relative z-10" />
                         {(!collapsed || isMobileOpen) && (
-                          <span className="relative z-10 flex items-center gap-1.5">
-                            {t(item.titleKey)}
+                          <>
+                            <span className="relative z-10">
+                              {t(item.titleKey)}
+                            </span>
                             {isNewFeature && (
-                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-sm">
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-sm ml-auto relative z-10">
                                 NEW
                               </span>
                             )}
-                          </span>
+                          </>
                         )}
                         {/* Red dot for collapsed state */}
                         {isNewFeature && (collapsed && !isMobileOpen) && (

@@ -159,10 +159,16 @@ function propertyToField(
 
   // Handle x-ui-component: uploader (for zip files etc.)
   if (prop['x-ui-component'] === 'uploader') {
+    // If no x-accept, try to infer from field name
+    let fileAccept = prop['x-accept']
+    if (!fileAccept) {
+      const inferred = detectFileType(name)
+      fileAccept = inferred?.accept || '*/*'
+    }
     return {
       ...baseField,
       type: 'file',
-      accept: prop['x-accept'] || '*/*',
+      accept: fileAccept,
       placeholder: prop['x-placeholder'],
     }
   }
@@ -190,8 +196,8 @@ function propertyToField(
     }
   }
 
-  // Handle loras fields (including high_noise_loras, low_noise_loras via x-ui-component)
-  if (prop['x-ui-component'] === 'loras' || (name.toLowerCase() === 'loras' && prop.type === 'array')) {
+  // Handle loras fields (including high_noise_loras, low_noise_loras)
+  if (prop['x-ui-component'] === 'loras' || (name.toLowerCase().includes('lora') && prop.type === 'array')) {
     return {
       ...baseField,
       type: 'loras',

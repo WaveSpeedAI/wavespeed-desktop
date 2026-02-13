@@ -130,60 +130,67 @@ export function FreeToolsPage() {
   ]
 
   return (
-    <div className="p-4 md:p-8 pt-14 md:pt-8">
-      <div className="flex items-baseline gap-3 mb-6 md:mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold">{t('freeTools.title')}</h1>
-        <p className="text-muted-foreground text-sm md:text-base">{t('freeTools.description')}</p>
+    <div className="flex h-full flex-col bg-gradient-to-b from-background via-background to-muted/20 pt-12 md:pt-0">
+      <div className="page-header border-b border-border/70 bg-background/70 px-4 py-4 backdrop-blur md:px-6">
+        <div className="flex flex-col gap-1.5 md:flex-row md:items-baseline md:gap-3">
+          <h1 className="flex items-center gap-2 text-2xl font-bold md:text-3xl">
+            <Sparkles className="h-6 w-6 text-primary" />
+            {t('freeTools.title')}
+          </h1>
+          <p className="max-w-2xl text-sm text-muted-foreground md:text-base">{t('freeTools.description')}</p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 max-w-6xl">
-        {tools.map((tool) => (
-          <Card
-            key={tool.id}
-            className="group cursor-pointer hover:shadow-lg transition-all duration-200 hover:border-primary/50 flex flex-col relative overflow-hidden"
-            onClick={() => navigate(tool.route)}
-          >
-            {/* Decorative gradient background */}
-            <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl ${tool.gradient} rounded-full blur-2xl opacity-60 group-hover:opacity-100 group-hover:scale-125 transition-all duration-500`} />
-            <div className={`absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr ${tool.gradient} rounded-full blur-xl opacity-40 group-hover:opacity-70 transition-all duration-500`} />
-            
-            {/* Demo image */}
-            <div className="px-4 pt-4 relative z-10">
-              <div className="h-32 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
-                {tool.image ? (
-                  <img
-                    src={tool.image}
-                    alt={t(tool.titleKey)}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                ) : (
-                  <tool.icon className="h-12 w-12 text-muted-foreground/30 group-hover:text-primary/50 transition-colors" />
-                )}
-              </div>
-            </div>
-            
-            <CardHeader className="relative z-10 pt-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                  <tool.icon className="h-4 w-4 text-primary" />
+      <div className="flex-1 overflow-auto p-4 md:p-6">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-6">
+          {tools.map((tool) => (
+            <Card
+              key={tool.id}
+              className="group relative flex cursor-pointer flex-col overflow-hidden rounded-xl border border-border/70 bg-card/80 shadow-sm transition-all duration-200 hover:border-primary/40 hover:shadow-lg"
+              onClick={() => navigate(tool.route)}
+            >
+              {/* Decorative gradient background */}
+              <div className={`absolute right-0 top-0 h-32 w-32 rounded-full bg-gradient-to-bl ${tool.gradient} opacity-60 blur-2xl transition-all duration-500 group-hover:scale-125 group-hover:opacity-100`} />
+              <div className={`absolute bottom-0 left-0 h-24 w-24 rounded-full bg-gradient-to-tr ${tool.gradient} opacity-40 blur-xl transition-all duration-500 group-hover:opacity-70`} />
+
+              {/* Demo image */}
+              <div className="relative z-10 px-4 pt-4">
+                <div className="h-32 overflow-hidden rounded-lg border border-border/60 bg-muted flex items-center justify-center">
+                  {tool.image ? (
+                    <img
+                      src={tool.image}
+                      alt={t(tool.titleKey)}
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  ) : (
+                    <tool.icon className="h-12 w-12 text-muted-foreground/30 transition-colors group-hover:text-primary/50" />
+                  )}
                 </div>
-                <CardTitle className="text-base">{t(tool.titleKey)}</CardTitle>
               </div>
-              <CardDescription className="mt-2 text-sm">
-                {t(tool.descriptionKey)}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="mt-auto relative z-10 pt-0">
-              <Button
-                variant="ghost"
-                className="w-full justify-between group-hover:bg-primary/5"
-              >
-                <span>{t('common.open')}</span>
-                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
+
+              <CardHeader className="relative z-10 pt-4">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-lg bg-primary/10 p-2 transition-colors group-hover:bg-primary/20">
+                    <tool.icon className="h-4 w-4 text-primary" />
+                  </div>
+                  <CardTitle className="text-base">{t(tool.titleKey)}</CardTitle>
+                </div>
+                <CardDescription className="mt-2 text-sm">
+                  <span className="line-clamp-2 leading-relaxed">{t(tool.descriptionKey)}</span>
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="relative z-10 mt-auto pt-0">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-between rounded-lg group-hover:bg-primary/5"
+                >
+                  <span>{t('common.open')}</span>
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
   )

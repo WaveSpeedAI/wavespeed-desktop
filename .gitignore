@@ -89,6 +89,15 @@ tmpclaude-*
 
 # Local development
 *.local.json
+
+# Kiro IDE
+.kiro/
+
+# Workflow data (dev mode storage)
+workflow-data/
+
+# Test build outputs
+out-test/
 README.zh-CN.md
 
 # Mobile (Capacitor/Android)

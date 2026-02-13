@@ -70,12 +70,12 @@ export function BatchControls({
   })()
 
   return (
-    <div className="flex">
+    <div className="flex rounded-xl border border-transparent shadow-sm">
       {/* Main Run Button */}
       <Button
         className={cn(
-          'flex-1 gradient-bg hover:opacity-90 transition-opacity glow-sm',
-          'rounded-r-none border-r border-r-white/20'
+          'flex-1 gradient-bg hover:opacity-90 transition-opacity',
+          'rounded-r-none border-r border-r-white/20 shadow-none'
         )}
         onClick={onRun}
         disabled={disabled || isRunning || isUploading}
@@ -90,7 +90,7 @@ export function BatchControls({
             <Play className="mr-2 h-4 w-4" />
             {displayLabel}
             {displayPrice && (
-              <span className="ml-2 text-xs opacity-80">{displayPrice}</span>
+              <span className="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-medium">{displayPrice}</span>
             )}
           </>
         )}
@@ -101,15 +101,15 @@ export function BatchControls({
         <DropdownMenuTrigger asChild>
           <Button
             className={cn(
-              'gradient-bg hover:opacity-90 transition-opacity glow-sm',
-              'rounded-l-none px-2'
+              'gradient-bg hover:opacity-90 transition-opacity',
+              'rounded-l-none px-2 shadow-none'
             )}
             disabled={disabled || isRunning || isUploading}
           >
             <ChevronDown className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-64 p-4">
+        <DropdownMenuContent align="end" className="w-64 rounded-xl border border-border/80 p-4 shadow-xl">
           <div className="space-y-4">
             {/* Header */}
             <div className="font-medium text-sm">{t('playground.batch.settings')}</div>

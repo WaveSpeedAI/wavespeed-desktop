@@ -9,7 +9,7 @@ import {
   DialogContent,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Download, CheckCircle2, XCircle, ExternalLink, Copy, Check, Loader2 } from 'lucide-react'
+import { Download, CheckCircle2, XCircle, ExternalLink, Copy, Check, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { AudioPlayer } from '@/components/shared/AudioPlayer'
 import { useAssetsStore, detectAssetType, generateDownloadFilename } from '@/stores/assetsStore'
 import { toast } from '@/hooks/useToast'
@@ -358,7 +358,7 @@ export function BatchOutputGrid({
   return (
     <div className={cn('flex flex-col h-full', className)}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="mb-3 flex items-center justify-between rounded-xl border border-border/70 bg-background/70 px-3 py-2 backdrop-blur">
         <div className="flex items-center gap-3">
           <h3 className="text-sm font-medium flex items-center gap-2">
             {isRunning && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -429,17 +429,17 @@ export function BatchOutputGrid({
                 key={index}
                 onClick={() => result && !hasError && setSelectedResult(result)}
                 className={cn(
-                  'relative border rounded-lg overflow-hidden bg-card transition-all',
+                  'relative overflow-hidden rounded-xl border border-border/70 bg-card/80 transition-all',
                   isPending
                     ? 'cursor-default'
                     : hasError
-                      ? 'border-destructive/50 opacity-70 cursor-default'
-                      : 'hover:border-primary hover:shadow-md cursor-pointer',
-                  result && savedIndexes.has(result.index) && 'ring-1 ring-green-500/50'
+                      ? 'border-destructive/50 opacity-75 cursor-default'
+                      : 'cursor-pointer hover:border-primary/40 hover:shadow-md',
+                  result && savedIndexes.has(result.index) && 'ring-1 ring-green-500/50 shadow-sm'
                 )}
               >
                 {/* Thumbnail */}
-                <div className="aspect-square bg-muted flex items-center justify-center">
+                <div className="aspect-square bg-muted/70 flex items-center justify-center">
                   {isPending && isRunning ? (
                     <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                   ) : isPending ? (
@@ -477,7 +477,7 @@ export function BatchOutputGrid({
                 </div>
 
                 {/* Footer */}
-                <div className="p-2 flex items-center justify-between">
+                <div className="flex items-center justify-between border-t border-border/60 bg-background/70 p-2">
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs font-medium">#{index + 1}</span>
                     {seed !== undefined && (
@@ -514,7 +514,7 @@ export function BatchOutputGrid({
 
       {/* Detail Dialog */}
       <Dialog open={!!selectedResult} onOpenChange={() => setSelectedResult(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-0">
+        <DialogContent className="flex max-h-[90vh] max-w-4xl flex-col overflow-hidden border-border/70 p-0">
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b">
             <DialogTitle className="flex items-center gap-2">
@@ -537,7 +537,7 @@ export function BatchOutputGrid({
                     onClick={() => navigateResult('prev')}
                     className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full opacity-80 hover:opacity-100 active:bg-black/60"
                   >
-                    <span className="text-xl">◀</span>
+                    <ChevronLeft className="h-5 w-5" />
                   </Button>
                   <Button
                     size="icon"
@@ -545,7 +545,7 @@ export function BatchOutputGrid({
                     onClick={() => navigateResult('next')}
                     className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full opacity-80 hover:opacity-100 active:bg-black/60"
                   >
-                    <span className="text-xl">▶</span>
+                    <ChevronRight className="h-5 w-5" />
                   </Button>
                 </>
               )}

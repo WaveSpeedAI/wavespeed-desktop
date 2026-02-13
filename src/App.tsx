@@ -71,6 +71,8 @@ function App() {
         <Route path="assets" element={<AssetsPage />} />
         <Route path="z-image" element={<ZImagePage />} />
         <Route path="free-tools" element={<FreeToolsPage />} />
+        {/* Workflow page - persistent rendered */}
+        <Route path="workflow" element={<PersistentPagePlaceholder />} />
         {/* Free tools pages are rendered persistently in Layout */}
         <Route path="free-tools/video-enhancer" element={<PersistentPagePlaceholder />} />
         <Route path="free-tools/image-enhancer" element={<PersistentPagePlaceholder />} />

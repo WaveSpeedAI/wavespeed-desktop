@@ -9,6 +9,7 @@ Cross-platform applications for running AI models from [WaveSpeedAI](https://wav
 [![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Mobile.apk)
 
 ![Playground Screenshot](https://github.com/user-attachments/assets/904a3ff8-c302-4b84-851b-34a76486c891)
+![Workflow Screenshot](https://github.com/user-attachments/assets/f54bea9d-7d63-42c2-80ce-ea76e5dc5de4)
 ![Face Swapper Screenshot](https://github.com/user-attachments/assets/f9eb0022-4bf7-4efd-a9a6-43138ab5cfcb)
 ![Z-Image Screenshot](https://github.com/user-attachments/assets/f2eabfb1-a613-4b01-9f84-a5ae5fd07638)
 
@@ -22,6 +23,16 @@ Cross-platform applications for running AI models from [WaveSpeedAI](https://wav
 - **Mask Drawing**: Interactive canvas-based mask editor for models that accept mask inputs, with brush, eraser, and bucket fill tools
 - **Templates**: Save and reuse playground configurations as templates for quick access
 - **LoRA Support**: Full support for LoRAs including high-noise and low-noise LoRAs for Wan 2.2 models
+- **Visual Workflow Editor**: Node-based editor for building and executing AI/processing pipelines
+  - **Node Types**: Media upload, text input, AI task (any WaveSpeedAI model), 12 free tool nodes, file export, preview display, and annotation notes
+  - **Canvas Interaction**: Drag & drop nodes, connect handles, zoom/pan, context menus, copy/paste, duplicate, and keyboard shortcuts (Ctrl+Z/Y, Ctrl+C/V, Ctrl+S, Delete)
+  - **Execution Control**: Run all, run selected node, continue from any node, retry failed nodes, cancel individual or all, and batch runs (1-99x with auto-randomized seeds)
+  - **Execution Monitor**: Real-time progress panel with per-node status, progress bars, cost tracking, and I/O data inspection
+  - **Multi-Tab**: Chrome-style tabs with session persistence, tab renaming (double-click), unsaved changes indicator, and auto-restore on restart
+  - **Results Management**: Per-node execution history, fullscreen preview (images, videos, 3D models, audio), arrow key navigation, download, and clear results
+  - **Cost Estimation & Budget**: Real-time cost estimate per run, daily budget tracking, per-execution limits, and cost breakdown per node
+  - **Import/Export**: Save and load workflows as JSON with SQLite-backed persistence
+  - **Undo/Redo**: Snapshot-based (up to 50 states) with debounced text input support
 - **Free Tools**: Free AI-powered image and video tools (no API key required)
   - **Image Enhancer**: Upscale images 2x-4x with ESRGAN models (slim, medium, thick quality options)
   - **Video Enhancer**: Frame-by-frame video upscaling with real-time progress and ETA
@@ -168,23 +179,36 @@ See [mobile/README.md](mobile/README.md) for detailed mobile development guide.
 
 ```
 wavespeed-desktop/
-├── electron/           # Electron main process
-│   ├── main.ts         # Main process entry
-│   └── preload.ts      # Preload script (IPC bridge)
-├── src/                # Shared source code (desktop + mobile)
-│   ├── api/            # API client
-│   ├── components/     # React components
-│   │   ├── layout/     # Layout components
-│   │   ├── playground/ # Playground components
-│   │   ├── shared/     # Shared components
-│   │   └── ui/         # shadcn/ui components
-│   ├── hooks/          # Custom React hooks
-│   ├── i18n/           # Internationalization (18 languages)
-│   ├── lib/            # Utility functions
-│   ├── pages/          # Page components
-│   ├── stores/         # Zustand stores
-│   ├── types/          # TypeScript types
-│   └── workers/        # Web Workers (upscaler, background remover, image eraser, ffmpeg)
+├── electron/              # Electron main process
+│   ├── main.ts            # Main process entry
+│   ├── preload.ts         # Preload script (IPC bridge)
+│   └── workflow/          # Workflow backend
+│       ├── db/            # SQLite database (workflow, node, edge, execution repos)
+│       ├── ipc/           # IPC handlers (workflow, execution, history, cost, storage)
+│       ├── nodes/         # Node type definitions & handlers (AI task, free tools, I/O)
+│       ├── engine/        # Execution engine (DAG runner, scheduler)
+│       └── utils/         # File storage, cost estimation
+├── src/
+│   ├── api/               # API client
+│   ├── components/        # React components
+│   │   ├── layout/        # Layout components
+│   │   ├── playground/    # Playground components
+│   │   ├── shared/        # Shared components
+│   │   └── ui/            # shadcn/ui components
+│   ├── hooks/             # Custom React hooks
+│   ├── i18n/              # Internationalization (18 languages)
+│   ├── lib/               # Utility functions
+│   ├── pages/             # Page components
+│   ├── stores/            # Zustand stores
+│   ├── types/             # TypeScript types
+│   ├── workers/           # Web Workers (upscaler, background remover, image eraser, ffmpeg)
+│   └── workflow/          # Workflow frontend
+│       ├── components/    # Canvas, node palette, config panel, results panel, run monitor
+│       ├── stores/        # Workflow, execution, UI stores (Zustand)
+│       ├── hooks/         # Workflow-specific hooks
+│       ├── ipc/           # Type-safe IPC client
+│       └── types/         # Workflow type definitions
+├── .github/workflows/     # GitHub Actions
 ├── mobile/             # Mobile app (Android)
 │   ├── src/            # Mobile-specific overrides
 │   ├── android/        # Android native project
@@ -201,6 +225,8 @@ wavespeed-desktop/
 - **Styling**: Tailwind CSS + shadcn/ui
 - **State Management**: Zustand
 - **HTTP Client**: Axios
+- **Workflow Canvas**: React Flow
+- **Workflow Database**: sql.js (SQLite in-process)
 
 ### Mobile
 - **Framework**: Capacitor 6

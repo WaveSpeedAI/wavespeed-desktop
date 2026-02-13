@@ -14,7 +14,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { Download, ExternalLink, Copy, Check, AlertTriangle, X, Save, FolderHeart, Gamepad2 } from 'lucide-react'
+import { Download, ExternalLink, Copy, Check, AlertTriangle, X, Save, FolderHeart, Gamepad2, Sparkles } from 'lucide-react'
 import { AudioPlayer } from '@/components/shared/AudioPlayer'
 import { FlappyBird } from './FlappyBird'
 import { toast } from '@/hooks/useToast'
@@ -358,9 +358,9 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
     }
 
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-4">
+      <div className="flex h-full flex-col items-center justify-center gap-4 rounded-xl border border-destructive/20 bg-destructive/5 px-6">
         <AlertTriangle className="h-12 w-12 text-destructive" />
-        <div className="text-center max-w-lg space-y-3">
+        <div className="max-w-lg space-y-3 text-center">
           <p className="text-destructive font-medium">{errorMessage}</p>
           {errorDetails && (
             <details className="text-left">
@@ -382,7 +382,7 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
 
   if (showGameView) {
     return (
-      <div className="relative h-full">
+      <div className="relative h-full overflow-hidden rounded-xl border border-border/70 bg-card/50">
         <FlappyBird
           onGameStart={handleGameStart}
           onGameEnd={handleGameEnd}
@@ -402,6 +402,24 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
   return (
     <div className="h-full flex flex-col relative">
       {/* Play game button - top left */}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute left-3 top-3 z-10 h-8 w-8 rounded-lg border border-border/70 bg-background/80 opacity-70 backdrop-blur hover:opacity-100"
+            onClick={() => {
+              setShowGame(true)
+              setGameEndedWithResults(true)
+            }}
+          >
+            <Gamepad2 className="h-4 w-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          {t('playground.flappyBird.playWhileWaiting', 'Play while waiting')}
+        </TooltipContent>
+      </Tooltip>
       {!hideGameButton && (
         <Tooltip>
           <TooltipTrigger asChild>
@@ -438,6 +456,12 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
               key={index}
               className="relative group rounded-lg border overflow-hidden bg-muted/30 flex-1 min-h-0 flex items-center justify-center"
             >
+              <div className="absolute left-2 top-2 z-10">
+                <Badge variant="secondary" className="rounded-md bg-background/80 px-2 py-0.5 text-[11px] backdrop-blur">
+                  <Sparkles className="mr-1 h-3 w-3" />
+                  #{index + 1}
+                </Badge>
+              </div>
               {isImage && (
                 <img
                   src={outputStr}
@@ -495,7 +519,7 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
               {/* Timing overlay */}
               {prediction?.timings?.inference && (
                 <div className="absolute bottom-2 left-2 flex items-center gap-1">
-                  <Badge variant="secondary" className="text-xs bg-black/60 text-white border-0">
+                  <Badge variant="secondary" className="border-0 bg-black/60 text-xs text-white">
                     {(prediction.timings.inference / 1000).toFixed(2)}s
                   </Badge>
                   {prediction.has_nsfw_contents?.some(Boolean) && (
@@ -512,7 +536,7 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
                 <Button
                   size="icon"
                   variant="secondary"
-                  className="h-8 w-8"
+                  className="h-8 w-8 rounded-lg bg-background/90 backdrop-blur"
                   onClick={() => handleCopy(copyValue, index)}
                 >
                   {copiedIndex === index ? (
@@ -525,7 +549,7 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
                   <Button
                     size="icon"
                     variant="secondary"
-                    className="h-8 w-8"
+                    className="h-8 w-8 rounded-lg bg-background/90 backdrop-blur"
                     onClick={() => handleOpenExternal(outputStr)}
                   >
                     <ExternalLink className="h-4 w-4" />
@@ -538,7 +562,7 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
                         <Button
                           size="icon"
                           variant="secondary"
-                          className="h-8 w-8"
+                          className="h-8 w-8 rounded-lg bg-background/90 backdrop-blur"
                           onClick={() => handleSaveToAssets(outputStr, index)}
                           disabled={savedIndexes.has(index) || savingIndex === index || !modelId}
                         >
@@ -556,7 +580,7 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
                     <Button
                       size="icon"
                       variant="secondary"
-                      className="h-8 w-8"
+                      className="h-8 w-8 rounded-lg bg-background/90 backdrop-blur"
                       onClick={() => handleDownload(outputStr, index)}
                     >
                       <Download className="h-4 w-4" />

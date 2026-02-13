@@ -31,7 +31,10 @@
     "selectAll": "เลือกทั้งหมด",
     "retry": "ลองอีกครั้ง",
     "downloadFailed": "ดาวน์โหลดล้มเหลว กรุณาตรวจสอบการเชื่อมต่อเครือข่ายของคุณ",
-    "openInBrowser": "เปิดในเบราว์เซอร์"
+    "openInBrowser": "เปิดในเบราว์เซอร์",
+    "settings": "การตั้งค่า",
+    "clearAll": "ล้างทั้งหมด",
+    "deselectAll": "ยกเลิกการเลือกทั้งหมด"
   },
   "nav": {
     "home": "หน้าแรก",
@@ -44,7 +47,9 @@
     "zImage": "Z-Image",
     "freeTools": "เครื่องมือฟรี",
     "settings": "การตั้งค่า",
-    "collapse": "ยุบ"
+    "collapse": "ยุบ",
+    "workflow": "เวิร์กโฟลว์",
+    "expand": "ขยาย"
   },
   "welcome": {
     "tagline": "เครื่องมือสร้างสรรค์ AI ที่ปลายนิ้วของคุณ",
@@ -86,6 +91,11 @@
         "title": "เครื่องมือฟรี",
         "description": "เครื่องมือ AI ที่ทรงพลังที่ทำงานในเครื่อง - ไม่ต้องใช้ API key",
         "badge": "ฟรี"
+      },
+      "workflow": {
+        "title": "เวิร์กโฟลว์",
+        "description": "สร้าง pipeline AI แบบภาพด้วยตัวแก้ไขตามโหนด",
+        "badge": "ใหม่"
       }
     }
   },
@@ -178,7 +188,9 @@
         "hint": "พื้นที่สีขาวแสดง พื้นที่สีดำซ่อน"
       },
       "removeFile": "ลบไฟล์",
-      "removeFileConfirm": "คุณแน่ใจหรือไม่ว่าต้องการลบไฟล์นี้?"
+      "removeFileConfirm": "คุณแน่ใจหรือไม่ว่าต้องการลบไฟล์นี้?",
+      "micInUse": "ไมโครโฟนถูกใช้งานโดยแอปอื่น",
+      "tapToRecord": "แตะเพื่อเริ่มบันทึก"
     },
     "autoSaved": "บันทึกอัตโนมัติไปยังทรัพย์สิน",
     "autoSavedDesc": "บันทึก {{count}} ผลลัพธ์ไปยังทรัพย์สินของฉัน",
@@ -234,7 +246,14 @@
       "playWhileWaiting": "เล่นขณะรอ",
       "quit": "ออก"
     },
-    "input": "อินพุต"
+    "input": "อินพุต",
+    "imageCopied": "คัดลอกภาพไปยังคลิปบอร์ดแล้ว",
+    "urlCopied": "คัดลอก URL ไปยังคลิปบอร์ดแล้ว",
+    "copyFailed": "คัดลอกไม่สำเร็จ",
+    "copyImage": "คัดลอกภาพ",
+    "copyUrl": "คัดลอก URL",
+    "copy": "คัดลอก",
+    "download": "ดาวน์โหลด"
   },
   "history": {
     "title": "ประวัติ",
@@ -245,7 +264,8 @@
       "completed": "เสร็จสมบูรณ์",
       "failed": "ล้มเหลว",
       "processing": "กำลังประมวลผล",
-      "created": "สร้างแล้ว"
+      "created": "สร้างแล้ว",
+      "archived": "เก็บถาวร"
     },
     "loadPreviews": "โหลดตัวอย่าง",
     "disablePreviews": "ปิดตัวอย่าง",
@@ -266,7 +286,25 @@
     "executionTime": "เวลาดำเนินการ",
     "predictionId": "ID การทำนาย",
     "notAvailable": "ประวัติไม่พร้อมใช้งาน",
-    "notAvailableDesc": "API ประวัติการทำนายไม่พร้อมใช้งานในขณะนี้"
+    "notAvailableDesc": "API ประวัติการทำนายไม่พร้อมใช้งานในขณะนี้",
+    "downloadComplete": "ดาวน์โหลดเสร็จสมบูรณ์",
+    "downloadCompleteDesc": "ดาวน์โหลด {{count}} ไฟล์แล้ว",
+    "downloadFailed": "ดาวน์โหลดล้มเหลว",
+    "downloadFailedDesc": "ดาวน์โหลด {{count}} ไฟล์ล้มเหลว",
+    "hasInputs": "มีอินพุตที่ใช้งานได้",
+    "saveTemplate": {
+      "button": "บันทึกเป็นแม่แบบ",
+      "dialogTitle": "บันทึกแม่แบบ",
+      "nameLabel": "ชื่อแม่แบบ",
+      "namePlaceholder": "ใส่ชื่อแม่แบบ...",
+      "duplicateName": "ชื่อนี้มีอยู่แล้ว",
+      "noInputsTitle": "ไม่สามารถบันทึกแม่แบบได้",
+      "noInputsDesc": "ไม่พบพารามิเตอร์อินพุตสำหรับการทำนายนี้",
+      "success": "บันทึกแม่แบบแล้ว",
+      "successDesc": "คุณสามารถใช้ได้จากหน้าแม่แบบ",
+      "error": "บันทึกแม่แบบล้มเหลว"
+    },
+    "longPressHint": "กดค้างไว้เพื่อเลือก"
   },
   "templates": {
     "title": "เทมเพลต",
@@ -417,7 +455,7 @@
       }
     },
     "errors": {
-      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "desktopRequired": "ฟีเจอร์นี้ต้องการแอปเดสก์ท็อป กรุณาดาวน์โหลด WaveSpeed Desktop หรือลองใช้เวอร์ชันออนไลน์",
       "generationCancelled": "ยกเลิกการสร้างแล้ว"
     },
     "tips": {
@@ -447,7 +485,7 @@
       "invalidDesc": "ไม่สามารถตรวจสอบคีย์ API ได้ กรุณาตรวจสอบและลองอีกครั้ง",
       "cleared": "ล้างคีย์ API แล้ว",
       "clearedDesc": "คีย์ API ของคุณถูกลบแล้ว",
-      "itemDeleted": "Cache item deleted",
+      "itemDeleted": "ลบรายการแคชแล้ว",
       "error": "ข้อผิดพลาด",
       "errorDesc": "ไม่สามารถบันทึกคีย์ API ได้"
     },
@@ -485,7 +523,7 @@
       "autoSaveDisabledDesc": "คุณยังสามารถบันทึกผลลัพธ์ด้วยตนเองจากสนามทดสอบได้",
       "directory": "ไดเรกทอรีทรัพย์สิน",
       "directoryDesc": "เลือกตำแหน่งที่จะบันทึกผลลัพธ์ที่สร้างของคุณ",
-      "defaultDirectory": "Documents/WaveSpeed",
+      "defaultDirectory": "เอกสาร/WaveSpeed",
       "browse": "เรียกดู",
       "directoryChanged": "เปลี่ยนไดเรกทอรีแล้ว",
       "directoryChangedDesc": "ผลลัพธ์ใหม่จะถูกบันทึกไปยัง {{path}}",
@@ -505,7 +543,27 @@
       "clearFailed": "ล้างแคชไม่สำเร็จ",
       "zImageAuxiliary": "โมเดลเสริม Z-Image",
       "zImageModels": "โมเดล Z-Image",
-      "zImageBinary": "ไบนารี Z-Image"
+      "zImageBinary": "ไบนารี Z-Image",
+      "predownload": "ดาวน์โหลดโมเดลล่วงหน้า",
+      "predownloadDesc": "ดาวน์โหลดโมเดล AI ล่วงหน้าสำหรับการใช้งานแบบออฟไลน์",
+      "downloadModels": "ดาวน์โหลดโมเดล",
+      "downloadPartial": "ดาวน์โหลดบางส่วนเสร็จสมบูรณ์",
+      "downloadPartialDesc": "ดาวน์โหลดโมเดลบางส่วนสำเร็จ",
+      "downloadComplete": "ดาวน์โหลดเสร็จสมบูรณ์",
+      "downloadCompleteDesc": "ดาวน์โหลดโมเดลทั้งหมดสำเร็จ",
+      "downloadCancelled": "ยกเลิกการดาวน์โหลด",
+      "downloadCancelledDesc": "ยกเลิกการดาวน์โหลดโมเดล",
+      "alreadyCached": "แคชไว้แล้ว",
+      "downloaded": "ดาวน์โหลดแล้ว",
+      "overallProgress": "ความคืบหน้าทั้งหมด",
+      "models": {
+        "ffmpegJs": "FFmpeg Core (JS)",
+        "ffmpegWasm": "FFmpeg Core (WASM)",
+        "backgroundRemover": "ลบพื้นหลัง",
+        "imageEraser": "ยางลบรูปภาพ (LaMa)",
+        "samEncoder": "SAM Vision Encoder",
+        "samDecoder": "SAM Prompt Decoder"
+      }
     },
     "downloads": {
       "title": "ดาวน์โหลด",
@@ -520,7 +578,7 @@
       "channel": "ช่องอัปเดต",
       "stable": "เสถียร",
       "stableDesc": "รับรุ่นเสถียรพร้อมคุณสมบัติที่ทดสอบแล้ว",
-      "nightly": "Nightly",
+      "nightly": "กลางคืน",
       "nightlyDesc": "รับ Nightly builds พร้อมคุณสมบัติใหม่ล่าสุด (อาจไม่เสถียร)",
       "autoCheck": "ตรวจสอบการอัปเดตอัตโนมัติ",
       "autoCheckDesc": "ตรวจสอบการอัปเดตอัตโนมัติเมื่อเริ่มแอป",
@@ -540,14 +598,23 @@
       "devModeDesc": "การอัปเดตอัตโนมัติถูกปิดในโหมดพัฒนา",
       "checkFailed": "ตรวจสอบการอัปเดตล้มเหลว",
       "downloadFailed": "ดาวน์โหลดล้มเหลว",
-      "downloadFailedDesc": "ไม่สามารถดาวน์โหลดการอัปเดตได้"
+      "downloadFailedDesc": "ไม่สามารถดาวน์โหลดการอัปเดตได้",
+      "downloadComplete": "ดาวน์โหลดเสร็จสมบูรณ์",
+      "openToInstall": "กรุณาเปิด {{filename}} เพื่อติดตั้ง",
+      "installInstructions": "คำแนะนำในการติดตั้ง",
+      "findInDownloads": "APK บันทึกในโฟลเดอร์ดาวน์โหลด กรุณาเปิด {{filename}} ในตัวจัดการไฟล์เพื่อติดตั้ง",
+      "downloadProgress": "กำลังดาวน์โหลด... {{progress}}%"
     },
     "about": {
       "title": "เกี่ยวกับ",
       "description": "WaveSpeed Desktop - สนามทดสอบโมเดล AI",
       "aboutText": "แอปพลิเคชันเดสก์ท็อปโอเพนซอร์สสำหรับเรียกใช้โมเดล AI ด้วย WaveSpeed API",
-      "viewOnGitHub": "ดูบน GitHub"
-    }
+      "viewOnGitHub": "ดูบน GitHub",
+      "version": "เวอร์ชัน",
+      "mobileDescription": "WaveSpeed Mobile - เครื่องมือ AI สำหรับมือถือ",
+      "mobileAboutText": "แอปมือถือโอเพนซอร์สสำหรับรันโมเดล AI WaveSpeed API"
+    },
+    "mobileDescription": "กำหนดค่าแอป WaveSpeed Mobile ของคุณ"
   },
   "apiKeyRequired": {
     "title": "ต้องการคีย์ API",
@@ -622,7 +689,18 @@
       "detecting": "กำลังตรวจจับใบหน้า",
       "enhancing": "กำลังปรับปรุงใบหน้า",
       "noFaces": "ไม่พบใบหน้าในรูปภาพ",
-      "facesFound": "ตรวจพบ {{count}} ใบหน้า"
+      "facesFound": "ตรวจพบ {{count}} ใบหน้า",
+      "inputImage": "รูปภาพอินพุต",
+      "selectImageWithFaces": "เลือกรูปภาพที่มีใบหน้าเพื่อปรับปรุง",
+      "modelsInfo": "ใช้โมเดล YOLO + GFPGAN AI",
+      "downloading": "กำลังดาวน์โหลดโมเดล...",
+      "loading": "กำลังโหลดโมเดล...",
+      "noFacesFound": "ไม่พบใบหน้า",
+      "facesEnhanced": "ปรับปรุง {{count}} ใบหน้า",
+      "result": "ผลการปรับปรุง",
+      "newImage": "รูปภาพใหม่",
+      "firstTimeDownload": "ครั้งแรก? โมเดลจะถูกดาวน์โหลด (~350MB)",
+      "invalidFile": "กรุณาเลือกไฟล์รูปภาพที่ถูกต้อง"
     },
     "faceSwapper": {
       "title": "สลับใบหน้า",
@@ -633,12 +711,12 @@
       "selectTarget": "เลือกรูปภาพเป้าหมาย",
       "sourceHint": "ตัวตนของใบหน้าที่จะคัดลอก",
       "targetHint": "รูปภาพที่จะถูกเปลี่ยนใบหน้า",
-      "orDragDrop": "or drag and drop",
+      "orDragDrop": "หรือลากและวาง",
       "noSourceFace": "ไม่พบใบหน้าในรูปภาพต้นทาง",
       "noTargetFaces": "ไม่พบใบหน้าในรูปภาพเป้าหมาย",
       "clickToSelect": "คลิกที่ใบหน้าเพื่อเลือกว่าจะสลับใบหน้าไหน",
       "facesSelected": "เลือก {{selected}}/{{total}} ใบหน้า",
-      "sourceSelected": "Face {{selected}}/{{total}} selected",
+      "sourceSelected": "เลือกใบหน้า {{selected}}/{{total}}",
       "faceDetected": "ตรวจพบใบหน้า",
       "swapFaces": "สลับใบหน้า",
       "processing": "กำลังประมวลผล...",
@@ -708,7 +786,8 @@
       "undoEdit": "เลิกทำการลบ",
       "redoEdit": "ทำซ้ำการลบ",
       "hint": "วาดบนวัตถุที่คุณต้องการลบ แล้วคลิกลบวัตถุ",
-      "resultPlaceholder": "ผลลัพธ์จะปรากฏที่นี่"
+      "resultPlaceholder": "ผลลัพธ์จะปรากฏที่นี่",
+      "hintMobile": "วาดบนพื้นที่ที่ต้องการลบ"
     },
     "progress": {
       "downloading": "กำลังดาวน์โหลดโมเดล",
@@ -732,7 +811,10 @@
       "clearPoints": "ล้างจุด",
       "clearPointsTooltip": "ล้างจุดทั้งหมดและกลับไปยังโหมดดูตัวอย่างเมื่อวางเมาส์",
       "cutMask": "ตัดมาสก์",
-      "hint": "คลิกซ้ายเพื่อรวม คลิกขวาเพื่อยกเว้นพื้นที่"
+      "hint": "คลิกซ้ายเพื่อรวม คลิกขวาเพื่อยกเว้นพื้นที่",
+      "hoverToPreviewMobile": "แตะที่วัตถุเพื่อเริ่มเลือก",
+      "clickToRefineMobile": "แตะเพื่อเพิ่มจุด",
+      "hintMobile": "แตะเพื่อรวม กดค้างเพื่อแยก"
     },
     "backWarning": {
       "title": "กำลังประมวลผล",
@@ -741,82 +823,116 @@
       "confirm": "ย้อนกลับ"
     },
     "videoConverter": {
-      "title": "Video Converter",
+      "title": "ตัวแปลงวิดีโอ",
       "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
       "selectVideo": "Select Video",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace video",
+      "orDragDrop": "หรือลากและวาง",
+      "dropToReplace": "วางเพื่อแทนที่วิดีโอ",
       "supportedFormats": "Supports MP4, WebM, MOV, AVI, MKV",
       "convert": "Convert",
-      "converting": "Converting...",
-      "original": "Original",
-      "outputSettings": "Output Settings",
-      "format": "Format",
-      "quality": "Quality",
-      "resolution": "Resolution",
-      "convertedSize": "Converted Size"
+      "converting": "กำลังแปลง...",
+      "original": "ต้นฉบับ",
+      "outputSettings": "การตั้งค่าผลลัพธ์",
+      "format": "รูปแบบ",
+      "quality": "คุณภาพ",
+      "resolution": "ความละเอียด",
+      "convertedSize": "ขนาดหลังแปลง",
+      "inputVideo": "วิดีโออินพุต",
+      "selectVideoDesc": "เลือกหรือลากไฟล์วิดีโอเพื่อแปลง",
+      "outputFormat": "รูปแบบเอาท์พุต",
+      "converted": "แปลงแล้ว",
+      "result": "ผลการแปลง",
+      "codecUsed": "โค้ดเดคที่ใช้",
+      "invalidFile": "กรุณาเลือกไฟล์วิดีโอที่ถูกต้อง"
     },
     "audioConverter": {
-      "title": "Audio Converter",
+      "title": "ตัวแปลงเสียง",
       "description": "Convert audio between formats (MP3, AAC, FLAC, WAV)",
       "selectAudio": "Select Audio",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace audio",
+      "orDragDrop": "หรือลากและวาง",
+      "dropToReplace": "วางเพื่อแทนที่เสียง",
       "supportedFormats": "Supports MP3, M4A, OGG, WAV, FLAC",
       "convert": "Convert",
-      "converting": "Converting...",
-      "converted": "Converted",
-      "playOriginal": "Play original",
-      "playConverted": "Play converted"
+      "converting": "กำลังแปลง...",
+      "converted": "แปลงแล้ว",
+      "playOriginal": "เล่นต้นฉบับ",
+      "playConverted": "เล่นผลลัพธ์ที่แปลง",
+      "inputAudio": "เสียงอินพุต",
+      "outputFormat": "รูปแบบเอาท์พุต",
+      "bitrate": "อัตราบิต",
+      "original": "ต้นฉบับ",
+      "result": "ผลลัพธ์",
+      "invalidFile": "กรุณาเลือกไฟล์ MP3 หรือ WAV"
     },
     "imageConverter": {
-      "title": "Image Converter",
+      "title": "ตัวแปลงรูปภาพ",
       "description": "Convert images between formats (JPG, PNG, WebP, GIF)",
-      "selectImages": "Select Images",
-      "orDragDrop": "or drag and drop",
-      "dropToAdd": "Drop to add images",
+      "selectImages": "คลิกหรือลากรูปมาที่นี่",
+      "orDragDrop": "หรือลากและวาง",
+      "dropToAdd": "วางเพื่อเพิ่ม",
       "supportedFormats": "Supports JPG, PNG, WebP, GIF, BMP",
-      "addMore": "Add More",
+      "addMore": "เพิ่มอีก",
       "convert": "Convert",
-      "converting": "Converting...",
-      "quality": "Quality",
-      "downloadAll": "Download All"
+      "converting": "กำลังแปลง...",
+      "quality": "คุณภาพ",
+      "downloadAll": "ดาวน์โหลดทั้งหมด",
+      "inputImage": "รูปภาพอินพุต",
+      "selectImage": "คลิกหรือลากรูปภาพมาที่นี่",
+      "outputFormat": "รูปแบบเอาท์พุต",
+      "result": "ผลลัพธ์",
+      "invalidFile": "กรุณาเลือกไฟล์รูปภาพที่ถูกต้อง"
     },
     "mediaTrimmer": {
-      "title": "Media Trimmer",
-      "description": "Trim videos or audio to a specific duration",
+      "title": "ตัวตัดสื่อ",
+      "description": "ตัดต้นและท้ายวิดีโอหรือเสียง",
       "selectMedia": "Select Media",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace media",
+      "orDragDrop": "หรือลากและวาง",
+      "dropToReplace": "วางเพื่อแทนที่ไฟล์",
       "supportedFormats": "Supports video and audio files",
       "trim": "Trim",
-      "trimming": "Trimming...",
-      "originalDuration": "Original",
-      "selectedDuration": "Selected",
-      "trimmedSize": "Trimmed Size",
-      "playingOriginal": "Playing original",
-      "playingTrimmed": "Playing trimmed"
+      "trimming": "กำลังตัด...",
+      "originalDuration": "ระยะเวลาต้นฉบับ",
+      "selectedDuration": "ระยะเวลาที่เลือก",
+      "trimmedSize": "ขนาดหลังตัด",
+      "playingOriginal": "เล่นต้นฉบับ",
+      "playingTrimmed": "เล่นหลังตัด",
+      "inputMedia": "สื่ออินพุต",
+      "trimSettings": "การตั้งค่าการตัด",
+      "selectRange": "เลือกเวลาเริ่มต้นและสิ้นสุด",
+      "startTime": "เวลาเริ่มต้น",
+      "endTime": "เวลาสิ้นสุด",
+      "timeFormat": "รูปแบบ: m:ss.d หรือวินาที",
+      "outputDuration": "ระยะเวลาที่ส่งออก",
+      "result": "ผลการตัด",
+      "invalidFile": "กรุณาเลือกไฟล์วิดีโอหรือเสียงที่ถูกต้อง"
     },
     "mediaMerger": {
-      "title": "Media Merger",
-      "description": "Merge multiple video or audio files into one",
+      "title": "ตัวรวมสื่อ",
+      "description": "รวมไฟล์วิดีโอหรือเสียงหลายไฟล์ตามลำดับ",
       "selectFiles": "Select Files",
-      "orDragDrop": "or drag and drop",
-      "dropToAdd": "Drop to add files",
+      "orDragDrop": "หรือลากและวาง",
+      "dropToAdd": "วางเพื่อเพิ่ม",
       "supportedFormats": "Supports video and audio files",
       "addMore": "Add More",
       "merge": "Merge",
-      "merging": "Merging...",
-      "merged": "Merged",
-      "totalDuration": "Total Duration",
-      "sameFormatNote": "Files must have the same format for lossless merging"
+      "merging": "กำลังรวม...",
+      "merged": "รวมแล้ว",
+      "totalDuration": "ระยะเวลารวม",
+      "sameFormatNote": "แนะนำให้ใช้ไฟล์รูปแบบเดียวกัน",
+      "inputMedia": "ไฟล์อินพุต",
+      "files": "ไฟล์",
+      "result": "ผลการรวม",
+      "sameTypeRequired": "ไฟล์ทั้งหมดต้องเป็นประเภทเดียวกัน (วิดีโอหรือเสียง)"
     },
     "ffmpeg": {
-      "loading": "Loading FFmpeg",
-      "converting": "Converting",
-      "merging": "Merging",
-      "trimming": "Trimming"
-    }
+      "loading": "กำลังโหลด...",
+      "converting": "กำลังแปลง...",
+      "merging": "กำลังรวม...",
+      "trimming": "กำลังตัด..."
+    },
+    "downloadSuccess": "บันทึกไปยังโฟลเดอร์ดาวน์โหลด",
+    "downloadStarted": "เริ่มดาวน์โหลดแล้ว",
+    "downloadFailed": "ดาวน์โหลดล้มเหลว"
   },
   "videoConverter": {
     "title": "ตัวแปลงวิดีโอ",
@@ -834,5 +950,319 @@
     "result": "ผลลัพธ์",
     "codecUsed": "ตัวแปลงสัญญาณที่ใช้",
     "download": "ดาวน์โหลด"
+  },
+  "game": {
+    "waitingLong": "รอนานเกินไป",
+    "clickToPlay": "คลิกเพื่อเริ่ม"
+  },
+  "workflow": {
+    "workflows": "เวิร์กโฟลว์",
+    "newWorkflow": "เวิร์กโฟลว์ใหม่",
+    "untitled": "ยังไม่มีชื่อ",
+    "save": "บันทึก",
+    "saved": "บันทึกแล้ว",
+    "saving": "กำลังบันทึก...",
+    "saveFailed": "บันทึกล้มเหลว",
+    "savedAt": "บันทึกแล้ว",
+    "unsaved": "ยังไม่ได้บันทึก",
+    "nodes": "โหนด",
+    "config": "การกำหนดค่า",
+    "results": "ผลลัพธ์",
+    "cost": "ต้นทุน",
+    "settings": "การตั้งค่า",
+    "runAll": "รันทั้งหมด",
+    "run": "รัน",
+    "runTarget": "รันเป้าหมาย",
+    "runTargetAll": "รันโหนดทั้งหมด",
+    "runTargetSelected": "รันโหนดที่เลือก",
+    "runCount": "จำนวนการรัน",
+    "stop": "หยุด",
+    "running": "กำลังรัน...",
+    "cancelAll": "ยกเลิกทั้งหมด",
+    "import": "นำเข้า",
+    "export": "ส่งออก",
+    "imported": "นำเข้าแล้ว",
+    "importFailed": "นำเข้าล้มเหลว",
+    "exported": "ส่งออกสำเร็จ",
+    "exportFailed": "ส่งออกล้มเหลว",
+    "estimated": "ต้นทุนโดยประมาณ",
+    "fitView": "ปรับมุมมอง",
+    "previousImage": "รูปก่อนหน้า",
+    "nextImage": "รูปถัดไป",
+    "previewNavHint": "ใช้ ← / → เพื่อนำทาง ({{current}}/{{total}})",
+    "clickAnywhereToClose": "คลิกที่ใดก็ได้เพื่อปิด",
+    "runNode": "รันโหนด",
+    "modelSelection": "การเลือกโมเดล",
+    "annotationHint": "ดับเบิลคลิกที่โน้ตเพื่อแก้ไข",
+    "continueFrom": "ดำเนินการต่อจากที่นี่",
+    "retry": "ลองอีกครั้ง",
+    "cancel": "ยกเลิก",
+    "noWorkflows": "ยังไม่มีเวิร์กโฟลว์",
+    "create": "สร้าง",
+    "open": "เปิด",
+    "paste": "วาง",
+    "addNode": "เพิ่มโหนด",
+    "addNote": "เพิ่มโน้ต",
+    "note": "โน้ต",
+    "deleteConnection": "ลบการเชื่อมต่อ",
+    "add": "เพิ่ม",
+    "delete": "ลบ",
+    "currentModel": "โมเดลปัจจุบัน",
+    "modelIdLabel": "รหัสโมเดล",
+    "selectNode": "เลือกโหนดเพื่อกำหนดค่า",
+    "noExecutions": "ยังไม่มีการดำเนินการ",
+    "budgetExceeded": "เกินงบประมาณ",
+    "dailySpend": "การใช้จ่ายรายวัน",
+    "perExecutionLimit": "ขีดจำกัดต่อการดำเนินการ",
+    "dailyLimit": "ขีดจำกัดรายวัน",
+    "editBudget": "แก้ไขงบประมาณ",
+    "refreshModels": "รีเฟรชโมเดล",
+    "drawMask": "วาดหน้ากาก",
+    "drawMaskNeedInput": "ตั้งค่าภาพอินพุตก่อน",
+    "segmentPointPicker": {
+      "title": "เลือกจุดแบ่งส่วน",
+      "hint": "คลิกซ้าย = รวม คลิกขวา = แยก",
+      "points": "จุด",
+      "clear": "ล้าง",
+      "done": "เสร็จสิ้น"
+    },
+    "pickPoints": "เลือกจุด",
+    "pickPointsNeedInput": "ตั้งค่าภาพอินพุตก่อน",
+    "pointsLabel": "จุดแบ่งส่วน",
+    "linked": "เชื่อมโยง",
+    "linkedTo": "เชื่อมโยงกับ",
+    "disconnectLink": "ปลดล็อก: ตัดการเชื่อมต่อลิงก์นี้",
+    "previewUpstreamOutput": "แสดงตัวอย่าง output ต้นทาง",
+    "localFileOrUrl": "ไฟล์ท้องถิ่นหรือ URL",
+    "showAll": "แสดงทั้งหมด",
+    "showAllRuns": "แสดงการดำเนินการทั้งหมด",
+    "showLatestOnly": "แสดงล่าสุดเท่านั้น",
+    "latest": "ล่าสุด",
+    "latestHidden": "ผลลัพธ์ล่าสุดถูกซ่อนแล้ว",
+    "noVisibleResults": "ไม่มีผลลัพธ์ที่มองเห็นได้",
+    "hideRun": "ซ่อนการดำเนินการนี้",
+    "output": "ผลลัพธ์",
+    "outputLowercase": "ผลลัพธ์",
+    "invalidUrl": "URL ไม่ถูกต้อง",
+    "removeLast": "ลบรายการสุดท้าย",
+    "enterField": "ใส่{{field}}...",
+    "show": "แสดง",
+    "hide": "ซ่อน",
+    "optional": "ตัวเลือก",
+    "searchNodesPlaceholder": "ค้นหาโหนด...",
+    "dragOrClickToAdd": "ลากไปยังแคนวาสหรือคลิกเพื่อเพิ่ม",
+    "noNodesAvailable": "ไม่มีโหนดที่ใช้ได้",
+    "nodeCategory": {
+      "recent": "ล่าสุด",
+      "input": "อินพุต",
+      "ai-task": "งาน AI",
+      "free-tool": "เครื่องมือฟรี",
+      "output": "ผลลัพธ์",
+      "processing": "การประมวลผล",
+      "control": "ควบคุม"
+    },
+    "nodeDefs": {
+      "ai-task/run": {
+        "label": "รันโมเดล",
+        "emptyHint": "คลิกโหนดนี้ จากนั้นเลือกโมเดล →",
+        "params": {
+          "modelId": {
+            "label": "โมเดล"
+          }
+        }
+      },
+      "input/media-upload": {
+        "label": "อัปโหลด",
+        "outputs": {
+          "output": {
+            "label": "URL"
+          }
+        }
+      },
+      "input/text-input": {
+        "label": "ข้อความ",
+        "params": {
+          "text": {
+            "label": "ข้อความ"
+          }
+        }
+      },
+      "output/preview": {
+        "label": "แสดงตัวอย่าง",
+        "inputs": {
+          "input": {
+            "label": "URL"
+          }
+        },
+        "params": {
+          "autoDetect": {
+            "label": "ตรวจจับประเภทอัตโนมัติ"
+          },
+          "forceType": {
+            "label": "บังคับประเภท",
+            "options": {
+              "auto": "อัตโนมัติ",
+              "image": "รูปภาพ",
+              "video": "วิดีโอ",
+              "audio": "เสียง",
+              "3d": "โมเดล 3D"
+            }
+          }
+        }
+      },
+      "output/file": {
+        "label": "ส่งออกไฟล์",
+        "inputs": {
+          "url": {
+            "label": "URL"
+          }
+        },
+        "params": {
+          "outputDir": {
+            "label": "ไดเรกทอรีเอาท์พุต"
+          },
+          "filename": {
+            "label": "คำนำหน้าชื่อไฟล์"
+          },
+          "format": {
+            "label": "รูปแบบ",
+            "options": {
+              "auto": "อัตโนมัติ",
+              "mp4": "MP4",
+              "png": "PNG",
+              "jpg": "JPG",
+              "mp3": "MP3",
+              "wav": "WAV"
+            }
+          }
+        }
+      },
+      "free-tool/image-enhancer": {
+        "label": "ปรับปรุงรูปภาพ"
+      },
+      "free-tool/background-remover": {
+        "label": "ลบพื้นหลัง"
+      },
+      "free-tool/face-enhancer": {
+        "label": "ปรับปรุงใบหน้า"
+      },
+      "free-tool/video-enhancer": {
+        "label": "ปรับปรุงวิดีโอ"
+      },
+      "free-tool/face-swapper": {
+        "label": "สลับใบหน้า"
+      },
+      "free-tool/image-eraser": {
+        "label": "ยางลบรูปภาพ"
+      },
+      "free-tool/segment-anything": {
+        "label": "แบ่งส่วน anything",
+        "params": {
+          "pointX": {
+            "label": "จุด X",
+            "description": "พิกัด X ที่เป็นมาตรฐาน (0-1) สำหรับจุดแบ่งส่วน"
+          },
+          "pointY": {
+            "label": "จุด Y",
+            "description": "พิกัด Y ที่เป็นมาตรฐาน (0-1) สำหรับจุดแบ่งส่วน"
+          }
+        }
+      },
+      "free-tool/video-converter": {
+        "label": "ตัวแปลงวิดีโอ"
+      },
+      "free-tool/audio-converter": {
+        "label": "ตัวแปลงเสียง"
+      },
+      "free-tool/image-converter": {
+        "label": "ตัวแปลงรูปภาพ"
+      },
+      "free-tool/media-trimmer": {
+        "label": "ตัวตัดสื่อ"
+      },
+      "free-tool/media-merger": {
+        "label": "ตัวรวมสื่อ"
+      }
+    },
+    "modelSelector": {
+      "allCategory": "ทั้งหมด",
+      "noModelsLoaded": "ยังไม่ได้โหลดโมเดล คลิก \"รีเฟรชโมเดล\" ด้านล่าง",
+      "loadFailed": "โหลดโมเดลล้มเหลว",
+      "refreshFailed": "รีเฟรชโมเดลล้มเหลว",
+      "loadingModels": "กำลังโหลดโมเดล...",
+      "loadingHint": "อาจใช้เวลาสองสามวินาทีในการเปิดครั้งแรก",
+      "recent": "ล่าสุด",
+      "searchPlaceholder": "ค้นหาโมเดล...",
+      "searchAllPlaceholder": "ค้นหาทุกโมเดล...",
+      "refreshTooltip": "รีเฟรชแคตตาล็อกโมเดล",
+      "refreshing": "กำลังรีเฟรช...",
+      "noModelsFound": "ไม่พบโมเดล",
+      "disconnectBeforeSwitch": "กรุณาตัดการเชื่อมต่อโหนดนี้ก่อนเปลี่ยนโมเดล",
+      "selectCategory": "เลือกหมวดหมู่",
+      "cannotSwitchTitle": "ไม่สามารถเปลี่ยนโมเดลได้",
+      "cannotSwitchDesc": "โหนดนี้มีการเชื่อมต่อกรุณาตัดการเชื่อมต่อขอบทั้งหมดก่อนเปลี่ยนโมเดล"
+    },
+    "mediaUpload": {
+      "uploadFailed": "อัปโหลดล้มเหลว",
+      "invalidUrl": "URL ไม่ถูกต้อง",
+      "fileUploaded": "อัปโหลดไฟล์แล้ว",
+      "uploaded": "อัปโหลดแล้ว",
+      "clear": "ล้าง",
+      "uploading": "กำลังอัปโหลด...",
+      "uploadingShort": "กำลังอัปโหลด...",
+      "failed": "ล้มเหลว",
+      "dropOrBrowse": "วางไฟล์ที่นี่หรือคลิกเพื่อเรียกดู",
+      "browse": "เรียกดู",
+      "pasteUrl": "วาง URL",
+      "urlPlaceholder": "https://...",
+      "urlShortPlaceholder": "URL...",
+      "supportedTypes": "รูปภาพ วิดีโอ เสียง"
+    },
+    "textInput": {
+      "promptLibrary": "ไลบรารีพรอมป์ต",
+      "saveCurrent": "บันทึกปัจจุบัน",
+      "namePlaceholder": "ชื่อ...",
+      "noSavedSnippets": "ไม่มีสnippet ที่บันทึกไว้",
+      "optimizeFailed": "การปรับปรุงล้มเหลว",
+      "optimizeNowTitle": "ปรับปรุงข้อความตอนนี้",
+      "optimizing": "กำลังปรับปรุง...",
+      "optimizeNow": "ปรับปรุงตอนนี้",
+      "autoOnRunTitle": "ปรับปรุงเฉพาะเมื่อคลิกรัน",
+      "autoOnRun": "อัตโนมัติเมื่อรัน",
+      "chars": "ตัวอักษร",
+      "optimizeOnRunEnabled": "เปิดใช้งาน: ปรับปรุงเมื่อรัน",
+      "optimizeOffHint": "ค่าเริ่มต้น: ไม่มีการปรับปรุง (รันด้วยข้อความต้นฉบับ)",
+      "manualOptimizedHint": "ปรับปรุงด้วยตนเอง การปรับปรุงอัตโนมัติจะถูกข้ามจนกว่าข้อความจะเปลี่ยน",
+      "enterTextOrPrompt": "ใส่ข้อความหรือพรอมป์ต..."
+    },
+    "promptOptimizer": {
+      "optimizationFailed": "การปรับปรุงล้มเหลว",
+      "optimizeParams": "ปรับปรุงพารามิเตอร์",
+      "optimizeParamsPresetOnly": "ปรับปรุงพารามิเตอร์ (เฉพาะแบบกำหนดไว้)",
+      "perRun": "ครั้ง",
+      "mode": "โหมด",
+      "text": "ข้อความ",
+      "textPlaceholder": "ข้อความเพื่อขยายหรือใช้เป็นบริบท...",
+      "autoOnRunTitle": "ปรับปรุงอัตโนมัติเมื่อคลิกรัน",
+      "autoOnRun": "อัตโนมัติเมื่อรัน",
+      "quickOptimizeTitle": "ปรับปรุงด่วน ({{mode}})",
+      "params": "พารามิเตอร์",
+      "prompt": "พรอมป์ต",
+      "emptyPrompt": "(ว่าง)",
+      "optimizing": "กำลังปรับปรุง...",
+      "optimize": "ปรับปรุง",
+      "optimizeWithImage": "ปรับปรุงด้วยรูปภาพ...",
+      "modeOptions": {
+        "image": "รูปภาพ",
+        "video": "วิดีโอ"
+      },
+      "imageDialog": {
+        "title": "ปรับปรุงด้วยรูปภาพ",
+        "enterTextOrImage": "กรุณาใส่ข้อความหรือให้รูปภาพ",
+        "optimizeFailed": "การปรับปรุงล้มเหลว",
+        "loadingOptimizer": "กำลังโหลดตัวปรับปรุง...",
+        "loadConfigFailed": "ไม่สามารถโหลดการกำหนดค่าตัวปรับปรุงได้"
+      }
+    }
   }
 }

@@ -50,7 +50,8 @@ import {
   Check,
   Eye,
   EyeOff,
-  Trash2
+  Trash2,
+  Sparkles
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AudioPlayer } from '@/components/shared/AudioPlayer'
@@ -354,7 +355,7 @@ export function HistoryPage() {
       <Card
         key={item.id}
         className={cn(
-          "overflow-hidden cursor-pointer border hover:shadow-md transition-shadow",
+          "overflow-hidden cursor-pointer rounded-xl border border-border/70 bg-card/80 shadow-sm hover:shadow-md transition-all",
           selectedIds.has(item.id) && "ring-2 ring-primary"
         )}
         onClick={() => isSelectionMode ? handleToggleSelect(item.id) : setSelectedItem(item)}
@@ -421,11 +422,11 @@ export function HistoryPage() {
           </div>
         </div>
 
-        <CardContent className="p-2">
+        <CardContent className="p-2.5">
           <p className="text-sm font-medium truncate">{item.model}</p>
-          <p className="text-xs text-muted-foreground truncate">{formatDate(item.created_at)}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground truncate">{formatDate(item.created_at)}</p>
           {item.execution_time && (
-            <p className="text-xs text-muted-foreground">
+            <p className="mt-0.5 text-xs text-muted-foreground">
               {(item.execution_time / 1000).toFixed(2)}s
             </p>
           )}
@@ -445,17 +446,15 @@ export function HistoryPage() {
 
 
   return (
-    <div className="flex h-full flex-col relative overflow-hidden">
-      {/* Dynamic Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 via-transparent to-cyan-500/5" />
-      <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-primary/10 to-transparent rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-cyan-500/10 to-transparent rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-      
+    <div className="flex h-full flex-col overflow-hidden bg-gradient-to-b from-background via-background to-muted/20">
       {/* Header */}
-      <div className="page-header px-4 md:px-6 py-4 pt-14 md:pt-4 relative z-10">
+      <div className="page-header px-4 md:px-6 py-4 pt-14 md:pt-4 bg-background/70 backdrop-blur">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-          <div className="flex items-baseline gap-3">
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight">{t('history.title')}</h1>
+          <div className="flex flex-col gap-1.5 md:flex-row md:items-baseline md:gap-3">
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              {t('history.title')}
+            </h1>
             <p className="text-muted-foreground text-xs md:text-sm">{t('history.description')}</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -486,7 +485,7 @@ export function HistoryPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-2 md:gap-3 flex-wrap">
+        <div className="flex flex-wrap items-center gap-2 md:gap-3">
           <Select
             value={statusFilter}
             onValueChange={(value) => {
@@ -494,7 +493,7 @@ export function HistoryPage() {
               setPage(1)
             }}
           >
-            <SelectTrigger className="w-36 h-9">
+            <SelectTrigger className="h-9 w-36 rounded-lg border-border/80 bg-background">
               <SelectValue placeholder={t('history.status.all')} />
             </SelectTrigger>
             <SelectContent>
@@ -510,6 +509,7 @@ export function HistoryPage() {
             size="sm"
             onClick={() => setLoadPreviews(!loadPreviews)}
             title={loadPreviews ? t('history.disablePreviews') : t('history.loadPreviews')}
+            className="h-9 rounded-lg"
           >
             {loadPreviews ? (
               <Eye className="h-4 w-4" />
@@ -531,7 +531,7 @@ export function HistoryPage() {
       </div>
 
       {/* Content */}
-      <ScrollArea className="flex-1 relative z-10">
+      <ScrollArea className="flex-1">
         <div className="p-4">
           {isLoading && items.length === 0 ? (
             <div className="flex items-center justify-center py-8">
@@ -562,7 +562,7 @@ export function HistoryPage() {
               <p className="text-muted-foreground text-sm">{t('history.noHistory')}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {items.map((item) => (
                 <HistoryCard key={item.id} item={item} />
               ))}
@@ -573,7 +573,7 @@ export function HistoryPage() {
 
       {/* Pagination */}
       {maxSelectablePages > 1 && (
-        <div className="border-t p-4 flex items-center justify-between relative z-10">
+        <div className="flex items-center justify-between border-t border-border/70 bg-background/70 p-4 backdrop-blur">
           <p className="text-sm text-muted-foreground">
             {displayStart} - {displayEnd}
           </p>
@@ -618,7 +618,7 @@ export function HistoryPage() {
 
       {/* Detail Dialog */}
       <Dialog open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogContent className="max-h-[90vh] max-w-4xl overflow-hidden border-border/70 flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {t('history.generationDetails')}
@@ -640,7 +640,7 @@ export function HistoryPage() {
                     onClick={() => navigateHistory('prev')}
                     className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full opacity-80 hover:opacity-100"
                   >
-                    <span className="text-xl">◀</span>
+                    <ChevronLeft className="h-5 w-5" />
                   </Button>
                   <Button
                     size="icon"
@@ -648,7 +648,7 @@ export function HistoryPage() {
                     onClick={() => navigateHistory('next')}
                     className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full opacity-80 hover:opacity-100"
                   >
-                    <span className="text-xl">▶</span>
+                    <ChevronRight className="h-5 w-5" />
                   </Button>
                 </>
               )}

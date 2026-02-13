@@ -24,7 +24,8 @@ export default defineConfig({
       rollupOptions: {
         input: {
           index: resolve(__dirname, 'electron/main.ts')
-        }
+        },
+        external: ['sql.js']
       }
     }
   },
@@ -52,6 +53,9 @@ export default defineConfig({
         // Externalize Capacitor modules - they're only used in mobile builds
         external: CAPACITOR_MODULES
       }
+    },
+    optimizeDeps: {
+      exclude: ['@google/model-viewer']
     },
     server: {
       port: 5173,

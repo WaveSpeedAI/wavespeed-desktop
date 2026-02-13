@@ -233,13 +233,32 @@ const electronAPI = {
     ipcRenderer.invoke('sd-extract-binary', zipPath, destPath)
 }
 
+// ─── Workflow API (isolated namespace to avoid collision with electronAPI) ────
+const workflowAPI = {
+  invoke: (channel: string, args?: unknown): Promise<unknown> =>
+    ipcRenderer.invoke(channel, args),
+  on: (channel: string, callback: (...args: unknown[]) => void): void => {
+    const handler = (_event: unknown, ...rest: unknown[]) => callback(...rest)
+    ipcRenderer.on(channel, handler)
+    // Store handler reference for removal
+    ;(workflowAPI as Record<string, unknown>)[`__handler_${channel}_${callback.toString().slice(0, 50)}`] = handler
+  },
+  removeListener: (channel: string, _callback: (...args: unknown[]) => void): void => {
+    // Best-effort removal — remove all listeners for this channel
+    ipcRenderer.removeAllListeners(channel)
+  }
+}
+
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electronAPI', electronAPI)
+    contextBridge.exposeInMainWorld('workflowAPI', workflowAPI)
   } catch (error) {
     console.error(error)
   }
 } else {
   // @ts-ignore - fallback for non-isolated context
   window.electronAPI = electronAPI
+  // @ts-ignore
+  window.workflowAPI = workflowAPI
 }

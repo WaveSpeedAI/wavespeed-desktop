@@ -5,25 +5,43 @@ type ScaleType = '2x' | '3x' | '4x'
 
 let upscaler: InstanceType<typeof Upscaler> | null = null
 
+/**
+ * Model loading strategy:
+ *  - slim:  bundled locally (small, ~5MB per scale)
+ *  - medium/thick:  loaded from CDN on demand (saves ~128MB from app bundle)
+ *
+ * CDN model definitions use jsdelivr to serve the TF.js model.json + weight shards.
+ * TF.js loadGraphModel/loadLayersModel supports remote URLs natively.
+ */
+
+const CDN_MODELS: Record<string, Record<ScaleType, { path: string; modelType: string; scale: number }>> = {
+  medium: {
+    '2x': { path: 'https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-medium@1.0.0-beta.13/models/2x/model.json', modelType: 'layers', scale: 2 },
+    '3x': { path: 'https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-medium@1.0.0-beta.13/models/3x/model.json', modelType: 'layers', scale: 3 },
+    '4x': { path: 'https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-medium@1.0.0-beta.13/models/4x/model.json', modelType: 'layers', scale: 4 }
+  },
+  thick: {
+    '2x': { path: 'https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-thick@1.0.0-beta.16/models/2x/model.json', modelType: 'layers', scale: 2 },
+    '3x': { path: 'https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-thick@1.0.0-beta.16/models/3x/model.json', modelType: 'layers', scale: 3 },
+    '4x': { path: 'https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-thick@1.0.0-beta.16/models/4x/model.json', modelType: 'layers', scale: 4 }
+  }
+}
+
 const getModel = async (model: ModelType, scale: ScaleType) => {
-  const modelMap = {
-    slim: {
+  // Slim: bundled locally
+  if (model === 'slim') {
+    const slimMap = {
       '2x': () => import('@upscalerjs/esrgan-slim/2x'),
       '3x': () => import('@upscalerjs/esrgan-slim/3x'),
       '4x': () => import('@upscalerjs/esrgan-slim/4x')
-    },
-    medium: {
-      '2x': () => import('@upscalerjs/esrgan-medium/2x'),
-      '3x': () => import('@upscalerjs/esrgan-medium/3x'),
-      '4x': () => import('@upscalerjs/esrgan-medium/4x')
-    },
-    thick: {
-      '2x': () => import('@upscalerjs/esrgan-thick/2x'),
-      '3x': () => import('@upscalerjs/esrgan-thick/3x'),
-      '4x': () => import('@upscalerjs/esrgan-thick/4x')
     }
+    return (await slimMap[scale]()).default
   }
-  return (await modelMap[model][scale]()).default
+
+  // Medium / Thick: load from CDN
+  const cdnDef = CDN_MODELS[model]?.[scale]
+  if (!cdnDef) throw new Error(`Unknown model: ${model}/${scale}`)
+  return cdnDef
 }
 
 self.onmessage = async (e: MessageEvent) => {
@@ -70,7 +88,8 @@ self.onmessage = async (e: MessageEvent) => {
           }
         })
 
-        upscaler = new Upscaler({ model: modelDef })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        upscaler = new Upscaler({ model: modelDef as any })
 
         self.postMessage({
           type: 'progress',

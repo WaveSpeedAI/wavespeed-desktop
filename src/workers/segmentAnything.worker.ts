@@ -6,9 +6,9 @@ env.allowLocalModels = false
 const isMobile = /android|iphone|ipad/i.test(navigator.userAgent)
 
 if (!isMobile) {
-  // Align WASM files with the @huggingface/transformers onnxruntime-web dependency.
-  // On mobile, use the bundled WASM for reliability (no CDN dependency).
-  env.backends.onnx.wasm!.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0-dev.20250409-89f8206ba4/dist/'
+  // Align WASM files with the actual installed onnxruntime-web version (pinned via overrides).
+  // The JS API is 1.21.0 (due to package.json overrides), so WASM binaries must match.
+  env.backends.onnx.wasm!.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/'
 }
 
 const MODEL_ID = 'Xenova/slimsam-77-uniform'

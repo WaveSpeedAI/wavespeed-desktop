@@ -31,20 +31,25 @@
     "selectAll": "Pilih semua",
     "retry": "Cuba Lagi",
     "downloadFailed": "Muat turun gagal. Sila semak sambungan rangkaian anda.",
-    "openInBrowser": "Buka dalam pelayar"
+    "openInBrowser": "Buka dalam pelayar",
+    "settings": "Tetapan",
+    "clearAll": "Kosongkan semua",
+    "deselectAll": "Nyahpilih Semua"
   },
   "nav": {
     "home": "Laman Utama",
     "featuredModels": "Model Pilihan",
     "models": "Model",
-    "playground": "Playground",
+    "playground": "Permainan",
     "history": "Sejarah",
     "templates": "Templat",
     "assets": "Aset Saya",
     "zImage": "Z-Image",
     "freeTools": "Alat Percuma",
     "settings": "Tetapan",
-    "collapse": "Kuncupkan"
+    "collapse": "Kuncupkan",
+    "workflow": "Aliran kerja",
+    "expand": "Kembang"
   },
   "welcome": {
     "tagline": "Alat Kreatif AI di Hujung Jari Anda",
@@ -62,7 +67,7 @@
         "description": "Layari model AI untuk penjanaan imej, video dan audio"
       },
       "playground": {
-        "title": "Playground",
+        "title": "Permainan",
         "description": "Ruang kerja berbilang tab untuk menjalankan model dengan parameter tersuai"
       },
       "templates": {
@@ -86,6 +91,11 @@
         "title": "Alat Percuma",
         "description": "Alat AI yang berkuasa yang berjalan secara tempatan - tiada kunci API diperlukan",
         "badge": "Percuma"
+      },
+      "workflow": {
+        "title": "Aliran kerja",
+        "description": "Bina saluran paip AI visual dengan editor berasaskan nod",
+        "badge": "Baru"
       }
     }
   },
@@ -108,7 +118,7 @@
     "removeFromFavorites": "Buang dari kegemaran"
   },
   "playground": {
-    "title": "Playground",
+    "title": "Permainan",
     "selectModel": "Pilih model",
     "searchModels": "Cari model...",
     "noModelSelected": "Tiada model dipilih",
@@ -178,7 +188,9 @@
         "hint": "Kawasan putih mendedahkan, kawasan hitam menyembunyikan"
       },
       "removeFile": "Buang Fail",
-      "removeFileConfirm": "Adakah anda pasti mahu membuang fail ini?"
+      "removeFileConfirm": "Adakah anda pasti mahu membuang fail ini?",
+      "micInUse": "Mikrofon sedang digunakan oleh aplikasi lain",
+      "tapToRecord": "Ketik untuk mula merakam"
     },
     "autoSaved": "Disimpan automatik ke Aset",
     "autoSavedDesc": "Menyimpan {{count}} output ke Aset Saya",
@@ -234,7 +246,14 @@
       "seedsGenerated": "Benih dijana secara automatik",
       "settings": "Tetapan kelompok"
     },
-    "input": "Input"
+    "input": "Input",
+    "imageCopied": "Imej disalin ke papan keratan",
+    "urlCopied": "URL disalin ke papan keratan",
+    "copyFailed": "Gagal menyalin",
+    "copyImage": "Salin imej",
+    "copyUrl": "Salin URL",
+    "copy": "Salin",
+    "download": "Muat turun"
   },
   "history": {
     "title": "Sejarah",
@@ -245,7 +264,8 @@
       "completed": "Selesai",
       "failed": "Gagal",
       "processing": "Memproses",
-      "created": "Dicipta"
+      "created": "Dicipta",
+      "archived": "Diarkibkan"
     },
     "loadPreviews": "Muat pratonton",
     "disablePreviews": "Nyahaktif pratonton",
@@ -266,7 +286,25 @@
     "executionTime": "Masa Pelaksanaan",
     "predictionId": "ID Ramalan",
     "notAvailable": "Sejarah Tidak Tersedia",
-    "notAvailableDesc": "API sejarah ramalan tidak tersedia pada masa ini."
+    "notAvailableDesc": "API sejarah ramalan tidak tersedia pada masa ini.",
+    "downloadComplete": "Muat turun selesai",
+    "downloadCompleteDesc": "{{count}} fail dimuat turun",
+    "downloadFailed": "Muat turun gagal",
+    "downloadFailedDesc": "{{count}} fail gagal dimuat turun",
+    "hasInputs": "Mempunyai input yang tersedia",
+    "saveTemplate": {
+      "button": "Simpan sebagai templat",
+      "dialogTitle": "Simpan templat",
+      "nameLabel": "Nama templat",
+      "namePlaceholder": "Masukkan nama templat...",
+      "duplicateName": "Nama ini sudah wujud",
+      "noInputsTitle": "Tidak dapat menyimpan templat",
+      "noInputsDesc": "Tiada parameter input dijumpai untuk ramalan ini",
+      "success": "Templat disimpan",
+      "successDesc": "Anda boleh menggunakannya dari halaman templat",
+      "error": "Gagal menyimpan templat"
+    },
+    "longPressHint": "Tekan lama untuk memilih"
   },
   "templates": {
     "title": "Templat",
@@ -333,7 +371,7 @@
     "filters": "Penapis",
     "clearFilters": "Kosongkan Penapis",
     "filterByType": "Jenis",
-    "filterByModel": "Model",
+    "filterByModel": "Mengikut model",
     "allModels": "Semua Model",
     "favorites": "Kegemaran",
     "showFavoritesOnly": "Papar kegemaran sahaja",
@@ -417,7 +455,7 @@
       }
     },
     "errors": {
-      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "desktopRequired": "Ciri ini memerlukan aplikasi desktop. Sila muat turun WaveSpeed Desktop atau cuba versi dalam talian.",
       "generationCancelled": "Penjanaan dibatalkan"
     },
     "tips": {
@@ -447,7 +485,7 @@
       "invalidDesc": "Kunci API tidak dapat disahkan. Sila semak dan cuba lagi.",
       "cleared": "Kunci API dikosongkan",
       "clearedDesc": "Kunci API anda telah dibuang.",
-      "itemDeleted": "Cache item deleted",
+      "itemDeleted": "Item cache dipadam",
       "error": "Ralat",
       "errorDesc": "Gagal menyimpan kunci API."
     },
@@ -485,7 +523,7 @@
       "autoSaveDisabledDesc": "Anda masih boleh menyimpan output secara manual dari playground",
       "directory": "Direktori Aset",
       "directoryDesc": "Pilih tempat untuk menyimpan output yang dijana",
-      "defaultDirectory": "Documents/WaveSpeed",
+      "defaultDirectory": "Dokumen/WaveSpeed",
       "browse": "Layari",
       "directoryChanged": "Direktori ditukar",
       "directoryChangedDesc": "Output baharu akan disimpan ke {{path}}",
@@ -505,7 +543,27 @@
       "clearFailed": "Gagal memadam cache",
       "zImageAuxiliary": "Model tambahan Z-Image",
       "zImageModels": "Model Z-Image",
-      "zImageBinary": "Binari Z-Image"
+      "zImageBinary": "Binari Z-Image",
+      "predownload": "Muat turun model terlebih dahulu",
+      "predownloadDesc": "Muat turun model AI terlebih dahulu untuk penggunaan luar talian",
+      "downloadModels": "Muat turun model",
+      "downloadPartial": "Muat turun separa selesai",
+      "downloadPartialDesc": "Sesetengah model berjaya dimuat turun",
+      "downloadComplete": "Muat turun selesai",
+      "downloadCompleteDesc": "Semua model berjaya dimuat turun",
+      "downloadCancelled": "Muat turun dibatalkan",
+      "downloadCancelledDesc": "Muat turun model dibatalkan",
+      "alreadyCached": "Sudah di-cache",
+      "downloaded": "Dimuat turun",
+      "overallProgress": "Kemajuan keseluruhan",
+      "models": {
+        "ffmpegJs": "Teras FFmpeg (JS)",
+        "ffmpegWasm": "Teras FFmpeg (WASM)",
+        "backgroundRemover": "Pembuang latar belakang",
+        "imageEraser": "Pemadam imej (LaMa)",
+        "samEncoder": "Pengekod penglihatan SAM",
+        "samDecoder": "Penyahkod prompt SAM"
+      }
     },
     "downloads": {
       "title": "Muat Turun",
@@ -520,7 +578,7 @@
       "channel": "Saluran Kemaskini",
       "stable": "Stabil",
       "stableDesc": "Terima keluaran stabil dengan ciri yang diuji.",
-      "nightly": "Nightly",
+      "nightly": "Malam",
       "nightlyDesc": "Terima binaan nightly dengan ciri terkini (mungkin tidak stabil).",
       "autoCheck": "Semak kemaskini secara automatik",
       "autoCheckDesc": "Semak kemaskini secara automatik apabila aplikasi dimulakan.",
@@ -540,14 +598,23 @@
       "devModeDesc": "Kemaskini automatik dinyahaktif dalam mod pembangunan.",
       "checkFailed": "Semakan kemaskini gagal",
       "downloadFailed": "Muat turun gagal",
-      "downloadFailedDesc": "Gagal memuat turun kemaskini."
+      "downloadFailedDesc": "Gagal memuat turun kemaskini.",
+      "downloadComplete": "Muat turun selesai",
+      "openToInstall": "Sila buka {{filename}} untuk memasang",
+      "installInstructions": "Arahan pemasangan",
+      "findInDownloads": "APK disimpan dalam folder Muat Turun. Buka {{filename}} dalam pengurus fail untuk memasang",
+      "downloadProgress": "Memuat turun... {{progress}}%"
     },
     "about": {
       "title": "Tentang",
       "description": "WaveSpeed Desktop - Playground Model AI",
       "aboutText": "Aplikasi desktop sumber terbuka untuk menjalankan model AI dengan API WaveSpeed.",
-      "viewOnGitHub": "Lihat di GitHub"
-    }
+      "viewOnGitHub": "Lihat di GitHub",
+      "version": "Versi",
+      "mobileDescription": "WaveSpeed Mobile - Alat AI mudah alih",
+      "mobileAboutText": "Aplikasi mudah alih sumber terbuka untuk menjalankan model AI WaveSpeed API."
+    },
+    "mobileDescription": "Konfigurasi aplikasi WaveSpeed Mobile anda"
   },
   "apiKeyRequired": {
     "title": "Kunci API Diperlukan",
@@ -622,7 +689,18 @@
       "detecting": "Mengesan wajah",
       "enhancing": "Meningkatkan wajah",
       "noFaces": "Tiada wajah dikesan dalam imej",
-      "facesFound": "{{count}} wajah dikesan"
+      "facesFound": "{{count}} wajah dikesan",
+      "inputImage": "Imej input",
+      "selectImageWithFaces": "Pilih imej dengan muka untuk dipertingkatkan",
+      "modelsInfo": "Menggunakan model YOLO + GFPGAN AI",
+      "downloading": "Memuat turun model...",
+      "loading": "Memuat model...",
+      "noFacesFound": "Tiada muka dijumpai",
+      "facesEnhanced": "{{count}} muka dipertingkatkan",
+      "result": "Hasil peningkatan",
+      "newImage": "Imej baharu",
+      "firstTimeDownload": "Kali pertama? Model akan dimuat turun (~350MB)",
+      "invalidFile": "Sila pilih fail imej yang sah"
     },
     "faceSwapper": {
       "title": "Penukar Wajah",
@@ -633,12 +711,12 @@
       "selectTarget": "Pilih imej sasaran",
       "sourceHint": "Identiti wajah untuk disalin",
       "targetHint": "Imej di mana wajah akan diganti",
-      "orDragDrop": "or drag and drop",
+      "orDragDrop": "atau seret dan lepas",
       "noSourceFace": "Tiada wajah dikesan dalam imej sumber",
       "noTargetFaces": "Tiada wajah dikesan dalam imej sasaran",
       "clickToSelect": "Klik pada wajah untuk memilih yang mana hendak ditukar",
       "facesSelected": "{{selected}}/{{total}} wajah dipilih",
-      "sourceSelected": "Face {{selected}}/{{total}} selected",
+      "sourceSelected": "Muka {{selected}}/{{total}} dipilih",
       "faceDetected": "Wajah dikesan",
       "swapFaces": "Tukar Wajah",
       "processing": "Memproses...",
@@ -708,7 +786,8 @@
       "undoEdit": "Buat asal pembuangan",
       "redoEdit": "Buat semula pembuangan",
       "hint": "Lukis di atas objek yang anda mahu buang, kemudian klik Buang Objek",
-      "resultPlaceholder": "Hasil akan muncul di sini"
+      "resultPlaceholder": "Hasil akan muncul di sini",
+      "hintMobile": "Lukis pada kawasan yang ingin dialih keluar"
     },
     "progress": {
       "downloading": "Memuat turun model",
@@ -732,7 +811,10 @@
       "clearPoints": "Padam titik",
       "clearPointsTooltip": "Padam semua titik dan kembali ke mod pratonton tuding",
       "cutMask": "Potong Topeng",
-      "hint": "Klik kiri untuk menyertakan, klik kanan untuk mengecualikan kawasan"
+      "hint": "Klik kiri untuk menyertakan, klik kanan untuk mengecualikan kawasan",
+      "hoverToPreviewMobile": "Ketik objek untuk mula memilih",
+      "clickToRefineMobile": "Ketik untuk menambah lebih banyak titik",
+      "hintMobile": "Ketik untuk masukkan, tekan lama untuk kecualikan"
     },
     "backWarning": {
       "title": "Pemprosesan Sedang Berjalan",
@@ -741,82 +823,116 @@
       "confirm": "Kembali"
     },
     "videoConverter": {
-      "title": "Video Converter",
+      "title": "Penukar video",
       "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
       "selectVideo": "Select Video",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace video",
+      "orDragDrop": "atau seret dan lepas",
+      "dropToReplace": "Jatuhkan untuk ganti video",
       "supportedFormats": "Supports MP4, WebM, MOV, AVI, MKV",
       "convert": "Convert",
-      "converting": "Converting...",
-      "original": "Original",
-      "outputSettings": "Output Settings",
+      "converting": "Menukar...",
+      "original": "Asal",
+      "outputSettings": "Tetapan output",
       "format": "Format",
-      "quality": "Quality",
-      "resolution": "Resolution",
-      "convertedSize": "Converted Size"
+      "quality": "Kualiti",
+      "resolution": "Resolusi",
+      "convertedSize": "Saiz ditukar",
+      "inputVideo": "Video input",
+      "selectVideoDesc": "Pilih atau seret fail video untuk ditukar",
+      "outputFormat": "Format output",
+      "converted": "Ditukar",
+      "result": "Hasil penukaran",
+      "codecUsed": "Codec digunakan",
+      "invalidFile": "Sila pilih fail video yang sah"
     },
     "audioConverter": {
-      "title": "Audio Converter",
+      "title": "Penukar audio",
       "description": "Convert audio between formats (MP3, AAC, FLAC, WAV)",
       "selectAudio": "Select Audio",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace audio",
+      "orDragDrop": "atau seret dan lepas",
+      "dropToReplace": "Jatuhkan untuk ganti audio",
       "supportedFormats": "Supports MP3, M4A, OGG, WAV, FLAC",
       "convert": "Convert",
-      "converting": "Converting...",
-      "converted": "Converted",
-      "playOriginal": "Play original",
-      "playConverted": "Play converted"
+      "converting": "Menukar...",
+      "converted": "Ditukar",
+      "playOriginal": "Main asal",
+      "playConverted": "Main hasil ditukar",
+      "inputAudio": "Audio input",
+      "outputFormat": "Format output",
+      "bitrate": "Kadar bit",
+      "original": "Asal",
+      "result": "Hasil",
+      "invalidFile": "Sila pilih fail MP3 atau WAV"
     },
     "imageConverter": {
-      "title": "Image Converter",
+      "title": "Penukar gambar",
       "description": "Convert images between formats (JPG, PNG, WebP, GIF)",
-      "selectImages": "Select Images",
-      "orDragDrop": "or drag and drop",
-      "dropToAdd": "Drop to add images",
+      "selectImages": "Klik atau seret gambar ke sini",
+      "orDragDrop": "atau seret dan lepas",
+      "dropToAdd": "Jatuhkan untuk tambah",
       "supportedFormats": "Supports JPG, PNG, WebP, GIF, BMP",
-      "addMore": "Add More",
+      "addMore": "Tambah lagi",
       "convert": "Convert",
-      "converting": "Converting...",
-      "quality": "Quality",
-      "downloadAll": "Download All"
+      "converting": "Menukar...",
+      "quality": "Kualiti",
+      "downloadAll": "Muat turun semua",
+      "inputImage": "Imej input",
+      "selectImage": "Klik atau seret imej ke sini",
+      "outputFormat": "Format output",
+      "result": "Hasil",
+      "invalidFile": "Sila pilih fail imej yang sah"
     },
     "mediaTrimmer": {
-      "title": "Media Trimmer",
-      "description": "Trim videos or audio to a specific duration",
+      "title": "Pemangkas media",
+      "description": "Potong awal dan akhir video atau audio",
       "selectMedia": "Select Media",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace media",
+      "orDragDrop": "atau seret dan lepas",
+      "dropToReplace": "Jatuhkan untuk ganti fail",
       "supportedFormats": "Supports video and audio files",
       "trim": "Trim",
-      "trimming": "Trimming...",
-      "originalDuration": "Original",
-      "selectedDuration": "Selected",
-      "trimmedSize": "Trimmed Size",
-      "playingOriginal": "Playing original",
-      "playingTrimmed": "Playing trimmed"
+      "trimming": "Memangkas...",
+      "originalDuration": "Tempoh asal",
+      "selectedDuration": "Tempoh dipilih",
+      "trimmedSize": "Saiz selepas dipangkas",
+      "playingOriginal": "Main asal",
+      "playingTrimmed": "Main selepas dipangkas",
+      "inputMedia": "Media input",
+      "trimSettings": "Tetapan pemotongan",
+      "selectRange": "Pilih masa mula dan tamat",
+      "startTime": "Masa mula",
+      "endTime": "Masa tamat",
+      "timeFormat": "Format: m:ss.d atau saat",
+      "outputDuration": "Tempoh output",
+      "result": "Hasil pemotongan",
+      "invalidFile": "Sila pilih fail video atau audio yang sah"
     },
     "mediaMerger": {
-      "title": "Media Merger",
-      "description": "Merge multiple video or audio files into one",
+      "title": "Penggabung media",
+      "description": "Gabungkan beberapa fail video atau audio mengikut urutan",
       "selectFiles": "Select Files",
-      "orDragDrop": "or drag and drop",
-      "dropToAdd": "Drop to add files",
+      "orDragDrop": "atau seret dan lepas",
+      "dropToAdd": "Jatuhkan untuk tambah",
       "supportedFormats": "Supports video and audio files",
       "addMore": "Add More",
       "merge": "Merge",
-      "merging": "Merging...",
-      "merged": "Merged",
-      "totalDuration": "Total Duration",
-      "sameFormatNote": "Files must have the same format for lossless merging"
+      "merging": "Menggabungkan...",
+      "merged": "Digabungkan",
+      "totalDuration": "Jumlah tempoh",
+      "sameFormatNote": "Disyorkan fail format yang sama",
+      "inputMedia": "Fail input",
+      "files": "fail",
+      "result": "Hasil penggabungan",
+      "sameTypeRequired": "Semua fail mesti sama jenis (video atau audio)"
     },
     "ffmpeg": {
-      "loading": "Loading FFmpeg",
-      "converting": "Converting",
-      "merging": "Merging",
-      "trimming": "Trimming"
-    }
+      "loading": "Memuat...",
+      "converting": "Menukar...",
+      "merging": "Menggabungkan...",
+      "trimming": "Memangkas..."
+    },
+    "downloadSuccess": "Disimpan ke folder Muat Turun",
+    "downloadStarted": "Muat turun dimulakan",
+    "downloadFailed": "Muat turun gagal"
   },
   "videoConverter": {
     "title": "Penukar Video",
@@ -834,5 +950,319 @@
     "result": "Hasil",
     "codecUsed": "Codec yang digunakan",
     "download": "Muat turun"
+  },
+  "game": {
+    "waitingLong": "Menunggu terlalu lama",
+    "clickToPlay": "Klik untuk mula"
+  },
+  "workflow": {
+    "workflows": "Aliran kerja",
+    "newWorkflow": "Aliran kerja baharu",
+    "untitled": "Tanpa judul",
+    "save": "Simpan",
+    "saved": "Disimpan",
+    "saving": "Menyimpan...",
+    "saveFailed": "Gagal menyimpan",
+    "savedAt": "Disimpan",
+    "unsaved": "Belum disimpan",
+    "nodes": "Nod",
+    "config": "Konfigurasi",
+    "results": "Hasil",
+    "cost": "Kos",
+    "settings": "Tetapan",
+    "runAll": "Jalankan semua",
+    "run": "Jalankan",
+    "runTarget": "Jalankan sasaran",
+    "runTargetAll": "Jalankan semua nod",
+    "runTargetSelected": "Jalankan nod terpilih",
+    "runCount": "Bilangan larian",
+    "stop": "Berhenti",
+    "running": "Menjalankan...",
+    "cancelAll": "Batalkan semua",
+    "import": "Import",
+    "export": "Eksport",
+    "imported": "Diimport",
+    "importFailed": "Gagal mengimport",
+    "exported": "Dieksport dengan jayanya",
+    "exportFailed": "Gagal mengeksport",
+    "estimated": "Anggaran kos",
+    "fitView": "Sesuaikan pandangan",
+    "previousImage": "Imej sebelumnya",
+    "nextImage": "Imej seterusnya",
+    "previewNavHint": "Gunakan ← / → untuk menavigasi ({{current}}/{{total}})",
+    "clickAnywhereToClose": "Klik di mana sahaja untuk menutup",
+    "runNode": "Jalankan nod",
+    "modelSelection": "Pemilihan model",
+    "annotationHint": "Klik dua kali pada nota untuk mengedit.",
+    "continueFrom": "Teruskan dari sini",
+    "retry": "Cuba lagi",
+    "cancel": "Batal",
+    "noWorkflows": "Belum ada aliran kerja",
+    "create": "Cipta",
+    "open": "Buka",
+    "paste": "Tampal",
+    "addNode": "Tambah nod",
+    "addNote": "Tambah nota",
+    "note": "Nota",
+    "deleteConnection": "Padam sambungan",
+    "add": "Tambah",
+    "delete": "Padam",
+    "currentModel": "Model semasa",
+    "modelIdLabel": "ID model",
+    "selectNode": "Pilih nod untuk dikonfigurasi",
+    "noExecutions": "Belum ada pelaksanaan",
+    "budgetExceeded": "Budget terlampaui",
+    "dailySpend": "Perbelanjaan harian",
+    "perExecutionLimit": "Had per pelaksanaan",
+    "dailyLimit": "Had harian",
+    "editBudget": "Edit bajet",
+    "refreshModels": "Muat semula model",
+    "drawMask": "Lukis topeng",
+    "drawMaskNeedInput": "Tetapkan imej input terlebih dahulu",
+    "segmentPointPicker": {
+      "title": "Pilih titik segmentasi",
+      "hint": "Klik kiri = masukkan, klik kanan = kecualikan",
+      "points": "titik",
+      "clear": "Kosongkan",
+      "done": "Selesai"
+    },
+    "pickPoints": "Pilih titik",
+    "pickPointsNeedInput": "Tetapkan imej input terlebih dahulu",
+    "pointsLabel": "Titik segmentasi",
+    "linked": "Dikaitkan",
+    "linkedTo": "Dikaitkan dengan",
+    "disconnectLink": "Buka kunci: putuskan pautan ini",
+    "previewUpstreamOutput": "Pratonton output hulu",
+    "localFileOrUrl": "Fail tempatan atau URL",
+    "showAll": "Tunjukkan semua",
+    "showAllRuns": "Tunjukkan semua larian",
+    "showLatestOnly": "Tunjukkan yang terbaru sahaja",
+    "latest": "Terkini",
+    "latestHidden": "Hasil terkini disembunyikan.",
+    "noVisibleResults": "Tiada hasil yang kelihatan.",
+    "hideRun": "Sembunyikan larian ini",
+    "output": "Output",
+    "outputLowercase": "Output",
+    "invalidUrl": "URL tidak sah",
+    "removeLast": "Buang yang terakhir",
+    "enterField": "Masukkan {{field}}...",
+    "show": "Tunjuk",
+    "hide": "Sembunyikan",
+    "optional": "Pilihan",
+    "searchNodesPlaceholder": "Cari nod...",
+    "dragOrClickToAdd": "Seret ke kanvas atau klik untuk menambah",
+    "noNodesAvailable": "Tiada nod tersedia",
+    "nodeCategory": {
+      "recent": "Terkini",
+      "input": "Input",
+      "ai-task": "Tugas AI",
+      "free-tool": "Alat percuma",
+      "output": "Output",
+      "processing": "Pemprosesan",
+      "control": "Kawalan"
+    },
+    "nodeDefs": {
+      "ai-task/run": {
+        "label": "Jalankan model",
+        "emptyHint": "Klik nod ini, kemudian pilih model →",
+        "params": {
+          "modelId": {
+            "label": "Model"
+          }
+        }
+      },
+      "input/media-upload": {
+        "label": "Muat naik",
+        "outputs": {
+          "output": {
+            "label": "URL"
+          }
+        }
+      },
+      "input/text-input": {
+        "label": "Teks",
+        "params": {
+          "text": {
+            "label": "Teks"
+          }
+        }
+      },
+      "output/preview": {
+        "label": "Pratonton",
+        "inputs": {
+          "input": {
+            "label": "URL"
+          }
+        },
+        "params": {
+          "autoDetect": {
+            "label": "Auto-kesan jenis"
+          },
+          "forceType": {
+            "label": "Paksa jenis",
+            "options": {
+              "auto": "Auto",
+              "image": "Imej",
+              "video": "Video",
+              "audio": "Audio",
+              "3d": "Model 3D"
+            }
+          }
+        }
+      },
+      "output/file": {
+        "label": "Eksport fail",
+        "inputs": {
+          "url": {
+            "label": "URL"
+          }
+        },
+        "params": {
+          "outputDir": {
+            "label": "Direktori output"
+          },
+          "filename": {
+            "label": "Awalan nama fail"
+          },
+          "format": {
+            "label": "Format",
+            "options": {
+              "auto": "Auto",
+              "mp4": "MP4",
+              "png": "PNG",
+              "jpg": "JPG",
+              "mp3": "MP3",
+              "wav": "WAV"
+            }
+          }
+        }
+      },
+      "free-tool/image-enhancer": {
+        "label": "Penambah imej"
+      },
+      "free-tool/background-remover": {
+        "label": "Pembuang latar belakang"
+      },
+      "free-tool/face-enhancer": {
+        "label": "Penambah muka"
+      },
+      "free-tool/video-enhancer": {
+        "label": "Penambah video"
+      },
+      "free-tool/face-swapper": {
+        "label": "Penukar muka"
+      },
+      "free-tool/image-eraser": {
+        "label": "Pemadam imej"
+      },
+      "free-tool/segment-anything": {
+        "label": "Segmen apa-apa",
+        "params": {
+          "pointX": {
+            "label": "Titik X",
+            "description": "Koordinat X ternormal (0-1) untuk titik segmentasi"
+          },
+          "pointY": {
+            "label": "Titik Y",
+            "description": "Koordinat Y ternormal (0-1) untuk titik segmentasi"
+          }
+        }
+      },
+      "free-tool/video-converter": {
+        "label": "Penukar video"
+      },
+      "free-tool/audio-converter": {
+        "label": "Penukar audio"
+      },
+      "free-tool/image-converter": {
+        "label": "Penukar imej"
+      },
+      "free-tool/media-trimmer": {
+        "label": "Pemangkas media"
+      },
+      "free-tool/media-merger": {
+        "label": "Penggabung media"
+      }
+    },
+    "modelSelector": {
+      "allCategory": "Semua",
+      "noModelsLoaded": "Tiada model dimuat. Klik \"Muat semula model\" di bawah.",
+      "loadFailed": "Gagal memuat model.",
+      "refreshFailed": "Gagal memuat semula model.",
+      "loadingModels": "Memuat model...",
+      "loadingHint": "Mungkin mengambil beberapa saat pada pelancaran pertama",
+      "recent": "Terkini",
+      "searchPlaceholder": "Cari model...",
+      "searchAllPlaceholder": "Cari semua model...",
+      "refreshTooltip": "Muat semula katalog model",
+      "refreshing": "Menyegarkan...",
+      "noModelsFound": "Tiada model dijumpai",
+      "disconnectBeforeSwitch": "Sila putuskan nod ini sebelum menukar model.",
+      "selectCategory": "Pilih kategori",
+      "cannotSwitchTitle": "Tidak dapat menukar model",
+      "cannotSwitchDesc": "Nod ini mempunyai sambungan aktif. Sila putuskan semua tepi sebelum menukar model."
+    },
+    "mediaUpload": {
+      "uploadFailed": "Muat naik gagal",
+      "invalidUrl": "URL tidak sah",
+      "fileUploaded": "Fail dimuat naik",
+      "uploaded": "Dimuat naik",
+      "clear": "Kosongkan",
+      "uploading": "Memuat naik...",
+      "uploadingShort": "Memuat naik...",
+      "failed": "Gagal",
+      "dropOrBrowse": "Letakkan fail di sini atau klik untuk melayari",
+      "browse": "Layari",
+      "pasteUrl": "Tampal URL",
+      "urlPlaceholder": "https://...",
+      "urlShortPlaceholder": "URL...",
+      "supportedTypes": "Imej, Video, Audio"
+    },
+    "textInput": {
+      "promptLibrary": "Perpustakaan prompt",
+      "saveCurrent": "Simpan semasa",
+      "namePlaceholder": "Nama...",
+      "noSavedSnippets": "Tiada coretan disimpan",
+      "optimizeFailed": "Pengoptimuman gagal",
+      "optimizeNowTitle": "Optimumkan teks sekarang",
+      "optimizing": "Mengoptimumkan...",
+      "optimizeNow": "Optimumkan sekarang",
+      "autoOnRunTitle": "Optimumkan hanya bila klik Jalankan",
+      "autoOnRun": "Auto pada Jalankan",
+      "chars": "aksara",
+      "optimizeOnRunEnabled": "Didayakan: optimumkan pada Jalankan",
+      "optimizeOffHint": "Lalai: tiada pengoptimuman (jalankan dengan teks asal)",
+      "manualOptimizedHint": "Dioptimumkan secara manual. Auto-on-run akan dilangkau sehingga teks berubah.",
+      "enterTextOrPrompt": "Masukkan teks atau prompt..."
+    },
+    "promptOptimizer": {
+      "optimizationFailed": "Pengoptimuman gagal",
+      "optimizeParams": "Optimumkan parameter",
+      "optimizeParamsPresetOnly": "Optimumkan parameter (preset sahaja)",
+      "perRun": "larian",
+      "mode": "Mod",
+      "text": "Teks",
+      "textPlaceholder": "Teks untuk diperluas atau sebagai konteks...",
+      "autoOnRunTitle": "Optimumkan secara auto bila klik Jalankan",
+      "autoOnRun": "Auto pada Jalankan",
+      "quickOptimizeTitle": "Optimumkan pantas ({{mode}})",
+      "params": "Parameter",
+      "prompt": "Prompt",
+      "emptyPrompt": "(kosong)",
+      "optimizing": "Mengoptimumkan...",
+      "optimize": "Optimumkan",
+      "optimizeWithImage": "Optimumkan dengan imej...",
+      "modeOptions": {
+        "image": "Imej",
+        "video": "Video"
+      },
+      "imageDialog": {
+        "title": "Optimumkan dengan imej",
+        "enterTextOrImage": "Sila masukkan teks atau berikan imej",
+        "optimizeFailed": "Pengoptimuman gagal",
+        "loadingOptimizer": "Memuat pengoptimum...",
+        "loadConfigFailed": "Tidak dapat memuat konfigurasi pengoptimum"
+      }
+    }
   }
 }

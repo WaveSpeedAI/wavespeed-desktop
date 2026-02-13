@@ -10,6 +10,12 @@ import imageEnhancerImg from '../../../build/images/ImageEnhancer.jpeg'
 import backgroundRemoverImg from '../../../build/images/BackgroundRemover.jpeg'
 import imageEraserImg from '../../../build/images/ImageEraser.jpeg'
 import SegmentAnythingImg from '../../../build/images/SegmentAnything.png'
+import faceEnhancerImg from '../../../build/images/FaceEnhancerNew.png'
+import videoConverterImg from '../../../build/images/VideoConverter.png'
+import audioConverterImg from '../../../build/images/AudioConverter.png'
+import imageConverterImg from '../../../build/images/ImageConverter.png'
+import mediaTrimmerImg from '../../../build/images/MediaTrimmer.png'
+import mediaMergerImg from '../../../build/images/MediaMerger.png'
 
 export function MobileFreeToolsPage() {
   const { t } = useTranslation()
@@ -73,8 +79,8 @@ export function MobileFreeToolsPage() {
       descriptionKey: 'freeTools.faceEnhancer.description',
       route: '/free-tools/face-enhancer',
       gradient: 'from-rose-500/20 via-pink-500/10 to-transparent',
-      iconGradient: 'from-rose-500 to-pink-600'
-      // No image - will show icon placeholder
+      iconGradient: 'from-rose-500 to-pink-600',
+      image: faceEnhancerImg
     },
     {
       id: 'video-converter',
@@ -83,8 +89,8 @@ export function MobileFreeToolsPage() {
       descriptionKey: 'freeTools.videoConverter.description',
       route: '/free-tools/video-converter',
       gradient: 'from-indigo-500/20 via-blue-500/10 to-transparent',
-      iconGradient: 'from-indigo-500 to-blue-600'
-      // No image - will show icon placeholder
+      iconGradient: 'from-indigo-500 to-blue-600',
+      image: videoConverterImg
     },
     {
       id: 'audio-converter',
@@ -93,8 +99,8 @@ export function MobileFreeToolsPage() {
       descriptionKey: 'freeTools.audioConverter.description',
       route: '/free-tools/audio-converter',
       gradient: 'from-teal-500/20 via-cyan-500/10 to-transparent',
-      iconGradient: 'from-teal-500 to-cyan-600'
-      // No image - will show icon placeholder
+      iconGradient: 'from-teal-500 to-cyan-600',
+      image: audioConverterImg
     },
     {
       id: 'image-converter',
@@ -103,8 +109,8 @@ export function MobileFreeToolsPage() {
       descriptionKey: 'freeTools.imageConverter.description',
       route: '/free-tools/image-converter',
       gradient: 'from-amber-500/20 via-yellow-500/10 to-transparent',
-      iconGradient: 'from-amber-500 to-yellow-600'
-      // No image - will show icon placeholder
+      iconGradient: 'from-amber-500 to-yellow-600',
+      image: imageConverterImg
     },
     {
       id: 'media-trimmer',
@@ -113,8 +119,8 @@ export function MobileFreeToolsPage() {
       descriptionKey: 'freeTools.mediaTrimmer.description',
       route: '/free-tools/media-trimmer',
       gradient: 'from-red-500/20 via-orange-500/10 to-transparent',
-      iconGradient: 'from-red-500 to-orange-600'
-      // No image - will show icon placeholder
+      iconGradient: 'from-red-500 to-orange-600',
+      image: mediaTrimmerImg
     },
     {
       id: 'media-merger',
@@ -123,8 +129,8 @@ export function MobileFreeToolsPage() {
       descriptionKey: 'freeTools.mediaMerger.description',
       route: '/free-tools/media-merger',
       gradient: 'from-purple-500/20 via-fuchsia-500/10 to-transparent',
-      iconGradient: 'from-purple-500 to-fuchsia-600'
-      // No image - will show icon placeholder
+      iconGradient: 'from-purple-500 to-fuchsia-600',
+      image: mediaMergerImg
     }
   ]
 

@@ -1,8 +1,9 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ChevronLeft, Zap, Home, Sun, Moon } from 'lucide-react'
+import { ChevronLeft, Home, Sun, Moon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useThemeStore } from '@/stores/themeStore'
+import { AppLogo } from '@/components/layout/AppLogo'
 import { cn } from '@/lib/utils'
 
 // Map paths to page titles (translation key or plain text prefixed with '!')
@@ -59,8 +60,8 @@ export function MobileHeader() {
       return t('nav.playground')
     }
 
-    // Default to app name
-    return 'WaveSpeed'
+    // Default to app name (home page)
+    return null
   }
 
   const showBackButton = pagesWithBackButton.some(path =>
@@ -94,11 +95,7 @@ export function MobileHeader() {
               <ChevronLeft className="h-5 w-5" />
             </Button>
           ) : location.pathname === '/' ? (
-            <div className="flex items-center gap-2">
-              <div className="gradient-bg rounded-lg p-1">
-                <Zap className="h-4 w-4 text-white" />
-              </div>
-            </div>
+            <AppLogo className="h-7 w-7 shrink-0" />
           ) : (
             <Button
               variant="ghost"
@@ -116,7 +113,11 @@ export function MobileHeader() {
           "font-semibold text-base truncate",
           showBackButton ? "flex-1 text-center" : "flex-1"
         )}>
-          {getPageTitle()}
+          {getPageTitle() ?? (
+            <span className="font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#1a2654] to-[#1a6b7c] dark:from-[#38bdf8] dark:to-[#34d399]">
+              WaveSpeed
+            </span>
+          )}
         </h1>
 
         {/* Right side - Action buttons */}

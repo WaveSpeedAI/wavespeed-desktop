@@ -33,7 +33,8 @@
     "downloadFailed": "下载失败。请检查您的网络连接。",
     "openInBrowser": "在浏览器中打开",
     "settings": "设置",
-    "clearAll": "全部清除"
+    "clearAll": "全部清除",
+    "deselectAll": "取消全选"
   },
   "nav": {
     "home": "首页",
@@ -45,8 +46,10 @@
     "assets": "我的资产",
     "zImage": "Z-Image",
     "freeTools": "免费工具",
+    "workflow": "工作流",
     "settings": "设置",
-    "collapse": "收起"
+    "collapse": "收起",
+    "expand": "展开"
   },
   "welcome": {
     "tagline": "触手可及的 AI 创意工具",
@@ -88,6 +91,11 @@
         "title": "免费工具",
         "description": "本地运行的强大 AI 工具 - 无需 API 密钥",
         "badge": "免费"
+      },
+      "workflow": {
+        "title": "工作流",
+        "description": "使用可视化节点编辑器构建 AI 管线",
+        "badge": "新"
       }
     }
   },
@@ -180,7 +188,9 @@
         "hint": "白色区域显示，黑色区域隐藏"
       },
       "removeFile": "移除文件",
-      "removeFileConfirm": "确定要移除这个文件吗？"
+      "removeFileConfirm": "确定要移除这个文件吗？",
+      "micInUse": "麦克风正被其他应用使用",
+      "tapToRecord": "点击开始录制"
     },
     "autoSaved": "已自动保存到资产",
     "autoSavedDesc": "已保存 {{count}} 个输出到我的资产",
@@ -236,7 +246,14 @@
       "seedsGenerated": "种子已自动生成",
       "settings": "批量设置"
     },
-    "input": "输入"
+    "input": "输入",
+    "imageCopied": "图片已复制到剪贴板",
+    "urlCopied": "链接已复制到剪贴板",
+    "copyFailed": "复制失败",
+    "copyImage": "复制图片",
+    "copyUrl": "复制链接",
+    "copy": "复制",
+    "download": "下载"
   },
   "history": {
     "title": "历史记录",
@@ -286,7 +303,8 @@
       "success": "模板已保存",
       "successDesc": "您可以在模板页面使用它",
       "error": "保存模板失败"
-    }
+    },
+    "longPressHint": "长按选择"
   },
   "templates": {
     "title": "模板",
@@ -468,7 +486,7 @@
       "invalidDesc": "无法验证 API 密钥。请检查后重试。",
       "cleared": "API 密钥已清除",
       "clearedDesc": "您的 API 密钥已被移除。",
-      "itemDeleted": "Cache item deleted",
+      "itemDeleted": "缓存项已删除",
       "error": "错误",
       "errorDesc": "保存 API 密钥失败。"
     },
@@ -693,12 +711,12 @@
       "selectTarget": "选择目标图像",
       "sourceHint": "要复制的人脸身份",
       "targetHint": "要替换人脸的图像",
-      "orDragDrop": "or drag and drop",
+      "orDragDrop": "或拖放文件",
       "noSourceFace": "源图像中未检测到人脸",
       "noTargetFaces": "目标图像中未检测到人脸",
       "clickToSelect": "点击人脸选择要替换的目标",
       "facesSelected": "已选择 {{selected}}/{{total}} 张人脸",
-      "sourceSelected": "Face {{selected}}/{{total}} selected",
+      "sourceSelected": "已选择人脸 {{selected}}/{{total}}",
       "faceDetected": "已检测到人脸",
       "swapFaces": "替换人脸",
       "processing": "处理中...",
@@ -956,5 +974,315 @@
     "result": "结果",
     "codecUsed": "使用的编码器",
     "download": "下载"
+  },
+  "workflow": {
+    "workflows": "工作流",
+    "newWorkflow": "新建工作流",
+    "untitled": "未命名工作流",
+    "save": "保存",
+    "saved": "已保存",
+    "saving": "保存中...",
+    "saveFailed": "保存失败",
+    "savedAt": "已保存",
+    "unsaved": "未保存",
+    "nodes": "节点",
+    "config": "配置",
+    "results": "结果",
+    "cost": "费用",
+    "settings": "设置",
+    "runAll": "全部运行",
+    "run": "运行",
+    "runTarget": "运行目标",
+    "runTargetAll": "运行全部节点",
+    "runTargetSelected": "运行选中节点",
+    "runCount": "运行次数",
+    "stop": "停止",
+    "running": "运行中...",
+    "cancelAll": "全部取消",
+    "import": "导入",
+    "export": "导出",
+    "imported": "已导入",
+    "importFailed": "导入失败",
+    "exported": "导出成功",
+    "exportFailed": "导出失败",
+    "estimated": "预估",
+    "fitView": "适配视图",
+    "previousImage": "上一张图片",
+    "nextImage": "下一张图片",
+    "previewNavHint": "使用 ← / → 查看图片（{{current}}/{{total}}）",
+    "clickAnywhereToClose": "点击任意位置关闭",
+    "runNode": "运行节点",
+    "modelSelection": "模型选择",
+    "annotationHint": "双击画布上的备注即可编辑。",
+    "continueFrom": "从此继续",
+    "retry": "重试",
+    "cancel": "取消",
+    "noWorkflows": "暂无工作流",
+    "create": "创建",
+    "open": "打开",
+    "paste": "粘贴",
+    "addNode": "添加节点",
+    "addNote": "添加备注",
+    "note": "备注",
+    "deleteConnection": "删除连接",
+    "add": "添加",
+    "delete": "删除",
+    "currentModel": "当前模型",
+    "modelIdLabel": "模型 ID",
+    "selectNode": "选择节点进行配置",
+    "noExecutions": "暂无执行记录",
+    "budgetExceeded": "超出预算",
+    "dailySpend": "今日花费",
+    "perExecutionLimit": "单次执行限额",
+    "dailyLimit": "每日限额",
+    "editBudget": "编辑预算",
+    "refreshModels": "刷新模型",
+    "drawMask": "绘制蒙版",
+    "drawMaskNeedInput": "请先设置输入图片",
+    "segmentPointPicker": {
+      "title": "选择分割点",
+      "hint": "左键点击=包含，右键点击=排除",
+      "points": "个点",
+      "clear": "清空",
+      "done": "完成"
+    },
+    "pickPoints": "点选",
+    "pickPointsNeedInput": "请先设置输入图片",
+    "pointsLabel": "分割点",
+    "linked": "已连接",
+    "linkedTo": "连接到",
+    "disconnectLink": "解锁：断开此连接",
+    "previewUpstreamOutput": "预览上游输出",
+    "localFileOrUrl": "本地文件或 URL",
+    "showAll": "全部显示",
+    "showAllRuns": "显示全部运行",
+    "showLatestOnly": "仅显示最新",
+    "latest": "最新",
+    "latestHidden": "最新结果已隐藏。",
+    "noVisibleResults": "没有可见结果。",
+    "hideRun": "隐藏本次运行",
+    "output": "输出",
+    "outputLowercase": "输出",
+    "invalidUrl": "无效 URL",
+    "removeLast": "移除最后一项",
+    "enterField": "输入 {{field}}...",
+    "show": "显示",
+    "hide": "隐藏",
+    "optional": "可选项",
+    "searchNodesPlaceholder": "搜索节点...",
+    "dragOrClickToAdd": "拖拽到画布或点击添加",
+    "noNodesAvailable": "暂无可用节点",
+    "nodeCategory": {
+      "recent": "最近使用",
+      "input": "输入",
+      "ai-task": "AI 任务",
+      "free-tool": "免费工具",
+      "output": "输出",
+      "processing": "处理",
+      "control": "控制"
+    },
+    "nodeDefs": {
+      "ai-task/run": {
+        "label": "执行模型",
+        "emptyHint": "点击此节点，然后选择模型 →",
+        "params": {
+          "modelId": {
+            "label": "模型"
+          }
+        }
+      },
+      "input/media-upload": {
+        "label": "上传",
+        "outputs": {
+          "output": {
+            "label": "URL"
+          }
+        }
+      },
+      "input/text-input": {
+        "label": "文本",
+        "params": {
+          "text": {
+            "label": "文本"
+          }
+        }
+      },
+      "output/preview": {
+        "label": "预览",
+        "inputs": {
+          "input": {
+            "label": "URL"
+          }
+        },
+        "params": {
+          "autoDetect": {
+            "label": "自动识别类型"
+          },
+          "forceType": {
+            "label": "强制类型",
+            "options": {
+              "auto": "自动",
+              "image": "图片",
+              "video": "视频",
+              "audio": "音频",
+              "3d": "3D 模型"
+            }
+          }
+        }
+      },
+      "output/file": {
+        "label": "文件导出",
+        "inputs": {
+          "url": {
+            "label": "URL"
+          }
+        },
+        "params": {
+          "outputDir": {
+            "label": "输出目录"
+          },
+          "filename": {
+            "label": "文件名前缀"
+          },
+          "format": {
+            "label": "格式",
+            "options": {
+              "auto": "自动",
+              "mp4": "MP4",
+              "png": "PNG",
+              "jpg": "JPG",
+              "mp3": "MP3",
+              "wav": "WAV"
+            }
+          }
+        }
+      },
+      "free-tool/image-enhancer": {
+        "label": "图片增强"
+      },
+      "free-tool/background-remover": {
+        "label": "背景移除"
+      },
+      "free-tool/face-enhancer": {
+        "label": "人脸增强"
+      },
+      "free-tool/video-enhancer": {
+        "label": "视频增强"
+      },
+      "free-tool/face-swapper": {
+        "label": "换脸"
+      },
+      "free-tool/image-eraser": {
+        "label": "图像擦除"
+      },
+      "free-tool/segment-anything": {
+        "label": "智能分割",
+        "params": {
+          "pointX": {
+            "label": "点 X",
+            "description": "分割点归一化 X 坐标（0-1）"
+          },
+          "pointY": {
+            "label": "点 Y",
+            "description": "分割点归一化 Y 坐标（0-1）"
+          }
+        }
+      },
+      "free-tool/video-converter": {
+        "label": "视频转换"
+      },
+      "free-tool/audio-converter": {
+        "label": "音频转换"
+      },
+      "free-tool/image-converter": {
+        "label": "图片转换"
+      },
+      "free-tool/media-trimmer": {
+        "label": "媒体裁剪"
+      },
+      "free-tool/media-merger": {
+        "label": "媒体合并"
+      }
+    },
+    "modelSelector": {
+      "allCategory": "全部",
+      "noModelsLoaded": "尚未加载模型，请点击下方“刷新模型”。",
+      "loadFailed": "加载模型失败。",
+      "refreshFailed": "刷新模型失败。",
+      "loadingModels": "正在加载模型...",
+      "loadingHint": "首次启动可能需要几秒钟",
+      "recent": "最近使用",
+      "searchPlaceholder": "搜索模型...",
+      "searchAllPlaceholder": "搜索所有模型...",
+      "refreshTooltip": "刷新模型目录",
+      "refreshing": "刷新中...",
+      "noModelsFound": "未找到模型",
+      "disconnectBeforeSwitch": "切换模型前请先断开该节点的连线。",
+      "selectCategory": "请选择分类",
+      "cannotSwitchTitle": "无法切换模型",
+      "cannotSwitchDesc": "该节点存在连接。切换模型前请先断开所有连线，否则参数结构变化后可能导致连接无效。"
+    },
+    "mediaUpload": {
+      "uploadFailed": "上传失败",
+      "invalidUrl": "无效 URL",
+      "fileUploaded": "文件已上传",
+      "uploaded": "已上传",
+      "clear": "清除",
+      "uploading": "上传中...",
+      "uploadingShort": "上传中...",
+      "failed": "失败",
+      "dropOrBrowse": "将文件拖到这里，或点击浏览",
+      "browse": "浏览",
+      "pasteUrl": "粘贴 URL",
+      "urlPlaceholder": "https://...",
+      "urlShortPlaceholder": "URL...",
+      "supportedTypes": "图片、视频、音频"
+    },
+    "textInput": {
+      "promptLibrary": "提示词库",
+      "saveCurrent": "保存当前内容",
+      "namePlaceholder": "名称...",
+      "noSavedSnippets": "暂无已保存片段",
+      "optimizeFailed": "优化失败",
+      "optimizeNowTitle": "立即优化文本",
+      "optimizing": "优化中...",
+      "optimizeNow": "立即优化",
+      "autoOnRunTitle": "仅在点击运行时优化",
+      "autoOnRun": "运行时自动优化",
+      "chars": "字",
+      "optimizeOnRunEnabled": "已开启：运行时优化",
+      "optimizeOffHint": "默认：不优化（按原文运行）",
+      "manualOptimizedHint": "已手动优化。在文本变更前将跳过运行时自动优化。",
+      "enterTextOrPrompt": "输入文本或提示词..."
+    },
+    "promptOptimizer": {
+      "optimizationFailed": "优化失败",
+      "optimizeParams": "优化参数",
+      "optimizeParamsPresetOnly": "优化参数（仅预设）",
+      "perRun": "次",
+      "mode": "模式",
+      "text": "文本",
+      "textPlaceholder": "用于扩展或作为上下文的文本...",
+      "autoOnRunTitle": "点击运行时自动优化",
+      "autoOnRun": "运行时自动优化",
+      "quickOptimizeTitle": "快速优化（{{mode}}）",
+      "params": "参数",
+      "prompt": "提示词",
+      "emptyPrompt": "（空）",
+      "optimizing": "优化中...",
+      "optimize": "优化",
+      "optimizeWithImage": "使用图片优化...",
+      "modeOptions": {
+        "image": "图片",
+        "video": "视频"
+      },
+      "imageDialog": {
+        "title": "使用图片优化",
+        "enterTextOrImage": "请输入文本或提供一张图片",
+        "optimizeFailed": "优化失败",
+        "loadingOptimizer": "正在加载优化器...",
+        "loadConfigFailed": "无法加载优化器配置"
+      }
+    }
   }
 }

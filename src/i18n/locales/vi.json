@@ -31,7 +31,10 @@
     "selectAll": "Chọn tất cả",
     "retry": "Thử lại",
     "downloadFailed": "Tải xuống thất bại. Vui lòng kiểm tra kết nối mạng của bạn.",
-    "openInBrowser": "Mở trong trình duyệt"
+    "openInBrowser": "Mở trong trình duyệt",
+    "settings": "Cài đặt",
+    "clearAll": "Xóa tất cả",
+    "deselectAll": "Bỏ chọn tất cả"
   },
   "nav": {
     "home": "Trang chủ",
@@ -44,7 +47,9 @@
     "zImage": "Z-Image",
     "freeTools": "Công cụ Miễn phí",
     "settings": "Cài đặt",
-    "collapse": "Thu gọn"
+    "collapse": "Thu gọn",
+    "workflow": "Quy trình",
+    "expand": "Mở rộng"
   },
   "welcome": {
     "tagline": "Công cụ Sáng tạo AI Trong Tầm Tay",
@@ -54,7 +59,7 @@
     "featuredModels": {
       "title": "Mô hình nổi bật",
       "description": "Các mô hình AI thịnh hành được chọn lọc cho bạn",
-      "badge": "Hot"
+      "badge": "Phổ biến"
     },
     "features": {
       "models": {
@@ -86,6 +91,11 @@
         "title": "Công cụ Miễn phí",
         "description": "Công cụ AI mạnh mẽ chạy cục bộ - không cần khóa API",
         "badge": "Miễn phí"
+      },
+      "workflow": {
+        "title": "Quy trình",
+        "description": "Xây dựng pipeline AI trực quan với trình chỉnh sửa dựa trên nút",
+        "badge": "Mới"
       }
     }
   },
@@ -178,7 +188,9 @@
         "hint": "Vùng trắng hiển thị, vùng đen ẩn đi"
       },
       "removeFile": "Xóa tệp",
-      "removeFileConfirm": "Bạn có chắc chắn muốn xóa tệp này không?"
+      "removeFileConfirm": "Bạn có chắc chắn muốn xóa tệp này không?",
+      "micInUse": "Microphone đang được sử dụng bởi ứng dụng khác",
+      "tapToRecord": "Nhấn để bắt đầu ghi âm"
     },
     "autoSaved": "Đã tự động lưu vào Tài sản",
     "autoSavedDesc": "Đã lưu {{count}} đầu ra vào Tài sản của tôi",
@@ -234,7 +246,14 @@
       "playWhileWaiting": "Chơi trong khi chờ",
       "quit": "Thoát"
     },
-    "input": "Đầu vào"
+    "input": "Đầu vào",
+    "imageCopied": "Đã sao chép hình ảnh vào clipboard",
+    "urlCopied": "Đã sao chép URL vào clipboard",
+    "copyFailed": "Sao chép thất bại",
+    "copyImage": "Sao chép hình ảnh",
+    "copyUrl": "Sao chép URL",
+    "copy": "Sao chép",
+    "download": "Tải xuống"
   },
   "history": {
     "title": "Lịch sử",
@@ -245,7 +264,8 @@
       "completed": "Hoàn thành",
       "failed": "Thất bại",
       "processing": "Đang xử lý",
-      "created": "Đã tạo"
+      "created": "Đã tạo",
+      "archived": "Đã lưu trữ"
     },
     "loadPreviews": "Tải xem trước",
     "disablePreviews": "Tắt xem trước",
@@ -266,7 +286,25 @@
     "executionTime": "Thời gian thực thi",
     "predictionId": "ID dự đoán",
     "notAvailable": "Lịch sử không khả dụng",
-    "notAvailableDesc": "API lịch sử dự đoán hiện không khả dụng."
+    "notAvailableDesc": "API lịch sử dự đoán hiện không khả dụng.",
+    "downloadComplete": "Tải xuống hoàn tất",
+    "downloadCompleteDesc": "Đã tải xuống {{count}} tệp",
+    "downloadFailed": "Tải xuống thất bại",
+    "downloadFailedDesc": "{{count}} tệp tải xuống thất bại",
+    "hasInputs": "Có đầu vào khả dụng",
+    "saveTemplate": {
+      "button": "Lưu làm mẫu",
+      "dialogTitle": "Lưu mẫu",
+      "nameLabel": "Tên mẫu",
+      "namePlaceholder": "Nhập tên mẫu...",
+      "duplicateName": "Tên này đã tồn tại",
+      "noInputsTitle": "Không thể lưu mẫu",
+      "noInputsDesc": "Không tìm thấy tham số đầu vào cho dự đoán này",
+      "success": "Đã lưu mẫu",
+      "successDesc": "Bạn có thể sử dụng từ trang mẫu",
+      "error": "Lưu mẫu thất bại"
+    },
+    "longPressHint": "Nhấn giữ để chọn"
   },
   "templates": {
     "title": "Mẫu",
@@ -417,7 +455,7 @@
       }
     },
     "errors": {
-      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "desktopRequired": "Tính năng này yêu cầu ứng dụng máy tính để bàn. Vui lòng tải WaveSpeed Desktop hoặc dùng phiên bản trực tuyến.",
       "generationCancelled": "Đã hủy tạo"
     },
     "tips": {
@@ -447,7 +485,7 @@
       "invalidDesc": "Không thể xác thực khóa API. Vui lòng kiểm tra và thử lại.",
       "cleared": "Đã xóa khóa API",
       "clearedDesc": "Khóa API của bạn đã được xóa.",
-      "itemDeleted": "Cache item deleted",
+      "itemDeleted": "Đã xóa mục bộ nhớ cache",
       "error": "Lỗi",
       "errorDesc": "Không thể lưu khóa API."
     },
@@ -485,7 +523,7 @@
       "autoSaveDisabledDesc": "Bạn vẫn có thể lưu đầu ra thủ công từ sân chơi",
       "directory": "Thư mục Tài sản",
       "directoryDesc": "Chọn nơi lưu đầu ra đã tạo của bạn",
-      "defaultDirectory": "Documents/WaveSpeed",
+      "defaultDirectory": "Tài liệu/WaveSpeed",
       "browse": "Duyệt",
       "directoryChanged": "Đã đổi thư mục",
       "directoryChangedDesc": "Đầu ra mới sẽ được lưu vào {{path}}",
@@ -505,7 +543,27 @@
       "clearFailed": "Không thể xóa bộ nhớ đệm",
       "zImageAuxiliary": "Mô hình phụ trợ Z-Image",
       "zImageModels": "Mô hình Z-Image",
-      "zImageBinary": "Tệp nhị phân Z-Image"
+      "zImageBinary": "Tệp nhị phân Z-Image",
+      "predownload": "Tải xuống mô hình trước",
+      "predownloadDesc": "Tải xuống mô hình AI trước để sử dụng ngoại tuyến",
+      "downloadModels": "Tải xuống mô hình",
+      "downloadPartial": "Tải xuống một phần hoàn tất",
+      "downloadPartialDesc": "Một số mô hình đã tải xuống thành công",
+      "downloadComplete": "Tải xuống hoàn tất",
+      "downloadCompleteDesc": "Tất cả mô hình đã tải xuống thành công",
+      "downloadCancelled": "Đã hủy tải xuống",
+      "downloadCancelledDesc": "Đã hủy tải xuống mô hình",
+      "alreadyCached": "Đã có trong bộ nhớ cache",
+      "downloaded": "Đã tải xuống",
+      "overallProgress": "Tiến độ tổng thể",
+      "models": {
+        "ffmpegJs": "Lõi FFmpeg (JS)",
+        "ffmpegWasm": "Lõi FFmpeg (WASM)",
+        "backgroundRemover": "Xóa nền",
+        "imageEraser": "Tẩy ảnh (LaMa)",
+        "samEncoder": "Bộ mã hóa thị giác SAM",
+        "samDecoder": "Bộ giải mã nhắc SAM"
+      }
     },
     "downloads": {
       "title": "Tải xuống",
@@ -520,7 +578,7 @@
       "channel": "Kênh cập nhật",
       "stable": "Ổn định",
       "stableDesc": "Nhận bản phát hành ổn định với tính năng đã kiểm tra.",
-      "nightly": "Nightly",
+      "nightly": "Hàng đêm",
       "nightlyDesc": "Nhận bản nightly với tính năng mới nhất (có thể không ổn định).",
       "autoCheck": "Tự động kiểm tra cập nhật",
       "autoCheckDesc": "Tự động kiểm tra cập nhật khi khởi động ứng dụng.",
@@ -540,14 +598,23 @@
       "devModeDesc": "Tự động cập nhật bị tắt trong chế độ phát triển.",
       "checkFailed": "Kiểm tra cập nhật thất bại",
       "downloadFailed": "Tải xuống thất bại",
-      "downloadFailedDesc": "Không thể tải cập nhật."
+      "downloadFailedDesc": "Không thể tải cập nhật.",
+      "downloadComplete": "Tải xuống hoàn tất",
+      "openToInstall": "Vui lòng mở {{filename}} để cài đặt",
+      "installInstructions": "Hướng dẫn cài đặt",
+      "findInDownloads": "APK đã lưu vào thư mục Tải xuống. Mở {{filename}} trong trình quản lý tệp để cài đặt",
+      "downloadProgress": "Đang tải xuống... {{progress}}%"
     },
     "about": {
       "title": "Giới thiệu",
       "description": "WaveSpeed Desktop - Sân chơi mô hình AI",
       "aboutText": "Ứng dụng desktop mã nguồn mở để chạy mô hình AI với WaveSpeed API.",
-      "viewOnGitHub": "Xem trên GitHub"
-    }
+      "viewOnGitHub": "Xem trên GitHub",
+      "version": "Phiên bản",
+      "mobileDescription": "WaveSpeed Mobile - Công cụ AI di động",
+      "mobileAboutText": "Ứng dụng di động mã nguồn mở để chạy mô hình AI WaveSpeed API."
+    },
+    "mobileDescription": "Cấu hình ứng dụng WaveSpeed Mobile của bạn"
   },
   "apiKeyRequired": {
     "title": "Yêu cầu khóa API",
@@ -622,7 +689,18 @@
       "detecting": "Đang phát hiện khuôn mặt",
       "enhancing": "Đang cải thiện khuôn mặt",
       "noFaces": "Không phát hiện khuôn mặt trong hình ảnh",
-      "facesFound": "Phát hiện {{count}} khuôn mặt"
+      "facesFound": "Phát hiện {{count}} khuôn mặt",
+      "inputImage": "Hình ảnh đầu vào",
+      "selectImageWithFaces": "Chọn ảnh có khuôn mặt để tăng cường",
+      "modelsInfo": "Sử dụng mô hình YOLO + GFPGAN AI",
+      "downloading": "Đang tải mô hình...",
+      "loading": "Đang tải mô hình...",
+      "noFacesFound": "Không tìm thấy khuôn mặt",
+      "facesEnhanced": "Đã tăng cường {{count}} khuôn mặt",
+      "result": "Kết quả tăng cường",
+      "newImage": "Hình ảnh mới",
+      "firstTimeDownload": "Lần đầu? Mô hình sẽ được tải (~350MB)",
+      "invalidFile": "Vui lòng chọn file hình ảnh hợp lệ"
     },
     "faceSwapper": {
       "title": "Hoán đổi Khuôn mặt",
@@ -633,12 +711,12 @@
       "selectTarget": "Chọn hình ảnh đích",
       "sourceHint": "Danh tính khuôn mặt cần sao chép",
       "targetHint": "Hình ảnh nơi các khuôn mặt sẽ được thay thế",
-      "orDragDrop": "or drag and drop",
+      "orDragDrop": "hoặc kéo và thả",
       "noSourceFace": "Không phát hiện khuôn mặt trong hình ảnh nguồn",
       "noTargetFaces": "Không phát hiện khuôn mặt trong hình ảnh đích",
       "clickToSelect": "Nhấp vào các khuôn mặt để chọn khuôn mặt cần hoán đổi",
       "facesSelected": "Đã chọn {{selected}}/{{total}} khuôn mặt",
-      "sourceSelected": "Face {{selected}}/{{total}} selected",
+      "sourceSelected": "Đã chọn khuôn mặt {{selected}}/{{total}}",
       "faceDetected": "Đã phát hiện khuôn mặt",
       "swapFaces": "Hoán đổi Khuôn mặt",
       "processing": "Đang xử lý...",
@@ -708,7 +786,8 @@
       "undoEdit": "Hoàn tác xóa",
       "redoEdit": "Làm lại xóa",
       "hint": "Vẽ lên các đối tượng bạn muốn xóa, sau đó nhấp Xóa Đối Tượng",
-      "resultPlaceholder": "Kết quả sẽ xuất hiện ở đây"
+      "resultPlaceholder": "Kết quả sẽ xuất hiện ở đây",
+      "hintMobile": "Vẽ trên vùng cần xóa"
     },
     "progress": {
       "downloading": "Đang tải xuống mô hình",
@@ -732,7 +811,10 @@
       "clearPoints": "Xóa điểm",
       "clearPointsTooltip": "Xóa tất cả điểm và quay lại chế độ xem trước khi di chuột",
       "cutMask": "Cắt Mặt nạ",
-      "hint": "Nhấp chuột trái để bao gồm, nhấp chuột phải để loại trừ vùng"
+      "hint": "Nhấp chuột trái để bao gồm, nhấp chuột phải để loại trừ vùng",
+      "hoverToPreviewMobile": "Nhấn vào đối tượng để bắt đầu chọn",
+      "clickToRefineMobile": "Nhấn để thêm điểm",
+      "hintMobile": "Nhấn để bao gồm, nhấn giữ để loại trừ"
     },
     "backWarning": {
       "title": "Đang Xử Lý",
@@ -741,82 +823,116 @@
       "confirm": "Quay Lại"
     },
     "videoConverter": {
-      "title": "Video Converter",
+      "title": "Chuyển đổi video",
       "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
       "selectVideo": "Select Video",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace video",
+      "orDragDrop": "hoặc kéo và thả",
+      "dropToReplace": "Thả để thay video",
       "supportedFormats": "Supports MP4, WebM, MOV, AVI, MKV",
       "convert": "Convert",
-      "converting": "Converting...",
-      "original": "Original",
-      "outputSettings": "Output Settings",
-      "format": "Format",
-      "quality": "Quality",
-      "resolution": "Resolution",
-      "convertedSize": "Converted Size"
+      "converting": "Đang chuyển đổi...",
+      "original": "Gốc",
+      "outputSettings": "Cài đặt đầu ra",
+      "format": "Định dạng",
+      "quality": "Chất lượng",
+      "resolution": "Độ phân giải",
+      "convertedSize": "Kích thước sau chuyển đổi",
+      "inputVideo": "Video đầu vào",
+      "selectVideoDesc": "Chọn hoặc kéo thả file video để chuyển đổi",
+      "outputFormat": "Định dạng đầu ra",
+      "converted": "Đã chuyển đổi",
+      "result": "Kết quả chuyển đổi",
+      "codecUsed": "Codec đã sử dụng",
+      "invalidFile": "Vui lòng chọn file video hợp lệ"
     },
     "audioConverter": {
-      "title": "Audio Converter",
+      "title": "Chuyển đổi âm thanh",
       "description": "Convert audio between formats (MP3, AAC, FLAC, WAV)",
       "selectAudio": "Select Audio",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace audio",
+      "orDragDrop": "hoặc kéo và thả",
+      "dropToReplace": "Thả để thay âm thanh",
       "supportedFormats": "Supports MP3, M4A, OGG, WAV, FLAC",
       "convert": "Convert",
-      "converting": "Converting...",
-      "converted": "Converted",
-      "playOriginal": "Play original",
-      "playConverted": "Play converted"
+      "converting": "Đang chuyển đổi...",
+      "converted": "Đã chuyển đổi",
+      "playOriginal": "Phát bản gốc",
+      "playConverted": "Phát bản đã chuyển đổi",
+      "inputAudio": "Âm thanh đầu vào",
+      "outputFormat": "Định dạng đầu ra",
+      "bitrate": "Tốc độ bit",
+      "original": "Gốc",
+      "result": "Kết quả",
+      "invalidFile": "Vui lòng chọn file MP3 hoặc WAV"
     },
     "imageConverter": {
-      "title": "Image Converter",
+      "title": "Chuyển đổi hình ảnh",
       "description": "Convert images between formats (JPG, PNG, WebP, GIF)",
-      "selectImages": "Select Images",
-      "orDragDrop": "or drag and drop",
-      "dropToAdd": "Drop to add images",
+      "selectImages": "Nhấp hoặc kéo thả hình ảnh vào đây",
+      "orDragDrop": "hoặc kéo và thả",
+      "dropToAdd": "Thả để thêm",
       "supportedFormats": "Supports JPG, PNG, WebP, GIF, BMP",
-      "addMore": "Add More",
+      "addMore": "Thêm nữa",
       "convert": "Convert",
-      "converting": "Converting...",
-      "quality": "Quality",
-      "downloadAll": "Download All"
+      "converting": "Đang chuyển đổi...",
+      "quality": "Chất lượng",
+      "downloadAll": "Tải tất cả",
+      "inputImage": "Hình ảnh đầu vào",
+      "selectImage": "Nhấp hoặc kéo thả hình ảnh vào đây",
+      "outputFormat": "Định dạng đầu ra",
+      "result": "Kết quả",
+      "invalidFile": "Vui lòng chọn file hình ảnh hợp lệ"
     },
     "mediaTrimmer": {
-      "title": "Media Trimmer",
-      "description": "Trim videos or audio to a specific duration",
+      "title": "Cắt phương tiện",
+      "description": "Cắt đầu và cuối video hoặc âm thanh",
       "selectMedia": "Select Media",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace media",
+      "orDragDrop": "hoặc kéo và thả",
+      "dropToReplace": "Thả để thay file",
       "supportedFormats": "Supports video and audio files",
       "trim": "Trim",
-      "trimming": "Trimming...",
-      "originalDuration": "Original",
-      "selectedDuration": "Selected",
-      "trimmedSize": "Trimmed Size",
-      "playingOriginal": "Playing original",
-      "playingTrimmed": "Playing trimmed"
+      "trimming": "Đang cắt...",
+      "originalDuration": "Thời lượng gốc",
+      "selectedDuration": "Thời lượng đã chọn",
+      "trimmedSize": "Kích thước sau khi cắt",
+      "playingOriginal": "Phát bản gốc",
+      "playingTrimmed": "Phát sau khi cắt",
+      "inputMedia": "Phương tiện đầu vào",
+      "trimSettings": "Cài đặt cắt",
+      "selectRange": "Chọn thời gian bắt đầu và kết thúc",
+      "startTime": "Thời gian bắt đầu",
+      "endTime": "Thời gian kết thúc",
+      "timeFormat": "Định dạng: m:ss.d hoặc giây",
+      "outputDuration": "Thời lượng đầu ra",
+      "result": "Kết quả cắt",
+      "invalidFile": "Vui lòng chọn file video hoặc âm thanh hợp lệ"
     },
     "mediaMerger": {
-      "title": "Media Merger",
-      "description": "Merge multiple video or audio files into one",
+      "title": "Gộp phương tiện",
+      "description": "Gộp nhiều file video hoặc âm thanh theo thứ tự",
       "selectFiles": "Select Files",
-      "orDragDrop": "or drag and drop",
-      "dropToAdd": "Drop to add files",
+      "orDragDrop": "hoặc kéo và thả",
+      "dropToAdd": "Thả để thêm",
       "supportedFormats": "Supports video and audio files",
       "addMore": "Add More",
       "merge": "Merge",
-      "merging": "Merging...",
-      "merged": "Merged",
-      "totalDuration": "Total Duration",
-      "sameFormatNote": "Files must have the same format for lossless merging"
+      "merging": "Đang gộp...",
+      "merged": "Đã gộp",
+      "totalDuration": "Tổng thời lượng",
+      "sameFormatNote": "Khuyến nghị dùng file cùng định dạng",
+      "inputMedia": "Tệp đầu vào",
+      "files": "tệp",
+      "result": "Kết quả gộp",
+      "sameTypeRequired": "Tất cả tệp phải cùng loại (video hoặc âm thanh)"
     },
     "ffmpeg": {
-      "loading": "Loading FFmpeg",
-      "converting": "Converting",
-      "merging": "Merging",
-      "trimming": "Trimming"
-    }
+      "loading": "Đang tải...",
+      "converting": "Đang chuyển đổi...",
+      "merging": "Đang gộp...",
+      "trimming": "Đang cắt..."
+    },
+    "downloadSuccess": "Đã lưu vào thư mục Tải xuống",
+    "downloadStarted": "Đã bắt đầu tải xuống",
+    "downloadFailed": "Tải xuống thất bại"
   },
   "smartPlayground": {
     "autoDetected": "Auto-detected variant",
@@ -854,5 +970,319 @@
     "result": "Kết Quả",
     "codecUsed": "Codec đã sử dụng",
     "download": "Tải Xuống"
+  },
+  "game": {
+    "waitingLong": "Chờ quá lâu",
+    "clickToPlay": "Nhấp để bắt đầu"
+  },
+  "workflow": {
+    "workflows": "Quy trình",
+    "newWorkflow": "Quy trình mới",
+    "untitled": "Chưa đặt tên",
+    "save": "Lưu",
+    "saved": "Đã lưu",
+    "saving": "Đang lưu...",
+    "saveFailed": "Lưu thất bại",
+    "savedAt": "Đã lưu",
+    "unsaved": "Chưa lưu",
+    "nodes": "Nút",
+    "config": "Cấu hình",
+    "results": "Kết quả",
+    "cost": "Chi phí",
+    "settings": "Cài đặt",
+    "runAll": "Chạy tất cả",
+    "run": "Chạy",
+    "runTarget": "Chạy mục tiêu",
+    "runTargetAll": "Chạy tất cả nút",
+    "runTargetSelected": "Chạy nút đã chọn",
+    "runCount": "Số lần chạy",
+    "stop": "Dừng",
+    "running": "Đang chạy...",
+    "cancelAll": "Hủy tất cả",
+    "import": "Nhập",
+    "export": "Xuất",
+    "imported": "Đã nhập",
+    "importFailed": "Nhập thất bại",
+    "exported": "Xuất thành công",
+    "exportFailed": "Xuất thất bại",
+    "estimated": "Chi phí ước tính",
+    "fitView": "Vừa khung xem",
+    "previousImage": "Hình trước",
+    "nextImage": "Hình tiếp theo",
+    "previewNavHint": "Dùng ← / → để điều hướng ({{current}}/{{total}})",
+    "clickAnywhereToClose": "Nhấp vào bất kỳ đâu để đóng",
+    "runNode": "Chạy nút",
+    "modelSelection": "Chọn mô hình",
+    "annotationHint": "Nhấp đúp vào ghi chú để chỉnh sửa.",
+    "continueFrom": "Tiếp tục từ đây",
+    "retry": "Thử lại",
+    "cancel": "Hủy",
+    "noWorkflows": "Chưa có quy trình",
+    "create": "Tạo",
+    "open": "Mở",
+    "paste": "Dán",
+    "addNode": "Thêm nút",
+    "addNote": "Thêm ghi chú",
+    "note": "Ghi chú",
+    "deleteConnection": "Xóa kết nối",
+    "add": "Thêm",
+    "delete": "Xóa",
+    "currentModel": "Mô hình hiện tại",
+    "modelIdLabel": "ID mô hình",
+    "selectNode": "Chọn nút để cấu hình",
+    "noExecutions": "Chưa có lần thực thi",
+    "budgetExceeded": "Vượt ngân sách",
+    "dailySpend": "Chi tiêu hàng ngày",
+    "perExecutionLimit": "Giới hạn mỗi lần thực thi",
+    "dailyLimit": "Giới hạn hàng ngày",
+    "editBudget": "Chỉnh sửa ngân sách",
+    "refreshModels": "Làm mới mô hình",
+    "drawMask": "Vẽ mặt nạ",
+    "drawMaskNeedInput": "Vui lòng đặt hình ảnh đầu vào trước",
+    "segmentPointPicker": {
+      "title": "Chọn điểm phân đoạn",
+      "hint": "Nhấp trái = bao gồm, nhấp phải = loại trừ",
+      "points": "điểm",
+      "clear": "Xóa",
+      "done": "Xong"
+    },
+    "pickPoints": "Chọn điểm",
+    "pickPointsNeedInput": "Vui lòng đặt hình ảnh đầu vào trước",
+    "pointsLabel": "Điểm phân đoạn",
+    "linked": "Đã liên kết",
+    "linkedTo": "Đã liên kết với",
+    "disconnectLink": "Mở khóa: ngắt liên kết này",
+    "previewUpstreamOutput": "Xem trước đầu ra thượng nguồn",
+    "localFileOrUrl": "File local hoặc URL",
+    "showAll": "Hiển thị tất cả",
+    "showAllRuns": "Hiển thị tất cả lần chạy",
+    "showLatestOnly": "Chỉ hiển thị mới nhất",
+    "latest": "Mới nhất",
+    "latestHidden": "Kết quả mới nhất đã được ẩn.",
+    "noVisibleResults": "Không có kết quả hiển thị.",
+    "hideRun": "Ẩn lần chạy này",
+    "output": "Đầu ra",
+    "outputLowercase": "Đầu ra",
+    "invalidUrl": "URL không hợp lệ",
+    "removeLast": "Xóa mục cuối",
+    "enterField": "Nhập {{field}}...",
+    "show": "Hiển thị",
+    "hide": "Ẩn",
+    "optional": "Tùy chọn",
+    "searchNodesPlaceholder": "Tìm nút...",
+    "dragOrClickToAdd": "Kéo vào canvas hoặc nhấp để thêm",
+    "noNodesAvailable": "Không có nút khả dụng",
+    "nodeCategory": {
+      "recent": "Gần đây",
+      "input": "Đầu vào",
+      "ai-task": "Tác vụ AI",
+      "free-tool": "Công cụ miễn phí",
+      "output": "Đầu ra",
+      "processing": "Xử lý",
+      "control": "Điều khiển"
+    },
+    "nodeDefs": {
+      "ai-task/run": {
+        "label": "Chạy mô hình",
+        "emptyHint": "Nhấp vào nút này, sau đó chọn mô hình →",
+        "params": {
+          "modelId": {
+            "label": "Mô hình"
+          }
+        }
+      },
+      "input/media-upload": {
+        "label": "Tải lên",
+        "outputs": {
+          "output": {
+            "label": "URL"
+          }
+        }
+      },
+      "input/text-input": {
+        "label": "Văn bản",
+        "params": {
+          "text": {
+            "label": "Văn bản"
+          }
+        }
+      },
+      "output/preview": {
+        "label": "Xem trước",
+        "inputs": {
+          "input": {
+            "label": "URL"
+          }
+        },
+        "params": {
+          "autoDetect": {
+            "label": "Tự động phát hiện loại"
+          },
+          "forceType": {
+            "label": "Ép kiểu",
+            "options": {
+              "auto": "Tự động",
+              "image": "Hình ảnh",
+              "video": "Video",
+              "audio": "Âm thanh",
+              "3d": "Mô hình 3D"
+            }
+          }
+        }
+      },
+      "output/file": {
+        "label": "Xuất tệp",
+        "inputs": {
+          "url": {
+            "label": "URL"
+          }
+        },
+        "params": {
+          "outputDir": {
+            "label": "Thư mục đầu ra"
+          },
+          "filename": {
+            "label": "Tiền tố tên tệp"
+          },
+          "format": {
+            "label": "Định dạng",
+            "options": {
+              "auto": "Tự động",
+              "mp4": "MP4",
+              "png": "PNG",
+              "jpg": "JPG",
+              "mp3": "MP3",
+              "wav": "WAV"
+            }
+          }
+        }
+      },
+      "free-tool/image-enhancer": {
+        "label": "Tăng cường hình ảnh"
+      },
+      "free-tool/background-remover": {
+        "label": "Xóa nền"
+      },
+      "free-tool/face-enhancer": {
+        "label": "Tăng cường khuôn mặt"
+      },
+      "free-tool/video-enhancer": {
+        "label": "Tăng cường video"
+      },
+      "free-tool/face-swapper": {
+        "label": "Đổi mặt"
+      },
+      "free-tool/image-eraser": {
+        "label": "Tẩy ảnh"
+      },
+      "free-tool/segment-anything": {
+        "label": "Phân đoạn mọi thứ",
+        "params": {
+          "pointX": {
+            "label": "Điểm X",
+            "description": "Tọa độ X chuẩn hóa (0-1) cho điểm phân đoạn"
+          },
+          "pointY": {
+            "label": "Điểm Y",
+            "description": "Tọa độ Y chuẩn hóa (0-1) cho điểm phân đoạn"
+          }
+        }
+      },
+      "free-tool/video-converter": {
+        "label": "Chuyển đổi video"
+      },
+      "free-tool/audio-converter": {
+        "label": "Chuyển đổi âm thanh"
+      },
+      "free-tool/image-converter": {
+        "label": "Chuyển đổi hình ảnh"
+      },
+      "free-tool/media-trimmer": {
+        "label": "Cắt media"
+      },
+      "free-tool/media-merger": {
+        "label": "Gộp media"
+      }
+    },
+    "modelSelector": {
+      "allCategory": "Tất cả",
+      "noModelsLoaded": "Chưa tải mô hình. Nhấp \"Làm mới mô hình\" bên dưới.",
+      "loadFailed": "Tải mô hình thất bại.",
+      "refreshFailed": "Làm mới mô hình thất bại.",
+      "loadingModels": "Đang tải mô hình...",
+      "loadingHint": "Lần chạy đầu tiên có thể mất vài giây",
+      "recent": "Gần đây",
+      "searchPlaceholder": "Tìm mô hình...",
+      "searchAllPlaceholder": "Tìm tất cả mô hình...",
+      "refreshTooltip": "Làm mới danh mục mô hình",
+      "refreshing": "Đang làm mới...",
+      "noModelsFound": "Không tìm thấy mô hình",
+      "disconnectBeforeSwitch": "Vui lòng ngắt kết nối nút này trước khi đổi mô hình.",
+      "selectCategory": "Chọn danh mục",
+      "cannotSwitchTitle": "Không thể đổi mô hình",
+      "cannotSwitchDesc": "Nút này có kết nối đang hoạt động. Vui lòng ngắt tất cả cạnh trước khi đổi mô hình."
+    },
+    "mediaUpload": {
+      "uploadFailed": "Tải lên thất bại",
+      "invalidUrl": "URL không hợp lệ",
+      "fileUploaded": "Đã tải tệp lên",
+      "uploaded": "Đã tải lên",
+      "clear": "Xóa",
+      "uploading": "Đang tải lên...",
+      "uploadingShort": "Đang tải lên...",
+      "failed": "Thất bại",
+      "dropOrBrowse": "Kéo thả tệp vào đây hoặc nhấp để duyệt",
+      "browse": "Duyệt",
+      "pasteUrl": "Dán URL",
+      "urlPlaceholder": "https://...",
+      "urlShortPlaceholder": "URL...",
+      "supportedTypes": "Hình ảnh, Video, Âm thanh"
+    },
+    "textInput": {
+      "promptLibrary": "Thư viện gợi ý",
+      "saveCurrent": "Lưu hiện tại",
+      "namePlaceholder": "Tên...",
+      "noSavedSnippets": "Không có đoạn đã lưu",
+      "optimizeFailed": "Tối ưu thất bại",
+      "optimizeNowTitle": "Tối ưu văn bản ngay",
+      "optimizing": "Đang tối ưu...",
+      "optimizeNow": "Tối ưu ngay",
+      "autoOnRunTitle": "Chỉ tối ưu khi nhấp Chạy",
+      "autoOnRun": "Tự động khi chạy",
+      "chars": "ký tự",
+      "optimizeOnRunEnabled": "Đã bật: tối ưu khi chạy",
+      "optimizeOffHint": "Mặc định: không tối ưu (chạy với văn gốc)",
+      "manualOptimizedHint": "Đã tối ưu thủ công. Bỏ qua tối ưu tự động cho đến khi văn bản thay đổi.",
+      "enterTextOrPrompt": "Nhập văn bản hoặc gợi ý..."
+    },
+    "promptOptimizer": {
+      "optimizationFailed": "Tối ưu thất bại",
+      "optimizeParams": "Tối ưu tham số",
+      "optimizeParamsPresetOnly": "Tối ưu tham số (chỉ preset)",
+      "perRun": "lần",
+      "mode": "Chế độ",
+      "text": "Văn bản",
+      "textPlaceholder": "Văn bản để mở rộng hoặc làm ngữ cảnh...",
+      "autoOnRunTitle": "Tự động tối ưu khi nhấp Chạy",
+      "autoOnRun": "Tự động khi chạy",
+      "quickOptimizeTitle": "Tối ưu nhanh ({{mode}})",
+      "params": "Tham số",
+      "prompt": "Gợi ý",
+      "emptyPrompt": "(trống)",
+      "optimizing": "Đang tối ưu...",
+      "optimize": "Tối ưu",
+      "optimizeWithImage": "Tối ưu với hình ảnh...",
+      "modeOptions": {
+        "image": "Hình ảnh",
+        "video": "Video"
+      },
+      "imageDialog": {
+        "title": "Tối ưu với hình ảnh",
+        "enterTextOrImage": "Vui lòng nhập văn bản hoặc cung cấp hình ảnh",
+        "optimizeFailed": "Tối ưu thất bại",
+        "loadingOptimizer": "Đang tải trình tối ưu...",
+        "loadConfigFailed": "Không thể tải cấu hình trình tối ưu"
+      }
+    }
   }
 }

@@ -6,7 +6,9 @@ This file provides guidance for Claude Code when working with this repository.
 
 WaveSpeed Desktop is an Electron-based cross-platform desktop application that provides a playground interface for [WaveSpeedAI](https://wavespeed.ai) models. It allows users to browse models, run predictions, view their history, and manage saved assets.
 
-Z-Image is the local image generation flow backed by stable-diffusion.cpp with model and auxiliary downloads, progress reporting, and log streaming.
+**Workflow** is a node-based visual editor (under `src/workflow/`) for chaining WaveSpeed AI Task nodes, free-tool nodes, and I/O nodes. Workflows are persisted via the Electron main process (sql.js DB), with execution, cost estimation, and per-node history.
+
+**Z-Image** is the local image generation flow backed by stable-diffusion.cpp with model and auxiliary downloads, progress reporting, and log streaming.
 
 ## Tech Stack
 
@@ -22,7 +24,8 @@ Z-Image is the local image generation flow backed by stable-diffusion.cpp with m
 wavespeed-desktop/
 ├── electron/              # Electron main process files
 │   ├── main.ts           # Main process entry point
-│   └── preload.ts        # Preload script for IPC bridge
+│   ├── preload.ts        # Preload script for IPC bridge
+│   └── workflow/         # Workflow module (sql.js DB, node registry, IPC handlers)
 ├── src/
 │   ├── api/
 │   │   └── client.ts     # WaveSpeedAI API client (base URL, auth, methods)
@@ -36,8 +39,16 @@ wavespeed-desktop/
 │   │   └── locales/      # 18 language locale files
 │   ├── lib/              # Utilities (cn, fuzzySearch, schemaUtils, maskUtils)
 │   ├── pages/            # Page components (ModelsPage, PlaygroundPage, FreeToolsPage, etc.)
-│   ├── stores/           # Zustand stores (apiKeyStore, modelsStore)
+│   ├── stores/           # Zustand stores (apiKeyStore, modelsStore, settingsStore, etc.)
 │   ├── types/            # TypeScript type definitions
+│   ├── workflow/         # Workflow feature (node-based editor)
+│   │   ├── WorkflowPage.tsx
+│   │   ├── components/   # WorkflowList, panels (NodeConfig, Results, Cost, Settings), canvas (WorkflowCanvas, NodePalette, CustomNode, CustomEdge, AnnotationNode, etc.)
+│   │   ├── stores/       # workflow.store, execution.store, ui.store
+│   │   ├── types/        # workflow, node-defs, execution, ipc
+│   │   ├── ipc/          # ipc-client.ts (invoke workflow/execution/models/cost/history IPC)
+│   │   ├── hooks/        # useUndoRedo, useFreeToolListener
+│   │   └── lib/          # free-tool-runner, constants
 │   └── workers/          # Web Workers (upscaler, backgroundRemover, imageEraser, faceEnhancer, segmentAnything, ffmpeg)
 ├── .github/workflows/    # GitHub Actions for CI/CD
 │   ├── build.yml         # Build on push/tag/PR
@@ -54,6 +65,25 @@ wavespeed-desktop/
 - **`src/stores/templateStore.ts`**: Template CRUD operations with localStorage persistence
 - **`src/stores/themeStore.ts`**: Theme management (auto/dark/light) with system preference detection
 - **`src/stores/assetsStore.ts`**: Asset management (save, delete, tags, favorites, filtering)
+- **`src/stores/settingsStore.ts`**: App settings (e.g. download timeout) with localStorage persistence
+- **`src/workflow/WorkflowPage.tsx`**: Workflow feature entry; workflow list + canvas or list-only view
+- **`src/workflow/stores/workflow.store.ts`**: Workflow CRUD state (nodes, edges, current workflow id)
+- **`src/workflow/stores/execution.store.ts`**: Execution state (running, results, history, progress)
+- **`src/workflow/stores/ui.store.ts`**: Workflow UI state (selected node, panels, add-node palette)
+- **`src/workflow/components/panels/NodeConfigPanel.tsx`**: Model selector for AI Task nodes; categories sorted by popularity (model count), recent models, search
+- **`src/workflow/components/panels/ResultsPanel.tsx`**: Execution results and per-node history
+- **`src/workflow/components/panels/CostPanel.tsx`**: Cost estimate and budget config
+- **`src/workflow/components/panels/SettingsPanel.tsx`**: Workflow settings (API keys, etc.)
+- **`src/workflow/components/canvas/WorkflowCanvas.tsx`**: React Flow canvas, add-node palette, node/edge rendering
+- **`src/workflow/components/canvas/NodePalette.tsx`**: Add-node palette (input, ai-task, free-tool, output, etc.)
+- **`src/workflow/components/canvas/CustomNode.tsx`**: Custom node UI (AI Task, free-tool, I/O, annotation)
+- **`src/workflow/components/canvas/CustomEdge.tsx`**: Custom edge rendering
+- **`src/workflow/components/canvas/AnnotationNode.tsx`**: Annotation node for notes
+- **`src/workflow/ipc/ipc-client.ts`**: Typed IPC client for workflow, execution, models, cost, history, registry, settings
+- **`src/workflow/types/node-defs.ts`**: NodeTypeDefinition, WaveSpeedModel, ParamDefinition
+- **`src/workflow/types/ipc.ts`**: IPC channel types (workflow:*, execution:*, models:*, cost:*, history:*, etc.)
+- **`src/workflow/hooks/useFreeToolListener.ts`**: Listens for free-tool execution requests from main process (used by Layout)
+- **`src/workflow/lib/free-tool-runner.ts`**: Runs free-tool nodes (e.g. background-remover) and returns outputs to main
 - **`src/components/playground/DynamicForm.tsx`**: Generates forms from model schemas
 - **`src/components/playground/ModelSelector.tsx`**: Searchable model dropdown with fuzzy search
 - **`src/components/playground/OutputDisplay.tsx`**: Displays prediction results (images, videos, text)
@@ -223,6 +253,10 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - Asset metadata is stored in `{userData}/assets-metadata.json` with tags, favorites, and file references
 - Asset file naming format: `{model-slug}_{predictionId}_{resultindex}.{ext}` (e.g., `flux-schnell_pred-abc123_0.png`)
 - Layout.tsx handles unified API key login screen - pages don't need individual ApiKeyRequired checks
+- Workflow page is at `/workflow`; rendered persistently in Layout (like free-tools). Sidebar has "Workflow" (nav.workflow) with GitBranch icon. Layout auto-collapses sidebar when entering workflow.
+- Workflow uses IPC from main: `workflow:create|save|load|list|rename|delete`, `execution:run-all|run-node|continue-from|retry|cancel`, `models:list|search|refresh|get-schema`, `cost:estimate|get-budget|set-budget|get-daily-spend`, `history:list|set-current|star|score`, `registry:get-all`, `settings:get-api-keys|set-api-keys`. Electron main initializes workflow module (sql.js DB, node registry, IPC handlers) on app load.
+- Workflow model selector (NodeConfigPanel): categories are sorted by popularity (model count per category, descending), then alphabetically for ties; "全部" / "All" stays first.
+- useFreeToolListener is mounted in Layout so workflow execution can trigger free-tool runs and receive results via IPC.
 - Settings page (`/settings`) is a public path accessible without API key
 - Free Tools pages are public paths accessible without API key: `/free-tools`, `/free-tools/image-enhancer`, `/free-tools/video-enhancer`, `/free-tools/background-remover`, `/free-tools/face-enhancer`, `/free-tools/face-swapper`, `/free-tools/image-eraser`, `/free-tools/segment-anything`, `/free-tools/video-converter`, `/free-tools/audio-converter`, `/free-tools/image-converter`, `/free-tools/media-trimmer`, `/free-tools/media-merger`
 - Free Tools feature uses UpscalerJS with ESRGAN models for image/video upscaling (slim/medium/thick quality options)

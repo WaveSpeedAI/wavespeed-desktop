@@ -32,7 +32,9 @@
     "done": "Tamamlandı",
     "retry": "Yeniden Dene",
     "downloadFailed": "İndirme başarısız. Lütfen ağ bağlantınızı kontrol edin.",
-    "openInBrowser": "Tarayıcıda aç"
+    "openInBrowser": "Tarayıcıda aç",
+    "settings": "Ayarlar",
+    "clearAll": "Tümünü temizle"
   },
   "nav": {
     "home": "Ana Sayfa",
@@ -45,7 +47,9 @@
     "zImage": "Z-Image",
     "freeTools": "Ücretsiz Araçlar",
     "settings": "Ayarlar",
-    "collapse": "Daralt"
+    "collapse": "Daralt",
+    "workflow": "İş Akışı",
+    "expand": "Genişlet"
   },
   "welcome": {
     "tagline": "Parmaklarınızın Ucunda AI Destekli Yaratıcı Araçlar",
@@ -87,6 +91,11 @@
         "title": "Ücretsiz Araçlar",
         "description": "Yerel olarak çalışan güçlü AI araçları - API anahtarı gerekmez",
         "badge": "Ücretsiz"
+      },
+      "workflow": {
+        "title": "İş Akışı",
+        "description": "Düğüm tabanlı düzenleyici ile görsel AI pipeline'ları oluşturun",
+        "badge": "Yeni"
       }
     }
   },
@@ -179,7 +188,9 @@
         "hint": "Beyaz alanlar gösterir, siyah alanlar gizler"
       },
       "removeFile": "Dosyayı Kaldır",
-      "removeFileConfirm": "Bu dosyayı kaldırmak istediğinizden emin misiniz?"
+      "removeFileConfirm": "Bu dosyayı kaldırmak istediğinizden emin misiniz?",
+      "micInUse": "Mikrofon başka bir uygulama tarafından kullanılıyor",
+      "tapToRecord": "Kaydetmeye başlamak için dokunun"
     },
     "autoSaved": "Varlıklara otomatik kaydedildi",
     "autoSavedDesc": "{{count}} çıktı Varlıklarım'a kaydedildi",
@@ -235,7 +246,14 @@
       "seedsGenerated": "Tohumlar otomatik oluşturuldu",
       "settings": "Toplu ayarları"
     },
-    "input": "Giriş"
+    "input": "Giriş",
+    "imageCopied": "Görsel panoya kopyalandı",
+    "urlCopied": "URL panoya kopyalandı",
+    "copyFailed": "Kopyalama başarısız",
+    "copyImage": "Görseli kopyala",
+    "copyUrl": "URL'yi kopyala",
+    "copy": "Kopyala",
+    "download": "İndir"
   },
   "history": {
     "title": "Geçmiş",
@@ -246,7 +264,8 @@
       "completed": "Tamamlandı",
       "failed": "Başarısız",
       "processing": "İşleniyor",
-      "created": "Oluşturuldu"
+      "created": "Oluşturuldu",
+      "archived": "Arşivlendi"
     },
     "loadPreviews": "Önizlemeleri yükle",
     "disablePreviews": "Önizlemeleri devre dışı bırak",
@@ -280,7 +299,12 @@
       "noInputsTitle": "Şablon kaydedilemiyor",
       "noInputsDesc": "Giriş parametreleri yalnızca bu uygulamada yapılan tahminler için kullanılabilir. Önce yeni bir tahmin çalıştırmayı deneyin."
     },
-    "hasInputs": "Şablon olarak kaydedilebilir"
+    "hasInputs": "Şablon olarak kaydedilebilir",
+    "downloadComplete": "İndirme tamamlandı",
+    "downloadCompleteDesc": "{{count}} dosya indirildi",
+    "downloadFailed": "İndirme başarısız",
+    "downloadFailedDesc": "{{count}} dosya indirilemedi",
+    "longPressHint": "Seçmek için uzun basın"
   },
   "templates": {
     "title": "Şablonlar",
@@ -347,7 +371,7 @@
     "filters": "Filtreler",
     "clearFilters": "Filtreleri Temizle",
     "filterByType": "Tür",
-    "filterByModel": "Model",
+    "filterByModel": "Modele göre",
     "allModels": "Tüm Modeller",
     "favorites": "Favoriler",
     "showFavoritesOnly": "Sadece favorileri göster",
@@ -431,7 +455,7 @@
       }
     },
     "errors": {
-      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "desktopRequired": "Bu özellik masaüstü uygulaması gerektirir. WaveSpeed Desktop'ı indirin veya çevrimiçi sürümü deneyin.",
       "generationCancelled": "Oluşturma iptal edildi"
     },
     "tips": {
@@ -462,7 +486,7 @@
       "invalidDesc": "API anahtarı doğrulanamadı. Lütfen kontrol edip tekrar deneyin.",
       "cleared": "API anahtarı silindi",
       "clearedDesc": "API anahtarınız kaldırıldı.",
-      "itemDeleted": "Cache item deleted",
+      "itemDeleted": "Önbellek öğesi silindi",
       "error": "Hata",
       "errorDesc": "API anahtarı kaydedilemedi."
     },
@@ -520,7 +544,27 @@
       "clearFailed": "Önbellek temizlenemedi",
       "zImageAuxiliary": "Z-Image yardımcı modeller",
       "zImageModels": "Z-Image modelleri",
-      "zImageBinary": "Z-Image ikili dosyası"
+      "zImageBinary": "Z-Image ikili dosyası",
+      "predownload": "Modelleri önceden indir",
+      "predownloadDesc": "Çevrimdışı kullanım için AI modellerini önceden indirin",
+      "downloadModels": "Modelleri indir",
+      "downloadPartial": "Kısmi indirme tamamlandı",
+      "downloadPartialDesc": "Bazı modeller başarıyla indirildi",
+      "downloadComplete": "İndirme tamamlandı",
+      "downloadCompleteDesc": "Tüm modeller başarıyla indirildi",
+      "downloadCancelled": "İndirme iptal edildi",
+      "downloadCancelledDesc": "Model indirmesi iptal edildi",
+      "alreadyCached": "Zaten önbellekte",
+      "downloaded": "İndirildi",
+      "overallProgress": "Genel ilerleme",
+      "models": {
+        "ffmpegJs": "FFmpeg Çekirdeği (JS)",
+        "ffmpegWasm": "FFmpeg Çekirdeği (WASM)",
+        "backgroundRemover": "Arka plan kaldırıcı",
+        "imageEraser": "Görsel silgisi (LaMa)",
+        "samEncoder": "SAM Görüntü Kodlayıcı",
+        "samDecoder": "SAM İstem Dekodlayıcı"
+      }
     },
     "downloads": {
       "title": "İndirmeler",
@@ -535,7 +579,7 @@
       "channel": "Güncelleme Kanalı",
       "stable": "Kararlı",
       "stableDesc": "Test edilmiş özelliklerle kararlı sürümler alın.",
-      "nightly": "Nightly",
+      "nightly": "Gece",
       "nightlyDesc": "En son özelliklerle nightly derlemeler alın (kararsız olabilir).",
       "autoCheck": "Güncellemeleri otomatik kontrol et",
       "autoCheckDesc": "Uygulama başlatıldığında güncellemeleri otomatik kontrol et.",
@@ -555,7 +599,12 @@
       "devModeDesc": "Otomatik güncelleme geliştirme modunda devre dışı.",
       "checkFailed": "Güncelleme kontrolü başarısız",
       "downloadFailed": "İndirme başarısız",
-      "downloadFailedDesc": "Güncelleme indirilemedi."
+      "downloadFailedDesc": "Güncelleme indirilemedi.",
+      "downloadComplete": "İndirme tamamlandı",
+      "openToInstall": "Yüklemek için lütfen {{filename}} açın",
+      "installInstructions": "Kurulum talimatları",
+      "findInDownloads": "APK İndirilenler klasörüne kaydedildi. Yüklemek için dosya yöneticisinde {{filename}} açın",
+      "downloadProgress": "İndiriliyor... {{progress}}%"
     },
     "about": {
       "title": "Hakkında",
@@ -563,7 +612,8 @@
       "mobileDescription": "WaveSpeed Mobile - AI Model Oyun Alanı",
       "aboutText": "WaveSpeed API ile AI modelleri çalıştırmak için açık kaynaklı bir masaüstü uygulaması.",
       "mobileAboutText": "WaveSpeed API ile AI modelleri çalıştırmak için açık kaynaklı bir mobil uygulama.",
-      "viewOnGitHub": "GitHub'da Görüntüle"
+      "viewOnGitHub": "GitHub'da Görüntüle",
+      "version": "Sürüm"
     }
   },
   "apiKeyRequired": {
@@ -642,7 +692,15 @@
       "facesEnhanced": "{{count}} yüz iyileştirildi",
       "noFacesFound": "Yüz bulunamadı",
       "invalidFile": "Geçerli bir görsel dosyası seçin",
-      "firstTimeDownload": "İlk kez mi? Modeller indirilecek (~350MB)"
+      "firstTimeDownload": "İlk kez mi? Modeller indirilecek (~350MB)",
+      "orDragDrop": "veya sürükleyip bırakın",
+      "original": "Orijinal",
+      "enhanced": "Geliştirilmiş",
+      "sideBySide": "Yan yana",
+      "comparison": "Karşılaştırma",
+      "dragToCompare": "Karşılaştırmak için sürükle",
+      "noFaces": "Görselde yüz bulunamadı",
+      "facesFound": "{{count}} yüz bulundu"
     },
     "faceSwapper": {
       "title": "Yüz Değiştirici",
@@ -653,12 +711,12 @@
       "selectTarget": "Hedef görseli seçin",
       "sourceHint": "Kopyalanacak yüz kimliği",
       "targetHint": "Yüzlerin değiştirileceği görsel",
-      "orDragDrop": "or drag and drop",
+      "orDragDrop": "veya sürükleyip bırakın",
       "noSourceFace": "Kaynak görselde yüz algılanmadı",
       "noTargetFaces": "Hedef görselde yüz algılanmadı",
       "clickToSelect": "Değiştirilecek yüzleri seçmek için tıklayın",
       "facesSelected": "{{selected}}/{{total}} yüz seçildi",
-      "sourceSelected": "Face {{selected}}/{{total}} selected",
+      "sourceSelected": "Yüz {{selected}}/{{total}} seçildi",
       "faceDetected": "Yüz algılandı",
       "swapFaces": "Yüzleri Değiştir",
       "processing": "İşleniyor...",
@@ -728,7 +786,8 @@
       "undoEdit": "Kaldırmayı geri al",
       "redoEdit": "Kaldırmayı yinele",
       "hint": "Kaldırmak istediğiniz nesnelerin üzerine çizin, ardından Nesneleri Kaldır'a tıklayın",
-      "resultPlaceholder": "Sonuç burada görünecek"
+      "resultPlaceholder": "Sonuç burada görünecek",
+      "hintMobile": "Kaldırılacak alanı çiz"
     },
     "segmentAnything": {
       "title": "Her Şeyi Segmentler",
@@ -742,78 +801,112 @@
       "clearPoints": "Noktaları temizle",
       "clearPointsTooltip": "Tüm noktaları temizle ve hover önizleme moduna dön",
       "cutMask": "Maskeyi kes",
-      "hint": "Dahil etmek için sol tık, hariç tutmak için sağ tık"
+      "hint": "Dahil etmek için sol tık, hariç tutmak için sağ tık",
+      "hoverToPreviewMobile": "Seçime başlamak için nesneye dokunun",
+      "clickToRefineMobile": "Daha fazla nokta eklemek için dokunun",
+      "hintMobile": "Dahil etmek için dokun, hariç tutmak için uzun bas"
     },
     "videoConverter": {
-      "title": "Video Converter",
+      "title": "Video dönüştürücü",
       "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
       "selectVideo": "Select Video",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace video",
+      "orDragDrop": "veya sürükleyip bırakın",
+      "dropToReplace": "Değiştirmek için bırakın",
       "supportedFormats": "Supports MP4, WebM, MOV, AVI, MKV",
       "convert": "Convert",
-      "converting": "Converting...",
-      "original": "Original",
-      "outputSettings": "Output Settings",
+      "converting": "Dönüştürülüyor...",
+      "original": "Orijinal",
+      "outputSettings": "Çıktı ayarları",
       "format": "Format",
-      "quality": "Quality",
-      "resolution": "Resolution",
-      "convertedSize": "Converted Size"
+      "quality": "Kalite",
+      "resolution": "Çözünürlük",
+      "convertedSize": "Dönüştürülmüş boyut",
+      "inputVideo": "Giriş videosu",
+      "selectVideoDesc": "Dönüştürmek için video dosyası seçin veya sürükleyin",
+      "outputFormat": "Çıktı formatı",
+      "converted": "Dönüştürüldü",
+      "result": "Dönüşüm sonucu",
+      "codecUsed": "Kullanılan codec",
+      "invalidFile": "Geçerli bir video dosyası seçin"
     },
     "audioConverter": {
-      "title": "Audio Converter",
+      "title": "Ses dönüştürücü",
       "description": "Convert audio between formats (MP3, AAC, FLAC, WAV)",
       "selectAudio": "Select Audio",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace audio",
+      "orDragDrop": "veya sürükleyip bırakın",
+      "dropToReplace": "Değiştirmek için bırakın",
       "supportedFormats": "Supports MP3, M4A, OGG, WAV, FLAC",
       "convert": "Convert",
-      "converting": "Converting...",
-      "converted": "Converted",
-      "playOriginal": "Play original",
-      "playConverted": "Play converted"
+      "converting": "Dönüştürülüyor...",
+      "converted": "Dönüştürüldü",
+      "playOriginal": "Orijinali oynat",
+      "playConverted": "Dönüştürülmüşü oynat",
+      "inputAudio": "Giriş sesi",
+      "outputFormat": "Çıktı formatı",
+      "bitrate": "Bit hızı",
+      "original": "Orijinal",
+      "result": "Sonuç",
+      "invalidFile": "MP3 veya WAV dosyası seçin"
     },
     "imageConverter": {
-      "title": "Image Converter",
+      "title": "Görsel dönüştürücü",
       "description": "Convert images between formats (JPG, PNG, WebP, GIF)",
-      "selectImages": "Select Images",
-      "orDragDrop": "or drag and drop",
-      "dropToAdd": "Drop to add images",
+      "selectImages": "Tıklayın veya görselleri buraya sürükleyin",
+      "orDragDrop": "veya sürükleyip bırakın",
+      "dropToAdd": "Daha eklemek için bırakın",
       "supportedFormats": "Supports JPG, PNG, WebP, GIF, BMP",
-      "addMore": "Add More",
+      "addMore": "Daha fazla ekle",
       "convert": "Convert",
-      "converting": "Converting...",
-      "quality": "Quality",
-      "downloadAll": "Download All"
+      "converting": "Dönüştürülüyor...",
+      "quality": "Kalite",
+      "downloadAll": "Tümünü indir",
+      "inputImage": "Giriş görseli",
+      "selectImage": "Tıklayın veya görseli buraya sürükleyin",
+      "outputFormat": "Çıktı formatı",
+      "result": "Sonuç",
+      "invalidFile": "Geçerli bir görsel dosyası seçin"
     },
     "mediaTrimmer": {
-      "title": "Media Trimmer",
-      "description": "Trim videos or audio to a specific duration",
+      "title": "Medya kırpıcı",
+      "description": "Video veya sesin başını ve sonunu kırpın",
       "selectMedia": "Select Media",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace media",
+      "orDragDrop": "veya sürükleyip bırakın",
+      "dropToReplace": "Değiştirmek için bırakın",
       "supportedFormats": "Supports video and audio files",
       "trim": "Trim",
-      "trimming": "Trimming...",
-      "originalDuration": "Original",
-      "selectedDuration": "Selected",
-      "trimmedSize": "Trimmed Size",
-      "playingOriginal": "Playing original",
-      "playingTrimmed": "Playing trimmed"
+      "trimming": "Kırpılıyor...",
+      "originalDuration": "Orijinal süre",
+      "selectedDuration": "Seçilen süre",
+      "trimmedSize": "Kırpmadan sonra boyut",
+      "playingOriginal": "Orijinali oynat",
+      "playingTrimmed": "Kırpmadan sonra oynat",
+      "inputMedia": "Giriş medyası",
+      "trimSettings": "Kırpma ayarları",
+      "selectRange": "Başlangıç ve bitiş zamanını seçin",
+      "startTime": "Başlangıç zamanı",
+      "endTime": "Bitiş zamanı",
+      "timeFormat": "Biçim: m:ss.d veya saniye",
+      "outputDuration": "Çıktı süresi",
+      "result": "Kırpılmış sonuç",
+      "invalidFile": "Geçerli bir video veya ses dosyası seçin"
     },
     "mediaMerger": {
-      "title": "Media Merger",
-      "description": "Merge multiple video or audio files into one",
+      "title": "Medya birleştirici",
+      "description": "Birden fazla video veya ses dosyasını sırayla birleştirin",
       "selectFiles": "Select Files",
-      "orDragDrop": "or drag and drop",
-      "dropToAdd": "Drop to add files",
+      "orDragDrop": "veya sürükleyip bırakın",
+      "dropToAdd": "Daha eklemek için bırakın",
       "supportedFormats": "Supports video and audio files",
       "addMore": "Add More",
       "merge": "Merge",
-      "merging": "Merging...",
-      "merged": "Merged",
-      "totalDuration": "Total Duration",
-      "sameFormatNote": "Files must have the same format for lossless merging"
+      "merging": "Birleştiriliyor...",
+      "merged": "Birleştirildi",
+      "totalDuration": "Toplam süre",
+      "sameFormatNote": "Aynı formatta dosya kullanmanız önerilir",
+      "inputMedia": "Giriş dosyaları",
+      "files": "dosya",
+      "result": "Birleştirilmiş sonuç",
+      "sameTypeRequired": "Tüm dosyalar aynı tipte olmalı (video veya ses)"
     },
     "progress": {
       "downloading": "Model indiriliyor",
@@ -832,11 +925,14 @@
       "confirm": "Geri Dön"
     },
     "ffmpeg": {
-      "loading": "Loading FFmpeg",
-      "converting": "Converting",
-      "merging": "Merging",
-      "trimming": "Trimming"
-    }
+      "loading": "Yükleniyor...",
+      "converting": "Dönüştürülüyor...",
+      "merging": "Birleştiriliyor...",
+      "trimming": "Kırpılıyor..."
+    },
+    "downloadSuccess": "İndirilenler klasörüne kaydedildi",
+    "downloadStarted": "İndirme başladı",
+    "downloadFailed": "İndirme başarısız"
   },
   "game": {
     "waitingLong": "Çok mu bekliyorsunuz? Mini oyun oynayın!",
@@ -878,5 +974,315 @@
     "result": "Sonuç",
     "codecUsed": "Kullanılan codec",
     "download": "İndir"
+  },
+  "workflow": {
+    "workflows": "İş akışları",
+    "newWorkflow": "Yeni iş akışı",
+    "untitled": "Başlıksız",
+    "save": "Kaydet",
+    "saved": "Kaydedildi",
+    "saving": "Kaydediliyor...",
+    "saveFailed": "Kaydetme başarısız",
+    "savedAt": "Kaydedildi",
+    "unsaved": "Kaydedilmemiş",
+    "nodes": "Düğümler",
+    "config": "Yapılandırma",
+    "results": "Sonuçlar",
+    "cost": "Maliyet",
+    "settings": "Ayarlar",
+    "runAll": "Tümünü çalıştır",
+    "run": "Çalıştır",
+    "runTarget": "Hedefi çalıştır",
+    "runTargetAll": "Tüm düğümleri çalıştır",
+    "runTargetSelected": "Seçili düğümü çalıştır",
+    "runCount": "Çalıştırma sayısı",
+    "stop": "Durdur",
+    "running": "Çalışıyor...",
+    "cancelAll": "Tümünü iptal et",
+    "import": "İçe aktar",
+    "export": "Dışa aktar",
+    "imported": "İçe aktarıldı",
+    "importFailed": "İçe aktarma başarısız",
+    "exported": "Başarıyla dışa aktarıldı",
+    "exportFailed": "Dışa aktarma başarısız",
+    "estimated": "Tahmini maliyet",
+    "fitView": "Görünüme sığdır",
+    "previousImage": "Önceki görsel",
+    "nextImage": "Sonraki görsel",
+    "previewNavHint": "Gezinmek için ← / → kullanın ({{current}}/{{total}})",
+    "clickAnywhereToClose": "Kapatmak için herhangi bir yere tıklayın",
+    "runNode": "Düğümü çalıştır",
+    "modelSelection": "Model seçimi",
+    "annotationHint": "Düzenlemek için notu çift tıklayın.",
+    "continueFrom": "Buradan devam et",
+    "retry": "Tekrar dene",
+    "cancel": "İptal",
+    "noWorkflows": "Henüz iş akışı yok",
+    "create": "Oluştur",
+    "open": "Aç",
+    "paste": "Yapıştır",
+    "addNode": "Düğüm ekle",
+    "addNote": "Not ekle",
+    "note": "Not",
+    "deleteConnection": "Bağlantıyı sil",
+    "add": "Ekle",
+    "delete": "Sil",
+    "currentModel": "Mevcut model",
+    "modelIdLabel": "Model ID",
+    "selectNode": "Yapılandırmak için düğüm seçin",
+    "noExecutions": "Henüz yürütme yok",
+    "budgetExceeded": "Bütçe aşıldı",
+    "dailySpend": "Günlük harcama",
+    "perExecutionLimit": "Yürütme başına limit",
+    "dailyLimit": "Günlük limit",
+    "editBudget": "Bütçeyi düzenle",
+    "refreshModels": "Modelleri yenile",
+    "drawMask": "Maske çiz",
+    "drawMaskNeedInput": "Önce giriş görselini ayarlayın",
+    "segmentPointPicker": {
+      "title": "Segmentasyon noktalarını seçin",
+      "hint": "Sol tıklama = dahil, sağ tıklama = hariç tut",
+      "points": "nokta",
+      "clear": "Temizle",
+      "done": "Tamam"
+    },
+    "pickPoints": "Noktaları seç",
+    "pickPointsNeedInput": "Önce giriş görselini ayarlayın",
+    "pointsLabel": "Segmentasyon noktaları",
+    "linked": "Bağlı",
+    "linkedTo": "Bağlı",
+    "disconnectLink": "Kilidi aç: bu bağlantıyı kes",
+    "previewUpstreamOutput": "Yukarı akış çıktısını önizle",
+    "localFileOrUrl": "Yerel dosya veya URL",
+    "showAll": "Tümünü göster",
+    "showAllRuns": "Tüm çalıştırmaları göster",
+    "showLatestOnly": "Sadece sonucu göster",
+    "latest": "En son",
+    "latestHidden": "En son sonuç gizlendi.",
+    "noVisibleResults": "Görünür sonuç yok.",
+    "hideRun": "Bu çalıştırmayı gizle",
+    "output": "Çıktı",
+    "outputLowercase": "Çıktı",
+    "invalidUrl": "Geçersiz URL",
+    "removeLast": "Sonuncuyu kaldır",
+    "enterField": "{{field}} girin...",
+    "show": "Göster",
+    "hide": "Gizle",
+    "optional": "İsteğe bağlı",
+    "searchNodesPlaceholder": "Düğüm ara...",
+    "dragOrClickToAdd": "Tuvale sürükleyin veya eklemek için tıklayın",
+    "noNodesAvailable": "Kullanılabilir düğüm yok",
+    "nodeCategory": {
+      "recent": "Son kullanılan",
+      "input": "Giriş",
+      "ai-task": "AI görevi",
+      "free-tool": "Ücretsiz araçlar",
+      "output": "Çıktı",
+      "processing": "İşleme",
+      "control": "Kontrol"
+    },
+    "nodeDefs": {
+      "ai-task/run": {
+        "label": "Modeli çalıştır",
+        "emptyHint": "Bu düğüme tıklayın, sonra model seçin →",
+        "params": {
+          "modelId": {
+            "label": "Model"
+          }
+        }
+      },
+      "input/media-upload": {
+        "label": "Yükle",
+        "outputs": {
+          "output": {
+            "label": "URL"
+          }
+        }
+      },
+      "input/text-input": {
+        "label": "Metin",
+        "params": {
+          "text": {
+            "label": "Metin"
+          }
+        }
+      },
+      "output/preview": {
+        "label": "Önizleme",
+        "inputs": {
+          "input": {
+            "label": "URL"
+          }
+        },
+        "params": {
+          "autoDetect": {
+            "label": "Türü otomatik algıla"
+          },
+          "forceType": {
+            "label": "Türü zorla",
+            "options": {
+              "auto": "Otomatik",
+              "image": "Görsel",
+              "video": "Video",
+              "audio": "Ses",
+              "3d": "3D Model"
+            }
+          }
+        }
+      },
+      "output/file": {
+        "label": "Dosya dışa aktar",
+        "inputs": {
+          "url": {
+            "label": "URL"
+          }
+        },
+        "params": {
+          "outputDir": {
+            "label": "Çıktı dizini"
+          },
+          "filename": {
+            "label": "Dosya adı öneki"
+          },
+          "format": {
+            "label": "Format",
+            "options": {
+              "auto": "Otomatik",
+              "mp4": "MP4",
+              "png": "PNG",
+              "jpg": "JPG",
+              "mp3": "MP3",
+              "wav": "WAV"
+            }
+          }
+        }
+      },
+      "free-tool/image-enhancer": {
+        "label": "Görsel geliştirici"
+      },
+      "free-tool/background-remover": {
+        "label": "Arka plan kaldırıcı"
+      },
+      "free-tool/face-enhancer": {
+        "label": "Yüz geliştirici"
+      },
+      "free-tool/video-enhancer": {
+        "label": "Video geliştirici"
+      },
+      "free-tool/face-swapper": {
+        "label": "Yüz değiştirici"
+      },
+      "free-tool/image-eraser": {
+        "label": "Görsel silgisi"
+      },
+      "free-tool/segment-anything": {
+        "label": "Her şeyi böl",
+        "params": {
+          "pointX": {
+            "label": "Nokta X",
+            "description": "Segmentasyon noktası için normalize X (0-1)"
+          },
+          "pointY": {
+            "label": "Nokta Y",
+            "description": "Segmentasyon noktası için normalize Y (0-1)"
+          }
+        }
+      },
+      "free-tool/video-converter": {
+        "label": "Video dönüştürücü"
+      },
+      "free-tool/audio-converter": {
+        "label": "Ses dönüştürücü"
+      },
+      "free-tool/image-converter": {
+        "label": "Görsel dönüştürücü"
+      },
+      "free-tool/media-trimmer": {
+        "label": "Medya kırpıcı"
+      },
+      "free-tool/media-merger": {
+        "label": "Medya birleştirici"
+      }
+    },
+    "modelSelector": {
+      "allCategory": "Tümü",
+      "noModelsLoaded": "Model yüklenmedi. Aşağıdaki \"Modelleri yenile\"ye tıklayın.",
+      "loadFailed": "Model yüklemesi başarısız.",
+      "refreshFailed": "Model yenilemesi başarısız.",
+      "loadingModels": "Modeller yükleniyor...",
+      "loadingHint": "İlk başlatmada birkaç saniye sürebilir",
+      "recent": "Son kullanılan",
+      "searchPlaceholder": "Model ara...",
+      "searchAllPlaceholder": "Tüm modelleri ara...",
+      "refreshTooltip": "Model kataloğunu yenile",
+      "refreshing": "Yenileniyor...",
+      "noModelsFound": "Model bulunamadı",
+      "disconnectBeforeSwitch": "Model değiştirmeden önce lütfen bu düğümün bağlantısını kesin.",
+      "selectCategory": "Kategori seçin",
+      "cannotSwitchTitle": "Model değiştirilemiyor",
+      "cannotSwitchDesc": "Bu düğümün aktif bağlantıları var. Model değiştirmeden önce tüm kenarları kesin."
+    },
+    "mediaUpload": {
+      "uploadFailed": "Yükleme başarısız",
+      "invalidUrl": "Geçersiz URL",
+      "fileUploaded": "Dosya yüklendi",
+      "uploaded": "Yüklendi",
+      "clear": "Temizle",
+      "uploading": "Yükleniyor...",
+      "uploadingShort": "Yükleniyor...",
+      "failed": "Başarısız",
+      "dropOrBrowse": "Dosyayı buraya bırakın veya göz atmak için tıklayın",
+      "browse": "Gözat",
+      "pasteUrl": "URL yapıştır",
+      "urlPlaceholder": "https://...",
+      "urlShortPlaceholder": "URL...",
+      "supportedTypes": "Görsel, Video, Ses"
+    },
+    "textInput": {
+      "promptLibrary": "İstem kitaplığı",
+      "saveCurrent": "Mevcut kaydet",
+      "namePlaceholder": "Ad...",
+      "noSavedSnippets": "Kayıtlı parça yok",
+      "optimizeFailed": "Optimizasyon başarısız",
+      "optimizeNowTitle": "Metni şimdi optimize et",
+      "optimizing": "Optimize ediliyor...",
+      "optimizeNow": "Şimdi optimize et",
+      "autoOnRunTitle": "Yalnızca Çalıştır tıklandığında optimize et",
+      "autoOnRun": "Çalıştırırken otomatik",
+      "chars": "karakter",
+      "optimizeOnRunEnabled": "Etkin: çalıştırırken optimize et",
+      "optimizeOffHint": "Varsayılan: optimizasyon yok (orijinal metinle çalıştır)",
+      "manualOptimizedHint": "Manuel optimize edildi. Metin değişene kadar otomatik optimize atlanacak.",
+      "enterTextOrPrompt": "Metin veya istem girin..."
+    },
+    "promptOptimizer": {
+      "optimizationFailed": "Optimizasyon başarısız",
+      "optimizeParams": "Parametreleri optimize et",
+      "optimizeParamsPresetOnly": "Parametreleri optimize et (sadece önayar)",
+      "perRun": "çalıştırma",
+      "mode": "Mod",
+      "text": "Metin",
+      "textPlaceholder": "Genişletmek veya bağlam olarak kullanılacak metin...",
+      "autoOnRunTitle": "Çalıştır tıklandığında otomatik optimize et",
+      "autoOnRun": "Çalıştırırken otomatik",
+      "quickOptimizeTitle": "Hızlı optimize ({{mode}})",
+      "params": "Parametreler",
+      "prompt": "İstem",
+      "emptyPrompt": "(boş)",
+      "optimizing": "Optimize ediliyor...",
+      "optimize": "Optimize et",
+      "optimizeWithImage": "Görselle optimize et...",
+      "modeOptions": {
+        "image": "Görsel",
+        "video": "Video"
+      },
+      "imageDialog": {
+        "title": "Görselle optimize et",
+        "enterTextOrImage": "Lütfen metin girin veya görsel sağlayın",
+        "optimizeFailed": "Optimizasyon başarısız",
+        "loadingOptimizer": "Optimize edici yükleniyor...",
+        "loadConfigFailed": "Optimize edici yapılandırması yüklenemedi"
+      }
+    }
   }
 }

@@ -6,6 +6,8 @@ let isLoaded = false
 let loadingPromise: Promise<void> | null = null
 let currentOperationId: number | null = null
 
+const BASE_URL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm'
+
 interface ConvertOptions {
   videoCodec?: string
   videoBitrate?: string
@@ -49,8 +51,6 @@ interface InfoPayload {
   fileName: string
   id: number
 }
-
-const BASE_URL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm'
 
 async function ensureLoaded(onProgress?: (progress: number) => void): Promise<FFmpeg> {
   if (isLoaded && ffmpeg) return ffmpeg
@@ -105,12 +105,13 @@ function buildConvertArgs(
   // Video/Audio options
   if (options?.videoCodec) args.push('-c:v', options.videoCodec)
   if (options?.videoBitrate) args.push('-b:v', options.videoBitrate)
+  if (options?.audioCodec) args.push('-c:a', options.audioCodec)
+  if (options?.audioBitrate) args.push('-b:a', options.audioBitrate)
+
   if (options?.resolution && options.resolution !== 'original') {
     args.push('-vf', `scale=${options.resolution.replace('x', ':')}`)
   }
   if (options?.fps) args.push('-r', String(options.fps))
-  if (options?.audioCodec) args.push('-c:a', options.audioCodec)
-  if (options?.audioBitrate) args.push('-b:a', options.audioBitrate)
   if (options?.sampleRate) args.push('-ar', String(options.sampleRate))
 
   args.push(outputFile)

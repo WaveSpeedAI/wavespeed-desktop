@@ -32,20 +32,24 @@
     "done": "Готово",
     "retry": "Повторить",
     "downloadFailed": "Загрузка не удалась. Пожалуйста, проверьте сетевое подключение.",
-    "openInBrowser": "Открыть в браузере"
+    "openInBrowser": "Открыть в браузере",
+    "settings": "Настройки",
+    "clearAll": "Очистить всё"
   },
   "nav": {
     "home": "Главная",
     "featuredModels": "Рекомендуемые модели",
     "models": "Модели",
-    "playground": "Playground",
+    "playground": "Песочница",
     "history": "История",
     "templates": "Шаблоны",
     "assets": "Мои Активы",
     "zImage": "Z-Image",
     "freeTools": "Бесплатные Инструменты",
     "settings": "Настройки",
-    "collapse": "Свернуть"
+    "collapse": "Свернуть",
+    "workflow": "Рабочий процесс",
+    "expand": "Развернуть"
   },
   "welcome": {
     "tagline": "ИИ-инструменты для творчества под рукой",
@@ -63,7 +67,7 @@
         "description": "Просматривайте ИИ-модели для генерации изображений, видео и аудио"
       },
       "playground": {
-        "title": "Playground",
+        "title": "Песочница",
         "description": "Рабочее пространство с несколькими вкладками для запуска моделей с пользовательскими параметрами"
       },
       "templates": {
@@ -87,6 +91,11 @@
         "title": "Бесплатные Инструменты",
         "description": "Мощные ИИ-инструменты, работающие локально - API-ключ не требуется",
         "badge": "Бесплатно"
+      },
+      "workflow": {
+        "title": "Рабочий процесс",
+        "description": "Создавайте визуальные AI-пайплайны с узловым редактором",
+        "badge": "Новый"
       }
     }
   },
@@ -109,7 +118,7 @@
     "removeFromFavorites": "Удалить из избранного"
   },
   "playground": {
-    "title": "Playground",
+    "title": "Песочница",
     "selectModel": "Выберите модель",
     "searchModels": "Поиск моделей...",
     "noModelSelected": "Модель не выбрана",
@@ -179,7 +188,9 @@
         "hint": "Белые области показывают, чёрные скрывают"
       },
       "removeFile": "Удалить файл",
-      "removeFileConfirm": "Вы уверены, что хотите удалить этот файл?"
+      "removeFileConfirm": "Вы уверены, что хотите удалить этот файл?",
+      "micInUse": "Микрофон используется другим приложением",
+      "tapToRecord": "Нажмите, чтобы начать запись"
     },
     "autoSaved": "Автосохранено в Активы",
     "autoSavedDesc": "Сохранено {{count}} результат(ов) в Мои Активы",
@@ -235,7 +246,14 @@
       "seedsGenerated": "Сиды сгенерированы автоматически",
       "settings": "Настройки пакета"
     },
-    "input": "Ввод"
+    "input": "Ввод",
+    "imageCopied": "Изображение скопировано в буфер обмена",
+    "urlCopied": "URL скопирован в буфер обмена",
+    "copyFailed": "Не удалось скопировать",
+    "copyImage": "Копировать изображение",
+    "copyUrl": "Копировать URL",
+    "copy": "Копировать",
+    "download": "Скачать"
   },
   "history": {
     "title": "История",
@@ -246,7 +264,8 @@
       "completed": "Завершено",
       "failed": "Ошибка",
       "processing": "Обработка",
-      "created": "Создано"
+      "created": "Создано",
+      "archived": "В архиве"
     },
     "loadPreviews": "Загрузить превью",
     "disablePreviews": "Отключить превью",
@@ -280,7 +299,12 @@
       "noInputsTitle": "Невозможно сохранить шаблон",
       "noInputsDesc": "Входные параметры доступны только для предсказаний, сделанных в этом приложении. Сначала попробуйте выполнить новое предсказание."
     },
-    "hasInputs": "Можно сохранить как шаблон"
+    "hasInputs": "Можно сохранить как шаблон",
+    "downloadComplete": "Загрузка завершена",
+    "downloadCompleteDesc": "Загружено {{count}} файл(ов)",
+    "downloadFailed": "Ошибка загрузки",
+    "downloadFailedDesc": "Не удалось загрузить {{count}} файл(ов)",
+    "longPressHint": "Нажмите и удерживайте для выбора"
   },
   "templates": {
     "title": "Шаблоны",
@@ -431,7 +455,7 @@
       }
     },
     "errors": {
-      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "desktopRequired": "Для этой функции требуется десктопное приложение. Загрузите WaveSpeed Desktop или попробуйте онлайн-версию.",
       "generationCancelled": "Генерация отменена"
     },
     "tips": {
@@ -462,7 +486,7 @@
       "invalidDesc": "Не удалось проверить API-ключ. Проверьте и попробуйте снова.",
       "cleared": "API-ключ удалён",
       "clearedDesc": "Ваш API-ключ был удалён.",
-      "itemDeleted": "Cache item deleted",
+      "itemDeleted": "Элемент кэша удалён",
       "error": "Ошибка",
       "errorDesc": "Не удалось сохранить API-ключ."
     },
@@ -520,7 +544,27 @@
       "clearFailed": "Не удалось очистить кэш",
       "zImageAuxiliary": "Вспомогательные модели Z-Image",
       "zImageModels": "Модели Z-Image",
-      "zImageBinary": "Бинарный файл Z-Image"
+      "zImageBinary": "Бинарный файл Z-Image",
+      "predownload": "Предзагрузка моделей",
+      "predownloadDesc": "Скачайте модели ИИ заранее для офлайн-использования",
+      "downloadModels": "Скачать модели",
+      "downloadPartial": "Частичная загрузка завершена",
+      "downloadPartialDesc": "Некоторые модели успешно загружены",
+      "downloadComplete": "Загрузка завершена",
+      "downloadCompleteDesc": "Все модели успешно загружены",
+      "downloadCancelled": "Загрузка отменена",
+      "downloadCancelledDesc": "Загрузка модели отменена",
+      "alreadyCached": "Уже в кэше",
+      "downloaded": "Загружено",
+      "overallProgress": "Общий прогресс",
+      "models": {
+        "ffmpegJs": "Ядро FFmpeg (JS)",
+        "ffmpegWasm": "Ядро FFmpeg (WASM)",
+        "backgroundRemover": "Удаление фона",
+        "imageEraser": "Ластик изображений (LaMa)",
+        "samEncoder": "Визуальный кодировщик SAM",
+        "samDecoder": "Декодер подсказок SAM"
+      }
     },
     "downloads": {
       "title": "Загрузки",
@@ -555,7 +599,12 @@
       "devModeDesc": "Автообновление отключено в режиме разработки.",
       "checkFailed": "Ошибка проверки обновлений",
       "downloadFailed": "Ошибка загрузки",
-      "downloadFailedDesc": "Не удалось загрузить обновление."
+      "downloadFailedDesc": "Не удалось загрузить обновление.",
+      "downloadComplete": "Загрузка завершена",
+      "openToInstall": "Откройте {{filename}} для установки",
+      "installInstructions": "Инструкции по установке",
+      "findInDownloads": "APK сохранён в папку Загрузки. Откройте {{filename}} в файловом менеджере для установки",
+      "downloadProgress": "Загрузка... {{progress}}%"
     },
     "about": {
       "title": "О программе",
@@ -563,7 +612,8 @@
       "mobileDescription": "WaveSpeed Mobile - Playground для ИИ-моделей",
       "aboutText": "Приложение с открытым исходным кодом для запуска ИИ-моделей с API WaveSpeed.",
       "mobileAboutText": "Мобильное приложение с открытым исходным кодом для запуска ИИ-моделей с API WaveSpeed.",
-      "viewOnGitHub": "Посмотреть на GitHub"
+      "viewOnGitHub": "Посмотреть на GitHub",
+      "version": "Версия"
     }
   },
   "apiKeyRequired": {
@@ -642,7 +692,15 @@
       "facesEnhanced": "{{count}} лиц(о) улучшено",
       "noFacesFound": "Лица не найдены",
       "invalidFile": "Выберите корректный файл изображения",
-      "firstTimeDownload": "Первый раз? Модели будут загружены (~350МБ)"
+      "firstTimeDownload": "Первый раз? Модели будут загружены (~350МБ)",
+      "orDragDrop": "или перетащите",
+      "original": "Оригинал",
+      "enhanced": "Улучшено",
+      "sideBySide": "Рядом",
+      "comparison": "Сравнение",
+      "dragToCompare": "Перетащите для сравнения",
+      "noFaces": "Лица на изображении не найдены",
+      "facesFound": "Найдено {{count}} лиц"
     },
     "faceSwapper": {
       "title": "Замена лиц",
@@ -653,12 +711,12 @@
       "selectTarget": "Выберите целевое изображение",
       "sourceHint": "Идентичность лица для копирования",
       "targetHint": "Изображение, где будут заменены лица",
-      "orDragDrop": "or drag and drop",
+      "orDragDrop": "или перетащите",
       "noSourceFace": "Лицо не обнаружено в исходном изображении",
       "noTargetFaces": "Лица не обнаружены в целевом изображении",
       "clickToSelect": "Нажмите на лица, чтобы выбрать, какие заменить",
       "facesSelected": "{{selected}}/{{total}} лиц(о/а) выбрано",
-      "sourceSelected": "Face {{selected}}/{{total}} selected",
+      "sourceSelected": "Лицо {{selected}}/{{total}} выбрано",
       "faceDetected": "Лицо обнаружено",
       "swapFaces": "Заменить лица",
       "processing": "Обработка...",
@@ -728,7 +786,8 @@
       "undoEdit": "Отменить удаление",
       "redoEdit": "Повторить удаление",
       "hint": "Нарисуйте поверх объектов, которые хотите удалить, затем нажмите Удалить объекты",
-      "resultPlaceholder": "Результат появится здесь"
+      "resultPlaceholder": "Результат появится здесь",
+      "hintMobile": "Нарисуйте на области для удаления"
     },
     "segmentAnything": {
       "title": "Сегментация Объектов",
@@ -742,7 +801,10 @@
       "clearPoints": "Очистить точки",
       "clearPointsTooltip": "Очистить все точки и вернуться в режим предпросмотра при наведении",
       "cutMask": "Вырезать по маске",
-      "hint": "Левый клик для включения, правый клик для исключения областей"
+      "hint": "Левый клик для включения, правый клик для исключения областей",
+      "hoverToPreviewMobile": "Нажмите на объект, чтобы начать выбор",
+      "clickToRefineMobile": "Нажмите, чтобы добавить точки",
+      "hintMobile": "Нажмите для включения, удерживайте для исключения"
     },
     "videoConverter": {
       "title": "Конвертер видео",
@@ -758,7 +820,14 @@
       "format": "Формат",
       "quality": "Качество",
       "resolution": "Разрешение",
-      "convertedSize": "Размер после конвертации"
+      "convertedSize": "Размер после конвертации",
+      "inputVideo": "Входное видео",
+      "selectVideoDesc": "Выберите или перетащите видеофайл для конвертации",
+      "outputFormat": "Формат вывода",
+      "converted": "Конвертировано",
+      "result": "Результат конвертации",
+      "codecUsed": "Использованный кодег",
+      "invalidFile": "Выберите действительный видеофайл"
     },
     "audioConverter": {
       "title": "Конвертер аудио",
@@ -771,7 +840,13 @@
       "converting": "Конвертация...",
       "converted": "Конвертировано",
       "playOriginal": "Воспроизвести оригинал",
-      "playConverted": "Воспроизвести конвертированное"
+      "playConverted": "Воспроизвести конвертированное",
+      "inputAudio": "Входное аудио",
+      "outputFormat": "Формат вывода",
+      "bitrate": "Битрейт",
+      "original": "Оригинал",
+      "result": "Результат",
+      "invalidFile": "Выберите файл MP3 или WAV"
     },
     "imageConverter": {
       "title": "Конвертер изображений",
@@ -784,7 +859,12 @@
       "convert": "Конвертировать",
       "converting": "Конвертация...",
       "quality": "Качество",
-      "downloadAll": "Скачать все"
+      "downloadAll": "Скачать все",
+      "inputImage": "Входное изображение",
+      "selectImage": "Нажмите или перетащите изображение сюда",
+      "outputFormat": "Формат вывода",
+      "result": "Результат",
+      "invalidFile": "Выберите действительный файл изображения"
     },
     "mediaTrimmer": {
       "title": "Обрезка медиа",
@@ -799,7 +879,16 @@
       "selectedDuration": "Выбрано",
       "trimmedSize": "Размер после обрезки",
       "playingOriginal": "Воспроизведение оригинала",
-      "playingTrimmed": "Воспроизведение обрезанного"
+      "playingTrimmed": "Воспроизведение обрезанного",
+      "inputMedia": "Входные медиа",
+      "trimSettings": "Настройки обрезки",
+      "selectRange": "Выберите время начала и конца",
+      "startTime": "Время начала",
+      "endTime": "Время окончания",
+      "timeFormat": "Формат: m:ss.d или секунды",
+      "outputDuration": "Длительность вывода",
+      "result": "Результат обрезки",
+      "invalidFile": "Выберите действительный видео- или аудиофайл"
     },
     "mediaMerger": {
       "title": "Объединение медиа",
@@ -813,7 +902,11 @@
       "merging": "Объединение...",
       "merged": "Объединено",
       "totalDuration": "Общая длительность",
-      "sameFormatNote": "Файлы должны иметь одинаковый формат для объединения без потерь"
+      "sameFormatNote": "Файлы должны иметь одинаковый формат для объединения без потерь",
+      "inputMedia": "Входные файлы",
+      "files": "файлов",
+      "result": "Объединённый результат",
+      "sameTypeRequired": "Все файлы должны быть одного типа (видео или аудио)"
     },
     "progress": {
       "downloading": "Загрузка модели",
@@ -836,7 +929,10 @@
       "converting": "Конвертация",
       "merging": "Объединение",
       "trimming": "Обрезка"
-    }
+    },
+    "downloadSuccess": "Сохранено в папку Загрузки",
+    "downloadStarted": "Загрузка начата",
+    "downloadFailed": "Ошибка загрузки"
   },
   "game": {
     "waitingLong": "Долго ждёте? Сыграйте в мини-игру!",
@@ -878,5 +974,315 @@
     "result": "Результат",
     "codecUsed": "Использованный кодек",
     "download": "Скачать"
+  },
+  "workflow": {
+    "workflows": "Рабочие процессы",
+    "newWorkflow": "Новый рабочий процесс",
+    "untitled": "Без названия",
+    "save": "Сохранить",
+    "saved": "Сохранено",
+    "saving": "Сохранение...",
+    "saveFailed": "Не удалось сохранить",
+    "savedAt": "Сохранено",
+    "unsaved": "Не сохранено",
+    "nodes": "Узлы",
+    "config": "Конфигурация",
+    "results": "Результаты",
+    "cost": "Стоимость",
+    "settings": "Настройки",
+    "runAll": "Запустить всё",
+    "run": "Запустить",
+    "runTarget": "Запустить цель",
+    "runTargetAll": "Запустить все узлы",
+    "runTargetSelected": "Запустить выбранный узел",
+    "runCount": "Количество запусков",
+    "stop": "Стоп",
+    "running": "Выполнение...",
+    "cancelAll": "Отменить всё",
+    "import": "Импорт",
+    "export": "Экспорт",
+    "imported": "Импортировано",
+    "importFailed": "Ошибка импорта",
+    "exported": "Успешно экспортировано",
+    "exportFailed": "Ошибка экспорта",
+    "estimated": "Оценка стоимости",
+    "fitView": "Подогнать вид",
+    "previousImage": "Предыдущее изображение",
+    "nextImage": "Следующее изображение",
+    "previewNavHint": "Используйте ← / → для навигации ({{current}}/{{total}})",
+    "clickAnywhereToClose": "Нажмите в любом месте, чтобы закрыть",
+    "runNode": "Запустить узел",
+    "modelSelection": "Выбор модели",
+    "annotationHint": "Дважды нажмите на заметку для редактирования.",
+    "continueFrom": "Продолжить отсюда",
+    "retry": "Повторить",
+    "cancel": "Отмена",
+    "noWorkflows": "Пока нет рабочих процессов",
+    "create": "Создать",
+    "open": "Открыть",
+    "paste": "Вставить",
+    "addNode": "Добавить узел",
+    "addNote": "Добавить заметку",
+    "note": "Заметка",
+    "deleteConnection": "Удалить соединение",
+    "add": "Добавить",
+    "delete": "Удалить",
+    "currentModel": "Текущая модель",
+    "modelIdLabel": "ID модели",
+    "selectNode": "Выберите узел для настройки",
+    "noExecutions": "Пока нет выполнений",
+    "budgetExceeded": "Превышен бюджет",
+    "dailySpend": "Ежедневные расходы",
+    "perExecutionLimit": "Лимит на выполнение",
+    "dailyLimit": "Дневной лимит",
+    "editBudget": "Редактировать бюджет",
+    "refreshModels": "Обновить модели",
+    "drawMask": "Рисовать маску",
+    "drawMaskNeedInput": "Сначала установите входное изображение",
+    "segmentPointPicker": {
+      "title": "Выбрать точки сегментации",
+      "hint": "ЛКМ = включить, ПКМ = исключить",
+      "points": "точек",
+      "clear": "Очистить",
+      "done": "Готово"
+    },
+    "pickPoints": "Выбрать точки",
+    "pickPointsNeedInput": "Сначала установите входное изображение",
+    "pointsLabel": "Точки сегментации",
+    "linked": "Связано",
+    "linkedTo": "Связано с",
+    "disconnectLink": "Разблокировать: отключить эту ссылку",
+    "previewUpstreamOutput": "Предпросмотр вывода выше",
+    "localFileOrUrl": "Локальный файл или URL",
+    "showAll": "Показать всё",
+    "showAllRuns": "Показать все выполнения",
+    "showLatestOnly": "Показать только последнее",
+    "latest": "Последнее",
+    "latestHidden": "Последний результат скрыт.",
+    "noVisibleResults": "Нет видимых результатов.",
+    "hideRun": "Скрыть это выполнение",
+    "output": "Вывод",
+    "outputLowercase": "Вывод",
+    "invalidUrl": "Недействительный URL",
+    "removeLast": "Удалить последний",
+    "enterField": "Введите {{field}}...",
+    "show": "Показать",
+    "hide": "Скрыть",
+    "optional": "Необязательно",
+    "searchNodesPlaceholder": "Поиск узлов...",
+    "dragOrClickToAdd": "Перетащите на холст или нажмите для добавления",
+    "noNodesAvailable": "Нет доступных узлов",
+    "nodeCategory": {
+      "recent": "Недавние",
+      "input": "Ввод",
+      "ai-task": "AI-задача",
+      "free-tool": "Бесплатные инструменты",
+      "output": "Вывод",
+      "processing": "Обработка",
+      "control": "Управление"
+    },
+    "nodeDefs": {
+      "ai-task/run": {
+        "label": "Запустить модель",
+        "emptyHint": "Нажмите на этот узел, затем выберите модель →",
+        "params": {
+          "modelId": {
+            "label": "Модель"
+          }
+        }
+      },
+      "input/media-upload": {
+        "label": "Загрузить",
+        "outputs": {
+          "output": {
+            "label": "URL"
+          }
+        }
+      },
+      "input/text-input": {
+        "label": "Текст",
+        "params": {
+          "text": {
+            "label": "Текст"
+          }
+        }
+      },
+      "output/preview": {
+        "label": "Предпросмотр",
+        "inputs": {
+          "input": {
+            "label": "URL"
+          }
+        },
+        "params": {
+          "autoDetect": {
+            "label": "Автоопределение типа"
+          },
+          "forceType": {
+            "label": "Принудительный тип",
+            "options": {
+              "auto": "Авто",
+              "image": "Изображение",
+              "video": "Видео",
+              "audio": "Аудио",
+              "3d": "3D модель"
+            }
+          }
+        }
+      },
+      "output/file": {
+        "label": "Экспорт файла",
+        "inputs": {
+          "url": {
+            "label": "URL"
+          }
+        },
+        "params": {
+          "outputDir": {
+            "label": "Выходная директория"
+          },
+          "filename": {
+            "label": "Префикс имени файла"
+          },
+          "format": {
+            "label": "Формат",
+            "options": {
+              "auto": "Авто",
+              "mp4": "MP4",
+              "png": "PNG",
+              "jpg": "JPG",
+              "mp3": "MP3",
+              "wav": "WAV"
+            }
+          }
+        }
+      },
+      "free-tool/image-enhancer": {
+        "label": "Улучшение изображения"
+      },
+      "free-tool/background-remover": {
+        "label": "Удаление фона"
+      },
+      "free-tool/face-enhancer": {
+        "label": "Улучшение лиц"
+      },
+      "free-tool/video-enhancer": {
+        "label": "Улучшение видео"
+      },
+      "free-tool/face-swapper": {
+        "label": "Замена лиц"
+      },
+      "free-tool/image-eraser": {
+        "label": "Ластик изображений"
+      },
+      "free-tool/segment-anything": {
+        "label": "Сегментация чего угодно",
+        "params": {
+          "pointX": {
+            "label": "Точка X",
+            "description": "Нормализованная X (0-1) для точки сегментации"
+          },
+          "pointY": {
+            "label": "Точка Y",
+            "description": "Нормализованная Y (0-1) для точки сегментации"
+          }
+        }
+      },
+      "free-tool/video-converter": {
+        "label": "Конвертер видео"
+      },
+      "free-tool/audio-converter": {
+        "label": "Конвертер аудио"
+      },
+      "free-tool/image-converter": {
+        "label": "Конвертер изображений"
+      },
+      "free-tool/media-trimmer": {
+        "label": "Обрезчик медиа"
+      },
+      "free-tool/media-merger": {
+        "label": "Объединитель медиа"
+      }
+    },
+    "modelSelector": {
+      "allCategory": "Все",
+      "noModelsLoaded": "Модели не загружены. Нажмите «Обновить модели» ниже.",
+      "loadFailed": "Не удалось загрузить модели.",
+      "refreshFailed": "Не удалось обновить модели.",
+      "loadingModels": "Загрузка моделей...",
+      "loadingHint": "При первом запуске может занять несколько секунд",
+      "recent": "Недавние",
+      "searchPlaceholder": "Поиск моделей...",
+      "searchAllPlaceholder": "Поиск по всем моделям...",
+      "refreshTooltip": "Обновить каталог моделей",
+      "refreshing": "Обновление...",
+      "noModelsFound": "Модели не найдены",
+      "disconnectBeforeSwitch": "Пожалуйста, отключите этот узел перед сменой модели.",
+      "selectCategory": "Выберите категорию",
+      "cannotSwitchTitle": "Невозможно сменить модель",
+      "cannotSwitchDesc": "У этого узла есть активные соединения. Отключите все рёбра перед сменой модели."
+    },
+    "mediaUpload": {
+      "uploadFailed": "Ошибка загрузки",
+      "invalidUrl": "Недействительный URL",
+      "fileUploaded": "Файл загружен",
+      "uploaded": "Загружено",
+      "clear": "Очистить",
+      "uploading": "Загрузка...",
+      "uploadingShort": "Загрузка...",
+      "failed": "Ошибка",
+      "dropOrBrowse": "Перетащите файл сюда или нажмите для просмотра",
+      "browse": "Обзор",
+      "pasteUrl": "Вставить URL",
+      "urlPlaceholder": "https://...",
+      "urlShortPlaceholder": "URL...",
+      "supportedTypes": "Изображение, Видео, Аудио"
+    },
+    "textInput": {
+      "promptLibrary": "Библиотека подсказок",
+      "saveCurrent": "Сохранить текущее",
+      "namePlaceholder": "Имя...",
+      "noSavedSnippets": "Нет сохранённых фрагментов",
+      "optimizeFailed": "Ошибка оптимизации",
+      "optimizeNowTitle": "Оптимизировать текст сейчас",
+      "optimizing": "Оптимизация...",
+      "optimizeNow": "Оптимизировать сейчас",
+      "autoOnRunTitle": "Оптимизировать только при нажатии «Запустить»",
+      "autoOnRun": "Авто при запуске",
+      "chars": "симв.",
+      "optimizeOnRunEnabled": "Включено: оптимизация при запуске",
+      "optimizeOffHint": "По умолчанию: без оптимизации (запуск с исходным текстом)",
+      "manualOptimizedHint": "Оптимизировано вручную. Авто-оптимизация пропускается до изменения текста.",
+      "enterTextOrPrompt": "Введите текст или подсказку..."
+    },
+    "promptOptimizer": {
+      "optimizationFailed": "Ошибка оптимизации",
+      "optimizeParams": "Оптимизировать параметры",
+      "optimizeParamsPresetOnly": "Оптимизировать параметры (только пресет)",
+      "perRun": "запуск",
+      "mode": "Режим",
+      "text": "Текст",
+      "textPlaceholder": "Текст для расширения или как контекст...",
+      "autoOnRunTitle": "Автоматически оптимизировать при нажатии Запустить",
+      "autoOnRun": "Авто при запуске",
+      "quickOptimizeTitle": "Быстрая оптимизация ({{mode}})",
+      "params": "Параметры",
+      "prompt": "Подсказка",
+      "emptyPrompt": "(пусто)",
+      "optimizing": "Оптимизация...",
+      "optimize": "Оптимизировать",
+      "optimizeWithImage": "Оптимизировать с изображением...",
+      "modeOptions": {
+        "image": "Изображение",
+        "video": "Видео"
+      },
+      "imageDialog": {
+        "title": "Оптимизировать с изображением",
+        "enterTextOrImage": "Введите текст или предоставьте изображение",
+        "optimizeFailed": "Ошибка оптимизации",
+        "loadingOptimizer": "Загрузка оптимизатора...",
+        "loadConfigFailed": "Не удалось загрузить конфигурацию оптимизатора"
+      }
+    }
   }
 }

@@ -32,7 +32,9 @@
     "deselectAll": "सभी अचयनित करें",
     "retry": "पुनः प्रयास करें",
     "downloadFailed": "डाउनलोड विफल। कृपया अपना नेटवर्क कनेक्शन जांचें।",
-    "openInBrowser": "ब्राउज़र में खोलें"
+    "openInBrowser": "ब्राउज़र में खोलें",
+    "settings": "सेटिंग्स",
+    "clearAll": "सभी साफ़ करें"
   },
   "nav": {
     "home": "होम",
@@ -45,7 +47,9 @@
     "zImage": "Z-Image",
     "freeTools": "मुफ्त उपकरण",
     "settings": "सेटिंग्स",
-    "collapse": "संक्षिप्त करें"
+    "collapse": "संक्षिप्त करें",
+    "workflow": "वर्कफ़्लो",
+    "expand": "विस्तार करें"
   },
   "welcome": {
     "tagline": "आपकी उंगलियों पर AI-संचालित रचनात्मक उपकरण",
@@ -87,6 +91,11 @@
         "title": "मुफ्त उपकरण",
         "description": "शक्तिशाली AI उपकरण जो स्थानीय रूप से चलते हैं - API कुंजी की आवश्यकता नहीं",
         "badge": "मुफ्त"
+      },
+      "workflow": {
+        "title": "वर्कफ़्लो",
+        "description": "नोड-आधारित संपादक के साथ विज़ुअल AI पाइपलाइन बनाएं",
+        "badge": "नया"
       }
     }
   },
@@ -179,7 +188,9 @@
         "hint": "सफेद क्षेत्र दिखाते हैं, काले क्षेत्र छुपाते हैं"
       },
       "removeFile": "फ़ाइल हटाएं",
-      "removeFileConfirm": "क्या आप वाकई इस फ़ाइल को हटाना चाहते हैं?"
+      "removeFileConfirm": "क्या आप वाकई इस फ़ाइल को हटाना चाहते हैं?",
+      "micInUse": "माइक्रोफ़ोन किसी अन्य एप्लिकेशन द्वारा उपयोग में है",
+      "tapToRecord": "रिकॉर्डिंग शुरू करने के लिए टैप करें"
     },
     "autoSaved": "संपत्तियों में ऑटो-सेव किया गया",
     "autoSavedDesc": "मेरी संपत्तियों में {{count}} आउटपुट सहेजे गए",
@@ -235,7 +246,14 @@
       "seedsGenerated": "सीड स्वचालित रूप से जनरेट किए गए",
       "settings": "बैच सेटिंग्स"
     },
-    "input": "इनपुट"
+    "input": "इनपुट",
+    "imageCopied": "छवि क्लिपबोर्ड में कॉपी की गई",
+    "urlCopied": "URL क्लिपबोर्ड में कॉपी की गई",
+    "copyFailed": "कॉपी विफल",
+    "copyImage": "छवि कॉपी करें",
+    "copyUrl": "URL कॉपी करें",
+    "copy": "कॉपी करें",
+    "download": "डाउनलोड करें"
   },
   "history": {
     "title": "इतिहास",
@@ -246,7 +264,8 @@
       "completed": "पूर्ण",
       "failed": "विफल",
       "processing": "प्रोसेसिंग",
-      "created": "बनाया गया"
+      "created": "बनाया गया",
+      "archived": "संग्रहीत"
     },
     "loadPreviews": "प्रीव्यू लोड करें",
     "disablePreviews": "प्रीव्यू अक्षम करें",
@@ -280,7 +299,12 @@
       "noInputsTitle": "टेम्पलेट सहेजा नहीं जा सकता",
       "noInputsDesc": "इनपुट पैरामीटर केवल इस ऐप में की गई भविष्यवाणियों के लिए उपलब्ध हैं। पहले एक नई भविष्यवाणी चलाने का प्रयास करें।"
     },
-    "hasInputs": "टेम्पलेट के रूप में सहेजा जा सकता है"
+    "hasInputs": "टेम्पलेट के रूप में सहेजा जा सकता है",
+    "downloadComplete": "डाउनलोड पूर्ण",
+    "downloadCompleteDesc": "{{count}} फ़ाइल(फ़ाइलें) डाउनलोड की गईं",
+    "downloadFailed": "डाउनलोड विफल",
+    "downloadFailedDesc": "{{count}} फ़ाइल(फ़ाइलें) डाउनलोड विफल",
+    "longPressHint": "चयन करने के लिए लंबे समय तक दबाएं"
   },
   "templates": {
     "title": "टेम्पलेट",
@@ -431,7 +455,7 @@
       }
     },
     "errors": {
-      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "desktopRequired": "इस सुविधा के लिए डेस्कटॉप ऐप की आवश्यकता है। कृपया WaveSpeed Desktop डाउनलोड करें या ऑनलाइन संस्करण आज़माएं।",
       "generationCancelled": "जनरेशन रद्द की गई"
     },
     "tips": {
@@ -462,7 +486,7 @@
       "invalidDesc": "API कुंजी सत्यापित नहीं की जा सकी। कृपया जांचें और पुनः प्रयास करें।",
       "cleared": "API कुंजी साफ़ की गई",
       "clearedDesc": "आपकी API कुंजी हटा दी गई है।",
-      "itemDeleted": "Cache item deleted",
+      "itemDeleted": "कैश आइटम हटाया गया",
       "error": "त्रुटि",
       "errorDesc": "API कुंजी सहेजने में विफल।"
     },
@@ -500,7 +524,7 @@
       "autoSaveDisabledDesc": "आप अभी भी प्लेग्राउंड से आउटपुट को मैन्युअल रूप से सहेज सकते हैं",
       "directory": "संपत्ति निर्देशिका",
       "directoryDesc": "चुनें कि अपने उत्पन्न आउटपुट कहां सहेजें",
-      "defaultDirectory": "Documents/WaveSpeed",
+      "defaultDirectory": "दस्तावेज़/WaveSpeed",
       "browse": "ब्राउज़ करें",
       "directoryChanged": "निर्देशिका बदली गई",
       "directoryChangedDesc": "नए आउटपुट {{path}} में सहेजे जाएंगे",
@@ -520,7 +544,27 @@
       "clearFailed": "कैश साफ करने में विफल",
       "zImageAuxiliary": "Z-Image सहायक मॉडल",
       "zImageModels": "Z-Image मॉडल",
-      "zImageBinary": "Z-Image बाइनरी"
+      "zImageBinary": "Z-Image बाइनरी",
+      "predownload": "मॉडल पूर्व-डाउनलोड करें",
+      "predownloadDesc": "ऑफ़लाइन उपयोग के लिए पहले से AI मॉडल डाउनलोड करें",
+      "downloadModels": "मॉडल डाउनलोड करें",
+      "downloadPartial": "आंशिक डाउनलोड पूर्ण",
+      "downloadPartialDesc": "कुछ मॉडल सफलतापूर्वक डाउनलोड हुए",
+      "downloadComplete": "डाउनलोड पूर्ण",
+      "downloadCompleteDesc": "सभी मॉडल सफलतापूर्वक डाउनलोड हुए",
+      "downloadCancelled": "डाउनलोड रद्द किया गया",
+      "downloadCancelledDesc": "मॉडल डाउनलोड रद्द किया गया",
+      "alreadyCached": "पहले से कैश में",
+      "downloaded": "डाउनलोड किया गया",
+      "overallProgress": "कुल प्रगति",
+      "models": {
+        "ffmpegJs": "FFmpeg कोर (JS)",
+        "ffmpegWasm": "FFmpeg कोर (WASM)",
+        "backgroundRemover": "पृष्ठभूमि हटाने वाला",
+        "imageEraser": "छवि इरेज़र (LaMa)",
+        "samEncoder": "SAM विज़न एनकोडर",
+        "samDecoder": "SAM प्रॉम्प्ट डिकोडर"
+      }
     },
     "downloads": {
       "title": "डाउनलोड",
@@ -555,7 +599,12 @@
       "devModeDesc": "डेवलपमेंट मोड में ऑटो-अपडेट अक्षम है।",
       "checkFailed": "अपडेट जांच विफल",
       "downloadFailed": "डाउनलोड विफल",
-      "downloadFailedDesc": "अपडेट डाउनलोड करने में विफल।"
+      "downloadFailedDesc": "अपडेट डाउनलोड करने में विफल।",
+      "downloadComplete": "डाउनलोड पूर्ण",
+      "openToInstall": "इंस्टॉल करने के लिए कृपया {{filename}} खोलें",
+      "installInstructions": "इंस्टॉल करने के निर्देश",
+      "findInDownloads": "APK Download फोल्डर में सहेजा गया। इंस्टॉल करने के लिए फाइल मैनेजर में {{filename}} खोलें",
+      "downloadProgress": "डाउनलोड हो रहा है... {{progress}}%"
     },
     "about": {
       "title": "के बारे में",
@@ -563,7 +612,8 @@
       "mobileDescription": "WaveSpeed Mobile - AI मॉडल प्लेग्राउंड",
       "aboutText": "WaveSpeed API के साथ AI मॉडल चलाने के लिए एक ओपन-सोर्स डेस्कटॉप एप्लिकेशन।",
       "mobileAboutText": "WaveSpeed API के साथ AI मॉडल चलाने के लिए एक ओपन-सोर्स मोबाइल एप्लिकेशन।",
-      "viewOnGitHub": "GitHub पर देखें"
+      "viewOnGitHub": "GitHub पर देखें",
+      "version": "संस्करण"
     }
   },
   "apiKeyRequired": {
@@ -642,7 +692,15 @@
       "facesEnhanced": "{{count}} चेहरे बेहतर किए गए",
       "noFacesFound": "कोई चेहरा नहीं मिला",
       "invalidFile": "कृपया एक वैध छवि फ़ाइल चुनें",
-      "firstTimeDownload": "पहली बार? मॉडल डाउनलोड होंगे (~350MB)"
+      "firstTimeDownload": "पहली बार? मॉडल डाउनलोड होंगे (~350MB)",
+      "orDragDrop": "या खींचकर छोड़ें",
+      "original": "मूल",
+      "enhanced": "बेहतर",
+      "sideBySide": "साइड बाय साइड",
+      "comparison": "तुलना",
+      "dragToCompare": "तुलना के लिए खींचें",
+      "noFaces": "छवि में कोई चेहरा नहीं मिला",
+      "facesFound": "{{count}} चेहरे मिले"
     },
     "faceSwapper": {
       "title": "फेस स्वैपर",
@@ -653,12 +711,12 @@
       "selectTarget": "लक्ष्य छवि चुनें",
       "sourceHint": "कॉपी करने के लिए चेहरे की पहचान",
       "targetHint": "छवि जहां चेहरे बदले जाएंगे",
-      "orDragDrop": "or drag and drop",
+      "orDragDrop": "या खींचकर छोड़ें",
       "noSourceFace": "स्रोत छवि में कोई चेहरा नहीं मिला",
       "noTargetFaces": "लक्ष्य छवि में कोई चेहरा नहीं मिला",
       "clickToSelect": "बदलने के लिए चेहरों पर क्लिक करें",
       "facesSelected": "{{selected}}/{{total}} चेहरे चुने गए",
-      "sourceSelected": "Face {{selected}}/{{total}} selected",
+      "sourceSelected": "चेहरा {{selected}}/{{total}} चयनित",
       "faceDetected": "चेहरा मिला",
       "swapFaces": "चेहरे बदलें",
       "processing": "प्रोसेसिंग...",
@@ -728,7 +786,8 @@
       "undoEdit": "हटाना पूर्ववत करें",
       "redoEdit": "हटाना फिर से करें",
       "hint": "जिन वस्तुओं को हटाना है उन पर ड्रॉ करें, फिर वस्तुएं हटाएं पर क्लिक करें",
-      "resultPlaceholder": "परिणाम यहां दिखाई देगा"
+      "resultPlaceholder": "परिणाम यहां दिखाई देगा",
+      "hintMobile": "हटाने वाले क्षेत्र पर ड्रॉ करें"
     },
     "segmentAnything": {
       "title": "कुछ भी सेगमेंट करें",
@@ -742,78 +801,112 @@
       "clearPoints": "पॉइंट साफ़ करें",
       "clearPointsTooltip": "सभी पॉइंट साफ़ करें और होवर प्रीव्यू मोड पर वापस जाएं",
       "cutMask": "मास्क काटें",
-      "hint": "शामिल करने के लिए लेफ्ट-क्लिक, बाहर करने के लिए राइट-क्लिक"
+      "hint": "शामिल करने के लिए लेफ्ट-क्लिक, बाहर करने के लिए राइट-क्लिक",
+      "hoverToPreviewMobile": "चयन शुरू करने के लिए वस्तु पर टैप करें",
+      "clickToRefineMobile": "और अंक जोड़ने के लिए टैप करें",
+      "hintMobile": "शामिल करने के लिए टैप करें, बाहर करने के लिए लंबे समय तक दबाएं"
     },
     "videoConverter": {
-      "title": "Video Converter",
+      "title": "वीडियो कन्वर्टर",
       "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
       "selectVideo": "Select Video",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace video",
+      "orDragDrop": "या खींचकर छोड़ें",
+      "dropToReplace": "वीडियो बदलने के लिए ड्रॉप करें",
       "supportedFormats": "Supports MP4, WebM, MOV, AVI, MKV",
       "convert": "Convert",
-      "converting": "Converting...",
-      "original": "Original",
-      "outputSettings": "Output Settings",
-      "format": "Format",
-      "quality": "Quality",
-      "resolution": "Resolution",
-      "convertedSize": "Converted Size"
+      "converting": "कन्वर्ट हो रहा है...",
+      "original": "मूल",
+      "outputSettings": "आउटपुट सेटिंग्स",
+      "format": "प्रारूप",
+      "quality": "गुणवत्ता",
+      "resolution": "रिज़ॉल्यूशन",
+      "convertedSize": "कन्वर्ट किया गया आकार",
+      "inputVideo": "इनपुट वीडियो",
+      "selectVideoDesc": "कन्वर्ट करने के लिए वीडियो फ़ाइल चुनें या ड्रॉप करें",
+      "outputFormat": "आउटपुट प्रारूप",
+      "converted": "परिवर्तित",
+      "result": "रूपांतरण परिणाम",
+      "codecUsed": "उपयोग किया गया कोडेक",
+      "invalidFile": "कृपया एक मान्य वीडियो फ़ाइल चुनें"
     },
     "audioConverter": {
-      "title": "Audio Converter",
+      "title": "ऑडियो कन्वर्टर",
       "description": "Convert audio between formats (MP3, AAC, FLAC, WAV)",
       "selectAudio": "Select Audio",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace audio",
+      "orDragDrop": "या खींचकर छोड़ें",
+      "dropToReplace": "ऑडियो बदलने के लिए ड्रॉप करें",
       "supportedFormats": "Supports MP3, M4A, OGG, WAV, FLAC",
       "convert": "Convert",
-      "converting": "Converting...",
-      "converted": "Converted",
-      "playOriginal": "Play original",
-      "playConverted": "Play converted"
+      "converting": "कन्वर्ट हो रहा है...",
+      "converted": "कन्वर्ट किया गया",
+      "playOriginal": "मूल चलाएं",
+      "playConverted": "कन्वर्ट किया हुआ चलाएं",
+      "inputAudio": "इनपुट ऑडियो",
+      "outputFormat": "आउटपुट प्रारूप",
+      "bitrate": "बिटरेट",
+      "original": "मूल",
+      "result": "परिणाम",
+      "invalidFile": "कृपया MP3 या WAV फ़ाइल चुनें"
     },
     "imageConverter": {
-      "title": "Image Converter",
+      "title": "छवि कन्वर्टर",
       "description": "Convert images between formats (JPG, PNG, WebP, GIF)",
-      "selectImages": "Select Images",
-      "orDragDrop": "or drag and drop",
-      "dropToAdd": "Drop to add images",
+      "selectImages": "यहां क्लिक करें या छवियां ड्रॉप करें",
+      "orDragDrop": "या खींचकर छोड़ें",
+      "dropToAdd": "और जोड़ने के लिए ड्रॉप करें",
       "supportedFormats": "Supports JPG, PNG, WebP, GIF, BMP",
-      "addMore": "Add More",
+      "addMore": "और जोड़ें",
       "convert": "Convert",
-      "converting": "Converting...",
-      "quality": "Quality",
-      "downloadAll": "Download All"
+      "converting": "कन्वर्ट हो रहा है...",
+      "quality": "गुणवत्ता",
+      "downloadAll": "सभी डाउनलोड करें",
+      "inputImage": "इनपुट छवि",
+      "selectImage": "यहां क्लिक करें या छवि ड्रॉप करें",
+      "outputFormat": "आउटपुट प्रारूप",
+      "result": "परिणाम",
+      "invalidFile": "कृपया एक मान्य छवि फ़ाइल चुनें"
     },
     "mediaTrimmer": {
-      "title": "Media Trimmer",
-      "description": "Trim videos or audio to a specific duration",
+      "title": "मीडिया ट्रिमर",
+      "description": "वीडियो या ऑडियो की शुरुआत और अंत ट्रिम करें",
       "selectMedia": "Select Media",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace media",
+      "orDragDrop": "या खींचकर छोड़ें",
+      "dropToReplace": "फ़ाइल बदलने के लिए ड्रॉप करें",
       "supportedFormats": "Supports video and audio files",
       "trim": "Trim",
-      "trimming": "Trimming...",
-      "originalDuration": "Original",
-      "selectedDuration": "Selected",
-      "trimmedSize": "Trimmed Size",
-      "playingOriginal": "Playing original",
-      "playingTrimmed": "Playing trimmed"
+      "trimming": "ट्रिम हो रहा है...",
+      "originalDuration": "मूल अवधि",
+      "selectedDuration": "चुनी गई अवधि",
+      "trimmedSize": "ट्रिम के बाद का आकार",
+      "playingOriginal": "मूल चलाएं",
+      "playingTrimmed": "ट्रिम के बाद चलाएं",
+      "inputMedia": "इनपुट मीडिया",
+      "trimSettings": "ट्रिम सेटिंग्स",
+      "selectRange": "प्रारंभ और समाप्ति समय चुनें",
+      "startTime": "प्रारंभ समय",
+      "endTime": "समाप्ति समय",
+      "timeFormat": "प्रारूप: m:ss.d या सेकंड",
+      "outputDuration": "आउटपुट अवधि",
+      "result": "ट्रिम परिणाम",
+      "invalidFile": "कृपया एक मान्य वीडियो या ऑडियो फ़ाइल चुनें"
     },
     "mediaMerger": {
-      "title": "Media Merger",
-      "description": "Merge multiple video or audio files into one",
+      "title": "मीडिया मर्जर",
+      "description": "क्रम में कई वीडियो या ऑडियो फाइलों को मर्ज करें",
       "selectFiles": "Select Files",
-      "orDragDrop": "or drag and drop",
-      "dropToAdd": "Drop to add files",
+      "orDragDrop": "या खींचकर छोड़ें",
+      "dropToAdd": "और जोड़ने के लिए ड्रॉप करें",
       "supportedFormats": "Supports video and audio files",
       "addMore": "Add More",
       "merge": "Merge",
-      "merging": "Merging...",
-      "merged": "Merged",
-      "totalDuration": "Total Duration",
-      "sameFormatNote": "Files must have the same format for lossless merging"
+      "merging": "मर्ज हो रहा है...",
+      "merged": "मर्ज किया गया",
+      "totalDuration": "कुल अवधि",
+      "sameFormatNote": "एक ही फॉर्मेट की फाइलों का उपयोग करें",
+      "inputMedia": "इनपुट फ़ाइलें",
+      "files": "फ़ाइलें",
+      "result": "विलय परिणाम",
+      "sameTypeRequired": "सभी फ़ाइलें एक ही प्रकार की होनी चाहिए (वीडियो या ऑडियो)"
     },
     "progress": {
       "downloading": "मॉडल डाउनलोड हो रहा है",
@@ -832,11 +925,14 @@
       "confirm": "वापस जाएं"
     },
     "ffmpeg": {
-      "loading": "Loading FFmpeg",
-      "converting": "Converting",
-      "merging": "Merging",
-      "trimming": "Trimming"
-    }
+      "loading": "लोड हो रहा है...",
+      "converting": "कन्वर्ट हो रहा है...",
+      "merging": "मर्ज हो रहा है...",
+      "trimming": "ट्रिम हो रहा है..."
+    },
+    "downloadSuccess": "डाउनलोड फोल्डर में सहेजा गया",
+    "downloadStarted": "डाउनलोड शुरू हो गया",
+    "downloadFailed": "डाउनलोड विफल"
   },
   "game": {
     "waitingLong": "ज़्यादा इंतज़ार? एक मिनी गेम खेलें!",
@@ -878,5 +974,315 @@
     "result": "परिणाम",
     "codecUsed": "उपयोग किया गया कोडेक",
     "download": "डाउनलोड"
+  },
+  "workflow": {
+    "workflows": "वर्कफ़्लो",
+    "newWorkflow": "नया वर्कफ़्लो",
+    "untitled": "अनाम वर्कफ़्लो",
+    "save": "सहेजें",
+    "saved": "सहेजा गया",
+    "saving": "सहेजा जा रहा है...",
+    "saveFailed": "सहेजने में विफल",
+    "savedAt": "सहेजा गया",
+    "unsaved": "असहेजा",
+    "nodes": "नोड",
+    "config": "कॉन्फ़िगरेशन",
+    "results": "परिणाम",
+    "cost": "लागत",
+    "settings": "सेटिंग्स",
+    "runAll": "सभी चलाएं",
+    "run": "चलाएं",
+    "runTarget": "लक्ष्य चलाएं",
+    "runTargetAll": "सभी नोड चलाएं",
+    "runTargetSelected": "चयनित नोड चलाएं",
+    "runCount": "रन संख्या",
+    "stop": "रोकें",
+    "running": "चल रहा है...",
+    "cancelAll": "सभी रद्द करें",
+    "import": "आयात करें",
+    "export": "निर्यात करें",
+    "imported": "आयात किया गया",
+    "importFailed": "आयात विफल",
+    "exported": "सफलतापूर्वक निर्यात किया गया",
+    "exportFailed": "निर्यात विफल",
+    "estimated": "अनुमानित लागत",
+    "fitView": "दृश्य फिट करें",
+    "previousImage": "पिछली छवि",
+    "nextImage": "अगली छवि",
+    "previewNavHint": "छवियों में नेविगेट करने के लिए ← / → का उपयोग करें ({{current}}/{{total}})",
+    "clickAnywhereToClose": "बंद करने के लिए कहीं भी क्लिक करें",
+    "runNode": "नोड चलाएं",
+    "modelSelection": "मॉडल चयन",
+    "annotationHint": "संपादित करने के लिए नोट पर डबल-क्लिक करें।",
+    "continueFrom": "यहां से जारी रखें",
+    "retry": "पुनः प्रयास करें",
+    "cancel": "रद्द करें",
+    "noWorkflows": "अभी तक कोई वर्कफ़्लो नहीं",
+    "create": "बनाएं",
+    "open": "खोलें",
+    "paste": "पेस्ट करें",
+    "addNode": "नोड जोड़ें",
+    "addNote": "नोट जोड़ें",
+    "note": "नोट",
+    "deleteConnection": "कनेक्शन हटाएं",
+    "add": "जोड़ें",
+    "delete": "हटाएं",
+    "currentModel": "वर्तमान मॉडल",
+    "modelIdLabel": "मॉडल ID",
+    "selectNode": "कॉन्फ़िगर करने के लिए नोड चुनें",
+    "noExecutions": "अभी तक कोई निष्पादन नहीं",
+    "budgetExceeded": "बजट पार",
+    "dailySpend": "दैनिक खर्च",
+    "perExecutionLimit": "प्रति निष्पादन सीमा",
+    "dailyLimit": "दैनिक सीमा",
+    "editBudget": "बजट संपादित करें",
+    "refreshModels": "मॉडल रिफ्रेश करें",
+    "drawMask": "मास्क ड्रॉ करें",
+    "drawMaskNeedInput": "पहले इनपुट छवि सेट करें",
+    "segmentPointPicker": {
+      "title": "सेगमेंटेशन पॉइंट चुनें",
+      "hint": "बायाँ क्लिक = शामिल, दायाँ क्लिक = बाहर",
+      "points": "अंक",
+      "clear": "साफ़ करें",
+      "done": "हो गया"
+    },
+    "pickPoints": "बिंदु चुनें",
+    "pickPointsNeedInput": "पहले इनपुट छवि सेट करें",
+    "pointsLabel": "सेगमेंटेशन पॉइंट",
+    "linked": "लिंक किया गया",
+    "linkedTo": "से लिंक किया गया",
+    "disconnectLink": "अनलॉक करें: इस लिंक को काटें",
+    "previewUpstreamOutput": "अपस्ट्रीम आउटपुट पूर्वावलोकन",
+    "localFileOrUrl": "स्थानीय फ़ाइल या URL",
+    "showAll": "सब दिखाएं",
+    "showAllRuns": "सभी रन दिखाएं",
+    "showLatestOnly": "केवल नवीनतम दिखाएं",
+    "latest": "नवीनतम",
+    "latestHidden": "नवीनतम परिणाम छिपा दिया गया।",
+    "noVisibleResults": "कोई दृश्यमान परिणाम नहीं।",
+    "hideRun": "इस रन को छिपाएं",
+    "output": "आउटपुट",
+    "outputLowercase": "आउटपुट",
+    "invalidUrl": "अमान्य URL",
+    "removeLast": "अंतिम हटाएं",
+    "enterField": "{{field}} दर्ज करें...",
+    "show": "दिखाएं",
+    "hide": "छिपाएं",
+    "optional": "वैकल्पिक",
+    "searchNodesPlaceholder": "नोड खोजें...",
+    "dragOrClickToAdd": "कैनवास पर ड्रॉ करें या जोड़ने के लिए क्लिक करें",
+    "noNodesAvailable": "कोई नोड उपलब्ध नहीं",
+    "nodeCategory": {
+      "recent": "हाल ही में",
+      "input": "इनपुट",
+      "ai-task": "AI कार्य",
+      "free-tool": "मुफ्त उपकरण",
+      "output": "आउटपुट",
+      "processing": "प्रसंस्करण",
+      "control": "नियंत्रण"
+    },
+    "nodeDefs": {
+      "ai-task/run": {
+        "label": "मॉडल चलाएं",
+        "emptyHint": "इस नोड पर क्लिक करें, फिर मॉडल चुनें →",
+        "params": {
+          "modelId": {
+            "label": "मॉडल"
+          }
+        }
+      },
+      "input/media-upload": {
+        "label": "अपलोड",
+        "outputs": {
+          "output": {
+            "label": "URL"
+          }
+        }
+      },
+      "input/text-input": {
+        "label": "टेक्स्ट",
+        "params": {
+          "text": {
+            "label": "टेक्स्ट"
+          }
+        }
+      },
+      "output/preview": {
+        "label": "पूर्वावलोकन",
+        "inputs": {
+          "input": {
+            "label": "URL"
+          }
+        },
+        "params": {
+          "autoDetect": {
+            "label": "स्वचालित प्रकार जांच"
+          },
+          "forceType": {
+            "label": "प्रकार बाध्य करें",
+            "options": {
+              "auto": "ऑटो",
+              "image": "छवि",
+              "video": "वीडियो",
+              "audio": "ऑडियो",
+              "3d": "3D मॉडल"
+            }
+          }
+        }
+      },
+      "output/file": {
+        "label": "फ़ाइल निर्यात",
+        "inputs": {
+          "url": {
+            "label": "URL"
+          }
+        },
+        "params": {
+          "outputDir": {
+            "label": "आउटपुट निर्देशिका"
+          },
+          "filename": {
+            "label": "फ़ाइल नाम उपसर्ग"
+          },
+          "format": {
+            "label": "प्रारूप",
+            "options": {
+              "auto": "ऑटो",
+              "mp4": "MP4",
+              "png": "PNG",
+              "jpg": "JPG",
+              "mp3": "MP3",
+              "wav": "WAV"
+            }
+          }
+        }
+      },
+      "free-tool/image-enhancer": {
+        "label": "छवि एन्हांसर"
+      },
+      "free-tool/background-remover": {
+        "label": "पृष्ठभूमि हटाने वाला"
+      },
+      "free-tool/face-enhancer": {
+        "label": "चेहरा एन्हांसर"
+      },
+      "free-tool/video-enhancer": {
+        "label": "वीडियो एन्हांसर"
+      },
+      "free-tool/face-swapper": {
+        "label": "चेहरा स्वैपर"
+      },
+      "free-tool/image-eraser": {
+        "label": "छवि इरेज़र"
+      },
+      "free-tool/segment-anything": {
+        "label": "कुछ भी विभाजित करें",
+        "params": {
+          "pointX": {
+            "label": "बिंदु X",
+            "description": "सेगमेंटेशन पॉइंट के लिए सामान्यीकृत X (0-1)"
+          },
+          "pointY": {
+            "label": "बिंदु Y",
+            "description": "सेगमेंटेशन पॉइंट के लिए सामान्यीकृत Y (0-1)"
+          }
+        }
+      },
+      "free-tool/video-converter": {
+        "label": "वीडियो कन्वर्टर"
+      },
+      "free-tool/audio-converter": {
+        "label": "ऑडियो कन्वर्टर"
+      },
+      "free-tool/image-converter": {
+        "label": "छवि कन्वर्टर"
+      },
+      "free-tool/media-trimmer": {
+        "label": "मीडिया ट्रिमर"
+      },
+      "free-tool/media-merger": {
+        "label": "मीडिया मर्जर"
+      }
+    },
+    "modelSelector": {
+      "allCategory": "सभी",
+      "noModelsLoaded": "कोई मॉडल लोड नहीं हुआ। नीचे \"मॉडल रिफ्रेश करें\" पर क्लिक करें।",
+      "loadFailed": "मॉडल लोड विफल.",
+      "refreshFailed": "मॉडल रिफ्रेश विफल.",
+      "loadingModels": "मॉडल लोड हो रहे हैं...",
+      "loadingHint": "पहली बार शुरू करने पर कुछ सेकंड लग सकते हैं",
+      "recent": "हाल ही में",
+      "searchPlaceholder": "मॉडल खोजें...",
+      "searchAllPlaceholder": "सभी मॉडल खोजें...",
+      "refreshTooltip": "मॉडल कैटलॉग रिफ्रेश करें",
+      "refreshing": "रिफ्रेश हो रहा है...",
+      "noModelsFound": "कोई मॉडल नहीं मिला",
+      "disconnectBeforeSwitch": "मॉडल बदलने से पहले कृपया इस नोड को डिस्कनेक्ट करें।",
+      "selectCategory": "श्रेणी चुनें",
+      "cannotSwitchTitle": "मॉडल बदला नहीं जा सकता",
+      "cannotSwitchDesc": "इस नोड में सक्रिय कनेक्शन हैं। मॉडल बदलने से पहले सभी एज को डिस्कनेक्ट करें, क्योंकि पैरामीटर स्कीमा बदल जाएगा।"
+    },
+    "mediaUpload": {
+      "uploadFailed": "अपलोड विफल",
+      "invalidUrl": "अमान्य URL",
+      "fileUploaded": "फ़ाइल अपलोड हो गई",
+      "uploaded": "अपलोड हो गया",
+      "clear": "साफ़ करें",
+      "uploading": "अपलोड हो रहा है...",
+      "uploadingShort": "अपलोड हो रहा है...",
+      "failed": "विफल",
+      "dropOrBrowse": "यहां फ़ाइल ड्रॉप करें या ब्राउज़ करने के लिए क्लिक करें",
+      "browse": "ब्राउज़ करें",
+      "pasteUrl": "URL पेस्ट करें",
+      "urlPlaceholder": "https://...",
+      "urlShortPlaceholder": "URL...",
+      "supportedTypes": "छवि, वीडियो, ऑडियो"
+    },
+    "textInput": {
+      "promptLibrary": "प्रॉम्प्ट लाइब्रेरी",
+      "saveCurrent": "वर्तमान सहेजें",
+      "namePlaceholder": "नाम...",
+      "noSavedSnippets": "कोई सहेजा गया स्निपेट नहीं",
+      "optimizeFailed": "अनुकूलन विफल",
+      "optimizeNowTitle": "अभी टेक्स्ट ऑप्टिमाइज़ करें",
+      "optimizing": "अनुकूलन हो रहा है...",
+      "optimizeNow": "अभी अनुकूलन",
+      "autoOnRunTitle": "रन पर क्लिक करने पर ही अनुकूलन",
+      "autoOnRun": "रन पर ऑटो",
+      "chars": "अक्षर",
+      "optimizeOnRunEnabled": "सक्षम: रन पर अनुकूलन",
+      "optimizeOffHint": "डिफ़ॉल्ट: कोई अनुकूलन नहीं (मूल टेक्स्ट के साथ चलाएं)",
+      "manualOptimizedHint": "मैन्युअल रूप से अनुकूलित। टेक्स्ट बदलने तक ऑटो-ऑन-रन छोड़ा जाएगा।",
+      "enterTextOrPrompt": "टेक्स्ट या प्रॉम्प्ट दर्ज करें..."
+    },
+    "promptOptimizer": {
+      "optimizationFailed": "अनुकूलन विफल",
+      "optimizeParams": "पैरामीटर अनुकूलन",
+      "optimizeParamsPresetOnly": "पैरामीटर अनुकूलन (केवल प्रीसेट)",
+      "perRun": "रन",
+      "mode": "मोड",
+      "text": "टेक्स्ट",
+      "textPlaceholder": "विस्तार करने या संदर्भ के रूप में उपयोग करने के लिए टेक्स्ट...",
+      "autoOnRunTitle": "रन पर क्लिक करने पर स्वचालित रूप से अनुकूलन",
+      "autoOnRun": "रन पर ऑटो",
+      "quickOptimizeTitle": "त्वरित अनुकूलन ({{mode}})",
+      "params": "पैरामीटर",
+      "prompt": "प्रॉम्प्ट",
+      "emptyPrompt": "(खाली)",
+      "optimizing": "अनुकूलन हो रहा है...",
+      "optimize": "अनुकूलन",
+      "optimizeWithImage": "छवि के साथ अनुकूलन...",
+      "modeOptions": {
+        "image": "छवि",
+        "video": "वीडियो"
+      },
+      "imageDialog": {
+        "title": "छवि के साथ अनुकूलन",
+        "enterTextOrImage": "कृपया टेक्स्ट दर्ज करें या छवि प्रदान करें",
+        "optimizeFailed": "अनुकूलन विफल",
+        "loadingOptimizer": "ऑप्टिमाइज़र लोड हो रहा है...",
+        "loadConfigFailed": "ऑप्टिमाइज़र कॉन्फ़िगरेशन लोड नहीं हो सका"
+      }
+    }
   }
 }

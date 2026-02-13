@@ -66,6 +66,7 @@ import {
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
+  Sparkles,
 } from 'lucide-react'
 import type { AssetMetadata, AssetType, AssetSortBy, AssetsFilter } from '@/types/asset'
 
@@ -439,7 +440,7 @@ export function AssetsPage() {
     return (
       <div
         className={cn(
-          "group relative border rounded-lg overflow-hidden bg-card hover:shadow-md transition-shadow",
+          "group relative overflow-hidden rounded-xl border border-border/70 bg-card/85 shadow-sm transition-all hover:shadow-md",
           selectedIds.has(asset.id) && "ring-2 ring-primary"
         )}
       >
@@ -477,7 +478,7 @@ export function AssetsPage() {
           {/* Favorite star */}
           {asset.favorite && (
             <div className="absolute top-2 right-2">
-              <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+              <Star className="h-5 w-5 fill-yellow-400 text-yellow-400 drop-shadow-sm" />
             </div>
           )}
 
@@ -512,7 +513,7 @@ export function AssetsPage() {
             {/* Actions */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 rounded-lg text-muted-foreground hover:text-foreground">
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -556,12 +557,12 @@ export function AssetsPage() {
           {asset.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
               {asset.tags.slice(0, 3).map((tag) => (
-                <Badge key={tag} variant="outline" className="text-xs">
+                <Badge key={tag} variant="outline" className="rounded-md border-border/70 bg-background text-xs">
                   {tag}
                 </Badge>
               ))}
               {asset.tags.length > 3 && (
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="outline" className="rounded-md border-border/70 bg-background text-xs">
                   +{asset.tags.length - 3}
                 </Badge>
               )}
@@ -581,17 +582,20 @@ export function AssetsPage() {
   }
 
   return (
-    <div className="flex h-full flex-col pt-12 md:pt-0">
+    <div className="flex h-full flex-col bg-gradient-to-b from-background via-background to-muted/20 pt-12 md:pt-0">
       {/* Header */}
-      <div className="border-b p-4">
+      <div className="page-header border-b border-border/70 bg-background/70 p-4 backdrop-blur">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
-            <h1 className="text-xl md:text-2xl font-bold">{t('assets.title')}</h1>
+            <h1 className="flex items-center gap-2 text-xl font-bold md:text-2xl">
+              <Sparkles className="h-5 w-5 text-primary" />
+              {t('assets.title')}
+            </h1>
             <p className="text-xs md:text-sm text-muted-foreground">
               {t('assets.subtitle', { count: assets.length })}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {isSelectionMode ? (
               <>
                 <Button variant="outline" size="sm" onClick={handleSelectAll}>
@@ -668,21 +672,21 @@ export function AssetsPage() {
         </div>
 
         {/* Search and Filters */}
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative min-w-[220px] flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder={t('assets.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
+              className="h-10 rounded-lg border-border/80 bg-background pl-9"
             />
           </div>
           <Select
             value={filter.sortBy || 'date-desc'}
             onValueChange={(value) => setFilter(f => ({ ...f, sortBy: value as AssetSortBy }))}
           >
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="h-10 w-full rounded-lg border-border/80 bg-background sm:w-[170px]">
               <ArrowUpDown className="mr-2 h-4 w-4" />
               <SelectValue />
             </SelectTrigger>
@@ -700,6 +704,7 @@ export function AssetsPage() {
             size="icon"
             onClick={() => setLoadPreviews(!loadPreviews)}
             title={loadPreviews ? t('assets.disablePreviews') : t('assets.loadPreviews')}
+            className="h-10 w-10 rounded-lg"
           >
             {loadPreviews ? (
               <Eye className="h-4 w-4" />
@@ -711,6 +716,7 @@ export function AssetsPage() {
             variant={showFilters ? 'default' : 'outline'}
             size="icon"
             onClick={() => setShowFilters(!showFilters)}
+            className="h-10 w-10 rounded-lg"
           >
             <Filter className="h-4 w-4" />
           </Button>
@@ -718,7 +724,7 @@ export function AssetsPage() {
 
         {/* Filter Panel */}
         {showFilters && (
-          <div className="mt-4 p-4 border rounded-lg bg-muted/30 space-y-4">
+          <div className="mt-4 space-y-4 rounded-xl border border-border/70 bg-card/70 p-4 shadow-sm">
             <div className="flex items-center justify-between">
               <h3 className="font-medium">{t('assets.filters')}</h3>
               <Button variant="ghost" size="sm" onClick={handleClearFilters}>
@@ -726,7 +732,7 @@ export function AssetsPage() {
               </Button>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
               {/* Type filters */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium">{t('assets.filterByType')}</Label>
@@ -800,7 +806,7 @@ export function AssetsPage() {
             </p>
           </div>
         ) : (
-          <div className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 gap-4 p-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {paginatedAssets.map((asset) => {
               const assetKey = asset.filePath || asset.originalUrl || asset.id
               return <AssetCard key={assetKey} asset={asset} assetKey={assetKey} />
@@ -811,7 +817,7 @@ export function AssetsPage() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="border-t p-4 flex items-center justify-between">
+        <div className="flex items-center justify-between border-t border-border/70 bg-background/70 p-4 backdrop-blur">
           <p className="text-sm text-muted-foreground">
             {(page - 1) * pageSize + 1} - {Math.min(page * pageSize, filteredAssets.length)} / {filteredAssets.length}
           </p>

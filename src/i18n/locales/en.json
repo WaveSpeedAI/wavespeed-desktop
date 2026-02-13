@@ -30,6 +30,7 @@
     "success": "Success",
     "warning": "Warning",
     "selectAll": "Select All",
+    "deselectAll": "Deselect All",
     "downloadFailed": "Download failed. Please check your network connection.",
     "openInBrowser": "Open in browser",
     "settings": "Settings",
@@ -45,8 +46,10 @@
     "assets": "My Assets",
     "zImage": "Z-Image",
     "freeTools": "Free Tools",
+    "workflow": "Workflow",
     "settings": "Settings",
-    "collapse": "Collapse"
+    "collapse": "Collapse",
+    "expand": "Expand"
   },
   "welcome": {
     "tagline": "AI-Powered Creative Tools at Your Fingertips",
@@ -88,6 +91,11 @@
         "title": "Free Tools",
         "description": "Powerful AI tools that run locally - no API key needed",
         "badge": "Free"
+      },
+      "workflow": {
+        "title": "Workflow",
+        "description": "Build visual AI pipelines with node-based editor",
+        "badge": "New"
       }
     }
   },
@@ -238,7 +246,14 @@
       "seedsGenerated": "Seeds auto-generated",
       "settings": "Batch Settings"
     },
-    "input": "Input"
+    "input": "Input",
+    "imageCopied": "Image copied to clipboard",
+    "urlCopied": "URL copied to clipboard",
+    "copyFailed": "Copy failed",
+    "copyImage": "Copy image",
+    "copyUrl": "Copy URL",
+    "copy": "Copy",
+    "download": "Download"
   },
   "history": {
     "title": "History",
@@ -277,6 +292,7 @@
     "downloadFailed": "Download Failed",
     "downloadFailedDesc": "{{count}} file(s) failed to download",
     "hasInputs": "Has available inputs",
+    "longPressHint": "Long press to select",
     "saveTemplate": {
       "button": "Save as Template",
       "dialogTitle": "Save Template",
@@ -958,5 +974,318 @@
     "result": "Result",
     "codecUsed": "Codec used",
     "download": "Download"
+  },
+  "workflow": {
+    "workflows": "Workflows",
+    "newWorkflow": "New Workflow",
+    "untitled": "Untitled Workflow",
+    "save": "Save",
+    "saved": "Saved",
+    "saving": "Saving...",
+    "saveFailed": "Save failed",
+    "savedAt": "Saved",
+    "unsaved": "unsaved",
+    "nodes": "Nodes",
+    "config": "Config",
+    "results": "Results",
+    "cost": "Cost",
+    "settings": "Settings",
+    "runAll": "Run All",
+    "run": "Run",
+    "runTarget": "Run target",
+    "runTargetAll": "Run All Nodes",
+    "runTargetSelected": "Run Selected Node",
+    "runCount": "Run count",
+    "stop": "Stop",
+    "running": "Running...",
+    "cancelAll": "Cancel All",
+    "import": "Import",
+    "export": "Export",
+    "imported": "Imported",
+    "importFailed": "Import failed",
+    "exported": "Exported successfully",
+    "exportFailed": "Export failed",
+    "estimated": "Cost",
+    "fitView": "Fit View",
+    "previousImage": "Previous image",
+    "nextImage": "Next image",
+    "previewNavHint": "Use ← / → to navigate images ({{current}}/{{total}})",
+    "clickAnywhereToClose": "Click anywhere to close",
+    "runNode": "Run Node",
+    "modelSelection": "Model Selection",
+    "annotationHint": "Double-click the note on the canvas to edit it.",
+    "continueFrom": "Continue From",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "noWorkflows": "No workflows yet",
+    "create": "Create",
+    "open": "Open",
+    "paste": "Paste",
+    "addNode": "Add Node",
+    "addNote": "Add Note",
+    "note": "Note",
+    "deleteConnection": "Delete Connection",
+    "add": "Add",
+    "delete": "Delete",
+    "currentModel": "Current model",
+    "modelIdLabel": "Model ID",
+    "selectNode": "Select a node to configure",
+    "noExecutions": "No executions yet",
+    "budgetExceeded": "Budget exceeded",
+    "dailySpend": "Daily Spend",
+    "perExecutionLimit": "Per-Execution Limit",
+    "dailyLimit": "Daily Limit",
+    "editBudget": "Edit Budget",
+    "refreshModels": "Refresh Models",
+    "drawMask": "Draw mask",
+    "drawMaskNeedInput": "Set input image first",
+    "segmentPointPicker": {
+      "title": "Pick segmentation points",
+      "hint": "Left click = include, right click = exclude",
+      "points": "points",
+      "clear": "Clear",
+      "done": "Done",
+      "encoding": "Analyzing image...",
+      "waitingEncode": "Preparing...",
+      "decoding": "Updating mask..."
+    },
+    "pickPoints": "Pick points",
+    "pickPointsNeedInput": "Set input image first",
+    "pointsLabel": "Points",
+    "linked": "linked",
+    "linkedTo": "linked to",
+    "disconnectLink": "Unlock: disconnect this link",
+    "previewUpstreamOutput": "Preview upstream output",
+    "localFileOrUrl": "Local file or URL",
+    "showAll": "Show all",
+    "showAllRuns": "Show all runs",
+    "showLatestOnly": "Show latest only",
+    "latest": "Latest",
+    "latestHidden": "Latest result hidden.",
+    "noVisibleResults": "No visible results.",
+    "hideRun": "Hide this run",
+    "output": "Output",
+    "outputLowercase": "output",
+    "invalidUrl": "Invalid URL",
+    "removeLast": "Remove last",
+    "enterField": "Enter {{field}}...",
+    "show": "Show",
+    "hide": "Hide",
+    "optional": "optional",
+    "searchNodesPlaceholder": "Search nodes...",
+    "dragOrClickToAdd": "Drag to canvas or click to add",
+    "noNodesAvailable": "No nodes available",
+    "nodeCategory": {
+      "recent": "Recent",
+      "input": "Input",
+      "ai-task": "AI Task",
+      "free-tool": "Free Tools",
+      "output": "Output",
+      "processing": "Processing",
+      "control": "Control"
+    },
+    "nodeDefs": {
+      "ai-task/run": {
+        "label": "Run Model",
+        "emptyHint": "Click this node, then select a model →",
+        "params": {
+          "modelId": {
+            "label": "Model"
+          }
+        }
+      },
+      "input/media-upload": {
+        "label": "Upload",
+        "outputs": {
+          "output": {
+            "label": "URL"
+          }
+        }
+      },
+      "input/text-input": {
+        "label": "Text",
+        "params": {
+          "text": {
+            "label": "Text"
+          }
+        }
+      },
+      "output/preview": {
+        "label": "Preview",
+        "inputs": {
+          "input": {
+            "label": "URL"
+          }
+        },
+        "params": {
+          "autoDetect": {
+            "label": "Auto-detect Type"
+          },
+          "forceType": {
+            "label": "Force Type",
+            "options": {
+              "auto": "Auto",
+              "image": "Image",
+              "video": "Video",
+              "audio": "Audio",
+              "3d": "3D Model"
+            }
+          }
+        }
+      },
+      "output/file": {
+        "label": "File Export",
+        "inputs": {
+          "url": {
+            "label": "URL"
+          }
+        },
+        "params": {
+          "outputDir": {
+            "label": "Output Directory"
+          },
+          "filename": {
+            "label": "Filename Prefix"
+          },
+          "format": {
+            "label": "Format",
+            "options": {
+              "auto": "Auto",
+              "mp4": "MP4",
+              "png": "PNG",
+              "jpg": "JPG",
+              "mp3": "MP3",
+              "wav": "WAV"
+            }
+          }
+        }
+      },
+      "free-tool/image-enhancer": {
+        "label": "Image Enhancer"
+      },
+      "free-tool/background-remover": {
+        "label": "Background Remover"
+      },
+      "free-tool/face-enhancer": {
+        "label": "Face Enhancer"
+      },
+      "free-tool/video-enhancer": {
+        "label": "Video Enhancer"
+      },
+      "free-tool/face-swapper": {
+        "label": "Face Swapper"
+      },
+      "free-tool/image-eraser": {
+        "label": "Image Eraser"
+      },
+      "free-tool/segment-anything": {
+        "label": "Segment Anything",
+        "params": {
+          "pointX": {
+            "label": "Point X",
+            "description": "Normalized X (0-1) for segmentation point"
+          },
+          "pointY": {
+            "label": "Point Y",
+            "description": "Normalized Y (0-1) for segmentation point"
+          }
+        }
+      },
+      "free-tool/video-converter": {
+        "label": "Video Converter"
+      },
+      "free-tool/audio-converter": {
+        "label": "Audio Converter"
+      },
+      "free-tool/image-converter": {
+        "label": "Image Converter"
+      },
+      "free-tool/media-trimmer": {
+        "label": "Media Trimmer"
+      },
+      "free-tool/media-merger": {
+        "label": "Media Merger"
+      }
+    },
+    "modelSelector": {
+      "allCategory": "All",
+      "noModelsLoaded": "No models loaded. Click \"Refresh Models\" below.",
+      "loadFailed": "Failed to load models.",
+      "refreshFailed": "Failed to refresh models.",
+      "loadingModels": "Loading models...",
+      "loadingHint": "This may take a few seconds on first launch",
+      "recent": "Recent",
+      "searchPlaceholder": "Search models...",
+      "searchAllPlaceholder": "Search all models...",
+      "refreshTooltip": "Refresh model catalog",
+      "refreshing": "Refreshing...",
+      "noModelsFound": "No models found",
+      "disconnectBeforeSwitch": "Please disconnect this node before switching model.",
+      "selectCategory": "Select a category",
+      "cannotSwitchTitle": "Cannot Switch Model",
+      "cannotSwitchDesc": "This node has active connections. Please disconnect all edges before switching models, as the parameter schema will change and existing connections may become invalid."
+    },
+    "mediaUpload": {
+      "uploadFailed": "Upload failed",
+      "invalidUrl": "Invalid URL",
+      "fileUploaded": "File uploaded",
+      "uploaded": "Uploaded",
+      "clear": "Clear",
+      "uploading": "Uploading...",
+      "uploadingShort": "Uploading...",
+      "failed": "Failed",
+      "dropOrBrowse": "Drop file here or click to browse",
+      "browse": "Browse",
+      "pasteUrl": "Paste URL",
+      "urlPlaceholder": "https://...",
+      "urlShortPlaceholder": "URL...",
+      "supportedTypes": "Image, Video, Audio"
+    },
+    "textInput": {
+      "promptLibrary": "Prompt Library",
+      "saveCurrent": "Save Current",
+      "namePlaceholder": "Name...",
+      "noSavedSnippets": "No saved snippets",
+      "optimizeFailed": "Optimize failed",
+      "optimizeNowTitle": "Optimize text now",
+      "optimizing": "Optimizing...",
+      "optimizeNow": "Optimize now",
+      "autoOnRunTitle": "Only optimize when Run is clicked",
+      "autoOnRun": "Auto on Run",
+      "chars": "chars",
+      "optimizeOnRunEnabled": "Enabled: optimize on Run",
+      "optimizeOffHint": "Default: no optimization (run with original text)",
+      "manualOptimizedHint": "Manually optimized. Auto-on-run will be skipped until text changes.",
+      "enterTextOrPrompt": "Enter text or prompt..."
+    },
+    "promptOptimizer": {
+      "optimizationFailed": "Optimization failed",
+      "optimizeParams": "Optimize Params",
+      "optimizeParamsPresetOnly": "Optimize Params (preset only)",
+      "perRun": "run",
+      "mode": "Mode",
+      "text": "Text",
+      "textPlaceholder": "Text to expand or use as context...",
+      "autoOnRunTitle": "Optimize automatically when clicking Run",
+      "autoOnRun": "Auto on Run",
+      "quickOptimizeTitle": "Quick Optimize ({{mode}})",
+      "params": "Params",
+      "prompt": "Prompt",
+      "emptyPrompt": "(empty)",
+      "optimizing": "Optimizing...",
+      "optimize": "Optimize",
+      "optimizeWithImage": "Optimize with Image...",
+      "modeOptions": {
+        "image": "Image",
+        "video": "Video"
+      },
+      "imageDialog": {
+        "title": "Optimize with Image",
+        "enterTextOrImage": "Please enter text or provide an image",
+        "optimizeFailed": "Failed to optimize",
+        "loadingOptimizer": "Loading optimizer...",
+        "loadConfigFailed": "Unable to load optimizer configuration"
+      }
+    }
   }
 }

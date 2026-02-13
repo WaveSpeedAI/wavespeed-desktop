@@ -32,20 +32,24 @@
     "deselectAll": "Auswahl aufheben",
     "retry": "Erneut versuchen",
     "downloadFailed": "Download fehlgeschlagen. Bitte überprüfen Sie Ihre Netzwerkverbindung.",
-    "openInBrowser": "Im Browser öffnen"
+    "openInBrowser": "Im Browser öffnen",
+    "settings": "Einstellungen",
+    "clearAll": "Alles löschen"
   },
   "nav": {
     "home": "Startseite",
     "featuredModels": "Empfohlene Modelle",
     "models": "Modelle",
-    "playground": "Playground",
+    "playground": "Spielplatz",
     "history": "Verlauf",
     "templates": "Vorlagen",
     "assets": "Meine Assets",
     "zImage": "Z-Image",
     "freeTools": "Kostenlose Tools",
     "settings": "Einstellungen",
-    "collapse": "Einklappen"
+    "collapse": "Einklappen",
+    "workflow": "Workflow",
+    "expand": "Erweitern"
   },
   "welcome": {
     "tagline": "KI-Kreativwerkzeuge direkt zur Hand",
@@ -63,7 +67,7 @@
         "description": "Durchsuchen Sie KI-Modelle für Bild-, Video- und Audiogenerierung"
       },
       "playground": {
-        "title": "Playground",
+        "title": "Spielplatz",
         "description": "Multi-Tab-Arbeitsbereich zum Ausführen von Modellen mit benutzerdefinierten Parametern"
       },
       "templates": {
@@ -87,6 +91,11 @@
         "title": "Kostenlose Tools",
         "description": "Leistungsstarke KI-Tools, die lokal laufen - kein API-Schlüssel erforderlich",
         "badge": "Kostenlos"
+      },
+      "workflow": {
+        "title": "Workflow",
+        "description": "Visuelle KI-Pipelines mit knotenbasiertem Editor erstellen",
+        "badge": "Neu"
       }
     }
   },
@@ -109,7 +118,7 @@
     "removeFromFavorites": "Aus Favoriten entfernen"
   },
   "playground": {
-    "title": "Playground",
+    "title": "Spielplatz",
     "selectModel": "Modell auswählen",
     "searchModels": "Modelle suchen...",
     "noModelSelected": "Kein Modell ausgewählt",
@@ -132,7 +141,7 @@
     "savedAs": "Gespeichert als \"{{name}}\"",
     "resetForm": "Formular zurücksetzen",
     "webPage": "Webseite",
-    "docs": "Docs",
+    "docs": "Dokumentation",
     "noTabs": "Keine Playground-Tabs geöffnet",
     "tabs": {
       "newTab": "Neuer Tab",
@@ -179,7 +188,9 @@
         "hint": "Weiße Bereiche zeigen an, schwarze verbergen"
       },
       "removeFile": "Datei entfernen",
-      "removeFileConfirm": "Sind Sie sicher, dass Sie diese Datei entfernen möchten?"
+      "removeFileConfirm": "Sind Sie sicher, dass Sie diese Datei entfernen möchten?",
+      "micInUse": "Mikrofon wird von einer anderen Anwendung verwendet",
+      "tapToRecord": "Tippen zum Aufnehmen"
     },
     "autoSaved": "Automatisch in Assets gespeichert",
     "autoSavedDesc": "{{count}} Ausgabe(n) in Meine Assets gespeichert",
@@ -235,7 +246,14 @@
       "seedsGenerated": "Seeds automatisch generiert",
       "settings": "Stapeleinstellungen"
     },
-    "input": "Eingabe"
+    "input": "Eingabe",
+    "imageCopied": "Bild in Zwischenablage kopiert",
+    "urlCopied": "URL in Zwischenablage kopiert",
+    "copyFailed": "Kopieren fehlgeschlagen",
+    "copyImage": "Bild kopieren",
+    "copyUrl": "URL kopieren",
+    "copy": "Kopieren",
+    "download": "Herunterladen"
   },
   "history": {
     "title": "Verlauf",
@@ -246,7 +264,8 @@
       "completed": "Abgeschlossen",
       "failed": "Fehlgeschlagen",
       "processing": "Verarbeitung",
-      "created": "Erstellt"
+      "created": "Erstellt",
+      "archived": "Archiviert"
     },
     "loadPreviews": "Vorschauen laden",
     "disablePreviews": "Vorschauen deaktivieren",
@@ -280,7 +299,12 @@
       "noInputsTitle": "Vorlage kann nicht gespeichert werden",
       "noInputsDesc": "Eingabeparameter sind nur für Vorhersagen verfügbar, die in dieser App erstellt wurden. Versuchen Sie zuerst, eine neue Vorhersage auszuführen."
     },
-    "hasInputs": "Kann als Vorlage gespeichert werden"
+    "hasInputs": "Kann als Vorlage gespeichert werden",
+    "downloadComplete": "Download abgeschlossen",
+    "downloadCompleteDesc": "{{count}} Datei(en) heruntergeladen",
+    "downloadFailed": "Download fehlgeschlagen",
+    "downloadFailedDesc": "{{count}} Datei(en) konnten nicht heruntergeladen werden",
+    "longPressHint": "Lang drücken zum Auswählen"
   },
   "templates": {
     "title": "Vorlagen",
@@ -361,8 +385,8 @@
     "typesPlural": {
       "image": "Bilder",
       "video": "Videos",
-      "audio": "Audio",
-      "text": "Text"
+      "audio": "Audiodateien",
+      "text": "Texte"
     },
     "sort": {
       "dateNewest": "Neueste zuerst",
@@ -431,7 +455,7 @@
       }
     },
     "errors": {
-      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "desktopRequired": "Diese Funktion erfordert die Desktop-App. Bitte laden Sie WaveSpeed Desktop herunter oder probieren Sie die Online-Version.",
       "generationCancelled": "Generierung abgebrochen"
     },
     "tips": {
@@ -462,7 +486,7 @@
       "invalidDesc": "Der API-Schlüssel konnte nicht validiert werden. Bitte überprüfen und erneut versuchen.",
       "cleared": "API-Schlüssel gelöscht",
       "clearedDesc": "Ihr API-Schlüssel wurde entfernt.",
-      "itemDeleted": "Cache item deleted",
+      "itemDeleted": "Cache-Eintrag gelöscht",
       "error": "Fehler",
       "errorDesc": "Fehler beim Speichern des API-Schlüssels."
     },
@@ -500,7 +524,7 @@
       "autoSaveDisabledDesc": "Sie können Ausgaben weiterhin manuell vom Playground aus speichern",
       "directory": "Assets-Verzeichnis",
       "directoryDesc": "Wählen Sie, wo Ihre generierten Ausgaben gespeichert werden sollen",
-      "defaultDirectory": "Documents/WaveSpeed",
+      "defaultDirectory": "Dokumente/WaveSpeed",
       "browse": "Durchsuchen",
       "directoryChanged": "Verzeichnis geändert",
       "directoryChangedDesc": "Neue Ausgaben werden in {{path}} gespeichert",
@@ -520,7 +544,27 @@
       "clearFailed": "Cache konnte nicht geleert werden",
       "zImageAuxiliary": "Z-Image-Hilfsmodelle",
       "zImageModels": "Z-Image-Modelle",
-      "zImageBinary": "Z-Image-Binärdatei"
+      "zImageBinary": "Z-Image-Binärdatei",
+      "predownload": "Modelle vorher herunterladen",
+      "predownloadDesc": "AI-Modelle im Voraus für die Offline-Nutzung herunterladen",
+      "downloadModels": "Modelle herunterladen",
+      "downloadPartial": "Teildownload abgeschlossen",
+      "downloadPartialDesc": "Einige Modelle wurden erfolgreich heruntergeladen",
+      "downloadComplete": "Download abgeschlossen",
+      "downloadCompleteDesc": "Alle Modelle wurden erfolgreich heruntergeladen",
+      "downloadCancelled": "Download abgebrochen",
+      "downloadCancelledDesc": "Der Modelldownload wurde abgebrochen",
+      "alreadyCached": "Bereits im Cache",
+      "downloaded": "Heruntergeladen",
+      "overallProgress": "Gesamtfortschritt",
+      "models": {
+        "ffmpegJs": "FFmpeg-Kern (JS)",
+        "ffmpegWasm": "FFmpeg-Kern (WASM)",
+        "backgroundRemover": "Hintergrundentferner",
+        "imageEraser": "Bildradierer (LaMa)",
+        "samEncoder": "SAM-Vision-Encoder",
+        "samDecoder": "SAM-Prompt-Decoder"
+      }
     },
     "downloads": {
       "title": "Downloads",
@@ -555,7 +599,12 @@
       "devModeDesc": "Auto-Update ist im Entwicklungsmodus deaktiviert.",
       "checkFailed": "Update-Prüfung fehlgeschlagen",
       "downloadFailed": "Download fehlgeschlagen",
-      "downloadFailedDesc": "Fehler beim Herunterladen des Updates."
+      "downloadFailedDesc": "Fehler beim Herunterladen des Updates.",
+      "downloadComplete": "Download abgeschlossen",
+      "openToInstall": "Bitte öffnen Sie {{filename}} zur Installation",
+      "installInstructions": "Installationsanleitung",
+      "findInDownloads": "APK wurde im Download-Ordner gespeichert. Bitte öffnen Sie {{filename}} im Dateimanager zur Installation",
+      "downloadProgress": "Wird heruntergeladen... {{progress}}%"
     },
     "about": {
       "title": "Über",
@@ -563,7 +612,8 @@
       "mobileDescription": "WaveSpeed Mobile - KI-Modell-Playground",
       "aboutText": "Eine Open-Source-Desktop-Anwendung zum Ausführen von KI-Modellen mit der WaveSpeed-API.",
       "mobileAboutText": "Eine Open-Source-Mobile-Anwendung zum Ausführen von KI-Modellen mit der WaveSpeed-API.",
-      "viewOnGitHub": "Auf GitHub ansehen"
+      "viewOnGitHub": "Auf GitHub ansehen",
+      "version": "Version"
     }
   },
   "apiKeyRequired": {
@@ -642,7 +692,15 @@
       "facesEnhanced": "{{count}} Gesicht(er) verbessert",
       "noFacesFound": "Keine Gesichter gefunden",
       "invalidFile": "Bitte wählen Sie eine gültige Bilddatei",
-      "firstTimeDownload": "Erstes Mal? Modelle werden heruntergeladen (~350MB)"
+      "firstTimeDownload": "Erstes Mal? Modelle werden heruntergeladen (~350MB)",
+      "orDragDrop": "oder per Drag & Drop",
+      "original": "Original",
+      "enhanced": "Verbessert",
+      "sideBySide": "Nebeneinander",
+      "comparison": "Vergleich",
+      "dragToCompare": "Ziehen zum Vergleichen",
+      "noFaces": "Keine Gesichter im Bild erkannt",
+      "facesFound": "{{count}} Gesicht(er) erkannt"
     },
     "faceSwapper": {
       "title": "Gesichtertausch",
@@ -653,12 +711,12 @@
       "selectTarget": "Zielbild auswählen",
       "sourceHint": "Die zu kopierende Gesichtsidentität",
       "targetHint": "Bild, in dem Gesichter ersetzt werden",
-      "orDragDrop": "or drag and drop",
+      "orDragDrop": "oder per Drag & Drop",
       "noSourceFace": "Kein Gesicht im Quellbild erkannt",
       "noTargetFaces": "Keine Gesichter im Zielbild erkannt",
       "clickToSelect": "Klicken Sie auf Gesichter, um auszuwählen, welche getauscht werden sollen",
       "facesSelected": "{{selected}}/{{total}} Gesicht(er) ausgewählt",
-      "sourceSelected": "Face {{selected}}/{{total}} selected",
+      "sourceSelected": "Gesicht {{selected}}/{{total}} ausgewählt",
       "faceDetected": "Gesicht erkannt",
       "swapFaces": "Gesichter tauschen",
       "processing": "Verarbeitung...",
@@ -728,7 +786,8 @@
       "undoEdit": "Entfernung rückgängig",
       "redoEdit": "Entfernung wiederholen",
       "hint": "Zeichnen Sie über die Objekte, die Sie entfernen möchten, dann klicken Sie auf Objekte entfernen",
-      "resultPlaceholder": "Das Ergebnis wird hier angezeigt"
+      "resultPlaceholder": "Das Ergebnis wird hier angezeigt",
+      "hintMobile": "Zeichnen Sie auf den zu entfernenden Bereich"
     },
     "segmentAnything": {
       "title": "Alles Segmentieren",
@@ -742,7 +801,10 @@
       "clearPoints": "Punkte löschen",
       "clearPointsTooltip": "Alle Punkte löschen und zum Hover-Vorschaumodus zurückkehren",
       "cutMask": "Maske ausschneiden",
-      "hint": "Linksklick zum Einschließen, Rechtsklick zum Ausschließen von Bereichen"
+      "hint": "Linksklick zum Einschließen, Rechtsklick zum Ausschließen von Bereichen",
+      "hoverToPreviewMobile": "Tippen Sie auf das Objekt, um die Auswahl zu starten",
+      "clickToRefineMobile": "Tippen Sie, um weitere Punkte hinzuzufügen",
+      "hintMobile": "Tippen zum Einbeziehen, lange drücken zum Ausschließen"
     },
     "videoConverter": {
       "title": "Video-Konverter",
@@ -758,7 +820,14 @@
       "format": "Format",
       "quality": "Qualität",
       "resolution": "Auflösung",
-      "convertedSize": "Konvertierte Größe"
+      "convertedSize": "Konvertierte Größe",
+      "inputVideo": "Eingabevideo",
+      "selectVideoDesc": "Wählen Sie eine Videodatei oder ziehen Sie sie per Drag & Drop",
+      "outputFormat": "Ausgabeformat",
+      "converted": "Konvertiert",
+      "result": "Konvertierungsergebnis",
+      "codecUsed": "Verwendeter Codec",
+      "invalidFile": "Bitte wählen Sie eine gültige Videodatei"
     },
     "audioConverter": {
       "title": "Audio-Konverter",
@@ -771,7 +840,13 @@
       "converting": "Konvertierung...",
       "converted": "Konvertiert",
       "playOriginal": "Original abspielen",
-      "playConverted": "Konvertiert abspielen"
+      "playConverted": "Konvertiert abspielen",
+      "inputAudio": "Eingabeaudio",
+      "outputFormat": "Ausgabeformat",
+      "bitrate": "Bitrate",
+      "original": "Original",
+      "result": "Ergebnis",
+      "invalidFile": "Bitte wählen Sie eine MP3- oder WAV-Datei"
     },
     "imageConverter": {
       "title": "Bild-Konverter",
@@ -784,7 +859,12 @@
       "convert": "Konvertieren",
       "converting": "Konvertierung...",
       "quality": "Qualität",
-      "downloadAll": "Alle herunterladen"
+      "downloadAll": "Alle herunterladen",
+      "inputImage": "Eingabebild",
+      "selectImage": "Klicken oder Bild hier ablegen",
+      "outputFormat": "Ausgabeformat",
+      "result": "Ergebnis",
+      "invalidFile": "Bitte wählen Sie eine gültige Bilddatei"
     },
     "mediaTrimmer": {
       "title": "Medien-Trimmer",
@@ -795,11 +875,20 @@
       "supportedFormats": "Unterstützt Video- und Audiodateien",
       "trim": "Zuschneiden",
       "trimming": "Zuschneiden...",
-      "originalDuration": "Original",
+      "originalDuration": "Originaldauer",
       "selectedDuration": "Ausgewählt",
       "trimmedSize": "Zugeschnittene Größe",
       "playingOriginal": "Original abspielen",
-      "playingTrimmed": "Zugeschnitten abspielen"
+      "playingTrimmed": "Zugeschnitten abspielen",
+      "inputMedia": "Eingabemedien",
+      "trimSettings": "Zuschneide-Einstellungen",
+      "selectRange": "Start- und Endzeit auswählen",
+      "startTime": "Startzeit",
+      "endTime": "Endzeit",
+      "timeFormat": "Format: m:ss.d oder Sekunden",
+      "outputDuration": "Ausgabedauer",
+      "result": "Zugeschnittenes Ergebnis",
+      "invalidFile": "Bitte wählen Sie eine gültige Video- oder Audiodatei"
     },
     "mediaMerger": {
       "title": "Medien-Zusammenführung",
@@ -813,7 +902,11 @@
       "merging": "Zusammenführung...",
       "merged": "Zusammengeführt",
       "totalDuration": "Gesamtdauer",
-      "sameFormatNote": "Dateien müssen das gleiche Format für verlustfreie Zusammenführung haben"
+      "sameFormatNote": "Dateien müssen das gleiche Format für verlustfreie Zusammenführung haben",
+      "inputMedia": "Eingabedateien",
+      "files": "Dateien",
+      "result": "Zusammengeführtes Ergebnis",
+      "sameTypeRequired": "Alle Dateien müssen vom gleichen Typ sein (Video oder Audio)"
     },
     "progress": {
       "downloading": "Modell herunterladen",
@@ -836,7 +929,10 @@
       "converting": "Konvertierung",
       "merging": "Zusammenführung",
       "trimming": "Zuschneiden"
-    }
+    },
+    "downloadSuccess": "In Downloads-Ordner gespeichert",
+    "downloadStarted": "Download gestartet",
+    "downloadFailed": "Download fehlgeschlagen"
   },
   "game": {
     "waitingLong": "Lange Wartezeit? Spiel ein Mini-Spiel!",
@@ -878,5 +974,315 @@
     "result": "Ergebnis",
     "codecUsed": "Verwendeter Codec",
     "download": "Herunterladen"
+  },
+  "workflow": {
+    "workflows": "Workflows",
+    "newWorkflow": "Neuer Workflow",
+    "untitled": "Unbenannter Workflow",
+    "save": "Speichern",
+    "saved": "Gespeichert",
+    "saving": "Wird gespeichert...",
+    "saveFailed": "Speichern fehlgeschlagen",
+    "savedAt": "Gespeichert",
+    "unsaved": "Nicht gespeichert",
+    "nodes": "Knoten",
+    "config": "Konfiguration",
+    "results": "Ergebnisse",
+    "cost": "Kosten",
+    "settings": "Einstellungen",
+    "runAll": "Alle ausführen",
+    "run": "Ausführen",
+    "runTarget": "Ziel ausführen",
+    "runTargetAll": "Alle Knoten ausführen",
+    "runTargetSelected": "Ausgewählten Knoten ausführen",
+    "runCount": "Anzahl Läufe",
+    "stop": "Stoppen",
+    "running": "Wird ausgeführt...",
+    "cancelAll": "Alle abbrechen",
+    "import": "Importieren",
+    "export": "Exportieren",
+    "imported": "Importiert",
+    "importFailed": "Import fehlgeschlagen",
+    "exported": "Erfolgreich exportiert",
+    "exportFailed": "Export fehlgeschlagen",
+    "estimated": "Kosten",
+    "fitView": "Ansicht anpassen",
+    "previousImage": "Vorheriges Bild",
+    "nextImage": "Nächstes Bild",
+    "previewNavHint": "← / → zum Navigieren ({{current}}/{{total}})",
+    "clickAnywhereToClose": "Klicken Sie irgendwo zum Schließen",
+    "runNode": "Knoten ausführen",
+    "modelSelection": "Modellauswahl",
+    "annotationHint": "Doppelklicken Sie auf die Notiz zum Bearbeiten.",
+    "continueFrom": "Von hier fortsetzen",
+    "retry": "Wiederholen",
+    "cancel": "Abbrechen",
+    "noWorkflows": "Noch keine Workflows",
+    "create": "Erstellen",
+    "open": "Öffnen",
+    "paste": "Einfügen",
+    "addNode": "Knoten hinzufügen",
+    "addNote": "Notiz hinzufügen",
+    "note": "Notiz",
+    "deleteConnection": "Verbindung löschen",
+    "add": "Hinzufügen",
+    "delete": "Löschen",
+    "currentModel": "Aktuelles Modell",
+    "modelIdLabel": "Modell-ID",
+    "selectNode": "Wählen Sie einen Knoten zur Konfiguration",
+    "noExecutions": "Noch keine Ausführungen",
+    "budgetExceeded": "Budget überschritten",
+    "dailySpend": "Tägliche Ausgaben",
+    "perExecutionLimit": "Limite pro Ausführung",
+    "dailyLimit": "Tageslimit",
+    "editBudget": "Budget bearbeiten",
+    "refreshModels": "Modelle aktualisieren",
+    "drawMask": "Maske zeichnen",
+    "drawMaskNeedInput": "Bitte zuerst Eingabebild festlegen",
+    "segmentPointPicker": {
+      "title": "Segmentierungspunkte auswählen",
+      "hint": "Linksklick = einbeziehen, Rechtsklick = ausschließen",
+      "points": "Punkte",
+      "clear": "Löschen",
+      "done": "Fertig"
+    },
+    "pickPoints": "Punkte auswählen",
+    "pickPointsNeedInput": "Bitte zuerst Eingabebild festlegen",
+    "pointsLabel": "Segmentierungspunkte",
+    "linked": "Verknüpft",
+    "linkedTo": "Verknüpft mit",
+    "disconnectLink": "Entsperren: Verbindung trennen",
+    "previewUpstreamOutput": "Ausgabe der vorgelagerten Stufe anzeigen",
+    "localFileOrUrl": "Lokale Datei oder URL",
+    "showAll": "Alle anzeigen",
+    "showAllRuns": "Alle Läufe anzeigen",
+    "showLatestOnly": "Nur letzte anzeigen",
+    "latest": "Neueste",
+    "latestHidden": "Neuestes Ergebnis ausgeblendet.",
+    "noVisibleResults": "Keine sichtbaren Ergebnisse.",
+    "hideRun": "Diesen Lauf ausblenden",
+    "output": "Ausgabe",
+    "outputLowercase": "Ausgabe",
+    "invalidUrl": "Ungültige URL",
+    "removeLast": "Letztes entfernen",
+    "enterField": "{{field}} eingeben...",
+    "show": "Anzeigen",
+    "hide": "Ausblenden",
+    "optional": "Optional",
+    "searchNodesPlaceholder": "Knoten suchen...",
+    "dragOrClickToAdd": "Auf die Leinwand ziehen oder klicken zum Hinzufügen",
+    "noNodesAvailable": "Keine Knoten verfügbar",
+    "nodeCategory": {
+      "recent": "Zuletzt verwendet",
+      "input": "Eingabe",
+      "ai-task": "AI-Aufgabe",
+      "free-tool": "Kostenlose Tools",
+      "output": "Ausgabe",
+      "processing": "Verarbeitung",
+      "control": "Steuerung"
+    },
+    "nodeDefs": {
+      "ai-task/run": {
+        "label": "Modell ausführen",
+        "emptyHint": "Klicken Sie auf diesen Knoten, dann wählen Sie ein Modell →",
+        "params": {
+          "modelId": {
+            "label": "Modell"
+          }
+        }
+      },
+      "input/media-upload": {
+        "label": "Hochladen",
+        "outputs": {
+          "output": {
+            "label": "URL"
+          }
+        }
+      },
+      "input/text-input": {
+        "label": "Text",
+        "params": {
+          "text": {
+            "label": "Text"
+          }
+        }
+      },
+      "output/preview": {
+        "label": "Vorschau",
+        "inputs": {
+          "input": {
+            "label": "URL"
+          }
+        },
+        "params": {
+          "autoDetect": {
+            "label": "Typ automatisch erkennen"
+          },
+          "forceType": {
+            "label": "Typ erzwingen",
+            "options": {
+              "auto": "Auto",
+              "image": "Bild",
+              "video": "Video",
+              "audio": "Audio",
+              "3d": "3D-Modell"
+            }
+          }
+        }
+      },
+      "output/file": {
+        "label": "Datei exportieren",
+        "inputs": {
+          "url": {
+            "label": "URL"
+          }
+        },
+        "params": {
+          "outputDir": {
+            "label": "Ausgabeverzeichnis"
+          },
+          "filename": {
+            "label": "Dateinamenspräfix"
+          },
+          "format": {
+            "label": "Format",
+            "options": {
+              "auto": "Auto",
+              "mp4": "MP4",
+              "png": "PNG",
+              "jpg": "JPG",
+              "mp3": "MP3",
+              "wav": "WAV"
+            }
+          }
+        }
+      },
+      "free-tool/image-enhancer": {
+        "label": "Bildverbesserung"
+      },
+      "free-tool/background-remover": {
+        "label": "Hintergrundentferner"
+      },
+      "free-tool/face-enhancer": {
+        "label": "Gesichtsverbesserung"
+      },
+      "free-tool/video-enhancer": {
+        "label": "Video-Verbesserung"
+      },
+      "free-tool/face-swapper": {
+        "label": "Gesichtstausch"
+      },
+      "free-tool/image-eraser": {
+        "label": "Bildradierer"
+      },
+      "free-tool/segment-anything": {
+        "label": "Alles segmentieren",
+        "params": {
+          "pointX": {
+            "label": "Punkt X",
+            "description": "Normalisierte X-Koordinate (0-1) für Segmentierungspunkt"
+          },
+          "pointY": {
+            "label": "Punkt Y",
+            "description": "Normalisierte Y-Koordinate (0-1) für Segmentierungspunkt"
+          }
+        }
+      },
+      "free-tool/video-converter": {
+        "label": "Video-Konverter"
+      },
+      "free-tool/audio-converter": {
+        "label": "Audio-Konverter"
+      },
+      "free-tool/image-converter": {
+        "label": "Bild-Konverter"
+      },
+      "free-tool/media-trimmer": {
+        "label": "Medien-Trimmer"
+      },
+      "free-tool/media-merger": {
+        "label": "Medien-Zusammenführer"
+      }
+    },
+    "modelSelector": {
+      "allCategory": "Alle",
+      "noModelsLoaded": "Keine Modelle geladen. Klicken Sie unten auf \"Modelle aktualisieren\".",
+      "loadFailed": "Modellladung fehlgeschlagen.",
+      "refreshFailed": "Modellaktualisierung fehlgeschlagen.",
+      "loadingModels": "Modelle werden geladen...",
+      "loadingHint": "Beim ersten Start kann es einige Sekunden dauern",
+      "recent": "Zuletzt verwendet",
+      "searchPlaceholder": "Modelle suchen...",
+      "searchAllPlaceholder": "Alle Modelle durchsuchen...",
+      "refreshTooltip": "Modellkatalog aktualisieren",
+      "refreshing": "Wird aktualisiert...",
+      "noModelsFound": "Keine Modelle gefunden",
+      "disconnectBeforeSwitch": "Bitte trennen Sie diesen Knoten vor dem Modellwechsel.",
+      "selectCategory": "Kategorie auswählen",
+      "cannotSwitchTitle": "Modell kann nicht gewechselt werden",
+      "cannotSwitchDesc": "Dieser Knoten hat aktive Verbindungen. Bitte trennen Sie alle Kanten vor dem Modellwechsel, da sich das Parameterschema ändert und bestehende Verbindungen ungültig werden können."
+    },
+    "mediaUpload": {
+      "uploadFailed": "Upload fehlgeschlagen",
+      "invalidUrl": "Ungültige URL",
+      "fileUploaded": "Datei hochgeladen",
+      "uploaded": "Hochgeladen",
+      "clear": "Löschen",
+      "uploading": "Wird hochgeladen...",
+      "uploadingShort": "Wird hochgeladen...",
+      "failed": "Fehlgeschlagen",
+      "dropOrBrowse": "Datei hier ablegen oder klicken zum Durchsuchen",
+      "browse": "Durchsuchen",
+      "pasteUrl": "URL einfügen",
+      "urlPlaceholder": "https://...",
+      "urlShortPlaceholder": "URL...",
+      "supportedTypes": "Bild, Video, Audio"
+    },
+    "textInput": {
+      "promptLibrary": "Prompt-Bibliothek",
+      "saveCurrent": "Aktuelles speichern",
+      "namePlaceholder": "Name...",
+      "noSavedSnippets": "Keine gespeicherten Snippets",
+      "optimizeFailed": "Optimierung fehlgeschlagen",
+      "optimizeNowTitle": "Text jetzt optimieren",
+      "optimizing": "Wird optimiert...",
+      "optimizeNow": "Jetzt optimieren",
+      "autoOnRunTitle": "Nur bei Klick auf Ausführen optimieren",
+      "autoOnRun": "Auto bei Ausführung",
+      "chars": "Zeichen",
+      "optimizeOnRunEnabled": "Aktiviert: Optimieren bei Ausführung",
+      "optimizeOffHint": "Standard: keine Optimierung (mit Originaltext ausführen)",
+      "manualOptimizedHint": "Manuell optimiert. Auto-on-Run wird übersprungen, bis der Text sich ändert.",
+      "enterTextOrPrompt": "Text oder Prompt eingeben..."
+    },
+    "promptOptimizer": {
+      "optimizationFailed": "Optimierung fehlgeschlagen",
+      "optimizeParams": "Parameter optimieren",
+      "optimizeParamsPresetOnly": "Parameter optimieren (nur Voreinstellung)",
+      "perRun": "Lauf",
+      "mode": "Modus",
+      "text": "Text",
+      "textPlaceholder": "Text zum Erweitern oder als Kontext...",
+      "autoOnRunTitle": "Beim Klick auf Ausführen automatisch optimieren",
+      "autoOnRun": "Auto bei Ausführung",
+      "quickOptimizeTitle": "Schnell optimieren ({{mode}})",
+      "params": "Parameter",
+      "prompt": "Eingabeaufforderung",
+      "emptyPrompt": "(leer)",
+      "optimizing": "Wird optimiert...",
+      "optimize": "Optimieren",
+      "optimizeWithImage": "Mit Bild optimieren...",
+      "modeOptions": {
+        "image": "Bild",
+        "video": "Video"
+      },
+      "imageDialog": {
+        "title": "Mit Bild optimieren",
+        "enterTextOrImage": "Bitte Text eingeben oder ein Bild bereitstellen",
+        "optimizeFailed": "Optimierung fehlgeschlagen",
+        "loadingOptimizer": "Optimierer wird geladen...",
+        "loadConfigFailed": "Optimierer-Konfiguration konnte nicht geladen werden"
+      }
+    }
   }
 }

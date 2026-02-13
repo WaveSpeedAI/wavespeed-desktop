@@ -31,7 +31,10 @@
     "selectAll": "تحديد الكل",
     "retry": "إعادة المحاولة",
     "downloadFailed": "فشل التنزيل. يرجى التحقق من اتصال الشبكة.",
-    "openInBrowser": "فتح في المتصفح"
+    "openInBrowser": "فتح في المتصفح",
+    "settings": "الإعدادات",
+    "clearAll": "مسح الكل",
+    "deselectAll": "إلغاء تحديد الكل"
   },
   "nav": {
     "home": "الرئيسية",
@@ -44,7 +47,9 @@
     "zImage": "Z-Image",
     "freeTools": "أدوات مجانية",
     "settings": "الإعدادات",
-    "collapse": "طي"
+    "collapse": "طي",
+    "workflow": "سير العمل",
+    "expand": "توسيع"
   },
   "welcome": {
     "tagline": "أدوات إبداعية مدعومة بالذكاء الاصطناعي في متناول يدك",
@@ -86,6 +91,11 @@
         "title": "أدوات مجانية",
         "description": "أدوات ذكاء اصطناعي قوية تعمل محليًا - لا حاجة لمفتاح API",
         "badge": "مجاني"
+      },
+      "workflow": {
+        "title": "سير العمل",
+        "description": "بناء خطوط أنابيب الذكاء الاصطناعي المرئية باستخدام محرر العقد",
+        "badge": "جديد"
       }
     }
   },
@@ -178,7 +188,9 @@
         "hint": "المناطق البيضاء تكشف، المناطق السوداء تخفي"
       },
       "removeFile": "إزالة الملف",
-      "removeFileConfirm": "هل أنت متأكد أنك تريد إزالة هذا الملف؟"
+      "removeFileConfirm": "هل أنت متأكد أنك تريد إزالة هذا الملف؟",
+      "micInUse": "الميكروفون قيد الاستخدام من تطبيق آخر",
+      "tapToRecord": "انقر للبدء في التسجيل"
     },
     "autoSaved": "تم الحفظ التلقائي في الأصول",
     "autoSavedDesc": "تم حفظ {{count}} مخرجات في أصولي",
@@ -234,7 +246,14 @@
       "playWhileWaiting": "العب أثناء الانتظار",
       "quit": "خروج"
     },
-    "input": "إدخال"
+    "input": "إدخال",
+    "imageCopied": "تم نسخ الصورة إلى الحافظة",
+    "urlCopied": "تم نسخ الرابط إلى الحافظة",
+    "copyFailed": "فشل النسخ",
+    "copyImage": "نسخ الصورة",
+    "copyUrl": "نسخ الرابط",
+    "copy": "نسخ",
+    "download": "تنزيل"
   },
   "history": {
     "title": "السجل",
@@ -245,7 +264,8 @@
       "completed": "مكتمل",
       "failed": "فشل",
       "processing": "قيد المعالجة",
-      "created": "تم الإنشاء"
+      "created": "تم الإنشاء",
+      "archived": "مؤرشف"
     },
     "loadPreviews": "تحميل المعاينات",
     "disablePreviews": "تعطيل المعاينات",
@@ -266,7 +286,25 @@
     "executionTime": "وقت التنفيذ",
     "predictionId": "معرف التنبؤ",
     "notAvailable": "السجل غير متاح",
-    "notAvailableDesc": "واجهة برمجة تطبيقات سجل التنبؤات غير متاحة حالياً."
+    "notAvailableDesc": "واجهة برمجة تطبيقات سجل التنبؤات غير متاحة حالياً.",
+    "downloadComplete": "اكتمل التنزيل",
+    "downloadCompleteDesc": "تم تنزيل {{count}} ملف (ملفات)",
+    "downloadFailed": "فشل التنزيل",
+    "downloadFailedDesc": "فشل تنزيل {{count}} ملف (ملفات)",
+    "hasInputs": "لديه مدخلات متاحة",
+    "saveTemplate": {
+      "button": "حفظ كقالب",
+      "dialogTitle": "حفظ القالب",
+      "nameLabel": "اسم القالب",
+      "namePlaceholder": "أدخل اسم القالب...",
+      "duplicateName": "هذا الاسم موجود بالفعل",
+      "noInputsTitle": "لا يمكن حفظ القالب",
+      "noInputsDesc": "لم يتم العثور على معلمات الإدخال لهذه التنبؤ",
+      "success": "تم حفظ القالب",
+      "successDesc": "يمكنك استخدامه من صفحة القوالب",
+      "error": "فشل حفظ القالب"
+    },
+    "longPressHint": "اضغط مطولاً للتحديد"
   },
   "templates": {
     "title": "القوالب",
@@ -417,7 +455,7 @@
       }
     },
     "errors": {
-      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "desktopRequired": "تتطلب هذه الميزة تطبيق سطح المكتب. يرجى تنزيل WaveSpeed Desktop أو تجربة النسخة عبر الإنترنت.",
       "generationCancelled": "تم إلغاء الإنشاء"
     },
     "tips": {
@@ -447,7 +485,7 @@
       "invalidDesc": "تعذر التحقق من مفتاح API. يرجى التحقق والمحاولة مرة أخرى.",
       "cleared": "تم مسح مفتاح API",
       "clearedDesc": "تمت إزالة مفتاح API الخاص بك.",
-      "itemDeleted": "Cache item deleted",
+      "itemDeleted": "تم حذف عنصر التخزين المؤقت",
       "error": "خطأ",
       "errorDesc": "فشل حفظ مفتاح API."
     },
@@ -485,7 +523,7 @@
       "autoSaveDisabledDesc": "يمكنك حفظ المخرجات يدوياً من ساحة التجربة",
       "directory": "دليل الأصول",
       "directoryDesc": "اختر مكان حفظ المخرجات المولدة",
-      "defaultDirectory": "Documents/WaveSpeed",
+      "defaultDirectory": "مستندات/WaveSpeed",
       "browse": "تصفح",
       "directoryChanged": "تم تغيير الدليل",
       "directoryChangedDesc": "سيتم حفظ المخرجات الجديدة في {{path}}",
@@ -505,7 +543,27 @@
       "clearFailed": "فشل في مسح ذاكرة التخزين المؤقت",
       "zImageAuxiliary": "نماذج Z-Image المساعدة",
       "zImageModels": "نماذج Z-Image",
-      "zImageBinary": "ملف Z-Image الثنائي"
+      "zImageBinary": "ملف Z-Image الثنائي",
+      "predownload": "تنزيل مسبق للنماذج",
+      "predownloadDesc": "تنزيل نماذج الذكاء الاصطناعي مسبقاً للاستخدام دون اتصال",
+      "downloadModels": "تنزيل النماذج",
+      "downloadPartial": "اكتمل التنزيل الجزئي",
+      "downloadPartialDesc": "تم تنزيل بعض النماذج بنجاح",
+      "downloadComplete": "اكتمل التنزيل",
+      "downloadCompleteDesc": "تم تنزيل جميع النماذج بنجاح",
+      "downloadCancelled": "تم إلغاء التنزيل",
+      "downloadCancelledDesc": "تم إلغاء تنزيل النماذج",
+      "alreadyCached": "مخزن مؤقت بالفعل",
+      "downloaded": "تم التنزيل",
+      "overallProgress": "التقدم الإجمالي",
+      "models": {
+        "ffmpegJs": "نواة FFmpeg (JS)",
+        "ffmpegWasm": "نواة FFmpeg (WASM)",
+        "backgroundRemover": "إزالة الخلفية",
+        "imageEraser": "ممحاة الصور (LaMa)",
+        "samEncoder": "مُرمّز رؤية SAM",
+        "samDecoder": "مُفكّك رموز SAM"
+      }
     },
     "downloads": {
       "title": "التنزيلات",
@@ -540,14 +598,23 @@
       "devModeDesc": "التحديث التلقائي معطل في وضع التطوير.",
       "checkFailed": "فشل التحقق من التحديث",
       "downloadFailed": "فشل التنزيل",
-      "downloadFailedDesc": "فشل تنزيل التحديث."
+      "downloadFailedDesc": "فشل تنزيل التحديث.",
+      "downloadComplete": "اكتمل التنزيل",
+      "openToInstall": "يرجى فتح {{filename}} للتثبيت",
+      "installInstructions": "تعليمات التثبيت",
+      "findInDownloads": "تم حفظ APK في مجلد التنزيلات. يرجى فتح {{filename}} في مدير الملفات للتثبيت",
+      "downloadProgress": "جاري التنزيل... {{progress}}%"
     },
     "about": {
       "title": "حول",
       "description": "WaveSpeed Desktop - ساحة تجربة نماذج الذكاء الاصطناعي",
       "aboutText": "تطبيق سطح مكتب مفتوح المصدر لتشغيل نماذج الذكاء الاصطناعي مع WaveSpeed API.",
-      "viewOnGitHub": "عرض على GitHub"
-    }
+      "viewOnGitHub": "عرض على GitHub",
+      "version": "الإصدار",
+      "mobileDescription": "WaveSpeed Mobile - أدوات الذكاء الاصطناعي للجوال",
+      "mobileAboutText": "تطبيق جوال مفتوح المصدر لتشغيل نماذج الذكاء الاصطناعي من WaveSpeed API."
+    },
+    "mobileDescription": "تكوين تطبيق WaveSpeed Mobile الخاص بك"
   },
   "apiKeyRequired": {
     "title": "مفتاح API مطلوب",
@@ -622,7 +689,18 @@
       "detecting": "جاري اكتشاف الوجوه",
       "enhancing": "جاري تحسين الوجوه",
       "noFaces": "لم يتم اكتشاف وجوه في الصورة",
-      "facesFound": "تم اكتشاف {{count}} وجه/وجوه"
+      "facesFound": "تم اكتشاف {{count}} وجه/وجوه",
+      "inputImage": "صورة الإدخال",
+      "selectImageWithFaces": "اختر صورة تحتوي على وجوه للتحسين",
+      "modelsInfo": "يستخدم نماذج YOLO + GFPGAN AI",
+      "downloading": "جاري تحميل النماذج...",
+      "loading": "جاري تحميل النماذج...",
+      "noFacesFound": "لم يتم العثور على وجوه",
+      "facesEnhanced": "تم تحسين {{count}} وجه",
+      "result": "نتيجة التحسين",
+      "newImage": "صورة جديدة",
+      "firstTimeDownload": "المرة الأولى؟ سيتم تنزيل النماذج (~350 ميجابايت)",
+      "invalidFile": "يرجى اختيار ملف صورة صالح"
     },
     "faceSwapper": {
       "title": "مبادل الوجوه",
@@ -633,12 +711,12 @@
       "selectTarget": "اختر الصورة الهدف",
       "sourceHint": "هوية الوجه المراد نسخها",
       "targetHint": "الصورة التي سيتم استبدال الوجوه فيها",
-      "orDragDrop": "or drag and drop",
+      "orDragDrop": "أو اسحب وأفلت",
       "noSourceFace": "لم يتم اكتشاف وجه في الصورة المصدر",
       "noTargetFaces": "لم يتم اكتشاف وجوه في الصورة الهدف",
       "clickToSelect": "انقر على الوجوه لتحديد أي منها سيتم تبديله",
       "facesSelected": "تم تحديد {{selected}}/{{total}} وجه/وجوه",
-      "sourceSelected": "Face {{selected}}/{{total}} selected",
+      "sourceSelected": "تم تحديد الوجه {{selected}}/{{total}}",
       "faceDetected": "تم اكتشاف الوجه",
       "swapFaces": "تبديل الوجوه",
       "processing": "جاري المعالجة...",
@@ -708,7 +786,8 @@
       "undoEdit": "التراجع عن الإزالة",
       "redoEdit": "إعادة الإزالة",
       "hint": "ارسم فوق الكائنات التي تريد إزالتها، ثم انقر على إزالة الكائنات",
-      "resultPlaceholder": "ستظهر النتيجة هنا"
+      "resultPlaceholder": "ستظهر النتيجة هنا",
+      "hintMobile": "ارسم على المنطقة المراد إزالتها"
     },
     "progress": {
       "downloading": "تنزيل النموذج",
@@ -732,7 +811,10 @@
       "clearPoints": "مسح النقاط",
       "clearPointsTooltip": "امسح جميع النقاط وعد إلى وضع معاينة التمرير",
       "cutMask": "قص القناع",
-      "hint": "انقر بزر الماوس الأيسر للتضمين، انقر بزر الماوس الأيمن لاستبعاد المناطق"
+      "hint": "انقر بزر الماوس الأيسر للتضمين، انقر بزر الماوس الأيمن لاستبعاد المناطق",
+      "hoverToPreviewMobile": "انقر على الكائن للبدء في الاختيار",
+      "clickToRefineMobile": "انقر لإضافة المزيد من النقاط",
+      "hintMobile": "انقر للتضمين، اضغط مطولاً للاستبعاد"
     },
     "backWarning": {
       "title": "المعالجة قيد التنفيذ",
@@ -741,82 +823,116 @@
       "confirm": "العودة"
     },
     "videoConverter": {
-      "title": "Video Converter",
+      "title": "محول الفيديو",
       "description": "Convert videos between formats (MP4, WebM, MOV, AVI)",
       "selectVideo": "Select Video",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace video",
+      "orDragDrop": "أو اسحب وأفلت",
+      "dropToReplace": "اسحب للإسقاط لاستبدال الفيديو",
       "supportedFormats": "Supports MP4, WebM, MOV, AVI, MKV",
       "convert": "Convert",
-      "converting": "Converting...",
-      "original": "Original",
-      "outputSettings": "Output Settings",
-      "format": "Format",
-      "quality": "Quality",
-      "resolution": "Resolution",
-      "convertedSize": "Converted Size"
+      "converting": "جاري التحويل...",
+      "original": "الأصلي",
+      "outputSettings": "إعدادات الإخراج",
+      "format": "التنسيق",
+      "quality": "الجودة",
+      "resolution": "الدقة",
+      "convertedSize": "الحجم المحول",
+      "inputVideo": "فيديو الإدخال",
+      "selectVideoDesc": "اختر أو اسحب وأفلت ملف فيديو للتحويل",
+      "outputFormat": "تنسيق الإخراج",
+      "converted": "تم التحويل",
+      "result": "نتيجة التحويل",
+      "codecUsed": "التشفير المستخدم",
+      "invalidFile": "يرجى اختيار ملف فيديو صالح"
     },
     "audioConverter": {
-      "title": "Audio Converter",
+      "title": "محول الصوت",
       "description": "Convert audio between formats (MP3, AAC, FLAC, WAV)",
       "selectAudio": "Select Audio",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace audio",
+      "orDragDrop": "أو اسحب وأفلت",
+      "dropToReplace": "اسحب للإسقاط لاستبدال الصوت",
       "supportedFormats": "Supports MP3, M4A, OGG, WAV, FLAC",
       "convert": "Convert",
-      "converting": "Converting...",
-      "converted": "Converted",
-      "playOriginal": "Play original",
-      "playConverted": "Play converted"
+      "converting": "جاري التحويل...",
+      "converted": "تم التحويل",
+      "playOriginal": "تشغيل الأصلي",
+      "playConverted": "تشغيل المحول",
+      "inputAudio": "صوت الإدخال",
+      "outputFormat": "تنسيق الإخراج",
+      "bitrate": "معدل البت",
+      "original": "الأصلي",
+      "result": "نتيجة التحويل",
+      "invalidFile": "يرجى اختيار ملف MP3 أو WAV"
     },
     "imageConverter": {
-      "title": "Image Converter",
+      "title": "محول الصور",
       "description": "Convert images between formats (JPG, PNG, WebP, GIF)",
-      "selectImages": "Select Images",
-      "orDragDrop": "or drag and drop",
-      "dropToAdd": "Drop to add images",
+      "selectImages": "انقر أو اسحب الصور هنا",
+      "orDragDrop": "أو اسحب وأفلت",
+      "dropToAdd": "اسحب للإسقاط لإضافة المزيد",
       "supportedFormats": "Supports JPG, PNG, WebP, GIF, BMP",
-      "addMore": "Add More",
+      "addMore": "إضافة المزيد",
       "convert": "Convert",
-      "converting": "Converting...",
-      "quality": "Quality",
-      "downloadAll": "Download All"
+      "converting": "جاري التحويل...",
+      "quality": "الجودة",
+      "downloadAll": "تحميل الكل",
+      "inputImage": "صورة الإدخال",
+      "selectImage": "انقر أو اسحب وأفلت الصورة هنا",
+      "outputFormat": "تنسيق الإخراج",
+      "result": "نتيجة التحويل",
+      "invalidFile": "يرجى اختيار ملف صورة صالح"
     },
     "mediaTrimmer": {
-      "title": "Media Trimmer",
-      "description": "Trim videos or audio to a specific duration",
+      "title": "قص الوسائط",
+      "description": "قص بداية ونهاية الفيديو أو الصوت",
       "selectMedia": "Select Media",
-      "orDragDrop": "or drag and drop",
-      "dropToReplace": "Drop to replace media",
+      "orDragDrop": "أو اسحب وأفلت",
+      "dropToReplace": "اسحب للإسقاط لاستبدال الملف",
       "supportedFormats": "Supports video and audio files",
       "trim": "Trim",
-      "trimming": "Trimming...",
-      "originalDuration": "Original",
-      "selectedDuration": "Selected",
-      "trimmedSize": "Trimmed Size",
-      "playingOriginal": "Playing original",
-      "playingTrimmed": "Playing trimmed"
+      "trimming": "جاري القص...",
+      "originalDuration": "المدة الأصلية",
+      "selectedDuration": "المدة المحددة",
+      "trimmedSize": "الحجم بعد القص",
+      "playingOriginal": "تشغيل الأصلي",
+      "playingTrimmed": "تشغيل بعد القص",
+      "inputMedia": "وسائط الإدخال",
+      "trimSettings": "إعدادات القص",
+      "selectRange": "اختر وقت البداية والنهاية",
+      "startTime": "وقت البداية",
+      "endTime": "وقت النهاية",
+      "timeFormat": "التنسيق: m:ss.d أو ثوانٍ",
+      "outputDuration": "مدة الإخراج",
+      "result": "نتيجة القص",
+      "invalidFile": "يرجى اختيار ملف فيديو أو صوت صالح"
     },
     "mediaMerger": {
-      "title": "Media Merger",
-      "description": "Merge multiple video or audio files into one",
+      "title": "دمج الوسائط",
+      "description": "دمج ملفات الفيديو أو الصوت المتعددة بالترتيب",
       "selectFiles": "Select Files",
-      "orDragDrop": "or drag and drop",
-      "dropToAdd": "Drop to add files",
+      "orDragDrop": "أو اسحب وأفلت",
+      "dropToAdd": "اسحب للإسقاط لإضافة المزيد",
       "supportedFormats": "Supports video and audio files",
       "addMore": "Add More",
       "merge": "Merge",
-      "merging": "Merging...",
-      "merged": "Merged",
-      "totalDuration": "Total Duration",
-      "sameFormatNote": "Files must have the same format for lossless merging"
+      "merging": "جاري الدمج...",
+      "merged": "تم الدمج",
+      "totalDuration": "إجمالي المدة",
+      "sameFormatNote": "يُفضل استخدام ملفات بنفس التنسيق",
+      "inputMedia": "ملفات الإدخال",
+      "files": "ملفات",
+      "result": "نتيجة الدمج",
+      "sameTypeRequired": "يجب أن تكون جميع الملفات من نفس النوع (فيديو أو صوت)"
     },
     "ffmpeg": {
-      "loading": "Loading FFmpeg",
-      "converting": "Converting",
-      "merging": "Merging",
-      "trimming": "Trimming"
-    }
+      "loading": "جاري التحميل...",
+      "converting": "جاري التحويل...",
+      "merging": "جاري الدمج...",
+      "trimming": "جاري القص..."
+    },
+    "downloadSuccess": "تم الحفظ في مجلد التنزيلات",
+    "downloadStarted": "بدأ التنزيل",
+    "downloadFailed": "فشل التنزيل"
   },
   "smartPlayground": {
     "autoDetected": "Auto-detected variant",
@@ -854,5 +970,319 @@
     "result": "النتيجة",
     "codecUsed": "برنامج الترميز المستخدم",
     "download": "تحميل"
+  },
+  "game": {
+    "waitingLong": "انتظار طويل جداً",
+    "clickToPlay": "انقر للبدء"
+  },
+  "workflow": {
+    "workflows": "سير العمل",
+    "newWorkflow": "سير عمل جديد",
+    "untitled": "سير عمل بدون عنوان",
+    "save": "حفظ",
+    "saved": "تم الحفظ",
+    "saving": "جاري الحفظ...",
+    "saveFailed": "فشل الحفظ",
+    "savedAt": "تم الحفظ",
+    "unsaved": "غير محفوظ",
+    "nodes": "العقد",
+    "config": "الإعدادات",
+    "results": "النتائج",
+    "cost": "التكلفة",
+    "settings": "الإعدادات",
+    "runAll": "تشغيل الكل",
+    "run": "تشغيل",
+    "runTarget": "تشغيل الهدف",
+    "runTargetAll": "تشغيل جميع العقد",
+    "runTargetSelected": "تشغيل العقدة المحددة",
+    "runCount": "عدد التشغيلات",
+    "stop": "إيقاف",
+    "running": "جاري التشغيل...",
+    "cancelAll": "إلغاء الكل",
+    "import": "استيراد",
+    "export": "تصدير",
+    "imported": "تم الاستيراد",
+    "importFailed": "فشل الاستيراد",
+    "exported": "تم التصدير بنجاح",
+    "exportFailed": "فشل التصدير",
+    "estimated": "التكلفة",
+    "fitView": "تأقلم العرض",
+    "previousImage": "الصورة السابقة",
+    "nextImage": "الصورة التالية",
+    "previewNavHint": "استخدم ← / → للتنقل بين الصور ({{current}}/{{total}})",
+    "clickAnywhereToClose": "انقر في أي مكان للإغلاق",
+    "runNode": "تشغيل العقدة",
+    "modelSelection": "اختيار النموذج",
+    "annotationHint": "انقر نقرًا مزدوجًا على الملاحظة لتعديلها.",
+    "continueFrom": "المتابعة من هنا",
+    "retry": "إعادة المحاولة",
+    "cancel": "إلغاء",
+    "noWorkflows": "لا توجد سير عمل بعد",
+    "create": "إنشاء",
+    "open": "فتح",
+    "paste": "لصق",
+    "addNode": "إضافة عقدة",
+    "addNote": "إضافة ملاحظة",
+    "note": "ملاحظة",
+    "deleteConnection": "حذف الاتصال",
+    "add": "إضافة",
+    "delete": "حذف",
+    "currentModel": "النموذج الحالي",
+    "modelIdLabel": "معرف النموذج",
+    "selectNode": "اختر عقدة للتكوين",
+    "noExecutions": "لا توجد عمليات تنفيذ بعد",
+    "budgetExceeded": "تجاوز الميزانية",
+    "dailySpend": "الإنفاق اليومي",
+    "perExecutionLimit": "حد التنفيذ لكل عملية",
+    "dailyLimit": "الحد اليومي",
+    "editBudget": "تحرير الميزانية",
+    "refreshModels": "تحديث النماذج",
+    "drawMask": "رسم القناع",
+    "drawMaskNeedInput": "قم بتعيين صورة الإدخال أولاً",
+    "segmentPointPicker": {
+      "title": "اختر نقاط التقسيم",
+      "hint": "النقر الأيسر = تضمين، النقر الأيمن = استبعاد",
+      "points": "نقاط",
+      "clear": "مسح",
+      "done": "تم"
+    },
+    "pickPoints": "اختر النقاط",
+    "pickPointsNeedInput": "قم بتعيين صورة الإدخال أولاً",
+    "pointsLabel": "نقاط التقسيم",
+    "linked": "مرتبط",
+    "linkedTo": "مرتبط بـ",
+    "disconnectLink": "إلغاء القفل: قطع هذا الرابط",
+    "previewUpstreamOutput": "معاينة إخراج المصدر",
+    "localFileOrUrl": "ملف محلي أو URL",
+    "showAll": "عرض الكل",
+    "showAllRuns": "عرض جميع عمليات التشغيل",
+    "showLatestOnly": "عرض الأحدث فقط",
+    "latest": "الأحدث",
+    "latestHidden": "تم إخفاء أحدث النتائج.",
+    "noVisibleResults": "لا توجد نتائج مرئية.",
+    "hideRun": "إخفاء هذا التشغيل",
+    "output": "الإخراج",
+    "outputLowercase": "الإخراج",
+    "invalidUrl": "URL غير صالح",
+    "removeLast": "إزالة האחר",
+    "enterField": "أدخل {{field}}...",
+    "show": "عرض",
+    "hide": "إخفاء",
+    "optional": "اختياري",
+    "searchNodesPlaceholder": "البحث عن العقد...",
+    "dragOrClickToAdd": "اسحب إلى اللوحة أو انقر للإضافة",
+    "noNodesAvailable": "لا توجد عقد متاحة",
+    "nodeCategory": {
+      "recent": "الأخيرة",
+      "input": "الإدخال",
+      "ai-task": "مهمة الذكاء الاصطناعي",
+      "free-tool": "أدوات مجانية",
+      "output": "الإخراج",
+      "processing": "المعالجة",
+      "control": "التحكم"
+    },
+    "nodeDefs": {
+      "ai-task/run": {
+        "label": "تشغيل النموذج",
+        "emptyHint": "انقر على هذه العقدة، ثم اختر النموذج ←",
+        "params": {
+          "modelId": {
+            "label": "النموذج"
+          }
+        }
+      },
+      "input/media-upload": {
+        "label": "تحميل",
+        "outputs": {
+          "output": {
+            "label": "رابط"
+          }
+        }
+      },
+      "input/text-input": {
+        "label": "النص",
+        "params": {
+          "text": {
+            "label": "النص"
+          }
+        }
+      },
+      "output/preview": {
+        "label": "معاينة",
+        "inputs": {
+          "input": {
+            "label": "رابط"
+          }
+        },
+        "params": {
+          "autoDetect": {
+            "label": "كشف تلقائي للنوع"
+          },
+          "forceType": {
+            "label": "إجبار النوع",
+            "options": {
+              "auto": "تلقائي",
+              "image": "صورة",
+              "video": "فيديو",
+              "audio": "صوت",
+              "3d": "نموذج 3D"
+            }
+          }
+        }
+      },
+      "output/file": {
+        "label": "تصدير الملف",
+        "inputs": {
+          "url": {
+            "label": "رابط"
+          }
+        },
+        "params": {
+          "outputDir": {
+            "label": "مجلد الإخراج"
+          },
+          "filename": {
+            "label": "بادئة اسم الملف"
+          },
+          "format": {
+            "label": "التنسيق",
+            "options": {
+              "auto": "تلقائي",
+              "mp4": "MP4",
+              "png": "PNG",
+              "jpg": "JPG",
+              "mp3": "MP3",
+              "wav": "WAV"
+            }
+          }
+        }
+      },
+      "free-tool/image-enhancer": {
+        "label": "تحسين الصورة"
+      },
+      "free-tool/background-remover": {
+        "label": "إزالة الخلفية"
+      },
+      "free-tool/face-enhancer": {
+        "label": "محسن الوجوه"
+      },
+      "free-tool/video-enhancer": {
+        "label": "تحسين الفيديو"
+      },
+      "free-tool/face-swapper": {
+        "label": "مبدل الوجوه"
+      },
+      "free-tool/image-eraser": {
+        "label": "ممحاة الصور"
+      },
+      "free-tool/segment-anything": {
+        "label": "تقسيم أي شيء",
+        "params": {
+          "pointX": {
+            "label": "النقطة X",
+            "description": "إحداثي X الطبيعي (0-1) لنقطة التقسيم"
+          },
+          "pointY": {
+            "label": "النقطة Y",
+            "description": "إحداثي Y الطبيعي (0-1) لنقطة التقسيم"
+          }
+        }
+      },
+      "free-tool/video-converter": {
+        "label": "محول الفيديو"
+      },
+      "free-tool/audio-converter": {
+        "label": "محول الصوت"
+      },
+      "free-tool/image-converter": {
+        "label": "محول الصور"
+      },
+      "free-tool/media-trimmer": {
+        "label": "مقص الوسائط"
+      },
+      "free-tool/media-merger": {
+        "label": "دامج الوسائط"
+      }
+    },
+    "modelSelector": {
+      "allCategory": "الكل",
+      "noModelsLoaded": "لم يتم تحميل النماذج بعد. انقر على \"تحديث النماذج\" أدناه.",
+      "loadFailed": "فشل تحميل النماذج.",
+      "refreshFailed": "فشل تحديث النماذج.",
+      "loadingModels": "جاري تحميل النماذج...",
+      "loadingHint": "قد يستغرق بضع ثوانٍ عند التشغيل لأول مرة",
+      "recent": "الأخيرة",
+      "searchPlaceholder": "البحث عن النماذج...",
+      "searchAllPlaceholder": "البحث في جميع النماذج...",
+      "refreshTooltip": "تحديث كتالوج النماذج",
+      "refreshing": "جاري التحديث...",
+      "noModelsFound": "لم يتم العثور على نماذج",
+      "disconnectBeforeSwitch": "يرجى قطع الاتصال بهذه العقدة قبل تغيير النموذج.",
+      "selectCategory": "اختر الفئة",
+      "cannotSwitchTitle": "لا يمكن تغيير النموذج",
+      "cannotSwitchDesc": "هذه العقدة بها اتصالات. قطع جميع الروابط قبل تغيير النموذج، حيث سيؤدي تغيير مخطط المعلمات إلى إبطال الاتصالات الموجودة."
+    },
+    "mediaUpload": {
+      "uploadFailed": "فشل التحميل",
+      "invalidUrl": "URL غير صالح",
+      "fileUploaded": "تم تحميل الملف",
+      "uploaded": "تم التحميل",
+      "clear": "مسح",
+      "uploading": "جاري التحميل...",
+      "uploadingShort": "جاري التحميل...",
+      "failed": "فشل",
+      "dropOrBrowse": "أسقط الملف هنا أو انقر للتصفح",
+      "browse": "تصفح",
+      "pasteUrl": "لصق URL",
+      "urlPlaceholder": "https://...",
+      "urlShortPlaceholder": "رابط...",
+      "supportedTypes": "صورة، فيديو، صوت"
+    },
+    "textInput": {
+      "promptLibrary": "مكتبة التلميحات",
+      "saveCurrent": "حفظ المحتوى الحالي",
+      "namePlaceholder": "الاسم...",
+      "noSavedSnippets": "لا توجد مقاطع محفوظة",
+      "optimizeFailed": "فشل التحسين",
+      "optimizeNowTitle": "تحسين النص الآن",
+      "optimizing": "جاري التحسين...",
+      "optimizeNow": "تحسين الآن",
+      "autoOnRunTitle": "تحسين فقط عند النقر على تشغيل",
+      "autoOnRun": "تحسين تلقائي عند التشغيل",
+      "chars": "أحرف",
+      "optimizeOnRunEnabled": "مفعّل: تحسين عند التشغيل",
+      "optimizeOffHint": "الافتراضي: لا تحسين (تشغيل بالنص الأصلي)",
+      "manualOptimizedHint": "تم التحسين يدويًا. سيتم تخطي التحسين التلقائي حتى يتغير النص.",
+      "enterTextOrPrompt": "أدخل النص أو التلميح..."
+    },
+    "promptOptimizer": {
+      "optimizationFailed": "فشل التحسين",
+      "optimizeParams": "تحسين المعاملات",
+      "optimizeParamsPresetOnly": "تحسين المعاملات (الافتراضي فقط)",
+      "perRun": "تشغيل",
+      "mode": "الوضع",
+      "text": "النص",
+      "textPlaceholder": "نص للتوسيع أو استخدامه كسياق...",
+      "autoOnRunTitle": "تحسين تلقائي عند النقر على تشغيل",
+      "autoOnRun": "تحسين تلقائي عند التشغيل",
+      "quickOptimizeTitle": "تحسين سريع ({{mode}})",
+      "params": "المعاملات",
+      "prompt": "التلميح",
+      "emptyPrompt": "(فارغ)",
+      "optimizing": "جاري التحسين...",
+      "optimize": "تحسين",
+      "optimizeWithImage": "تحسين بالصورة...",
+      "modeOptions": {
+        "image": "صورة",
+        "video": "فيديو"
+      },
+      "imageDialog": {
+        "title": "تحسين بالصورة",
+        "enterTextOrImage": "يرجى إدخال النص أو توفير صورة",
+        "optimizeFailed": "فشل التحسين",
+        "loadingOptimizer": "جاري تحميل المحسّن...",
+        "loadConfigFailed": "تعذر تحميل تكوين المحسّن"
+      }
+    }
   }
 }

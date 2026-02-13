@@ -32,7 +32,9 @@
     "deselectAll": "전체 선택 해제",
     "retry": "다시 시도",
     "downloadFailed": "다운로드에 실패했습니다. 네트워크 연결을 확인해 주세요.",
-    "openInBrowser": "브라우저에서 열기"
+    "openInBrowser": "브라우저에서 열기",
+    "settings": "설정",
+    "clearAll": "모두 지우기"
   },
   "nav": {
     "home": "홈",
@@ -45,7 +47,9 @@
     "zImage": "Z-Image",
     "freeTools": "무료 도구",
     "settings": "설정",
-    "collapse": "접기"
+    "collapse": "접기",
+    "workflow": "워크플로우",
+    "expand": "펼치기"
   },
   "welcome": {
     "tagline": "손끝에서 펼쳐지는 AI 크리에이티브 도구",
@@ -87,6 +91,11 @@
         "title": "무료 도구",
         "description": "로컬에서 실행되는 강력한 AI 도구 - API 키 불필요",
         "badge": "무료"
+      },
+      "workflow": {
+        "title": "워크플로우",
+        "description": "노드 기반 에디터로 시각적 AI 파이프라인 구축",
+        "badge": "새로운"
       }
     }
   },
@@ -179,7 +188,9 @@
         "hint": "흰색 영역은 표시, 검은색 영역은 숨김"
       },
       "removeFile": "파일 제거",
-      "removeFileConfirm": "이 파일을 제거하시겠습니까?"
+      "removeFileConfirm": "이 파일을 제거하시겠습니까?",
+      "micInUse": "마이크가 다른 애플리케이션에서 사용 중입니다",
+      "tapToRecord": "탭하여 녹음 시작"
     },
     "autoSaved": "에셋에 자동 저장됨",
     "autoSavedDesc": "{{count}}개의 출력을 내 에셋에 저장했습니다",
@@ -235,7 +246,14 @@
       "seedsGenerated": "시드 자동 생성됨",
       "settings": "배치 설정"
     },
-    "input": "입력"
+    "input": "입력",
+    "imageCopied": "이미지가 클립보드에 복사되었습니다",
+    "urlCopied": "URL이 클립보드에 복사되었습니다",
+    "copyFailed": "복사 실패",
+    "copyImage": "이미지 복사",
+    "copyUrl": "URL 복사",
+    "copy": "복사",
+    "download": "다운로드"
   },
   "history": {
     "title": "기록",
@@ -246,7 +264,8 @@
       "completed": "완료됨",
       "failed": "실패",
       "processing": "처리 중",
-      "created": "생성됨"
+      "created": "생성됨",
+      "archived": "보관됨"
     },
     "loadPreviews": "미리보기 로드",
     "disablePreviews": "미리보기 비활성화",
@@ -280,7 +299,12 @@
       "noInputsTitle": "템플릿을 저장할 수 없습니다",
       "noInputsDesc": "입력 매개변수는 이 앱에서 수행한 예측에서만 사용할 수 있습니다. 먼저 새 예측을 실행하세요."
     },
-    "hasInputs": "템플릿으로 저장 가능"
+    "hasInputs": "템플릿으로 저장 가능",
+    "downloadComplete": "다운로드 완료",
+    "downloadCompleteDesc": "{{count}}개 파일 다운로드됨",
+    "downloadFailed": "다운로드 실패",
+    "downloadFailedDesc": "{{count}}개 파일 다운로드 실패",
+    "longPressHint": "길게 눌러 선택"
   },
   "templates": {
     "title": "템플릿",
@@ -431,7 +455,7 @@
       }
     },
     "errors": {
-      "desktopRequired": "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+      "desktopRequired": "이 기능은 데스크톱 앱이 필요합니다. WaveSpeed Desktop을 다운로드하거나 온라인 버전을 사용해 보세요.",
       "generationCancelled": "생성이 취소되었습니다"
     },
     "tips": {
@@ -462,7 +486,7 @@
       "invalidDesc": "API 키를 확인할 수 없습니다. 확인 후 다시 시도하세요.",
       "cleared": "API 키 삭제됨",
       "clearedDesc": "API 키가 제거되었습니다.",
-      "itemDeleted": "Cache item deleted",
+      "itemDeleted": "캐시 항목 삭제됨",
       "error": "오류",
       "errorDesc": "API 키 저장에 실패했습니다."
     },
@@ -500,7 +524,7 @@
       "autoSaveDisabledDesc": "플레이그라운드에서 수동으로 출력을 저장할 수 있습니다",
       "directory": "에셋 디렉토리",
       "directoryDesc": "생성된 출력을 저장할 위치를 선택하세요",
-      "defaultDirectory": "Documents/WaveSpeed",
+      "defaultDirectory": "문서/WaveSpeed",
       "browse": "찾아보기",
       "directoryChanged": "디렉토리 변경됨",
       "directoryChangedDesc": "새 출력이 {{path}}에 저장됩니다",
@@ -520,7 +544,27 @@
       "clearFailed": "캐시 삭제 실패",
       "zImageAuxiliary": "Z-Image 보조 모델",
       "zImageModels": "Z-Image 모델",
-      "zImageBinary": "Z-Image 바이너리"
+      "zImageBinary": "Z-Image 바이너리",
+      "predownload": "모델 사전 다운로드",
+      "predownloadDesc": "오프라인 사용을 위해 AI 모델을 미리 다운로드",
+      "downloadModels": "모델 다운로드",
+      "downloadPartial": "일부 다운로드 완료",
+      "downloadPartialDesc": "일부 모델이 성공적으로 다운로드됨",
+      "downloadComplete": "다운로드 완료",
+      "downloadCompleteDesc": "모든 모델이 성공적으로 다운로드됨",
+      "downloadCancelled": "다운로드 취소됨",
+      "downloadCancelledDesc": "모델 다운로드가 취소되었습니다",
+      "alreadyCached": "이미 캐시됨",
+      "downloaded": "다운로드됨",
+      "overallProgress": "전체 진행률",
+      "models": {
+        "ffmpegJs": "FFmpeg 코어 (JS)",
+        "ffmpegWasm": "FFmpeg 코어 (WASM)",
+        "backgroundRemover": "배경 제거",
+        "imageEraser": "이미지 지우개 (LaMa)",
+        "samEncoder": "SAM 비전 인코더",
+        "samDecoder": "SAM 프롬프트 디코더"
+      }
     },
     "downloads": {
       "title": "다운로드",
@@ -555,7 +599,12 @@
       "devModeDesc": "개발 모드에서는 자동 업데이트가 비활성화되어 있습니다.",
       "checkFailed": "업데이트 확인 실패",
       "downloadFailed": "다운로드 실패",
-      "downloadFailedDesc": "업데이트 다운로드에 실패했습니다."
+      "downloadFailedDesc": "업데이트 다운로드에 실패했습니다.",
+      "downloadComplete": "다운로드 완료",
+      "openToInstall": "설치하려면 {{filename}}을(를) 열어주세요",
+      "installInstructions": "설치 안내",
+      "findInDownloads": "APK가 다운로드 폴더에 저장되었습니다. 설치하려면 파일 관리자에서 {{filename}}을(를) 여세요",
+      "downloadProgress": "다운로드 중... {{progress}}%"
     },
     "about": {
       "title": "정보",
@@ -563,7 +612,8 @@
       "mobileDescription": "WaveSpeed Mobile - AI 모델 플레이그라운드",
       "aboutText": "WaveSpeed API로 AI 모델을 실행하기 위한 오픈소스 데스크톱 애플리케이션입니다.",
       "mobileAboutText": "WaveSpeed API로 AI 모델을 실행하기 위한 오픈소스 모바일 애플리케이션입니다.",
-      "viewOnGitHub": "GitHub에서 보기"
+      "viewOnGitHub": "GitHub에서 보기",
+      "version": "버전"
     }
   },
   "apiKeyRequired": {
@@ -642,7 +692,15 @@
       "facesEnhanced": "{{count}}개의 얼굴 보정됨",
       "noFacesFound": "얼굴을 찾을 수 없음",
       "invalidFile": "유효한 이미지 파일을 선택하세요",
-      "firstTimeDownload": "처음이신가요? 모델이 다운로드됩니다 (~350MB)"
+      "firstTimeDownload": "처음이신가요? 모델이 다운로드됩니다 (~350MB)",
+      "orDragDrop": "또는 끌어서 놓기",
+      "original": "원본",
+      "enhanced": "향상됨",
+      "sideBySide": "나란히 비교",
+      "comparison": "슬라이더 비교",
+      "dragToCompare": "드래그하여 비교",
+      "noFaces": "이미지에서 얼굴을 찾을 수 없습니다",
+      "facesFound": "{{count}}개 얼굴 감지됨"
     },
     "faceSwapper": {
       "title": "얼굴 교체",
@@ -653,12 +711,12 @@
       "selectTarget": "대상 이미지 선택",
       "sourceHint": "복사할 얼굴 정체성",
       "targetHint": "얼굴을 교체할 이미지",
-      "orDragDrop": "or drag and drop",
+      "orDragDrop": "또는 끌어서 놓기",
       "noSourceFace": "소스 이미지에서 얼굴이 감지되지 않았습니다",
       "noTargetFaces": "대상 이미지에서 얼굴이 감지되지 않았습니다",
       "clickToSelect": "교체할 얼굴을 클릭하여 선택",
       "facesSelected": "{{selected}}/{{total}}개의 얼굴 선택됨",
-      "sourceSelected": "Face {{selected}}/{{total}} selected",
+      "sourceSelected": "얼굴 {{selected}}/{{total}} 선택됨",
       "faceDetected": "얼굴 감지됨",
       "swapFaces": "얼굴 교체",
       "processing": "처리 중...",
@@ -728,7 +786,8 @@
       "undoEdit": "제거 취소",
       "redoEdit": "제거 다시 실행",
       "hint": "제거할 객체 위에 그린 후 객체 제거를 클릭하세요",
-      "resultPlaceholder": "결과가 여기에 표시됩니다"
+      "resultPlaceholder": "결과가 여기에 표시됩니다",
+      "hintMobile": "제거할 영역에 그리기"
     },
     "segmentAnything": {
       "title": "세그먼트 애니씽",
@@ -742,7 +801,10 @@
       "clearPoints": "포인트 지우기",
       "clearPointsTooltip": "모든 포인트를 지우고 호버 미리보기 모드로 돌아가기",
       "cutMask": "마스크 잘라내기",
-      "hint": "좌클릭으로 포함할 영역, 우클릭으로 제외할 영역 지정"
+      "hint": "좌클릭으로 포함할 영역, 우클릭으로 제외할 영역 지정",
+      "hoverToPreviewMobile": "선택을 시작하려면 객체를 탭하세요",
+      "clickToRefineMobile": "탭하여 포인트 추가",
+      "hintMobile": "탭하여 포함, 길게 눌러 제외"
     },
     "videoConverter": {
       "title": "비디오 변환기",
@@ -758,7 +820,14 @@
       "format": "형식",
       "quality": "품질",
       "resolution": "해상도",
-      "convertedSize": "변환 후 크기"
+      "convertedSize": "변환 후 크기",
+      "inputVideo": "입력 비디오",
+      "selectVideoDesc": "변환할 비디오 파일 선택 또는 드롭",
+      "outputFormat": "출력 형식",
+      "converted": "변환됨",
+      "result": "변환 결과",
+      "codecUsed": "사용된 코덱",
+      "invalidFile": "유효한 비디오 파일을 선택하세요"
     },
     "audioConverter": {
       "title": "오디오 변환기",
@@ -771,7 +840,13 @@
       "converting": "변환 중...",
       "converted": "변환됨",
       "playOriginal": "원본 재생",
-      "playConverted": "변환 후 재생"
+      "playConverted": "변환 후 재생",
+      "inputAudio": "입력 오디오",
+      "outputFormat": "출력 형식",
+      "bitrate": "비트레이트",
+      "original": "원본",
+      "result": "결과",
+      "invalidFile": "MP3 또는 WAV 파일을 선택하세요"
     },
     "imageConverter": {
       "title": "이미지 변환기",
@@ -784,7 +859,12 @@
       "convert": "변환",
       "converting": "변환 중...",
       "quality": "품질",
-      "downloadAll": "모두 다운로드"
+      "downloadAll": "모두 다운로드",
+      "inputImage": "입력 이미지",
+      "selectImage": "클릭하거나 이미지를 여기에 드롭",
+      "outputFormat": "출력 형식",
+      "result": "결과",
+      "invalidFile": "유효한 이미지 파일을 선택하세요"
     },
     "mediaTrimmer": {
       "title": "미디어 트리머",
@@ -799,7 +879,16 @@
       "selectedDuration": "선택 길이",
       "trimmedSize": "자른 후 크기",
       "playingOriginal": "원본 재생 중",
-      "playingTrimmed": "자른 파일 재생 중"
+      "playingTrimmed": "자른 파일 재생 중",
+      "inputMedia": "입력 미디어",
+      "trimSettings": "트림 설정",
+      "selectRange": "시작 및 종료 시간 선택",
+      "startTime": "시작 시간",
+      "endTime": "종료 시간",
+      "timeFormat": "형식: m:ss.d 또는 초",
+      "outputDuration": "출력 시간",
+      "result": "트림 결과",
+      "invalidFile": "유효한 비디오 또는 오디오 파일을 선택하세요"
     },
     "mediaMerger": {
       "title": "미디어 병합기",
@@ -813,7 +902,11 @@
       "merging": "병합 중...",
       "merged": "병합됨",
       "totalDuration": "총 길이",
-      "sameFormatNote": "무손실 병합을 위해 파일은 동일한 형식이어야 합니다"
+      "sameFormatNote": "무손실 병합을 위해 파일은 동일한 형식이어야 합니다",
+      "inputMedia": "입력 파일",
+      "files": "개 파일",
+      "result": "병합 결과",
+      "sameTypeRequired": "모든 파일은 동일한 유형(비디오 또는 오디오)이어야 합니다"
     },
     "progress": {
       "downloading": "모델 다운로드 중",
@@ -836,7 +929,10 @@
       "converting": "변환 중",
       "merging": "병합 중",
       "trimming": "자르는 중"
-    }
+    },
+    "downloadSuccess": "다운로드 폴더에 저장됨",
+    "downloadStarted": "다운로드 시작됨",
+    "downloadFailed": "다운로드 실패"
   },
   "game": {
     "waitingLong": "오래 기다리셨나요? 미니 게임 해보세요!",
@@ -878,5 +974,315 @@
     "result": "결과",
     "codecUsed": "사용된 코덱",
     "download": "다운로드"
+  },
+  "workflow": {
+    "workflows": "워크플로우",
+    "newWorkflow": "새 워크플로우",
+    "untitled": "제목 없는 워크플로우",
+    "save": "저장",
+    "saved": "저장됨",
+    "saving": "저장 중...",
+    "saveFailed": "저장 실패",
+    "savedAt": "저장됨",
+    "unsaved": "저장 안 됨",
+    "nodes": "노드",
+    "config": "구성",
+    "results": "결과",
+    "cost": "비용",
+    "settings": "설정",
+    "runAll": "모두 실행",
+    "run": "실행",
+    "runTarget": "대상 실행",
+    "runTargetAll": "모든 노드 실행",
+    "runTargetSelected": "선택한 노드 실행",
+    "runCount": "실행 횟수",
+    "stop": "중지",
+    "running": "실행 중...",
+    "cancelAll": "모두 취소",
+    "import": "가져오기",
+    "export": "내보내기",
+    "imported": "가져옴",
+    "importFailed": "가져오기 실패",
+    "exported": "내보내기 성공",
+    "exportFailed": "내보내기 실패",
+    "estimated": "예상 비용",
+    "fitView": "뷰 맞춤",
+    "previousImage": "이전 이미지",
+    "nextImage": "다음 이미지",
+    "previewNavHint": "← / →로 이미지 탐색 ({{current}}/{{total}})",
+    "clickAnywhereToClose": "아무 곳이나 클릭하여 닫기",
+    "runNode": "노드 실행",
+    "modelSelection": "모델 선택",
+    "annotationHint": "메모를 더블클릭하여 편집하세요.",
+    "continueFrom": "여기서 계속",
+    "retry": "다시 시도",
+    "cancel": "취소",
+    "noWorkflows": "아직 워크플로우 없음",
+    "create": "만들기",
+    "open": "열기",
+    "paste": "붙여넣기",
+    "addNode": "노드 추가",
+    "addNote": "메모 추가",
+    "note": "메모",
+    "deleteConnection": "연결 삭제",
+    "add": "추가",
+    "delete": "삭제",
+    "currentModel": "현재 모델",
+    "modelIdLabel": "모델 ID",
+    "selectNode": "구성할 노드 선택",
+    "noExecutions": "아직 실행 없음",
+    "budgetExceeded": "예산 초과",
+    "dailySpend": "일일 지출",
+    "perExecutionLimit": "실행당 제한",
+    "dailyLimit": "일일 제한",
+    "editBudget": "예산 편집",
+    "refreshModels": "모델 새로고침",
+    "drawMask": "마스크 그리기",
+    "drawMaskNeedInput": "먼저 입력 이미지를 설정하세요",
+    "segmentPointPicker": {
+      "title": "세그먼트 포인트 선택",
+      "hint": "왼쪽 클릭 = 포함, 오른쪽 클릭 = 제외",
+      "points": "포인트",
+      "clear": "지우기",
+      "done": "완료"
+    },
+    "pickPoints": "포인트 선택",
+    "pickPointsNeedInput": "먼저 입력 이미지를 설정하세요",
+    "pointsLabel": "세그먼트 포인트",
+    "linked": "연결됨",
+    "linkedTo": "연결됨",
+    "disconnectLink": "잠금 해제: 이 링크 연결 끊기",
+    "previewUpstreamOutput": "상류 출력 미리보기",
+    "localFileOrUrl": "로컬 파일 또는 URL",
+    "showAll": "모두 표시",
+    "showAllRuns": "모든 실행 표시",
+    "showLatestOnly": "최신만 표시",
+    "latest": "최신",
+    "latestHidden": "최신 결과가 숨겨졌습니다.",
+    "noVisibleResults": "표시할 결과가 없습니다.",
+    "hideRun": "이 실행 숨기기",
+    "output": "출력",
+    "outputLowercase": "출력",
+    "invalidUrl": "잘못된 URL",
+    "removeLast": "마지막 제거",
+    "enterField": "{{field}} 입력...",
+    "show": "표시",
+    "hide": "숨기기",
+    "optional": "선택 사항",
+    "searchNodesPlaceholder": "노드 검색...",
+    "dragOrClickToAdd": "캔버스로 드래그하거나 클릭하여 추가",
+    "noNodesAvailable": "사용 가능한 노드가 없습니다",
+    "nodeCategory": {
+      "recent": "최근 사용",
+      "input": "입력",
+      "ai-task": "AI 작업",
+      "free-tool": "무료 도구",
+      "output": "출력",
+      "processing": "처리",
+      "control": "제어"
+    },
+    "nodeDefs": {
+      "ai-task/run": {
+        "label": "모델 실행",
+        "emptyHint": "이 노드를 클릭한 다음 모델 선택 →",
+        "params": {
+          "modelId": {
+            "label": "모델"
+          }
+        }
+      },
+      "input/media-upload": {
+        "label": "업로드",
+        "outputs": {
+          "output": {
+            "label": "URL"
+          }
+        }
+      },
+      "input/text-input": {
+        "label": "텍스트",
+        "params": {
+          "text": {
+            "label": "텍스트"
+          }
+        }
+      },
+      "output/preview": {
+        "label": "미리보기",
+        "inputs": {
+          "input": {
+            "label": "URL"
+          }
+        },
+        "params": {
+          "autoDetect": {
+            "label": "자동 타입 감지"
+          },
+          "forceType": {
+            "label": "강제 유형",
+            "options": {
+              "auto": "자동",
+              "image": "이미지",
+              "video": "비디오",
+              "audio": "오디오",
+              "3d": "3D 모델"
+            }
+          }
+        }
+      },
+      "output/file": {
+        "label": "파일 내보내기",
+        "inputs": {
+          "url": {
+            "label": "URL"
+          }
+        },
+        "params": {
+          "outputDir": {
+            "label": "출력 디렉토리"
+          },
+          "filename": {
+            "label": "파일명 접두사"
+          },
+          "format": {
+            "label": "형식",
+            "options": {
+              "auto": "자동",
+              "mp4": "MP4",
+              "png": "PNG",
+              "jpg": "JPG",
+              "mp3": "MP3",
+              "wav": "WAV"
+            }
+          }
+        }
+      },
+      "free-tool/image-enhancer": {
+        "label": "이미지 향상"
+      },
+      "free-tool/background-remover": {
+        "label": "배경 제거"
+      },
+      "free-tool/face-enhancer": {
+        "label": "얼굴 향상"
+      },
+      "free-tool/video-enhancer": {
+        "label": "비디오 향상"
+      },
+      "free-tool/face-swapper": {
+        "label": "얼굴 교체"
+      },
+      "free-tool/image-eraser": {
+        "label": "이미지 지우개"
+      },
+      "free-tool/segment-anything": {
+        "label": "세그먼트 애니싱",
+        "params": {
+          "pointX": {
+            "label": "포인트 X",
+            "description": "세그먼트 포인트의 정규화 X (0-1)"
+          },
+          "pointY": {
+            "label": "포인트 Y",
+            "description": "세그먼트 포인트의 정규화 Y (0-1)"
+          }
+        }
+      },
+      "free-tool/video-converter": {
+        "label": "비디오 변환"
+      },
+      "free-tool/audio-converter": {
+        "label": "오디오 변환"
+      },
+      "free-tool/image-converter": {
+        "label": "이미지 변환"
+      },
+      "free-tool/media-trimmer": {
+        "label": "미디어 트리머"
+      },
+      "free-tool/media-merger": {
+        "label": "미디어 병합"
+      }
+    },
+    "modelSelector": {
+      "allCategory": "전체",
+      "noModelsLoaded": "모델이 로드되지 않았습니다. 아래 \"모델 새로고침\"을 클릭하세요.",
+      "loadFailed": "모델 로드에 실패했습니다.",
+      "refreshFailed": "모델 새로고침에 실패했습니다.",
+      "loadingModels": "모델 로드 중...",
+      "loadingHint": "최초 실행 시 몇 초가 걸릴 수 있습니다",
+      "recent": "최근 사용",
+      "searchPlaceholder": "모델 검색...",
+      "searchAllPlaceholder": "모든 모델 검색...",
+      "refreshTooltip": "모델 카탈로그 새로고침",
+      "refreshing": "새로고침 중...",
+      "noModelsFound": "모델을 찾을 수 없습니다",
+      "disconnectBeforeSwitch": "모델 전환 전에 이 노드의 연결을 해제해 주세요.",
+      "selectCategory": "카테고리 선택",
+      "cannotSwitchTitle": "모델을 전환할 수 없습니다",
+      "cannotSwitchDesc": "이 노드에 활성 연결이 있습니다. 매개변수 스키마가 변경되므로 모델 전환 전에 모든 엣지를 연결 해제하세요."
+    },
+    "mediaUpload": {
+      "uploadFailed": "업로드 실패",
+      "invalidUrl": "잘못된 URL",
+      "fileUploaded": "파일이 업로드되었습니다",
+      "uploaded": "업로드됨",
+      "clear": "지우기",
+      "uploading": "업로드 중...",
+      "uploadingShort": "업로드 중...",
+      "failed": "실패",
+      "dropOrBrowse": "파일을 여기에 놓거나 클릭하여 찾아보기",
+      "browse": "찾아보기",
+      "pasteUrl": "URL 붙여넣기",
+      "urlPlaceholder": "https://...",
+      "urlShortPlaceholder": "URL...",
+      "supportedTypes": "이미지, 비디오, 오디오"
+    },
+    "textInput": {
+      "promptLibrary": "프롬프트 라이브러리",
+      "saveCurrent": "현재 저장",
+      "namePlaceholder": "이름...",
+      "noSavedSnippets": "저장된 스니펫 없음",
+      "optimizeFailed": "최적화 실패",
+      "optimizeNowTitle": "지금 텍스트 최적화",
+      "optimizing": "최적화 중...",
+      "optimizeNow": "지금 최적화",
+      "autoOnRunTitle": "실행 클릭 시에만 최적화",
+      "autoOnRun": "실행 시 자동 최적화",
+      "chars": "자",
+      "optimizeOnRunEnabled": "활성화: 실행 시 최적화",
+      "optimizeOffHint": "기본값: 최적화 없음(원문으로 실행)",
+      "manualOptimizedHint": "수동 최적화됨. 텍스트가 변경될 때까지 자동 최적화를 건너뜁니다.",
+      "enterTextOrPrompt": "텍스트 또는 프롬프트 입력..."
+    },
+    "promptOptimizer": {
+      "optimizationFailed": "최적화 실패",
+      "optimizeParams": "매개변수 최적화",
+      "optimizeParamsPresetOnly": "매개변수 최적화(프리셋만)",
+      "perRun": "회",
+      "mode": "모드",
+      "text": "텍스트",
+      "textPlaceholder": "확장하거나 컨텍스트로 사용할 텍스트...",
+      "autoOnRunTitle": "실행 클릭 시 자동 최적화",
+      "autoOnRun": "실행 시 자동 최적화",
+      "quickOptimizeTitle": "빠른 최적화 ({{mode}})",
+      "params": "매개변수",
+      "prompt": "프롬프트",
+      "emptyPrompt": "(비어 있음)",
+      "optimizing": "최적화 중...",
+      "optimize": "최적화",
+      "optimizeWithImage": "이미지로 최적화...",
+      "modeOptions": {
+        "image": "이미지",
+        "video": "비디오"
+      },
+      "imageDialog": {
+        "title": "이미지로 최적화",
+        "enterTextOrImage": "텍스트를 입력하거나 이미지를 제공해 주세요",
+        "optimizeFailed": "최적화 실패",
+        "loadingOptimizer": "최적화 도구 로드 중...",
+        "loadConfigFailed": "최적화 도구 구성을 로드할 수 없습니다"
+      }
+    }
   }
 }

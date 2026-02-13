@@ -296,7 +296,21 @@ function AITaskModelSelector({ params, onChange }: { params: Record<string, unkn
     return models.find(m => m.modelId === currentModelId) ?? null
   }, [selectedModel, models, currentModelId])
 
-  const categories = useMemo(() => [allCategoryLabel, ...[...new Set(models.map(m => m.category))].sort()], [models, allCategoryLabel])
+  // Sort categories by popularity (model count descending), then alphabetically for ties
+  const categories = useMemo(() => {
+    const countByCategory = new Map<string, number>()
+    for (const m of models) {
+      countByCategory.set(m.category, (countByCategory.get(m.category) ?? 0) + 1)
+    }
+    const unique = [...new Set(models.map(m => m.category))]
+    unique.sort((a, b) => {
+      const countA = countByCategory.get(a) ?? 0
+      const countB = countByCategory.get(b) ?? 0
+      if (countB !== countA) return countB - countA
+      return a.localeCompare(b)
+    })
+    return [allCategoryLabel, ...unique]
+  }, [models, allCategoryLabel])
 
   useEffect(() => {
     if (!categories.includes(selectedCategory)) {

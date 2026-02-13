@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useContext } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { PageResetContext } from '@/components/layout/Layout'
+import { PageResetContext } from '@/components/layout/PageResetContext'
 import { useTranslation } from 'react-i18next'
 import { generateFreeToolFilename } from '@/stores/assetsStore'
 import { useFFmpegWorker } from '@/hooks/useFFmpegWorker'

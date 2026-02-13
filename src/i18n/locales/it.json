@@ -938,6 +938,26 @@
     "waitingLong": "Attesa troppo lunga? Gioca a un mini gioco!",
     "clickToPlay": "Clicca per iniziare"
   },
+  "smartPlayground": {
+    "autoDetected": "Auto-detected variant",
+    "willCall": "Will call",
+    "toggleSpeed": "Speed",
+    "toggleMode": "Mode",
+    "toggleQuality": "Quality",
+    "speedNormal": "Normal",
+    "speedFast": "Fast",
+    "modeNormal": "Normal",
+    "modeSequential": "Sequential",
+    "qualityPro": "Pro",
+    "qualityStd": "Standard",
+    "qualityUltra": "Ultra",
+    "qualityMulti": "Multi",
+    "run": "Run",
+    "running": "Running...",
+    "input": "Input",
+    "output": "Output",
+    "back": "Back"
+  },
   "videoConverter": {
     "title": "Convertitore Video",
     "description": "Converti video tra formati usando il tuo browser",

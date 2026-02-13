@@ -938,6 +938,26 @@
     "waitingLong": "오래 기다리셨나요? 미니 게임 해보세요!",
     "clickToPlay": "클릭하여 시작"
   },
+  "smartPlayground": {
+    "autoDetected": "Auto-detected variant",
+    "willCall": "Will call",
+    "toggleSpeed": "Speed",
+    "toggleMode": "Mode",
+    "toggleQuality": "Quality",
+    "speedNormal": "Normal",
+    "speedFast": "Fast",
+    "modeNormal": "Normal",
+    "modeSequential": "Sequential",
+    "qualityPro": "Pro",
+    "qualityStd": "Standard",
+    "qualityUltra": "Ultra",
+    "qualityMulti": "Multi",
+    "run": "Run",
+    "running": "Running...",
+    "input": "Input",
+    "output": "Output",
+    "back": "Back"
+  },
   "videoConverter": {
     "title": "비디오 변환기",
     "description": "브라우저에서 비디오 형식 변환",

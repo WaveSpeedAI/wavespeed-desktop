@@ -80,9 +80,10 @@ interface OutputDisplayProps {
   isLoading: boolean
   modelId?: string
   hideGameButton?: boolean
+  gridLayout?: boolean
 }
 
-export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, hideGameButton }: OutputDisplayProps) {
+export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, hideGameButton, gridLayout }: OutputDisplayProps) {
   const { t } = useTranslation()
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
   const [fullscreenIndex, setFullscreenIndex] = useState<number | null>(null)
@@ -442,7 +443,12 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
       )}
 
       {/* Outputs - fill remaining space */}
-      <div className="flex-1 min-h-0 flex flex-col gap-4">
+      <div className={cn(
+        "flex-1 min-h-0",
+        gridLayout && outputs.length > 1
+          ? "grid grid-cols-2 md:grid-cols-3 gap-3 auto-rows-min overflow-auto"
+          : "flex flex-col gap-4"
+      )}>
         {outputs.map((output, index) => {
           const isObject = typeof output === 'object' && output !== null
           const outputStr = isObject ? JSON.stringify(output, null, 2) : String(output)
@@ -454,7 +460,12 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
           return (
             <div
               key={index}
-              className="relative group rounded-lg border overflow-hidden bg-muted/30 flex-1 min-h-0 flex items-center justify-center"
+              className={cn(
+                "relative group rounded-lg border overflow-hidden bg-muted/30 flex items-center justify-center",
+                gridLayout && outputs.length > 1
+                  ? "aspect-square"
+                  : "flex-1 min-h-0"
+              )}
             >
               <div className="absolute left-2 top-2 z-10">
                 <Badge variant="secondary" className="rounded-md bg-background/80 px-2 py-0.5 text-[11px] backdrop-blur">

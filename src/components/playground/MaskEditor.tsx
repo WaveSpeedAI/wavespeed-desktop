@@ -183,8 +183,8 @@ export function MaskEditor({
     setHistoryIndex(newIndex)
   }, [historyIndex, history])
 
-  // Get coordinates relative to canvas
-  const getCanvasCoords = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+  // Get coordinates relative to canvas (from clientX/clientY)
+  const getCanvasCoords = useCallback((clientX: number, clientY: number) => {
     const canvas = maskCanvasRef.current
     if (!canvas) return null
 
@@ -193,20 +193,20 @@ export function MaskEditor({
     const scaleY = canvas.height / rect.height
 
     return {
-      x: (e.clientX - rect.left) * scaleX,
-      y: (e.clientY - rect.top) * scaleY
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY
     }
   }, [])
 
   // Get display coordinates for cursor overlay (in CSS pixels)
-  const getDisplayCoords = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+  const getDisplayCoords = useCallback((clientX: number, clientY: number) => {
     const canvas = maskCanvasRef.current
     if (!canvas) return null
 
     const rect = canvas.getBoundingClientRect()
     return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top
+      x: clientX - rect.left,
+      y: clientY - rect.top
     }
   }, [])
 
@@ -235,11 +235,11 @@ export function MaskEditor({
     }
   }, [tool, brushSize])
 
-  // Mouse event handlers
-  const handleMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+  // Shared pointer-down logic
+  const handlePointerDown = useCallback((clientX: number, clientY: number) => {
     if (disabled) return
 
-    const coords = getCanvasCoords(e)
+    const coords = getCanvasCoords(clientX, clientY)
     if (!coords) return
 
     if (tool === 'fill') {
@@ -258,16 +258,16 @@ export function MaskEditor({
     drawAt(coords.x, coords.y)
   }, [disabled, tool, getCanvasCoords, drawAt, saveHistorySnapshot])
 
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
-    // Update cursor position for brush indicator
-    const displayCoords = getDisplayCoords(e)
+  // Shared pointer-move logic
+  const handlePointerMove = useCallback((clientX: number, clientY: number) => {
+    const displayCoords = getDisplayCoords(clientX, clientY)
     if (displayCoords) {
       setCursorPos(displayCoords)
     }
 
     if (!isDrawing || tool === 'fill') return
 
-    const coords = getCanvasCoords(e)
+    const coords = getCanvasCoords(clientX, clientY)
     if (!coords) return
 
     const lastPos = lastPosRef.current
@@ -275,7 +275,8 @@ export function MaskEditor({
     lastPosRef.current = coords
   }, [isDrawing, tool, getCanvasCoords, getDisplayCoords, drawAt])
 
-  const handleMouseUp = useCallback(() => {
+  // Shared pointer-up logic
+  const handlePointerUp = useCallback(() => {
     if (isDrawing) {
       setIsDrawing(false)
       lastPosRef.current = null
@@ -283,14 +284,43 @@ export function MaskEditor({
     }
   }, [isDrawing, saveHistorySnapshot])
 
+  // Mouse event handlers
+  const handleMouseDown = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    handlePointerDown(e.clientX, e.clientY)
+  }, [handlePointerDown])
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    handlePointerMove(e.clientX, e.clientY)
+  }, [handlePointerMove])
+
+  const handleMouseUp = useCallback(() => {
+    handlePointerUp()
+  }, [handlePointerUp])
+
   const handleMouseLeave = useCallback(() => {
     setCursorPos(null)
-    if (isDrawing) {
-      setIsDrawing(false)
-      lastPosRef.current = null
-      saveHistorySnapshot()
-    }
-  }, [isDrawing, saveHistorySnapshot])
+    handlePointerUp()
+  }, [handlePointerUp])
+
+  // Touch event handlers (mobile)
+  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault()
+    if (e.touches.length !== 1) return
+    const touch = e.touches[0]
+    handlePointerDown(touch.clientX, touch.clientY)
+  }, [handlePointerDown])
+
+  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault()
+    if (e.touches.length !== 1) return
+    const touch = e.touches[0]
+    handlePointerMove(touch.clientX, touch.clientY)
+  }, [handlePointerMove])
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault()
+    handlePointerUp()
+  }, [handlePointerUp])
 
   // Clear all (reset to black)
   const handleClear = useCallback(() => {
@@ -348,12 +378,12 @@ export function MaskEditor({
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl p-0 gap-0">
-        <DialogHeader className="p-4 pb-2">
+      <DialogContent className="max-w-4xl p-0 gap-0 max-h-[100dvh] md:max-h-[90vh] flex flex-col overflow-hidden">
+        <DialogHeader className="shrink-0 p-4 pb-2">
           <DialogTitle>{t('playground.capture.maskEditor.title')}</DialogTitle>
         </DialogHeader>
 
-        <div className="px-4 pb-2">
+        <div className="flex-1 min-h-0 overflow-auto px-4 pb-2">
           {isLoading ? (
             <div
               className="flex items-center justify-center bg-muted rounded-lg"
@@ -365,14 +395,18 @@ export function MaskEditor({
             <div
               ref={containerRef}
               className="relative mx-auto cursor-none"
-              style={{ width: canvasSize.width, height: canvasSize.height }}
+              style={{
+                maxWidth: canvasSize.width,
+                width: '100%',
+                aspectRatio: `${canvasSize.width} / ${canvasSize.height}`,
+              }}
             >
               {/* Background canvas (reference image) */}
               <canvas
                 ref={backgroundCanvasRef}
                 width={canvasSize.width}
                 height={canvasSize.height}
-                className="absolute inset-0 rounded-lg"
+                className="absolute inset-0 w-full h-full rounded-lg"
                 style={referenceImage ? undefined : { filter: 'brightness(1.2) contrast(1.02) saturate(1.05)' }}
               />
 
@@ -381,12 +415,15 @@ export function MaskEditor({
                 ref={maskCanvasRef}
                 width={canvasSize.width}
                 height={canvasSize.height}
-                className="absolute inset-0 rounded-lg"
-                style={{ opacity: 0.4 }}
+                className="absolute inset-0 w-full h-full rounded-lg"
+                style={{ opacity: 0.4, touchAction: 'none' }}
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseLeave}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
               />
 
               {/* Brush cursor indicator */}
@@ -411,8 +448,8 @@ export function MaskEditor({
         </div>
 
         {/* Toolbar */}
-        <div className="px-4 py-3 border-t bg-muted/30">
-          <div className="flex flex-wrap items-center gap-4">
+        <div className="shrink-0 px-4 py-2 md:py-3 border-t bg-muted/30">
+          <div className="flex flex-wrap items-center gap-2 md:gap-4">
             {/* Drawing tools */}
             <div className="flex items-center gap-1">
               <Tooltip>
@@ -557,7 +594,7 @@ export function MaskEditor({
           </p>
         </div>
 
-        <DialogFooter className="p-4 pt-2 border-t">
+        <DialogFooter className="shrink-0 p-4 pt-2 border-t">
           <Button variant="outline" onClick={onClose} disabled={disabled}>
             {t('playground.capture.maskEditor.cancel')}
           </Button>

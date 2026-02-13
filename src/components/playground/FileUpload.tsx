@@ -295,9 +295,13 @@ export function FileUpload({
         <div className="flex gap-2 flex-wrap">
           {urls.map((url, index) => {
             const FileIconComponent = getFileIcon()
-            const isImage = accept.includes('image') && url.match(/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i)
-            const isVideo = accept.includes('video') && url.match(/\.(mp4|webm|mov|avi|mkv)(\?.*)?$/i)
-            const isAudio = accept.includes('audio') && url.match(/\.(mp3|wav|ogg|webm|m4a)(\?.*)?$/i)
+            const hasImageExt = url.match(/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i)
+            const hasVideoExt = url.match(/\.(mp4|webm|mov|avi|mkv)(\?.*)?$/i)
+            const hasAudioExt = url.match(/\.(mp3|wav|ogg|webm|m4a)(\?.*)?$/i)
+            // Fallback: if accept type matches but URL has no recognized extension, trust accept
+            const isImage = accept.includes('image') && (hasImageExt || (!hasVideoExt && !hasAudioExt))
+            const isVideo = accept.includes('video') && (hasVideoExt || (!hasImageExt && !hasAudioExt))
+            const isAudio = accept.includes('audio') && (hasAudioExt || (!hasImageExt && !hasVideoExt))
 
             const handlePreview = () => {
               setPreviewUrl(url)

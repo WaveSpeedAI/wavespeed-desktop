@@ -938,6 +938,26 @@
     "waitingLong": "ज़्यादा इंतज़ार? एक मिनी गेम खेलें!",
     "clickToPlay": "शुरू करने के लिए क्लिक करें"
   },
+  "smartPlayground": {
+    "autoDetected": "Auto-detected variant",
+    "willCall": "Will call",
+    "toggleSpeed": "Speed",
+    "toggleMode": "Mode",
+    "toggleQuality": "Quality",
+    "speedNormal": "Normal",
+    "speedFast": "Fast",
+    "modeNormal": "Normal",
+    "modeSequential": "Sequential",
+    "qualityPro": "Pro",
+    "qualityStd": "Standard",
+    "qualityUltra": "Ultra",
+    "qualityMulti": "Multi",
+    "run": "Run",
+    "running": "Running...",
+    "input": "Input",
+    "output": "Output",
+    "back": "Back"
+  },
   "videoConverter": {
     "title": "वीडियो कनवर्टर",
     "description": "अपने ब्राउज़र का उपयोग करके वीडियो को फॉर्मेट के बीच कनवर्ट करें",

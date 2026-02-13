@@ -25,7 +25,7 @@ import {
   Star,
   X
 } from 'lucide-react'
-import appIcon from '../../../build/icon.png'
+import { AppLogo } from './AppLogo'
 
 interface NavItem {
   titleKey: string
@@ -173,15 +173,10 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
           collapsed && !isMobileOpen ? "justify-center px-2" : "gap-3 px-5"
         )}
       >
-        <img
-          src={appIcon}
-          alt="WaveSpeed"
-          className="h-10 w-10 rounded-xl shadow-sm object-cover"
-          style={{ flexShrink: 0 }}
-        />
+        <AppLogo className="h-10 w-10 shrink-0" />
         {(!collapsed || isMobileOpen) && (
           <div className="min-w-0">
-            <span className="block whitespace-nowrap text-lg font-bold gradient-text">WaveSpeed</span>
+            <span className="block whitespace-nowrap text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#1a2654] to-[#1a6b7c] dark:from-[#38bdf8] dark:to-[#34d399]">WaveSpeed</span>
           </div>
         )}
       </div>

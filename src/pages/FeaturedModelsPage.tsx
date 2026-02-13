@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, PlayCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { SMART_FORM_FAMILIES } from '@/lib/smartFormConfig'
 
 // Featured model families with all variants
 const FEATURED_MODEL_FAMILIES = [
@@ -177,7 +178,14 @@ export function FeaturedModelsPage() {
                   "group cursor-pointer rounded-xl border border-border/50 bg-card/60 backdrop-blur-sm transition-all duration-300 hover:shadow-lg hover:scale-[1.02] overflow-hidden",
                   accent.border
                 )}
-                onClick={() => navigate(`/playground/${family.primaryVariant}`)}
+                onClick={() => {
+                  const smartFamily = SMART_FORM_FAMILIES.find(sf => sf.primaryVariant === family.primaryVariant)
+                  if (smartFamily) {
+                    navigate(`/featured-models/${smartFamily.id}`)
+                  } else {
+                    navigate(`/playground/${family.primaryVariant}`)
+                  }
+                }}
               >
                 {/* Cover image */}
                 <div className="relative aspect-[3/4] overflow-hidden bg-muted">
@@ -212,23 +220,6 @@ export function FeaturedModelsPage() {
                       >
                         {type}
                       </span>
-                    ))}
-                  </div>
-
-                  {/* Variants list */}
-                  <div className="space-y-1 mb-3">
-                    {family.variants.map((variant) => (
-                      <button
-                        key={variant.id}
-                        className="w-full text-left text-xs text-muted-foreground hover:text-primary transition-colors truncate flex items-center gap-1.5 py-0.5"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          navigate(`/playground/${variant.id}`)
-                        }}
-                      >
-                        <PlayCircle className="h-3 w-3 shrink-0 opacity-50" />
-                        <span className="truncate font-mono">{variant.id}</span>
-                      </button>
                     ))}
                   </div>
 

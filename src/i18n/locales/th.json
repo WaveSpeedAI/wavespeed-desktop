@@ -934,6 +934,26 @@
     "downloadStarted": "เริ่มดาวน์โหลดแล้ว",
     "downloadFailed": "ดาวน์โหลดล้มเหลว"
   },
+  "smartPlayground": {
+    "autoDetected": "Auto-detected variant",
+    "willCall": "Will call",
+    "toggleSpeed": "Speed",
+    "toggleMode": "Mode",
+    "toggleQuality": "Quality",
+    "speedNormal": "Normal",
+    "speedFast": "Fast",
+    "modeNormal": "Normal",
+    "modeSequential": "Sequential",
+    "qualityPro": "Pro",
+    "qualityStd": "Standard",
+    "qualityUltra": "Ultra",
+    "qualityMulti": "Multi",
+    "run": "Run",
+    "running": "Running...",
+    "input": "Input",
+    "output": "Output",
+    "back": "Back"
+  },
   "videoConverter": {
     "title": "ตัวแปลงวิดีโอ",
     "description": "แปลงวิดีโอระหว่างรูปแบบโดยใช้เบราว์เซอร์ของคุณ",

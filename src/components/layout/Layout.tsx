@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef, useCallback, createContext } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Sidebar } from './Sidebar'
+import { PageResetContext } from './PageResetContext'
 import { Toaster } from '@/components/ui/toaster'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { ToastAction } from '@/components/ui/toast'
@@ -27,11 +28,6 @@ import { FaceEnhancerPage } from '@/pages/FaceEnhancerPage'
 import { FaceSwapperPage } from '@/pages/FaceSwapperPage'
 import { WorkflowPage } from '@/workflow/WorkflowPage'
 import { useFreeToolListener } from '@/workflow/hooks/useFreeToolListener'
-
-// Context for resetting persistent pages (forces remount by changing key)
-export const PageResetContext = createContext<{ resetPage: (path: string) => void }>({
-  resetPage: () => {}
-})
 
 // Helper to generate next key
 let keyCounter = 0

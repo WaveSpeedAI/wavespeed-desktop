@@ -13,6 +13,11 @@ import backgroundRemoverImg from '../../build/images/BackgroundRemover.jpeg'
 import imageEraserImg from '../../build/images/ImageEraser.jpeg'
 import SegmentAnythingImg from '../../build/images/SegmentAnything.png'
 import freeToolImg from '../../build/images/FreeTool.jpeg'
+import videoConverterImg from '../../build/images/VideoConverter.png'
+import audioConverterImg from '../../build/images/AudioConverter.png'
+import imageConverterImg from '../../build/images/ImageConverter.png'
+import mediaTrimmerImg from '../../build/images/MediaTrimmer.png'
+import mediaMergerImg from '../../build/images/MediaMerger.png'
 
 export function FreeToolsPage() {
   const { t } = useTranslation()
@@ -89,7 +94,7 @@ export function FreeToolsPage() {
       descriptionKey: 'freeTools.videoConverter.description',
       route: '/free-tools/video-converter',
       gradient: 'from-indigo-500/20 via-blue-500/10 to-transparent',
-      image: freeToolImg
+      image: videoConverterImg
     },
     {
       id: 'audio-converter',
@@ -98,7 +103,7 @@ export function FreeToolsPage() {
       descriptionKey: 'freeTools.audioConverter.description',
       route: '/free-tools/audio-converter',
       gradient: 'from-teal-500/20 via-cyan-500/10 to-transparent',
-      image: freeToolImg
+      image: audioConverterImg
     },
     {
       id: 'image-converter',
@@ -107,7 +112,7 @@ export function FreeToolsPage() {
       descriptionKey: 'freeTools.imageConverter.description',
       route: '/free-tools/image-converter',
       gradient: 'from-amber-500/20 via-yellow-500/10 to-transparent',
-      image: freeToolImg
+      image: imageConverterImg
     },
     {
       id: 'media-trimmer',
@@ -116,7 +121,7 @@ export function FreeToolsPage() {
       descriptionKey: 'freeTools.mediaTrimmer.description',
       route: '/free-tools/media-trimmer',
       gradient: 'from-red-500/20 via-orange-500/10 to-transparent',
-      image: freeToolImg
+      image: mediaTrimmerImg
     },
     {
       id: 'media-merger',
@@ -125,7 +130,7 @@ export function FreeToolsPage() {
       descriptionKey: 'freeTools.mediaMerger.description',
       route: '/free-tools/media-merger',
       gradient: 'from-purple-500/20 via-fuchsia-500/10 to-transparent',
-      image: freeToolImg
+      image: mediaMergerImg
     }
   ]
 

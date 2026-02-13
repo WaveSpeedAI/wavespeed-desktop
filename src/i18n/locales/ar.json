@@ -992,6 +992,12 @@
     "settings": "الإعدادات",
     "runAll": "تشغيل الكل",
     "run": "تشغيل",
+    "runWorkflow": "تشغيل سير العمل",
+    "runFromHere": "تشغيل من هنا",
+    "nameYourWorkflow": "سمِّ سير العمل",
+    "nameYourWorkflowDesc": "أعطه اسمًا للحفظ على القرص وتفعيل التنفيذ.",
+    "nameYourWorkflowPlaceholder": "مثال: خط أنابيب صور المنتج",
+    "nameDuplicate": "يوجد سير عمل بهذا الاسم بالفعل",
     "runTarget": "تشغيل الهدف",
     "runTargetAll": "تشغيل جميع العقد",
     "runTargetSelected": "تشغيل العقدة المحددة",
@@ -1007,6 +1013,9 @@
     "exportFailed": "فشل التصدير",
     "estimated": "التكلفة",
     "fitView": "تأقلم العرض",
+    "autoLayout": "ترتيب تلقائي",
+    "freeToolModelHint": "سيتم تنزيل نموذج الذكاء الاصطناعي عند التشغيل الأول",
+    "more": "المزيد",
     "previousImage": "الصورة السابقة",
     "nextImage": "الصورة التالية",
     "previewNavHint": "استخدم ← / → للتنقل بين الصور ({{current}}/{{total}})",
@@ -1083,7 +1092,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "تشغيل النموذج",
+        "label": "استوديو الإبداع بالذكاء الاصطناعي",
         "emptyHint": "انقر على هذه العقدة، ثم اختر النموذج ←",
         "params": {
           "modelId": {
@@ -1093,6 +1102,11 @@
       },
       "input/media-upload": {
         "label": "تحميل",
+        "inputs": {
+          "media": {
+            "label": "وسائط"
+          }
+        },
         "outputs": {
           "output": {
             "label": "رابط"
@@ -1185,6 +1199,9 @@
           "pointY": {
             "label": "النقطة Y",
             "description": "إحداثي Y الطبيعي (0-1) لنقطة التقسيم"
+          },
+          "invertMask": {
+            "label": "عكس القناع"
           }
         }
       },
@@ -1266,6 +1283,7 @@
       "autoOnRunTitle": "تحسين تلقائي عند النقر على تشغيل",
       "autoOnRun": "تحسين تلقائي عند التشغيل",
       "quickOptimizeTitle": "تحسين سريع ({{mode}})",
+      "quickOptimizeLabel": "تحسين",
       "params": "المعاملات",
       "prompt": "التلميح",
       "emptyPrompt": "(فارغ)",

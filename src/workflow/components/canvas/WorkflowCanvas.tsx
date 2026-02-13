@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { v4 as uuidv4 } from 'uuid'
 import ReactFlow, {
   ReactFlowProvider,
-  type Connection, type ReactFlowInstance, type Node
+  type Connection, type ReactFlowInstance, type Node, type NodeChange
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import { useWorkflowStore } from '../../stores/workflow.store'
@@ -315,9 +315,11 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
     const def = nodeDefs.find(d => d.type === nodeType)
     const defaultParams: Record<string, unknown> = {}
     if (def) { for (const p of def.params) { if (p.default !== undefined) defaultParams[p.key] = p.default } }
-    addNode(nodeType, position, defaultParams, def ? `${def.icon} ${def.label}` : nodeType, def?.params ?? [], def?.inputs ?? [], def?.outputs ?? [])
+    const newNodeId = addNode(nodeType, position, defaultParams, def ? `${def.icon} ${def.label}` : nodeType, def?.params ?? [], def?.inputs ?? [], def?.outputs ?? [])
     recordRecentNodeType(nodeType)
-  }, [addNode, nodeDefs, recordRecentNodeType])
+    // Auto-select the newly dropped node so the right config panel opens
+    selectNode(newNodeId)
+  }, [addNode, nodeDefs, recordRecentNodeType, selectNode])
 
   useEffect(() => {
     const handleFitView = () => {
@@ -325,6 +327,145 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
     }
     window.addEventListener('workflow:fit-view', handleFitView)
     return () => window.removeEventListener('workflow:fit-view', handleFitView)
+  }, [])
+
+  // Auto-layout: arrange nodes in a clean left-to-right DAG layout
+  // Uses actual DOM measurements for node sizes to prevent overlap
+  useEffect(() => {
+    const handleAutoLayout = () => {
+      const { nodes: currentNodes, edges: currentEdges, onNodesChange: applyChanges } = useWorkflowStore.getState()
+      if (currentNodes.length === 0) return
+
+      // ── Measure actual node sizes from DOM ──
+      const nodeSize = new Map<string, { w: number; h: number }>()
+      for (const n of currentNodes) {
+        const el = document.querySelector(`[data-id="${n.id}"]`) as HTMLElement | null
+        if (el) {
+          nodeSize.set(n.id, { w: el.offsetWidth, h: el.offsetHeight })
+        } else {
+          // Fallback: use saved width or default
+          const w = (n.data?.params?.__nodeWidth as number) ?? 380
+          nodeSize.set(n.id, { w, h: 200 })
+        }
+      }
+
+      // ── Build adjacency ──
+      const outgoing = new Map<string, string[]>()
+      const incoming = new Map<string, string[]>()
+      for (const n of currentNodes) {
+        outgoing.set(n.id, [])
+        incoming.set(n.id, [])
+      }
+      for (const e of currentEdges) {
+        outgoing.get(e.source)?.push(e.target)
+        incoming.get(e.target)?.push(e.source)
+      }
+
+      // ── Assign layers via longest-path (ensures proper depth) ──
+      const layer = new Map<string, number>()
+      const visited = new Set<string>()
+
+      function assignLayer(id: string): number {
+        if (layer.has(id)) return layer.get(id)!
+        if (visited.has(id)) return 0 // cycle guard
+        visited.add(id)
+        const parents = incoming.get(id) ?? []
+        const depth = parents.length === 0 ? 0 : Math.max(...parents.map(p => assignLayer(p) + 1))
+        layer.set(id, depth)
+        return depth
+      }
+      for (const n of currentNodes) assignLayer(n.id)
+
+      // ── Group by layer ──
+      const layers = new Map<number, string[]>()
+      for (const [id, l] of layer) {
+        if (!layers.has(l)) layers.set(l, [])
+        layers.get(l)!.push(id)
+      }
+
+      // Sort layers by key
+      const sortedLayerKeys = [...layers.keys()].sort((a, b) => a - b)
+
+      // ── Barycenter ordering to minimize edge crossings ──
+      // For each layer (except the first), sort nodes by the average Y position
+      // of their connected nodes in the previous layer.
+      // Run multiple passes for better results.
+      const nodeOrder = new Map<string, number>()
+      // Initialize order by original position (top to bottom)
+      for (const l of sortedLayerKeys) {
+        const ids = layers.get(l)!
+        ids.sort((a, b) => {
+          const na = currentNodes.find(n => n.id === a)
+          const nb = currentNodes.find(n => n.id === b)
+          return (na?.position?.y ?? 0) - (nb?.position?.y ?? 0)
+        })
+        ids.forEach((id, i) => nodeOrder.set(id, i))
+      }
+
+      // Barycenter passes (forward + backward)
+      for (let pass = 0; pass < 4; pass++) {
+        const keys = pass % 2 === 0 ? sortedLayerKeys : [...sortedLayerKeys].reverse()
+        for (const l of keys) {
+          const ids = layers.get(l)!
+          const bary = new Map<string, number>()
+          for (const id of ids) {
+            const neighbors = pass % 2 === 0
+              ? (incoming.get(id) ?? [])
+              : (outgoing.get(id) ?? [])
+            if (neighbors.length > 0) {
+              const avg = neighbors.reduce((sum, nid) => sum + (nodeOrder.get(nid) ?? 0), 0) / neighbors.length
+              bary.set(id, avg)
+            } else {
+              bary.set(id, nodeOrder.get(id) ?? 0)
+            }
+          }
+          ids.sort((a, b) => (bary.get(a) ?? 0) - (bary.get(b) ?? 0))
+          ids.forEach((id, i) => nodeOrder.set(id, i))
+        }
+      }
+
+      // ── Compute column X positions based on max width per layer ──
+      const H_GAP = 100 // horizontal gap between columns
+      const V_GAP = 60  // vertical gap between nodes in same column
+      const layerX = new Map<number, number>()
+      let currentX = 0
+      for (const l of sortedLayerKeys) {
+        layerX.set(l, currentX)
+        const ids = layers.get(l)!
+        const maxW = Math.max(...ids.map(id => nodeSize.get(id)?.w ?? 380))
+        currentX += maxW + H_GAP
+      }
+
+      // ── Position nodes: center each column vertically ──
+      const changes: NodeChange[] = []
+      for (const l of sortedLayerKeys) {
+        const ids = layers.get(l)!
+        // Calculate total height of this column
+        const heights = ids.map(id => nodeSize.get(id)?.h ?? 200)
+        const totalHeight = heights.reduce((sum, h) => sum + h, 0) + (ids.length - 1) * V_GAP
+        let y = -totalHeight / 2
+
+        ids.forEach((id, i) => {
+          changes.push({
+            type: 'position',
+            id,
+            position: {
+              x: layerX.get(l) ?? 0,
+              y
+            }
+          } as NodeChange)
+          y += heights[i] + V_GAP
+        })
+      }
+      applyChanges(changes)
+
+      // Fit view after layout
+      setTimeout(() => {
+        reactFlowInstance.current?.fitView({ padding: 0.2, duration: 300, minZoom: 0.05, maxZoom: 1.5 })
+      }, 50)
+    }
+    window.addEventListener('workflow:auto-layout', handleAutoLayout)
+    return () => window.removeEventListener('workflow:auto-layout', handleAutoLayout)
   }, [])
 
   return (

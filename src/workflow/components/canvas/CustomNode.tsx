@@ -515,14 +515,14 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
           ) : (
             <>
               <button onClick={onRun}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium shadow-lg backdrop-blur-sm bg-blue-500 text-white hover:bg-blue-600 transition-all"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium shadow-lg backdrop-blur-sm bg-blue-500 text-white hover:bg-blue-600 transition-all whitespace-nowrap"
                 title={t('workflow.runNode', 'Run Node')}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 20,12 6,21"/></svg> {t('workflow.run', 'Run')}
               </button>
               <button onClick={onRunFromHere}
-                className="flex items-center justify-center w-8 h-8 rounded-full shadow-lg backdrop-blur-sm bg-green-600 text-white hover:bg-green-700 transition-all"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium shadow-lg backdrop-blur-sm bg-green-600 text-white hover:bg-green-700 transition-all whitespace-nowrap"
                 title={t('workflow.continueFrom', 'Continue From')}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="4,4 14,12 4,20"/><polygon points="12,4 22,12 12,20"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="4,4 14,12 4,20"/><polygon points="12,4 22,12 12,20"/></svg> {t('workflow.runFromHere', 'Run from here')}
               </button>
               <button onClick={onDelete}
                 className="flex items-center justify-center w-8 h-8 rounded-full shadow-lg backdrop-blur-sm bg-[hsl(var(--muted))] text-muted-foreground hover:bg-red-500/20 hover:text-red-400 transition-all"
@@ -610,16 +610,55 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
 
       {/* ── Body ───────────────────────────────────────────────────── */}
       <div className="px-1 py-2 space-y-px">
+        {/* Free-tool ML model download hint (not for ffmpeg-based converters/trimmer/merger) */}
+        {status === 'idle' && resultGroups.length === 0 && (() => {
+          const ML_FREE_TOOLS = new Set([
+            'free-tool/image-enhancer', 'free-tool/background-remover', 'free-tool/face-enhancer',
+            'free-tool/video-enhancer', 'free-tool/face-swapper', 'free-tool/image-eraser',
+            'free-tool/segment-anything'
+          ])
+          return ML_FREE_TOOLS.has(data.nodeType) ? (
+            <div className="mx-3 mb-1 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
+              <svg className="flex-shrink-0 text-amber-400" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span className="text-[10px] text-amber-400/90 leading-tight">
+                {t('workflow.freeToolModelHint', 'First run will download the AI model')}
+              </span>
+            </div>
+          ) : null
+        })()}
+
         {/* Media Upload node — special UI */}
         {data.nodeType === 'input/media-upload' && (
-          <MediaUploadBody
-            params={data.params}
-            onBatchChange={(updates) => {
-              const newParams = { ...data.params, ...updates }
-              updateNodeParams(id, newParams)
-            }}
-            onPreview={openPreview}
-          />
+          <>
+            {/* Input handle for receiving media from upstream nodes */}
+            {inputDefs.map(inp => {
+              const hid = `input-${inp.key}`
+              const conn = connectedSet.has(hid)
+              return (
+                <Row key={inp.key} handleId={hid} handleType="target" connected={conn} media>
+                  <div className="flex items-center justify-between gap-2 w-full">
+                    <span className={`text-xs whitespace-nowrap flex-shrink-0 ${conn ? 'text-green-400 font-semibold' : 'text-[hsl(var(--muted-foreground))]'}`}>
+                      {localizeInputLabel(inp.key, inp.label)}
+                    </span>
+                    {conn && <ConnectedInputControl nodeId={id} handleId={hid} edges={edges} nodes={useWorkflowStore.getState().nodes} onPreview={openPreview} />}
+                  </div>
+                </Row>
+              )
+            })}
+            {/* Show upload body only when input is NOT connected */}
+            {!connectedSet.has('input-media') && (
+              <MediaUploadBody
+                params={data.params}
+                onBatchChange={(updates) => {
+                  const newParams = { ...data.params, ...updates }
+                  updateNodeParams(id, newParams)
+                }}
+                onPreview={openPreview}
+              />
+            )}
+          </>
         )}
 
         {/* Text Input node — special UI */}
@@ -747,6 +786,8 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
         )}
 
         {inputDefs.map(inp => {
+          // Skip media-upload inputs — already rendered above with custom UI
+          if (data.nodeType === 'input/media-upload') return null
           const hid = `input-${inp.key}`
           const conn = connectedSet.has(hid)
           if (!isPreviewNode) {
@@ -1560,18 +1601,15 @@ function ConnectedInputControl({
     const isMediaLike = (u: string) =>
       /^https?:\/\//i.test(u) || /^blob:/i.test(u) || /^local-asset:\/\//i.test(u) || /^data:/i.test(u)
 
+    // Prefer actual execution results — this is the real output of the source node
     if (latestResultUrl && isMediaLike(latestResultUrl)) return latestResultUrl
 
-    // Media upload node and common source-node params fallback
-    const candidates = [
-      String(sourceParams.uploadedUrl ?? ''),
-      String(sourceParams.output ?? ''),
-      String(sourceParams.input ?? ''),
-      String(sourceParams.url ?? '')
-    ]
-    for (const c of candidates) {
-      if (c && isMediaLike(c)) return c
-    }
+    // Only fall back to source params for input-type nodes (media-upload)
+    // that store their value directly in params. Do NOT use generic params
+    // like 'input'/'output' which are the source node's own inputs, not outputs.
+    const uploadedUrl = String(sourceParams.uploadedUrl ?? '')
+    if (uploadedUrl && isMediaLike(uploadedUrl)) return uploadedUrl
+
     return ''
   }
 
@@ -2356,6 +2394,8 @@ function TextInputBody({ params, onParamChange }: {
 
   return (
     <div className="px-3 py-2" onClick={e => e.stopPropagation()}>
+      {/* Toolbar + optimizer config — unified background */}
+      <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-2 mb-2">
       {/* Toolbar */}
       <div className="flex items-center gap-0.5 mb-1.5">
         {/* Snippet Library */}
@@ -2442,7 +2482,7 @@ function TextInputBody({ params, onParamChange }: {
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/>
                 </svg>
-                {t('workflow.textInput.optimizeNow', 'Optimize now')}
+                Prompt {t('workflow.textInput.optimizeNow', 'Optimize now')}
               </>
             )}
           </button>
@@ -2467,7 +2507,7 @@ function TextInputBody({ params, onParamChange }: {
         <span className="text-[9px] text-[hsl(var(--muted-foreground))]">{text.length} {t('workflow.textInput.chars', 'chars')}</span>
       </div>
 
-      <div className="mb-1 flex items-center justify-between rounded-md border border-[hsl(var(--border))]/70 bg-[hsl(var(--muted))]/20 px-2 py-1">
+      <div className="mb-1 flex items-center justify-between rounded-md border border-blue-500/20 bg-blue-500/10 px-2 py-1">
         {optimizeOnRun ? (
           <span className="text-[10px] font-medium text-emerald-300">{t('workflow.textInput.optimizeOnRunEnabled', 'Enabled: optimize on Run')}</span>
         ) : (
@@ -2485,6 +2525,7 @@ function TextInputBody({ params, onParamChange }: {
           {optimizeError}
         </div>
       )}
+      </div>{/* end unified background wrapper */}
 
       <WorkflowPromptOptimizer
         currentPrompt={text}
@@ -2696,7 +2737,7 @@ function ResultThumb({ url, onPreview, onDownload }: { url: string; onPreview: (
         <img src={url} alt="" onClick={e => { e.stopPropagation(); onPreview(url) }}
           className="w-full max-h-[120px] rounded border border-[hsl(var(--border))] object-contain cursor-pointer hover:ring-2 hover:ring-blue-500/40 bg-black/10" />
         <button onClick={e => { e.stopPropagation(); onDownload(url) }}
-          className="absolute top-1 right-1 w-7 h-7 rounded-md bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80">
+          className="absolute top-1 right-1 h-8 px-2 rounded-md bg-blue-600 text-white flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-700 shadow-lg">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/><line x1="4" y1="21" x2="20" y2="21"/>
           </svg>
@@ -2727,6 +2768,12 @@ function ResultThumb({ url, onPreview, onDownload }: { url: string; onPreview: (
             <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
           </div>
         </div>
+        <button onClick={e => { e.stopPropagation(); onDownload(url) }}
+          className="absolute top-1 right-1 h-8 px-2 rounded-md bg-blue-600 text-white flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-700 shadow-lg">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/><line x1="4" y1="21" x2="20" y2="21"/>
+          </svg>
+        </button>
       </div>
     )
   }

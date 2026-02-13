@@ -992,6 +992,12 @@
     "settings": "Ayarlar",
     "runAll": "Tümünü çalıştır",
     "run": "Çalıştır",
+    "runWorkflow": "İş akışını çalıştır",
+    "runFromHere": "Buradan çalıştır",
+    "nameYourWorkflow": "İş akışınızı adlandırın",
+    "nameYourWorkflowDesc": "Diske kaydetmek ve çalıştırmayı etkinleştirmek için bir ad verin.",
+    "nameYourWorkflowPlaceholder": "Örn: Ürün Görseli İşlem Hattı",
+    "nameDuplicate": "Bu isimde bir iş akışı zaten mevcut",
     "runTarget": "Hedefi çalıştır",
     "runTargetAll": "Tüm düğümleri çalıştır",
     "runTargetSelected": "Seçili düğümü çalıştır",
@@ -1007,6 +1013,9 @@
     "exportFailed": "Dışa aktarma başarısız",
     "estimated": "Tahmini maliyet",
     "fitView": "Görünüme sığdır",
+    "autoLayout": "Otomatik düzenle",
+    "freeToolModelHint": "İlk çalıştırmada AI modeli indirilecek",
+    "more": "Daha fazla",
     "previousImage": "Önceki görsel",
     "nextImage": "Sonraki görsel",
     "previewNavHint": "Gezinmek için ← / → kullanın ({{current}}/{{total}})",
@@ -1083,7 +1092,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "Modeli çalıştır",
+        "label": "AI Yaratıcı Stüdyo",
         "emptyHint": "Bu düğüme tıklayın, sonra model seçin →",
         "params": {
           "modelId": {
@@ -1093,6 +1102,11 @@
       },
       "input/media-upload": {
         "label": "Yükle",
+        "inputs": {
+          "media": {
+            "label": "Medya"
+          }
+        },
         "outputs": {
           "output": {
             "label": "URL"
@@ -1185,6 +1199,9 @@
           "pointY": {
             "label": "Nokta Y",
             "description": "Segmentasyon noktası için normalize Y (0-1)"
+          },
+          "invertMask": {
+            "label": "Maskeyi ters çevir"
           }
         }
       },
@@ -1266,6 +1283,7 @@
       "autoOnRunTitle": "Çalıştır tıklandığında otomatik optimize et",
       "autoOnRun": "Çalıştırırken otomatik",
       "quickOptimizeTitle": "Hızlı optimize ({{mode}})",
+      "quickOptimizeLabel": "Optimize",
       "params": "Parametreler",
       "prompt": "İstem",
       "emptyPrompt": "(boş)",

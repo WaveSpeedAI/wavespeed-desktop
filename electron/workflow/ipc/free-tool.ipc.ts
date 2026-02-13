@@ -81,6 +81,22 @@ export function registerFreeToolIpc(): void {
     pending.delete(requestId)
     entry.reject(new Error(error))
   })
+
+  // Detect renderer reload/navigation — fail all pending requests immediately
+  // so the user sees an error right away instead of waiting for timeout
+  const onWebContentsCreated = (_event: Electron.Event, webContents: Electron.WebContents) => {
+    webContents.on('did-start-navigation', () => {
+      if (pending.size > 0) {
+        console.warn(`[FreeTool] Renderer reloading — failing ${pending.size} pending request(s)`)
+        for (const [reqId, entry] of pending) {
+          pending.delete(reqId)
+          entry.reject(new Error('Renderer reloaded during execution. Please retry.'))
+        }
+      }
+    })
+  }
+  const { app } = require('electron')
+  app.on('web-contents-created', onWebContentsCreated)
 }
 
 /**
@@ -91,7 +107,9 @@ export function executeFreeToolInRenderer(req: Omit<FreeToolExecuteRequest, 'req
     const requestId = uuid()
     const startTime = Date.now()
 
-    const timeoutMs = req.nodeType === 'free-tool/video-enhancer' ? 600_000 : 120_000
+    const timeoutMs = (req.nodeType === 'free-tool/video-enhancer') ? 600_000
+      : (req.nodeType === 'free-tool/face-swapper' || req.nodeType === 'free-tool/image-eraser' || req.nodeType === 'free-tool/face-enhancer') ? 300_000
+      : 120_000
     const timeout = setTimeout(() => {
       const entry = pending.get(requestId)
       if (entry) {

@@ -992,6 +992,13 @@
     "settings": "Settings",
     "runAll": "Run All",
     "run": "Run",
+    "runWorkflow": "Run Workflow",
+    "runFromHere": "Run from here",
+    "nameYourWorkflow": "Name your workflow",
+    "nameYourWorkflowDesc": "Give it a name to save to disk and enable execution.",
+    "nameYourWorkflowPlaceholder": "e.g. Product Image Pipeline",
+    "nameDuplicate": "A workflow with this name already exists",
+    "cancel": "Cancel",
     "runTarget": "Run target",
     "runTargetAll": "Run All Nodes",
     "runTargetSelected": "Run Selected Node",
@@ -1007,6 +1014,9 @@
     "exportFailed": "Export failed",
     "estimated": "Cost",
     "fitView": "Fit View",
+    "autoLayout": "Auto Layout",
+    "freeToolModelHint": "First run will download the AI model",
+    "more": "More",
     "previousImage": "Previous image",
     "nextImage": "Next image",
     "previewNavHint": "Use ← / → to navigate images ({{current}}/{{total}})",
@@ -1086,7 +1096,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "Run Model",
+        "label": "AI Creative Studio",
         "emptyHint": "Click this node, then select a model →",
         "params": {
           "modelId": {
@@ -1096,6 +1106,11 @@
       },
       "input/media-upload": {
         "label": "Upload",
+        "inputs": {
+          "media": {
+            "label": "Media"
+          }
+        },
         "outputs": {
           "output": {
             "label": "URL"
@@ -1188,6 +1203,9 @@
           "pointY": {
             "label": "Point Y",
             "description": "Normalized Y (0-1) for segmentation point"
+          },
+          "invertMask": {
+            "label": "Invert Mask"
           }
         }
       },
@@ -1269,6 +1287,7 @@
       "autoOnRunTitle": "Optimize automatically when clicking Run",
       "autoOnRun": "Auto on Run",
       "quickOptimizeTitle": "Quick Optimize ({{mode}})",
+      "quickOptimizeLabel": "Optimize",
       "params": "Params",
       "prompt": "Prompt",
       "emptyPrompt": "(empty)",

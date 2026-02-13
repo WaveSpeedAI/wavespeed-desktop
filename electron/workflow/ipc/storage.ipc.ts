@@ -5,7 +5,7 @@ import { ipcMain, dialog, shell } from 'electron'
 import { getFileStorageInstance } from '../utils/file-storage'
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs'
 import { v4 as uuid } from 'uuid'
-import { createWorkflow, updateWorkflow, listWorkflows } from '../db/workflow.repo'
+import { createWorkflow, updateWorkflow } from '../db/workflow.repo'
 import { getModelById } from '../services/model-list'
 
 function getStorage() { return getFileStorageInstance() }
@@ -90,14 +90,8 @@ export function registerStorageIpc(): void {
       const name = data.name ?? 'Imported Workflow'
       if (!rawGraphDef || !Array.isArray(rawGraphDef.nodes)) throw new Error('Invalid workflow file')
 
-      // Check for name conflicts
+      // createWorkflow now auto-deduplicates names, so no need for manual conflict check
       const importName = name + ' (imported)'
-      const existing = listWorkflows()
-      if (existing.some(w => w.name === importName || w.name === name)) {
-        throw new Error(`A workflow named "${name}" already exists. Please rename the "name" field in the JSON file before importing.`)
-      }
-
-      // Generate new UUIDs for all nodes/edges to avoid conflicts on re-import
       const wf = createWorkflow(importName)
       const idMap = new Map<string, string>() // old ID → new UUID
       for (const n of rawGraphDef.nodes) {

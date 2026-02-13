@@ -992,6 +992,12 @@
     "settings": "Tetapan",
     "runAll": "Jalankan semua",
     "run": "Jalankan",
+    "runWorkflow": "Jalankan alur kerja",
+    "runFromHere": "Jalankan dari sini",
+    "nameYourWorkflow": "Namakan alur kerja anda",
+    "nameYourWorkflowDesc": "Beri nama untuk menyimpan ke cakera dan mengaktifkan pelaksanaan.",
+    "nameYourWorkflowPlaceholder": "Cth: Saluran Imej Produk",
+    "nameDuplicate": "Alur kerja dengan nama ini sudah ada",
     "runTarget": "Jalankan sasaran",
     "runTargetAll": "Jalankan semua nod",
     "runTargetSelected": "Jalankan nod terpilih",
@@ -1007,6 +1013,9 @@
     "exportFailed": "Gagal mengeksport",
     "estimated": "Anggaran kos",
     "fitView": "Sesuaikan pandangan",
+    "autoLayout": "Susun atur automatik",
+    "freeToolModelHint": "Larian pertama akan memuat turun model AI",
+    "more": "Lagi",
     "previousImage": "Imej sebelumnya",
     "nextImage": "Imej seterusnya",
     "previewNavHint": "Gunakan ← / → untuk menavigasi ({{current}}/{{total}})",
@@ -1083,7 +1092,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "Jalankan model",
+        "label": "Studio Kreatif AI",
         "emptyHint": "Klik nod ini, kemudian pilih model →",
         "params": {
           "modelId": {
@@ -1093,6 +1102,11 @@
       },
       "input/media-upload": {
         "label": "Muat naik",
+        "inputs": {
+          "media": {
+            "label": "Media"
+          }
+        },
         "outputs": {
           "output": {
             "label": "URL"
@@ -1185,6 +1199,9 @@
           "pointY": {
             "label": "Titik Y",
             "description": "Koordinat Y ternormal (0-1) untuk titik segmentasi"
+          },
+          "invertMask": {
+            "label": "Songsangkan topeng"
           }
         }
       },
@@ -1266,6 +1283,7 @@
       "autoOnRunTitle": "Optimumkan secara auto bila klik Jalankan",
       "autoOnRun": "Auto pada Jalankan",
       "quickOptimizeTitle": "Optimumkan pantas ({{mode}})",
+      "quickOptimizeLabel": "Optimum",
       "params": "Parameter",
       "prompt": "Prompt",
       "emptyPrompt": "(kosong)",

@@ -992,6 +992,12 @@
     "settings": "การตั้งค่า",
     "runAll": "รันทั้งหมด",
     "run": "รัน",
+    "runWorkflow": "รันเวิร์กโฟลว์",
+    "runFromHere": "รันจากที่นี่",
+    "nameYourWorkflow": "ตั้งชื่อเวิร์กโฟลว์",
+    "nameYourWorkflowDesc": "ตั้งชื่อเพื่อบันทึกลงดิสก์และเปิดใช้งานการรัน",
+    "nameYourWorkflowPlaceholder": "เช่น ไปป์ไลน์ภาพสินค้า",
+    "nameDuplicate": "มีเวิร์กโฟลว์ชื่อนี้อยู่แล้ว",
     "runTarget": "รันเป้าหมาย",
     "runTargetAll": "รันโหนดทั้งหมด",
     "runTargetSelected": "รันโหนดที่เลือก",
@@ -1007,6 +1013,9 @@
     "exportFailed": "ส่งออกล้มเหลว",
     "estimated": "ต้นทุนโดยประมาณ",
     "fitView": "ปรับมุมมอง",
+    "autoLayout": "จัดเรียงอัตโนมัติ",
+    "freeToolModelHint": "การรันครั้งแรกจะดาวน์โหลดโมเดล AI",
+    "more": "เพิ่มเติม",
     "previousImage": "รูปก่อนหน้า",
     "nextImage": "รูปถัดไป",
     "previewNavHint": "ใช้ ← / → เพื่อนำทาง ({{current}}/{{total}})",
@@ -1083,7 +1092,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "รันโมเดล",
+        "label": "สตูดิโอสร้างสรรค์ AI",
         "emptyHint": "คลิกโหนดนี้ จากนั้นเลือกโมเดล →",
         "params": {
           "modelId": {
@@ -1093,6 +1102,11 @@
       },
       "input/media-upload": {
         "label": "อัปโหลด",
+        "inputs": {
+          "media": {
+            "label": "สื่อ"
+          }
+        },
         "outputs": {
           "output": {
             "label": "URL"
@@ -1185,6 +1199,9 @@
           "pointY": {
             "label": "จุด Y",
             "description": "พิกัด Y ที่เป็นมาตรฐาน (0-1) สำหรับจุดแบ่งส่วน"
+          },
+          "invertMask": {
+            "label": "กลับด้านมาสก์"
           }
         }
       },
@@ -1266,6 +1283,7 @@
       "autoOnRunTitle": "ปรับปรุงอัตโนมัติเมื่อคลิกรัน",
       "autoOnRun": "อัตโนมัติเมื่อรัน",
       "quickOptimizeTitle": "ปรับปรุงด่วน ({{mode}})",
+      "quickOptimizeLabel": "ปรับปรุง",
       "params": "พารามิเตอร์",
       "prompt": "พรอมป์ต",
       "emptyPrompt": "(ว่าง)",

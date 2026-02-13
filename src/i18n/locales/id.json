@@ -1014,6 +1014,12 @@
     "settings": "Pengaturan",
     "runAll": "Jalankan semua",
     "run": "Jalankan",
+    "runWorkflow": "Jalankan alur kerja",
+    "runFromHere": "Jalankan dari sini",
+    "nameYourWorkflow": "Beri nama alur kerja",
+    "nameYourWorkflowDesc": "Beri nama untuk menyimpan ke disk dan mengaktifkan eksekusi.",
+    "nameYourWorkflowPlaceholder": "Cth: Pipeline Gambar Produk",
+    "nameDuplicate": "Alur kerja dengan nama ini sudah ada",
     "runTarget": "Jalankan target",
     "runTargetAll": "Jalankan semua node",
     "runTargetSelected": "Jalankan node terpilih",
@@ -1029,6 +1035,9 @@
     "exportFailed": "Gagal mengekspor",
     "estimated": "Perkiraan biaya",
     "fitView": "Sesuaikan tampilan",
+    "autoLayout": "Tata letak otomatis",
+    "freeToolModelHint": "Eksekusi pertama akan mengunduh model AI",
+    "more": "Lainnya",
     "previousImage": "Gambar sebelumnya",
     "nextImage": "Gambar berikutnya",
     "previewNavHint": "Gunakan ← / → untuk menavigasi ({{current}}/{{total}})",
@@ -1105,7 +1114,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "Jalankan model",
+        "label": "Studio Kreatif AI",
         "emptyHint": "Klik node ini, lalu pilih model →",
         "params": {
           "modelId": {
@@ -1115,6 +1124,11 @@
       },
       "input/media-upload": {
         "label": "Unggah",
+        "inputs": {
+          "media": {
+            "label": "Media"
+          }
+        },
         "outputs": {
           "output": {
             "label": "URL"
@@ -1207,6 +1221,9 @@
           "pointY": {
             "label": "Titik Y",
             "description": "Koordinat Y ternormalisasi (0-1) untuk titik segmentasi"
+          },
+          "invertMask": {
+            "label": "Balikkan topeng"
           }
         }
       },
@@ -1288,6 +1305,7 @@
       "autoOnRunTitle": "Optimalkan otomatis saat mengklik Jalankan",
       "autoOnRun": "Otomatis saat jalankan",
       "quickOptimizeTitle": "Optimalkan cepat ({{mode}})",
+      "quickOptimizeLabel": "Optimalkan",
       "params": "Parameter",
       "prompt": "Prompt",
       "emptyPrompt": "(kosong)",

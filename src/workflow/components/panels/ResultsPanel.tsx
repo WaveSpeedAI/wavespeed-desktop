@@ -202,10 +202,11 @@ export function ResultsPanel() {
                             <img src={url} alt="" onClick={() => openPreview(url, panelImageUrls)}
                               className="w-full max-h-[160px] rounded border border-[hsl(var(--border))] object-contain cursor-pointer hover:ring-2 hover:ring-blue-500/40 bg-black/10" />
                             <button onClick={() => handleDownload(url)}
-                              className="absolute top-1 right-1 w-6 h-6 rounded bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80">
+                              className="absolute top-1 right-1 h-7 px-2 rounded-md bg-blue-600 text-white text-[10px] font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-700 shadow-md">
                               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/><line x1="4" y1="21" x2="20" y2="21"/>
                               </svg>
+                              {t('workflow.download', 'Download')}
                             </button>
                           </div>
                         )
@@ -233,6 +234,13 @@ export function ResultsPanel() {
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
                               </div>
                             </div>
+                            <button onClick={() => handleDownload(url)}
+                              className="absolute top-1 right-1 h-7 px-2 rounded-md bg-blue-600 text-white text-[10px] font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-700 shadow-md">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/><line x1="4" y1="21" x2="20" y2="21"/>
+                              </svg>
+                              {t('workflow.download', 'Download')}
+                            </button>
                           </div>
                         )
                       }

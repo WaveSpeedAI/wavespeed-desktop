@@ -986,6 +986,12 @@
     "results": "結果",
     "runAll": "すべて実行",
     "run": "実行",
+    "runWorkflow": "ワークフローを実行",
+    "runFromHere": "ここから実行",
+    "nameYourWorkflow": "ワークフローに名前を付ける",
+    "nameYourWorkflowDesc": "ディスクに保存して実行を有効にするために名前を付けてください。",
+    "nameYourWorkflowPlaceholder": "例：商品画像パイプライン",
+    "nameDuplicate": "同じ名前のワークフローが既に存在します",
     "runTarget": "実行対象",
     "runTargetAll": "すべてのノードを実行",
     "runTargetSelected": "選択ノードを実行",
@@ -994,6 +1000,9 @@
     "runNode": "ノード実行",
     "modelSelection": "モデル選択",
     "fitView": "ビューに合わせる",
+    "autoLayout": "自動整列",
+    "freeToolModelHint": "初回実行時にAIモデルをダウンロードします",
+    "more": "その他",
     "previousImage": "前の画像",
     "nextImage": "次の画像",
     "previewNavHint": "← / → で画像を切り替え（{{current}}/{{total}}）",
@@ -1046,7 +1055,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "モデル実行",
+        "label": "AI クリエイティブスタジオ",
         "emptyHint": "このノードをクリックし、モデルを選択 →",
         "params": {
           "modelId": {
@@ -1056,6 +1065,11 @@
       },
       "input/media-upload": {
         "label": "アップロード",
+        "inputs": {
+          "media": {
+            "label": "メディア"
+          }
+        },
         "outputs": {
           "output": {
             "label": "URL"
@@ -1148,6 +1162,9 @@
           "pointY": {
             "label": "ポイント Y",
             "description": "セグメントポイントの正規化Y (0-1)"
+          },
+          "invertMask": {
+            "label": "マスク反転"
           }
         }
       },
@@ -1229,6 +1246,7 @@
       "autoOnRunTitle": "実行時に自動で最適化",
       "autoOnRun": "実行時に自動最適化",
       "quickOptimizeTitle": "クイック最適化（{{mode}}）",
+      "quickOptimizeLabel": "最適化",
       "params": "パラメータ",
       "prompt": "プロンプト",
       "emptyPrompt": "（空）",

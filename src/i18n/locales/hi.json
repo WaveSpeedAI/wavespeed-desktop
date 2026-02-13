@@ -992,6 +992,12 @@
     "settings": "सेटिंग्स",
     "runAll": "सभी चलाएं",
     "run": "चलाएं",
+    "runWorkflow": "वर्कफ़्लो चलाएं",
+    "runFromHere": "यहां से चलाएं",
+    "nameYourWorkflow": "वर्कफ़्लो का नाम दें",
+    "nameYourWorkflowDesc": "डिस्क पर सहेजने और निष्पादन सक्षम करने के लिए नाम दें।",
+    "nameYourWorkflowPlaceholder": "उदा: उत्पाद छवि पाइपलाइन",
+    "nameDuplicate": "इस नाम का वर्कफ़्लो पहले से मौजूद है",
     "runTarget": "लक्ष्य चलाएं",
     "runTargetAll": "सभी नोड चलाएं",
     "runTargetSelected": "चयनित नोड चलाएं",
@@ -1007,6 +1013,9 @@
     "exportFailed": "निर्यात विफल",
     "estimated": "अनुमानित लागत",
     "fitView": "दृश्य फिट करें",
+    "autoLayout": "स्वचालित व्यवस्था",
+    "freeToolModelHint": "पहली बार चलाने पर AI मॉडल डाउनलोड होगा",
+    "more": "और",
     "previousImage": "पिछली छवि",
     "nextImage": "अगली छवि",
     "previewNavHint": "छवियों में नेविगेट करने के लिए ← / → का उपयोग करें ({{current}}/{{total}})",
@@ -1083,7 +1092,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "मॉडल चलाएं",
+        "label": "AI रचनात्मक स्टूडियो",
         "emptyHint": "इस नोड पर क्लिक करें, फिर मॉडल चुनें →",
         "params": {
           "modelId": {
@@ -1093,6 +1102,11 @@
       },
       "input/media-upload": {
         "label": "अपलोड",
+        "inputs": {
+          "media": {
+            "label": "मीडिया"
+          }
+        },
         "outputs": {
           "output": {
             "label": "URL"
@@ -1185,6 +1199,9 @@
           "pointY": {
             "label": "बिंदु Y",
             "description": "सेगमेंटेशन पॉइंट के लिए सामान्यीकृत Y (0-1)"
+          },
+          "invertMask": {
+            "label": "मास्क उलटें"
           }
         }
       },
@@ -1266,6 +1283,7 @@
       "autoOnRunTitle": "रन पर क्लिक करने पर स्वचालित रूप से अनुकूलन",
       "autoOnRun": "रन पर ऑटो",
       "quickOptimizeTitle": "त्वरित अनुकूलन ({{mode}})",
+      "quickOptimizeLabel": "अनुकूलन",
       "params": "पैरामीटर",
       "prompt": "प्रॉम्प्ट",
       "emptyPrompt": "(खाली)",

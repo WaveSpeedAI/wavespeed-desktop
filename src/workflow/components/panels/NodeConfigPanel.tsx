@@ -86,14 +86,16 @@ export function NodeConfigPanel({ paramDefs }: NodeConfigPanelProps) {
   const handleChange = (key: string, value: unknown) => updateNodeParams(selectedNodeId, { ...params, [key]: value })
 
   return (
-    <div className="p-3 overflow-hidden w-full min-w-0">
-      <h3 className="text-sm font-semibold mb-3">
+    <div className="p-3 overflow-hidden w-full min-w-0 flex flex-col flex-1">
+      <h3 className="text-sm font-semibold mb-3 flex-shrink-0">
         {isAITask ? t('workflow.modelSelection', 'Model Selection') : t('workflow.config', 'Configuration')}
       </h3>
       {isAITask ? (
         <AITaskModelSelector params={params} onChange={handleChange} />
       ) : (
-        <StaticParamForm nodeType={node.data.nodeType} paramDefs={paramDefs} params={params} onChange={handleChange} />
+        <div className="flex-1 overflow-y-auto scrollbar-auto-hide">
+          <StaticParamForm nodeType={node.data.nodeType} paramDefs={paramDefs} params={params} onChange={handleChange} />
+        </div>
       )}
     </div>
   )
@@ -346,7 +348,7 @@ function AITaskModelSelector({ params, onChange }: { params: Record<string, unkn
   }
 
   return (
-    <div className="overflow-hidden min-w-0 w-full">
+    <div className="overflow-hidden min-w-0 w-full flex flex-col flex-1">
       {error && <div className="text-destructive text-xs p-2 mb-3 rounded border border-destructive bg-destructive/10">{error}</div>}
 
       {/* Top-level model search */}
@@ -433,7 +435,7 @@ function AITaskModelSelector({ params, onChange }: { params: Record<string, unkn
       )}
 
       {/* Model list */}
-      <div className="h-[260px] overflow-y-auto overflow-x-hidden scrollbar-auto-hide">
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden scrollbar-auto-hide">
         {loading && <div className="text-[10px] text-blue-400 animate-pulse px-2 py-1">{t('workflow.modelSelector.refreshing', 'Refreshing...')}</div>}
         {displayResults.slice(0, 50).map(model => (
           <div key={model.modelId} onClick={() => handleSelectModel(model)}

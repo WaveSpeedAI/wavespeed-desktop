@@ -9,7 +9,9 @@ export const segmentAnythingDef: NodeTypeDefinition = {
   icon: '🖱️',
   inputs: [{ key: 'input', label: 'Image', dataType: 'image', required: true }],
   outputs: [{ key: 'output', label: 'Mask', dataType: 'image', required: true }],
-  params: []
+  params: [
+    { key: 'invertMask', label: 'Invert Mask', type: 'boolean', default: false }
+  ]
 }
 
 export class SegmentAnythingHandler extends BaseNodeHandler {
@@ -42,7 +44,8 @@ export class SegmentAnythingHandler extends BaseNodeHandler {
           pointX: ctx.params.pointX ?? 0.5,
           pointY: ctx.params.pointY ?? 0.5,
           __segmentPoints: ctx.params.__segmentPoints,
-          __previewMask: ctx.params.__previewMask
+          __previewMask: ctx.params.__previewMask,
+          invertMask: ctx.params.invertMask ?? false
         }
       })
       ctx.onProgress(100, 'Segmentation completed.')

@@ -986,6 +986,12 @@
     "results": "結果",
     "runAll": "全部執行",
     "run": "執行",
+    "runWorkflow": "執行工作流程",
+    "runFromHere": "從此處執行",
+    "nameYourWorkflow": "命名工作流程",
+    "nameYourWorkflowDesc": "為工作流程命名以儲存至磁碟並啟用執行。",
+    "nameYourWorkflowPlaceholder": "例如：產品圖片處理流程",
+    "nameDuplicate": "已存在同名工作流程",
     "runTarget": "執行目標",
     "runTargetAll": "執行全部節點",
     "runTargetSelected": "執行選取節點",
@@ -994,6 +1000,9 @@
     "runNode": "執行節點",
     "modelSelection": "模型選擇",
     "fitView": "適配視圖",
+    "autoLayout": "整理佈局",
+    "freeToolModelHint": "首次運行需要下載 AI 模型",
+    "more": "更多",
     "previousImage": "上一張圖片",
     "nextImage": "下一張圖片",
     "previewNavHint": "使用 ← / → 查看圖片（{{current}}/{{total}}）",
@@ -1046,7 +1055,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "執行模型",
+        "label": "AI 創作工坊",
         "emptyHint": "點擊此節點，然後選擇模型 →",
         "params": {
           "modelId": {
@@ -1056,6 +1065,11 @@
       },
       "input/media-upload": {
         "label": "上傳",
+        "inputs": {
+          "media": {
+            "label": "媒體"
+          }
+        },
         "outputs": {
           "output": {
             "label": "URL"
@@ -1148,6 +1162,9 @@
           "pointY": {
             "label": "點 Y",
             "description": "分割點歸一化 Y 坐標（0-1）"
+          },
+          "invertMask": {
+            "label": "反轉遮罩"
           }
         }
       },
@@ -1229,6 +1246,7 @@
       "autoOnRunTitle": "點擊執行時自動優化",
       "autoOnRun": "執行時自動優化",
       "quickOptimizeTitle": "快速優化（{{mode}}）",
+      "quickOptimizeLabel": "優化",
       "params": "參數",
       "prompt": "提示詞",
       "emptyPrompt": "（空）",

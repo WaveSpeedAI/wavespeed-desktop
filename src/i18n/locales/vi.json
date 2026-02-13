@@ -992,6 +992,12 @@
     "settings": "Cài đặt",
     "runAll": "Chạy tất cả",
     "run": "Chạy",
+    "runWorkflow": "Chạy quy trình",
+    "runFromHere": "Chạy từ đây",
+    "nameYourWorkflow": "Đặt tên quy trình",
+    "nameYourWorkflowDesc": "Đặt tên để lưu vào đĩa và kích hoạt thực thi.",
+    "nameYourWorkflowPlaceholder": "VD: Quy trình xử lý ảnh sản phẩm",
+    "nameDuplicate": "Đã tồn tại quy trình cùng tên",
     "runTarget": "Chạy mục tiêu",
     "runTargetAll": "Chạy tất cả nút",
     "runTargetSelected": "Chạy nút đã chọn",
@@ -1007,6 +1013,9 @@
     "exportFailed": "Xuất thất bại",
     "estimated": "Chi phí ước tính",
     "fitView": "Vừa khung xem",
+    "autoLayout": "Tự động sắp xếp",
+    "freeToolModelHint": "Lần chạy đầu tiên sẽ tải mô hình AI",
+    "more": "Thêm",
     "previousImage": "Hình trước",
     "nextImage": "Hình tiếp theo",
     "previewNavHint": "Dùng ← / → để điều hướng ({{current}}/{{total}})",
@@ -1083,7 +1092,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "Chạy mô hình",
+        "label": "Xưởng sáng tạo AI",
         "emptyHint": "Nhấp vào nút này, sau đó chọn mô hình →",
         "params": {
           "modelId": {
@@ -1093,6 +1102,11 @@
       },
       "input/media-upload": {
         "label": "Tải lên",
+        "inputs": {
+          "media": {
+            "label": "Phương tiện"
+          }
+        },
         "outputs": {
           "output": {
             "label": "URL"
@@ -1185,6 +1199,9 @@
           "pointY": {
             "label": "Điểm Y",
             "description": "Tọa độ Y chuẩn hóa (0-1) cho điểm phân đoạn"
+          },
+          "invertMask": {
+            "label": "Đảo ngược mặt nạ"
           }
         }
       },
@@ -1266,6 +1283,7 @@
       "autoOnRunTitle": "Tự động tối ưu khi nhấp Chạy",
       "autoOnRun": "Tự động khi chạy",
       "quickOptimizeTitle": "Tối ưu nhanh ({{mode}})",
+      "quickOptimizeLabel": "Tối ưu",
       "params": "Tham số",
       "prompt": "Gợi ý",
       "emptyPrompt": "(trống)",

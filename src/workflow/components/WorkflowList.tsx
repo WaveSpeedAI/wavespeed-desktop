@@ -72,7 +72,16 @@ export function WorkflowList({ onOpen }: WorkflowListProps) {
 
   const handleCreate = async () => {
     if (!newName.trim()) return
-    await newWorkflow(newName.trim())
+    const trimmed = newName.trim()
+
+    // Check for duplicate name
+    const duplicate = workflows.find(w => w.name === trimmed)
+    if (duplicate) {
+      // Name already taken — don't create
+      return
+    }
+
+    await newWorkflow(trimmed)
     setNewName('')
     refresh()
   }
@@ -102,9 +111,20 @@ export function WorkflowList({ onOpen }: WorkflowListProps) {
     if (!renamingId) return
     const trimmed = renamingValue.trim()
     if (!trimmed) { setRenamingId(null); return }
-    await workflowIpc.rename(renamingId, trimmed)
+
+    // Check for duplicate name in the current list (excluding self)
+    const duplicate = workflows.find(w => w.id !== renamingId && w.name === trimmed)
+    if (duplicate) {
+      // Name already taken — don't allow
+      setRenamingId(null)
+      return
+    }
+
+    const result = await workflowIpc.rename(renamingId, trimmed) as unknown as { finalName: string } | void
+    const actualName = (result && typeof result === 'object' && 'finalName' in result) ? result.finalName : trimmed
+
     if (currentWorkflowId === renamingId) {
-      useWorkflowStore.getState().setWorkflowName(trimmed)
+      useWorkflowStore.getState().setWorkflowName(actualName)
     }
     setRenamingId(null)
     refresh()
@@ -154,8 +174,9 @@ export function WorkflowList({ onOpen }: WorkflowListProps) {
       {/* Create new */}
       <div className="px-2.5 py-2 border-b border-border flex gap-1.5">
         <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder={t('workflow.newWorkflowName', 'New workflow...')}
-          onKeyDown={e => e.key === 'Enter' && handleCreate()} className="flex-1 h-7 text-xs" />
-        <button onClick={handleCreate} disabled={!newName.trim()}
+          onKeyDown={e => e.key === 'Enter' && handleCreate()}
+          className={`flex-1 h-7 text-xs ${newName.trim() && workflows.some(w => w.name === newName.trim()) ? 'border-red-500 focus-visible:ring-red-500/50' : ''}`} />
+        <button onClick={handleCreate} disabled={!newName.trim() || workflows.some(w => w.name === newName.trim())}
           className="h-7 px-2 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
           +
         </button>
@@ -191,7 +212,11 @@ export function WorkflowList({ onOpen }: WorkflowListProps) {
                     }}
                     onClick={e => e.stopPropagation()}
                     autoFocus
-                    className="w-full text-xs font-medium bg-transparent border-b border-primary outline-none"
+                    className={`w-full text-xs font-medium bg-transparent border-b outline-none ${
+                      renamingValue.trim() && workflows.some(w => w.id !== renamingId && w.name === renamingValue.trim())
+                        ? 'border-red-500 text-red-400'
+                        : 'border-primary'
+                    }`}
                   />
                 ) : (
                   <div className="font-medium truncate" onDoubleClick={e => {

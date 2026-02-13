@@ -992,6 +992,12 @@
     "settings": "Impostazioni",
     "runAll": "Esegui tutto",
     "run": "Esegui",
+    "runWorkflow": "Esegui flusso di lavoro",
+    "runFromHere": "Esegui da qui",
+    "nameYourWorkflow": "Dai un nome al flusso di lavoro",
+    "nameYourWorkflowDesc": "Assegna un nome per salvare su disco e abilitare l'esecuzione.",
+    "nameYourWorkflowPlaceholder": "Es: Pipeline Immagini Prodotto",
+    "nameDuplicate": "Esiste già un flusso di lavoro con questo nome",
     "runTarget": "Esegui destinazione",
     "runTargetAll": "Esegui tutti i nodi",
     "runTargetSelected": "Esegui nodo selezionato",
@@ -1007,6 +1013,9 @@
     "exportFailed": "Esportazione fallita",
     "estimated": "Costo stimato",
     "fitView": "Adatta vista",
+    "autoLayout": "Disposizione automatica",
+    "freeToolModelHint": "La prima esecuzione scaricherà il modello AI",
+    "more": "Altro",
     "previousImage": "Immagine precedente",
     "nextImage": "Immagine successiva",
     "previewNavHint": "Usa ← / → per navigare ({{current}}/{{total}})",
@@ -1083,7 +1092,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "Esegui modello",
+        "label": "Studio Creativo AI",
         "emptyHint": "Clicca su questo nodo, poi seleziona un modello →",
         "params": {
           "modelId": {
@@ -1093,6 +1102,11 @@
       },
       "input/media-upload": {
         "label": "Carica",
+        "inputs": {
+          "media": {
+            "label": "Media"
+          }
+        },
         "outputs": {
           "output": {
             "label": "URL"
@@ -1185,6 +1199,9 @@
           "pointY": {
             "label": "Punto Y",
             "description": "Coordinata Y normalizzata (0-1) per punto di segmentazione"
+          },
+          "invertMask": {
+            "label": "Inverti maschera"
           }
         }
       },
@@ -1266,6 +1283,7 @@
       "autoOnRunTitle": "Ottimizza automaticamente al clic su Esegui",
       "autoOnRun": "Auto all'esecuzione",
       "quickOptimizeTitle": "Ottimizzazione rapida ({{mode}})",
+      "quickOptimizeLabel": "Ottimizza",
       "params": "Parametri",
       "prompt": "Prompt",
       "emptyPrompt": "(vuoto)",

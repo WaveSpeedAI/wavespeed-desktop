@@ -81,6 +81,22 @@ export class AITaskHandler extends BaseNodeHandler {
     const params: Record<string, unknown> = {}
     // Internal keys to skip
     const skipKeys = new Set(['modelId', '__meta', '__locks', '__nodeWidth', '__nodeHeight'])
+
+    // First, fill in schema defaults so params that the user never touched
+    // (but are visible in the UI with their default value) are still sent.
+    const meta = ctx.params.__meta as Record<string, unknown> | undefined
+    const schema = (meta?.modelInputSchema ?? []) as Array<{ name: string; default?: unknown; enum?: string[] }>
+    for (const s of schema) {
+      if (skipKeys.has(s.name) || s.name.startsWith('__')) continue
+      if (s.default !== undefined && s.default !== null && s.default !== '') {
+        params[s.name] = s.default
+      } else if (s.enum && s.enum.length > 0) {
+        // Select/enum fields show the first option by default in the UI
+        params[s.name] = s.enum[0]
+      }
+    }
+
+    // Then overlay with actual user-set params (these take priority)
     for (const [key, value] of Object.entries(ctx.params)) {
       if (skipKeys.has(key) || key.startsWith('__')) continue
       if (value !== undefined && value !== null && value !== '') params[key] = value

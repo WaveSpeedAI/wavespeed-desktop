@@ -992,6 +992,12 @@
     "settings": "Einstellungen",
     "runAll": "Alle ausführen",
     "run": "Ausführen",
+    "runWorkflow": "Workflow ausführen",
+    "runFromHere": "Von hier ausführen",
+    "nameYourWorkflow": "Workflow benennen",
+    "nameYourWorkflowDesc": "Geben Sie einen Namen ein, um auf der Festplatte zu speichern und die Ausführung zu aktivieren.",
+    "nameYourWorkflowPlaceholder": "Z.B.: Produktbild-Pipeline",
+    "nameDuplicate": "Ein Workflow mit diesem Namen existiert bereits",
     "runTarget": "Ziel ausführen",
     "runTargetAll": "Alle Knoten ausführen",
     "runTargetSelected": "Ausgewählten Knoten ausführen",
@@ -1007,6 +1013,9 @@
     "exportFailed": "Export fehlgeschlagen",
     "estimated": "Kosten",
     "fitView": "Ansicht anpassen",
+    "autoLayout": "Automatisches Layout",
+    "freeToolModelHint": "Beim ersten Ausführen wird das KI-Modell heruntergeladen",
+    "more": "Mehr",
     "previousImage": "Vorheriges Bild",
     "nextImage": "Nächstes Bild",
     "previewNavHint": "← / → zum Navigieren ({{current}}/{{total}})",
@@ -1083,7 +1092,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "Modell ausführen",
+        "label": "AI Kreativstudio",
         "emptyHint": "Klicken Sie auf diesen Knoten, dann wählen Sie ein Modell →",
         "params": {
           "modelId": {
@@ -1093,6 +1102,11 @@
       },
       "input/media-upload": {
         "label": "Hochladen",
+        "inputs": {
+          "media": {
+            "label": "Medien"
+          }
+        },
         "outputs": {
           "output": {
             "label": "URL"
@@ -1185,6 +1199,9 @@
           "pointY": {
             "label": "Punkt Y",
             "description": "Normalisierte Y-Koordinate (0-1) für Segmentierungspunkt"
+          },
+          "invertMask": {
+            "label": "Maske invertieren"
           }
         }
       },
@@ -1266,6 +1283,7 @@
       "autoOnRunTitle": "Beim Klick auf Ausführen automatisch optimieren",
       "autoOnRun": "Auto bei Ausführung",
       "quickOptimizeTitle": "Schnell optimieren ({{mode}})",
+      "quickOptimizeLabel": "Optimieren",
       "params": "Parameter",
       "prompt": "Eingabeaufforderung",
       "emptyPrompt": "(leer)",

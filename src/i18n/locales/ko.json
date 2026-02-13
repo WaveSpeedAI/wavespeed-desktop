@@ -992,6 +992,12 @@
     "settings": "설정",
     "runAll": "모두 실행",
     "run": "실행",
+    "runWorkflow": "워크플로 실행",
+    "runFromHere": "여기서부터 실행",
+    "nameYourWorkflow": "워크플로 이름 지정",
+    "nameYourWorkflowDesc": "디스크에 저장하고 실행을 활성화하려면 이름을 지정하세요.",
+    "nameYourWorkflowPlaceholder": "예: 제품 이미지 파이프라인",
+    "nameDuplicate": "같은 이름의 워크플로가 이미 존재합니다",
     "runTarget": "대상 실행",
     "runTargetAll": "모든 노드 실행",
     "runTargetSelected": "선택한 노드 실행",
@@ -1007,6 +1013,9 @@
     "exportFailed": "내보내기 실패",
     "estimated": "예상 비용",
     "fitView": "뷰 맞춤",
+    "autoLayout": "자동 정렬",
+    "freeToolModelHint": "첫 실행 시 AI 모델을 다운로드합니다",
+    "more": "더보기",
     "previousImage": "이전 이미지",
     "nextImage": "다음 이미지",
     "previewNavHint": "← / →로 이미지 탐색 ({{current}}/{{total}})",
@@ -1083,7 +1092,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "모델 실행",
+        "label": "AI 크리에이티브 스튜디오",
         "emptyHint": "이 노드를 클릭한 다음 모델 선택 →",
         "params": {
           "modelId": {
@@ -1093,6 +1102,11 @@
       },
       "input/media-upload": {
         "label": "업로드",
+        "inputs": {
+          "media": {
+            "label": "미디어"
+          }
+        },
         "outputs": {
           "output": {
             "label": "URL"
@@ -1185,6 +1199,9 @@
           "pointY": {
             "label": "포인트 Y",
             "description": "세그먼트 포인트의 정규화 Y (0-1)"
+          },
+          "invertMask": {
+            "label": "마스크 반전"
           }
         }
       },
@@ -1266,6 +1283,7 @@
       "autoOnRunTitle": "실행 클릭 시 자동 최적화",
       "autoOnRun": "실행 시 자동 최적화",
       "quickOptimizeTitle": "빠른 최적화 ({{mode}})",
+      "quickOptimizeLabel": "최적화",
       "params": "매개변수",
       "prompt": "프롬프트",
       "emptyPrompt": "(비어 있음)",

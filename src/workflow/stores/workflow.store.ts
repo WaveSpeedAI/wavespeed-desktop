@@ -304,7 +304,8 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     const { workflowName, nodes, edges } = get()
 
     // Don't save unnamed workflows — prompt user for a name via UI dialog
-    if (!workflowName || workflowName === 'Untitled Workflow') {
+    const isUntitled = !workflowName || /^Untitled Workflow(\s+\d+)?$/.test(workflowName)
+    if (isUntitled) {
       const uiStoreModule = await import('./ui.store')
       const uiStore = resolveStoreExport<{ promptWorkflowName: (defaultName?: string) => Promise<string | null> }>(uiStoreModule, 'useUIStore')
       const promptWorkflowName = uiStore?.getState().promptWorkflowName
@@ -312,7 +313,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         throw new Error('Workflow naming dialog is unavailable')
       }
       const name = await promptWorkflowName(workflowName || '')
-      if (!name || !name.trim() || name.trim() === 'Untitled Workflow') return
+      if (!name || !name.trim() || /^Untitled Workflow(\s+\d+)?$/.test(name.trim())) return
       set({ workflowName: name.trim() })
     }
 
@@ -362,6 +363,13 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     }))
 
     await workflowIpc.save({ id: workflowId!, name: finalName, nodes: wfNodes, edges: wfEdges })
+    // Sync name back — backend may have deduplicated it
+    try {
+      const saved = await workflowIpc.load(workflowId!)
+      if (saved.name !== finalName) {
+        set({ workflowName: saved.name })
+      }
+    } catch { /* ignore */ }
     set({ isDirty: false })
   },
 
@@ -432,7 +440,11 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     const { workflowId } = get()
     set({ workflowName: newName })
     if (workflowId) {
-      await workflowIpc.rename(workflowId, newName)
+      const result = await workflowIpc.rename(workflowId, newName) as unknown as { finalName: string } | void
+      // If the backend deduplicated the name, sync it back
+      if (result && typeof result === 'object' && 'finalName' in result && result.finalName !== newName) {
+        set({ workflowName: result.finalName })
+      }
     }
   },
 

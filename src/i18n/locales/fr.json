@@ -992,6 +992,12 @@
     "settings": "Paramètres",
     "runAll": "Tout exécuter",
     "run": "Exécuter",
+    "runWorkflow": "Exécuter le flux de travail",
+    "runFromHere": "Exécuter à partir d'ici",
+    "nameYourWorkflow": "Nommez votre flux de travail",
+    "nameYourWorkflowDesc": "Donnez-lui un nom pour enregistrer sur le disque et activer l'exécution.",
+    "nameYourWorkflowPlaceholder": "Ex : Pipeline d'images produit",
+    "nameDuplicate": "Un flux de travail avec ce nom existe déjà",
     "runTarget": "Exécuter la cible",
     "runTargetAll": "Exécuter tous les nœuds",
     "runTargetSelected": "Exécuter le nœud sélectionné",
@@ -1007,6 +1013,9 @@
     "exportFailed": "Échec de l'exportation",
     "estimated": "Coût estimé",
     "fitView": "Ajuster la vue",
+    "autoLayout": "Disposition automatique",
+    "freeToolModelHint": "La première exécution téléchargera le modèle IA",
+    "more": "Plus",
     "previousImage": "Image précédente",
     "nextImage": "Image suivante",
     "previewNavHint": "Utilisez ← / → pour naviguer ({{current}}/{{total}})",
@@ -1083,7 +1092,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "Exécuter le modèle",
+        "label": "Studio Créatif AI",
         "emptyHint": "Cliquez sur ce nœud, puis sélectionnez un modèle →",
         "params": {
           "modelId": {
@@ -1093,6 +1102,11 @@
       },
       "input/media-upload": {
         "label": "Télécharger",
+        "inputs": {
+          "media": {
+            "label": "Média"
+          }
+        },
         "outputs": {
           "output": {
             "label": "URL"
@@ -1185,6 +1199,9 @@
           "pointY": {
             "label": "Point Y",
             "description": "Coordonnée Y normalisée (0-1) pour le point de segmentation"
+          },
+          "invertMask": {
+            "label": "Inverser le masque"
           }
         }
       },
@@ -1266,6 +1283,7 @@
       "autoOnRunTitle": "Optimiser automatiquement au clic sur Exécuter",
       "autoOnRun": "Auto à l'exécution",
       "quickOptimizeTitle": "Optimisation rapide ({{mode}})",
+      "quickOptimizeLabel": "Optimiser",
       "params": "Paramètres",
       "prompt": "Invite",
       "emptyPrompt": "(vide)",

@@ -992,6 +992,13 @@
     "settings": "设置",
     "runAll": "全部运行",
     "run": "运行",
+    "runWorkflow": "运行工作流",
+    "runFromHere": "从此执行",
+    "nameYourWorkflow": "命名工作流",
+    "nameYourWorkflowDesc": "为工作流命名以保存到磁盘并启用执行。",
+    "nameYourWorkflowPlaceholder": "例如：产品图片处理流程",
+    "nameDuplicate": "已存在同名工作流",
+    "cancel": "取消",
     "runTarget": "运行目标",
     "runTargetAll": "运行全部节点",
     "runTargetSelected": "运行选中节点",
@@ -1007,6 +1014,9 @@
     "exportFailed": "导出失败",
     "estimated": "预估",
     "fitView": "适配视图",
+    "autoLayout": "整理布局",
+    "freeToolModelHint": "首次运行需要下载 AI 模型",
+    "more": "更多",
     "previousImage": "上一张图片",
     "nextImage": "下一张图片",
     "previewNavHint": "使用 ← / → 查看图片（{{current}}/{{total}}）",
@@ -1083,7 +1093,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "执行模型",
+        "label": "AI 创作工坊",
         "emptyHint": "点击此节点，然后选择模型 →",
         "params": {
           "modelId": {
@@ -1093,6 +1103,11 @@
       },
       "input/media-upload": {
         "label": "上传",
+        "inputs": {
+          "media": {
+            "label": "媒体"
+          }
+        },
         "outputs": {
           "output": {
             "label": "URL"
@@ -1185,6 +1200,9 @@
           "pointY": {
             "label": "点 Y",
             "description": "分割点归一化 Y 坐标（0-1）"
+          },
+          "invertMask": {
+            "label": "反转蒙版"
           }
         }
       },
@@ -1266,6 +1284,7 @@
       "autoOnRunTitle": "点击运行时自动优化",
       "autoOnRun": "运行时自动优化",
       "quickOptimizeTitle": "快速优化（{{mode}}）",
+      "quickOptimizeLabel": "优化",
       "params": "参数",
       "prompt": "提示词",
       "emptyPrompt": "（空）",

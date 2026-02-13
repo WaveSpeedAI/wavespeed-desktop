@@ -194,10 +194,19 @@ export function WorkflowPage() {
     saveCurrentTabSnapshot()
     tabIdCounter++
     const newTabId = `tab-${tabIdCounter}`
-    setTabs(prev => [...prev, { tabId: newTabId, workflowId: null, workflowName: 'Untitled Workflow', nodes: [], edges: [], isDirty: false }])
-    useWorkflowStore.setState({ workflowId: null, workflowName: 'Untitled Workflow', nodes: [], edges: [], isDirty: false })
+    // Generate a unique name that doesn't collide with existing tabs or persisted workflows
+    const baseName = 'Untitled Workflow'
+    const existingTabNames = new Set(tabs.map(t => t.workflowName))
+    let uniqueName = baseName
+    if (existingTabNames.has(uniqueName)) {
+      let counter = 2
+      while (existingTabNames.has(`${baseName} ${counter}`)) counter++
+      uniqueName = `${baseName} ${counter}`
+    }
+    setTabs(prev => [...prev, { tabId: newTabId, workflowId: null, workflowName: uniqueName, nodes: [], edges: [], isDirty: false }])
+    useWorkflowStore.setState({ workflowId: null, workflowName: uniqueName, nodes: [], edges: [], isDirty: false })
     setActiveTabId(newTabId)
-  }, [saveCurrentTabSnapshot])
+  }, [saveCurrentTabSnapshot, tabs])
 
   // Tab rename — inline editing
   const [editingTabId, setEditingTabId] = useState<string | null>(null)
@@ -218,18 +227,31 @@ export function WorkflowPage() {
       setEditingTabId(null)
       return
     }
-    // Update tab snapshot
-    setTabs(prev => prev.map(t => t.tabId === editingTabId ? { ...t, workflowName: trimmed } : t))
+
+    // Check for duplicate name across all tabs (excluding self)
+    const isDuplicate = tabs.some(t => t.tabId !== editingTabId && t.workflowName === trimmed)
+    if (isDuplicate) {
+      setEditingTabId(null)
+      return
+    }
+
     // If it's the active tab, also update the store and persist to backend
     if (editingTabId === activeTabId) {
       await renameWorkflow(trimmed)
+      // Sync back the actual name (may have been deduplicated by backend)
+      const actualName = useWorkflowStore.getState().workflowName
+      setTabs(prev => prev.map(t => t.tabId === editingTabId ? { ...t, workflowName: actualName } : t))
       invalidateWorkflowListCache()
     } else {
       // For non-active tabs, persist directly via IPC if it has a workflowId
       const tab = tabs.find(t => t.tabId === editingTabId)
       if (tab?.workflowId) {
-        workflowIpc.rename(tab.workflowId, trimmed).catch(console.error)
+        const result = await workflowIpc.rename(tab.workflowId, trimmed) as unknown as { finalName: string } | void
+        const actualName = (result && typeof result === 'object' && 'finalName' in result) ? result.finalName : trimmed
+        setTabs(prev => prev.map(t => t.tabId === editingTabId ? { ...t, workflowName: actualName } : t))
         invalidateWorkflowListCache()
+      } else {
+        setTabs(prev => prev.map(t => t.tabId === editingTabId ? { ...t, workflowName: trimmed } : t))
       }
     }
     setEditingTabId(null)
@@ -360,7 +382,7 @@ export function WorkflowPage() {
   // Auto-save: when workflow has a name and is dirty, save after 2s debounce
   // Triggers on: param changes, connections, model switches, node adds/removes
   useEffect(() => {
-    if (!isDirty || !workflowId || !workflowName || workflowName === 'Untitled Workflow') return
+    if (!isDirty || !workflowId || !workflowName || /^Untitled Workflow(\s+\d+)?$/.test(workflowName)) return
     const timer = setTimeout(async () => {
       try {
         await saveWorkflow()
@@ -372,7 +394,7 @@ export function WorkflowPage() {
 
   // Auto-save after execution completes
   useEffect(() => {
-    if (!isRunning && workflowId && workflowName && workflowName !== 'Untitled Workflow') {
+    if (!isRunning && workflowId && workflowName && !/^Untitled Workflow(\s+\d+)?$/.test(workflowName)) {
       saveWorkflow().then(() => setLastSavedAt(new Date())).catch(() => {})
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -551,6 +573,10 @@ export function WorkflowPage() {
     window.dispatchEvent(new Event('workflow:fit-view'))
   }, [])
 
+  const handleAutoLayout = useCallback(() => {
+    window.dispatchEvent(new Event('workflow:auto-layout'))
+  }, [])
+
   // Import / Export with toast feedback
   const [ioToast, setIoToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
   const showIoToast = (type: 'success' | 'error', msg: string) => {
@@ -618,11 +644,17 @@ export function WorkflowPage() {
       <div className="flex items-center border-b border-border bg-card py-1.5 gap-1.5 min-h-[40px]">
         {/* Left: Panel toggles */}
         <button onClick={toggleWorkflowPanel}
-          className={`h-7 px-3 rounded-md text-xs font-medium transition-colors ${showWorkflowPanel ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`}>
+          className={`h-7 px-3 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 ${showWorkflowPanel ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
           {t('workflow.workflows', 'Workflows')}
         </button>
         <button onClick={toggleNodePalette}
-          className={`h-7 px-3 rounded-md text-xs font-medium transition-colors ${showNodePalette ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`}>
+          className={`h-7 px-3 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 ${showNodePalette ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="2" y="4" width="8" height="6" rx="1"/><rect x="14" y="14" width="8" height="6" rx="1"/><path d="M10 7h4"/><path d="M14 7v7a2 2 0 0 0 2 2h0"/>
+          </svg>
           {t('workflow.nodes', 'Nodes')}
         </button>
         <div className="w-px h-5 bg-border mx-1" />
@@ -635,7 +667,7 @@ export function WorkflowPage() {
             return (
               <div key={tab.tabId}
                 onClick={() => switchTab(tab.tabId)}
-                className={`group flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-md cursor-pointer text-xs select-none max-w-[160px] transition-colors
+                className={`group flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-md cursor-pointer text-xs select-none min-w-[72px] max-w-[160px] transition-colors
                   ${isActive
                     ? 'bg-accent text-foreground'
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
@@ -653,7 +685,11 @@ export function WorkflowPage() {
                     }}
                     onClick={e => e.stopPropagation()}
                     autoFocus
-                    className="flex-1 min-w-0 bg-transparent border-b border-primary text-xs outline-none px-0 py-0"
+                    className={`flex-1 min-w-0 bg-transparent border-b text-xs outline-none px-0 py-0 ${
+                      editingTabName.trim() && tabs.some(t => t.tabId !== editingTabId && t.workflowName === editingTabName.trim())
+                        ? 'border-red-500 text-red-400'
+                        : 'border-primary'
+                    }`}
                   />
                 ) : (
                   <span className="truncate flex-1" onDoubleClick={e => { e.stopPropagation(); startRenameTab(tab.tabId) }}>{tab.workflowName}</span>
@@ -710,7 +746,7 @@ export function WorkflowPage() {
               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none">
                 <polygon points="6,3 20,12 6,21" />
               </svg>
-              {isRunning || isBatchRunning ? t('workflow.running', 'Running...') : t('workflow.run', 'Run')}
+              {isRunning || isBatchRunning ? t('workflow.running', 'Running...') : t('workflow.runWorkflow', 'Run Workflow')}
             </button>
             {/* Run count */}
             <div className="h-8 flex items-center bg-[hsl(var(--muted))] border-l border-[hsl(var(--border))]">
@@ -742,22 +778,36 @@ export function WorkflowPage() {
           )}
           <button
             onClick={handleFitView}
-            className="h-8 px-2 rounded-md border border-[hsl(var(--border))] text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            className="h-8 px-2 rounded-md border border-[hsl(var(--border))] text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center gap-1.5"
             title={t('workflow.fitView', 'Fit View')}
           >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 7V2h5"/><path d="M17 2h5v5"/><path d="M22 17v5h-5"/><path d="M7 22H2v-5"/><circle cx="12" cy="12" r="3"/>
+            </svg>
             {t('workflow.fitView', 'Fit View')}
+          </button>
+          <button
+            onClick={handleAutoLayout}
+            className="h-8 px-2 rounded-md border border-[hsl(var(--border))] text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center gap-1.5"
+            title={t('workflow.autoLayout', 'Auto Layout')}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="6" height="6" rx="1"/><rect x="15" y="3" width="6" height="6" rx="1"/><rect x="9" y="15" width="6" height="6" rx="1"/><path d="M9 6h6"/><path d="M12 9v6"/>
+            </svg>
+            {t('workflow.autoLayout', 'Auto Layout')}
           </button>
         </div>
 
         {/* Monitor toggle */}
         <MonitorToggleBtn />
 
-        <div className="w-px h-5 bg-border mx-1" />
-
-        <button onClick={handleImport} className="px-2 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors">{t('workflow.import', 'Import')}</button>
-        {workflowId && <button onClick={handleExport} className="px-2 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors">{t('workflow.export', 'Export')}</button>}
-        <button onClick={handleSave}
-          className="px-2 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors">{t('workflow.save', 'Save')}</button>
+        {/* ── More menu (Import / Export / Save) ─────────────── */}
+        <MoreMenu
+          workflowId={workflowId}
+          onImport={handleImport}
+          onExport={handleExport}
+          onSave={handleSave}
+        />
       </div>
 
       {/* ── Run Monitor panel ─────────────────────────────────── */}
@@ -802,7 +852,7 @@ export function WorkflowPage() {
                   {t('workflow.results', 'Results')}
                 </button>
               </div>
-              <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 scrollbar-auto-hide">
+              <div className="flex-1 overflow-hidden min-w-0 flex flex-col">
                 {rightTab === 'config' && <NodeConfigPanel paramDefs={paramDefs} />}
                 {rightTab === 'results' && <ResultsPanel />}
               </div>
@@ -954,36 +1004,53 @@ function ResizableSidebar({ children }: { children: React.ReactNode }) {
 /* ── Naming Dialog Component ───────────────────────────────────────── */
 
 function NamingDialog({ defaultValue, onConfirm }: { defaultValue: string; onConfirm: (name: string | null) => void }) {
-  const [value, setValue] = useState(defaultValue === 'Untitled Workflow' ? '' : defaultValue)
+  const { t } = useTranslation()
+  const [value, setValue] = useState(/^Untitled Workflow(\s+\d+)?$/.test(defaultValue) ? '' : defaultValue)
+  const [existingNames, setExistingNames] = useState<Set<string>>(new Set())
+  const currentWorkflowId = useWorkflowStore(s => s.workflowId)
+
+  // Load existing workflow names on mount
+  useEffect(() => {
+    workflowIpc.list().then(list => {
+      const names = new Set((list ?? []).filter(w => w.id !== currentWorkflowId).map(w => w.name))
+      setExistingNames(names)
+    }).catch(() => {})
+  }, [currentWorkflowId])
+
+  const trimmed = value.trim()
+  const isDuplicate = trimmed.length > 0 && existingNames.has(trimmed)
 
   const handleSubmit = () => {
-    const trimmed = value.trim()
-    if (!trimmed) return
+    if (!trimmed || isDuplicate) return
     onConfirm(trimmed)
   }
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60" onClick={() => onConfirm(null)}>
       <div className="w-[360px] rounded-xl border border-border bg-card p-5 shadow-xl" onClick={e => e.stopPropagation()}>
-        <h3 className="text-sm font-semibold mb-1">Name your workflow</h3>
-        <p className="text-xs text-muted-foreground mb-3">Give it a name to save to disk and enable execution.</p>
+        <h3 className="text-sm font-semibold mb-1">{t('workflow.nameYourWorkflow', 'Name your workflow')}</h3>
+        <p className="text-xs text-muted-foreground mb-3">{t('workflow.nameYourWorkflowDesc', 'Give it a name to save to disk and enable execution.')}</p>
         <input
           type="text"
           value={value}
           onChange={e => setValue(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-          placeholder="e.g. Product Image Pipeline"
+          placeholder={t('workflow.nameYourWorkflowPlaceholder', 'e.g. Product Image Pipeline')}
           autoFocus
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary mb-3"
+          className={`w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 mb-1 ${isDuplicate ? 'border-red-500 focus:ring-red-500/50' : 'border-input focus:ring-primary'}`}
         />
+        {isDuplicate && (
+          <p className="text-[11px] text-red-400 mb-2">{t('workflow.nameDuplicate', 'A workflow with this name already exists')}</p>
+        )}
+        {!isDuplicate && <div className="mb-2" />}
         <div className="flex justify-end gap-2">
           <button onClick={() => onConfirm(null)}
             className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
-            Cancel
+            {t('workflow.cancel', 'Cancel')}
           </button>
-          <button onClick={handleSubmit} disabled={!value.trim()}
+          <button onClick={handleSubmit} disabled={!trimmed || isDuplicate}
             className="px-4 py-1.5 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-            Save
+            {t('workflow.save', 'Save')}
           </button>
         </div>
       </div>
@@ -1024,6 +1091,74 @@ function MonitorToggleBtn() {
         </span>
       )}
     </button>
+  )
+}
+
+/* ── More Menu — collapsed Import / Export / Save ──────────────────── */
+function MoreMenu({ workflowId, onImport, onExport, onSave }: {
+  workflowId: string | null
+  onImport: () => void
+  onExport: () => void
+  onSave: () => void
+}) {
+  const { t } = useTranslation()
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: PointerEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    const keyHandler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    window.addEventListener('pointerdown', handler, true)
+    window.addEventListener('keydown', keyHandler)
+    return () => {
+      window.removeEventListener('pointerdown', handler, true)
+      window.removeEventListener('keydown', keyHandler)
+    }
+  }, [open])
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(!open)}
+        className={`h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors ${open ? 'bg-accent text-foreground' : ''}`}
+        title={t('workflow.more', 'More')}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
+        </svg>
+      </button>
+      {open && (
+        <div className="absolute top-8 right-0 z-[100] w-36 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--popover))] text-[hsl(var(--popover-foreground))] shadow-xl py-1">
+          <button onClick={() => { onImport(); setOpen(false) }}
+            className="w-full px-3 py-1.5 text-xs text-left hover:bg-[hsl(var(--accent))] transition-colors flex items-center gap-2">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            {t('workflow.import', 'Import')}
+          </button>
+          {workflowId && (
+            <button onClick={() => { onExport(); setOpen(false) }}
+              className="w-full px-3 py-1.5 text-xs text-left hover:bg-[hsl(var(--accent))] transition-colors flex items-center gap-2">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              {t('workflow.export', 'Export')}
+            </button>
+          )}
+          <div className="mx-2 my-1 h-px bg-[hsl(var(--border))]" />
+          <button onClick={() => { onSave(); setOpen(false) }}
+            className="w-full px-3 py-1.5 text-xs text-left hover:bg-[hsl(var(--accent))] transition-colors flex items-center gap-2">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+            </svg>
+            {t('workflow.save', 'Save')}
+          </button>
+        </div>
+      )}
+    </div>
   )
 }
 

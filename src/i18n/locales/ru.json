@@ -992,6 +992,12 @@
     "settings": "Настройки",
     "runAll": "Запустить всё",
     "run": "Запустить",
+    "runWorkflow": "Запустить рабочий процесс",
+    "runFromHere": "Запустить отсюда",
+    "nameYourWorkflow": "Назовите рабочий процесс",
+    "nameYourWorkflowDesc": "Дайте имя для сохранения на диск и включения выполнения.",
+    "nameYourWorkflowPlaceholder": "Напр.: Конвейер обработки изображений",
+    "nameDuplicate": "Рабочий процесс с таким именем уже существует",
     "runTarget": "Запустить цель",
     "runTargetAll": "Запустить все узлы",
     "runTargetSelected": "Запустить выбранный узел",
@@ -1007,6 +1013,9 @@
     "exportFailed": "Ошибка экспорта",
     "estimated": "Оценка стоимости",
     "fitView": "Подогнать вид",
+    "autoLayout": "Автоматическая компоновка",
+    "freeToolModelHint": "При первом запуске будет загружена модель ИИ",
+    "more": "Ещё",
     "previousImage": "Предыдущее изображение",
     "nextImage": "Следующее изображение",
     "previewNavHint": "Используйте ← / → для навигации ({{current}}/{{total}})",
@@ -1083,7 +1092,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "Запустить модель",
+        "label": "AI Творческая студия",
         "emptyHint": "Нажмите на этот узел, затем выберите модель →",
         "params": {
           "modelId": {
@@ -1093,6 +1102,11 @@
       },
       "input/media-upload": {
         "label": "Загрузить",
+        "inputs": {
+          "media": {
+            "label": "Медиа"
+          }
+        },
         "outputs": {
           "output": {
             "label": "URL"
@@ -1185,6 +1199,9 @@
           "pointY": {
             "label": "Точка Y",
             "description": "Нормализованная Y (0-1) для точки сегментации"
+          },
+          "invertMask": {
+            "label": "Инвертировать маску"
           }
         }
       },
@@ -1266,6 +1283,7 @@
       "autoOnRunTitle": "Автоматически оптимизировать при нажатии Запустить",
       "autoOnRun": "Авто при запуске",
       "quickOptimizeTitle": "Быстрая оптимизация ({{mode}})",
+      "quickOptimizeLabel": "Оптимизация",
       "params": "Параметры",
       "prompt": "Подсказка",
       "emptyPrompt": "(пусто)",

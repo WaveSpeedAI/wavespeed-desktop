@@ -628,9 +628,11 @@ interface SegmentPointInput {
  */
 export async function runSegmentAnything(
   imageUrl: string,
-  params: { pointX?: number; pointY?: number; __segmentPoints?: string; __previewMask?: string },
+  params: { pointX?: number; pointY?: number; __segmentPoints?: string; __previewMask?: string; invertMask?: boolean },
   onProgress?: (progress: number, message?: string) => void
 ): Promise<string> {
+  const invert = Boolean(params.invertMask)
+
   // If a preview mask was already generated in the SegmentPointPicker, use it directly
   const previewMask = params.__previewMask
   if (previewMask && typeof previewMask === 'string' && previewMask.trim()) {
@@ -643,8 +645,21 @@ export async function runSegmentAnything(
       const canvas = document.createElement('canvas')
       canvas.width = bitmap.width
       canvas.height = bitmap.height
-      canvas.getContext('2d')!.drawImage(bitmap, 0, 0)
+      const ctx2d = canvas.getContext('2d')!
+      ctx2d.drawImage(bitmap, 0, 0)
       bitmap.close()
+      if (invert) {
+        const imgData = ctx2d.getImageData(0, 0, canvas.width, canvas.height)
+        const d = imgData.data
+        for (let i = 0; i < d.length; i += 4) {
+          d[i] = 255 - d[i]
+          d[i + 1] = 255 - d[i + 1]
+          d[i + 2] = 255 - d[i + 2]
+          // Keep alpha: if was transparent (0) make opaque (255) and vice versa
+          d[i + 3] = d[i + 3] > 128 ? 0 : 255
+        }
+        ctx2d.putImageData(imgData, 0, 0)
+      }
       const dataUrl = canvas.toDataURL('image/png')
       onProgress?.(100, 'Done')
       return dataURLToBase64(dataUrl)
@@ -726,7 +741,8 @@ export async function runSegmentAnything(
     // SAM outputs 0 or 1; scale to 0 or 255 so downstream consumers
     // (e.g. image-eraser loadMaskAsFloat32) can distinguish mask from background
     // via luminance check (r > 128).  Alpha is always 255 (fully opaque).
-    const v = mask[i] ? 255 : 0
+    const raw = mask[i] ? 255 : 0
+    const v = invert ? 255 - raw : raw
     imageData.data[i * 4] = v
     imageData.data[i * 4 + 1] = v
     imageData.data[i * 4 + 2] = v

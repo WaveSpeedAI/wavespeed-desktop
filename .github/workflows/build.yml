@@ -61,13 +61,15 @@ jobs:
         run: npm run build:${{ matrix.platform }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # macOS: skip code signing on non-tag builds (no certs available)
+          CSC_IDENTITY_AUTO_DISCOVERY: ${{ !(matrix.platform == 'mac' && startsWith(github.ref, 'refs/tags/v')) && 'false' || 'true' }}
           # macOS signing (only on tag builds with secrets available)
           CSC_LINK: ${{ matrix.platform == 'mac' && startsWith(github.ref, 'refs/tags/v') && secrets.MAC_CERTS || '' }}
           CSC_KEY_PASSWORD: ${{ matrix.platform == 'mac' && startsWith(github.ref, 'refs/tags/v') && secrets.MAC_CERTS_PASSWORD || '' }}
-          # macOS notarization (optional)
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          # macOS notarization (only on tag builds)
+          APPLE_ID: ${{ startsWith(github.ref, 'refs/tags/v') && secrets.APPLE_ID || '' }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ startsWith(github.ref, 'refs/tags/v') && secrets.APPLE_APP_SPECIFIC_PASSWORD || '' }}
+          APPLE_TEAM_ID: ${{ startsWith(github.ref, 'refs/tags/v') && secrets.APPLE_TEAM_ID || '' }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

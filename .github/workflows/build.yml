@@ -57,23 +57,25 @@ jobs:
             rm certificate.p12
           fi
 
-      - name: Build for ${{ matrix.platform }}
-        shell: bash
-        run: |
-          if [[ "${{ matrix.platform }}" == "mac" && "${{ startsWith(github.ref, 'refs/tags/v') }}" != "true" ]]; then
-            npm run build:mac:fast
-          else
-            npm run build:${{ matrix.platform }}
-          fi
+      # macOS non-release: skip signing entirely (clean env, no CSC_LINK leaking)
+      - name: Build for mac (no signing)
+        if: matrix.platform == 'mac' && !startsWith(github.ref, 'refs/tags/v')
+        run: npm run build:mac:fast
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # macOS signing (only on tag builds with secrets available)
-          CSC_LINK: ${{ matrix.platform == 'mac' && startsWith(github.ref, 'refs/tags/v') && secrets.MAC_CERTS || '' }}
-          CSC_KEY_PASSWORD: ${{ matrix.platform == 'mac' && startsWith(github.ref, 'refs/tags/v') && secrets.MAC_CERTS_PASSWORD || '' }}
-          # macOS notarization (only on tag builds)
-          APPLE_ID: ${{ startsWith(github.ref, 'refs/tags/v') && secrets.APPLE_ID || '' }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ startsWith(github.ref, 'refs/tags/v') && secrets.APPLE_APP_SPECIFIC_PASSWORD || '' }}
-          APPLE_TEAM_ID: ${{ startsWith(github.ref, 'refs/tags/v') && secrets.APPLE_TEAM_ID || '' }}
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      # All other builds (Linux, Windows, macOS release with signing)
+      - name: Build for ${{ matrix.platform }}
+        if: matrix.platform != 'mac' || startsWith(github.ref, 'refs/tags/v')
+        run: npm run build:${{ matrix.platform }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_LINK: ${{ matrix.platform == 'mac' && secrets.MAC_CERTS || '' }}
+          CSC_KEY_PASSWORD: ${{ matrix.platform == 'mac' && secrets.MAC_CERTS_PASSWORD || '' }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

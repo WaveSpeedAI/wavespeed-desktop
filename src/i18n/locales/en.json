@@ -1024,7 +1024,10 @@
       "hint": "Left click = include, right click = exclude",
       "points": "points",
       "clear": "Clear",
-      "done": "Done"
+      "done": "Done",
+      "encoding": "Analyzing image...",
+      "waitingEncode": "Preparing...",
+      "decoding": "Updating mask..."
     },
     "pickPoints": "Pick points",
     "pickPointsNeedInput": "Set input image first",

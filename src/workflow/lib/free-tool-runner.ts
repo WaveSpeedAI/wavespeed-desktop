@@ -449,10 +449,9 @@ export async function runFaceSwapper(
   }
 
   onProgress?.(30, 'Detecting faces...')
-  const [sourceFaces, targetFaces] = await Promise.all([
-    detectFaces(sourceImageData, 'source'),
-    detectFaces(targetImageData, 'target')
-  ])
+  // Detect faces sequentially to avoid "Session already started" errors from ONNX Runtime
+  const sourceFaces = await detectFaces(sourceImageData, 'source')
+  const targetFaces = await detectFaces(targetImageData, 'target')
 
   if (!sourceFaces.length) throw new Error('No face found in source image')
   if (!targetFaces.length) throw new Error('No face found in target image')
@@ -519,7 +518,16 @@ async function loadMaskAsFloat32(url: string, width: number, height: number): Pr
     const g = data[i * 4 + 1]
     const b = data[i * 4 + 2]
     const a = data[i * 4 + 3]
-    float32[i] = a > 128 || (r > 128 && g > 128 && b > 128) ? 1 : 0
+    // Transparent pixels are always background (0).
+    // For opaque pixels, use luminance to decide: white = mask, black = background.
+    // This handles both:
+    //  - MaskEditor output (opaque black/white, alpha always 255)
+    //  - Segment-anything output (transparent bg + opaque white mask)
+    if (a <= 128) {
+      float32[i] = 0
+    } else {
+      float32[i] = (r > 128 || g > 128 || b > 128) ? 1 : 0
+    }
   }
   return float32
 }
@@ -614,13 +622,36 @@ interface SegmentPointInput {
 
 /**
  * Run segment anything — output mask PNG from point prompt.
+ * If __previewMask is set (from SegmentPointPicker live preview), use it directly
+ * instead of re-running the SAM model.
  * Params: __segmentPoints (JSON array from PointPicker) or pointX/pointY as fallback.
  */
 export async function runSegmentAnything(
   imageUrl: string,
-  params: { pointX?: number; pointY?: number; __segmentPoints?: string },
+  params: { pointX?: number; pointY?: number; __segmentPoints?: string; __previewMask?: string },
   onProgress?: (progress: number, message?: string) => void
 ): Promise<string> {
+  // If a preview mask was already generated in the SegmentPointPicker, use it directly
+  const previewMask = params.__previewMask
+  if (previewMask && typeof previewMask === 'string' && previewMask.trim()) {
+    onProgress?.(50, 'Using previewed mask...')
+    // Load the mask image and re-export as base64
+    const res = await fetch(previewMask)
+    if (res.ok) {
+      const blob = await res.blob()
+      const bitmap = await createImageBitmap(blob)
+      const canvas = document.createElement('canvas')
+      canvas.width = bitmap.width
+      canvas.height = bitmap.height
+      canvas.getContext('2d')!.drawImage(bitmap, 0, 0)
+      bitmap.close()
+      const dataUrl = canvas.toDataURL('image/png')
+      onProgress?.(100, 'Done')
+      return dataURLToBase64(dataUrl)
+    }
+    // If fetch failed, fall through to full SAM execution
+  }
+
   let points: SegmentPointInput[]
   try {
     const parsed = params.__segmentPoints ? JSON.parse(params.__segmentPoints as string) : null
@@ -692,11 +723,14 @@ export async function runSegmentAnything(
   const { mask, width, height } = maskResult
   const imageData = new ImageData(width, height)
   for (let i = 0; i < width * height; i++) {
-    const v = mask[i]
+    // SAM outputs 0 or 1; scale to 0 or 255 so downstream consumers
+    // (e.g. image-eraser loadMaskAsFloat32) can distinguish mask from background
+    // via luminance check (r > 128).  Alpha is always 255 (fully opaque).
+    const v = mask[i] ? 255 : 0
     imageData.data[i * 4] = v
     imageData.data[i * 4 + 1] = v
     imageData.data[i * 4 + 2] = v
-    imageData.data[i * 4 + 3] = 255
+    imageData.data[i * 4 + 3] = v ? 255 : 0
   }
   const canvas = document.createElement('canvas')
   canvas.width = width

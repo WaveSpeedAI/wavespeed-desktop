@@ -39,12 +39,30 @@ interface FeatureCardProps {
 function FeatureCard({ icon, title, description, gradient, shapeGradient, href, badge }: FeatureCardProps) {
   const navigate = useNavigate()
   const { t } = useTranslation()
+  const isNewFeature = href === '/workflow'
 
   return (
     <div
-      className="relative group cursor-pointer overflow-hidden rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:border-border hover:shadow-lg"
+      className={cn(
+        "relative group cursor-pointer overflow-hidden rounded-2xl border bg-card/50 backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg",
+        isNewFeature 
+          ? "border-blue-500/30 ring-2 ring-blue-500/10 hover:ring-blue-500/20" 
+          : "border-border/50 hover:border-border"
+      )}
       onClick={() => navigate(href)}
     >
+      {/* Enhanced glow for new feature */}
+      {isNewFeature && (
+        <>
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 animate-pulse" />
+          <div className="absolute top-2 right-2 z-20">
+            <span className="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white shadow-lg animate-pulse">
+              ✨ NEW
+            </span>
+          </div>
+        </>
+      )}
+
       {/* Gradient background */}
       <div className={cn(
         "absolute inset-0 opacity-20 transition-opacity duration-300 group-hover:opacity-30",
@@ -70,7 +88,7 @@ function FeatureCard({ icon, title, description, gradient, shapeGradient, href, 
           )}>
             {icon}
           </div>
-          {badge && (
+          {badge && !isNewFeature && (
             <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-primary/10 text-primary">
               {badge}
             </span>

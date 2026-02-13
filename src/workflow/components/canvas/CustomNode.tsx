@@ -63,8 +63,11 @@ const NODE_INPUT_ACCEPT_RULES: Record<string, string | Record<string, string>> =
   'free-tool/audio-converter': { input: 'audio/*' },
   'free-tool/media-trimmer': { input: 'video/*,audio/*' },
   'free-tool/media-merger': {
-    first: 'video/*,audio/*',
-    second: 'video/*,audio/*'
+    input1: 'video/*,audio/*',
+    input2: 'video/*,audio/*',
+    input3: 'video/*,audio/*',
+    input4: 'video/*,audio/*',
+    input5: 'video/*,audio/*'
   },
   'input/media-upload': { output: 'image/*,video/*,audio/*' }
 }
@@ -834,8 +837,23 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
             {segmentPointPickerOpen && String(data.params.input ?? '').trim() && (
               <SegmentPointPicker
                 referenceImageUrl={String(data.params.input)}
-                onComplete={(points: SegmentPoint[]) => {
-                  updateNodeParams(id, { ...data.params, __segmentPoints: JSON.stringify(points) })
+                onComplete={async (points: SegmentPoint[], maskBlob?: Blob) => {
+                  const newParams: Record<string, unknown> = { ...data.params, __segmentPoints: JSON.stringify(points) }
+                  // Save the previewed mask as a file so downstream nodes can use it directly
+                  if (maskBlob) {
+                    try {
+                      const wfId = await ensureWorkflowId()
+                      if (wfId) {
+                        const { storageIpc } = await import('../../ipc/ipc-client')
+                        const arrBuf = await maskBlob.arrayBuffer()
+                        const localPath = await storageIpc.saveUploadedFile(wfId, id, 'segment-mask.png', arrBuf)
+                        newParams.__previewMask = `local-asset://${encodeURIComponent(localPath)}`
+                      }
+                    } catch (e) {
+                      console.error('Failed to save segment mask:', e)
+                    }
+                  }
+                  updateNodeParams(id, newParams)
                   setSegmentPointPickerOpen(false)
                 }}
                 onClose={() => setSegmentPointPickerOpen(false)}

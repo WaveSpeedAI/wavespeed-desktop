@@ -444,7 +444,7 @@ export function WorkflowPage() {
   }, [handleSave])
 
   // Init
-  useFreeToolListener()
+  // Note: useFreeToolListener is now called globally in Layout.tsx
 
   useEffect(() => {
     registryIpc.getAll().then(defs => setNodeDefs(defs ?? [])).catch(console.error)

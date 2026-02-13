@@ -26,6 +26,7 @@ import { MediaMergerPage } from '@/pages/MediaMergerPage'
 import { FaceEnhancerPage } from '@/pages/FaceEnhancerPage'
 import { FaceSwapperPage } from '@/pages/FaceSwapperPage'
 import { WorkflowPage } from '@/workflow/WorkflowPage'
+import { useFreeToolListener } from '@/workflow/hooks/useFreeToolListener'
 
 // Context for resetting persistent pages (forces remount by changing key)
 export const PageResetContext = createContext<{ resetPage: (path: string) => void }>({
@@ -43,6 +44,9 @@ export function Layout() {
   const navigate = useNavigate()
   const location = useLocation()
   const hasShownUpdateToast = useRef(false)
+
+  // Register free-tool IPC listener globally (must be always mounted for workflow execution)
+  useFreeToolListener()
 
   // Close mobile menu when route changes; auto-collapse sidebar for workflow
   const prevPathRef = useRef(location.pathname)

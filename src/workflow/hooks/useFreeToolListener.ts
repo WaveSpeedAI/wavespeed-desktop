@@ -100,7 +100,7 @@ export function useFreeToolListener(): void {
         } else if (nodeType === 'free-tool/segment-anything') {
           const inputUrl = inputs.input
           if (!inputUrl) throw new Error('Missing input')
-          const outputData = await runSegmentAnything(inputUrl, params as { pointX?: number; pointY?: number; __segmentPoints?: string })
+          const outputData = await runSegmentAnything(inputUrl, params as { pointX?: number; pointY?: number; __segmentPoints?: string; __previewMask?: string })
           await freeToolIpc.complete({
             requestId,
             workflowId,

@@ -201,6 +201,7 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
               {group.items.map((item) => {
                 const active = isActive(item)
                 const showTooltip = collapsed && !isMobileOpen && tooltipReady
+                const isNewFeature = item.href === '/workflow'
                 return (
                   <Tooltip key={item.href} delayDuration={0} open={showTooltip ? undefined : false}>
                     <TooltipTrigger asChild>
@@ -217,20 +218,47 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
                         }}
                         className={cn(
                           buttonVariants({ variant: 'ghost', size: 'sm' }),
-                          'h-10 w-full rounded-xl text-sm transition-all',
+                          'h-10 w-full rounded-xl text-sm transition-all relative overflow-visible',
                           collapsed && !isMobileOpen ? 'justify-center px-2' : 'justify-start gap-3 px-3',
                           active
                             ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/95 hover:text-primary-foreground'
-                            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                            : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                          isNewFeature && !active && 'ring-2 ring-blue-500/20 hover:ring-blue-500/30'
                         )}
                       >
-                        <item.icon className="h-4 w-4 shrink-0" />
-                        {(!collapsed || isMobileOpen) && <span>{t(item.titleKey)}</span>}
+                        {/* Glow effect for new feature */}
+                        {isNewFeature && !active && (
+                          <span className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 animate-pulse" />
+                        )}
+                        
+                        <item.icon className="h-4 w-4 shrink-0 relative z-10" />
+                        {(!collapsed || isMobileOpen) && (
+                          <span className="relative z-10 flex items-center gap-1.5">
+                            {t(item.titleKey)}
+                            {isNewFeature && (
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-sm">
+                                NEW
+                              </span>
+                            )}
+                          </span>
+                        )}
+                        {/* Red dot for collapsed state */}
+                        {isNewFeature && (collapsed && !isMobileOpen) && (
+                          <span className="absolute top-1 right-1 flex h-2 w-2 z-10">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                          </span>
+                        )}
                       </button>
                     </TooltipTrigger>
                     {showTooltip && (
-                      <TooltipContent side="right">
-                        {t(item.titleKey)}
+                      <TooltipContent side="right" className="flex items-center gap-2">
+                        <span>{t(item.titleKey)}</span>
+                        {isNewFeature && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+                            NEW
+                          </span>
+                        )}
                       </TooltipContent>
                     )}
                   </Tooltip>

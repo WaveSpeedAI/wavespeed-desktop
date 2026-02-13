@@ -1506,7 +1506,7 @@ async function detectFaces(
   width: number,
   height: number
 ): Promise<DetectedFace[]> {
-  return detectFacesWithLandmarks(imageData, width, height)
+  return await detectFacesWithLandmarks(imageData, width, height)
 }
 
 /**
@@ -1528,13 +1528,11 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
         if (det10gSession && arcfaceSession && inswapperSession && segmenter) {
           // If enhancement is off, or enhancement is on and GFPGAN is loaded, we're ready
           if (!enableEnhancement || gfpganSession) {
-            console.log('Face Swapper models already loaded, reusing sessions')
             self.postMessage({ type: 'ready', payload: { id: payload?.id } })
             break
           }
 
           // Enhancement is ON but GFPGAN not loaded - load only GFPGAN
-          console.log('Loading GFPGAN for face enhancement...')
           self.postMessage({ type: 'phase', payload: { phase: 'download', id: payload?.id } })
 
           const gfpganCached = await isModelCached(GFPGAN_MODEL_URL, FACE_ENHANCER_CACHE)
@@ -1555,19 +1553,16 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
           self.postMessage({ type: 'phase', payload: { phase: 'loading', id: payload?.id } })
           gfpganSession = await createSession(gfpganBuffer)
 
-          console.log('GFPGAN loaded for face enhancement')
           self.postMessage({ type: 'ready', payload: { id: payload?.id } })
           break
         }
 
         // Check for WebGPU support
         useWebGPU = await checkWebGPU()
-        console.log(`Face Swapper using ${useWebGPU ? 'WebGPU' : 'WASM'} backend`)
 
         // Initialize WebGPU compute for image processing
         if (useWebGPU) {
           await initWebGPU()
-          console.log(`WebGPU compute: ${isWebGPUAvailable() ? 'enabled' : 'disabled'}`)
         }
 
         // Calculate total model size for progress
@@ -1672,7 +1667,6 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
 
         // Parse EMAP matrix from downloaded binary (512x512 float32 = 1MB)
         emapMatrix = new Float32Array(emapBuffer)
-        console.log(`EMAP matrix loaded: ${emapMatrix.length} floats`)
 
         inswapperSession = await createSession(inswapperBuffer)
 

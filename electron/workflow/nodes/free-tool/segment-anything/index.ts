@@ -9,28 +9,7 @@ export const segmentAnythingDef: NodeTypeDefinition = {
   icon: '🖱️',
   inputs: [{ key: 'input', label: 'Image', dataType: 'image', required: true }],
   outputs: [{ key: 'output', label: 'Mask', dataType: 'image', required: true }],
-  params: [
-    {
-      key: 'pointX',
-      label: 'Point X',
-      type: 'slider',
-      default: 0.5,
-      dataType: 'text',
-      connectable: false,
-      validation: { min: 0, max: 1, step: 0.01 },
-      description: 'Normalized X (0-1) for segmentation point'
-    },
-    {
-      key: 'pointY',
-      label: 'Point Y',
-      type: 'slider',
-      default: 0.5,
-      dataType: 'text',
-      connectable: false,
-      validation: { min: 0, max: 1, step: 0.01 },
-      description: 'Normalized Y (0-1) for segmentation point'
-    }
-  ]
+  params: []
 }
 
 export class SegmentAnythingHandler extends BaseNodeHandler {
@@ -62,7 +41,8 @@ export class SegmentAnythingHandler extends BaseNodeHandler {
         params: {
           pointX: ctx.params.pointX ?? 0.5,
           pointY: ctx.params.pointY ?? 0.5,
-          __segmentPoints: ctx.params.__segmentPoints
+          __segmentPoints: ctx.params.__segmentPoints,
+          __previewMask: ctx.params.__previewMask
         }
       })
       ctx.onProgress(100, 'Segmentation completed.')

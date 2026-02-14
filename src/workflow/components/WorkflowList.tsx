@@ -20,6 +20,7 @@ function formatBytes(bytes: number): string {
 
 interface WorkflowListProps {
   onOpen?: (id: string) => Promise<void>
+  onDelete?: (id: string) => void
 }
 
 interface ContextMenuState {
@@ -28,7 +29,7 @@ interface ContextMenuState {
   y: number
 }
 
-export function WorkflowList({ onOpen }: WorkflowListProps) {
+export function WorkflowList({ onOpen, onDelete }: WorkflowListProps) {
   const { t } = useTranslation()
   const [workflows, setWorkflows] = useState<WorkflowSummary[]>([])
   const [diskUsage, setDiskUsage] = useState<Record<string, number>>({})
@@ -38,11 +39,12 @@ export function WorkflowList({ onOpen }: WorkflowListProps) {
   const [renamingValue, setRenamingValue] = useState('')
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
-  const [width, setWidth] = useState(220)
   const [dragging, setDragging] = useState(false)
   const { loadWorkflow, newWorkflow } = useWorkflowStore()
   const currentWorkflowId = useWorkflowStore(s => s.workflowId)
   const toggleWorkflowPanel = useUIStore(s => s.toggleWorkflowPanel)
+  const width = useUIStore(s => s.sidebarWidth)
+  const setSidebarWidth = useUIStore(s => s.setSidebarWidth)
   const contextMenuRef = useRef<HTMLDivElement>(null)
 
   const refresh = useCallback(() => {
@@ -66,8 +68,8 @@ export function WorkflowList({ onOpen }: WorkflowListProps) {
         setContextMenu(null)
       }
     }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
+    document.addEventListener('mousedown', handler, true)
+    return () => document.removeEventListener('mousedown', handler, true)
   }, [contextMenu])
 
   const handleCreate = async () => {
@@ -98,6 +100,7 @@ export function WorkflowList({ onOpen }: WorkflowListProps) {
     await workflowIpc.delete(id)
     await storageIpc.deleteWorkflowFiles(id).catch(() => {})
     setConfirmDeleteId(null)
+    onDelete?.(id)
     refresh()
   }
 
@@ -147,7 +150,7 @@ export function WorkflowList({ onOpen }: WorkflowListProps) {
     const startX = e.clientX
     const startWidth = width
     const onMove = (ev: MouseEvent) => {
-      setWidth(Math.max(180, Math.min(400, startWidth + (ev.clientX - startX))))
+      setSidebarWidth(startWidth + (ev.clientX - startX))
     }
     const onUp = () => {
       setDragging(false)
@@ -156,13 +159,13 @@ export function WorkflowList({ onOpen }: WorkflowListProps) {
     }
     document.addEventListener('mousemove', onMove)
     document.addEventListener('mouseup', onUp)
-  }, [width])
+  }, [width, setSidebarWidth])
 
   const totalDiskUsage = Object.values(diskUsage).reduce((sum, v) => sum + v, 0)
 
   return (
-    <div className="border-r border-border bg-card text-card-foreground flex flex-col relative overflow-hidden"
-      style={{ flexBasis: width, flexShrink: 1, flexGrow: 0, minWidth: 0 }}>
+    <div className="border-r border-border bg-card text-card-foreground flex flex-col relative overflow-hidden h-full"
+      style={{ width, minWidth: 0 }}>
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-border">
         <span className="font-semibold text-xs">{t('workflow.workflows', 'Workflows')}</span>
@@ -295,8 +298,8 @@ export function WorkflowList({ onOpen }: WorkflowListProps) {
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
                 </svg>
-                {cleaning === wf.id ? t('workflow.cleaning', 'Cleaning...') : t('workflow.cleanOutputs', 'Clean outputs')}
-                <span className="ml-auto text-[10px] opacity-60">{formatBytes(usage)}</span>
+                <span className="whitespace-nowrap">{cleaning === wf.id ? t('workflow.cleaning', 'Cleaning...') : t('workflow.cleanOutputs', 'Clean outputs')}</span>
+                <span className="ml-auto text-[10px] opacity-60 whitespace-nowrap">{formatBytes(usage)}</span>
               </button>
             )}
             <div className="border-t border-border my-1" />

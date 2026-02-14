@@ -1,184 +1,219 @@
 import { create } from 'zustand'
-
-export interface Template {
-  id: string
-  name: string
-  modelId: string
-  modelName: string
-  values: Record<string, unknown>
-  createdAt: string
-  updatedAt: string
-}
+import type { Template, TemplateFilter, CreateTemplateInput } from '../types/template'
 
 const TEMPLATES_STORAGE_KEY = 'wavespeed_templates'
+const MIGRATION_FLAG_KEY = 'wavespeed_templates_migrated'
 
-function loadTemplates(): Template[] {
-  try {
-    const stored = localStorage.getItem(TEMPLATES_STORAGE_KEY)
-    if (stored) {
-      return JSON.parse(stored)
-    }
-  } catch (e) {
-    console.error('Failed to load templates:', e)
+function invokeTemplateIpc<T = unknown>(channel: string, args?: unknown): Promise<T> {
+  if (!window.workflowAPI?.invoke) {
+    throw new Error('Template service is unavailable in this runtime')
   }
-  return []
-}
-
-function saveTemplates(templates: Template[]) {
-  try {
-    localStorage.setItem(TEMPLATES_STORAGE_KEY, JSON.stringify(templates))
-  } catch (e) {
-    console.error('Failed to save templates:', e)
-  }
-}
-
-function generateId(): string {
-  return `tpl-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-}
-
-// Export format version for compatibility
-const EXPORT_VERSION = '1.0'
-
-export interface TemplateExport {
-  version: string
-  exportedAt: string
-  templates: Template[]
+  return window.workflowAPI.invoke(channel, args) as Promise<T>
 }
 
 interface TemplateState {
   templates: Template[]
-  isLoaded: boolean
-
-  loadTemplates: () => void
-  saveTemplate: (name: string, modelId: string, modelName: string, values: Record<string, unknown>) => Template
-  updateTemplate: (id: string, updates: Partial<Pick<Template, 'name' | 'values'>>) => void
-  deleteTemplate: (id: string) => void
-  deleteTemplates: (ids: string[]) => void
-  getTemplatesByModel: (modelId: string) => Template[]
-  exportTemplates: (templateIds?: string[]) => TemplateExport
-  importTemplates: (data: TemplateExport, mode: 'merge' | 'replace') => { imported: number; skipped: number }
+  isLoading: boolean
+  error: string | null
+  
+  // CRUD operations
+  loadTemplates: (filter?: TemplateFilter) => Promise<void>
+  createTemplate: (input: CreateTemplateInput) => Promise<Template>
+  updateTemplate: (id: string, updates: Partial<Template>) => Promise<void>
+  deleteTemplate: (id: string) => Promise<void>
+  deleteTemplates: (ids: string[]) => Promise<void>
+  
+  // Special operations
+  toggleFavorite: (id: string) => Promise<void>
+  useTemplate: (id: string) => Promise<void>
+  
+  // Import/Export
+  exportTemplates: (ids?: string[]) => Promise<void>
+  importTemplates: (file: File, mode: 'merge' | 'replace') => Promise<{ imported: number; skipped: number }>
+  
+  // Filters
+  currentFilter: TemplateFilter
+  setFilter: (filter: TemplateFilter) => void
+  
+  // Migration
+  migrateFromLocalStorage: () => Promise<void>
 }
 
 export const useTemplateStore = create<TemplateState>((set, get) => ({
   templates: [],
-  isLoaded: false,
-
-  loadTemplates: () => {
-    const templates = loadTemplates()
-    set({ templates, isLoaded: true })
-  },
-
-  saveTemplate: (name: string, modelId: string, modelName: string, values: Record<string, unknown>) => {
-    const now = new Date().toISOString()
-    const template: Template = {
-      id: generateId(),
-      name,
-      modelId,
-      modelName,
-      values,
-      createdAt: now,
-      updatedAt: now,
-    }
-
-    set(state => {
-      const newTemplates = [...state.templates, template]
-      saveTemplates(newTemplates)
-      return { templates: newTemplates }
-    })
-
-    return template
-  },
-
-  updateTemplate: (id: string, updates: Partial<Pick<Template, 'name' | 'values'>>) => {
-    set(state => {
-      const newTemplates = state.templates.map(t =>
-        t.id === id
-          ? { ...t, ...updates, updatedAt: new Date().toISOString() }
-          : t
-      )
-      saveTemplates(newTemplates)
-      return { templates: newTemplates }
-    })
-  },
-
-  deleteTemplate: (id: string) => {
-    set(state => {
-      const newTemplates = state.templates.filter(t => t.id !== id)
-      saveTemplates(newTemplates)
-      return { templates: newTemplates }
-    })
-  },
-
-  deleteTemplates: (ids: string[]) => {
-    const idsSet = new Set(ids)
-    set(state => {
-      const newTemplates = state.templates.filter(t => !idsSet.has(t.id))
-      saveTemplates(newTemplates)
-      return { templates: newTemplates }
-    })
-  },
-
-  getTemplatesByModel: (modelId: string) => {
-    return get().templates.filter(t => t.modelId === modelId)
-  },
-
-  exportTemplates: (templateIds?: string[]) => {
-    const { templates } = get()
-    const templatesToExport = templateIds
-      ? templates.filter(t => templateIds.includes(t.id))
-      : templates
-
-    return {
-      version: EXPORT_VERSION,
-      exportedAt: new Date().toISOString(),
-      templates: templatesToExport,
-    }
-  },
-
-  importTemplates: (data: TemplateExport, mode: 'merge' | 'replace') => {
-    const { templates: currentTemplates } = get()
-    let imported = 0
-    let skipped = 0
-
-    // Validate import data
-    if (!data.templates || !Array.isArray(data.templates)) {
-      throw new Error('Invalid import data: missing templates array')
-    }
-
-    if (mode === 'replace') {
-      // Replace all templates with imported ones
-      const newTemplates = data.templates.map(t => ({
-        ...t,
-        id: generateId(), // Generate new IDs to avoid conflicts
-      }))
-      saveTemplates(newTemplates)
-      set({ templates: newTemplates })
-      imported = newTemplates.length
-    } else {
-      // Merge: add new templates, skip duplicates by name+modelId
-      const existingKeys = new Set(
-        currentTemplates.map(t => `${t.modelId}:${t.name}`)
-      )
-      const newTemplates = [...currentTemplates]
-
-      for (const template of data.templates) {
-        const key = `${template.modelId}:${template.name}`
-        if (existingKeys.has(key)) {
-          skipped++
-        } else {
-          newTemplates.push({
-            ...template,
-            id: generateId(), // Generate new ID
-          })
-          existingKeys.add(key)
-          imported++
-        }
+  isLoading: false,
+  error: null,
+  currentFilter: {},
+  
+  migrateFromLocalStorage: async () => {
+    try {
+      const migrationComplete = localStorage.getItem(MIGRATION_FLAG_KEY) === 'true'
+      if (migrationComplete) {
+        console.log('[Template Store] Migration already completed')
+        return
       }
-
-      saveTemplates(newTemplates)
-      set({ templates: newTemplates })
+      
+      const legacyTemplatesJson = localStorage.getItem(TEMPLATES_STORAGE_KEY)
+      if (!legacyTemplatesJson) {
+        console.log('[Template Store] No legacy templates to migrate')
+        localStorage.setItem(MIGRATION_FLAG_KEY, 'true')
+        return
+      }
+      
+      const result = await invokeTemplateIpc<{ migrated: number; skipped: number }>('template:migrate', {
+        legacyTemplatesJson,
+        migrationComplete
+      })
+      
+      console.log(`[Template Store] Migration complete: ${result.migrated} migrated, ${result.skipped} skipped`)
+      localStorage.setItem(MIGRATION_FLAG_KEY, 'true')
+      
+      // Reload templates after migration using current filter
+      await get().loadTemplates(get().currentFilter)
+    } catch (error) {
+      console.error('[Template Store] Migration failed:', error)
     }
-
-    return { imported, skipped }
   },
+  
+  loadTemplates: async (filter?: TemplateFilter) => {
+    const activeFilter = filter ?? get().currentFilter
+    set({ isLoading: true, error: null })
+    try {
+      const templates = await invokeTemplateIpc<Template[]>('template:query', activeFilter)
+      set({ templates, isLoading: false })
+    } catch (error) {
+      set({ error: (error as Error).message, isLoading: false })
+    }
+  },
+  
+  createTemplate: async (input: CreateTemplateInput) => {
+    set({ isLoading: true, error: null })
+    try {
+      const template = await invokeTemplateIpc<Template>('template:create', input)
+      set(state => ({
+        templates: [template, ...state.templates],
+        isLoading: false
+      }))
+      return template
+    } catch (error) {
+      set({ error: (error as Error).message, isLoading: false })
+      throw error
+    }
+  },
+  
+  updateTemplate: async (id: string, updates: Partial<Template>) => {
+    // Optimistic update
+    set(state => ({
+      templates: state.templates.map(t => 
+        t.id === id ? { ...t, ...updates, updatedAt: new Date().toISOString() } : t
+      )
+    }))
+    
+    try {
+      await invokeTemplateIpc('template:update', { id, updates })
+    } catch (error) {
+      // Revert on error
+      await get().loadTemplates(get().currentFilter)
+      set({ error: (error as Error).message })
+      throw error
+    }
+  },
+  
+  deleteTemplate: async (id: string) => {
+    // Optimistic delete
+    set(state => ({
+      templates: state.templates.filter(t => t.id !== id)
+    }))
+    
+    try {
+      await invokeTemplateIpc('template:delete', { id })
+    } catch (error) {
+      // Revert on error
+      await get().loadTemplates(get().currentFilter)
+      set({ error: (error as Error).message })
+      throw error
+    }
+  },
+  
+  deleteTemplates: async (ids: string[]) => {
+    const idsSet = new Set(ids)
+    set(state => ({
+      templates: state.templates.filter(t => !idsSet.has(t.id))
+    }))
+    
+    try {
+      await invokeTemplateIpc('template:deleteMany', { ids })
+    } catch (error) {
+      await get().loadTemplates(get().currentFilter)
+      set({ error: (error as Error).message })
+      throw error
+    }
+  },
+  
+  toggleFavorite: async (id: string) => {
+    // Optimistic toggle
+    set(state => ({
+      templates: state.templates.map(t =>
+        t.id === id ? { ...t, isFavorite: !t.isFavorite } : t
+      )
+    }))
+    
+    try {
+      await invokeTemplateIpc('template:toggleFavorite', { id })
+    } catch (error) {
+      await get().loadTemplates(get().currentFilter)
+      set({ error: (error as Error).message })
+      throw error
+    }
+  },
+  
+  useTemplate: async (id: string) => {
+    try {
+      await invokeTemplateIpc('template:incrementUseCount', { id })
+      // Update local state
+      set(state => ({
+        templates: state.templates.map(t =>
+          t.id === id ? { ...t, useCount: t.useCount + 1 } : t
+        )
+      }))
+    } catch (error) {
+      console.error('Failed to increment use count:', error)
+    }
+  },
+  
+  exportTemplates: async (ids?: string[]) => {
+    try {
+      const data = await invokeTemplateIpc('template:export', { ids })
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `templates-${new Date().toISOString().split('T')[0]}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      set({ error: (error as Error).message })
+      throw error
+    }
+  },
+  
+  importTemplates: async (file: File, mode: 'merge' | 'replace') => {
+    set({ isLoading: true, error: null })
+    try {
+      const text = await file.text()
+      const data = JSON.parse(text)
+      const result = await invokeTemplateIpc<{ imported: number; skipped: number }>('template:import', { data, mode })
+      await get().loadTemplates(get().currentFilter)
+      set({ isLoading: false })
+      return result
+    } catch (error) {
+      set({ error: (error as Error).message, isLoading: false })
+      throw error
+    }
+  },
+  
+  setFilter: (filter: TemplateFilter) => {
+    set({ currentFilter: filter })
+    get().loadTemplates(filter)
+  }
 }))

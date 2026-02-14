@@ -141,7 +141,14 @@ export function TemplatePanel({ onUseTemplate }: TemplatePanelProps) {
           </div>
         )}
 
-        {!isLoading && templates.map(template => (
+        {!isLoading && templates.map(template => {
+          const tName = template.i18nKey
+            ? t(`presetTemplates.${template.i18nKey}.name`, { defaultValue: template.name })
+            : template.name
+          const tDesc = template.i18nKey && template.description
+            ? t(`presetTemplates.${template.i18nKey}.description`, { defaultValue: template.description })
+            : template.description
+          return (
           <div
             key={template.id}
             className="group mx-1.5 mb-0.5 rounded-md hover:bg-accent transition-colors"
@@ -156,7 +163,7 @@ export function TemplatePanel({ onUseTemplate }: TemplatePanelProps) {
               {/* Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1">
-                  <span className="text-xs font-medium truncate">{template.name}</span>
+                  <span className="text-xs font-medium truncate">{tName}</span>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleToggleFavorite(template) }}
                     className={cn("p-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity",
@@ -165,8 +172,8 @@ export function TemplatePanel({ onUseTemplate }: TemplatePanelProps) {
                     <Heart className={cn("h-3 w-3", template.isFavorite && "fill-current")} />
                   </button>
                 </div>
-                {template.description && (
-                  <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">{template.description}</p>
+                {tDesc && (
+                  <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">{tDesc}</p>
                 )}
                 <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-0.5">
                   <span className="flex items-center gap-0.5"><Flame className="h-2.5 w-2.5" />{template.useCount}</span>
@@ -185,7 +192,8 @@ export function TemplatePanel({ onUseTemplate }: TemplatePanelProps) {
               </button>
             </div>
           </div>
-        ))}
+          )
+        })}
       </div>
 
       {/* Resize handle */}

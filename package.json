@@ -112,6 +112,15 @@
       "buildResources": "build",
       "output": "dist"
     },
+    "extraResources": [
+      {
+        "from": "data",
+        "to": "data",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
     "files": [
       "out/**/*",
       "!node_modules/**/@img/sharp-linux*/**",

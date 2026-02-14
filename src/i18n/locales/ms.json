@@ -405,6 +405,24 @@
     "uploadCover": "Klik untuk memuat naik imej sampul",
     "importDesc": "Import templat daripada fail yang dieksport sebelum ini"
   },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "Imej ke Video",
+      "description": "Tukar imej statik kepada video dinamik dengan peningkatan resolusi HD"
+    },
+    "musicGenerate": {
+      "name": "Penjanaan Muzik",
+      "description": "Jana muzik asli daripada lirik dan tag gaya"
+    },
+    "imageEdit": {
+      "name": "Penyuntingan Imej",
+      "description": "Sunting imej menggunakan model AI dengan prompt tersuai"
+    },
+    "videoEdit": {
+      "name": "Penyuntingan Video",
+      "description": "Sunting kandungan video menggunakan model AI dengan pengubahsuaian berasaskan prompt"
+    }
+  },
   "assets": {
     "title": "Aset Saya",
     "subtitle": "{{count}} output tersimpan",

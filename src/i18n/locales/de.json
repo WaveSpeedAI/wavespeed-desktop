@@ -405,6 +405,24 @@
     "uploadCover": "Klicken, um ein Titelbild hochzuladen",
     "importDesc": "Vorlagen aus einer zuvor exportierten Datei importieren"
   },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "Bild zu Video",
+      "description": "Statische Bilder in dynamische Videos umwandeln mit HD-Hochskalierung"
+    },
+    "musicGenerate": {
+      "name": "Musikgenerierung",
+      "description": "Originalmusik aus Texten und Stil-Tags generieren, verschiedene Genres unterstützt"
+    },
+    "imageEdit": {
+      "name": "Bildbearbeitung",
+      "description": "Bilder mit KI-Modellen und benutzerdefinierten Prompts präzise bearbeiten"
+    },
+    "videoEdit": {
+      "name": "Videobearbeitung",
+      "description": "Videoinhalte mit KI-Modellen und Prompt-basierten Änderungen bearbeiten"
+    }
+  },
   "assets": {
     "title": "Meine Assets",
     "subtitle": "{{count}} gespeicherte Ausgaben",

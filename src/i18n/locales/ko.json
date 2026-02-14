@@ -405,6 +405,24 @@
     "uploadCover": "클릭하여 커버 이미지 업로드",
     "importDesc": "이전에 내보낸 파일에서 템플릿 가져오기"
   },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "이미지를 비디오로",
+      "description": "정적 이미지를 동적 비디오로 변환하고 HD 업스케일링 처리"
+    },
+    "musicGenerate": {
+      "name": "음악 생성",
+      "description": "가사와 스타일 태그로 오리지널 음악 생성, 다양한 장르 지원"
+    },
+    "imageEdit": {
+      "name": "이미지 편집",
+      "description": "AI 모델과 사용자 정의 프롬프트로 이미지를 정밀하게 편집"
+    },
+    "videoEdit": {
+      "name": "비디오 편집",
+      "description": "AI 모델과 프롬프트 기반으로 비디오 콘텐츠의 요소를 편집"
+    }
+  },
   "assets": {
     "title": "내 에셋",
     "subtitle": "{{count}}개의 저장된 출력",

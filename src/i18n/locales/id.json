@@ -405,6 +405,24 @@
     "uploadCover": "Klik untuk mengunggah gambar sampul",
     "importDesc": "Impor template dari file yang sebelumnya diekspor"
   },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "Gambar ke Video",
+      "description": "Ubah gambar statis menjadi video dinamis dengan peningkatan resolusi HD"
+    },
+    "musicGenerate": {
+      "name": "Pembuatan Musik",
+      "description": "Buat musik orisinal dari lirik dan tag gaya"
+    },
+    "imageEdit": {
+      "name": "Pengeditan Gambar",
+      "description": "Edit gambar menggunakan model AI dengan prompt kustom"
+    },
+    "videoEdit": {
+      "name": "Pengeditan Video",
+      "description": "Edit konten video menggunakan model AI dengan modifikasi berbasis prompt"
+    }
+  },
   "assets": {
     "title": "Aset Saya",
     "subtitle": "{{count}} output tersimpan",

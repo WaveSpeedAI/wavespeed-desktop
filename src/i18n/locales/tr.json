@@ -405,6 +405,24 @@
     "uploadCover": "Kapak görseli yüklemek için tıkla",
     "importDesc": "Daha önce dışa aktarılan bir dosyadan şablonları içe aktar"
   },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "Görüntüden Videoya",
+      "description": "Statik görüntüleri HD ölçekleme ile dinamik videolara dönüştürün"
+    },
+    "musicGenerate": {
+      "name": "Müzik Oluşturma",
+      "description": "Şarkı sözleri ve stil etiketlerinden orijinal müzik oluşturun"
+    },
+    "imageEdit": {
+      "name": "Görüntü Düzenleme",
+      "description": "AI modelleri ve özel istemlerle görüntüleri düzenleyin"
+    },
+    "videoEdit": {
+      "name": "Video Düzenleme",
+      "description": "AI modelleri ve istem tabanlı değişikliklerle video içeriğini düzenleyin"
+    }
+  },
   "assets": {
     "title": "Varlıklarım",
     "subtitle": "{{count}} kaydedilmiş çıktı",

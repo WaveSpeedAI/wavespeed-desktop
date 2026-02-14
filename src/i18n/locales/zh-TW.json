@@ -405,6 +405,24 @@
     "uploadCover": "點擊上傳封面圖",
     "importDesc": "從先前匯出的檔案匯入範本"
   },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "圖生影片",
+      "description": "將靜態圖片轉換為動態影片，並進行高清放大處理"
+    },
+    "musicGenerate": {
+      "name": "音樂生成",
+      "description": "透過歌詞和風格標籤生成原創音樂，支援多種音樂風格"
+    },
+    "imageEdit": {
+      "name": "圖像編輯",
+      "description": "使用AI模型編輯圖像，支援自訂提示詞進行精確修改"
+    },
+    "videoEdit": {
+      "name": "影片編輯",
+      "description": "使用AI模型編輯影片內容，支援透過提示詞修改影片中的元素"
+    }
+  },
   "assets": {
     "title": "我的資產",
     "subtitle": "{{count}} 個已儲存的輸出",

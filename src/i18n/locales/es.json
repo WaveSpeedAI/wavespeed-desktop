@@ -405,6 +405,24 @@
     "uploadCover": "Haz clic para subir una imagen de portada",
     "importDesc": "Importar plantillas desde un archivo exportado previamente"
   },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "Imagen a Vídeo",
+      "description": "Convertir imágenes estáticas en vídeos dinámicos con escalado HD"
+    },
+    "musicGenerate": {
+      "name": "Generación Musical",
+      "description": "Generar música original a partir de letras y etiquetas de estilo"
+    },
+    "imageEdit": {
+      "name": "Edición de Imagen",
+      "description": "Editar imágenes con modelos de IA y prompts personalizados"
+    },
+    "videoEdit": {
+      "name": "Edición de Vídeo",
+      "description": "Editar contenido de vídeo con modelos de IA y modificaciones basadas en prompts"
+    }
+  },
   "assets": {
     "title": "Mis Recursos",
     "subtitle": "{{count}} salidas guardadas",

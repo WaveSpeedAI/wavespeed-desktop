@@ -407,6 +407,24 @@
     "uses": "uses",
     "importDesc": "Import templates from a previously exported file"
   },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "Image to Video",
+      "description": "Convert static images to dynamic videos with HD upscaling"
+    },
+    "musicGenerate": {
+      "name": "Music Generation",
+      "description": "Generate original music from lyrics and style tags, supporting various genres"
+    },
+    "imageEdit": {
+      "name": "Image Editing",
+      "description": "Edit images using AI models with custom prompts for precise modifications"
+    },
+    "videoEdit": {
+      "name": "Video Editing",
+      "description": "Edit video content using AI models with prompt-based element modifications"
+    }
+  },
   "assets": {
     "title": "My Assets",
     "subtitle": "{{count}} saved outputs",

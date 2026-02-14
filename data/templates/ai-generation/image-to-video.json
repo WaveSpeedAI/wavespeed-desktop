@@ -1,0 +1,96 @@
+{
+  "name": "图生视频",
+  "i18nKey": "imageToVideo",
+  "description": "将静态图片转换为动态视频，并进行高清放大处理",
+  "tags": [
+    "图片",
+    "视频",
+    "AI生成",
+    "视频放大"
+  ],
+  "category": "ai-generation",
+  "author": "WaveSpeed",
+  "thumbnail": "https://d1q70pf5vjeyhc.cloudfront.net/media/fb8f674bbb1a429d947016fd223cfae1/images/1759814613446857978_B0Cyvroj.jpeg",
+  "version": "1.0",
+  "id": "c6840e71-f4b3-4562-8de9-b8369ca403aa",
+  "exportedAt": "2026-02-14T18:32:38.352Z",
+  "graphDefinition": {
+    "nodes": [
+      {
+        "id": "479a3c49-5b2c-4387-85f3-e02707eb23d8",
+        "nodeType": "ai-task/run",
+        "position": {
+          "x": 480,
+          "y": -139.5
+        },
+        "params": {
+          "modelId": "openai/sora-2/image-to-video",
+          "duration": "8",
+          "prompt": "Action: The kitten suddenly pounces toward the yarn, batting at it rapidly with its paws, tumbling flexibly, and finally hugging the yarn ball and starting to kick it with its back legs.\n\nAmbient Sound: The kitten emits a series of excited \"meows\" (playful and slightly challenging); the soft \"pat-pat-pat\" sound of paws hitting the floor and the yarn; the slight shh-shh friction sound as the yarn rolls; the clear, rhythmic tick-tock of a grandfather clock in the room.\n\nCharacter Dialogue: (No human language, only the full range of cat sounds: excited \"Mrow! Mrow!\", a satisfied purr rumble deep in its throat after catching the \"prey,\" and a tiny hiss of exertion.)",
+          "__nodeHeight": 317
+        }
+      },
+      {
+        "id": "849f27df-c87a-4410-ad60-7cfce111b87a",
+        "nodeType": "ai-task/run",
+        "position": {
+          "x": 878.6352941176469,
+          "y": -109.91176470588235
+        },
+        "params": {
+          "modelId": "wavespeed-ai/video-upscaler-pro",
+          "target_resolution": "720p",
+          "__nodeHeight": 177
+        }
+      },
+      {
+        "id": "5fe4d0e1-b806-4f47-ad69-3d7c15a5a324",
+        "nodeType": "input/media-upload",
+        "position": {
+          "x": 0,
+          "y": -132.5
+        },
+        "params": {
+          "uploadedUrl": "https://d1q70pf5vjeyhc.cloudfront.net/media/fb8f674bbb1a429d947016fd223cfae1/images/1759814613446857978_B0Cyvroj.jpeg",
+          "mediaType": "image",
+          "fileName": "1759814613446857978_B0Cyvroj.jpeg"
+        }
+      },
+      {
+        "id": "0641c045-6df1-45f9-a5fa-f3a818a7d222",
+        "nodeType": "output/preview",
+        "position": {
+          "x": 1294.4,
+          "y": -115.33529411764707
+        },
+        "params": {
+          "autoDetect": true,
+          "forceType": "auto"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "8b6fcd1b-8875-413e-bbd3-13e6f0e3fae8",
+        "sourceNodeId": "5fe4d0e1-b806-4f47-ad69-3d7c15a5a324",
+        "targetNodeId": "479a3c49-5b2c-4387-85f3-e02707eb23d8",
+        "sourceOutputKey": "output",
+        "targetInputKey": "param-image"
+      },
+      {
+        "id": "9261781e-bb74-437a-9136-28550df2e5b5",
+        "sourceNodeId": "479a3c49-5b2c-4387-85f3-e02707eb23d8",
+        "targetNodeId": "849f27df-c87a-4410-ad60-7cfce111b87a",
+        "sourceOutputKey": "output",
+        "targetInputKey": "param-video"
+      },
+      {
+        "id": "bc91df2b-db28-4fde-ab3f-5ceda246122e",
+        "sourceNodeId": "849f27df-c87a-4410-ad60-7cfce111b87a",
+        "targetNodeId": "0641c045-6df1-45f9-a5fa-f3a818a7d222",
+        "sourceOutputKey": "output",
+        "targetInputKey": "input-input"
+      }
+    ]
+  }
+}

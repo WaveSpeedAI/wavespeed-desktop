@@ -405,6 +405,24 @@
     "uploadCover": "Clicca per caricare un'immagine di copertina",
     "importDesc": "Importa modelli da un file esportato in precedenza"
   },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "Immagine a Video",
+      "description": "Converti immagini statiche in video dinamici con upscaling HD"
+    },
+    "musicGenerate": {
+      "name": "Generazione Musicale",
+      "description": "Genera musica originale da testi e tag di stile"
+    },
+    "imageEdit": {
+      "name": "Modifica Immagine",
+      "description": "Modifica immagini con modelli AI e prompt personalizzati"
+    },
+    "videoEdit": {
+      "name": "Modifica Video",
+      "description": "Modifica contenuti video con modelli AI e modifiche basate su prompt"
+    }
+  },
   "assets": {
     "title": "I Miei Asset",
     "subtitle": "{{count}} output salvati",

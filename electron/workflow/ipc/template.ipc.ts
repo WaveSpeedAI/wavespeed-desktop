@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron'
 import * as templateRepo from '../db/template.repo'
 import { migrateTemplatesSync } from '../services/template-migration'
+import { getFileTemplates, getFileTemplateById } from '../services/template-init'
 import type { 
   Template, 
   TemplateFilter, 
@@ -19,11 +20,17 @@ export function registerTemplateIpc(): void {
   })
   
   ipcMain.handle('template:get', async (_event, args: { id: string }): Promise<Template | null> => {
-    return templateRepo.getTemplateById(args.id)
+    // Check file templates first, then database
+    return getFileTemplateById(args.id) || templateRepo.getTemplateById(args.id)
   })
   
   ipcMain.handle('template:query', async (_event, filter?: TemplateFilter): Promise<Template[]> => {
-    return templateRepo.queryTemplates(filter)
+    const dbTemplates = templateRepo.queryTemplates(filter)
+    const fileTemps = getFileTemplates(filter)
+    // Deduplicate: file templates take priority over DB templates with the same name
+    const fileNames = new Set(fileTemps.map(t => t.name))
+    const dedupedDb = dbTemplates.filter(t => !fileNames.has(t.name))
+    return [...fileTemps, ...dedupedDb]
   })
   
   ipcMain.handle('template:update', async (_event, args: { id: string; updates: Partial<Template> }): Promise<void> => {
@@ -39,11 +46,14 @@ export function registerTemplateIpc(): void {
   })
   
   ipcMain.handle('template:delete', async (_event, args: { id: string }): Promise<void> => {
+    if (args.id.startsWith('file-')) return // file templates cannot be deleted
     return templateRepo.deleteTemplate(args.id)
   })
   
   ipcMain.handle('template:deleteMany', async (_event, args: { ids: string[] }): Promise<void> => {
-    return templateRepo.deleteTemplates(args.ids)
+    const deletable = args.ids.filter(id => !id.startsWith('file-'))
+    if (deletable.length === 0) return
+    return templateRepo.deleteTemplates(deletable)
   })
   
   ipcMain.handle('template:export', async (_event, args: { ids?: string[] }): Promise<TemplateExport> => {

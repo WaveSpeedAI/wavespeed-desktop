@@ -405,6 +405,24 @@
     "uploadCover": "Nhấp để tải ảnh bìa lên",
     "importDesc": "Nhập mẫu từ tệp đã xuất trước đó"
   },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "Ảnh sang Video",
+      "description": "Chuyển đổi ảnh tĩnh thành video động với nâng cấp HD"
+    },
+    "musicGenerate": {
+      "name": "Tạo Nhạc",
+      "description": "Tạo nhạc gốc từ lời bài hát và thẻ phong cách"
+    },
+    "imageEdit": {
+      "name": "Chỉnh sửa Ảnh",
+      "description": "Chỉnh sửa ảnh bằng mô hình AI với prompt tùy chỉnh"
+    },
+    "videoEdit": {
+      "name": "Chỉnh sửa Video",
+      "description": "Chỉnh sửa nội dung video bằng mô hình AI với các sửa đổi dựa trên prompt"
+    }
+  },
   "assets": {
     "title": "Tài sản của tôi",
     "subtitle": "{{count}} đầu ra đã lưu",

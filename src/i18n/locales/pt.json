@@ -405,6 +405,24 @@
     "uploadCover": "Clique para enviar uma imagem de capa",
     "importDesc": "Importar modelos de um arquivo exportado anteriormente"
   },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "Imagem para Vídeo",
+      "description": "Converter imagens estáticas em vídeos dinâmicos com upscaling HD"
+    },
+    "musicGenerate": {
+      "name": "Geração Musical",
+      "description": "Gerar música original a partir de letras e tags de estilo"
+    },
+    "imageEdit": {
+      "name": "Edição de Imagem",
+      "description": "Editar imagens com modelos de IA e prompts personalizados"
+    },
+    "videoEdit": {
+      "name": "Edição de Vídeo",
+      "description": "Editar conteúdo de vídeo com modelos de IA e modificações baseadas em prompts"
+    }
+  },
   "assets": {
     "title": "Meus Recursos",
     "subtitle": "{{count}} saídas salvas",

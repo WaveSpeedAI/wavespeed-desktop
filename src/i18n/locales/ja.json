@@ -405,6 +405,24 @@
     "uploadCover": "クリックしてカバー画像をアップロード",
     "importDesc": "以前にエクスポートしたファイルからテンプレートをインポート"
   },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "画像から動画",
+      "description": "静止画像をダイナミックな動画に変換し、HD アップスケーリング処理"
+    },
+    "musicGenerate": {
+      "name": "音楽生成",
+      "description": "歌詞とスタイルタグからオリジナル音楽を生成、多様なジャンルに対応"
+    },
+    "imageEdit": {
+      "name": "画像編集",
+      "description": "AIモデルとカスタムプロンプトで画像を精密に編集"
+    },
+    "videoEdit": {
+      "name": "動画編集",
+      "description": "AIモデルとプロンプトで動画コンテンツの要素を編集"
+    }
+  },
   "assets": {
     "title": "マイアセット",
     "subtitle": "{{count}}個の保存された出力",

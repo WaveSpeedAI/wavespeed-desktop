@@ -1,6 +1,8 @@
 export interface Template {
   id: string
   name: string
+  i18nKey?: string
+  _searchText?: string
   description: string | null
   tags: string[]
   type: 'public' | 'custom'
@@ -33,6 +35,8 @@ export interface WorkflowTemplateData {
 
 export interface CreateTemplateInput {
   name: string
+  i18nKey?: string
+  _searchText?: string
   description?: string | null
   tags?: string[]
   type: 'public' | 'custom'

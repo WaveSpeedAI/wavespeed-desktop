@@ -407,6 +407,24 @@
     "uses": "次使用",
     "importDesc": "从之前导出的文件导入模板"
   },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "图生视频",
+      "description": "将静态图片转换为动态视频，并进行高清放大处理"
+    },
+    "musicGenerate": {
+      "name": "音乐生成",
+      "description": "通过歌词和风格标签生成原创音乐，支持多种音乐风格"
+    },
+    "imageEdit": {
+      "name": "图像编辑",
+      "description": "使用AI模型编辑图像，支持自定义提示词进行精确修改"
+    },
+    "videoEdit": {
+      "name": "视频编辑",
+      "description": "使用AI模型编辑视频内容，支持通过提示词修改视频中的元素"
+    }
+  },
   "assets": {
     "title": "我的资产",
     "subtitle": "{{count}} 个已保存的输出",

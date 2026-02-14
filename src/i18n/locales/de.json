@@ -1018,7 +1018,7 @@
     "estimated": "Kosten",
     "fitView": "Ansicht anpassen",
     "autoLayout": "Automatisches Layout",
-    "freeToolModelHint": "Beim ersten Ausführen wird das KI-Modell heruntergeladen",
+    "freeToolModelHint": "Beim ersten Ausführen wird das KI-Modell automatisch heruntergeladen, bitte warten",
     "more": "Mehr",
     "previousImage": "Vorheriges Bild",
     "nextImage": "Nächstes Bild",

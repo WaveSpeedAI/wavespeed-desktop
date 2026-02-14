@@ -1018,7 +1018,7 @@
     "estimated": "Cost",
     "fitView": "Fit View",
     "autoLayout": "Auto Layout",
-    "freeToolModelHint": "First run will download the AI model",
+    "freeToolModelHint": "First run will auto-download the AI model, please wait",
     "more": "More",
     "previousImage": "Previous image",
     "nextImage": "Next image",

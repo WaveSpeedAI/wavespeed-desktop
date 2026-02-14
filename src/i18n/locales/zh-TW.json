@@ -1005,7 +1005,7 @@
     "modelSelection": "模型選擇",
     "fitView": "適配視圖",
     "autoLayout": "整理佈局",
-    "freeToolModelHint": "首次運行需要下載 AI 模型",
+    "freeToolModelHint": "首次運行時將自動下載 AI 模型，請耐心等待",
     "more": "更多",
     "previousImage": "上一張圖片",
     "nextImage": "下一張圖片",

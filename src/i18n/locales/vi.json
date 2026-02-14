@@ -1018,7 +1018,7 @@
     "estimated": "Chi phí ước tính",
     "fitView": "Vừa khung xem",
     "autoLayout": "Tự động sắp xếp",
-    "freeToolModelHint": "Lần chạy đầu tiên sẽ tải mô hình AI",
+    "freeToolModelHint": "Lần chạy đầu tiên sẽ tự động tải mô hình AI, vui lòng chờ",
     "more": "Thêm",
     "previousImage": "Hình trước",
     "nextImage": "Hình tiếp theo",

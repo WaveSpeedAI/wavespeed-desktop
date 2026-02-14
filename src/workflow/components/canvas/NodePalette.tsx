@@ -148,7 +148,7 @@ export function NodePalette({ definitions }: NodePaletteProps) {
                     transition-colors select-none"
                   title={t('workflow.dragOrClickToAdd', 'Drag to canvas or click to add')}
                 >
-                  <span className="text-base leading-none">{def.icon}</span>
+                  <span className="text-base leading-none w-5 text-center shrink-0">{def.icon}</span>
                   <span>{t(`workflow.nodeDefs.${def.type}.label`, def.label)}</span>
                 </div>
               ))}

@@ -1018,7 +1018,7 @@
     "estimated": "예상 비용",
     "fitView": "뷰 맞춤",
     "autoLayout": "자동 정렬",
-    "freeToolModelHint": "첫 실행 시 AI 모델을 다운로드합니다",
+    "freeToolModelHint": "첫 실행 시 AI 모델이 자동 다운로드됩니다, 잠시 기다려 주세요",
     "more": "더보기",
     "previousImage": "이전 이미지",
     "nextImage": "다음 이미지",

@@ -1018,7 +1018,7 @@
     "estimated": "Tahmini maliyet",
     "fitView": "Görünüme sığdır",
     "autoLayout": "Otomatik düzenle",
-    "freeToolModelHint": "İlk çalıştırmada AI modeli indirilecek",
+    "freeToolModelHint": "İlk çalıştırmada AI modeli otomatik indirilecek, lütfen bekleyin",
     "more": "Daha fazla",
     "previousImage": "Önceki görsel",
     "nextImage": "Sonraki görsel",

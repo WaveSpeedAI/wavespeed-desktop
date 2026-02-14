@@ -1018,7 +1018,7 @@
     "estimated": "Costo stimato",
     "fitView": "Adatta vista",
     "autoLayout": "Disposizione automatica",
-    "freeToolModelHint": "La prima esecuzione scaricherà il modello AI",
+    "freeToolModelHint": "La prima esecuzione scaricherà automaticamente il modello AI, attendere prego",
     "more": "Altro",
     "previousImage": "Immagine precedente",
     "nextImage": "Immagine successiva",

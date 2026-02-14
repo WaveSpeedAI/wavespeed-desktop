@@ -1018,7 +1018,7 @@
     "estimated": "Custo estimado",
     "fitView": "Ajustar vista",
     "autoLayout": "Organizar automaticamente",
-    "freeToolModelHint": "A primeira execução fará o download do modelo de IA",
+    "freeToolModelHint": "A primeira execução fará o download automático do modelo de IA, aguarde",
     "more": "Mais",
     "previousImage": "Imagem anterior",
     "nextImage": "Imagem seguinte",

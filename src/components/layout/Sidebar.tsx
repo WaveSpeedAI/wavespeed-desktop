@@ -195,7 +195,7 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
               {group.items.map((item) => {
                 const active = isActive(item)
                 const showTooltip = collapsed && !isMobileOpen && tooltipReady
-                const isNewFeature = false
+                const isNewFeature = item.href === '/workflow'
                 return (
                   <Tooltip key={item.href} delayDuration={0} open={showTooltip ? undefined : false}>
                     <TooltipTrigger asChild>

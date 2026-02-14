@@ -939,24 +939,24 @@
     "clickToPlay": "शुरू करने के लिए क्लिक करें"
   },
   "smartPlayground": {
-    "autoDetected": "Auto-detected variant",
-    "willCall": "Will call",
-    "toggleSpeed": "Speed",
-    "toggleMode": "Mode",
-    "toggleQuality": "Quality",
-    "speedNormal": "Normal",
-    "speedFast": "Fast",
-    "modeNormal": "Normal",
-    "modeSequential": "Sequential",
-    "qualityPro": "Pro",
-    "qualityStd": "Standard",
-    "qualityUltra": "Ultra",
-    "qualityMulti": "Multi",
-    "run": "Run",
-    "running": "Running...",
-    "input": "Input",
-    "output": "Output",
-    "back": "Back"
+    "autoDetected": "स्वचालित रूप से पहचाना गया संस्करण",
+    "willCall": "कॉल करेगा",
+    "toggleSpeed": "गति",
+    "toggleMode": "मोड",
+    "toggleQuality": "गुणवत्ता",
+    "speedNormal": "सामान्य",
+    "speedFast": "तेज़",
+    "modeNormal": "सामान्य",
+    "modeSequential": "क्रमिक",
+    "qualityPro": "प्रो",
+    "qualityStd": "मानक",
+    "qualityUltra": "अल्ट्रा",
+    "qualityMulti": "मल्टी",
+    "run": "चलाएं",
+    "running": "चल रहा है...",
+    "input": "इनपुट",
+    "output": "आउटपुट",
+    "back": "वापस"
   },
   "videoConverter": {
     "title": "वीडियो कनवर्टर",
@@ -985,6 +985,10 @@
     "saveFailed": "सहेजने में विफल",
     "savedAt": "सहेजा गया",
     "unsaved": "असहेजा",
+    "outputDirFallbackHint": "सेट नहीं: वर्कफ़्लो डिफ़ॉल्ट निर्देशिका में निर्यात किया जाएगा",
+    "selectDirectory": "निर्देशिका चुनें",
+    "openFolder": "फ़ोल्डर खोलें",
+    "openWorkflowFolder": "वर्कफ़्लो फ़ोल्डर खोलें",
     "nodes": "नोड",
     "config": "कॉन्फ़िगरेशन",
     "results": "परिणाम",
@@ -1153,7 +1157,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "आउटपुट निर्देशिका"
+            "label": "आउटपुट निर्देशिका",
+            "placeholder": "वर्कफ़्लो डिफ़ॉल्ट आउटपुट निर्देशिका का उपयोग करने के लिए खाली छोड़ें"
           },
           "filename": {
             "label": "फ़ाइल नाम उपसर्ग"

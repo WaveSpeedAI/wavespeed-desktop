@@ -939,24 +939,24 @@
     "clickToPlay": "Klicken zum Starten"
   },
   "smartPlayground": {
-    "autoDetected": "Auto-detected variant",
-    "willCall": "Will call",
-    "toggleSpeed": "Speed",
-    "toggleMode": "Mode",
-    "toggleQuality": "Quality",
+    "autoDetected": "Automatisch erkannte Variante",
+    "willCall": "Wird aufrufen",
+    "toggleSpeed": "Geschwindigkeit",
+    "toggleMode": "Modus",
+    "toggleQuality": "Qualität",
     "speedNormal": "Normal",
-    "speedFast": "Fast",
+    "speedFast": "Schnell",
     "modeNormal": "Normal",
-    "modeSequential": "Sequential",
+    "modeSequential": "Sequenziell",
     "qualityPro": "Pro",
     "qualityStd": "Standard",
     "qualityUltra": "Ultra",
     "qualityMulti": "Multi",
-    "run": "Run",
-    "running": "Running...",
-    "input": "Input",
-    "output": "Output",
-    "back": "Back"
+    "run": "Ausführen",
+    "running": "Wird ausgeführt...",
+    "input": "Eingabe",
+    "output": "Ausgabe",
+    "back": "Zurück"
   },
   "videoConverter": {
     "title": "Video-Konverter",
@@ -985,6 +985,10 @@
     "saveFailed": "Speichern fehlgeschlagen",
     "savedAt": "Gespeichert",
     "unsaved": "Nicht gespeichert",
+    "outputDirFallbackHint": "Nicht festgelegt: Export erfolgt in das Standard-Workflow-Verzeichnis",
+    "selectDirectory": "Verzeichnis auswählen",
+    "openFolder": "Ordner öffnen",
+    "openWorkflowFolder": "Workflow-Ordner öffnen",
     "nodes": "Knoten",
     "config": "Konfiguration",
     "results": "Ergebnisse",
@@ -1153,7 +1157,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "Ausgabeverzeichnis"
+            "label": "Ausgabeverzeichnis",
+            "placeholder": "Leer lassen, um das Standard-Ausgabeverzeichnis des Workflows zu verwenden"
           },
           "filename": {
             "label": "Dateinamenspräfix"

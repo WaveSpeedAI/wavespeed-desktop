@@ -939,24 +939,24 @@
     "clickToPlay": "Нажмите, чтобы начать"
   },
   "smartPlayground": {
-    "autoDetected": "Auto-detected variant",
-    "willCall": "Will call",
-    "toggleSpeed": "Speed",
-    "toggleMode": "Mode",
-    "toggleQuality": "Quality",
-    "speedNormal": "Normal",
-    "speedFast": "Fast",
-    "modeNormal": "Normal",
-    "modeSequential": "Sequential",
-    "qualityPro": "Pro",
-    "qualityStd": "Standard",
-    "qualityUltra": "Ultra",
-    "qualityMulti": "Multi",
-    "run": "Run",
-    "running": "Running...",
-    "input": "Input",
-    "output": "Output",
-    "back": "Back"
+    "autoDetected": "Автоматически определенный вариант",
+    "willCall": "Будет вызывать",
+    "toggleSpeed": "Скорость",
+    "toggleMode": "Режим",
+    "toggleQuality": "Качество",
+    "speedNormal": "Обычная",
+    "speedFast": "Быстрая",
+    "modeNormal": "Обычный",
+    "modeSequential": "Последовательный",
+    "qualityPro": "Про",
+    "qualityStd": "Стандарт",
+    "qualityUltra": "Ультра",
+    "qualityMulti": "Мульти",
+    "run": "Запустить",
+    "running": "Выполняется...",
+    "input": "Вход",
+    "output": "Выход",
+    "back": "Назад"
   },
   "videoConverter": {
     "title": "Конвертер Видео",
@@ -985,6 +985,10 @@
     "saveFailed": "Не удалось сохранить",
     "savedAt": "Сохранено",
     "unsaved": "Не сохранено",
+    "outputDirFallbackHint": "Не задано: будет экспортировано в каталог рабочего процесса по умолчанию",
+    "selectDirectory": "Выбрать каталог",
+    "openFolder": "Открыть папку",
+    "openWorkflowFolder": "Открыть папку рабочего процесса",
     "nodes": "Узлы",
     "config": "Конфигурация",
     "results": "Результаты",
@@ -1153,7 +1157,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "Выходная директория"
+            "label": "Выходная директория",
+            "placeholder": "Оставьте пустым, чтобы использовать выходной каталог рабочего процесса по умолчанию"
           },
           "filename": {
             "label": "Префикс имени файла"

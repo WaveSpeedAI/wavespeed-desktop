@@ -961,24 +961,24 @@
     "clickToPlay": "Klik untuk mulai"
   },
   "smartPlayground": {
-    "autoDetected": "Auto-detected variant",
-    "willCall": "Will call",
-    "toggleSpeed": "Speed",
+    "autoDetected": "Varian terdeteksi otomatis",
+    "willCall": "Akan memanggil",
+    "toggleSpeed": "Kecepatan",
     "toggleMode": "Mode",
-    "toggleQuality": "Quality",
+    "toggleQuality": "Kualitas",
     "speedNormal": "Normal",
-    "speedFast": "Fast",
+    "speedFast": "Cepat",
     "modeNormal": "Normal",
-    "modeSequential": "Sequential",
+    "modeSequential": "Berurutan",
     "qualityPro": "Pro",
-    "qualityStd": "Standard",
+    "qualityStd": "Standar",
     "qualityUltra": "Ultra",
     "qualityMulti": "Multi",
-    "run": "Run",
-    "running": "Running...",
+    "run": "Jalankan",
+    "running": "Berjalan...",
     "input": "Input",
     "output": "Output",
-    "back": "Back"
+    "back": "Kembali"
   },
   "videoConverter": {
     "title": "Konverter Video",
@@ -1007,6 +1007,10 @@
     "saveFailed": "Gagal menyimpan",
     "savedAt": "Disimpan",
     "unsaved": "Belum disimpan",
+    "outputDirFallbackHint": "Tidak diatur: akan diekspor ke direktori default alur kerja",
+    "selectDirectory": "Pilih direktori",
+    "openFolder": "Buka folder",
+    "openWorkflowFolder": "Buka folder alur kerja",
     "nodes": "Node",
     "config": "Konfigurasi",
     "results": "Hasil",
@@ -1175,7 +1179,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "Direktori keluaran"
+            "label": "Direktori keluaran",
+            "placeholder": "Biarkan kosong untuk menggunakan direktori keluaran default alur kerja"
           },
           "filename": {
             "label": "Awalan nama file"

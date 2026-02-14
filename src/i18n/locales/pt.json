@@ -939,24 +939,24 @@
     "clickToPlay": "Clique para começar"
   },
   "smartPlayground": {
-    "autoDetected": "Auto-detected variant",
-    "willCall": "Will call",
-    "toggleSpeed": "Speed",
-    "toggleMode": "Mode",
-    "toggleQuality": "Quality",
+    "autoDetected": "Variante detectada automaticamente",
+    "willCall": "Irá chamar",
+    "toggleSpeed": "Velocidade",
+    "toggleMode": "Modo",
+    "toggleQuality": "Qualidade",
     "speedNormal": "Normal",
-    "speedFast": "Fast",
+    "speedFast": "Rápido",
     "modeNormal": "Normal",
-    "modeSequential": "Sequential",
+    "modeSequential": "Sequencial",
     "qualityPro": "Pro",
-    "qualityStd": "Standard",
+    "qualityStd": "Padrão",
     "qualityUltra": "Ultra",
     "qualityMulti": "Multi",
-    "run": "Run",
-    "running": "Running...",
-    "input": "Input",
-    "output": "Output",
-    "back": "Back"
+    "run": "Executar",
+    "running": "Executando...",
+    "input": "Entrada",
+    "output": "Saída",
+    "back": "Voltar"
   },
   "videoConverter": {
     "title": "Conversor de Vídeo",
@@ -985,6 +985,10 @@
     "saveFailed": "Falha ao guardar",
     "savedAt": "Guardado",
     "unsaved": "Não guardado",
+    "outputDirFallbackHint": "Não definido: será exportado para o diretório padrão do fluxo de trabalho",
+    "selectDirectory": "Selecionar diretório",
+    "openFolder": "Abrir pasta",
+    "openWorkflowFolder": "Abrir pasta do fluxo de trabalho",
     "nodes": "Nós",
     "config": "Configuração",
     "results": "Resultados",
@@ -1153,7 +1157,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "Diretório de saída"
+            "label": "Diretório de saída",
+            "placeholder": "Deixe vazio para usar o diretório de saída padrão do fluxo de trabalho"
           },
           "filename": {
             "label": "Prefixo do nome"

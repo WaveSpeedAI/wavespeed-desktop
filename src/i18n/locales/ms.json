@@ -935,24 +935,24 @@
     "downloadFailed": "Muat turun gagal"
   },
   "smartPlayground": {
-    "autoDetected": "Auto-detected variant",
-    "willCall": "Will call",
-    "toggleSpeed": "Speed",
-    "toggleMode": "Mode",
-    "toggleQuality": "Quality",
-    "speedNormal": "Normal",
-    "speedFast": "Fast",
-    "modeNormal": "Normal",
-    "modeSequential": "Sequential",
+    "autoDetected": "Varian dikesan automatik",
+    "willCall": "Akan memanggil",
+    "toggleSpeed": "Kelajuan",
+    "toggleMode": "Mod",
+    "toggleQuality": "Kualiti",
+    "speedNormal": "Biasa",
+    "speedFast": "Pantas",
+    "modeNormal": "Biasa",
+    "modeSequential": "Berurutan",
     "qualityPro": "Pro",
     "qualityStd": "Standard",
     "qualityUltra": "Ultra",
     "qualityMulti": "Multi",
-    "run": "Run",
-    "running": "Running...",
+    "run": "Jalankan",
+    "running": "Berjalan...",
     "input": "Input",
     "output": "Output",
-    "back": "Back"
+    "back": "Kembali"
   },
   "videoConverter": {
     "title": "Penukar Video",
@@ -985,6 +985,10 @@
     "saveFailed": "Gagal menyimpan",
     "savedAt": "Disimpan",
     "unsaved": "Belum disimpan",
+    "outputDirFallbackHint": "Tidak ditetapkan: akan dieksport ke direktori lalai aliran kerja",
+    "selectDirectory": "Pilih direktori",
+    "openFolder": "Buka folder",
+    "openWorkflowFolder": "Buka folder aliran kerja",
     "nodes": "Nod",
     "config": "Konfigurasi",
     "results": "Hasil",
@@ -1153,7 +1157,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "Direktori output"
+            "label": "Direktori output",
+            "placeholder": "Biarkan kosong untuk menggunakan direktori output lalai aliran kerja"
           },
           "filename": {
             "label": "Awalan nama fail"

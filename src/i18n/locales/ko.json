@@ -939,24 +939,24 @@
     "clickToPlay": "클릭하여 시작"
   },
   "smartPlayground": {
-    "autoDetected": "Auto-detected variant",
-    "willCall": "Will call",
-    "toggleSpeed": "Speed",
-    "toggleMode": "Mode",
-    "toggleQuality": "Quality",
-    "speedNormal": "Normal",
-    "speedFast": "Fast",
-    "modeNormal": "Normal",
-    "modeSequential": "Sequential",
-    "qualityPro": "Pro",
-    "qualityStd": "Standard",
-    "qualityUltra": "Ultra",
-    "qualityMulti": "Multi",
-    "run": "Run",
-    "running": "Running...",
-    "input": "Input",
-    "output": "Output",
-    "back": "Back"
+    "autoDetected": "자동 감지된 변형",
+    "willCall": "호출 예정",
+    "toggleSpeed": "속도",
+    "toggleMode": "모드",
+    "toggleQuality": "품질",
+    "speedNormal": "보통",
+    "speedFast": "빠름",
+    "modeNormal": "보통",
+    "modeSequential": "순차",
+    "qualityPro": "프로",
+    "qualityStd": "표준",
+    "qualityUltra": "울트라",
+    "qualityMulti": "멀티",
+    "run": "실행",
+    "running": "실행 중...",
+    "input": "입력",
+    "output": "출력",
+    "back": "뒤로"
   },
   "videoConverter": {
     "title": "비디오 변환기",
@@ -985,6 +985,10 @@
     "saveFailed": "저장 실패",
     "savedAt": "저장됨",
     "unsaved": "저장 안 됨",
+    "outputDirFallbackHint": "미설정: 워크플로우 기본 디렉토리로 내보내기",
+    "selectDirectory": "디렉토리 선택",
+    "openFolder": "폴더 열기",
+    "openWorkflowFolder": "워크플로우 폴더 열기",
     "nodes": "노드",
     "config": "구성",
     "results": "결과",
@@ -1153,7 +1157,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "출력 디렉토리"
+            "label": "출력 디렉토리",
+            "placeholder": "비워두면 워크플로우 기본 출력 디렉토리 사용"
           },
           "filename": {
             "label": "파일명 접두사"

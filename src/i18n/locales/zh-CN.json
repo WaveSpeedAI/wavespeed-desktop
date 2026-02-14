@@ -939,24 +939,24 @@
     "clickToPlay": "点击玩个小游戏打发时间"
   },
   "smartPlayground": {
-    "autoDetected": "Auto-detected variant",
-    "willCall": "Will call",
-    "toggleSpeed": "Speed",
-    "toggleMode": "Mode",
-    "toggleQuality": "Quality",
-    "speedNormal": "Normal",
-    "speedFast": "Fast",
-    "modeNormal": "Normal",
-    "modeSequential": "Sequential",
-    "qualityPro": "Pro",
-    "qualityStd": "Standard",
-    "qualityUltra": "Ultra",
-    "qualityMulti": "Multi",
-    "run": "Run",
-    "running": "Running...",
-    "input": "Input",
-    "output": "Output",
-    "back": "Back"
+    "autoDetected": "自动检测变体",
+    "willCall": "将调用",
+    "toggleSpeed": "速度",
+    "toggleMode": "模式",
+    "toggleQuality": "质量",
+    "speedNormal": "正常",
+    "speedFast": "快速",
+    "modeNormal": "正常",
+    "modeSequential": "顺序",
+    "qualityPro": "专业",
+    "qualityStd": "标准",
+    "qualityUltra": "超高",
+    "qualityMulti": "多重",
+    "run": "运行",
+    "running": "运行中...",
+    "input": "输入",
+    "output": "输出",
+    "back": "返回"
   },
   "videoConverter": {
     "title": "视频转换器",
@@ -985,6 +985,10 @@
     "saveFailed": "保存失败",
     "savedAt": "已保存",
     "unsaved": "未保存",
+    "outputDirFallbackHint": "未设置：将导出到工作流默认目录",
+    "selectDirectory": "选择目录",
+    "openFolder": "打开文件夹",
+    "openWorkflowFolder": "打开工作流目录",
     "nodes": "节点",
     "config": "配置",
     "results": "结果",
@@ -1154,7 +1158,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "输出目录"
+            "label": "输出目录",
+            "placeholder": "留空使用工作流默认输出目录"
           },
           "filename": {
             "label": "文件名前缀"

@@ -939,24 +939,24 @@
     "clickToPlay": "クリックして開始"
   },
   "smartPlayground": {
-    "autoDetected": "Auto-detected variant",
-    "willCall": "Will call",
-    "toggleSpeed": "Speed",
-    "toggleMode": "Mode",
-    "toggleQuality": "Quality",
-    "speedNormal": "Normal",
-    "speedFast": "Fast",
-    "modeNormal": "Normal",
-    "modeSequential": "Sequential",
-    "qualityPro": "Pro",
-    "qualityStd": "Standard",
-    "qualityUltra": "Ultra",
-    "qualityMulti": "Multi",
-    "run": "Run",
-    "running": "Running...",
-    "input": "Input",
-    "output": "Output",
-    "back": "Back"
+    "autoDetected": "自動検出されたバリアント",
+    "willCall": "呼び出します",
+    "toggleSpeed": "速度",
+    "toggleMode": "モード",
+    "toggleQuality": "品質",
+    "speedNormal": "通常",
+    "speedFast": "高速",
+    "modeNormal": "通常",
+    "modeSequential": "順次",
+    "qualityPro": "プロ",
+    "qualityStd": "標準",
+    "qualityUltra": "ウルトラ",
+    "qualityMulti": "マルチ",
+    "run": "実行",
+    "running": "実行中...",
+    "input": "入力",
+    "output": "出力",
+    "back": "戻る"
   },
   "videoConverter": {
     "title": "動画コンバーター",
@@ -980,7 +980,15 @@
     "newWorkflow": "新規ワークフロー",
     "untitled": "無題のワークフロー",
     "save": "保存",
+    "saved": "保存済み",
+    "saving": "保存中...",
+    "saveFailed": "保存失敗",
+    "savedAt": "保存済み",
     "unsaved": "未保存",
+    "outputDirFallbackHint": "未設定：ワークフローのデフォルトディレクトリにエクスポートされます",
+    "selectDirectory": "ディレクトリを選択",
+    "openFolder": "フォルダを開く",
+    "openWorkflowFolder": "ワークフローフォルダを開く",
     "nodes": "ノード",
     "config": "設定",
     "results": "結果",
@@ -1116,7 +1124,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "出力ディレクトリ"
+            "label": "出力ディレクトリ",
+            "placeholder": "空欄の場合、ワークフローのデフォルト出力ディレクトリを使用"
           },
           "filename": {
             "label": "ファイル名プレフィックス"

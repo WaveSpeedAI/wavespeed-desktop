@@ -939,24 +939,24 @@
     "clickToPlay": "Cliquez pour commencer"
   },
   "smartPlayground": {
-    "autoDetected": "Auto-detected variant",
-    "willCall": "Will call",
-    "toggleSpeed": "Speed",
+    "autoDetected": "Variante détectée automatiquement",
+    "willCall": "Appellera",
+    "toggleSpeed": "Vitesse",
     "toggleMode": "Mode",
-    "toggleQuality": "Quality",
+    "toggleQuality": "Qualité",
     "speedNormal": "Normal",
-    "speedFast": "Fast",
+    "speedFast": "Rapide",
     "modeNormal": "Normal",
-    "modeSequential": "Sequential",
+    "modeSequential": "Séquentiel",
     "qualityPro": "Pro",
     "qualityStd": "Standard",
     "qualityUltra": "Ultra",
     "qualityMulti": "Multi",
-    "run": "Run",
-    "running": "Running...",
-    "input": "Input",
-    "output": "Output",
-    "back": "Back"
+    "run": "Exécuter",
+    "running": "En cours...",
+    "input": "Entrée",
+    "output": "Sortie",
+    "back": "Retour"
   },
   "videoConverter": {
     "title": "Convertisseur Vidéo",
@@ -985,6 +985,10 @@
     "saveFailed": "Échec de l'enregistrement",
     "savedAt": "Enregistré",
     "unsaved": "Non enregistré",
+    "outputDirFallbackHint": "Non défini : exportera vers le répertoire par défaut du workflow",
+    "selectDirectory": "Sélectionner le répertoire",
+    "openFolder": "Ouvrir le dossier",
+    "openWorkflowFolder": "Ouvrir le dossier du workflow",
     "nodes": "Nœuds",
     "config": "Configuration",
     "results": "Résultats",
@@ -1153,7 +1157,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "Répertoire de sortie"
+            "label": "Répertoire de sortie",
+            "placeholder": "Laisser vide pour utiliser le répertoire de sortie par défaut du workflow"
           },
           "filename": {
             "label": "Préfixe du nom"

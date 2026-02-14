@@ -985,6 +985,10 @@
     "saveFailed": "Save failed",
     "savedAt": "Saved",
     "unsaved": "unsaved",
+    "outputDirFallbackHint": "Not set: will export to workflow default directory",
+    "selectDirectory": "Select directory",
+    "openFolder": "Open folder",
+    "openWorkflowFolder": "Open workflow folder",
     "nodes": "Nodes",
     "config": "Config",
     "results": "Results",
@@ -998,7 +1002,6 @@
     "nameYourWorkflowDesc": "Give it a name to save to disk and enable execution.",
     "nameYourWorkflowPlaceholder": "e.g. Product Image Pipeline",
     "nameDuplicate": "A workflow with this name already exists",
-    "cancel": "Cancel",
     "runTarget": "Run target",
     "runTargetAll": "Run All Nodes",
     "runTargetSelected": "Run Selected Node",
@@ -1157,7 +1160,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "Output Directory"
+            "label": "Output Directory",
+            "placeholder": "Leave empty to use workflow default output directory"
           },
           "filename": {
             "label": "Filename Prefix"

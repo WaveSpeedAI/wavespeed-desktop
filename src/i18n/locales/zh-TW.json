@@ -939,24 +939,24 @@
     "clickToPlay": "點擊開始"
   },
   "smartPlayground": {
-    "autoDetected": "Auto-detected variant",
-    "willCall": "Will call",
-    "toggleSpeed": "Speed",
-    "toggleMode": "Mode",
-    "toggleQuality": "Quality",
-    "speedNormal": "Normal",
-    "speedFast": "Fast",
-    "modeNormal": "Normal",
-    "modeSequential": "Sequential",
-    "qualityPro": "Pro",
-    "qualityStd": "Standard",
-    "qualityUltra": "Ultra",
-    "qualityMulti": "Multi",
-    "run": "Run",
-    "running": "Running...",
-    "input": "Input",
-    "output": "Output",
-    "back": "Back"
+    "autoDetected": "自動偵測變體",
+    "willCall": "將呼叫",
+    "toggleSpeed": "速度",
+    "toggleMode": "模式",
+    "toggleQuality": "品質",
+    "speedNormal": "正常",
+    "speedFast": "快速",
+    "modeNormal": "正常",
+    "modeSequential": "順序",
+    "qualityPro": "專業",
+    "qualityStd": "標準",
+    "qualityUltra": "超高",
+    "qualityMulti": "多重",
+    "run": "執行",
+    "running": "執行中...",
+    "input": "輸入",
+    "output": "輸出",
+    "back": "返回"
   },
   "videoConverter": {
     "title": "影片轉換器",
@@ -981,6 +981,10 @@
     "untitled": "未命名工作流程",
     "save": "儲存",
     "unsaved": "未儲存",
+    "outputDirFallbackHint": "未設定：將匯出到工作流程預設目錄",
+    "selectDirectory": "選擇目錄",
+    "openFolder": "開啟資料夾",
+    "openWorkflowFolder": "開啟工作流程目錄",
     "nodes": "節點",
     "config": "配置",
     "results": "結果",
@@ -1116,7 +1120,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "輸出目錄"
+            "label": "輸出目錄",
+            "placeholder": "留空使用工作流程預設輸出目錄"
           },
           "filename": {
             "label": "檔案名前置"

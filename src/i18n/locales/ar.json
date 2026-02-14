@@ -935,24 +935,24 @@
     "downloadFailed": "فشل التنزيل"
   },
   "smartPlayground": {
-    "autoDetected": "Auto-detected variant",
-    "willCall": "Will call",
-    "toggleSpeed": "Speed",
-    "toggleMode": "Mode",
-    "toggleQuality": "Quality",
-    "speedNormal": "Normal",
-    "speedFast": "Fast",
-    "modeNormal": "Normal",
-    "modeSequential": "Sequential",
-    "qualityPro": "Pro",
-    "qualityStd": "Standard",
-    "qualityUltra": "Ultra",
-    "qualityMulti": "Multi",
-    "run": "Run",
-    "running": "Running...",
-    "input": "Input",
-    "output": "Output",
-    "back": "Back"
+    "autoDetected": "متغير تم اكتشافه تلقائيًا",
+    "willCall": "سيتم الاتصال",
+    "toggleSpeed": "السرعة",
+    "toggleMode": "الوضع",
+    "toggleQuality": "الجودة",
+    "speedNormal": "عادي",
+    "speedFast": "سريع",
+    "modeNormal": "عادي",
+    "modeSequential": "تسلسلي",
+    "qualityPro": "احترافي",
+    "qualityStd": "قياسي",
+    "qualityUltra": "فائق",
+    "qualityMulti": "متعدد",
+    "run": "تشغيل",
+    "running": "قيد التشغيل...",
+    "input": "إدخال",
+    "output": "إخراج",
+    "back": "رجوع"
   },
   "videoConverter": {
     "title": "محول الفيديو",
@@ -985,6 +985,10 @@
     "saveFailed": "فشل الحفظ",
     "savedAt": "تم الحفظ",
     "unsaved": "غير محفوظ",
+    "outputDirFallbackHint": "غير محدد: سيتم التصدير إلى المجلد الافتراضي لسير العمل",
+    "selectDirectory": "اختر المجلد",
+    "openFolder": "فتح المجلد",
+    "openWorkflowFolder": "فتح مجلد سير العمل",
     "nodes": "العقد",
     "config": "الإعدادات",
     "results": "النتائج",
@@ -1153,7 +1157,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "مجلد الإخراج"
+            "label": "مجلد الإخراج",
+            "placeholder": "اتركه فارغاً لاستخدام مجلد الإخراج الافتراضي لسير العمل"
           },
           "filename": {
             "label": "بادئة اسم الملف"

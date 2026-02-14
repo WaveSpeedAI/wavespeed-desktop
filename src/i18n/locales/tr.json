@@ -939,24 +939,24 @@
     "clickToPlay": "Başlamak için tıklayın"
   },
   "smartPlayground": {
-    "autoDetected": "Auto-detected variant",
-    "willCall": "Will call",
-    "toggleSpeed": "Speed",
-    "toggleMode": "Mode",
-    "toggleQuality": "Quality",
+    "autoDetected": "Otomatik algılanan varyant",
+    "willCall": "Çağıracak",
+    "toggleSpeed": "Hız",
+    "toggleMode": "Mod",
+    "toggleQuality": "Kalite",
     "speedNormal": "Normal",
-    "speedFast": "Fast",
+    "speedFast": "Hızlı",
     "modeNormal": "Normal",
-    "modeSequential": "Sequential",
+    "modeSequential": "Sıralı",
     "qualityPro": "Pro",
-    "qualityStd": "Standard",
+    "qualityStd": "Standart",
     "qualityUltra": "Ultra",
-    "qualityMulti": "Multi",
-    "run": "Run",
-    "running": "Running...",
-    "input": "Input",
-    "output": "Output",
-    "back": "Back"
+    "qualityMulti": "Çoklu",
+    "run": "Çalıştır",
+    "running": "Çalışıyor...",
+    "input": "Giriş",
+    "output": "Çıkış",
+    "back": "Geri"
   },
   "videoConverter": {
     "title": "Video Dönüştürücü",
@@ -985,6 +985,10 @@
     "saveFailed": "Kaydetme başarısız",
     "savedAt": "Kaydedildi",
     "unsaved": "Kaydedilmemiş",
+    "outputDirFallbackHint": "Ayarlanmadı: iş akışı varsayılan dizinine aktarılacak",
+    "selectDirectory": "Dizin seç",
+    "openFolder": "Klasörü aç",
+    "openWorkflowFolder": "İş akışı klasörünü aç",
     "nodes": "Düğümler",
     "config": "Yapılandırma",
     "results": "Sonuçlar",
@@ -1153,7 +1157,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "Çıktı dizini"
+            "label": "Çıktı dizini",
+            "placeholder": "İş akışı varsayılan çıktı dizinini kullanmak için boş bırakın"
           },
           "filename": {
             "label": "Dosya adı öneki"

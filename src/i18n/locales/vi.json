@@ -935,24 +935,24 @@
     "downloadFailed": "Tải xuống thất bại"
   },
   "smartPlayground": {
-    "autoDetected": "Auto-detected variant",
-    "willCall": "Will call",
-    "toggleSpeed": "Speed",
-    "toggleMode": "Mode",
-    "toggleQuality": "Quality",
-    "speedNormal": "Normal",
-    "speedFast": "Fast",
-    "modeNormal": "Normal",
-    "modeSequential": "Sequential",
+    "autoDetected": "Biến thể được phát hiện tự động",
+    "willCall": "Sẽ gọi",
+    "toggleSpeed": "Tốc độ",
+    "toggleMode": "Chế độ",
+    "toggleQuality": "Chất lượng",
+    "speedNormal": "Bình thường",
+    "speedFast": "Nhanh",
+    "modeNormal": "Bình thường",
+    "modeSequential": "Tuần tự",
     "qualityPro": "Pro",
-    "qualityStd": "Standard",
-    "qualityUltra": "Ultra",
-    "qualityMulti": "Multi",
-    "run": "Run",
-    "running": "Running...",
-    "input": "Input",
-    "output": "Output",
-    "back": "Back"
+    "qualityStd": "Tiêu chuẩn",
+    "qualityUltra": "Siêu cao",
+    "qualityMulti": "Đa dạng",
+    "run": "Chạy",
+    "running": "Đang chạy...",
+    "input": "Đầu vào",
+    "output": "Đầu ra",
+    "back": "Quay lại"
   },
   "videoConverter": {
     "title": "Trình Chuyển Đổi Video",
@@ -985,6 +985,10 @@
     "saveFailed": "Lưu thất bại",
     "savedAt": "Đã lưu",
     "unsaved": "Chưa lưu",
+    "outputDirFallbackHint": "Chưa đặt: sẽ xuất vào thư mục mặc định của quy trình làm việc",
+    "selectDirectory": "Chọn thư mục",
+    "openFolder": "Mở thư mục",
+    "openWorkflowFolder": "Mở thư mục quy trình làm việc",
     "nodes": "Nút",
     "config": "Cấu hình",
     "results": "Kết quả",
@@ -1153,7 +1157,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "Thư mục đầu ra"
+            "label": "Thư mục đầu ra",
+            "placeholder": "Để trống để sử dụng thư mục đầu ra mặc định của quy trình làm việc"
           },
           "filename": {
             "label": "Tiền tố tên tệp"

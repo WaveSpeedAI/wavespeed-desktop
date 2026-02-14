@@ -1797,14 +1797,14 @@ function DefParamControl({ nodeId, param, value, onChange }: { nodeId: string; p
             type="text"
             value={textVal}
             onChange={e => onChange(e.target.value)}
-            placeholder={t('workflow.nodeDefs.output/file.params.outputDir.placeholder', '留空使用工作流默认输出目录')}
+            placeholder={t('workflow.nodeDefs.output/file.params.outputDir.placeholder', 'Leave empty to use workflow default output directory')}
             className={`${cls} flex-1`}
             onClick={e => e.stopPropagation()}
           />
           <button
             type="button"
             onClick={e => { e.stopPropagation(); handlePickDirectory() }}
-            title={t('workflow.selectDirectory', '选择目录')}
+            title={t('workflow.selectDirectory', 'Select directory')}
             className={`flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-md border border-[hsl(var(--border))] transition-colors ${
               selectingDir ? 'bg-blue-500/25 animate-pulse text-blue-300' : 'bg-blue-500/15 text-blue-400 hover:bg-blue-500/25'
             }`}
@@ -1814,7 +1814,7 @@ function DefParamControl({ nodeId, param, value, onChange }: { nodeId: string; p
           <button
             type="button"
             onClick={e => { e.stopPropagation(); handleOpenDirectory() }}
-            title={textVal.trim() ? t('workflow.openFolder', '打开文件夹') : t('workflow.openWorkflowFolder', '打开工作流目录')}
+            title={textVal.trim() ? t('workflow.openFolder', 'Open folder') : t('workflow.openWorkflowFolder', 'Open workflow folder')}
             className={`flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-md border border-[hsl(var(--border))] transition-colors ${
               openingDir ? 'bg-blue-500/25 animate-pulse text-blue-300' : 'bg-blue-500/15 text-blue-400 hover:bg-blue-500/25'
             }`}
@@ -1822,8 +1822,8 @@ function DefParamControl({ nodeId, param, value, onChange }: { nodeId: string; p
             ↗
           </button>
         </div>
-        <div className="text-[10px] text-muted-foreground truncate" title={textVal || t('workflow.outputDirFallbackHint', '未设置：将导出到工作流默认目录')}>
-          {textVal || t('workflow.outputDirFallbackHint', '未设置：将导出到工作流默认目录')}
+        <div className="text-[10px] text-muted-foreground truncate" title={textVal || t('workflow.outputDirFallbackHint', 'Not set: will export to workflow default directory')}>
+          {textVal || t('workflow.outputDirFallbackHint', 'Not set: will export to workflow default directory')}
         </div>
       </div>
     )

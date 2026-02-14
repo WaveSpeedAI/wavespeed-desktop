@@ -935,24 +935,24 @@
     "downloadFailed": "ดาวน์โหลดล้มเหลว"
   },
   "smartPlayground": {
-    "autoDetected": "Auto-detected variant",
-    "willCall": "Will call",
-    "toggleSpeed": "Speed",
-    "toggleMode": "Mode",
-    "toggleQuality": "Quality",
-    "speedNormal": "Normal",
-    "speedFast": "Fast",
-    "modeNormal": "Normal",
-    "modeSequential": "Sequential",
-    "qualityPro": "Pro",
-    "qualityStd": "Standard",
-    "qualityUltra": "Ultra",
-    "qualityMulti": "Multi",
-    "run": "Run",
-    "running": "Running...",
-    "input": "Input",
-    "output": "Output",
-    "back": "Back"
+    "autoDetected": "ตรวจพบรูปแบบอัตโนมัติ",
+    "willCall": "จะเรียก",
+    "toggleSpeed": "ความเร็ว",
+    "toggleMode": "โหมด",
+    "toggleQuality": "คุณภาพ",
+    "speedNormal": "ปกติ",
+    "speedFast": "เร็ว",
+    "modeNormal": "ปกติ",
+    "modeSequential": "ตามลำดับ",
+    "qualityPro": "โปร",
+    "qualityStd": "มาตรฐาน",
+    "qualityUltra": "อัลตร้า",
+    "qualityMulti": "หลายรายการ",
+    "run": "เรียกใช้",
+    "running": "กำลังทำงาน...",
+    "input": "อินพุต",
+    "output": "เอาต์พุต",
+    "back": "กลับ"
   },
   "videoConverter": {
     "title": "ตัวแปลงวิดีโอ",
@@ -985,6 +985,10 @@
     "saveFailed": "บันทึกล้มเหลว",
     "savedAt": "บันทึกแล้ว",
     "unsaved": "ยังไม่ได้บันทึก",
+    "outputDirFallbackHint": "ไม่ได้ตั้งค่า: จะส่งออกไปยังไดเรกทอรีเริ่มต้นของเวิร์กโฟลว์",
+    "selectDirectory": "เลือกไดเรกทอรี",
+    "openFolder": "เปิดโฟลเดอร์",
+    "openWorkflowFolder": "เปิดโฟลเดอร์เวิร์กโฟลว์",
     "nodes": "โหนด",
     "config": "การกำหนดค่า",
     "results": "ผลลัพธ์",
@@ -1153,7 +1157,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "ไดเรกทอรีเอาท์พุต"
+            "label": "ไดเรกทอรีเอาท์พุต",
+            "placeholder": "เว้นว่างเพื่อใช้ไดเรกทอรีเอาท์พุตเริ่มต้นของเวิร์กโฟลว์"
           },
           "filename": {
             "label": "คำนำหน้าชื่อไฟล์"

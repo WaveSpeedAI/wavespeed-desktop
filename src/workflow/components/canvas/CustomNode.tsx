@@ -233,13 +233,6 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
   const isAITask = data.nodeType === 'ai-task/run'
   const hasSchema = schema.length > 0
   const currentModelId = String(data.params.modelId ?? '').trim()
-  const currentModelDisplayName = useMemo(() => {
-    const rawLabel = String(data.label ?? '').trim()
-    if (rawLabel.startsWith('🤖')) return rawLabel.replace(/^🤖\s*/, '')
-    if (!currentModelId) return ''
-    const parts = currentModelId.split('/')
-    return parts[parts.length - 1] || currentModelId
-  }, [data.label, currentModelId])
   const isPreviewNode = data.nodeType === 'output/preview'
   const modelSearchResults = useMemo(() => {
     const q = modelSearchQuery.trim()

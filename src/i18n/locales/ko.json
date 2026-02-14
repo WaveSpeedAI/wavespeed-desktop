@@ -357,7 +357,71 @@
     "deleteTemplates": "템플릿 삭제",
     "templatesDeleted": "템플릿 삭제됨",
     "deletedCount": "{{count}}개의 템플릿을 삭제했습니다",
-    "batchDeleteConfirm": "{{count}}개의 템플릿을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다."
+    "batchDeleteConfirm": "{{count}}개의 템플릿을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+    "deletedSuccessfully": "\"{{name}}\"을(를) 삭제했습니다",
+    "updatedSuccessfully": "\"{{name}}\"을(를) 업데이트했습니다",
+    "exportedSuccessfully": "\"{{name}}\"을(를) 내보냈습니다",
+    "allExportedSuccessfully": "모든 템플릿을 내보냈습니다",
+    "importedSuccessfully": "{{imported}}개 템플릿 가져옴, {{skipped}}개 건너뜀",
+    "filters": "필터",
+    "templateType": "템플릿 유형",
+    "allTypes": "모든 유형",
+    "playground": "플레이그라운드",
+    "workflow": "워크플로",
+    "source": "소스",
+    "allSources": "모든 소스",
+    "public": "공개",
+    "myTemplates": "내 템플릿",
+    "favorites": "즐겨찾기",
+    "favoritesOnly": "즐겨찾기만",
+    "sortBy": "정렬",
+    "newest": "최신순",
+    "mostUsed": "사용순",
+    "category": "카테고리",
+    "allCategories": "모든 카테고리",
+    "imageProcessing": "이미지 처리",
+    "videoEditing": "동영상 편집",
+    "audioConversion": "오디오 변환",
+    "aiGeneration": "AI 생성",
+    "workflowNotSupported": "워크플로 미지원",
+    "workflowNotSupportedDesc": "워크플로 템플릿은 아직 지원되지 않습니다",
+    "loadTemplate": "템플릿 불러오기",
+    "browseAll": "모든 템플릿 보기",
+    "drawerDesc": "템플릿을 둘러보고 적용",
+    "createTemplate": "템플릿 만들기",
+    "createTemplateDesc": "현재 구성을 재사용 가능한 템플릿으로 저장",
+    "editTemplate": "템플릿 수정",
+    "editTemplateDesc": "템플릿 세부 정보 업데이트",
+    "descriptionLabel": "설명",
+    "tags": "태그",
+    "tagsPlaceholder": "태그 입력...",
+    "descriptionPlaceholder": "이 템플릿을 설명하세요...",
+    "categoryPlaceholder": "예: 이미지 처리",
+    "nodes": "노드",
+    "favorite": "즐겨찾기에 추가",
+    "unfavorite": "즐겨찾기에서 제거",
+    "uses": "사용 수",
+    "coverImage": "커버 이미지",
+    "uploadCover": "클릭하여 커버 이미지 업로드",
+    "importDesc": "이전에 내보낸 파일에서 템플릿 가져오기"
+  },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "이미지를 비디오로",
+      "description": "정적 이미지를 동적 비디오로 변환하고 HD 업스케일링 처리"
+    },
+    "musicGenerate": {
+      "name": "음악 생성",
+      "description": "가사와 스타일 태그로 오리지널 음악 생성, 다양한 장르 지원"
+    },
+    "imageEdit": {
+      "name": "이미지 편집",
+      "description": "AI 모델과 사용자 정의 프롬프트로 이미지를 정밀하게 편집"
+    },
+    "videoEdit": {
+      "name": "비디오 편집",
+      "description": "AI 모델과 프롬프트 기반으로 비디오 콘텐츠의 요소를 편집"
+    }
   },
   "assets": {
     "title": "내 에셋",
@@ -985,6 +1049,7 @@
     "saveFailed": "저장 실패",
     "savedAt": "저장됨",
     "unsaved": "저장 안 됨",
+    "selectNodeHint": "노드를 선택하여 매개변수를 설정하세요",
     "outputDirFallbackHint": "미설정: 워크플로우 기본 디렉토리로 내보내기",
     "selectDirectory": "디렉토리 선택",
     "openFolder": "폴더 열기",
@@ -1276,6 +1341,54 @@
       "optimizeOffHint": "기본값: 최적화 없음(원문으로 실행)",
       "manualOptimizedHint": "수동 최적화됨. 텍스트가 변경될 때까지 자동 최적화를 건너뜁니다.",
       "enterTextOrPrompt": "텍스트 또는 프롬프트 입력..."
+    },
+    "guide": {
+      "skip": "건너뛰기",
+      "prev": "이전",
+      "next": "다음",
+      "finish": "시작하기",
+      "welcome": {
+        "title": "워크플로우에 오신 것을 환영합니다",
+        "desc": "워크플로우는 비주얼 AI 파이프라인 편집기입니다. 노드를 캔버스에 드래그하고 연결하여 이미지 생성부터 비디오 향상까지 자동화된 AI 처리 흐름을 실행하세요."
+      },
+      "nodePaletteBtn": {
+        "title": "노드 팔레트",
+        "desc": "이 버튼을 클릭하여 노드 팔레트를 엽니다 — 사용 가능한 모든 노드의 도구 상자입니다. 검색, 드래그 또는 클릭으로 캔버스에 노드를 추가할 수 있습니다."
+      },
+      "nodePalette": {
+        "title": "노드 카테고리",
+        "desc": "노드는 카테고리별로 정리되어 있습니다:\n• 입력 — 파일을 업로드하거나 텍스트를 입력하여 시작 데이터로 사용\n• AI 작업 — 모든 WaveSpeed AI 모델 실행 (다음 단계 참조)\n• 무료 도구 — 배경 제거, 얼굴 보정, 형식 변환 등 12가지 내장 도구\n• 출력 — 결과 미리보기 또는 파일을 디스크로 내보내기\n\n노드를 캔버스에 드래그하거나 클릭하여 추가합니다."
+      },
+      "aiTask": {
+        "title": "AI 작업 노드 — 핵심 기능",
+        "desc": "AI 작업 노드는 워크플로우에서 가장 강력한 노드입니다. 이미지 생성, 비디오 제작, 스타일 전환 등 모든 WaveSpeed AI 모델을 실행할 수 있습니다.",
+        "features": {
+          "modelSwitch": "수백 개의 AI 모델 중 선택 — 선택한 모델에 따라 매개변수 패널이 동적으로 업데이트됩니다",
+          "dynamicParams": "각 모델에는 고유한 매개변수(프롬프트, 이미지 크기, 시드 등)가 있으며 선택 시 자동으로 표시됩니다",
+          "costEstimate": "실행당 실시간 비용 추정으로 실행 전 항상 가격을 확인할 수 있습니다",
+          "upstream": "상위 노드 출력(이미지, 텍스트)을 입력으로 연결 — 다단계 AI 파이프라인 구축"
+        }
+      },
+      "canvas": {
+        "title": "캔버스 상호작용",
+        "desc": "중앙 캔버스가 작업 공간입니다:\n• 팔레트에서 노드를 드래그하여 배치\n• 출력 포트에서 입력 포트로 드래그하여 연결 생성\n• 우클릭으로 컨텍스트 메뉴 (복사, 붙여넣기, 삭제)\n• 스크롤로 확대/축소, 배경 드래그로 이동\n• 단축키: Ctrl+Z 실행 취소, Ctrl+C/V 복사/붙여넣기, Delete로 삭제"
+      },
+      "canvasTools": {
+        "title": "캔버스 도구",
+        "desc": "캔버스 탐색 및 정리를 위한 3가지 편리한 도구:\n• 선택 / 손 모드 — 노드 선택(V)과 캔버스 이동(H) 전환\n• 화면에 맞추기 — 모든 노드가 뷰포트에 맞도록 자동 확대/축소\n• 자동 레이아웃 — 노드를 깔끔하고 읽기 쉽게 자동 배치"
+      },
+      "config": {
+        "title": "설정 및 결과 확인",
+        "desc": "노드를 클릭하여 선택합니다. 오른쪽 패널에 두 개의 탭이 표시됩니다:\n• 설정 — 모델 매개변수 설정, 파일 업로드, 프롬프트 입력\n• 결과 — 실행 출력 보기 (이미지, 비디오, 3D 모델)\n\n매개변수는 노드 유형과 선택한 모델에 따라 동적으로 업데이트됩니다. 결과는 전체 화면 미리보기와 다운로드를 지원합니다."
+      },
+      "run": {
+        "title": "워크플로우 실행",
+        "desc": "\"워크플로우 실행\"을 클릭하여 전체 파이프라인을 실행합니다:\n• 일괄 처리를 위한 실행 횟수 설정 (×1~×99)\n• 중지 버튼으로 언제든지 취소 가능\n• 실행 모니터에서 실시간 진행 상황 확인\n• 각 노드의 상태 표시: 대기 중 → 실행 중 → 완료"
+      },
+      "templates": {
+        "title": "템플릿, 가져오기 및 내보내기",
+        "desc": "⋮ 메뉴를 클릭하여 고급 기능에 접근:\n• 워크플로우를 재사용 가능한 템플릿으로 저장\n• 워크플로우를 JSON으로 가져오기/내보내기하여 공유\n• 브라우저처럼 탭에서 여러 워크플로우 열기\n• 도구 모음에서 사전 제작된 템플릿 둘러보기"
+      }
     },
     "promptOptimizer": {
       "optimizationFailed": "최적화 실패",

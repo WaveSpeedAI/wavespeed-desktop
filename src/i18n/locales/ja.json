@@ -357,7 +357,71 @@
     "deleteTemplates": "テンプレートを削除",
     "templatesDeleted": "テンプレートを削除しました",
     "deletedCount": "{{count}}個のテンプレートを削除しました",
-    "batchDeleteConfirm": "{{count}}個のテンプレートを削除してもよろしいですか？この操作は取り消せません。"
+    "batchDeleteConfirm": "{{count}}個のテンプレートを削除してもよろしいですか？この操作は取り消せません。",
+    "deletedSuccessfully": "「{{name}}」を正常に削除しました",
+    "updatedSuccessfully": "「{{name}}」を正常に更新しました",
+    "exportedSuccessfully": "「{{name}}」を正常にエクスポートしました",
+    "allExportedSuccessfully": "すべてのテンプレートを正常にエクスポートしました",
+    "importedSuccessfully": "{{imported}}個のテンプレートをインポート、{{skipped}}個スキップ",
+    "filters": "フィルター",
+    "templateType": "テンプレートタイプ",
+    "allTypes": "すべてのタイプ",
+    "playground": "プレイグラウンド",
+    "workflow": "ワークフロー",
+    "source": "ソース",
+    "allSources": "すべてのソース",
+    "public": "公開",
+    "myTemplates": "マイテンプレート",
+    "favorites": "お気に入り",
+    "favoritesOnly": "お気に入りのみ",
+    "sortBy": "並び替え",
+    "newest": "最新",
+    "mostUsed": "よく使う",
+    "category": "カテゴリ",
+    "allCategories": "すべてのカテゴリ",
+    "imageProcessing": "画像処理",
+    "videoEditing": "動画編集",
+    "audioConversion": "音声変換",
+    "aiGeneration": "AI生成",
+    "workflowNotSupported": "ワークフロー未対応",
+    "workflowNotSupportedDesc": "ワークフローテンプレートはまだサポートされていません",
+    "loadTemplate": "テンプレートを読み込む",
+    "browseAll": "すべてのテンプレートを表示",
+    "drawerDesc": "テンプレートを閲覧して適用",
+    "createTemplate": "テンプレートを作成",
+    "createTemplateDesc": "現在の設定を再利用可能なテンプレートとして保存",
+    "editTemplate": "テンプレートを編集",
+    "editTemplateDesc": "テンプレート詳細を更新",
+    "descriptionLabel": "説明",
+    "tags": "タグ",
+    "tagsPlaceholder": "タグを入力...",
+    "descriptionPlaceholder": "このテンプレートの説明を入力...",
+    "categoryPlaceholder": "例: 画像処理",
+    "nodes": "ノード",
+    "favorite": "お気に入りに追加",
+    "unfavorite": "お気に入りから削除",
+    "uses": "使用回数",
+    "coverImage": "カバー画像",
+    "uploadCover": "クリックしてカバー画像をアップロード",
+    "importDesc": "以前にエクスポートしたファイルからテンプレートをインポート"
+  },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "画像から動画",
+      "description": "静止画像をダイナミックな動画に変換し、HD アップスケーリング処理"
+    },
+    "musicGenerate": {
+      "name": "音楽生成",
+      "description": "歌詞とスタイルタグからオリジナル音楽を生成、多様なジャンルに対応"
+    },
+    "imageEdit": {
+      "name": "画像編集",
+      "description": "AIモデルとカスタムプロンプトで画像を精密に編集"
+    },
+    "videoEdit": {
+      "name": "動画編集",
+      "description": "AIモデルとプロンプトで動画コンテンツの要素を編集"
+    }
   },
   "assets": {
     "title": "マイアセット",
@@ -982,9 +1046,10 @@
     "save": "保存",
     "saved": "保存済み",
     "saving": "保存中...",
-    "saveFailed": "保存失敗",
+    "saveFailed": "保存に失敗しました",
     "savedAt": "保存済み",
     "unsaved": "未保存",
+    "selectNodeHint": "ノードを選択してパラメータを設定",
     "outputDirFallbackHint": "未設定：ワークフローのデフォルトディレクトリにエクスポートされます",
     "selectDirectory": "ディレクトリを選択",
     "openFolder": "フォルダを開く",
@@ -1244,6 +1309,54 @@
       "manualOptimizedHint": "手動で最適化済み。テキストが変更されるまで実行時自動最適化をスキップします。",
       "enterTextOrPrompt": "テキストまたはプロンプトを入力..."
     },
+    "guide": {
+      "skip": "スキップ",
+      "prev": "戻る",
+      "next": "次へ",
+      "finish": "始めましょう",
+      "welcome": {
+        "title": "ワークフローへようこそ",
+        "desc": "ワークフローはビジュアルAIパイプラインエディターです。ノードをキャンバスにドラッグし、接続して、画像生成から動画エンハンスメントまで、自動化されたAI処理フローを実行できます。"
+      },
+      "nodePaletteBtn": {
+        "title": "ノードパレット",
+        "desc": "このボタンをクリックしてノードパレットを開きます。利用可能なすべてのノードのツールボックスです。検索、ドラッグ、またはクリックでノードをキャンバスに追加できます。"
+      },
+      "nodePalette": {
+        "title": "ノードカテゴリ",
+        "desc": "ノードはカテゴリ別に整理されています：\n• 入力 — ファイルをアップロードまたはテキストを入力して開始データとする\n• AIタスク — 任意のWaveSpeed AIモデルを実行（次のステップを参照）\n• 無料ツール — 背景除去、顔補正、フォーマット変換など12種類の内蔵ツール\n• 出力 — 結果をプレビューまたはファイルをディスクにエクスポート\n\nノードをキャンバスにドラッグするか、クリックして追加します。"
+      },
+      "aiTask": {
+        "title": "AIタスクノード — コア機能",
+        "desc": "AIタスクノードはワークフローで最も強力なノードです。画像生成、動画作成、スタイル転送など、任意のWaveSpeed AIモデルを実行できます。",
+        "features": {
+          "modelSwitch": "数百のAIモデルから選択 — 選択したモデルに応じてパラメータパネルが動的に更新されます",
+          "dynamicParams": "各モデルには独自のパラメータ（プロンプト、画像サイズ、シードなど）があり、選択時に自動的に表示されます",
+          "costEstimate": "実行ごとのリアルタイムコスト見積もりで、実行前に常に価格を確認できます",
+          "upstream": "上流ノードの出力（画像、テキスト）を入力として接続 — マルチステップAIパイプラインを構築"
+        }
+      },
+      "canvas": {
+        "title": "キャンバス操作",
+        "desc": "中央のキャンバスがワークスペースです：\n• パレットからノードをドラッグして配置\n• 出力ポートから入力ポートにドラッグして接続を作成\n• 右クリックでコンテキストメニュー（コピー、貼り付け、削除）\n• スクロールでズーム、背景をドラッグでパン\n• ショートカット：Ctrl+Z 元に戻す、Ctrl+C/V コピー＆ペースト、Delete で削除"
+      },
+      "canvasTools": {
+        "title": "キャンバスツール",
+        "desc": "キャンバスのナビゲーションと整理に便利な3つのツール：\n• 選択 / ハンドモード — ノードの選択（V）とキャンバスのパン（H）を切り替え\n• ビューに合わせる — すべてのノードがビューポートに収まるよう自動ズーム\n• 自動レイアウト — ノードを見やすく整然と自動配置"
+      },
+      "config": {
+        "title": "設定と結果の確認",
+        "desc": "任意のノードをクリックして選択します。右パネルに2つのタブが表示されます：\n• 設定 — モデルパラメータの設定、ファイルのアップロード、プロンプトの入力\n• 結果 — 実行出力の表示（画像、動画、3Dモデル）\n\nパラメータはノードタイプと選択したモデルに応じて動的に更新されます。結果はフルスクリーンプレビューとダウンロードに対応しています。"
+      },
+      "run": {
+        "title": "ワークフローを実行",
+        "desc": "「ワークフローを実行」をクリックしてパイプライン全体を実行します：\n• バッチ処理用に実行回数を設定（×1〜×99）\n• 停止ボタンでいつでもキャンセル可能\n• 実行モニターでリアルタイムの進捗を監視\n• 各ノードのステータスを表示：待機中 → 実行中 → 完了"
+      },
+      "templates": {
+        "title": "テンプレート、インポート＆エクスポート",
+        "desc": "⋮メニューをクリックして高度な機能にアクセス：\n• ワークフローを再利用可能なテンプレートとして保存\n• ワークフローをJSONとしてインポート/エクスポートして共有\n• ブラウザのようにタブで複数のワークフローを開く\n• ツールバーからプリビルトテンプレートを閲覧"
+      }
+    },
     "promptOptimizer": {
       "optimizationFailed": "最適化に失敗しました",
       "optimizeParams": "最適化パラメータ",
@@ -1274,10 +1387,6 @@
         "loadConfigFailed": "最適化器の設定を読み込めません"
       }
     },
-    "saved": "保存済み",
-    "saving": "保存中...",
-    "saveFailed": "保存に失敗しました",
-    "savedAt": "保存済み",
     "cost": "コスト",
     "settings": "設定",
     "running": "実行中...",

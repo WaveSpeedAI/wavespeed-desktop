@@ -34,7 +34,9 @@
     "downloadFailed": "Download failed. Please check your network connection.",
     "openInBrowser": "Open in browser",
     "settings": "Settings",
-    "clearAll": "Clear All"
+    "clearAll": "Clear All",
+    "add": "Add",
+    "saving": "Saving..."
   },
   "nav": {
     "home": "Home",
@@ -323,12 +325,19 @@
     "renameDesc": "Enter a new name for this template",
     "templateName": "Template Name",
     "templateNamePlaceholder": "My template",
+    "coverImage": "Cover Image",
+    "uploadCover": "Click to upload cover image",
     "deleteTemplate": "Delete Template",
     "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
     "templateUpdated": "Template updated",
     "renamedTo": "Renamed to \"{{name}}\"",
     "templateDeleted": "Template deleted",
     "deleted": "Deleted \"{{name}}\"",
+    "deletedSuccessfully": "Deleted \"{{name}}\" successfully",
+    "updatedSuccessfully": "Updated \"{{name}}\" successfully",
+    "exportedSuccessfully": "Exported \"{{name}}\" successfully",
+    "allExportedSuccessfully": "All templates exported successfully",
+    "importedSuccessfully": "Imported {{imported}} template(s), skipped {{skipped}}",
     "lastUpdated": "Last updated",
     "export": "Export",
     "import": "Import",
@@ -348,6 +357,31 @@
     "replaceAll": "Replace All",
     "replaceAllDesc": "Delete existing templates and replace with imported ones",
     "templatesImported": "Templates imported",
+    "filters": "Filters",
+    "templateType": "Template Type",
+    "allTypes": "All Types",
+    "playground": "Playground",
+    "workflow": "Workflow",
+    "source": "Source",
+    "allSources": "All Sources",
+    "public": "Public",
+    "myTemplates": "My Templates",
+    "favorites": "Favorites",
+    "favoritesOnly": "Favorites Only",
+    "sortBy": "Sort By",
+    "newest": "Newest",
+    "mostUsed": "Most Used",
+    "category": "Category",
+    "allCategories": "All Categories",
+    "imageProcessing": "Image Processing",
+    "videoEditing": "Video Editing",
+    "audioConversion": "Audio Conversion",
+    "aiGeneration": "AI Generation",
+    "workflowNotSupported": "Workflow Not Supported",
+    "workflowNotSupportedDesc": "Workflow templates are not yet supported",
+    "loadTemplate": "Load Template",
+    "browseAll": "Browse All Templates",
+    "drawerDesc": "Browse and apply templates",
     "importedCount": "Imported {{imported}} template(s){{skipped}}",
     "skippedCount": ", {{count}} skipped (duplicates)",
     "importFailed": "Import failed",
@@ -357,7 +391,39 @@
     "deleteTemplates": "Delete Templates",
     "templatesDeleted": "Templates deleted",
     "deletedCount": "Deleted {{count}} template(s)",
-    "batchDeleteConfirm": "Are you sure you want to delete {{count}} template(s)? This action cannot be undone."
+    "batchDeleteConfirm": "Are you sure you want to delete {{count}} template(s)? This action cannot be undone.",
+    "createTemplate": "Create Template",
+    "createTemplateDesc": "Save your current configuration as a reusable template",
+    "editTemplate": "Edit Template",
+    "editTemplateDesc": "Update template details",
+    "descriptionLabel": "Description",
+    "tags": "Tags",
+    "tagsPlaceholder": "Enter a tag...",
+    "descriptionPlaceholder": "Describe this template...",
+    "categoryPlaceholder": "e.g. Image Processing",
+    "nodes": "nodes",
+    "favorite": "Add to favorites",
+    "unfavorite": "Remove from favorites",
+    "uses": "uses",
+    "importDesc": "Import templates from a previously exported file"
+  },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "Image to Video",
+      "description": "Convert static images to dynamic videos with HD upscaling"
+    },
+    "musicGenerate": {
+      "name": "Music Generation",
+      "description": "Generate original music from lyrics and style tags, supporting various genres"
+    },
+    "imageEdit": {
+      "name": "Image Editing",
+      "description": "Edit images using AI models with custom prompts for precise modifications"
+    },
+    "videoEdit": {
+      "name": "Video Editing",
+      "description": "Edit video content using AI models with prompt-based element modifications"
+    }
   },
   "assets": {
     "title": "My Assets",
@@ -985,6 +1051,7 @@
     "saveFailed": "Save failed",
     "savedAt": "Saved",
     "unsaved": "unsaved",
+    "selectNodeHint": "Select a node to configure its parameters",
     "outputDirFallbackHint": "Not set: will export to workflow default directory",
     "selectDirectory": "Select directory",
     "openFolder": "Open folder",
@@ -1002,6 +1069,15 @@
     "nameYourWorkflowDesc": "Give it a name to save to disk and enable execution.",
     "nameYourWorkflowPlaceholder": "e.g. Product Image Pipeline",
     "nameDuplicate": "A workflow with this name already exists",
+    "nameExists": "A workflow with this name already exists. Saving will overwrite it.",
+    "overwriteWorkflow": "Overwrite Workflow",
+    "overwriteConfirm": "A workflow named \"{{name}}\" already exists. Do you want to overwrite it?",
+    "overwrite": "Overwrite",
+    "tabClose": "Close",
+    "tabCloseOthers": "Close Others",
+    "tabCloseRight": "Close to the Right",
+    "tabCloseSaved": "Close Saved",
+    "tabCloseAll": "Close All",
     "runTarget": "Run target",
     "runTargetAll": "Run All Nodes",
     "runTargetSelected": "Run Selected Node",
@@ -1040,6 +1116,11 @@
     "deleteConnection": "Delete Connection",
     "add": "Add",
     "delete": "Delete",
+    "deleteSelected": "Delete Selected ({{count}})",
+    "selectMode": "Select (V)",
+    "handMode": "Hand (H)",
+    "interactionSelect": "Select",
+    "interactionHand": "Hand",
     "currentModel": "Current model",
     "modelIdLabel": "Model ID",
     "selectNode": "Select a node to configure",
@@ -1279,6 +1360,54 @@
       "optimizeOffHint": "Default: no optimization (run with original text)",
       "manualOptimizedHint": "Manually optimized. Auto-on-run will be skipped until text changes.",
       "enterTextOrPrompt": "Enter text or prompt..."
+    },
+    "guide": {
+      "skip": "Skip",
+      "prev": "Back",
+      "next": "Next",
+      "finish": "Get Started",
+      "welcome": {
+        "title": "Welcome to Workflow",
+        "desc": "Workflow is a visual AI pipeline editor. Drag nodes onto the canvas, connect them, and run automated AI processing flows — from image generation to video enhancement and beyond."
+      },
+      "nodePaletteBtn": {
+        "title": "Node Palette",
+        "desc": "Click this button to open the Node Palette — your toolbox of all available nodes. You can also search, drag, or click to add nodes to the canvas."
+      },
+      "nodePalette": {
+        "title": "Node Categories",
+        "desc": "Nodes are organized by category:\n• Input — Upload files or enter text as starting data\n• AI Task — Run any WaveSpeed AI model (see next step)\n• Free Tools — 12 built-in tools like background removal, face enhancement, format conversion\n• Output — Preview results or export files to disk\n\nDrag a node to the canvas or click to add it."
+      },
+      "aiTask": {
+        "title": "AI Task Node — The Core",
+        "desc": "The AI Task node is the most powerful node in Workflow. It can run any WaveSpeed AI model for image generation, video creation, style transfer, and more.",
+        "features": {
+          "modelSwitch": "Choose from hundreds of AI models — the parameter panel updates dynamically based on the selected model",
+          "dynamicParams": "Each model has its own parameters (prompt, image size, seed, etc.) that appear automatically when selected",
+          "costEstimate": "Real-time cost estimation per execution, so you always know the price before running",
+          "upstream": "Connect upstream node outputs (images, text) as inputs — build multi-step AI pipelines"
+        }
+      },
+      "canvas": {
+        "title": "Canvas Interactions",
+        "desc": "The central canvas is your workspace:\n• Drag nodes from the palette to position them\n• Drag from output ports to input ports to create connections\n• Right-click for context menu (copy, paste, delete)\n• Scroll to zoom, drag background to pan\n• Shortcuts: Ctrl+Z undo, Ctrl+C/V copy-paste, Delete to remove"
+      },
+      "canvasTools": {
+        "title": "Canvas Tools",
+        "desc": "Three handy tools for navigating and organizing your canvas:\n• Select / Hand mode — toggle between selecting nodes (V) and panning the canvas (H)\n• Fit View — auto-zoom to fit all nodes in the viewport\n• Auto Layout — automatically arrange nodes in a clean, readable layout"
+      },
+      "config": {
+        "title": "Configure & View Results",
+        "desc": "Click any node to select it. The right panel shows two tabs:\n• Config — Set model parameters, upload files, enter prompts\n• Results — View execution outputs (images, videos, 3D models)\n\nParameters update dynamically based on the node type and selected model. Results support fullscreen preview and download."
+      },
+      "run": {
+        "title": "Run Your Workflow",
+        "desc": "Click \"Run Workflow\" to execute the entire pipeline:\n• Set a run count (×1 to ×99) for batch processing\n• Cancel anytime with the stop button\n• Monitor real-time progress in the Execution Monitor\n• Each node shows its status: queued → running → done"
+      },
+      "templates": {
+        "title": "Templates, Import & Export",
+        "desc": "Click the ⋮ menu for advanced features:\n• Save your workflow as a reusable template\n• Import/Export workflows as JSON to share\n• Open multiple workflows in tabs (like a browser)\n• Browse pre-built templates from the toolbar"
+      }
     },
     "promptOptimizer": {
       "optimizationFailed": "Optimization failed",

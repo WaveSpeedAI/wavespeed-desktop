@@ -32,7 +32,8 @@ export function NodePalette({ definitions }: NodePaletteProps) {
   const { t } = useTranslation()
   const toggleNodePalette = useUIStore(s => s.toggleNodePalette)
   const addNode = useWorkflowStore(s => s.addNode)
-  const [width, setWidth] = useState(180)
+  const width = useUIStore(s => s.sidebarWidth)
+  const setSidebarWidth = useUIStore(s => s.setSidebarWidth)
   const [dragging, setDragging] = useState(false)
   const [query, setQuery] = useState('')
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
@@ -88,8 +89,7 @@ export function NodePalette({ definitions }: NodePaletteProps) {
     const startX = e.clientX
     const startWidth = width
     const onMove = (ev: MouseEvent) => {
-      const newWidth = Math.max(140, Math.min(360, startWidth + (ev.clientX - startX)))
-      setWidth(newWidth)
+      setSidebarWidth(startWidth + (ev.clientX - startX))
     }
     const onUp = () => {
       setDragging(false)
@@ -98,11 +98,12 @@ export function NodePalette({ definitions }: NodePaletteProps) {
     }
     document.addEventListener('mousemove', onMove)
     document.addEventListener('mouseup', onUp)
-  }, [width])
+  }, [width, setSidebarWidth])
 
   return (
-    <div className="border-r border-border bg-card text-card-foreground flex flex-col relative overflow-hidden"
-      style={{ flexBasis: width, flexShrink: 1, flexGrow: 0, minWidth: 0 }}>
+    <div className="border-r border-border bg-card text-card-foreground flex flex-col relative overflow-hidden h-full"
+      data-guide="node-palette"
+      style={{ width, minWidth: 0 }}>
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-border">
         <span className="font-semibold text-xs">{t('workflow.nodes', 'Nodes')}</span>

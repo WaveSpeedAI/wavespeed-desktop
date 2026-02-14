@@ -1,0 +1,164 @@
+{
+  "name": "图像编辑",
+  "i18nKey": "imageEdit",
+  "description": "使用AI模型编辑图像，支持自定义提示词进行精确修改",
+  "tags": [
+    "图像",
+    "编辑",
+    "AI",
+    "提示词"
+  ],
+  "category": "image-processing",
+  "author": "WaveSpeed",
+  "thumbnail": "https://d1q70pf5vjeyhc.cloudfront.net/media/a171ce9f725a41f49d5694458dba5f2a/images/1771092349188456413_57k0enwG.jpg",
+  "graphDefinition": {
+    "nodes": [
+      {
+        "id": "0e64e59a-df8d-4dc8-8ff4-69829c9607f9",
+        "workflowId": "ec1171e4-1237-4485-9068-060fa6467a83",
+        "nodeType": "input/media-upload",
+        "position": {
+          "x": 0,
+          "y": -351
+        },
+        "params": {
+          "uploadedUrl": "https://d1q70pf5vjeyhc.cloudfront.net/media/a171ce9f725a41f49d5694458dba5f2a/images/1771092349188456413_57k0enwG.jpg",
+          "mediaType": "image",
+          "fileName": "c618e354839840f587bad1b5fe980469.jpg",
+          "__meta": {
+            "label": "📁 Upload",
+            "modelInputSchema": []
+          }
+        },
+        "currentOutputId": null
+      },
+      {
+        "id": "fbccd06d-ce92-4215-8f3a-361f5f48e8e9",
+        "workflowId": "ec1171e4-1237-4485-9068-060fa6467a83",
+        "nodeType": "ai-task/run",
+        "position": {
+          "x": 461.3745173745174,
+          "y": -169.60424710424712
+        },
+        "params": {
+          "modelId": "wavespeed-ai/qwen-image/edit-plus",
+          "seed": -1,
+          "output_format": "jpeg",
+          "__meta": {
+            "label": "🤖 wavespeed-ai/qwen-image/edit-plus",
+            "modelInputSchema": [
+              {
+                "name": "prompt",
+                "type": "string",
+                "description": "The positive prompt for the generation.",
+                "fieldType": "textarea",
+                "required": true
+              },
+              {
+                "name": "images",
+                "type": "string",
+                "description": "The images to edit. A maximum of 3 reference images can be uploaded.",
+                "mediaType": "image",
+                "fieldType": "file-array",
+                "required": true
+              },
+              {
+                "name": "size",
+                "type": "string",
+                "description": "The size of the generated media in pixels (width*height).",
+                "hidden": true,
+                "fieldType": "size"
+              },
+              {
+                "name": "seed",
+                "type": "integer",
+                "description": "The random seed to use for the generation. -1 means a random seed will be used.",
+                "default": -1,
+                "fieldType": "number"
+              },
+              {
+                "name": "output_format",
+                "type": "enum",
+                "description": "The format of the output image.",
+                "default": "jpeg",
+                "enum": [
+                  "jpeg",
+                  "png",
+                  "webp"
+                ],
+                "fieldType": "select"
+              }
+            ]
+          }
+        },
+        "currentOutputId": null
+      },
+      {
+        "id": "d38828f3-3545-4c73-b886-f5e18502ca24",
+        "workflowId": "ec1171e4-1237-4485-9068-060fa6467a83",
+        "nodeType": "input/text-input",
+        "position": {
+          "x": 0,
+          "y": -26
+        },
+        "params": {
+          "text": "A natural, gradual transformation occurs as the hair begins to shift from its original color to a vibrant, glowing red — rich in hue, with subtle gradients and natural highlights that catch the light. The strands appear soft and flowing, with realistic texture and movement, as if caught in a gentle breeze. The transition is organic, not artificial, suggesting a magical or biological change occurring in real time. The red tone is vivid yet balanced, avoiding oversaturation, and blends seamlessly with surrounding tones to maintain visual harmony. This is not a static color change, but a dynamic, evolving process captured in a cinematic, lifelike moment.",
+          "__optimizerSettings": {
+            "optimizeOnRun": false,
+            "lastManualOptimizedText": "A natural, gradual transformation occurs as the hair begins to shift from its original color to a vibrant, glowing red — rich in hue, with subtle gradients and natural highlights that catch the light. The strands appear soft and flowing, with realistic texture and movement, as if caught in a gentle breeze. The transition is organic, not artificial, suggesting a magical or biological change occurring in real time. The red tone is vivid yet balanced, avoiding oversaturation, and blends seamlessly with surrounding tones to maintain visual harmony. This is not a static color change, but a dynamic, evolving process captured in a cinematic, lifelike moment."
+          },
+          "__meta": {
+            "label": "✏️ Text",
+            "modelInputSchema": []
+          }
+        },
+        "currentOutputId": null
+      },
+      {
+        "id": "b1dadfb6-e5a7-4ee8-9a3e-197ccd056164",
+        "workflowId": "ec1171e4-1237-4485-9068-060fa6467a83",
+        "nodeType": "output/preview",
+        "position": {
+          "x": 949.135135135135,
+          "y": -124.75096525096527
+        },
+        "params": {
+          "autoDetect": true,
+          "forceType": "auto",
+          "__meta": {
+            "label": "👀 Preview",
+            "modelInputSchema": []
+          }
+        },
+        "currentOutputId": null
+      }
+    ],
+    "edges": [
+      {
+        "id": "42370819-2c8d-4d74-bb9e-c95b2f18cab5",
+        "workflowId": "ec1171e4-1237-4485-9068-060fa6467a83",
+        "sourceNodeId": "0e64e59a-df8d-4dc8-8ff4-69829c9607f9",
+        "sourceOutputKey": "output",
+        "targetNodeId": "fbccd06d-ce92-4215-8f3a-361f5f48e8e9",
+        "targetInputKey": "images[0]"
+      },
+      {
+        "id": "eea5d870-aef0-4d83-bff0-2cb7ebffc44e",
+        "workflowId": "ec1171e4-1237-4485-9068-060fa6467a83",
+        "sourceNodeId": "d38828f3-3545-4c73-b886-f5e18502ca24",
+        "sourceOutputKey": "output",
+        "targetNodeId": "fbccd06d-ce92-4215-8f3a-361f5f48e8e9",
+        "targetInputKey": "param-prompt"
+      },
+      {
+        "id": "3b7b40a1-7657-4b89-9b2c-ef6f7add4705",
+        "workflowId": "ec1171e4-1237-4485-9068-060fa6467a83",
+        "sourceNodeId": "fbccd06d-ce92-4215-8f3a-361f5f48e8e9",
+        "sourceOutputKey": "output",
+        "targetNodeId": "b1dadfb6-e5a7-4ee8-9a3e-197ccd056164",
+        "targetInputKey": "input-input"
+      }
+    ]
+  },
+  "savedAt": "2026-02-14T19:32:23.179Z"
+}

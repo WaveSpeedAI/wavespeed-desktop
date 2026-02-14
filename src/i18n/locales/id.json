@@ -357,7 +357,71 @@
     "deleteTemplates": "Hapus template",
     "templatesDeleted": "Template dihapus",
     "deletedCount": "{{count}} template dihapus",
-    "batchDeleteConfirm": "Apakah Anda yakin ingin menghapus {{count}} template? Tindakan ini tidak dapat dibatalkan."
+    "batchDeleteConfirm": "Apakah Anda yakin ingin menghapus {{count}} template? Tindakan ini tidak dapat dibatalkan.",
+    "deletedSuccessfully": "\"{{name}}\" berhasil dihapus",
+    "updatedSuccessfully": "\"{{name}}\" berhasil diperbarui",
+    "exportedSuccessfully": "\"{{name}}\" berhasil diekspor",
+    "allExportedSuccessfully": "Semua template berhasil diekspor",
+    "importedSuccessfully": "{{imported}} template diimpor, {{skipped}} dilewati",
+    "filters": "Filter",
+    "templateType": "Jenis Template",
+    "allTypes": "Semua Jenis",
+    "playground": "Playground",
+    "workflow": "Alur Kerja",
+    "source": "Sumber",
+    "allSources": "Semua Sumber",
+    "public": "Publik",
+    "myTemplates": "Template Saya",
+    "favorites": "Favorit",
+    "favoritesOnly": "Hanya Favorit",
+    "sortBy": "Urutkan",
+    "newest": "Terbaru",
+    "mostUsed": "Paling Sering Digunakan",
+    "category": "Kategori",
+    "allCategories": "Semua Kategori",
+    "imageProcessing": "Pemrosesan Gambar",
+    "videoEditing": "Pengeditan Video",
+    "audioConversion": "Konversi Audio",
+    "aiGeneration": "Generasi AI",
+    "workflowNotSupported": "Alur Kerja Tidak Didukung",
+    "workflowNotSupportedDesc": "Template alur kerja belum didukung",
+    "loadTemplate": "Muat Template",
+    "browseAll": "Jelajahi Semua Template",
+    "drawerDesc": "Jelajahi dan terapkan template",
+    "createTemplate": "Buat Template",
+    "createTemplateDesc": "Simpan konfigurasi saat ini sebagai template yang dapat digunakan kembali",
+    "editTemplate": "Edit Templat",
+    "editTemplateDesc": "Perbarui detail template",
+    "descriptionLabel": "Deskripsi",
+    "tags": "Tag",
+    "tagsPlaceholder": "Masukkan tag...",
+    "descriptionPlaceholder": "Jelaskan template ini...",
+    "categoryPlaceholder": "mis. Pemrosesan Gambar",
+    "nodes": "node",
+    "favorite": "Tambahkan ke favorit",
+    "unfavorite": "Hapus dari favorit",
+    "uses": "penggunaan",
+    "coverImage": "Gambar sampul",
+    "uploadCover": "Klik untuk mengunggah gambar sampul",
+    "importDesc": "Impor template dari file yang sebelumnya diekspor"
+  },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "Gambar ke Video",
+      "description": "Ubah gambar statis menjadi video dinamis dengan peningkatan resolusi HD"
+    },
+    "musicGenerate": {
+      "name": "Pembuatan Musik",
+      "description": "Buat musik orisinal dari lirik dan tag gaya"
+    },
+    "imageEdit": {
+      "name": "Pengeditan Gambar",
+      "description": "Edit gambar menggunakan model AI dengan prompt kustom"
+    },
+    "videoEdit": {
+      "name": "Pengeditan Video",
+      "description": "Edit konten video menggunakan model AI dengan modifikasi berbasis prompt"
+    }
   },
   "assets": {
     "title": "Aset Saya",
@@ -1328,6 +1392,55 @@
         "loadingOptimizer": "Memuat pengoptimal...",
         "loadConfigFailed": "Tidak dapat memuat konfigurasi pengoptimal"
       }
-    }
+    },
+    "guide": {
+      "skip": "Lewati",
+      "prev": "Kembali",
+      "next": "Berikutnya",
+      "finish": "Mulai",
+      "welcome": {
+        "title": "Selamat datang di Workflow",
+        "desc": "Workflow adalah editor pipeline AI visual. Seret node ke kanvas, hubungkan, lalu jalankan alur pemrosesan AI otomatis — dari pembuatan gambar hingga peningkatan video dan lainnya."
+      },
+      "nodePaletteBtn": {
+        "title": "Palet Node",
+        "desc": "Klik tombol ini untuk membuka Palet Node — kotak alat berisi semua node yang tersedia. Anda juga dapat mencari, menyeret, atau klik untuk menambahkan node ke kanvas."
+      },
+      "nodePalette": {
+        "title": "Kategori Node",
+        "desc": "Node diatur berdasarkan kategori:\n• Input — Unggah file atau masukkan teks sebagai data awal\n• Tugas AI — Jalankan model WaveSpeed AI apa pun (lihat langkah berikutnya)\n• Alat Gratis — 12 alat bawaan seperti penghapus latar, peningkatan wajah, konversi format\n• Output — Pratinjau hasil atau ekspor file ke disk\n\nSeret node ke kanvas atau klik untuk menambahkannya."
+      },
+      "aiTask": {
+        "title": "Node Tugas AI — Inti Utama",
+        "desc": "Node Tugas AI adalah node paling kuat di Workflow. Node ini dapat menjalankan model WaveSpeed AI apa pun untuk pembuatan gambar, pembuatan video, transfer gaya, dan lainnya.",
+        "features": {
+          "modelSwitch": "Pilih dari ratusan model AI — panel parameter diperbarui dinamis sesuai model yang dipilih",
+          "dynamicParams": "Setiap model memiliki parameternya sendiri (prompt, ukuran gambar, seed, dll.) yang muncul otomatis saat dipilih",
+          "costEstimate": "Estimasi biaya real-time per eksekusi agar Anda selalu tahu harga sebelum menjalankan",
+          "upstream": "Hubungkan output node hulu (gambar, teks) sebagai input — bangun pipeline AI multi-langkah"
+        }
+      },
+      "canvas": {
+        "title": "Interaksi Kanvas",
+        "desc": "Kanvas utama adalah ruang kerja Anda:\n• Seret node dari palet untuk memposisikannya\n• Seret dari port output ke port input untuk membuat koneksi\n• Klik kanan untuk menu konteks (salin, tempel, hapus)\n• Gulir untuk zoom, seret latar untuk pan\n• Pintasan: Ctrl+Z undo, Ctrl+C/V copy-paste, Delete untuk menghapus"
+      },
+      "canvasTools": {
+        "title": "Alat Kanvas",
+        "desc": "Tiga alat praktis untuk menavigasi dan mengatur kanvas:\n• Mode Pilih / Tangan — alihkan antara memilih node (V) dan menggeser kanvas (H)\n• Fit View — zoom otomatis agar semua node muat di viewport\n• Tata Letak Otomatis — susun node secara otomatis agar rapi dan mudah dibaca"
+      },
+      "config": {
+        "title": "Konfigurasi & Lihat Hasil",
+        "desc": "Klik node mana pun untuk memilihnya. Panel kanan menampilkan dua tab:\n• Konfigurasi — Atur parameter model, unggah file, masukkan prompt\n• Hasil — Lihat output eksekusi (gambar, video, model 3D)\n\nParameter diperbarui secara dinamis berdasarkan jenis node dan model yang dipilih. Hasil mendukung pratinjau layar penuh dan unduhan."
+      },
+      "run": {
+        "title": "Jalankan Workflow Anda",
+        "desc": "Klik \"Run Workflow\" untuk mengeksekusi seluruh pipeline:\n• Atur jumlah run (×1 hingga ×99) untuk pemrosesan batch\n• Batalkan kapan saja dengan tombol stop\n• Pantau progres real-time di Execution Monitor\n• Setiap node menampilkan status: queued → running → done"
+      },
+      "templates": {
+        "title": "Template, Impor & Ekspor",
+        "desc": "Klik menu ⋮ untuk fitur lanjutan:\n• Simpan workflow Anda sebagai template yang dapat digunakan ulang\n• Impor/Ekspor workflow sebagai JSON untuk dibagikan\n• Buka beberapa workflow dalam tab (seperti browser)\n• Jelajahi template siap pakai dari toolbar"
+      }
+    },
+    "selectNodeHint": "Select a node to configure its parameters"
   }
 }

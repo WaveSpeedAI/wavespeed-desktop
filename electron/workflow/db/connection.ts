@@ -82,6 +82,7 @@ export async function openDatabase(): Promise<SqlJsDatabase> {
     saveToDisk()
   } else {
     runMigrations(db)
+    saveToDisk() // Save after running migrations
   }
 
   return db

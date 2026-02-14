@@ -357,7 +357,71 @@
     "deleteTemplates": "刪除範本",
     "templatesDeleted": "範本已刪除",
     "deletedCount": "已刪除 {{count}} 個範本",
-    "batchDeleteConfirm": "確定要刪除 {{count}} 個範本嗎？此操作無法復原。"
+    "batchDeleteConfirm": "確定要刪除 {{count}} 個範本嗎？此操作無法復原。",
+    "deletedSuccessfully": "已成功刪除「{{name}}」",
+    "updatedSuccessfully": "已成功更新「{{name}}」",
+    "exportedSuccessfully": "已成功匯出「{{name}}」",
+    "allExportedSuccessfully": "已成功匯出所有範本",
+    "importedSuccessfully": "已匯入 {{imported}} 個範本，跳過 {{skipped}} 個",
+    "filters": "篩選",
+    "templateType": "範本類型",
+    "allTypes": "所有類型",
+    "playground": "演練場",
+    "workflow": "工作流程",
+    "source": "來源",
+    "allSources": "所有來源",
+    "public": "公開",
+    "myTemplates": "我的範本",
+    "favorites": "收藏",
+    "favoritesOnly": "僅收藏",
+    "sortBy": "排序方式",
+    "newest": "最新",
+    "mostUsed": "最常使用",
+    "category": "分類",
+    "allCategories": "所有分類",
+    "imageProcessing": "圖片處理",
+    "videoEditing": "影片編輯",
+    "audioConversion": "音訊轉換",
+    "aiGeneration": "AI 生成",
+    "workflowNotSupported": "不支援工作流程",
+    "workflowNotSupportedDesc": "工作流程範本尚未支援",
+    "loadTemplate": "載入範本",
+    "browseAll": "瀏覽全部範本",
+    "drawerDesc": "瀏覽並套用範本",
+    "createTemplate": "建立範本",
+    "createTemplateDesc": "將目前設定儲存為可重複使用的範本",
+    "editTemplate": "編輯範本",
+    "editTemplateDesc": "更新範本詳細資訊",
+    "descriptionLabel": "描述",
+    "tags": "標籤",
+    "tagsPlaceholder": "輸入標籤...",
+    "descriptionPlaceholder": "描述此範本...",
+    "categoryPlaceholder": "例如：影像處理",
+    "nodes": "個節點",
+    "favorite": "加入收藏",
+    "unfavorite": "取消收藏",
+    "uses": "次使用",
+    "coverImage": "封面圖",
+    "uploadCover": "點擊上傳封面圖",
+    "importDesc": "從先前匯出的檔案匯入範本"
+  },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "圖生影片",
+      "description": "將靜態圖片轉換為動態影片，並進行高清放大處理"
+    },
+    "musicGenerate": {
+      "name": "音樂生成",
+      "description": "透過歌詞和風格標籤生成原創音樂，支援多種音樂風格"
+    },
+    "imageEdit": {
+      "name": "圖像編輯",
+      "description": "使用AI模型編輯圖像，支援自訂提示詞進行精確修改"
+    },
+    "videoEdit": {
+      "name": "影片編輯",
+      "description": "使用AI模型編輯影片內容，支援透過提示詞修改影片中的元素"
+    }
   },
   "assets": {
     "title": "我的資產",
@@ -1306,6 +1370,55 @@
     "hideRun": "隱藏本次執行",
     "show": "顯示",
     "hide": "隱藏",
-    "optional": "可選"
+    "optional": "可選",
+    "guide": {
+      "skip": "跳過",
+      "prev": "上一步",
+      "next": "下一步",
+      "finish": "開始使用",
+      "welcome": {
+        "title": "歡迎使用工作流",
+        "desc": "工作流是可視化 AI 流水線編輯器。將節點拖曳到畫布上、連接它們，即可執行自動化 AI 處理流程——從圖像生成到影片增強，遠不止如此。"
+      },
+      "nodePaletteBtn": {
+        "title": "節點面板",
+        "desc": "點擊此按鈕可開啟節點面板——你的節點工具箱。你也可以搜尋、拖曳或點擊以將節點加入畫布。"
+      },
+      "nodePalette": {
+        "title": "節點分類",
+        "desc": "節點依分類組織：\n• 輸入 — 上傳檔案或輸入文字作為起始資料\n• AI 任務 — 執行任意 WaveSpeed AI 模型（見下一步）\n• 免費工具 — 12 個內建工具，如背景移除、人臉增強、格式轉換\n• 輸出 — 預覽結果或匯出檔案到磁碟\n\n將節點拖曳到畫布，或點擊即可新增。"
+      },
+      "aiTask": {
+        "title": "AI 任務節點 — 核心能力",
+        "desc": "AI 任務節點是工作流中最強大的節點。它可執行任意 WaveSpeed AI 模型，用於圖像生成、影片創作、風格轉換等。",
+        "features": {
+          "modelSwitch": "從數百個 AI 模型中選擇——參數面板會依所選模型動態更新",
+          "dynamicParams": "每個模型都有自己的參數（提示詞、圖像尺寸、種子等），選擇後會自動顯示",
+          "costEstimate": "每次執行即時成本估算，執行前就能掌握價格",
+          "upstream": "將上游節點輸出（圖像、文字）連接為輸入——建立多步驟 AI 流水線"
+        }
+      },
+      "canvas": {
+        "title": "畫布操作",
+        "desc": "中央畫布是你的工作區：\n• 從節點面板拖曳節點到畫布定位\n• 從輸出埠拖曳到輸入埠建立連線\n• 右鍵開啟內容選單（複製、貼上、刪除）\n• 滾輪縮放，拖曳背景平移\n• 快捷鍵：Ctrl+Z 復原、Ctrl+C/V 複製貼上、Delete 刪除"
+      },
+      "canvasTools": {
+        "title": "畫布工具",
+        "desc": "三個實用的畫布導覽與整理工具：\n• 選取 / 手形模式 — 在選取節點（V）與平移畫布（H）之間切換\n• 適應視圖 — 自動縮放讓所有節點顯示在視窗中\n• 自動布局 — 自動將節點排列成整潔易讀的版面"
+      },
+      "config": {
+        "title": "設定與查看結果",
+        "desc": "點擊任意節點即可選取。右側面板有兩個分頁：\n• 設定 — 設定模型參數、上傳檔案、輸入提示詞\n• 結果 — 查看執行輸出（圖像、影片、3D 模型）\n\n參數會依節點類型與所選模型動態更新。結果支援全螢幕預覽與下載。"
+      },
+      "run": {
+        "title": "執行你的工作流",
+        "desc": "點擊「執行工作流」以執行整個流水線：\n• 設定執行次數（×1 到 ×99）進行批次處理\n• 可隨時按停止按鈕取消\n• 在執行監視器中即時查看進度\n• 每個節點都會顯示狀態：排隊 → 執行中 → 完成"
+      },
+      "templates": {
+        "title": "範本、匯入與匯出",
+        "desc": "點擊 ⋮ 選單可使用進階功能：\n• 將工作流儲存為可重複使用範本\n• 以 JSON 匯入/匯出工作流以便分享\n• 在分頁中同時開啟多個工作流（如瀏覽器）\n• 從工具列瀏覽預設範本"
+      }
+    },
+    "selectNodeHint": "Select a node to configure its parameters"
   }
 }

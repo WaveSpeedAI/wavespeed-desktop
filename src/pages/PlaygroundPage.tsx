@@ -12,17 +12,7 @@ import { ModelSelector } from '@/components/playground/ModelSelector'
 import { BatchControls } from '@/components/playground/BatchControls'
 import { BatchOutputGrid } from '@/components/playground/BatchOutputGrid'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/components/ui/dialog'
 import {
   Tooltip,
   TooltipContent,
@@ -31,6 +21,8 @@ import {
 import { RotateCcw, Loader2, Plus, X, BookOpen, Save, Globe, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/useToast'
+import { TemplateDialog, type TemplateFormData } from '@/components/templates/TemplateDialog'
+import { TemplatePickerDialog } from '@/components/templates/TemplatePickerDialog'
 
 export function PlaygroundPage() {
   const { t } = useTranslation()
@@ -59,7 +51,7 @@ export function PlaygroundPage() {
     generateBatchInputs,
     setUploading,
   } = usePlaygroundStore()
-  const { templates, loadTemplates, saveTemplate, isLoaded: templatesLoaded } = useTemplateStore()
+  const { templates, loadTemplates, createTemplate, migrateFromLocalStorage } = useTemplateStore()
 
   const activeTab = getActiveTab()
   const templateLoadedRef = useRef<string | null>(null)
@@ -70,7 +62,6 @@ export function PlaygroundPage() {
 
   // Template dialog states
   const [showSaveTemplateDialog, setShowSaveTemplateDialog] = useState(false)
-  const [newTemplateName, setNewTemplateName] = useState('')
 
   // Generate batch preview inputs
   const batchPreviewInputs = useMemo(() => {
@@ -85,12 +76,15 @@ export function PlaygroundPage() {
   const [isPricingLoading, setIsPricingLoading] = useState(false)
   const pricingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Load templates on mount
+  // Migrate templates and load on mount
   useEffect(() => {
-    if (!templatesLoaded) {
-      loadTemplates()
+    const init = async () => {
+      await migrateFromLocalStorage()
+      await loadTemplates({ templateType: 'playground' })
     }
-  }, [templatesLoaded, loadTemplates])
+    init()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Only run once on mount
 
   // Load API key and fetch models on mount
   useEffect(() => {
@@ -142,10 +136,10 @@ export function PlaygroundPage() {
   // Load template from URL query param
   useEffect(() => {
     const templateId = searchParams.get('template')
-    if (templateId && templatesLoaded && activeTab && templateLoadedRef.current !== templateId) {
+    if (templateId && templates.length > 0 && activeTab && templateLoadedRef.current !== templateId) {
       const template = templates.find(t => t.id === templateId)
-      if (template) {
-        setFormValues(template.values)
+      if (template && template.playgroundData) {
+        setFormValues(template.playgroundData.values)
         templateLoadedRef.current = templateId
         toast({
           title: t('playground.templateLoaded'),
@@ -155,22 +149,27 @@ export function PlaygroundPage() {
         setSearchParams({}, { replace: true })
       }
     }
-  }, [searchParams, templates, templatesLoaded, activeTab, setFormValues, setSearchParams])
+  }, [searchParams, templates, activeTab, setFormValues, setSearchParams, t])
 
-  const handleSaveTemplate = () => {
-    if (!activeTab?.selectedModel || !newTemplateName.trim()) return
+  const handleSaveTemplate = async (data: TemplateFormData) => {
+    if (!activeTab?.selectedModel) return
 
-    saveTemplate(
-      newTemplateName.trim(),
-      activeTab.selectedModel.model_id,
-      activeTab.selectedModel.name,
-      activeTab.formValues
-    )
-    setNewTemplateName('')
-    setShowSaveTemplateDialog(false)
+    await createTemplate({
+      name: data.name,
+      description: data.description || null,
+      tags: data.tags,
+      thumbnail: data.thumbnail || null,
+      type: 'custom',
+      templateType: 'playground',
+      playgroundData: {
+        modelId: activeTab.selectedModel.model_id,
+        modelName: activeTab.selectedModel.name,
+        values: activeTab.formValues
+      }
+    })
     toast({
       title: t('playground.templateSaved'),
-      description: t('playground.savedAs', { name: newTemplateName.trim() }),
+      description: t('playground.savedAs', { name: data.name }),
     })
   }
 
@@ -314,6 +313,13 @@ export function PlaygroundPage() {
     }
   }
 
+  const handleLoadTemplate = () => {
+    setShowTemplateDialog(true)
+  }
+
+  // Template dialog state
+  const [showTemplateDialog, setShowTemplateDialog] = useState(false)
+
   // Show loading state while API key is being loaded from storage
   // Also show loading when models are loading (needed for model selector)
   if (isLoadingApiKey || !hasAttemptedLoad || (isValidated && models.length === 0)) {
@@ -330,6 +336,26 @@ export function PlaygroundPage() {
       <div className="page-header bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/55">
         <ScrollArea className="w-full">
           <div className="flex items-center px-2 py-1.5">
+            {/* Templates button */}
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handleLoadTemplate}
+                  className={cn(
+                    'h-7 w-7 rounded-md text-xs font-medium transition-colors flex items-center justify-center mr-1',
+                    showTemplateDialog
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                  )}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/><path d="M13 13h4"/><path d="M13 17h4"/>
+                  </svg>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">{t('templates.title', 'Templates')}</TooltipContent>
+            </Tooltip>
+            <div className="w-px h-5 bg-border mr-1" />
             {tabs.map((tab) => (
               <div
                 key={tab.id}
@@ -591,49 +617,37 @@ export function PlaygroundPage() {
       )}
 
       {/* Save Template Dialog */}
-      <Dialog open={showSaveTemplateDialog} onOpenChange={setShowSaveTemplateDialog}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>{t('playground.saveTemplate')}</DialogTitle>
-            <DialogDescription>
-              {t('playground.saveTemplateDesc', { model: activeTab?.selectedModel?.name })}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="templateName">{t('playground.templateName')}</Label>
-              <Input
-                id="templateName"
-                value={newTemplateName}
-                onChange={(e) => setNewTemplateName(e.target.value)}
-                placeholder={t('templates.templateNamePlaceholder')}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && newTemplateName.trim()) {
-                    handleSaveTemplate()
-                  }
-                }}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setNewTemplateName('')
-                setShowSaveTemplateDialog(false)
-              }}
-            >
-              {t('common.cancel')}
-            </Button>
-            <Button
-              onClick={handleSaveTemplate}
-              disabled={!newTemplateName.trim()}
-            >
-              {t('common.save')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <TemplateDialog
+        open={showSaveTemplateDialog}
+        onOpenChange={setShowSaveTemplateDialog}
+        mode="create"
+        onSave={handleSaveTemplate}
+      />
+
+      {/* Template Picker Dialog */}
+      <TemplatePickerDialog
+        open={showTemplateDialog}
+        onOpenChange={setShowTemplateDialog}
+        templateType="playground"
+        onUseTemplate={(template) => {
+          if (template.playgroundData) {
+            // Switch model if needed
+            if (template.playgroundData.modelId && activeTab?.selectedModel?.model_id !== template.playgroundData.modelId) {
+              const model = models.find(m => m.model_id === template.playgroundData!.modelId)
+              if (model) {
+                setSelectedModel(model)
+                navigate(`/playground/${template.playgroundData.modelId}`)
+              }
+            }
+            // Apply form values
+            setFormValues(template.playgroundData.values)
+            toast({
+              title: t('playground.templateLoaded'),
+              description: t('playground.loadedTemplate', { name: template.name }),
+            })
+          }
+        }}
+      />
 
     </div>
   )

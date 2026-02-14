@@ -357,7 +357,71 @@
     "deleteTemplates": "Supprimer les modèles",
     "templatesDeleted": "Modèles supprimés",
     "deletedCount": "{{count}} modèle(s) supprimé(s)",
-    "batchDeleteConfirm": "Êtes-vous sûr de vouloir supprimer {{count}} modèle(s) ? Cette action est irréversible."
+    "batchDeleteConfirm": "Êtes-vous sûr de vouloir supprimer {{count}} modèle(s) ? Cette action est irréversible.",
+    "deletedSuccessfully": "\"{{name}}\" supprimé avec succès",
+    "updatedSuccessfully": "\"{{name}}\" mis à jour avec succès",
+    "exportedSuccessfully": "\"{{name}}\" exporté avec succès",
+    "allExportedSuccessfully": "Tous les modèles exportés avec succès",
+    "importedSuccessfully": "{{imported}} modèle(s) importé(s), {{skipped}} ignoré(s)",
+    "filters": "Filtres",
+    "templateType": "Type de modèle",
+    "allTypes": "Tous les types",
+    "playground": "Playground",
+    "workflow": "Workflow",
+    "source": "Source",
+    "allSources": "Toutes les sources",
+    "public": "Public",
+    "myTemplates": "Mes modèles",
+    "favorites": "Favoris",
+    "favoritesOnly": "Favoris uniquement",
+    "sortBy": "Trier par",
+    "newest": "Plus récent",
+    "mostUsed": "Plus utilisé",
+    "category": "Catégorie",
+    "allCategories": "Toutes les catégories",
+    "imageProcessing": "Traitement d'image",
+    "videoEditing": "Montage vidéo",
+    "audioConversion": "Conversion audio",
+    "aiGeneration": "Génération IA",
+    "workflowNotSupported": "Workflow non pris en charge",
+    "workflowNotSupportedDesc": "Les modèles de workflow ne sont pas encore pris en charge",
+    "loadTemplate": "Charger le modèle",
+    "browseAll": "Parcourir tous les modèles",
+    "drawerDesc": "Parcourir et appliquer des modèles",
+    "createTemplate": "Créer un modèle",
+    "createTemplateDesc": "Enregistrez votre configuration actuelle comme modèle réutilisable",
+    "editTemplate": "Modifier le modèle",
+    "editTemplateDesc": "Mettre à jour les détails du modèle",
+    "descriptionLabel": "Description",
+    "tags": "Étiquettes",
+    "tagsPlaceholder": "Saisir une étiquette...",
+    "descriptionPlaceholder": "Décrivez ce modèle...",
+    "categoryPlaceholder": "ex. Traitement d'image",
+    "nodes": "nœuds",
+    "favorite": "Ajouter aux favoris",
+    "unfavorite": "Retirer des favoris",
+    "uses": "utilisations",
+    "coverImage": "Image de couverture",
+    "uploadCover": "Cliquez pour importer une image de couverture",
+    "importDesc": "Importer des modèles depuis un fichier exporté précédemment"
+  },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "Image vers Vidéo",
+      "description": "Convertir des images statiques en vidéos dynamiques avec mise à l'échelle HD"
+    },
+    "musicGenerate": {
+      "name": "Génération Musicale",
+      "description": "Générer de la musique originale à partir de paroles et de tags de style"
+    },
+    "imageEdit": {
+      "name": "Édition d'Image",
+      "description": "Éditer des images avec des modèles IA et des prompts personnalisés"
+    },
+    "videoEdit": {
+      "name": "Édition Vidéo",
+      "description": "Éditer le contenu vidéo avec des modèles IA et des modifications basées sur des prompts"
+    }
   },
   "assets": {
     "title": "Mes Ressources",
@@ -985,6 +1049,7 @@
     "saveFailed": "Échec de l'enregistrement",
     "savedAt": "Enregistré",
     "unsaved": "Non enregistré",
+    "selectNodeHint": "Sélectionnez un nœud pour configurer ses paramètres",
     "outputDirFallbackHint": "Non défini : exportera vers le répertoire par défaut du workflow",
     "selectDirectory": "Sélectionner le répertoire",
     "openFolder": "Ouvrir le dossier",
@@ -1276,6 +1341,54 @@
       "optimizeOffHint": "Par défaut: pas d'optimisation (exécuter avec le texte original)",
       "manualOptimizedHint": "Optimisé manuellement. L'optimisation auto sera ignorée jusqu'au changement du texte.",
       "enterTextOrPrompt": "Entrez le texte ou l'invite..."
+    },
+    "guide": {
+      "skip": "Passer",
+      "prev": "Retour",
+      "next": "Suivant",
+      "finish": "Commencer",
+      "welcome": {
+        "title": "Bienvenue dans Workflow",
+        "desc": "Workflow est un éditeur visuel de pipelines AI. Glissez des nœuds sur le canevas, connectez-les et exécutez des flux de traitement AI automatisés — de la génération d'images à l'amélioration vidéo et bien plus encore."
+      },
+      "nodePaletteBtn": {
+        "title": "Palette de nœuds",
+        "desc": "Cliquez sur ce bouton pour ouvrir la Palette de nœuds — votre boîte à outils de tous les nœuds disponibles. Vous pouvez également rechercher, glisser ou cliquer pour ajouter des nœuds au canevas."
+      },
+      "nodePalette": {
+        "title": "Catégories de nœuds",
+        "desc": "Les nœuds sont organisés par catégorie :\n• Entrée — Téléchargez des fichiers ou saisissez du texte comme données de départ\n• Tâche AI — Exécutez n'importe quel modèle WaveSpeed AI (voir l'étape suivante)\n• Outils gratuits — 12 outils intégrés comme la suppression d'arrière-plan, l'amélioration des visages, la conversion de format\n• Sortie — Prévisualisez les résultats ou exportez les fichiers sur le disque\n\nGlissez un nœud sur le canevas ou cliquez pour l'ajouter."
+      },
+      "aiTask": {
+        "title": "Nœud Tâche AI — Le cœur",
+        "desc": "Le nœud Tâche AI est le nœud le plus puissant de Workflow. Il peut exécuter n'importe quel modèle WaveSpeed AI pour la génération d'images, la création vidéo, le transfert de style et plus encore.",
+        "features": {
+          "modelSwitch": "Choisissez parmi des centaines de modèles AI — le panneau de paramètres se met à jour dynamiquement selon le modèle sélectionné",
+          "dynamicParams": "Chaque modèle a ses propres paramètres (prompt, taille d'image, seed, etc.) qui apparaissent automatiquement lors de la sélection",
+          "costEstimate": "Estimation du coût en temps réel par exécution, pour toujours connaître le prix avant de lancer",
+          "upstream": "Connectez les sorties des nœuds en amont (images, texte) comme entrées — construisez des pipelines AI multi-étapes"
+        }
+      },
+      "canvas": {
+        "title": "Interactions du canevas",
+        "desc": "Le canevas central est votre espace de travail :\n• Glissez les nœuds depuis la palette pour les positionner\n• Glissez des ports de sortie vers les ports d'entrée pour créer des connexions\n• Clic droit pour le menu contextuel (copier, coller, supprimer)\n• Défilez pour zoomer, glissez l'arrière-plan pour naviguer\n• Raccourcis : Ctrl+Z annuler, Ctrl+C/V copier-coller, Delete pour supprimer"
+      },
+      "canvasTools": {
+        "title": "Outils du canevas",
+        "desc": "Trois outils pratiques pour naviguer et organiser votre canevas :\n• Mode Sélection / Main — basculez entre la sélection de nœuds (V) et le déplacement du canevas (H)\n• Ajuster la vue — zoom automatique pour afficher tous les nœuds dans la fenêtre\n• Disposition automatique — arrange automatiquement les nœuds de manière claire et lisible"
+      },
+      "config": {
+        "title": "Configurer et voir les résultats",
+        "desc": "Cliquez sur un nœud pour le sélectionner. Le panneau droit affiche deux onglets :\n• Config — Définir les paramètres du modèle, télécharger des fichiers, saisir des prompts\n• Résultats — Voir les sorties d'exécution (images, vidéos, modèles 3D)\n\nLes paramètres se mettent à jour dynamiquement selon le type de nœud et le modèle sélectionné. Les résultats supportent l'aperçu plein écran et le téléchargement."
+      },
+      "run": {
+        "title": "Exécuter votre workflow",
+        "desc": "Cliquez sur « Exécuter le workflow » pour lancer l'ensemble du pipeline :\n• Définissez un nombre d'exécutions (×1 à ×99) pour le traitement par lots\n• Annulez à tout moment avec le bouton d'arrêt\n• Surveillez la progression en temps réel dans le Moniteur d'exécution\n• Chaque nœud affiche son statut : en attente → en cours → terminé"
+      },
+      "templates": {
+        "title": "Modèles, import et export",
+        "desc": "Cliquez sur le menu ⋮ pour les fonctionnalités avancées :\n• Enregistrez votre workflow comme modèle réutilisable\n• Importez/Exportez des workflows en JSON pour les partager\n• Ouvrez plusieurs workflows dans des onglets (comme un navigateur)\n• Parcourez les modèles prédéfinis depuis la barre d'outils"
+      }
     },
     "promptOptimizer": {
       "optimizationFailed": "Optimisation échouée",

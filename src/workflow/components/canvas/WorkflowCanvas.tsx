@@ -7,7 +7,8 @@ import { useTranslation } from 'react-i18next'
 import { v4 as uuidv4 } from 'uuid'
 import ReactFlow, {
   ReactFlowProvider,
-  type Connection, type ReactFlowInstance, type Node, type NodeChange
+  SelectionMode,
+  type Connection, type ReactFlowInstance, type Node, type NodeChange, type OnSelectionChangeParams
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import { useWorkflowStore } from '../../stores/workflow.store'
@@ -53,9 +54,13 @@ interface WorkflowCanvasProps {
 
 export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
   const { t } = useTranslation()
-  const { nodes, edges, onNodesChange, onEdgesChange, addEdge, addNode, removeNode, undo, redo, saveWorkflow } = useWorkflowStore()
+  const { nodes, edges, onNodesChange, onEdgesChange, addEdge, addNode, removeNode, removeNodes, undo, redo, saveWorkflow } = useWorkflowStore()
   const selectedNodeId = useUIStore(s => s.selectedNodeId)
+  const selectedNodeIds = useUIStore(s => s.selectedNodeIds)
   const selectNode = useUIStore(s => s.selectNode)
+  const selectNodes = useUIStore(s => s.selectNodes)
+  const interactionMode = useUIStore(s => s.interactionMode)
+  const setInteractionMode = useUIStore(s => s.setInteractionMode)
   const reactFlowWrapper = useRef<HTMLDivElement>(null)
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null)
   const [contextMenu, setContextMenu] = useState<{
@@ -80,13 +85,22 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') return
       const ctrlOrCmd = navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? event.metaKey : event.ctrlKey
 
-      if (event.key === 'Delete' && selectedNodeId) {
-        event.preventDefault(); removeNode(selectedNodeId); selectNode(null)
+      if ((event.key === 'Delete' || event.key === 'Backspace') && selectedNodeIds.size > 0) {
+        event.preventDefault()
+        if (selectedNodeIds.size === 1) {
+          removeNode([...selectedNodeIds][0]); selectNode(null)
+        } else {
+          removeNodes([...selectedNodeIds]); selectNode(null)
+        }
       }
       if (ctrlOrCmd && event.key === 'c' && selectedNodeId) {
         event.preventDefault()
         const node = nodes.find(n => n.id === selectedNodeId)
         if (node) localStorage.setItem('copiedNode', JSON.stringify(node))
+      }
+      if (ctrlOrCmd && event.key === 'a') {
+        event.preventDefault()
+        selectNodes(nodes.map(n => n.id))
       }
       if (ctrlOrCmd && event.key === 's') {
         event.preventDefault(); saveWorkflow().catch(console.error)
@@ -99,6 +113,13 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
       }
       if (ctrlOrCmd && event.key === 'y') {
         event.preventDefault(); redo()
+      }
+      // V = Select mode, H = Hand (pan) mode
+      if (event.key === 'v' || event.key === 'V') {
+        if (!ctrlOrCmd) { setInteractionMode('select') }
+      }
+      if (event.key === 'h' || event.key === 'H') {
+        if (!ctrlOrCmd) { setInteractionMode('hand') }
       }
       if (ctrlOrCmd && event.key === 'v') {
         event.preventDefault()
@@ -116,11 +137,17 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
     }
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [selectedNodeId, removeNode, selectNode, nodes, addNode, undo, redo, saveWorkflow, recordRecentNodeType])
+  }, [selectedNodeId, selectedNodeIds, removeNode, removeNodes, selectNode, selectNodes, nodes, addNode, undo, redo, saveWorkflow, recordRecentNodeType])
 
   const onConnect = useCallback((connection: Connection) => addEdge(connection), [addEdge])
   const onNodeClick = useCallback((_: React.MouseEvent, node: { id: string }) => selectNode(node.id), [selectNode])
   const onPaneClick = useCallback(() => { selectNode(null); setContextMenu(null) }, [selectNode])
+
+  const onSelectionChange = useCallback(({ nodes: selectedNodes }: OnSelectionChangeParams) => {
+    const ids = selectedNodes.map(n => n.id)
+    if (ids.length === 0) return // pane click handles deselect
+    selectNodes(ids)
+  }, [selectNodes])
 
   const onNodeContextMenu = useCallback((event: React.MouseEvent, node: Node) => {
     event.preventDefault()
@@ -262,7 +289,11 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
         label: t('common.copy', 'Copy'), icon: '📋', shortcut: 'Ctrl+C',
         action: () => { const n = nodes.find(n => n.id === nodeId); if (n) localStorage.setItem('copiedNode', JSON.stringify(n)) }
       })
-      items.push({ label: t('workflow.delete', 'Delete'), icon: '🗑️', shortcut: 'Del', action: () => removeNode(nodeId), destructive: true })
+      if (selectedNodeIds.size > 1 && selectedNodeIds.has(nodeId)) {
+        items.push({ label: t('workflow.deleteSelected', 'Delete Selected ({{count}})', { count: selectedNodeIds.size }), icon: '🗑️', shortcut: 'Del', action: () => { removeNodes([...selectedNodeIds]); selectNode(null) }, destructive: true })
+      } else {
+        items.push({ label: t('workflow.delete', 'Delete'), icon: '🗑️', shortcut: 'Del', action: () => removeNode(nodeId), destructive: true })
+      }
       return items
     }
 
@@ -302,7 +333,7 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
       })
     }
     return items
-  }, [contextMenu, removeNode, nodes, addNode, openAddNodeMenu, t, recordRecentNodeType])
+  }, [contextMenu, removeNode, removeNodes, selectedNodeIds, selectNode, nodes, addNode, openAddNodeMenu, t, recordRecentNodeType])
 
   const onDragOver = useCallback((event: DragEvent) => { event.preventDefault(); event.dataTransfer.dropEffect = 'move' }, [])
 
@@ -475,12 +506,18 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
           nodes={nodes} edges={edges}
           onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}
           onConnect={onConnect} onNodeClick={onNodeClick} onPaneClick={onPaneClick}
+          onSelectionChange={onSelectionChange}
           onNodeContextMenu={onNodeContextMenu} onEdgeContextMenu={onEdgeContextMenu}
           onPaneContextMenu={onPaneContextMenu}
           proOptions={{ hideAttribution: true }}
           onDragOver={onDragOver} onDrop={onDrop}
           onInit={instance => { reactFlowInstance.current = instance }}
           nodeTypes={nodeTypes} edgeTypes={edgeTypes}
+          selectionOnDrag={interactionMode === 'select'}
+          selectionMode={SelectionMode.Partial}
+          multiSelectionKeyCode="Shift"
+          panOnDrag={interactionMode === 'hand'}
+          deleteKeyCode={null}
           minZoom={0.05}
           maxZoom={2.5}
           fitView

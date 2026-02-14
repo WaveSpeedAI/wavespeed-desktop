@@ -385,7 +385,25 @@
     "aiGeneration": "Generazione IA",
     "workflowNotSupported": "Workflow non supportato",
     "workflowNotSupportedDesc": "I template workflow non sono ancora supportati",
-    "loadTemplate": "Carica template"
+    "loadTemplate": "Carica template",
+    "browseAll": "Sfoglia tutti i modelli",
+    "drawerDesc": "Sfoglia e applica i modelli",
+    "createTemplate": "Crea modello",
+    "createTemplateDesc": "Salva la configurazione corrente come modello riutilizzabile",
+    "editTemplate": "Modifica modello",
+    "editTemplateDesc": "Aggiorna i dettagli del modello",
+    "descriptionLabel": "Descrizione",
+    "tags": "Tag",
+    "tagsPlaceholder": "Inserisci un tag...",
+    "descriptionPlaceholder": "Descrivi questo modello...",
+    "categoryPlaceholder": "es. Elaborazione immagini",
+    "nodes": "nodi",
+    "favorite": "Aggiungi ai preferiti",
+    "unfavorite": "Rimuovi dai preferiti",
+    "uses": "utilizzi",
+    "coverImage": "Immagine di copertina",
+    "uploadCover": "Clicca per caricare un'immagine di copertina",
+    "importDesc": "Importa modelli da un file esportato in precedenza"
   },
   "assets": {
     "title": "I Miei Asset",
@@ -1334,6 +1352,55 @@
         "loadingOptimizer": "Caricamento ottimizzatore...",
         "loadConfigFailed": "Impossibile caricare la configurazione dell'ottimizzatore"
       }
-    }
+    },
+    "guide": {
+      "skip": "Salta",
+      "prev": "Indietro",
+      "next": "Avanti",
+      "finish": "Inizia",
+      "welcome": {
+        "title": "Benvenuto in Workflow",
+        "desc": "Workflow e un editor visivo di pipeline AI. Trascina i nodi sulla canvas, collegali ed esegui flussi di elaborazione AI automatizzati, dalla generazione di immagini al miglioramento video e oltre."
+      },
+      "nodePaletteBtn": {
+        "title": "Palette dei nodi",
+        "desc": "Fai clic su questo pulsante per aprire la Palette dei nodi, la tua cassetta degli attrezzi con tutti i nodi disponibili. Puoi anche cercare, trascinare o fare clic per aggiungere nodi alla canvas."
+      },
+      "nodePalette": {
+        "title": "Categorie di nodi",
+        "desc": "I nodi sono organizzati per categoria:\n• Input — Carica file o inserisci testo come dati iniziali\n• Attivita AI — Esegui qualsiasi modello WaveSpeed AI (vedi passaggio successivo)\n• Strumenti gratuiti — 12 strumenti integrati come rimozione sfondo, miglioramento volto, conversione formato\n• Output — Anteprima dei risultati o esportazione file su disco\n\nTrascina un nodo sulla canvas o fai clic per aggiungerlo."
+      },
+      "aiTask": {
+        "title": "Nodo Attivita AI - Il cuore",
+        "desc": "Il nodo Attivita AI e il nodo piu potente in Workflow. Puo eseguire qualsiasi modello WaveSpeed AI per generazione immagini, creazione video, trasferimento di stile e altro.",
+        "features": {
+          "modelSwitch": "Scegli tra centinaia di modelli AI: il pannello parametri si aggiorna dinamicamente in base al modello selezionato",
+          "dynamicParams": "Ogni modello ha i propri parametri (prompt, dimensione immagine, seed, ecc.) che appaiono automaticamente alla selezione",
+          "costEstimate": "Stima dei costi in tempo reale per ogni esecuzione, cosi conosci sempre il prezzo prima di avviare",
+          "upstream": "Collega gli output dei nodi a monte (immagini, testo) come input e crea pipeline AI multi-step"
+        }
+      },
+      "canvas": {
+        "title": "Interazioni della canvas",
+        "desc": "La canvas centrale e il tuo spazio di lavoro:\n• Trascina i nodi dalla palette per posizionarli\n• Trascina dalle porte di output alle porte di input per creare connessioni\n• Clic destro per menu contestuale (copia, incolla, elimina)\n• Scorri per zoom, trascina lo sfondo per pan\n• Scorciatoie: Ctrl+Z annulla, Ctrl+C/V copia-incolla, Delete per rimuovere"
+      },
+      "canvasTools": {
+        "title": "Strumenti della canvas",
+        "desc": "Tre strumenti utili per navigare e organizzare la canvas:\n• Modalita Seleziona / Mano — alterna tra selezione nodi (V) e spostamento canvas (H)\n• Adatta vista — zoom automatico per includere tutti i nodi nel viewport\n• Layout automatico — dispone automaticamente i nodi in modo ordinato e leggibile"
+      },
+      "config": {
+        "title": "Configura e visualizza risultati",
+        "desc": "Fai clic su qualsiasi nodo per selezionarlo. Il pannello destro mostra due tab:\n• Config — Imposta parametri modello, carica file, inserisci prompt\n• Risultati — Visualizza output di esecuzione (immagini, video, modelli 3D)\n\nI parametri si aggiornano dinamicamente in base al tipo di nodo e al modello selezionato. I risultati supportano anteprima a schermo intero e download."
+      },
+      "run": {
+        "title": "Esegui il tuo workflow",
+        "desc": "Fai clic su \"Esegui workflow\" per eseguire l'intera pipeline:\n• Imposta un numero di esecuzioni (×1 a ×99) per il batch\n• Annulla in qualsiasi momento con il pulsante stop\n• Monitora il progresso in tempo reale nel Monitor di esecuzione\n• Ogni nodo mostra il proprio stato: queued → running → done"
+      },
+      "templates": {
+        "title": "Template, importazione ed esportazione",
+        "desc": "Fai clic sul menu ⋮ per funzioni avanzate:\n• Salva il workflow come template riutilizzabile\n• Importa/Esporta workflow in JSON per condividerli\n• Apri piu workflow in tab (come un browser)\n• Sfoglia template predefiniti dalla toolbar"
+      }
+    },
+    "selectNodeHint": "Select a node to configure its parameters"
   }
 }

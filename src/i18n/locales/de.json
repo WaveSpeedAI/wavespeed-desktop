@@ -385,7 +385,25 @@
     "aiGeneration": "KI-Generierung",
     "workflowNotSupported": "Workflow nicht unterstützt",
     "workflowNotSupportedDesc": "Workflow-Vorlagen werden noch nicht unterstützt",
-    "loadTemplate": "Vorlage laden"
+    "loadTemplate": "Vorlage laden",
+    "browseAll": "Alle Vorlagen durchsuchen",
+    "drawerDesc": "Vorlagen durchsuchen und anwenden",
+    "createTemplate": "Vorlage erstellen",
+    "createTemplateDesc": "Aktuelle Konfiguration als wiederverwendbare Vorlage speichern",
+    "editTemplate": "Vorlage bearbeiten",
+    "editTemplateDesc": "Vorlagendetails aktualisieren",
+    "descriptionLabel": "Beschreibung",
+    "tags": "Schlagwörter",
+    "tagsPlaceholder": "Tag eingeben...",
+    "descriptionPlaceholder": "Diese Vorlage beschreiben...",
+    "categoryPlaceholder": "z. B. Bildverarbeitung",
+    "nodes": "Knoten",
+    "favorite": "Zu Favoriten hinzufügen",
+    "unfavorite": "Aus Favoriten entfernen",
+    "uses": "Nutzungen",
+    "coverImage": "Titelbild",
+    "uploadCover": "Klicken, um ein Titelbild hochzuladen",
+    "importDesc": "Vorlagen aus einer zuvor exportierten Datei importieren"
   },
   "assets": {
     "title": "Meine Assets",
@@ -1013,6 +1031,7 @@
     "saveFailed": "Speichern fehlgeschlagen",
     "savedAt": "Gespeichert",
     "unsaved": "Nicht gespeichert",
+    "selectNodeHint": "Wählen Sie einen Knoten aus, um seine Parameter zu konfigurieren",
     "outputDirFallbackHint": "Nicht festgelegt: Export erfolgt in das Standard-Workflow-Verzeichnis",
     "selectDirectory": "Verzeichnis auswählen",
     "openFolder": "Ordner öffnen",
@@ -1304,6 +1323,54 @@
       "optimizeOffHint": "Standard: keine Optimierung (mit Originaltext ausführen)",
       "manualOptimizedHint": "Manuell optimiert. Auto-on-Run wird übersprungen, bis der Text sich ändert.",
       "enterTextOrPrompt": "Text oder Prompt eingeben..."
+    },
+    "guide": {
+      "skip": "Überspringen",
+      "prev": "Zurück",
+      "next": "Weiter",
+      "finish": "Loslegen",
+      "welcome": {
+        "title": "Willkommen bei Workflow",
+        "desc": "Workflow ist ein visueller AI-Pipeline-Editor. Ziehen Sie Knoten auf die Leinwand, verbinden Sie sie und führen Sie automatisierte AI-Verarbeitungsabläufe aus — von der Bilderzeugung bis zur Videoverbesserung und darüber hinaus."
+      },
+      "nodePaletteBtn": {
+        "title": "Knotenpalette",
+        "desc": "Klicken Sie auf diese Schaltfläche, um die Knotenpalette zu öffnen — Ihre Werkzeugkiste mit allen verfügbaren Knoten. Sie können auch suchen, ziehen oder klicken, um Knoten zur Leinwand hinzuzufügen."
+      },
+      "nodePalette": {
+        "title": "Knotenkategorien",
+        "desc": "Knoten sind nach Kategorien organisiert:\n• Eingabe — Dateien hochladen oder Text als Startdaten eingeben\n• AI-Aufgabe — Beliebiges WaveSpeed AI-Modell ausführen (siehe nächster Schritt)\n• Kostenlose Tools — 12 integrierte Tools wie Hintergrundentfernung, Gesichtsverbesserung, Formatkonvertierung\n• Ausgabe — Ergebnisse in der Vorschau anzeigen oder Dateien auf die Festplatte exportieren\n\nZiehen Sie einen Knoten auf die Leinwand oder klicken Sie, um ihn hinzuzufügen."
+      },
+      "aiTask": {
+        "title": "AI-Aufgabenknoten — Das Herzstück",
+        "desc": "Der AI-Aufgabenknoten ist der leistungsstärkste Knoten in Workflow. Er kann jedes WaveSpeed AI-Modell für Bilderzeugung, Videoerstellung, Stiltransfer und mehr ausführen.",
+        "features": {
+          "modelSwitch": "Wählen Sie aus Hunderten von AI-Modellen — das Parameterfeld aktualisiert sich dynamisch basierend auf dem ausgewählten Modell",
+          "dynamicParams": "Jedes Modell hat eigene Parameter (Prompt, Bildgröße, Seed usw.), die bei Auswahl automatisch angezeigt werden",
+          "costEstimate": "Echtzeit-Kostenschätzung pro Ausführung, damit Sie den Preis immer vor dem Start kennen",
+          "upstream": "Verbinden Sie Ausgaben vorgelagerter Knoten (Bilder, Text) als Eingaben — erstellen Sie mehrstufige AI-Pipelines"
+        }
+      },
+      "canvas": {
+        "title": "Leinwand-Interaktionen",
+        "desc": "Die zentrale Leinwand ist Ihr Arbeitsbereich:\n• Ziehen Sie Knoten aus der Palette, um sie zu positionieren\n• Ziehen Sie von Ausgangsports zu Eingangsports, um Verbindungen zu erstellen\n• Rechtsklick für Kontextmenü (Kopieren, Einfügen, Löschen)\n• Scrollen zum Zoomen, Hintergrund ziehen zum Schwenken\n• Tastenkürzel: Ctrl+Z Rückgängig, Ctrl+C/V Kopieren/Einfügen, Delete zum Entfernen"
+      },
+      "canvasTools": {
+        "title": "Leinwand-Werkzeuge",
+        "desc": "Drei praktische Werkzeuge zum Navigieren und Organisieren Ihrer Leinwand:\n• Auswahl- / Handmodus — zwischen Knotenauswahl (V) und Leinwandschwenken (H) wechseln\n• Ansicht anpassen — automatisch zoomen, damit alle Knoten im Sichtfeld sind\n• Auto-Layout — Knoten automatisch in einem übersichtlichen, lesbaren Layout anordnen"
+      },
+      "config": {
+        "title": "Konfigurieren und Ergebnisse anzeigen",
+        "desc": "Klicken Sie auf einen Knoten, um ihn auszuwählen. Das rechte Panel zeigt zwei Tabs:\n• Konfiguration — Modellparameter festlegen, Dateien hochladen, Prompts eingeben\n• Ergebnisse — Ausführungsergebnisse anzeigen (Bilder, Videos, 3D-Modelle)\n\nParameter aktualisieren sich dynamisch basierend auf dem Knotentyp und dem ausgewählten Modell. Ergebnisse unterstützen Vollbildvorschau und Download."
+      },
+      "run": {
+        "title": "Workflow ausführen",
+        "desc": "Klicken Sie auf „Workflow ausführen, um die gesamte Pipeline zu starten:\n• Legen Sie eine Ausführungsanzahl fest (×1 bis ×99) für Stapelverarbeitung\n• Jederzeit mit der Stopp-Schaltfläche abbrechen\n• Echtzeit-Fortschritt im Ausführungsmonitor überwachen\n• Jeder Knoten zeigt seinen Status: Warteschlange → Läuft → Fertig"
+      },
+      "templates": {
+        "title": "Vorlagen, Import & Export",
+        "desc": "Klicken Sie auf das ⋮-Menü für erweiterte Funktionen:\n• Speichern Sie Ihren Workflow als wiederverwendbare Vorlage\n• Importieren/Exportieren Sie Workflows als JSON zum Teilen\n• Öffnen Sie mehrere Workflows in Tabs (wie ein Browser)\n• Durchsuchen Sie vorgefertigte Vorlagen in der Symbolleiste"
+      }
     },
     "promptOptimizer": {
       "optimizationFailed": "Optimierung fehlgeschlagen",

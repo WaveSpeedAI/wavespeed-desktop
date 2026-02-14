@@ -385,7 +385,25 @@
     "aiGeneration": "Generación IA",
     "workflowNotSupported": "Workflow no soportado",
     "workflowNotSupportedDesc": "Las plantillas de workflow aún no están soportadas",
-    "loadTemplate": "Cargar plantilla"
+    "loadTemplate": "Cargar plantilla",
+    "browseAll": "Ver todas las plantillas",
+    "drawerDesc": "Explora y aplica plantillas",
+    "createTemplate": "Crear plantilla",
+    "createTemplateDesc": "Guarda tu configuración actual como una plantilla reutilizable",
+    "editTemplate": "Editar plantilla",
+    "editTemplateDesc": "Actualizar detalles de la plantilla",
+    "descriptionLabel": "Descripción",
+    "tags": "Etiquetas",
+    "tagsPlaceholder": "Introduce una etiqueta...",
+    "descriptionPlaceholder": "Describe esta plantilla...",
+    "categoryPlaceholder": "p. ej., Procesamiento de imágenes",
+    "nodes": "nodos",
+    "favorite": "Añadir a favoritos",
+    "unfavorite": "Quitar de favoritos",
+    "uses": "usos",
+    "coverImage": "Imagen de portada",
+    "uploadCover": "Haz clic para subir una imagen de portada",
+    "importDesc": "Importar plantillas desde un archivo exportado previamente"
   },
   "assets": {
     "title": "Mis Recursos",
@@ -1334,6 +1352,55 @@
         "loadingOptimizer": "Cargando optimizador...",
         "loadConfigFailed": "No se pudo cargar la configuración del optimizador"
       }
-    }
+    },
+    "guide": {
+      "skip": "Omitir",
+      "prev": "Atrás",
+      "next": "Siguiente",
+      "finish": "Comenzar",
+      "welcome": {
+        "title": "Bienvenido a Workflow",
+        "desc": "Workflow es un editor visual de flujos de IA. Arrastra nodos al lienzo, conéctalos y ejecuta flujos automáticos de procesamiento de IA: desde generación de imágenes hasta mejora de video y mucho más."
+      },
+      "nodePaletteBtn": {
+        "title": "Paleta de nodos",
+        "desc": "Haz clic en este botón para abrir la Paleta de nodos: tu caja de herramientas con todos los nodos disponibles. También puedes buscar, arrastrar o hacer clic para añadir nodos al lienzo."
+      },
+      "nodePalette": {
+        "title": "Categorías de nodos",
+        "desc": "Los nodos están organizados por categoría:\n• Entrada — Sube archivos o introduce texto como datos iniciales\n• Tarea de IA — Ejecuta cualquier modelo de WaveSpeed AI (ver siguiente paso)\n• Herramientas gratuitas — 12 herramientas integradas como eliminación de fondo, mejora facial y conversión de formato\n• Salida — Previsualiza resultados o exporta archivos al disco\n\nArrastra un nodo al lienzo o haz clic para añadirlo."
+      },
+      "aiTask": {
+        "title": "Nodo de Tarea de IA — El núcleo",
+        "desc": "El nodo de Tarea de IA es el más potente de Workflow. Puede ejecutar cualquier modelo de WaveSpeed AI para generación de imágenes, creación de video, transferencia de estilo y más.",
+        "features": {
+          "modelSwitch": "Elige entre cientos de modelos de IA; el panel de parámetros se actualiza dinámicamente según el modelo seleccionado",
+          "dynamicParams": "Cada modelo tiene sus propios parámetros (prompt, tamaño de imagen, semilla, etc.) que aparecen automáticamente al seleccionarlo",
+          "costEstimate": "Estimación de costo en tiempo real por ejecución, para que siempre conozcas el precio antes de ejecutar",
+          "upstream": "Conecta salidas de nodos anteriores (imágenes, texto) como entradas para construir flujos de IA de varios pasos"
+        }
+      },
+      "canvas": {
+        "title": "Interacciones del lienzo",
+        "desc": "El lienzo central es tu espacio de trabajo:\n• Arrastra nodos desde la paleta para colocarlos\n• Arrastra desde puertos de salida a puertos de entrada para crear conexiones\n• Clic derecho para menú contextual (copiar, pegar, eliminar)\n• Desplaza para hacer zoom y arrastra el fondo para mover la vista\n• Atajos: Ctrl+Z deshacer, Ctrl+C/V copiar-pegar, Delete para eliminar"
+      },
+      "canvasTools": {
+        "title": "Herramientas del lienzo",
+        "desc": "Tres herramientas prácticas para navegar y organizar el lienzo:\n• Modo Selección / Mano — Alterna entre seleccionar nodos (V) y mover el lienzo (H)\n• Ajustar vista — Zoom automático para encajar todos los nodos en la ventana\n• Diseño automático — Organiza los nodos automáticamente en un diseño limpio y legible"
+      },
+      "config": {
+        "title": "Configurar y ver resultados",
+        "desc": "Haz clic en cualquier nodo para seleccionarlo. El panel derecho muestra dos pestañas:\n• Configuración — Define parámetros del modelo, sube archivos e introduce prompts\n• Resultados — Visualiza las salidas de ejecución (imágenes, videos, modelos 3D)\n\nLos parámetros se actualizan dinámicamente según el tipo de nodo y el modelo seleccionado. Los resultados permiten vista en pantalla completa y descarga."
+      },
+      "run": {
+        "title": "Ejecuta tu workflow",
+        "desc": "Haz clic en \"Ejecutar workflow\" para ejecutar toda la canalización:\n• Define la cantidad de ejecuciones (×1 a ×99) para procesamiento por lotes\n• Cancela en cualquier momento con el botón de detener\n• Supervisa el progreso en tiempo real en el Monitor de ejecución\n• Cada nodo muestra su estado: queued → running → done"
+      },
+      "templates": {
+        "title": "Plantillas, importar y exportar",
+        "desc": "Haz clic en el menú ⋮ para funciones avanzadas:\n• Guarda tu workflow como plantilla reutilizable\n• Importa/exporta workflows como JSON para compartir\n• Abre varios workflows en pestañas (como un navegador)\n• Explora plantillas predefinidas desde la barra de herramientas"
+      }
+    },
+    "selectNodeHint": "Select a node to configure its parameters"
   }
 }

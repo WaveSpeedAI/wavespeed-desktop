@@ -1,6 +1,6 @@
 {
   "name": "wavespeed-desktop",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "WaveSpeedAI Desktop Application - A playground for AI models",
   "main": "./out/main/index.js",
   "author": {

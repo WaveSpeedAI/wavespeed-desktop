@@ -385,7 +385,25 @@
     "aiGeneration": "Yapay Zeka Üretimi",
     "workflowNotSupported": "İş Akışı Desteklenmiyor",
     "workflowNotSupportedDesc": "İş akışı şablonları henüz desteklenmiyor",
-    "loadTemplate": "Şablon Yükle"
+    "loadTemplate": "Şablon Yükle",
+    "browseAll": "Tüm şablonlara göz at",
+    "drawerDesc": "Şablonlara göz at ve uygula",
+    "createTemplate": "Şablon oluştur",
+    "createTemplateDesc": "Mevcut yapılandırmanı yeniden kullanılabilir bir şablon olarak kaydet",
+    "editTemplate": "Şablonu düzenle",
+    "editTemplateDesc": "Şablon ayrıntılarını güncelle",
+    "descriptionLabel": "Açıklama",
+    "tags": "Etiketler",
+    "tagsPlaceholder": "Bir etiket gir...",
+    "descriptionPlaceholder": "Bu şablonu açıklayın...",
+    "categoryPlaceholder": "örn. Görsel İşleme",
+    "nodes": "düğüm",
+    "favorite": "Favorilere ekle",
+    "unfavorite": "Favorilerden kaldır",
+    "uses": "kullanım",
+    "coverImage": "Kapak görseli",
+    "uploadCover": "Kapak görseli yüklemek için tıkla",
+    "importDesc": "Daha önce dışa aktarılan bir dosyadan şablonları içe aktar"
   },
   "assets": {
     "title": "Varlıklarım",
@@ -1334,6 +1352,55 @@
         "loadingOptimizer": "Optimize edici yükleniyor...",
         "loadConfigFailed": "Optimize edici yapılandırması yüklenemedi"
       }
-    }
+    },
+    "guide": {
+      "skip": "Atla",
+      "prev": "Geri",
+      "next": "Ileri",
+      "finish": "Baslayin",
+      "welcome": {
+        "title": "Workflow'a hos geldiniz",
+        "desc": "Workflow, gorsel bir yapay zeka is akisi duzenleyicisidir. Dugumleri tuvale surukleyin, baglayin ve goruntu uretiminden video iyilestirmeye kadar otomatik yapay zeka akislarini calistirin."
+      },
+      "nodePaletteBtn": {
+        "title": "Dugum Paleti",
+        "desc": "Bu dugmeye tiklayarak Dugum Paletini acin — tum mevcut dugumlerin oldugu arac kutunuz. Arama yapabilir, surukleyebilir veya tiklayarak dugum ekleyebilirsiniz."
+      },
+      "nodePalette": {
+        "title": "Dugum Kategorileri",
+        "desc": "Dugumler kategoriye gore duzenlenir:\n• Giris — Baslangic verisi olarak dosya yukleyin veya metin girin\n• AI Gorevi — Herhangi bir WaveSpeed AI modelini calistirin (sonraki adıma bakin)\n• Ucretsiz Araclar — Arka plan kaldirma, yuz iyilestirme, format donusumu gibi 12 dahili arac\n• Cikis — Sonuclari onizleyin veya dosyalari diske aktarin\n\nBir dugumu tuvale surukleyin veya tiklayarak ekleyin."
+      },
+      "aiTask": {
+        "title": "AI Gorev Dugumu — Cekirdek",
+        "desc": "AI Gorev dugumu, Workflow'daki en guclu dugumdur. Goruntu uretimi, video olusturma, stil transferi ve daha fazlasi icin herhangi bir WaveSpeed AI modelini calistirabilir.",
+        "features": {
+          "modelSwitch": "Yuzlerce AI modeli arasindan secin — parametre paneli secilen modele gore dinamik olarak guncellenir",
+          "dynamicParams": "Her modelin kendi parametreleri (istem, goruntu boyutu, seed vb.) vardir ve secildiginde otomatik gorunur",
+          "costEstimate": "Her calistirma icin gercek zamanli maliyet tahmini ile calistirmadan once fiyati gorun",
+          "upstream": "Yukari akistaki dugum ciktilarini (goruntu, metin) girdi olarak baglayin — cok adimli AI pipeline'lari kurun"
+        }
+      },
+      "canvas": {
+        "title": "Tuval Etkilesimleri",
+        "desc": "Merkezi tuval calisma alaninizdir:\n• Dugumleri paletten surukleyip konumlandirin\n• Baglanti olusturmak icin cikis portundan giris portuna surukleyin\n• Baglam menusu icin sag tiklayin (kopyala, yapistir, sil)\n• Zum icin kaydirin, kaydirmak icin arka plani surukleyin\n• Kisayollar: Ctrl+Z geri al, Ctrl+C/V kopyala-yapistir, Delete kaldir"
+      },
+      "canvasTools": {
+        "title": "Tuval Araclari",
+        "desc": "Tuvali gezmek ve duzenlemek icin 3 pratik arac:\n• Sec / El modu — dugum secme (V) ve tuvali kaydirma (H) arasinda gecis yapin\n• Gorunume Sigdir — tum dugumleri gorunur alana sigdiracak otomatik zum\n• Otomatik Duzen — dugumleri temiz ve okunabilir bir duzende otomatik yerlestirir"
+      },
+      "config": {
+        "title": "Yapilandir ve Sonuclari Gor",
+        "desc": "Secmek icin herhangi bir dugume tiklayin. Sag panelde iki sekme gorunur:\n• Yapilandirma — model parametrelerini ayarlayin, dosya yukleyin, istem girin\n• Sonuclar — calistirma ciktilarini goruntuleyin (gorsel, video, 3D modeller)\n\nParametreler, dugum tipine ve secilen modele gore dinamik guncellenir. Sonuclar tam ekran onizleme ve indirme destekler."
+      },
+      "run": {
+        "title": "Workflow'unuzu Calistirin",
+        "desc": "Tum pipeline'i calistirmak icin \"Workflow'u Calistir\"a tiklayin:\n• Toplu isleme icin calistirma sayisi ayarlayin (×1 - ×99)\n• Durdur dugmesiyle istediginiz an iptal edin\n• Gercek zamanli ilerlemeyi Execution Monitor'de izleyin\n• Her dugum su durumu gosterir: queued → running → done"
+      },
+      "templates": {
+        "title": "Sablonlar, Ice Aktarma ve Disa Aktarma",
+        "desc": "Gelismis ozellikler icin ⋮ menusune tiklayin:\n• Workflow'unuzu yeniden kullanilabilir sablon olarak kaydedin\n• Paylasmak icin workflow'lari JSON olarak ice/disa aktarin\n• Birden fazla workflow'u sekmelerde acin (tarayici gibi)\n• Arac cubugundan hazir sablonlara goz atin"
+      }
+    },
+    "selectNodeHint": "Select a node to configure its parameters"
   }
 }

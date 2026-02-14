@@ -404,7 +404,8 @@
     "nodes": "nodes",
     "favorite": "Add to favorites",
     "unfavorite": "Remove from favorites",
-    "uses": "uses"
+    "uses": "uses",
+    "importDesc": "Import templates from a previously exported file"
   },
   "assets": {
     "title": "My Assets",

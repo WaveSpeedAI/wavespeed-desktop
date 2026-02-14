@@ -385,7 +385,25 @@
     "aiGeneration": "Penjanaan AI",
     "workflowNotSupported": "Aliran Kerja Tidak Disokong",
     "workflowNotSupportedDesc": "Templat aliran kerja belum disokong",
-    "loadTemplate": "Muat Templat"
+    "loadTemplate": "Muat Templat",
+    "browseAll": "Semak Semua Templat",
+    "drawerDesc": "Semak dan guna templat",
+    "createTemplate": "Cipta Templat",
+    "createTemplateDesc": "Simpan konfigurasi semasa anda sebagai templat yang boleh digunakan semula",
+    "editTemplate": "Edit Templat",
+    "editTemplateDesc": "Kemas kini butiran templat",
+    "descriptionLabel": "Penerangan",
+    "tags": "Tag",
+    "tagsPlaceholder": "Masukkan tag...",
+    "descriptionPlaceholder": "Terangkan templat ini...",
+    "categoryPlaceholder": "cth. Pemprosesan Imej",
+    "nodes": "nod",
+    "favorite": "Tambah ke kegemaran",
+    "unfavorite": "Buang daripada kegemaran",
+    "uses": "penggunaan",
+    "coverImage": "Imej sampul",
+    "uploadCover": "Klik untuk memuat naik imej sampul",
+    "importDesc": "Import templat daripada fail yang dieksport sebelum ini"
   },
   "assets": {
     "title": "Aset Saya",
@@ -1334,6 +1352,55 @@
         "loadingOptimizer": "Memuat pengoptimum...",
         "loadConfigFailed": "Tidak dapat memuat konfigurasi pengoptimum"
       }
-    }
+    },
+    "guide": {
+      "skip": "Langkau",
+      "prev": "Kembali",
+      "next": "Seterusnya",
+      "finish": "Mula",
+      "welcome": {
+        "title": "Selamat datang ke Workflow",
+        "desc": "Workflow ialah editor saluran AI visual. Seret nod ke kanvas, sambungkannya, dan jalankan aliran pemprosesan AI automatik — daripada penjanaan imej hingga peningkatan video dan banyak lagi."
+      },
+      "nodePaletteBtn": {
+        "title": "Palet Nod",
+        "desc": "Klik butang ini untuk membuka Palet Nod — kotak alat anda untuk semua nod yang tersedia. Anda juga boleh cari, seret, atau klik untuk menambah nod ke kanvas."
+      },
+      "nodePalette": {
+        "title": "Kategori Nod",
+        "desc": "Nod disusun mengikut kategori:\n• Input — Muat naik fail atau masukkan teks sebagai data permulaan\n• Tugasan AI — Jalankan mana-mana model WaveSpeed AI (lihat langkah seterusnya)\n• Alat Percuma — 12 alat terbina dalam seperti buang latar, peningkatan wajah, penukaran format\n• Output — Pratonton hasil atau eksport fail ke cakera\n\nSeret nod ke kanvas atau klik untuk menambahkannya."
+      },
+      "aiTask": {
+        "title": "Nod Tugasan AI — Teras Utama",
+        "desc": "Nod Tugasan AI ialah nod paling berkuasa dalam Workflow. Ia boleh menjalankan mana-mana model WaveSpeed AI untuk penjanaan imej, penciptaan video, pemindahan gaya dan banyak lagi.",
+        "features": {
+          "modelSwitch": "Pilih daripada ratusan model AI — panel parameter dikemas kini secara dinamik berdasarkan model yang dipilih",
+          "dynamicParams": "Setiap model mempunyai parameter tersendiri (prompt, saiz imej, seed, dll.) yang akan muncul secara automatik apabila dipilih",
+          "costEstimate": "Anggaran kos masa nyata bagi setiap pelaksanaan supaya anda sentiasa tahu harga sebelum berjalan",
+          "upstream": "Sambungkan output nod huluan (imej, teks) sebagai input — bina saluran AI berbilang langkah"
+        }
+      },
+      "canvas": {
+        "title": "Interaksi Kanvas",
+        "desc": "Kanvas pusat ialah ruang kerja anda:\n• Seret nod dari palet untuk meletakkannya\n• Seret dari port output ke port input untuk membuat sambungan\n• Klik kanan untuk menu konteks (salin, tampal, padam)\n• Skrol untuk zum, seret latar belakang untuk pan\n• Pintasan: Ctrl+Z undur, Ctrl+C/V salin-tampal, Delete untuk buang"
+      },
+      "canvasTools": {
+        "title": "Alat Kanvas",
+        "desc": "Tiga alat berguna untuk menavigasi dan menyusun kanvas:\n• Mod Pilih / Tangan — tukar antara memilih nod (V) dan mengalih kanvas (H)\n• Muat Paparan — zum automatik supaya semua nod muat dalam viewport\n• Susun Atur Auto — susun nod secara automatik agar kemas dan mudah dibaca"
+      },
+      "config": {
+        "title": "Konfigurasi & Lihat Hasil",
+        "desc": "Klik mana-mana nod untuk memilihnya. Panel kanan memaparkan dua tab:\n• Konfigurasi — Tetapkan parameter model, muat naik fail, masukkan prompt\n• Hasil — Lihat output pelaksanaan (imej, video, model 3D)\n\nParameter dikemas kini secara dinamik berdasarkan jenis nod dan model yang dipilih. Hasil menyokong pratonton skrin penuh dan muat turun."
+      },
+      "run": {
+        "title": "Jalankan Workflow Anda",
+        "desc": "Klik \"Jalankan Workflow\" untuk menjalankan keseluruhan saluran:\n• Tetapkan bilangan larian (×1 hingga ×99) untuk pemprosesan kelompok\n• Batalkan pada bila-bila masa dengan butang henti\n• Pantau kemajuan masa nyata dalam Pemantau Pelaksanaan\n• Setiap nod menunjukkan status: queued → running → done"
+      },
+      "templates": {
+        "title": "Templat, Import & Eksport",
+        "desc": "Klik menu ⋮ untuk ciri lanjutan:\n• Simpan workflow anda sebagai templat boleh guna semula\n• Import/Eksport workflow sebagai JSON untuk dikongsi\n• Buka berbilang workflow dalam tab (seperti pelayar)\n• Semak templat siap bina dari bar alat"
+      }
+    },
+    "selectNodeHint": "Select a node to configure its parameters"
   }
 }

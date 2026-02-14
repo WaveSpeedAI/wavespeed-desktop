@@ -385,7 +385,25 @@
     "aiGeneration": "Geração IA",
     "workflowNotSupported": "Workflow não suportado",
     "workflowNotSupportedDesc": "Modelos de workflow ainda não são suportados",
-    "loadTemplate": "Carregar modelo"
+    "loadTemplate": "Carregar modelo",
+    "browseAll": "Ver todos os modelos",
+    "drawerDesc": "Navegue e aplique modelos",
+    "createTemplate": "Criar modelo",
+    "createTemplateDesc": "Salve sua configuração atual como um modelo reutilizável",
+    "editTemplate": "Editar modelo",
+    "editTemplateDesc": "Atualizar detalhes do modelo",
+    "descriptionLabel": "Descrição",
+    "tags": "Etiquetas",
+    "tagsPlaceholder": "Digite uma tag...",
+    "descriptionPlaceholder": "Descreva este modelo...",
+    "categoryPlaceholder": "ex.: Processamento de imagem",
+    "nodes": "nós",
+    "favorite": "Adicionar aos favoritos",
+    "unfavorite": "Remover dos favoritos",
+    "uses": "usos",
+    "coverImage": "Imagem de capa",
+    "uploadCover": "Clique para enviar uma imagem de capa",
+    "importDesc": "Importar modelos de um arquivo exportado anteriormente"
   },
   "assets": {
     "title": "Meus Recursos",
@@ -1334,6 +1352,55 @@
         "loadingOptimizer": "A carregar otimizador...",
         "loadConfigFailed": "Não foi possível carregar a configuração do otimizador"
       }
-    }
+    },
+    "guide": {
+      "skip": "Pular",
+      "prev": "Voltar",
+      "next": "Proximo",
+      "finish": "Comecar",
+      "welcome": {
+        "title": "Bem-vindo ao Workflow",
+        "desc": "Workflow e um editor visual de pipelines de IA. Arraste nos para o canvas, conecte-os e execute fluxos automatizados de processamento de IA — da geracao de imagens ao aprimoramento de video e muito mais."
+      },
+      "nodePaletteBtn": {
+        "title": "Paleta de Nos",
+        "desc": "Clique neste botao para abrir a Paleta de Nos — sua caixa de ferramentas com todos os nos disponiveis. Voce tambem pode pesquisar, arrastar ou clicar para adicionar nos ao canvas."
+      },
+      "nodePalette": {
+        "title": "Categorias de Nos",
+        "desc": "Os nos sao organizados por categoria:\n• Entrada — Envie arquivos ou insira texto como dados iniciais\n• Tarefa de IA — Execute qualquer modelo WaveSpeed AI (veja a proxima etapa)\n• Ferramentas gratuitas — 12 ferramentas integradas, como remocao de fundo, aprimoramento facial e conversao de formato\n• Saida — Visualize resultados ou exporte arquivos para o disco\n\nArraste um no para o canvas ou clique para adiciona-lo."
+      },
+      "aiTask": {
+        "title": "No de Tarefa de IA — O nucleo",
+        "desc": "O no de Tarefa de IA e o mais poderoso do Workflow. Ele pode executar qualquer modelo WaveSpeed AI para geracao de imagens, criacao de video, transferencia de estilo e mais.",
+        "features": {
+          "modelSwitch": "Escolha entre centenas de modelos de IA — o painel de parametros e atualizado dinamicamente com base no modelo selecionado",
+          "dynamicParams": "Cada modelo tem seus proprios parametros (prompt, tamanho da imagem, seed etc.) que aparecem automaticamente ao selecionar",
+          "costEstimate": "Estimativa de custo em tempo real por execucao, para voce sempre saber o preco antes de executar",
+          "upstream": "Conecte saidas de nos anteriores (imagens, texto) como entradas — construa pipelines de IA em varias etapas"
+        }
+      },
+      "canvas": {
+        "title": "Interacoes do canvas",
+        "desc": "O canvas central e seu espaco de trabalho:\n• Arraste nos da paleta para posiciona-los\n• Arraste de portas de saida para portas de entrada para criar conexoes\n• Clique com o botao direito para menu de contexto (copiar, colar, excluir)\n• Role para zoom e arraste o fundo para mover\n• Atalhos: Ctrl+Z desfazer, Ctrl+C/V copiar-colar, Delete para remover"
+      },
+      "canvasTools": {
+        "title": "Ferramentas do canvas",
+        "desc": "Tres ferramentas uteis para navegar e organizar o canvas:\n• Modo Selecionar / Mao — alterne entre selecionar nos (V) e mover o canvas (H)\n• Ajustar visualizacao — zoom automatico para encaixar todos os nos na tela\n• Layout automatico — organiza os nos automaticamente em um layout limpo e legivel"
+      },
+      "config": {
+        "title": "Configurar e ver resultados",
+        "desc": "Clique em qualquer no para seleciona-lo. O painel direito mostra duas abas:\n• Configuracao — Defina parametros do modelo, envie arquivos, insira prompts\n• Resultados — Veja saidas da execucao (imagens, videos, modelos 3D)\n\nOs parametros sao atualizados dinamicamente com base no tipo de no e no modelo selecionado. Os resultados suportam visualizacao em tela cheia e download."
+      },
+      "run": {
+        "title": "Execute seu workflow",
+        "desc": "Clique em \"Executar workflow\" para executar todo o pipeline:\n• Defina a quantidade de execucoes (×1 a ×99) para processamento em lote\n• Cancele a qualquer momento com o botao de parar\n• Monitore o progresso em tempo real no Monitor de execucao\n• Cada no mostra seu status: queued → running → done"
+      },
+      "templates": {
+        "title": "Modelos, importacao e exportacao",
+        "desc": "Clique no menu ⋮ para recursos avancados:\n• Salve seu workflow como modelo reutilizavel\n• Importe/Exporte workflows em JSON para compartilhar\n• Abra varios workflows em abas (como no navegador)\n• Navegue por modelos prontos na barra de ferramentas"
+      }
+    },
+    "selectNodeHint": "Select a node to configure its parameters"
   }
 }

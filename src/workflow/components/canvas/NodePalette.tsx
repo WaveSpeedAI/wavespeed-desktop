@@ -135,23 +135,28 @@ export function NodePalette({ definitions }: NodePaletteProps) {
                 <span>{categoryLabel(category)}</span>
                 <span className="ml-auto text-[10px] opacity-70">{defs.length}</span>
               </button>
-              {!isCollapsed && defs.map(def => (
-                <div
-                  key={def.type}
-                  draggable
-                  onDragStart={e => onDragStart(e, def.type)}
-                  onClick={() => handleClick(def)}
-                  className="flex items-center gap-2 px-3 py-2 mx-1.5 rounded-md cursor-grab
-                    text-xs text-muted-foreground
-                    hover:bg-accent hover:text-foreground
-                    active:cursor-grabbing active:bg-accent/80
-                    transition-colors select-none"
-                  title={t('workflow.dragOrClickToAdd', 'Drag to canvas or click to add')}
-                >
-                  <span className="text-base leading-none w-5 text-center shrink-0">{def.icon}</span>
-                  <span>{t(`workflow.nodeDefs.${def.type}.label`, def.label)}</span>
-                </div>
-              ))}
+              {!isCollapsed && defs.map(def => {
+                const isAiTask = def.category === 'ai-task'
+                return (
+                  <div
+                    key={def.type}
+                    draggable
+                    onDragStart={e => onDragStart(e, def.type)}
+                    onClick={() => handleClick(def)}
+                    className="flex items-center gap-2 px-3 py-2 mx-1.5 rounded-md cursor-grab
+                      text-xs text-muted-foreground select-none transition-colors
+                      hover:bg-accent hover:text-foreground
+                      active:cursor-grabbing active:bg-accent/80"
+                    title={t('workflow.dragOrClickToAdd', 'Drag to canvas or click to add')}
+                  >
+                    <span className="text-base leading-none w-5 text-center shrink-0">{def.icon}</span>
+                    <span>{t(`workflow.nodeDefs.${def.type}.label`, def.label)}</span>
+                    {isAiTask && (
+                      <span className="ml-auto text-[9px] font-semibold text-primary bg-primary/25 px-1.5 py-0.5 rounded">AI</span>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           )
         })}

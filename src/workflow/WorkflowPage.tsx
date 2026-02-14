@@ -641,7 +641,7 @@ export function WorkflowPage() {
       )}
 
       {/* ── Toolbar — unified header ──────────────────────────── */}
-      <div className="flex items-center border-b border-border bg-card py-1.5 gap-1.5 min-h-[40px]">
+      <div className="flex items-center border-b border-border bg-card py-1.5 px-2 gap-1.5 min-h-[40px]">
         {/* Left: Panel toggles */}
         <button onClick={toggleWorkflowPanel}
           className={`h-7 px-3 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 ${showWorkflowPanel ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`}>
@@ -756,7 +756,7 @@ export function WorkflowPage() {
                 max={99}
                 value={runCount}
                 onChange={e => setRunCount(Math.max(1, Math.min(99, Number(e.target.value) || 1)))}
-                className="w-10 h-full bg-transparent px-1 text-xs text-center text-foreground focus:outline-none"
+                className="w-10 h-full bg-transparent px-1 text-xs text-center text-foreground focus:outline-none dark:[color-scheme:dark]"
                 title={t('workflow.runCount', 'Run count')}
               />
             </div>
@@ -807,6 +807,7 @@ export function WorkflowPage() {
           onImport={handleImport}
           onExport={handleExport}
           onSave={handleSave}
+          className="mr-1"
         />
       </div>
 
@@ -1095,11 +1096,12 @@ function MonitorToggleBtn() {
 }
 
 /* ── More Menu — collapsed Import / Export / Save ──────────────────── */
-function MoreMenu({ workflowId, onImport, onExport, onSave }: {
+function MoreMenu({ workflowId, onImport, onExport, onSave, className }: {
   workflowId: string | null
   onImport: () => void
   onExport: () => void
   onSave: () => void
+  className?: string
 }) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
@@ -1120,7 +1122,7 @@ function MoreMenu({ workflowId, onImport, onExport, onSave }: {
   }, [open])
 
   return (
-    <div className="relative" ref={ref}>
+    <div className={`relative ${className ?? ''}`} ref={ref}>
       <button
         onClick={() => setOpen(!open)}
         className={`h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors ${open ? 'bg-accent text-foreground' : ''}`}

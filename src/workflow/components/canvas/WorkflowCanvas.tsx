@@ -315,11 +315,11 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
     const def = nodeDefs.find(d => d.type === nodeType)
     const defaultParams: Record<string, unknown> = {}
     if (def) { for (const p of def.params) { if (p.default !== undefined) defaultParams[p.key] = p.default } }
-    const newNodeId = addNode(nodeType, position, defaultParams, def ? `${def.icon} ${def.label}` : nodeType, def?.params ?? [], def?.inputs ?? [], def?.outputs ?? [])
+    const newNodeId = addNode(nodeType, position, defaultParams, def ? `${def.icon} ${t(`workflow.nodeDefs.${def.type}.label`, def.label)}` : nodeType, def?.params ?? [], def?.inputs ?? [], def?.outputs ?? [])
     recordRecentNodeType(nodeType)
     // Auto-select the newly dropped node so the right config panel opens
     selectNode(newNodeId)
-  }, [addNode, nodeDefs, recordRecentNodeType, selectNode])
+  }, [addNode, nodeDefs, recordRecentNodeType, selectNode, t])
 
   useEffect(() => {
     const handleFitView = () => {

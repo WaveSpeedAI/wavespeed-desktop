@@ -131,8 +131,8 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
 
   const navGroups = [
     { key: 'create', label: 'Create', items: createItems },
-    { key: 'tools', label: 'Tools', items: toolsItems },
     { key: 'manage', label: 'Manage', items: manageItems },
+    { key: 'tools', label: 'Tools', items: toolsItems },
   ]
 
   const bottomNavItems = [

@@ -4,6 +4,7 @@
  * Click a node row to see its input/output data (like Dify).
  */
 import { useState, useEffect } from 'react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useExecutionStore, type RunSession } from '../../stores/execution.store'
 import { useUIStore } from '../../stores/ui.store'
 import { historyIpc } from '../../ipc/ipc-client'
@@ -129,10 +130,7 @@ export function RunMonitor({ workflowId }: { workflowId?: string | null }) {
           className="text-muted-foreground hover:text-foreground p-1 rounded transition-colors"
           title={showRunMonitor ? 'Collapse' : 'Expand'}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            className={showRunMonitor ? '' : 'rotate-180'}>
-            <polyline points="18 15 12 9 6 15"/>
-          </svg>
+          {showRunMonitor ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
         </button>
       </div>
 
@@ -183,7 +181,9 @@ function SessionCard({ session, nodeStatuses, progressMap, errorMessages, onCanc
     <div className="border-b border-border last:border-b-0">
       <div className="flex items-center gap-2 px-4 py-2 bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors"
         onClick={() => setCollapsed(!collapsed)}>
-        <span className="text-[10px] text-muted-foreground w-3">{collapsed ? '▶' : '▼'}</span>
+        <span className="text-muted-foreground w-4 h-4 flex items-center justify-center flex-shrink-0">
+          {collapsed ? <ChevronDown className="w-3.5 h-3.5 rotate-[-90deg]" /> : <ChevronDown className="w-3.5 h-3.5" />}
+        </span>
         <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
           status === 'running' ? 'bg-blue-500 animate-pulse' :
           status === 'completed' ? 'bg-green-500' :
@@ -272,7 +272,11 @@ function NodeRow({ nodeId, label, sessionResult, isSessionRunning, liveStatus, p
         {isLiveRunning && !progress && <span className="text-[9px] text-blue-400 animate-pulse">...</span>}
         {!isLiveRunning && sessionResult === 'done' && <span className="text-[9px] text-green-400">done</span>}
         {!isLiveRunning && sessionResult === 'error' && <span className="text-[9px] text-red-400">error</span>}
-        {isDone && <span className="text-[8px] text-muted-foreground ml-1">{expanded ? '▲' : '▼'}</span>}
+        {isDone && (
+          <span className="text-muted-foreground ml-1 flex-shrink-0">
+            {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          </span>
+        )}
       </div>
 
       {/* Inline error preview for failed nodes */}

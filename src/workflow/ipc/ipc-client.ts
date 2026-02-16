@@ -71,7 +71,9 @@ export const workflowIpc = {
   rename: (id: string, name: string): Promise<void> =>
     invoke('workflow:rename', { id, name }),
   delete: (id: string): Promise<void> =>
-    invoke('workflow:delete', { id })
+    invoke('workflow:delete', { id }),
+  duplicate: (id: string): Promise<Workflow> =>
+    invoke('workflow:duplicate', { id })
 }
 
 // ─── Execution IPC ───────────────────────────────────────────────────────────

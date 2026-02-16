@@ -1397,9 +1397,18 @@ export function WorkflowPage() {
 
 /* ── Naming Dialog Component ───────────────────────────────────────── */
 
+/** Same format as auto-name in workflow.store when saving forRun (so dialog can pre-fill). */
+function defaultWorkflowName() {
+  return `Workflow ${new Date().toISOString().slice(0, 19).replace('T', ' ')}`
+}
+
 function NamingDialog({ defaultValue, onConfirm }: { defaultValue: string; onConfirm: (result: { name: string; overwriteId?: string } | null) => void }) {
   const { t } = useTranslation()
-  const [value, setValue] = useState(/^Untitled Workflow(\s+\d+)?$/.test(defaultValue) ? '' : defaultValue)
+  const [value, setValue] = useState(() => {
+    const d = defaultValue
+    if (!d || /^Untitled Workflow(\s+\d+)?$/.test(d)) return defaultWorkflowName()
+    return d
+  })
   const [existingWorkflows, setExistingWorkflows] = useState<Array<{ id: string; name: string }>>([])
   const [showOverwriteConfirm, setShowOverwriteConfirm] = useState(false)
   const currentWorkflowId = useWorkflowStore(s => s.workflowId)
@@ -1456,7 +1465,7 @@ function NamingDialog({ defaultValue, onConfirm }: { defaultValue: string; onCon
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60" onClick={() => onConfirm(null)}>
       <div className="w-[360px] rounded-xl border border-border bg-card p-5 shadow-xl" onClick={e => e.stopPropagation()}>
         <h3 className="text-sm font-semibold mb-1">{t('workflow.nameYourWorkflow', 'Name your workflow')}</h3>
-        <p className="text-xs text-muted-foreground mb-3">{t('workflow.nameYourWorkflowDesc', 'Give it a name to save to disk and enable execution.')}</p>
+        <p className="text-xs text-muted-foreground mb-3">{t('workflow.nameYourWorkflowDesc', 'Give it a name to save to disk.')}</p>
         <input
           type="text"
           value={value}

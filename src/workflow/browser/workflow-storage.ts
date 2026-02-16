@@ -118,3 +118,48 @@ export function deleteWorkflow(id: string): void {
   const workflows = loadAll().filter(w => w.id !== id)
   saveAll(workflows)
 }
+
+/**
+ * Clone a workflow: new id, name "${originalName} (copy)" (deduplicated), same graph with new node/edge IDs.
+ */
+export function duplicateWorkflow(sourceId: string): Workflow {
+  const workflows = loadAll()
+  const source = workflows.find(w => w.id === sourceId)
+  if (!source) throw new Error(`Workflow ${sourceId} not found`)
+
+  const id = uuidv4()
+  const now = new Date().toISOString()
+  const copyName = ensureUniqueName(workflows, `${source.name} (copy)`, null)
+
+  const nodeIdMap = new Map<string, string>()
+  for (const n of source.graphDefinition?.nodes ?? []) {
+    nodeIdMap.set(n.id, uuidv4())
+  }
+
+  const clonedNodes = (source.graphDefinition?.nodes ?? []).map((n) => ({
+    ...n,
+    id: nodeIdMap.get(n.id)!,
+    workflowId: id,
+    currentOutputId: null as string | null
+  }))
+
+  const clonedEdges = (source.graphDefinition?.edges ?? []).map((e) => ({
+    ...e,
+    id: uuidv4(),
+    workflowId: id,
+    sourceNodeId: nodeIdMap.get(e.sourceNodeId)!,
+    targetNodeId: nodeIdMap.get(e.targetNodeId)!
+  }))
+
+  const cloned: StoredWorkflow = {
+    id,
+    name: copyName,
+    createdAt: now,
+    updatedAt: now,
+    graphDefinition: { nodes: clonedNodes, edges: clonedEdges },
+    status: 'draft'
+  }
+  workflows.unshift(cloned)
+  saveAll(workflows)
+  return { ...cloned }
+}

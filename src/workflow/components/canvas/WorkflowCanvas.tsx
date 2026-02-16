@@ -242,11 +242,11 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
       const nodeStatus = nodeStatuses[nodeId]
       const items: ContextMenuItem[] = []
 
-      // Run actions — always available, will auto-save/create workflow if needed
+      // Run actions — always available, will auto-save/create workflow if needed (forRun: true = no name prompt)
       const ensureAndRun = async (action: (wfId: string, nId: string) => Promise<void>) => {
         let wfId = useWorkflowStore.getState().workflowId
         if (!wfId) {
-          await useWorkflowStore.getState().saveWorkflow()
+          await useWorkflowStore.getState().saveWorkflow({ forRun: true })
           wfId = useWorkflowStore.getState().workflowId
           if (!wfId) return
         }

@@ -51,6 +51,10 @@ async function handleInvoke(channel: string, args?: unknown): Promise<unknown> {
       storage.deleteWorkflow(id)
       return undefined
     }
+    case 'workflow:duplicate': {
+      const { id } = args as { id: string }
+      return storage.duplicateWorkflow(id)
+    }
 
     case 'cost:estimate':
       return { totalEstimated: 0, breakdown: [], withinBudget: true }

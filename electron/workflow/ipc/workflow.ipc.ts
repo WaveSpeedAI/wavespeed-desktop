@@ -36,4 +36,8 @@ export function registerWorkflowIpc(): void {
   ipcMain.handle('workflow:delete', async (_event, args: { id: string }): Promise<void> => {
     workflowRepo.deleteWorkflow(args.id)
   })
+
+  ipcMain.handle('workflow:duplicate', async (_event, args: { id: string }): Promise<Workflow> => {
+    return workflowRepo.duplicateWorkflow(args.id)
+  })
 }

@@ -17,11 +17,11 @@ export function ExecutionToolbar() {
   const { runAll, runNode, continueFrom, retryNode, cancelNode, activeExecutions } = useExecutionStore()
   const isRunning = activeExecutions.size > 0
 
-  // Helper: ensure workflow exists before running
+  // Helper: ensure workflow exists before running (forRun: true = auto-name untitled, no prompt)
   const ensureWorkflow = async (): Promise<string | null> => {
     if (workflowId) return workflowId
     if (nodes.length === 0) return null
-    await saveWorkflow()
+    await saveWorkflow({ forRun: true })
     return useWorkflowStore.getState().workflowId
   }
 

@@ -174,3 +174,43 @@ export function deleteWorkflow(id: string): void {
   persistDatabase()
   getFileStorage().deleteWorkflowFiles(id)
 }
+
+/**
+ * Clone a workflow: new id, name "${originalName} (copy)" (deduplicated), same graph with new node/edge IDs.
+ * Execution history (currentOutputId) is not copied.
+ */
+export function duplicateWorkflow(sourceId: string): Workflow {
+  const wf = getWorkflowById(sourceId)
+  if (!wf) throw new Error(`Workflow ${sourceId} not found`)
+
+  const db = getDatabase()
+  const copyName = ensureUniqueName(db, `${wf.name} (copy)`, null)
+  const newWf = createWorkflow(copyName)
+
+  const nodeIdMap = new Map<string, string>()
+  for (const n of wf.graphDefinition.nodes) {
+    nodeIdMap.set(n.id, uuid())
+  }
+
+  const clonedNodes: GraphDefinition['nodes'] = wf.graphDefinition.nodes.map((n) => ({
+    ...n,
+    id: nodeIdMap.get(n.id)!,
+    workflowId: newWf.id,
+    currentOutputId: null
+  }))
+
+  const clonedEdges: GraphDefinition['edges'] = wf.graphDefinition.edges.map((e) => ({
+    ...e,
+    id: uuid(),
+    workflowId: newWf.id,
+    sourceNodeId: nodeIdMap.get(e.sourceNodeId)!,
+    targetNodeId: nodeIdMap.get(e.targetNodeId)!
+  }))
+
+  const clonedGraph: GraphDefinition = { nodes: clonedNodes, edges: clonedEdges }
+  updateWorkflow(newWf.id, newWf.name, clonedGraph)
+
+  const out = getWorkflowById(newWf.id)
+  if (!out) throw new Error('Failed to load duplicated workflow')
+  return out
+}

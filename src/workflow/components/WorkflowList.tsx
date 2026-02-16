@@ -289,6 +289,24 @@ export function WorkflowList({ onOpen, onDelete }: WorkflowListProps) {
               </svg>
               {t('workflow.rename', 'Rename')}
             </button>
+            {/* Duplicate */}
+            <button
+              onClick={async () => {
+                setContextMenu(null)
+                try {
+                  const newWf = await workflowIpc.duplicate(wf.id)
+                  refresh()
+                  if (newWf?.id) await handleOpen(newWf.id)
+                } catch {
+                  refresh()
+                }
+              }}
+              className="w-full text-left px-3 py-1.5 flex items-center gap-2 hover:bg-accent transition-colors">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              {t('workflow.duplicate', 'Duplicate')}
+            </button>
             {/* Clean outputs */}
             {usage !== undefined && usage > 0 && (
               <button

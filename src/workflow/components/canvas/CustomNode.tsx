@@ -431,9 +431,9 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
 
   const ensureWorkflowId = async () => {
     let wfId = workflowId
-    // Executor reads from persisted workflow DB, so save first when dirty.
+    // Executor reads from persisted workflow DB, so save first when dirty. forRun: true = auto-name untitled, no prompt.
     if (!wfId || isDirty) {
-      await saveWorkflow()
+      await saveWorkflow({ forRun: true })
       wfId = useWorkflowStore.getState().workflowId
     }
     return wfId

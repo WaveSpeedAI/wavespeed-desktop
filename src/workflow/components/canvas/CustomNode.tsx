@@ -15,16 +15,16 @@ import { apiClient } from '@/api/client'
 import { MaskEditor } from '@/components/playground/MaskEditor'
 import { SegmentPointPicker, type SegmentPoint } from '../SegmentPointPicker'
 import { Paintbrush, MousePointer2 } from 'lucide-react'
-import { modelsIpc } from '../../ipc/ipc-client'
+import { useModelsStore } from '@/stores/modelsStore'
+import { convertDesktopModel } from '../../lib/model-converter'
 import { fuzzySearch } from '@/lib/fuzzySearch'
-import { NodeConfigPanel } from '../panels/NodeConfigPanel'
-import { ResultsPanel } from '../panels/ResultsPanel'
 // Status constants (kept for edge component compatibility)
 // import { NODE_STATUS_COLORS, NODE_STATUS_BORDER } from '@/workflow/constants'
 import type { NodeStatus } from '@/workflow/types/execution'
 import type { ParamDefinition, PortDefinition, ModelParamSchema, WaveSpeedModel } from '@/workflow/types/node-defs'
 
 import { CompInput, CompTextarea } from './composition-input'
+import { ResultsPanel } from '../panels/ResultsPanel'
 
 /* ── types ───────────────────────────────────────────────────────────── */
 
@@ -123,8 +123,10 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
   const [hovered, setHovered] = useState(false)
   const [segmentPointPickerOpen, setSegmentPointPickerOpen] = useState(false)
   const [modelSearchQuery, setModelSearchQuery] = useState('')
-  const [availableModels, setAvailableModels] = useState<WaveSpeedModel[]>([])
   const [modelSwitchBlocked, setModelSwitchBlocked] = useState(false)
+  const storeModels = useModelsStore(s => s.models)
+  const fetchModels = useModelsStore(s => s.fetchModels)
+  const availableModels = useMemo(() => storeModels.map(convertDesktopModel), [storeModels])
 
   // ── Resizable dimensions (use ref + direct DOM for zero-lag) ──
   const savedWidth = (data.params.__nodeWidth as number) ?? DEFAULT_NODE_WIDTH
@@ -132,9 +134,10 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
   const nodeRef = useRef<HTMLDivElement>(null)
   const [resizing, setResizing] = useState(false)
   const { getViewport, setNodes } = useReactFlow()
+  // Title bar: for AI task use custom model label (🤖 Model name); for others use only node-type translation so the title never changes to "Config & Results" or other wrong text when selected
   const nodeLabel = data.nodeType === 'ai-task/run' && data.label && String(data.label).startsWith('🤖')
     ? String(data.label)
-    : t(`workflow.nodeDefs.${data.nodeType}.label`, data.label)
+    : t(`workflow.nodeDefs.${data.nodeType}.label`, data.nodeType?.split('/').pop() ?? 'Node')
   const localizeInputLabel = useCallback((key: string, fallback: string) =>
     t(`workflow.nodeDefs.${data.nodeType}.inputs.${key}.label`, fallback), [data.nodeType, t])
   const localizeParamLabel = useCallback((key: string, fallback: string) =>
@@ -244,8 +247,28 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
       m.modelId,
       m.category,
       m.provider
-    ]).map(r => r.item).slice(0, 8)
+    ]).map(r => r.item).slice(0, 40)
   }, [availableModels, modelSearchQuery])
+
+  const modelListWhenNoSearch = useMemo(() => {
+    if (modelSearchQuery.trim()) return []
+    const current = currentModelId
+    const getFamily = (modelId: string) => modelId.split('/').slice(0, 2).join('/')
+    const selectedFamily = getFamily(current)
+    const isSameFamily = (m: WaveSpeedModel) => getFamily(m.modelId) === selectedFamily
+    const isSameProvider = (m: WaveSpeedModel) => m.modelId.split('/')[0] === current.split('/')[0]
+    return [...availableModels].sort((a, b) => {
+      const af = isSameFamily(a), bf = isSameFamily(b)
+      if (af && !bf) return -1
+      if (!af && bf) return 1
+      const ap = isSameProvider(a), bp = isSameProvider(b)
+      if (ap && !bp) return -1
+      if (!ap && bp) return 1
+      return a.displayName.localeCompare(b.displayName)
+    }).slice(0, 80)
+  }, [availableModels, modelSearchQuery, currentModelId])
+
+  const modelDisplayList = modelSearchQuery.trim() ? modelSearchResults : modelListWhenNoSearch
 
   const removeEdgesByIds = useWorkflowStore(s => s.removeEdgesByIds)
 
@@ -319,15 +342,8 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
   }, [currentModelId, data.params, edges, id, updateNodeData, updateNodeParams, removeEdgesByIds, allNodes])
 
   useEffect(() => {
-    if (!isAITask) return
-    let cancelled = false
-    modelsIpc.list().then((m) => {
-      if (!cancelled) setAvailableModels(m ?? [])
-    }).catch(() => {
-      if (!cancelled) setAvailableModels([])
-    })
-    return () => { cancelled = true }
-  }, [isAITask])
+    if (isAITask && storeModels.length === 0) fetchModels()
+  }, [isAITask, storeModels.length, fetchModels])
 
   const mediaParams = useMemo(() => schema.filter(p => p.mediaType && p.fieldType !== 'loras'), [schema])
   const loraParams = useMemo(() => schema.filter(p => p.fieldType === 'loras'), [schema])
@@ -337,30 +353,8 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
   const defParams = paramDefs.filter(p => p.key !== 'modelId')
   const [showOptional, setShowOptional] = useState(false)
 
-  // All execution result groups for inline preview (newest first)
+  // All execution result groups (e.g. for free-tool hint when empty)
   const resultGroups = useExecutionStore(s => s.lastResults[id]) ?? []
-  // Hidden run timestamps — persisted in node params so they survive remount/tab switch
-  const hiddenRunTimes = (data.params.__hiddenRuns as string[]) ?? []
-  const hiddenSet = useMemo(() => new Set(hiddenRunTimes), [hiddenRunTimes])
-  const visibleGroups = resultGroups.filter(g => !hiddenSet.has(g.time))
-  const hideRun = useCallback((time: string) => {
-    updateNodeParams(id, { ...data.params, __hiddenRuns: [...hiddenRunTimes, time] })
-  }, [id, data.params, hiddenRunTimes, updateNodeParams])
-  /** Show all: clear ALL hidden + turn OFF latest — single atomic update */
-  const showAllRuns = useCallback(() => {
-    const { __hiddenRuns: _, __showLatestOnly: _2, ...rest } = data.params as Record<string, unknown>
-    updateNodeParams(id, { ...rest, __showLatestOnly: false })
-  }, [id, data.params, updateNodeParams])
-
-  // Opt 3: Download result
-  const handleDownload = useCallback((url: string) => {
-    const filename = url.split('/').pop() || 'result'
-    if (window.electronAPI?.downloadFile) {
-      window.electronAPI.downloadFile(url, filename)
-    } else {
-      const a = document.createElement('a'); a.href = url; a.download = filename; a.click()
-    }
-  }, [])
 
   const saveWorkflow = useWorkflowStore(s => s.saveWorkflow)
   const removeNode = useWorkflowStore(s => s.removeNode)
@@ -605,17 +599,6 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
 
       {/* ── Body ───────────────────────────────────────────────────── */}
       <div className="px-1 py-2 space-y-px">
-        {selected && data.nodeType !== 'annotation' ? (
-          <div className="nodrag min-h-0 flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
-            <div className="flex-shrink-0 border-b border-border/50">
-              <NodeConfigPanel paramDefs={data.paramDefinitions ?? []} embeddedInNode />
-            </div>
-            <div className="flex-1 min-h-0 flex flex-col mt-1">
-              <ResultsPanel embeddedInNode />
-            </div>
-          </div>
-        ) : (
-        <div className="contents">
         {/* Free-tool ML model download hint (not for ffmpeg-based converters/trimmer/merger) */}
         {status === 'idle' && resultGroups.length === 0 && (() => {
           const ML_FREE_TOOLS = new Set([
@@ -679,7 +662,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
         )}
 
         {isAITask && (
-          <div className="px-3 mb-1">
+          <div className="nodrag px-3 mb-1" onClick={e => e.stopPropagation()}>
             <div className="relative pl-2">
               <svg className="absolute left-[18px] top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))]" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
@@ -693,39 +676,32 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
                 }}
                 placeholder={t('workflow.modelSelector.searchAllPlaceholder', 'Search all models...')}
                 className="w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] pl-6 pr-2 py-1.5 text-[11px] text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50"
-                onClick={e => e.stopPropagation()}
               />
             </div>
-            {modelSearchQuery.trim() && (
-              <div className="mt-1 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] max-h-[170px] overflow-y-auto">
-                {modelSearchResults.map(model => (
+            <div className="nodrag mt-1 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] max-h-[200px] overflow-y-auto">
+              {modelDisplayList.length === 0 ? (
+                <div className="px-2 py-2 text-[10px] text-muted-foreground text-center">
+                  {t('workflow.modelSelector.noModelsFound', 'No models found')}
+                </div>
+              ) : (
+                modelDisplayList.map(model => (
                   <button
                     key={model.modelId}
+                    type="button"
                     onClick={e => { e.stopPropagation(); handleInlineSelectModel(model) }}
                     className="w-full text-left px-2 py-1.5 hover:bg-[hsl(var(--accent))] transition-colors border-b border-[hsl(var(--border))]/40 last:border-b-0"
                   >
                     <div className="text-[11px] font-medium truncate">{model.displayName}</div>
                     <div className="text-[10px] text-muted-foreground truncate">{model.category} · {model.provider}</div>
                   </button>
-                ))}
-                {modelSearchResults.length === 0 && (
-                  <div className="px-2 py-2 text-[10px] text-muted-foreground text-center">
-                    {t('workflow.modelSelector.noModelsFound', 'No models found')}
-                  </div>
-                )}
-              </div>
-            )}
+                ))
+              )}
+            </div>
             {modelSwitchBlocked && (
               <div className="mt-1 text-[10px] text-amber-300">
                 {t('workflow.modelSelector.disconnectBeforeSwitch', 'Please disconnect this node before switching model.')}
               </div>
             )}
-          </div>
-        )}
-
-        {isAITask && !hasSchema && (
-          <div className="mx-2 text-center py-4 text-[hsl(var(--muted-foreground))] text-xs italic border border-dashed border-[hsl(var(--border))] rounded-lg my-1">
-            {t('workflow.nodeDefs.ai-task/run.emptyHint', 'Click this node, then select a model →')}
           </div>
         )}
 
@@ -975,146 +951,13 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
             </div>
           </div>
         )}
-        </div>
-      )}
-      </div>
-
-      {/* ── Results — grouped by execution run ─────────────────── */}
-      {resultGroups.length > 0 && (() => {
-        /*
-         * Results display logic:
-         *
-         * latestOnly ON:
-         *   - Show ONLY resultGroups[0] (the absolute newest, regardless of hidden)
-         *   - ✕ hides it → show "Latest result hidden" + "Show all"
-         *   - "Show all" clears hidden + turns OFF latest → shows everything
-         *   - "Latest" label only on resultGroups[0]
-         *
-         * latestOnly OFF:
-         *   - Show all visibleGroups (hidden ones filtered out)
-         *   - ✕ hides individual results
-         *   - "Show all" clears all hidden
-         *   - "Latest" label on resultGroups[0] if visible
-         *
-         * "Show all" button: ALWAYS clickable. Clears hidden + turns off latest (atomic).
-         * "Latest" toggle: ON→OFF just switches mode. OFF→ON just switches mode.
-         */
-        const latestOnly = data.params.__showLatestOnly !== false
-        const toggleLatest = (e: React.MouseEvent) => {
-          e.stopPropagation()
-          updateNodeParams(id, { ...data.params, __showLatestOnly: !latestOnly })
-        }
-
-        const newestGroup = resultGroups[0]
-        const newestHidden = newestGroup ? hiddenSet.has(newestGroup.time) : false
-
-        // What to actually display
-        let displayGroups: typeof resultGroups
-        if (latestOnly) {
-          displayGroups = newestGroup && !newestHidden ? [newestGroup] : []
-        } else {
-          displayGroups = visibleGroups
-        }
-
-        const isImageUrl = (url: string): boolean => {
-          const normalized = (() => {
-            if (/^local-asset:\/\//i.test(url)) {
-              try {
-                return decodeURIComponent(url.replace(/^local-asset:\/\//i, '')).toLowerCase().split('?')[0]
-              } catch {
-                return url.toLowerCase().split('?')[0]
-              }
-            }
-            return url.toLowerCase().split('?')[0]
-          })()
-          return Boolean(normalized.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg|avif)$/i))
-        }
-
-        const allDisplayImageUrls = displayGroups.flatMap(g => g.urls).filter(isImageUrl)
-
-        return (
-          <div className="px-3 pb-2 pt-1 border-t border-[hsl(var(--border))]">
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <span className="text-[10px] text-green-400 font-medium">
-                {t('workflow.results', 'Results')} ({displayGroups.length}/{resultGroups.length})
-              </span>
-              <div className="flex-1" />
-              {/* Clear all results + delete files */}
-              <button onClick={async e => {
-                  e.stopPropagation()
-                  try {
-                    const { historyIpc } = await import('../../ipc/ipc-client')
-                    await historyIpc.deleteAll(id)
-                  } catch { /* best-effort */ }
-                  clearNodeResults(id)
-                  // Also clear hidden runs metadata from params
-                  const { __hiddenRuns: _, __showLatestOnly: _2, ...rest } = data.params as Record<string, unknown>
-                  updateNodeParams(id, rest)
-                }}
-                className="text-[9px] text-red-400/70 hover:text-red-400 transition-colors"
-                title={t('workflow.clearAllResults', 'Clear all results')}>
-                {t('workflow.clearAll', 'Clear all')}
-              </button>
-              {/* Show all — always clickable, clears hidden + turns off latest */}
-              <button onClick={e => { e.stopPropagation(); showAllRuns() }}
-                className="text-[9px] text-blue-400 hover:text-blue-300 transition-colors">
-                {t('workflow.showAll', 'Show all')}
-              </button>
-              {/* Latest-only toggle */}
-              <button onClick={toggleLatest}
-                className={`flex items-center gap-1 text-[9px] transition-colors ${latestOnly ? 'text-blue-400' : 'text-muted-foreground hover:text-foreground'}`}
-                title={latestOnly ? t('workflow.showAllRuns', 'Show all runs') : t('workflow.showLatestOnly', 'Show latest only')}>
-                <span className={`w-6 h-3 rounded-full relative transition-colors ${latestOnly ? 'bg-blue-500' : 'bg-muted-foreground/30'}`}>
-                  <span className={`absolute top-0.5 w-2 h-2 rounded-full bg-white transition-transform ${latestOnly ? 'left-3.5' : 'left-0.5'}`} />
-                </span>
-                <span>{t('workflow.latest', 'Latest')}</span>
-              </button>
-            </div>
-            <div className="space-y-2">
-              {displayGroups.map((group) => {
-                const isNewest = group === newestGroup
-                return (
-                  <div key={group.time} className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] overflow-hidden">
-                    <div className="flex items-center gap-2 px-2.5 py-1.5 bg-[hsl(var(--muted))]">
-                      {isNewest && <span className="text-[10px] text-green-400 font-semibold">{t('workflow.latest', 'Latest')}</span>}
-                      <span className="text-[10px] text-foreground/80 font-medium">
-                        {new Date(group.time).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                      </span>
-                      {group.durationMs != null && <span className="text-[10px] text-blue-400/80 font-medium">⏱ {(group.durationMs / 1000).toFixed(1)}s</span>}
-                      {group.cost != null && group.cost > 0 && <span className="text-[10px] text-amber-400/80 font-medium">💰 ${group.cost.toFixed(4)}</span>}
-                      <div className="flex-1" />
-                      <button onClick={e => { e.stopPropagation(); hideRun(group.time) }}
-                        className="text-[10px] text-muted-foreground hover:text-red-400 transition-colors" title={t('workflow.hideRun', 'Hide this run')}>
-                        ✕
-                      </button>
-                    </div>
-                    <div className="p-1.5 flex gap-1.5 flex-wrap">
-                      {group.urls.map((url, ui) => (
-                        <ResultThumb
-                          key={`${url}-${ui}`}
-                          url={url}
-                          onPreview={(src) => {
-                            openPreview(src, isImageUrl(src) ? allDisplayImageUrls : undefined)
-                          }}
-                          onDownload={handleDownload}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )
-              })}
-              {/* Empty state */}
-              {displayGroups.length === 0 && (
-                <div className="text-center py-3 text-[10px] text-muted-foreground">
-                  {latestOnly && newestHidden ? t('workflow.latestHidden', 'Latest result hidden.') : t('workflow.noVisibleResults', 'No visible results.')}
-                  <button onClick={e => { e.stopPropagation(); showAllRuns() }}
-                    className="text-blue-400 hover:text-blue-300 ml-1">{t('workflow.showAll', 'Show all')}</button>
-                </div>
-              )}
-            </div>
+        {/* Results — at bottom of card, merged into normal view */}
+        {data.nodeType !== 'annotation' && (
+          <div className="nodrag min-h-0 flex flex-col flex-1 mt-2 border-t border-border/50 pt-2">
+            <ResultsPanel embeddedInNode nodeId={id} />
           </div>
-        )
-      })()}
+        )}
+      </div>
 
       {/* ── Output handle — top-right, aligned with title bar ───── */}
       <Handle type="source" position={Position.Right} id="output"
@@ -2698,111 +2541,6 @@ function JsonRow({ nodeId, schema, value, connected, onChange, edges, nodes }: {
 }
 
 /** Size input — dual W×H number fields. Value format: "W*H" (e.g. "1024*1024") */
-/* ══════════════════════════════════════════════════════════════════════
-   ResultThumb — smart thumbnail for each result URL in grouped view
-   ══════════════════════════════════════════════════════════════════════ */
-
-function ResultThumb({ url, onPreview, onDownload }: { url: string; onPreview: (src: string) => void; onDownload: (url: string) => void }) {
-  const detectSource = (() => {
-    if (/^local-asset:\/\//i.test(url)) {
-      try {
-        return decodeURIComponent(url.replace(/^local-asset:\/\//i, '')).toLowerCase()
-      } catch {
-        return url.toLowerCase()
-      }
-    }
-    return url.toLowerCase()
-  })().split('?')[0]
-
-  // Detect if the result is plain text (not a URL)
-  const isUrl = /^https?:\/\//i.test(url) || /^blob:/i.test(url) || /^local-asset:\/\//i.test(url)
-  const is3D = isUrl && /\.(glb|gltf)$/.test(detectSource)
-  const isImage = isUrl && /\.(jpg|jpeg|png|gif|webp|bmp|svg|avif)$/.test(detectSource)
-  const isVideo = isUrl && /\.(mp4|webm|mov|avi|mkv)$/.test(detectSource)
-  const isAudio = isUrl && /\.(mp3|wav|ogg|flac|aac|m4a)$/.test(detectSource)
-
-  // Plain text result — show inline text preview
-  if (!isUrl) {
-    return (
-      <div className="flex-1 min-w-[80px] rounded border border-[hsl(var(--border))] bg-[hsl(var(--muted))] p-2 cursor-default"
-        onClick={e => e.stopPropagation()}>
-        <div className="text-[10px] text-[hsl(var(--foreground))] leading-snug line-clamp-4 break-words whitespace-pre-wrap">
-          {url}
-        </div>
-        {url.length > 200 && (
-          <button onClick={e => { e.stopPropagation(); onPreview(url) }}
-            className="mt-1 text-[9px] text-blue-400 hover:text-blue-300 transition-colors">
-            Show full text
-          </button>
-        )}
-      </div>
-    )
-  }
-
-  if (isImage) {
-    return (
-      <div className="relative group flex-1 min-w-[80px]">
-        <img src={url} alt="" onClick={e => { e.stopPropagation(); onPreview(url) }}
-          className="w-full max-h-[120px] rounded border border-[hsl(var(--border))] object-contain cursor-pointer hover:ring-2 hover:ring-blue-500/40 bg-black/10" />
-        <button onClick={e => { e.stopPropagation(); onDownload(url) }}
-          className="absolute top-1 right-1 h-8 px-2 rounded-md bg-blue-600 text-white flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-700 shadow-lg">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/><line x1="4" y1="21" x2="20" y2="21"/>
-          </svg>
-        </button>
-      </div>
-    )
-  }
-
-  if (is3D) {
-    return (
-      <div className="relative group flex-1 min-w-[80px] cursor-pointer rounded border border-[hsl(var(--border))] bg-gradient-to-br from-[#1a1a2e] to-[#0f3460] p-3 flex flex-col items-center justify-center text-center hover:ring-2 hover:ring-blue-500/40 transition-all"
-        style={{ minHeight: 120 }}
-        onClick={e => { e.stopPropagation(); onPreview(url) }}>
-        <div className="text-2xl mb-1">🧊</div>
-        <div className="text-[10px] text-blue-300 font-medium">3D Model</div>
-        <div className="text-[8px] text-white/30 truncate mt-0.5 max-w-full">{url.split('/').pop()?.split('?')[0]}</div>
-      </div>
-    )
-  }
-
-  if (isVideo) {
-    return (
-      <div className="relative group flex-1 min-w-[80px]">
-        <video src={url} className="w-full max-h-[120px] rounded border border-[hsl(var(--border))] object-contain cursor-pointer"
-          onClick={e => { e.stopPropagation(); onPreview(url) }} />
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-6 h-6 rounded-full bg-black/50 flex items-center justify-center">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
-          </div>
-        </div>
-        <button onClick={e => { e.stopPropagation(); onDownload(url) }}
-          className="absolute top-1 right-1 h-8 px-2 rounded-md bg-blue-600 text-white flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-700 shadow-lg">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/><line x1="4" y1="21" x2="20" y2="21"/>
-          </svg>
-        </button>
-      </div>
-    )
-  }
-
-  if (isAudio) {
-    return (
-      <div className="flex-1 min-w-[80px] rounded border border-[hsl(var(--border))] bg-[hsl(var(--muted))] p-2">
-        <audio src={url} controls className="w-full" onClick={e => e.stopPropagation()} />
-      </div>
-    )
-  }
-
-  // Generic
-  return (
-    <div className="flex-1 min-w-[80px] rounded border border-[hsl(var(--border))] bg-[hsl(var(--muted))] p-2 text-center cursor-pointer hover:bg-accent transition-colors"
-      onClick={e => { e.stopPropagation(); onPreview(url) }}>
-      <div className="text-[9px] text-muted-foreground truncate">{url.split('/').pop()?.split('?')[0] || 'File'}</div>
-    </div>
-  )
-}
-
 function SizeInput({ value, onChange, min, max }: { value: string; onChange: (v: string) => void; min?: number; max?: number }) {
   const parts = value.split('*')
   const w = parseInt(parts[0]) || 512

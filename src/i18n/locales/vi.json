@@ -34,7 +34,9 @@
     "openInBrowser": "Mở trong trình duyệt",
     "settings": "Cài đặt",
     "clearAll": "Xóa tất cả",
-    "deselectAll": "Bỏ chọn tất cả"
+    "deselectAll": "Bỏ chọn tất cả",
+    "add": "Add",
+    "saving": "Saving..."
   },
   "nav": {
     "home": "Trang chủ",
@@ -1018,27 +1020,6 @@
     "output": "Đầu ra",
     "back": "Quay lại"
   },
-  "videoConverter": {
-    "title": "Trình Chuyển Đổi Video",
-    "description": "Chuyển đổi video giữa các định dạng bằng trình duyệt của bạn",
-    "invalidFile": "Vui lòng chọn tệp video hợp lệ",
-    "input": "Video Đầu Vào",
-    "inputDesc": "Chọn hoặc kéo tệp video để chuyển đổi",
-    "dropzone": "Nhấp hoặc kéo video vào đây",
-    "supportedFormats": "Hỗ trợ MP4, WebM, MOV, AVI",
-    "settings": "Cài Đặt",
-    "outputFormat": "Định Dạng Đầu Ra",
-    "convert": "Chuyển Đổi Video",
-    "converting": "Đang chuyển đổi...",
-    "noCodecSupport": "Không tìm thấy codec video được hỗ trợ",
-    "result": "Kết Quả",
-    "codecUsed": "Codec đã sử dụng",
-    "download": "Tải Xuống"
-  },
-  "game": {
-    "waitingLong": "Chờ quá lâu",
-    "clickToPlay": "Nhấp để bắt đầu"
-  },
   "workflow": {
     "workflows": "Quy trình",
     "newWorkflow": "Quy trình mới",
@@ -1121,7 +1102,10 @@
       "hint": "Nhấp trái = bao gồm, nhấp phải = loại trừ",
       "points": "điểm",
       "clear": "Xóa",
-      "done": "Xong"
+      "done": "Xong",
+      "encoding": "Analyzing image...",
+      "waitingEncode": "Preparing...",
+      "decoding": "Updating mask..."
     },
     "pickPoints": "Chọn điểm",
     "pickPointsNeedInput": "Vui lòng đặt hình ảnh đầu vào trước",
@@ -1160,7 +1144,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "Xưởng sáng tạo AI",
+        "label": "WaveSpeed API",
         "emptyHint": "Nhấp vào nút này, sau đó chọn mô hình →",
         "params": {
           "modelId": {
@@ -1419,6 +1403,21 @@
         "desc": "Nhan menu ⋮ de dung tinh nang nang cao:\n• Luu workflow thanh template co the tai su dung\n• Nhap/Xuat workflow dang JSON de chia se\n• Mo nhieu workflow theo tab (giong trinh duyet)\n• Duyet cac template co san tu thanh cong cu"
       }
     },
-    "selectNodeHint": "Select a node to configure its parameters"
+    "selectNodeHint": "Select a node to configure its parameters",
+    "modelSyncDesktopOnly": "Model sync is available in the WaveSpeed Desktop app.",
+    "nameExists": "A workflow with this name already exists. Saving will overwrite it.",
+    "overwriteWorkflow": "Overwrite Workflow",
+    "overwriteConfirm": "A workflow named \"{{name}}\" already exists. Do you want to overwrite it?",
+    "overwrite": "Overwrite",
+    "tabClose": "Close",
+    "tabCloseOthers": "Close Others",
+    "tabCloseRight": "Close to the Right",
+    "tabCloseSaved": "Close Saved",
+    "tabCloseAll": "Close All",
+    "deleteSelected": "Delete Selected ({{count}})",
+    "selectMode": "Select (V)",
+    "handMode": "Hand (H)",
+    "interactionSelect": "Select",
+    "interactionHand": "Hand"
   }
 }

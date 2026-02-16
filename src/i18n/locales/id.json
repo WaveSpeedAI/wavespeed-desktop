@@ -34,7 +34,9 @@
     "downloadFailed": "Unduhan gagal. Silakan periksa koneksi jaringan Anda.",
     "openInBrowser": "Buka di browser",
     "settings": "Pengaturan",
-    "clearAll": "Hapus semua"
+    "clearAll": "Hapus semua",
+    "add": "Add",
+    "saving": "Saving..."
   },
   "nav": {
     "home": "Beranda",
@@ -899,11 +901,8 @@
       "supportedFormats": "Konversi MP3 ↔ WAV",
       "converting": "Mengkonversi...",
       "convert": "Konversi",
-      "download": "Unduh",
-      "complete": "Selesai",
       "outputFormat": "Format output",
       "bitrate": "Bitrate",
-      "noFileSelected": "Tidak ada file dipilih",
       "inputAudio": "Audio masukan",
       "orDragDrop": "atau seret dan lepas",
       "dropToReplace": "Jatuhkan untuk mengganti audio",
@@ -921,11 +920,8 @@
       "supportedFormats": "Gambar apa saja → JPG/PNG/WebP",
       "converting": "Mengkonversi...",
       "convert": "Konversi",
-      "download": "Unduh",
-      "complete": "Selesai",
       "outputFormat": "Format output",
       "quality": "Kualitas",
-      "noFileSelected": "Tidak ada file dipilih",
       "inputImage": "Gambar masukan",
       "selectImages": "Klik atau seret gambar ke sini",
       "orDragDrop": "atau seret dan lepas",
@@ -941,21 +937,16 @@
       "selectMedia": "Seret file media ke sini",
       "supportedFormats": "Mendukung file video dan audio",
       "inputMedia": "Media input",
-      "selectMediaFile": "Pilih file untuk dipotong",
       "trimSettings": "Pengaturan potong",
       "selectRange": "Pilih waktu mulai dan selesai",
       "startTime": "Waktu mulai",
       "endTime": "Waktu selesai",
       "timeFormat": "Format: m:ss.d atau detik",
       "outputDuration": "Durasi output",
-      "duration": "Durasi",
       "trim": "Potong",
       "trimming": "Memotong...",
-      "download": "Unduh",
-      "newMedia": "File baru",
       "result": "Hasil pemotongan",
       "invalidFile": "Pilih file video atau audio yang valid",
-      "invalidRange": "Waktu selesai harus lebih besar dari waktu mulai",
       "orDragDrop": "atau seret dan lepas",
       "dropToReplace": "Jatuhkan untuk mengganti file",
       "originalDuration": "Durasi asli",
@@ -967,21 +958,10 @@
     "mediaMerger": {
       "title": "Penggabung Media",
       "description": "Gabungkan beberapa video atau audio menjadi satu",
-      "selectMedia": "Seret file ke sini",
       "supportedFormats": "Mendukung file video dan audio",
-      "addFiles": "Tambah file",
-      "inputFiles": "File input",
-      "dragToReorder": "Seret untuk mengurutkan",
-      "noFiles": "Tidak ada file",
-      "addFilesDesc": "Tambahkan video atau audio untuk digabung",
-      "outputFormat": "Format output",
       "merge": "Gabung",
       "merging": "Menggabung...",
-      "download": "Unduh",
-      "clear": "Hapus",
       "result": "Hasil",
-      "invalidFile": "Pilih file video atau audio yang valid",
-      "minFiles": "Tambahkan minimal 2 file untuk digabung",
       "inputMedia": "File masukan",
       "selectFiles": "Pilih file",
       "orDragDrop": "atau seret dan lepas",
@@ -1020,10 +1000,6 @@
     "downloadStarted": "Unduhan dimulai",
     "downloadFailed": "Unduhan gagal"
   },
-  "game": {
-    "waitingLong": "Menunggu lama? Main mini game!",
-    "clickToPlay": "Klik untuk mulai"
-  },
   "smartPlayground": {
     "autoDetected": "Varian terdeteksi otomatis",
     "willCall": "Akan memanggil",
@@ -1043,23 +1019,6 @@
     "input": "Input",
     "output": "Output",
     "back": "Kembali"
-  },
-  "videoConverter": {
-    "title": "Konverter Video",
-    "description": "Konversi video antar format menggunakan browser Anda",
-    "invalidFile": "Silakan pilih file video yang valid",
-    "input": "Video Input",
-    "inputDesc": "Pilih atau seret file video untuk dikonversi",
-    "dropzone": "Klik atau seret video ke sini",
-    "supportedFormats": "Mendukung MP4, WebM, MOV, AVI",
-    "settings": "Pengaturan",
-    "outputFormat": "Format Output",
-    "convert": "Konversi Video",
-    "converting": "Mengkonversi...",
-    "noCodecSupport": "Tidak ditemukan codec video yang didukung",
-    "result": "Hasil",
-    "codecUsed": "Codec yang digunakan",
-    "download": "Unduh"
   },
   "workflow": {
     "workflows": "Alur kerja",
@@ -1143,7 +1102,10 @@
       "hint": "Klik kiri = sertakan, klik kanan = kecualikan",
       "points": "titik",
       "clear": "Bersihkan",
-      "done": "Selesai"
+      "done": "Selesai",
+      "encoding": "Analyzing image...",
+      "waitingEncode": "Preparing...",
+      "decoding": "Updating mask..."
     },
     "pickPoints": "Pilih titik",
     "pickPointsNeedInput": "Setel gambar input terlebih dahulu",
@@ -1182,7 +1144,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "Studio Kreatif AI",
+        "label": "WaveSpeed API",
         "emptyHint": "Klik node ini, lalu pilih model →",
         "params": {
           "modelId": {
@@ -1441,6 +1403,21 @@
         "desc": "Klik menu ⋮ untuk fitur lanjutan:\n• Simpan workflow Anda sebagai template yang dapat digunakan ulang\n• Impor/Ekspor workflow sebagai JSON untuk dibagikan\n• Buka beberapa workflow dalam tab (seperti browser)\n• Jelajahi template siap pakai dari toolbar"
       }
     },
-    "selectNodeHint": "Select a node to configure its parameters"
+    "selectNodeHint": "Select a node to configure its parameters",
+    "modelSyncDesktopOnly": "Model sync is available in the WaveSpeed Desktop app.",
+    "nameExists": "A workflow with this name already exists. Saving will overwrite it.",
+    "overwriteWorkflow": "Overwrite Workflow",
+    "overwriteConfirm": "A workflow named \"{{name}}\" already exists. Do you want to overwrite it?",
+    "overwrite": "Overwrite",
+    "tabClose": "Close",
+    "tabCloseOthers": "Close Others",
+    "tabCloseRight": "Close to the Right",
+    "tabCloseSaved": "Close Saved",
+    "tabCloseAll": "Close All",
+    "deleteSelected": "Delete Selected ({{count}})",
+    "selectMode": "Select (V)",
+    "handMode": "Hand (H)",
+    "interactionSelect": "Select",
+    "interactionHand": "Hand"
   }
 }

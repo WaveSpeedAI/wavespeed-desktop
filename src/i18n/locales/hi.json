@@ -34,7 +34,9 @@
     "downloadFailed": "डाउनलोड विफल। कृपया अपना नेटवर्क कनेक्शन जांचें।",
     "openInBrowser": "ब्राउज़र में खोलें",
     "settings": "सेटिंग्स",
-    "clearAll": "सभी साफ़ करें"
+    "clearAll": "सभी साफ़ करें",
+    "add": "Add",
+    "saving": "Saving..."
   },
   "nav": {
     "home": "होम",
@@ -998,10 +1000,6 @@
     "downloadStarted": "डाउनलोड शुरू हो गया",
     "downloadFailed": "डाउनलोड विफल"
   },
-  "game": {
-    "waitingLong": "ज़्यादा इंतज़ार? एक मिनी गेम खेलें!",
-    "clickToPlay": "शुरू करने के लिए क्लिक करें"
-  },
   "smartPlayground": {
     "autoDetected": "स्वचालित रूप से पहचाना गया संस्करण",
     "willCall": "कॉल करेगा",
@@ -1021,23 +1019,6 @@
     "input": "इनपुट",
     "output": "आउटपुट",
     "back": "वापस"
-  },
-  "videoConverter": {
-    "title": "वीडियो कनवर्टर",
-    "description": "अपने ब्राउज़र का उपयोग करके वीडियो को फॉर्मेट के बीच कनवर्ट करें",
-    "invalidFile": "कृपया एक वैध वीडियो फ़ाइल चुनें",
-    "input": "इनपुट वीडियो",
-    "inputDesc": "कनवर्ट करने के लिए एक वीडियो फ़ाइल चुनें या खींचें",
-    "dropzone": "क्लिक करें या वीडियो यहां खींचें",
-    "supportedFormats": "MP4, WebM, MOV, AVI समर्थित",
-    "settings": "सेटिंग्स",
-    "outputFormat": "आउटपुट फॉर्मेट",
-    "convert": "वीडियो कनवर्ट करें",
-    "converting": "कनवर्ट हो रहा है...",
-    "noCodecSupport": "कोई समर्थित वीडियो कोडेक नहीं मिला",
-    "result": "परिणाम",
-    "codecUsed": "उपयोग किया गया कोडेक",
-    "download": "डाउनलोड"
   },
   "workflow": {
     "workflows": "वर्कफ़्लो",
@@ -1121,7 +1102,10 @@
       "hint": "बायाँ क्लिक = शामिल, दायाँ क्लिक = बाहर",
       "points": "अंक",
       "clear": "साफ़ करें",
-      "done": "हो गया"
+      "done": "हो गया",
+      "encoding": "Analyzing image...",
+      "waitingEncode": "Preparing...",
+      "decoding": "Updating mask..."
     },
     "pickPoints": "बिंदु चुनें",
     "pickPointsNeedInput": "पहले इनपुट छवि सेट करें",
@@ -1160,7 +1144,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "AI रचनात्मक स्टूडियो",
+        "label": "WaveSpeed API",
         "emptyHint": "इस नोड पर क्लिक करें, फिर मॉडल चुनें →",
         "params": {
           "modelId": {
@@ -1419,6 +1403,21 @@
         "desc": "एडवांस फीचर्स के लिए ⋮ मेनू पर क्लिक करें:\n• अपने workflow को पुन: प्रयोज्य टेम्पलेट के रूप में सहेजें\n• शेयर करने के लिए workflows को JSON के रूप में इम्पोर्ट/एक्सपोर्ट करें\n• कई workflows को टैब्स में खोलें (ब्राउज़र की तरह)\n• टूलबार से पहले से बने टेम्पलेट ब्राउज़ करें"
       }
     },
-    "selectNodeHint": "Select a node to configure its parameters"
+    "selectNodeHint": "Select a node to configure its parameters",
+    "modelSyncDesktopOnly": "Model sync is available in the WaveSpeed Desktop app.",
+    "nameExists": "A workflow with this name already exists. Saving will overwrite it.",
+    "overwriteWorkflow": "Overwrite Workflow",
+    "overwriteConfirm": "A workflow named \"{{name}}\" already exists. Do you want to overwrite it?",
+    "overwrite": "Overwrite",
+    "tabClose": "Close",
+    "tabCloseOthers": "Close Others",
+    "tabCloseRight": "Close to the Right",
+    "tabCloseSaved": "Close Saved",
+    "tabCloseAll": "Close All",
+    "deleteSelected": "Delete Selected ({{count}})",
+    "selectMode": "Select (V)",
+    "handMode": "Hand (H)",
+    "interactionSelect": "Select",
+    "interactionHand": "Hand"
   }
 }

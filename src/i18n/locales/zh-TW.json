@@ -34,7 +34,9 @@
     "downloadFailed": "下載失敗。請檢查您的網路連線。",
     "openInBrowser": "在瀏覽器中開啟",
     "settings": "設定",
-    "clearAll": "全部清除"
+    "clearAll": "全部清除",
+    "add": "Add",
+    "saving": "Saving..."
   },
   "nav": {
     "home": "首頁",
@@ -998,10 +1000,6 @@
     "downloadStarted": "下載已開始",
     "downloadFailed": "下載失敗"
   },
-  "game": {
-    "waitingLong": "等很久了？來局小遊戲！",
-    "clickToPlay": "點擊開始"
-  },
   "smartPlayground": {
     "autoDetected": "自動偵測變體",
     "willCall": "將呼叫",
@@ -1021,23 +1019,6 @@
     "input": "輸入",
     "output": "輸出",
     "back": "返回"
-  },
-  "videoConverter": {
-    "title": "影片轉換器",
-    "description": "在瀏覽器中轉換影片格式",
-    "invalidFile": "請選擇有效的影片檔案",
-    "input": "輸入影片",
-    "inputDesc": "選擇或拖曳影片檔案進行轉換",
-    "dropzone": "點擊或拖曳影片到此處",
-    "supportedFormats": "支援 MP4, WebM, MOV, AVI",
-    "settings": "設定",
-    "outputFormat": "輸出格式",
-    "convert": "轉換影片",
-    "converting": "轉換中...",
-    "noCodecSupport": "未找到支援的影片編碼器",
-    "result": "結果",
-    "codecUsed": "使用的編碼器",
-    "download": "下載"
   },
   "workflow": {
     "workflows": "工作流程",
@@ -1110,7 +1091,10 @@
       "hint": "左鍵=包含，右鍵=排除",
       "points": "個點",
       "clear": "清空",
-      "done": "完成"
+      "done": "完成",
+      "encoding": "Analyzing image...",
+      "waitingEncode": "Preparing...",
+      "decoding": "Updating mask..."
     },
     "nodeCategory": {
       "recent": "最近使用",
@@ -1123,7 +1107,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "AI 創作工坊",
+        "label": "WaveSpeed API",
         "emptyHint": "點擊此節點，然後選擇模型 →",
         "params": {
           "modelId": {
@@ -1419,6 +1403,21 @@
         "desc": "點擊 ⋮ 選單可使用進階功能：\n• 將工作流儲存為可重複使用範本\n• 以 JSON 匯入/匯出工作流以便分享\n• 在分頁中同時開啟多個工作流（如瀏覽器）\n• 從工具列瀏覽預設範本"
       }
     },
-    "selectNodeHint": "Select a node to configure its parameters"
+    "selectNodeHint": "Select a node to configure its parameters",
+    "modelSyncDesktopOnly": "Model sync is available in the WaveSpeed Desktop app.",
+    "nameExists": "A workflow with this name already exists. Saving will overwrite it.",
+    "overwriteWorkflow": "Overwrite Workflow",
+    "overwriteConfirm": "A workflow named \"{{name}}\" already exists. Do you want to overwrite it?",
+    "overwrite": "Overwrite",
+    "tabClose": "Close",
+    "tabCloseOthers": "Close Others",
+    "tabCloseRight": "Close to the Right",
+    "tabCloseSaved": "Close Saved",
+    "tabCloseAll": "Close All",
+    "deleteSelected": "Delete Selected ({{count}})",
+    "selectMode": "Select (V)",
+    "handMode": "Hand (H)",
+    "interactionSelect": "Select",
+    "interactionHand": "Hand"
   }
 }

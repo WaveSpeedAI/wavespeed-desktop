@@ -34,7 +34,9 @@
     "openInBrowser": "เปิดในเบราว์เซอร์",
     "settings": "การตั้งค่า",
     "clearAll": "ล้างทั้งหมด",
-    "deselectAll": "ยกเลิกการเลือกทั้งหมด"
+    "deselectAll": "ยกเลิกการเลือกทั้งหมด",
+    "add": "Add",
+    "saving": "Saving..."
   },
   "nav": {
     "home": "หน้าแรก",
@@ -1018,27 +1020,6 @@
     "output": "เอาต์พุต",
     "back": "กลับ"
   },
-  "videoConverter": {
-    "title": "ตัวแปลงวิดีโอ",
-    "description": "แปลงวิดีโอระหว่างรูปแบบโดยใช้เบราว์เซอร์ของคุณ",
-    "invalidFile": "กรุณาเลือกไฟล์วิดีโอที่ถูกต้อง",
-    "input": "วิดีโออินพุต",
-    "inputDesc": "เลือกหรือลากไฟล์วิดีโอเพื่อแปลง",
-    "dropzone": "คลิกหรือลากวิดีโอมาที่นี่",
-    "supportedFormats": "รองรับ MP4, WebM, MOV, AVI",
-    "settings": "การตั้งค่า",
-    "outputFormat": "รูปแบบเอาต์พุต",
-    "convert": "แปลงวิดีโอ",
-    "converting": "กำลังแปลง...",
-    "noCodecSupport": "ไม่พบตัวแปลงสัญญาณวิดีโอที่รองรับ",
-    "result": "ผลลัพธ์",
-    "codecUsed": "ตัวแปลงสัญญาณที่ใช้",
-    "download": "ดาวน์โหลด"
-  },
-  "game": {
-    "waitingLong": "รอนานเกินไป",
-    "clickToPlay": "คลิกเพื่อเริ่ม"
-  },
   "workflow": {
     "workflows": "เวิร์กโฟลว์",
     "newWorkflow": "เวิร์กโฟลว์ใหม่",
@@ -1121,7 +1102,10 @@
       "hint": "คลิกซ้าย = รวม คลิกขวา = แยก",
       "points": "จุด",
       "clear": "ล้าง",
-      "done": "เสร็จสิ้น"
+      "done": "เสร็จสิ้น",
+      "encoding": "Analyzing image...",
+      "waitingEncode": "Preparing...",
+      "decoding": "Updating mask..."
     },
     "pickPoints": "เลือกจุด",
     "pickPointsNeedInput": "ตั้งค่าภาพอินพุตก่อน",
@@ -1160,7 +1144,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "สตูดิโอสร้างสรรค์ AI",
+        "label": "WaveSpeed API",
         "emptyHint": "คลิกโหนดนี้ จากนั้นเลือกโมเดล →",
         "params": {
           "modelId": {
@@ -1419,6 +1403,21 @@
         "desc": "คลิกเมนู ⋮ เพื่อใช้ความสามารถขั้นสูง:\n• บันทึก workflow เป็นเทมเพลตที่นำกลับมาใช้ซ้ำได้\n• นำเข้า/ส่งออก workflow เป็น JSON เพื่อแชร์\n• เปิดหลาย workflow พร้อมกันในแท็บ (เหมือนเบราว์เซอร์)\n• เรียกดูเทมเพลตที่มีให้จากแถบเครื่องมือ"
       }
     },
-    "selectNodeHint": "Select a node to configure its parameters"
+    "selectNodeHint": "Select a node to configure its parameters",
+    "modelSyncDesktopOnly": "Model sync is available in the WaveSpeed Desktop app.",
+    "nameExists": "A workflow with this name already exists. Saving will overwrite it.",
+    "overwriteWorkflow": "Overwrite Workflow",
+    "overwriteConfirm": "A workflow named \"{{name}}\" already exists. Do you want to overwrite it?",
+    "overwrite": "Overwrite",
+    "tabClose": "Close",
+    "tabCloseOthers": "Close Others",
+    "tabCloseRight": "Close to the Right",
+    "tabCloseSaved": "Close Saved",
+    "tabCloseAll": "Close All",
+    "deleteSelected": "Delete Selected ({{count}})",
+    "selectMode": "Select (V)",
+    "handMode": "Hand (H)",
+    "interactionSelect": "Select",
+    "interactionHand": "Hand"
   }
 }

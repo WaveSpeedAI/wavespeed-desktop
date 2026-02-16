@@ -34,7 +34,9 @@
     "openInBrowser": "Buka dalam pelayar",
     "settings": "Tetapan",
     "clearAll": "Kosongkan semua",
-    "deselectAll": "Nyahpilih Semua"
+    "deselectAll": "Nyahpilih Semua",
+    "add": "Add",
+    "saving": "Saving..."
   },
   "nav": {
     "home": "Laman Utama",
@@ -1018,27 +1020,6 @@
     "output": "Output",
     "back": "Kembali"
   },
-  "videoConverter": {
-    "title": "Penukar Video",
-    "description": "Tukar video antara format menggunakan pelayar anda",
-    "invalidFile": "Sila pilih fail video yang sah",
-    "input": "Video Input",
-    "inputDesc": "Pilih atau seret fail video untuk ditukar",
-    "dropzone": "Klik atau seret video ke sini",
-    "supportedFormats": "Menyokong MP4, WebM, MOV, AVI",
-    "settings": "Tetapan",
-    "outputFormat": "Format Output",
-    "convert": "Tukar Video",
-    "converting": "Menukar...",
-    "noCodecSupport": "Tiada codec video yang disokong ditemui",
-    "result": "Hasil",
-    "codecUsed": "Codec yang digunakan",
-    "download": "Muat turun"
-  },
-  "game": {
-    "waitingLong": "Menunggu terlalu lama",
-    "clickToPlay": "Klik untuk mula"
-  },
   "workflow": {
     "workflows": "Aliran kerja",
     "newWorkflow": "Aliran kerja baharu",
@@ -1121,7 +1102,10 @@
       "hint": "Klik kiri = masukkan, klik kanan = kecualikan",
       "points": "titik",
       "clear": "Kosongkan",
-      "done": "Selesai"
+      "done": "Selesai",
+      "encoding": "Analyzing image...",
+      "waitingEncode": "Preparing...",
+      "decoding": "Updating mask..."
     },
     "pickPoints": "Pilih titik",
     "pickPointsNeedInput": "Tetapkan imej input terlebih dahulu",
@@ -1160,7 +1144,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "Studio Kreatif AI",
+        "label": "WaveSpeed API",
         "emptyHint": "Klik nod ini, kemudian pilih model →",
         "params": {
           "modelId": {
@@ -1419,6 +1403,21 @@
         "desc": "Klik menu ⋮ untuk ciri lanjutan:\n• Simpan workflow anda sebagai templat boleh guna semula\n• Import/Eksport workflow sebagai JSON untuk dikongsi\n• Buka berbilang workflow dalam tab (seperti pelayar)\n• Semak templat siap bina dari bar alat"
       }
     },
-    "selectNodeHint": "Select a node to configure its parameters"
+    "selectNodeHint": "Select a node to configure its parameters",
+    "modelSyncDesktopOnly": "Model sync is available in the WaveSpeed Desktop app.",
+    "nameExists": "A workflow with this name already exists. Saving will overwrite it.",
+    "overwriteWorkflow": "Overwrite Workflow",
+    "overwriteConfirm": "A workflow named \"{{name}}\" already exists. Do you want to overwrite it?",
+    "overwrite": "Overwrite",
+    "tabClose": "Close",
+    "tabCloseOthers": "Close Others",
+    "tabCloseRight": "Close to the Right",
+    "tabCloseSaved": "Close Saved",
+    "tabCloseAll": "Close All",
+    "deleteSelected": "Delete Selected ({{count}})",
+    "selectMode": "Select (V)",
+    "handMode": "Hand (H)",
+    "interactionSelect": "Select",
+    "interactionHand": "Hand"
   }
 }

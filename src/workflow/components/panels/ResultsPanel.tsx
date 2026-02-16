@@ -15,11 +15,14 @@ import type { NodeExecutionRecord } from '@/workflow/types/execution'
 interface ResultsPanelProps {
   /** When true, compact layout for embedding inside node card */
   embeddedInNode?: boolean
+  /** When set (e.g. when embedded in a node card), show this node's results regardless of selection */
+  nodeId?: string
 }
 
-export function ResultsPanel({ embeddedInNode }: ResultsPanelProps = {}) {
+export function ResultsPanel({ embeddedInNode, nodeId: nodeIdProp }: ResultsPanelProps = {}) {
   const { t } = useTranslation()
   const selectedNodeId = useUIStore(s => s.selectedNodeId)
+  const nodeId = nodeIdProp ?? selectedNodeId
   const openPreview = useUIStore(s => s.openPreview)
   const nodeStatuses = useExecutionStore(s => s.nodeStatuses)
   const clearNodeResults = useExecutionStore(s => s.clearNodeResults)
@@ -27,58 +30,56 @@ export function ResultsPanel({ embeddedInNode }: ResultsPanelProps = {}) {
   const [prevStatus, setPrevStatus] = useState<string>('idle')
 
   const loadRecords = useCallback(async () => {
-    if (!selectedNodeId) { setRecords([]); return }
+    if (!nodeId) { setRecords([]); return }
     try {
-      const r = await historyIpc.list(selectedNodeId)
+      const r = await historyIpc.list(nodeId)
       setRecords(r || [])
     } catch { setRecords([]) }
-  }, [selectedNodeId])
+  }, [nodeId])
 
   useEffect(() => { loadRecords() }, [loadRecords])
 
   // Auto-refresh when execution completes
   useEffect(() => {
-    if (!selectedNodeId) return
-    const currentStatus = nodeStatuses[selectedNodeId] || 'idle'
+    if (!nodeId) return
+    const currentStatus = nodeStatuses[nodeId] || 'idle'
     if (prevStatus === 'running' && currentStatus !== 'running') setTimeout(loadRecords, 1500)
     setPrevStatus(currentStatus)
-  }, [selectedNodeId, nodeStatuses, loadRecords, prevStatus])
+  }, [nodeId, nodeStatuses, loadRecords, prevStatus])
 
   /** Delete a single execution record + files, refresh list */
   const handleDeleteOne = useCallback(async (executionId: string) => {
     try {
       await historyIpc.delete(executionId)
       setRecords(prev => prev.filter(r => r.id !== executionId))
-      // Also refresh in-memory store
-      if (selectedNodeId) clearNodeResults(selectedNodeId)
+      if (nodeId) clearNodeResults(nodeId)
     } catch (err) {
       console.error('Failed to delete execution:', err)
     }
-  }, [selectedNodeId, clearNodeResults])
+  }, [nodeId, clearNodeResults])
 
   /** Delete ALL execution records + files for this node */
   const handleDeleteAll = useCallback(async () => {
-    if (!selectedNodeId) return
+    if (!nodeId) return
     try {
-      await historyIpc.deleteAll(selectedNodeId)
+      await historyIpc.deleteAll(nodeId)
       setRecords([])
-      clearNodeResults(selectedNodeId)
-      // Also clear hidden runs metadata from node params
-      const node = useWorkflowStore.getState().nodes.find(n => n.id === selectedNodeId)
+      clearNodeResults(nodeId)
+      const node = useWorkflowStore.getState().nodes.find(n => n.id === nodeId)
       if (node) {
         const { __hiddenRuns: _, __showLatestOnly: _2, ...rest } = node.data.params as Record<string, unknown>
-        useWorkflowStore.getState().updateNodeParams(selectedNodeId, rest)
+        useWorkflowStore.getState().updateNodeParams(nodeId, rest)
       }
     } catch (err) {
       console.error('Failed to delete all executions:', err)
     }
-  }, [selectedNodeId, clearNodeResults])
+  }, [nodeId, clearNodeResults])
 
-  if (!selectedNodeId) {
+  if (!nodeId) {
     return <div className="p-4 text-muted-foreground text-sm text-center">Select a node to view results</div>
   }
 
-  const currentNodeStatus = nodeStatuses[selectedNodeId]
+  const currentNodeStatus = nodeStatuses[nodeId]
 
   // Extract all output URLs from a record
   const getUrls = (rec: NodeExecutionRecord): string[] => {
@@ -147,7 +148,7 @@ export function ResultsPanel({ embeddedInNode }: ResultsPanelProps = {}) {
 
       {/* Execution list */}
       <ScrollArea className={`flex-1 min-h-0 ${embeddedInNode ? 'max-h-[240px] px-2 pb-2' : 'px-3 pb-3'}`}>
-        {records.length === 0 && <p className="text-muted-foreground text-sm py-6 text-center">No executions yet</p>}
+        {records.length === 0 && <p className="text-muted-foreground text-sm py-6 text-center">{t('workflow.noExecutions', 'No executions yet')}</p>}
 
         <div className="space-y-2">
           {records.map((rec, idx) => {

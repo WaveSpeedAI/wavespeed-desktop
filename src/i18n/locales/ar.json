@@ -34,7 +34,9 @@
     "openInBrowser": "فتح في المتصفح",
     "settings": "الإعدادات",
     "clearAll": "مسح الكل",
-    "deselectAll": "إلغاء تحديد الكل"
+    "deselectAll": "إلغاء تحديد الكل",
+    "add": "Add",
+    "saving": "Saving..."
   },
   "nav": {
     "home": "الرئيسية",
@@ -1018,27 +1020,6 @@
     "output": "إخراج",
     "back": "رجوع"
   },
-  "videoConverter": {
-    "title": "محول الفيديو",
-    "description": "تحويل مقاطع الفيديو بين الصيغ باستخدام متصفحك",
-    "invalidFile": "الرجاء تحديد ملف فيديو صالح",
-    "input": "فيديو الإدخال",
-    "inputDesc": "حدد أو اسحب ملف فيديو للتحويل",
-    "dropzone": "انقر أو اسحب الفيديو هنا",
-    "supportedFormats": "يدعم MP4، WebM، MOV، AVI",
-    "settings": "الإعدادات",
-    "outputFormat": "صيغة الإخراج",
-    "convert": "تحويل الفيديو",
-    "converting": "جاري التحويل...",
-    "noCodecSupport": "لم يتم العثور على برنامج ترميز فيديو مدعوم",
-    "result": "النتيجة",
-    "codecUsed": "برنامج الترميز المستخدم",
-    "download": "تحميل"
-  },
-  "game": {
-    "waitingLong": "انتظار طويل جداً",
-    "clickToPlay": "انقر للبدء"
-  },
   "workflow": {
     "workflows": "سير العمل",
     "newWorkflow": "سير عمل جديد",
@@ -1121,7 +1102,10 @@
       "hint": "النقر الأيسر = تضمين، النقر الأيمن = استبعاد",
       "points": "نقاط",
       "clear": "مسح",
-      "done": "تم"
+      "done": "تم",
+      "encoding": "Analyzing image...",
+      "waitingEncode": "Preparing...",
+      "decoding": "Updating mask..."
     },
     "pickPoints": "اختر النقاط",
     "pickPointsNeedInput": "قم بتعيين صورة الإدخال أولاً",
@@ -1160,7 +1144,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "استوديو الإبداع بالذكاء الاصطناعي",
+        "label": "WaveSpeed API",
         "emptyHint": "انقر على هذه العقدة، ثم اختر النموذج ←",
         "params": {
           "modelId": {
@@ -1419,6 +1403,21 @@
         "desc": "انقر قائمة ⋮ للوصول إلى الميزات المتقدمة:\n• احفظ سير العمل كقالب قابل لإعادة الاستخدام\n• استيراد/تصدير سير العمل بصيغة JSON للمشاركة\n• افتح عدة مسارات في تبويبات (مثل المتصفح)\n• تصفح القوالب الجاهزة من شريط الأدوات"
       }
     },
-    "selectNodeHint": "Select a node to configure its parameters"
+    "selectNodeHint": "Select a node to configure its parameters",
+    "modelSyncDesktopOnly": "Model sync is available in the WaveSpeed Desktop app.",
+    "nameExists": "A workflow with this name already exists. Saving will overwrite it.",
+    "overwriteWorkflow": "Overwrite Workflow",
+    "overwriteConfirm": "A workflow named \"{{name}}\" already exists. Do you want to overwrite it?",
+    "overwrite": "Overwrite",
+    "tabClose": "Close",
+    "tabCloseOthers": "Close Others",
+    "tabCloseRight": "Close to the Right",
+    "tabCloseSaved": "Close Saved",
+    "tabCloseAll": "Close All",
+    "deleteSelected": "Delete Selected ({{count}})",
+    "selectMode": "Select (V)",
+    "handMode": "Hand (H)",
+    "interactionSelect": "Select",
+    "interactionHand": "Hand"
   }
 }

@@ -34,7 +34,9 @@
     "downloadFailed": "Download fehlgeschlagen. Bitte überprüfen Sie Ihre Netzwerkverbindung.",
     "openInBrowser": "Im Browser öffnen",
     "settings": "Einstellungen",
-    "clearAll": "Alles löschen"
+    "clearAll": "Alles löschen",
+    "add": "Add",
+    "saving": "Saving..."
   },
   "nav": {
     "home": "Startseite",
@@ -998,10 +1000,6 @@
     "downloadStarted": "Download gestartet",
     "downloadFailed": "Download fehlgeschlagen"
   },
-  "game": {
-    "waitingLong": "Lange Wartezeit? Spiel ein Mini-Spiel!",
-    "clickToPlay": "Klicken zum Starten"
-  },
   "smartPlayground": {
     "autoDetected": "Automatisch erkannte Variante",
     "willCall": "Wird aufrufen",
@@ -1021,23 +1019,6 @@
     "input": "Eingabe",
     "output": "Ausgabe",
     "back": "Zurück"
-  },
-  "videoConverter": {
-    "title": "Video-Konverter",
-    "description": "Videos zwischen Formaten mit Ihrem Browser konvertieren",
-    "invalidFile": "Bitte wählen Sie eine gültige Videodatei",
-    "input": "Eingabevideo",
-    "inputDesc": "Wählen oder ziehen Sie eine Videodatei zum Konvertieren",
-    "dropzone": "Klicken oder Video hierher ziehen",
-    "supportedFormats": "Unterstützt MP4, WebM, MOV, AVI",
-    "settings": "Einstellungen",
-    "outputFormat": "Ausgabeformat",
-    "convert": "Video konvertieren",
-    "converting": "Konvertierung...",
-    "noCodecSupport": "Kein unterstützter Video-Codec gefunden",
-    "result": "Ergebnis",
-    "codecUsed": "Verwendeter Codec",
-    "download": "Herunterladen"
   },
   "workflow": {
     "workflows": "Workflows",
@@ -1122,7 +1103,10 @@
       "hint": "Linksklick = einbeziehen, Rechtsklick = ausschließen",
       "points": "Punkte",
       "clear": "Löschen",
-      "done": "Fertig"
+      "done": "Fertig",
+      "encoding": "Analyzing image...",
+      "waitingEncode": "Preparing...",
+      "decoding": "Updating mask..."
     },
     "pickPoints": "Punkte auswählen",
     "pickPointsNeedInput": "Bitte zuerst Eingabebild festlegen",
@@ -1161,7 +1145,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "AI Kreativstudio",
+        "label": "WaveSpeed API",
         "emptyHint": "Klicken Sie auf diesen Knoten, dann wählen Sie ein Modell →",
         "params": {
           "modelId": {
@@ -1419,6 +1403,21 @@
         "loadingOptimizer": "Optimierer wird geladen...",
         "loadConfigFailed": "Optimierer-Konfiguration konnte nicht geladen werden"
       }
-    }
+    },
+    "modelSyncDesktopOnly": "Model sync is available in the WaveSpeed Desktop app.",
+    "nameExists": "A workflow with this name already exists. Saving will overwrite it.",
+    "overwriteWorkflow": "Overwrite Workflow",
+    "overwriteConfirm": "A workflow named \"{{name}}\" already exists. Do you want to overwrite it?",
+    "overwrite": "Overwrite",
+    "tabClose": "Close",
+    "tabCloseOthers": "Close Others",
+    "tabCloseRight": "Close to the Right",
+    "tabCloseSaved": "Close Saved",
+    "tabCloseAll": "Close All",
+    "deleteSelected": "Delete Selected ({{count}})",
+    "selectMode": "Select (V)",
+    "handMode": "Hand (H)",
+    "interactionSelect": "Select",
+    "interactionHand": "Hand"
   }
 }

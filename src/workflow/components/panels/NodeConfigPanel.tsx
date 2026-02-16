@@ -9,6 +9,7 @@ import { useExecutionStore } from '../../stores/execution.store'
 import { useUIStore } from '../../stores/ui.store'
 import { modelsIpc } from '../../ipc/ipc-client'
 import { useModelsStore } from '@/stores/modelsStore'
+import { convertDesktopModel } from '../../lib/model-converter'
 import { Input } from '@/components/ui/input'
 import type { ParamDefinition, WaveSpeedModel } from '@/workflow/types/node-defs'
 import { fuzzySearch } from '@/lib/fuzzySearch'
@@ -112,76 +113,49 @@ function AITaskModelSelector({ params, onChange, embedded }: { params: Record<st
   const selectedNodeId = useUIStore(s => s.selectedNodeId)
   const updateNodeData = useWorkflowStore(s => s.updateNodeData)
   const [searchQuery, setSearchQuery] = useState('')
-  const [models, setModels] = useState<WaveSpeedModel[]>([])
   const [selectedModel, setSelectedModel] = useState<WaveSpeedModel | null>(null)
   const allCategoryLabel = t('workflow.modelSelector.allCategory', 'All')
   const [selectedCategory, setSelectedCategory] = useState(allCategoryLabel)
-  const [loading, setLoading] = useState(true)
   const [refreshingCatalog, setRefreshingCatalog] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [recentModels, setRecentModels] = useState(getRecentModels())
   const currentModelId = String(params.modelId ?? '')
+  const storeModels = useModelsStore(s => s.models)
+  const isLoading = useModelsStore(s => s.isLoading)
+  const storeError = useModelsStore(s => s.error)
   const fetchModels = useModelsStore(s => s.fetchModels)
   const hasSearchQuery = searchQuery.trim().length > 0
+  const models = useMemo(() => storeModels.map(convertDesktopModel), [storeModels])
+  const error = storeError
+    ? (typeof storeError === 'string' ? storeError : t('workflow.modelSelector.loadFailed', 'Failed to load models.'))
+    : (models.length === 0 && !isLoading ? t('workflow.modelSelector.noModelsLoaded', 'No models loaded. Click "Refresh Models" below.') : null)
 
-  const loadModelsFromRegistry = useCallback(async () => {
-    const m = await modelsIpc.list()
-    setModels(m ?? [])
-    if (currentModelId) {
-      const found = (m ?? []).find(model => model.modelId === currentModelId)
-      if (found) setSelectedModel(found)
-    }
-    if (!m || m.length === 0) setError(t('workflow.modelSelector.noModelsLoaded', 'No models loaded. Click "Refresh Models" below.'))
-  }, [currentModelId])
-
-  // Load models with retry — first attempt may be empty if sync is still in progress
   useEffect(() => {
-    let retryCount = 0
-    let cancelled = false
+    if (storeModels.length === 0) fetchModels()
+  }, [storeModels.length, fetchModels])
 
-    const tryLoad = () => {
-      setLoading(true); setError(null)
-      modelsIpc.list().then(m => {
-        if (cancelled) return
-        if ((!m || m.length === 0) && retryCount < 3) {
-          // Sync may still be in progress — retry after a short delay
-          retryCount++
-          setTimeout(tryLoad, 1500)
-          return
-        }
-        setModels(m ?? []); setLoading(false)
-        if (currentModelId) {
-          const found = (m ?? []).find(model => model.modelId === currentModelId)
-          if (found) setSelectedModel(found)
-        }
-        if (!m || m.length === 0) setError(t('workflow.modelSelector.noModelsLoaded', 'No models loaded. Click "Refresh Models" below.'))
-      }).catch(() => {
-        if (cancelled) return
-        if (retryCount < 3) { retryCount++; setTimeout(tryLoad, 1500); return }
-        setError(t('workflow.modelSelector.loadFailed', 'Failed to load models.')); setLoading(false)
-      })
+  useEffect(() => {
+    if (currentModelId && models.length > 0) {
+      const found = models.find(m => m.modelId === currentModelId)
+      setSelectedModel(found ?? null)
+    } else {
+      setSelectedModel(null)
     }
-    tryLoad()
-    return () => { cancelled = true }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentModelId])
+  }, [currentModelId, models])
 
   const handleRefreshModels = useCallback(async () => {
     try {
       setRefreshingCatalog(true)
-      setError(null)
       await fetchModels(true)
       const latestModels = useModelsStore.getState().models
-      if (latestModels.length > 0) {
+      if (latestModels.length > 0 && typeof window !== 'undefined' && window.workflowAPI) {
         await modelsIpc.sync(latestModels)
       }
-      await loadModelsFromRegistry()
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('workflow.modelSelector.refreshFailed', 'Failed to refresh models.'))
+      // error comes from store
     } finally {
       setRefreshingCatalog(false)
     }
-  }, [fetchModels, loadModelsFromRegistry, t])
+  }, [fetchModels])
 
   const categoryFilteredModels = useMemo(() => {
     if (selectedCategory === allCategoryLabel) return models

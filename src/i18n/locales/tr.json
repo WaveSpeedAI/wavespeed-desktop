@@ -34,7 +34,9 @@
     "downloadFailed": "İndirme başarısız. Lütfen ağ bağlantınızı kontrol edin.",
     "openInBrowser": "Tarayıcıda aç",
     "settings": "Ayarlar",
-    "clearAll": "Tümünü temizle"
+    "clearAll": "Tümünü temizle",
+    "add": "Add",
+    "saving": "Saving..."
   },
   "nav": {
     "home": "Ana Sayfa",
@@ -998,10 +1000,6 @@
     "downloadStarted": "İndirme başladı",
     "downloadFailed": "İndirme başarısız"
   },
-  "game": {
-    "waitingLong": "Çok mu bekliyorsunuz? Mini oyun oynayın!",
-    "clickToPlay": "Başlamak için tıklayın"
-  },
   "smartPlayground": {
     "autoDetected": "Otomatik algılanan varyant",
     "willCall": "Çağıracak",
@@ -1021,23 +1019,6 @@
     "input": "Giriş",
     "output": "Çıkış",
     "back": "Geri"
-  },
-  "videoConverter": {
-    "title": "Video Dönüştürücü",
-    "description": "Tarayıcınızı kullanarak videoları formatlar arasında dönüştürün",
-    "invalidFile": "Lütfen geçerli bir video dosyası seçin",
-    "input": "Giriş Videosu",
-    "inputDesc": "Dönüştürmek için bir video dosyası seçin veya sürükleyin",
-    "dropzone": "Videoyu buraya tıklayın veya sürükleyin",
-    "supportedFormats": "MP4, WebM, MOV, AVI desteklenir",
-    "settings": "Ayarlar",
-    "outputFormat": "Çıkış Formatı",
-    "convert": "Videoyu Dönüştür",
-    "converting": "Dönüştürülüyor...",
-    "noCodecSupport": "Desteklenen video codec bulunamadı",
-    "result": "Sonuç",
-    "codecUsed": "Kullanılan codec",
-    "download": "İndir"
   },
   "workflow": {
     "workflows": "İş akışları",
@@ -1121,7 +1102,10 @@
       "hint": "Sol tıklama = dahil, sağ tıklama = hariç tut",
       "points": "nokta",
       "clear": "Temizle",
-      "done": "Tamam"
+      "done": "Tamam",
+      "encoding": "Analyzing image...",
+      "waitingEncode": "Preparing...",
+      "decoding": "Updating mask..."
     },
     "pickPoints": "Noktaları seç",
     "pickPointsNeedInput": "Önce giriş görselini ayarlayın",
@@ -1160,7 +1144,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "AI Yaratıcı Stüdyo",
+        "label": "WaveSpeed API",
         "emptyHint": "Bu düğüme tıklayın, sonra model seçin →",
         "params": {
           "modelId": {
@@ -1419,6 +1403,21 @@
         "desc": "Gelismis ozellikler icin ⋮ menusune tiklayin:\n• Workflow'unuzu yeniden kullanilabilir sablon olarak kaydedin\n• Paylasmak icin workflow'lari JSON olarak ice/disa aktarin\n• Birden fazla workflow'u sekmelerde acin (tarayici gibi)\n• Arac cubugundan hazir sablonlara goz atin"
       }
     },
-    "selectNodeHint": "Select a node to configure its parameters"
+    "selectNodeHint": "Select a node to configure its parameters",
+    "modelSyncDesktopOnly": "Model sync is available in the WaveSpeed Desktop app.",
+    "nameExists": "A workflow with this name already exists. Saving will overwrite it.",
+    "overwriteWorkflow": "Overwrite Workflow",
+    "overwriteConfirm": "A workflow named \"{{name}}\" already exists. Do you want to overwrite it?",
+    "overwrite": "Overwrite",
+    "tabClose": "Close",
+    "tabCloseOthers": "Close Others",
+    "tabCloseRight": "Close to the Right",
+    "tabCloseSaved": "Close Saved",
+    "tabCloseAll": "Close All",
+    "deleteSelected": "Delete Selected ({{count}})",
+    "selectMode": "Select (V)",
+    "handMode": "Hand (H)",
+    "interactionSelect": "Select",
+    "interactionHand": "Hand"
   }
 }

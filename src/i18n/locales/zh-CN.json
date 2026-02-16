@@ -1000,10 +1000,6 @@
     "downloadStarted": "下载已开始",
     "downloadFailed": "下载失败"
   },
-  "game": {
-    "waitingLong": "等待时间较长",
-    "clickToPlay": "点击玩个小游戏打发时间"
-  },
   "smartPlayground": {
     "autoDetected": "自动检测变体",
     "willCall": "将调用",
@@ -1023,23 +1019,6 @@
     "input": "输入",
     "output": "输出",
     "back": "返回"
-  },
-  "videoConverter": {
-    "title": "视频转换器",
-    "description": "在浏览器中转换视频格式",
-    "invalidFile": "请选择有效的视频文件",
-    "input": "输入视频",
-    "inputDesc": "选择或拖拽视频文件进行转换",
-    "dropzone": "点击或拖拽视频到此处",
-    "supportedFormats": "支持 MP4, WebM, MOV, AVI",
-    "settings": "设置",
-    "outputFormat": "输出格式",
-    "convert": "转换视频",
-    "converting": "转换中...",
-    "noCodecSupport": "未找到支持的视频编码器",
-    "result": "结果",
-    "codecUsed": "使用的编码器",
-    "download": "下载"
   },
   "workflow": {
     "workflows": "工作流",
@@ -1138,7 +1117,10 @@
       "hint": "左键点击=包含，右键点击=排除",
       "points": "个点",
       "clear": "清空",
-      "done": "完成"
+      "done": "完成",
+      "encoding": "Analyzing image...",
+      "waitingEncode": "Preparing...",
+      "decoding": "Updating mask..."
     },
     "pickPoints": "点选",
     "pickPointsNeedInput": "请先设置输入图片",
@@ -1177,7 +1159,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "AI 创作工坊",
+        "label": "WaveSpeed API",
         "emptyHint": "点击此节点，然后选择模型 →",
         "params": {
           "modelId": {
@@ -1435,6 +1417,7 @@
         "loadingOptimizer": "正在加载优化器...",
         "loadConfigFailed": "无法加载优化器配置"
       }
-    }
+    },
+    "modelSyncDesktopOnly": "Model sync is available in the WaveSpeed Desktop app."
   }
 }

@@ -34,7 +34,9 @@
     "downloadFailed": "Загрузка не удалась. Пожалуйста, проверьте сетевое подключение.",
     "openInBrowser": "Открыть в браузере",
     "settings": "Настройки",
-    "clearAll": "Очистить всё"
+    "clearAll": "Очистить всё",
+    "add": "Add",
+    "saving": "Saving..."
   },
   "nav": {
     "home": "Главная",
@@ -998,10 +1000,6 @@
     "downloadStarted": "Загрузка начата",
     "downloadFailed": "Ошибка загрузки"
   },
-  "game": {
-    "waitingLong": "Долго ждёте? Сыграйте в мини-игру!",
-    "clickToPlay": "Нажмите, чтобы начать"
-  },
   "smartPlayground": {
     "autoDetected": "Автоматически определенный вариант",
     "willCall": "Будет вызывать",
@@ -1021,23 +1019,6 @@
     "input": "Вход",
     "output": "Выход",
     "back": "Назад"
-  },
-  "videoConverter": {
-    "title": "Конвертер Видео",
-    "description": "Конвертируйте видео между форматами в браузере",
-    "invalidFile": "Пожалуйста, выберите корректный видеофайл",
-    "input": "Входное Видео",
-    "inputDesc": "Выберите или перетащите видеофайл для конвертации",
-    "dropzone": "Нажмите или перетащите видео сюда",
-    "supportedFormats": "Поддерживает MP4, WebM, MOV, AVI",
-    "settings": "Настройки",
-    "outputFormat": "Выходной Формат",
-    "convert": "Конвертировать Видео",
-    "converting": "Конвертация...",
-    "noCodecSupport": "Поддерживаемый видеокодек не найден",
-    "result": "Результат",
-    "codecUsed": "Использованный кодек",
-    "download": "Скачать"
   },
   "workflow": {
     "workflows": "Рабочие процессы",
@@ -1121,7 +1102,10 @@
       "hint": "ЛКМ = включить, ПКМ = исключить",
       "points": "точек",
       "clear": "Очистить",
-      "done": "Готово"
+      "done": "Готово",
+      "encoding": "Analyzing image...",
+      "waitingEncode": "Preparing...",
+      "decoding": "Updating mask..."
     },
     "pickPoints": "Выбрать точки",
     "pickPointsNeedInput": "Сначала установите входное изображение",
@@ -1160,7 +1144,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "AI Творческая студия",
+        "label": "WaveSpeed API",
         "emptyHint": "Нажмите на этот узел, затем выберите модель →",
         "params": {
           "modelId": {
@@ -1419,6 +1403,21 @@
         "desc": "Нажмите меню ⋮ для расширенных возможностей:\n• Сохраняйте workflow как повторно используемый шаблон\n• Импортируйте/экспортируйте workflow в JSON для обмена\n• Открывайте несколько workflow во вкладках (как в браузере)\n• Просматривайте готовые шаблоны на панели инструментов"
       }
     },
-    "selectNodeHint": "Select a node to configure its parameters"
+    "selectNodeHint": "Select a node to configure its parameters",
+    "modelSyncDesktopOnly": "Model sync is available in the WaveSpeed Desktop app.",
+    "nameExists": "A workflow with this name already exists. Saving will overwrite it.",
+    "overwriteWorkflow": "Overwrite Workflow",
+    "overwriteConfirm": "A workflow named \"{{name}}\" already exists. Do you want to overwrite it?",
+    "overwrite": "Overwrite",
+    "tabClose": "Close",
+    "tabCloseOthers": "Close Others",
+    "tabCloseRight": "Close to the Right",
+    "tabCloseSaved": "Close Saved",
+    "tabCloseAll": "Close All",
+    "deleteSelected": "Delete Selected ({{count}})",
+    "selectMode": "Select (V)",
+    "handMode": "Hand (H)",
+    "interactionSelect": "Select",
+    "interactionHand": "Hand"
   }
 }

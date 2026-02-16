@@ -1000,10 +1000,6 @@
     "downloadStarted": "Download started",
     "downloadFailed": "Download failed"
   },
-  "game": {
-    "waitingLong": "This is taking a while",
-    "clickToPlay": "Tap to play a game while waiting"
-  },
   "smartPlayground": {
     "autoDetected": "Auto-detected variant",
     "willCall": "Will call",
@@ -1023,23 +1019,6 @@
     "input": "Input",
     "output": "Output",
     "back": "Back"
-  },
-  "videoConverter": {
-    "title": "Video Converter",
-    "description": "Convert videos between formats using your browser",
-    "invalidFile": "Please select a valid video file",
-    "input": "Input Video",
-    "inputDesc": "Select or drag a video file to convert",
-    "dropzone": "Click or drag video here",
-    "supportedFormats": "Supports MP4, WebM, MOV, AVI",
-    "settings": "Settings",
-    "outputFormat": "Output Format",
-    "convert": "Convert Video",
-    "converting": "Converting...",
-    "noCodecSupport": "No supported video codec found",
-    "result": "Result",
-    "codecUsed": "Codec used",
-    "download": "Download"
   },
   "workflow": {
     "workflows": "Workflows",
@@ -1181,7 +1160,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "AI Creative Studio",
+        "label": "WaveSpeed API",
         "emptyHint": "Click this node, then select a model →",
         "params": {
           "modelId": {

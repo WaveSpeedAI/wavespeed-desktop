@@ -34,7 +34,9 @@
     "downloadFailed": "다운로드에 실패했습니다. 네트워크 연결을 확인해 주세요.",
     "openInBrowser": "브라우저에서 열기",
     "settings": "설정",
-    "clearAll": "모두 지우기"
+    "clearAll": "모두 지우기",
+    "add": "Add",
+    "saving": "Saving..."
   },
   "nav": {
     "home": "홈",
@@ -998,10 +1000,6 @@
     "downloadStarted": "다운로드 시작됨",
     "downloadFailed": "다운로드 실패"
   },
-  "game": {
-    "waitingLong": "오래 기다리셨나요? 미니 게임 해보세요!",
-    "clickToPlay": "클릭하여 시작"
-  },
   "smartPlayground": {
     "autoDetected": "자동 감지된 변형",
     "willCall": "호출 예정",
@@ -1021,23 +1019,6 @@
     "input": "입력",
     "output": "출력",
     "back": "뒤로"
-  },
-  "videoConverter": {
-    "title": "비디오 변환기",
-    "description": "브라우저에서 비디오 형식 변환",
-    "invalidFile": "유효한 비디오 파일을 선택하세요",
-    "input": "입력 비디오",
-    "inputDesc": "변환할 비디오 파일을 선택하거나 드래그하세요",
-    "dropzone": "클릭하거나 비디오를 여기에 드래그",
-    "supportedFormats": "MP4, WebM, MOV, AVI 지원",
-    "settings": "설정",
-    "outputFormat": "출력 형식",
-    "convert": "비디오 변환",
-    "converting": "변환 중...",
-    "noCodecSupport": "지원되는 비디오 코덱을 찾을 수 없습니다",
-    "result": "결과",
-    "codecUsed": "사용된 코덱",
-    "download": "다운로드"
   },
   "workflow": {
     "workflows": "워크플로우",
@@ -1122,7 +1103,10 @@
       "hint": "왼쪽 클릭 = 포함, 오른쪽 클릭 = 제외",
       "points": "포인트",
       "clear": "지우기",
-      "done": "완료"
+      "done": "완료",
+      "encoding": "Analyzing image...",
+      "waitingEncode": "Preparing...",
+      "decoding": "Updating mask..."
     },
     "pickPoints": "포인트 선택",
     "pickPointsNeedInput": "먼저 입력 이미지를 설정하세요",
@@ -1161,7 +1145,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "AI 크리에이티브 스튜디오",
+        "label": "WaveSpeed API",
         "emptyHint": "이 노드를 클릭한 다음 모델 선택 →",
         "params": {
           "modelId": {
@@ -1419,6 +1403,21 @@
         "loadingOptimizer": "최적화 도구 로드 중...",
         "loadConfigFailed": "최적화 도구 구성을 로드할 수 없습니다"
       }
-    }
+    },
+    "modelSyncDesktopOnly": "Model sync is available in the WaveSpeed Desktop app.",
+    "nameExists": "A workflow with this name already exists. Saving will overwrite it.",
+    "overwriteWorkflow": "Overwrite Workflow",
+    "overwriteConfirm": "A workflow named \"{{name}}\" already exists. Do you want to overwrite it?",
+    "overwrite": "Overwrite",
+    "tabClose": "Close",
+    "tabCloseOthers": "Close Others",
+    "tabCloseRight": "Close to the Right",
+    "tabCloseSaved": "Close Saved",
+    "tabCloseAll": "Close All",
+    "deleteSelected": "Delete Selected ({{count}})",
+    "selectMode": "Select (V)",
+    "handMode": "Hand (H)",
+    "interactionSelect": "Select",
+    "interactionHand": "Hand"
   }
 }

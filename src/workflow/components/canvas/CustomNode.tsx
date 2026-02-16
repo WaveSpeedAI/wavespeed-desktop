@@ -14,7 +14,7 @@ import { WorkflowPromptOptimizer } from './WorkflowPromptOptimizer'
 import { apiClient } from '@/api/client'
 import { MaskEditor } from '@/components/playground/MaskEditor'
 import { SegmentPointPicker, type SegmentPoint } from '../SegmentPointPicker'
-import { Paintbrush, MousePointer2 } from 'lucide-react'
+import { Paintbrush, MousePointer2, Dices } from 'lucide-react'
 import { useModelsStore } from '@/stores/modelsStore'
 import { getFormFieldsFromModel } from '@/lib/schemaToForm'
 import { convertDesktopModel, formFieldsToModelParamSchema } from '../../lib/model-converter'
@@ -26,6 +26,38 @@ import type { ParamDefinition, PortDefinition, ModelParamSchema, WaveSpeedModel 
 
 import { CompInput, CompTextarea } from './composition-input'
 import { ResultsPanel } from '../panels/ResultsPanel'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { FormField } from '@/components/playground/FormField'
+import type { FormFieldConfig } from '@/lib/schemaToForm'
+
+/** Convert workflow ParamDefinition to Playground FormFieldConfig for consistent FormField rendering */
+function paramDefToFormFieldConfig(p: ParamDefinition, nodeType?: string): FormFieldConfig | null {
+  if (nodeType === 'output/file' && p.key === 'outputDir') return null
+  const typeMap = {
+    string: 'text' as const,
+    number: 'number' as const,
+    boolean: 'boolean' as const,
+    select: 'select' as const,
+    file: 'file' as const,
+    textarea: 'textarea' as const,
+    slider: 'slider' as const
+  }
+  const formType = typeMap[p.type]
+  if (!formType) return null
+  const options = p.options?.map(o => o.value)
+  return {
+    name: p.key,
+    type: formType,
+    label: p.label,
+    required: false,
+    default: p.default,
+    min: p.validation?.min,
+    max: p.validation?.max,
+    step: p.validation?.step,
+    options,
+    description: p.description
+  }
+}
 
 /* ── types ───────────────────────────────────────────────────────────── */
 
@@ -371,6 +403,24 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
   )
   const defParams = paramDefs.filter(p => p.key !== 'modelId')
   const [showOptional, setShowOptional] = useState(false)
+
+  /** Playground form fields for AI Task — reuse same schema/rendering as Playground */
+  const formFields = useMemo<FormFieldConfig[]>(() => {
+    if (!isAITask || !currentModel) return []
+    return getFormFieldsFromModel(currentModel).filter(f => f.name !== 'modelId')
+  }, [isAITask, currentModel])
+  const formValues = useMemo(() => {
+    const p = data.params ?? {}
+    return Object.fromEntries(Object.entries(p).filter(([k]) => !k.startsWith('__')))
+  }, [data.params])
+  const [enabledHiddenFields, setEnabledHiddenFields] = useState<Set<string>>(new Set())
+  const visibleFormFields = useMemo(() => formFields.filter(f => !f.hidden), [formFields])
+  const hiddenFormFields = useMemo(() => formFields.filter(f => f.hidden), [formFields])
+  const usePlaygroundForm = isAITask && formFields.length > 0
+
+  useEffect(() => {
+    if (usePlaygroundForm) setEnabledHiddenFields(new Set())
+  }, [currentModelId, usePlaygroundForm])
 
   // All execution result groups (e.g. for free-tool hint when empty)
   const resultGroups = useExecutionStore(s => s.lastResults[id]) ?? []
@@ -724,7 +774,87 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
           </div>
         )}
 
-        {orderedVisibleParams.map(p => {
+        {/* AI Task: reuse Playground form (FormField) when model is loaded */}
+        {usePlaygroundForm && (
+          <>
+            {visibleFormFields.map((field) => {
+              const hid = `param-${field.name}`
+              const conn = connectedSet.has(hid)
+              return (
+                <Row key={field.name} handleId={hid} handleType="target" connected={conn}>
+                  {conn ? (
+                    <LinkedBadge
+                      nodeId={id}
+                      handleId={hid}
+                      edges={edges}
+                      nodes={useWorkflowStore.getState().nodes}
+                      onDisconnect={() => {
+                        const edge = edges.find(e => e.target === id && e.targetHandle === hid)
+                        if (edge) useWorkflowStore.getState().removeEdge(edge.id)
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full min-w-0 nodrag" onClick={e => e.stopPropagation()}>
+                      <FormField
+                        field={field}
+                        value={formValues[field.name]}
+                        onChange={(v) => setParam(field.name, v)}
+                        disabled={running}
+                        modelType={currentModel?.type}
+                        imageValue={field.name === 'prompt' ? (formValues['image'] as string) : undefined}
+                        formValues={formValues}
+                      />
+                    </div>
+                  )}
+                </Row>
+              )
+            })}
+            {hiddenFormFields.length > 0 && (
+              <div className="space-y-2 px-3 py-1">
+                {hiddenFormFields.map((field) => {
+                  const isEnabled = enabledHiddenFields.has(field.name)
+                  return (
+                    <div key={field.name} className="space-y-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEnabledHiddenFields((prev) => {
+                            const next = new Set(prev)
+                            if (next.has(field.name)) {
+                              next.delete(field.name)
+                              setParam(field.name, undefined)
+                            } else next.add(field.name)
+                            return next
+                          })
+                        }}
+                        className="flex items-center gap-2 px-2 py-1.5 rounded-md text-[11px] font-medium border border-[hsl(var(--border))] bg-[hsl(var(--background))] hover:bg-[hsl(var(--muted))] transition-colors"
+                      >
+                        <span className={`w-2.5 h-2.5 rounded-full border-2 ${isEnabled ? 'bg-primary border-primary' : 'border-muted-foreground'}`} />
+                        {field.label}
+                      </button>
+                      {isEnabled && (
+                        <div className="pl-2 border-l-2 border-primary/50 ml-1">
+                          <FormField
+                            field={field}
+                            value={formValues[field.name]}
+                            onChange={(v) => setParam(field.name, v)}
+                            disabled={running}
+                            modelType={currentModel?.type}
+                            formValues={formValues}
+                            hideLabel
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Fallback: schema-based ParamRow/MediaRow when not using Playground form */}
+        {!usePlaygroundForm && orderedVisibleParams.map(p => {
           const hid = `param-${p.name}`
           if (p.mediaType && p.fieldType !== 'loras') {
             return (
@@ -759,8 +889,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
           )
         })}
 
-        {/* Collapsible optional/hidden params — same schema order */}
-        {optionalParams.length > 0 && (
+        {!usePlaygroundForm && optionalParams.length > 0 && (
           <>
             <div className="px-3 py-1">
               <button onClick={e => { e.stopPropagation(); setShowOptional(!showOptional) }}
@@ -905,11 +1034,54 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
           </div>
         )}
 
-        {/* Hide defParams for nodes with custom body UI */}
+        {/* defParams: use Playground FormField when convertible, else DefParamControl (e.g. outputDir picker) */}
         {data.nodeType !== 'input/media-upload' && data.nodeType !== 'input/text-input' && defParams.map(p => {
           const hid = `param-${p.key}`
           const canConnect = p.connectable !== false && p.dataType !== undefined
           const conn = canConnect ? connectedSet.has(hid) : false
+          const fieldConfig = paramDefToFormFieldConfig(p, data.nodeType)
+
+          if (fieldConfig) {
+            if (!canConnect) {
+              return (
+                <div key={p.key} className="px-3 py-1 nodrag" onClick={e => e.stopPropagation()}>
+                  <FormField
+                    field={fieldConfig}
+                    value={formValues[p.key]}
+                    onChange={(v) => setParam(p.key, v)}
+                    disabled={running}
+                    formValues={formValues}
+                  />
+                </div>
+              )
+            }
+            return (
+              <Row key={p.key} handleId={hid} handleType="target" connected={conn}>
+                {conn ? (
+                  <LinkedBadge
+                    nodeId={id}
+                    handleId={hid}
+                    edges={edges}
+                    nodes={useWorkflowStore.getState().nodes}
+                    onDisconnect={() => {
+                      const edge = edges.find(e => e.target === id && e.targetHandle === hid)
+                      if (edge) useWorkflowStore.getState().removeEdge(edge.id)
+                    }}
+                  />
+                ) : (
+                  <div className="w-full min-w-0 nodrag" onClick={e => e.stopPropagation()}>
+                    <FormField
+                      field={fieldConfig}
+                      value={formValues[p.key]}
+                      onChange={(v) => setParam(p.key, v)}
+                      disabled={running}
+                      formValues={formValues}
+                    />
+                  </div>
+                )}
+              </Row>
+            )
+          }
 
           if (!canConnect) {
             return (
@@ -933,7 +1105,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
                   {localizeParamDescription(p.key, p.description) && <Tip text={String(localizeParamDescription(p.key, p.description))} />}
                 </span>
                 {conn
-                  ? <LinkedBadge nodeId={id} handleId={hid} edges={edges} nodes={useWorkflowStore.getState().nodes} />
+                  ? <LinkedBadge nodeId={id} handleId={hid} edges={edges} nodes={useWorkflowStore.getState().nodes} onDisconnect={() => { const edge = edges.find(e => e.target === id && e.targetHandle === hid); if (edge) useWorkflowStore.getState().removeEdge(edge.id) }} />
                   : <DefParamControl nodeId={id} param={p} value={data.params[p.key]} onChange={v => setParam(p.key, v)} />}
               </div>
             </Row>
@@ -1063,6 +1235,9 @@ function Row({ children, handleId, handleType, connected, media }: {
    ParamRow — one row per regular (non-media) schema parameter
    ══════════════════════════════════════════════════════════════════════ */
 
+// Same range as playground (FormField generateRandomSeed)
+const RANDOM_SEED_MAX = 65536
+
 function ParamRow({ nodeId, schema, value, connected, onChange, onDisconnect, edges, nodes, optimizerSettings, onOptimizerSettingsChange }: {
   nodeId: string; schema: ModelParamSchema; value: unknown; connected: boolean
   onChange: (v: unknown) => void
@@ -1072,6 +1247,7 @@ function ParamRow({ nodeId, schema, value, connected, onChange, onDisconnect, ed
   optimizerSettings?: Record<string, unknown>
   onOptimizerSettingsChange?: (settings: Record<string, unknown>) => void
 }) {
+  const { t } = useTranslation()
   const label = schema.label ?? formatLabel(schema.name)
   const ft = schema.fieldType ?? (TEXTAREA_NAMES.has(schema.name.toLowerCase()) ? 'textarea' : undefined)
   const isSeed = schema.name.toLowerCase() === 'seed'
@@ -1189,12 +1365,29 @@ function ParamRow({ nodeId, schema, value, connected, onChange, onDisconnect, ed
             ) : schema.type === 'boolean' || ft === 'boolean' ? <ToggleSwitch checked={Boolean(cur)} onChange={onChange} />
             : schema.type === 'number' || schema.type === 'integer' || ft === 'number' ? (
               <>
-                <NumberInput value={cur as number | undefined} min={schema.min} max={schema.max} step={schema.step ?? (schema.type === 'integer' ? 1 : 0.1)} onChange={onChange} />
+                <NumberInput
+                  value={cur as number | undefined}
+                  min={schema.min}
+                  max={schema.max}
+                  step={schema.step ?? (schema.type === 'integer' ? 1 : 0.1)}
+                  onChange={onChange}
+                  placeholder={isSeed && !schema.required ? t('workflow.seedRandomPlaceholder', 'Random') : undefined}
+                />
                 {isSeed && (
-                  <button onClick={() => onChange(Math.floor(Math.random() * 2147483647))}
-                    title="Randomize seed" className="px-1.5 py-1 rounded text-[16px] leading-none bg-blue-500/10 hover:bg-blue-500/20 transition-colors flex-shrink-0">
-                    🎲
-                  </button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => onChange(Math.floor(Math.random() * RANDOM_SEED_MAX))}
+                        className="p-1.5 rounded bg-blue-500/10 hover:bg-blue-500/20 transition-colors flex-shrink-0"
+                      >
+                        <Dices className="h-4 w-4 text-blue-400" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <p>{t('playground.randomSeed')}</p>
+                    </TooltipContent>
+                  </Tooltip>
                 )}
               </>
             ) : (
@@ -1555,8 +1748,8 @@ function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: (v: u
   )
 }
 
-function NumberInput({ value, min, max, step, onChange }: {
-  value: number | undefined; min?: number; max?: number; step: number; onChange: (v: unknown) => void
+function NumberInput({ value, min, max, step, onChange, placeholder }: {
+  value: number | undefined; min?: number; max?: number; step: number; onChange: (v: unknown) => void; placeholder?: string
 }) {
   // Clamp value to min/max on blur
   const handleBlur = () => {
@@ -1572,7 +1765,8 @@ function NumberInput({ value, min, max, step, onChange }: {
       <input type="number" value={value !== undefined && value !== null ? value : ''} min={min} max={max} step={step}
         onChange={e => onChange(e.target.value === '' ? undefined : Number(e.target.value))}
         onBlur={handleBlur}
-        className="w-full max-w-[120px] rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1.5 text-xs text-right text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+        placeholder={placeholder}
+        className="w-full max-w-[120px] rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1.5 text-xs text-right text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50 placeholder:text-[hsl(var(--muted-foreground))] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
       {min !== undefined && max !== undefined && <span className="text-[9px] text-[hsl(var(--muted-foreground))] whitespace-nowrap">{min}–{max}</span>}
     </div>
   )

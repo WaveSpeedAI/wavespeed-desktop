@@ -119,10 +119,10 @@ export function RunMonitor({ workflowId }: { workflowId?: string | null }) {
 
   return (
     <div className="flex-shrink-0 border-t border-border bg-card flex flex-col min-h-0 w-full">
-      {/* Header bar — always visible; click to expand when collapsed */}
+      {/* Header bar — click entire row to toggle expand/collapse */}
       <div
         className="flex items-center justify-between px-3 py-2 bg-muted/50 border-b border-border cursor-pointer hover:bg-muted/70 transition-colors flex-shrink-0"
-        onClick={() => !showRunMonitor && toggleRunMonitor()}
+        onClick={() => toggleRunMonitor()}
       >
         <span className="text-xs font-semibold">Execution Monitor</span>
         <button

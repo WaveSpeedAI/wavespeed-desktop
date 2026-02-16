@@ -1082,6 +1082,7 @@
     "clickAnywhereToClose": "Click anywhere to close",
     "runNode": "Run Node",
     "modelSelection": "Model Selection",
+    "seedRandomPlaceholder": "Random",
     "annotationHint": "Double-click the note on the canvas to edit it.",
     "continueFrom": "Continue From",
     "retry": "Retry",

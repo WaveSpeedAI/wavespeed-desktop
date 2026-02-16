@@ -7,6 +7,8 @@ import { useTranslation } from 'react-i18next'
 import { v4 as uuidv4 } from 'uuid'
 import ReactFlow, {
   ReactFlowProvider,
+  Background,
+  BackgroundVariant,
   SelectionMode,
   type Connection, type ReactFlowInstance, type Node, type NodeChange, type OnSelectionChangeParams
 } from 'reactflow'
@@ -127,8 +129,8 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
         if (copiedNode && reactFlowInstance.current) {
           try {
             const node = JSON.parse(copiedNode)
-            const center = reactFlowInstance.current.getViewport()
-            addNode(node.data.nodeType, { x: -center.x / center.zoom + 100, y: -center.y / center.zoom + 100 },
+            const center = useUIStore.getState().getViewportCenter()
+            addNode(node.data.nodeType, { x: center.x + (Math.random() - 0.5) * 60, y: center.y + (Math.random() - 0.5) * 60 },
               node.data.params, node.data.label, node.data.paramDefinitions ?? [], node.data.inputDefinitions ?? [], node.data.outputDefinitions ?? [])
             if (typeof node.data?.nodeType === 'string') recordRecentNodeType(node.data.nodeType)
           } catch (e) { console.error('Failed to paste node:', e) }
@@ -511,7 +513,19 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
           onPaneContextMenu={onPaneContextMenu}
           proOptions={{ hideAttribution: true }}
           onDragOver={onDragOver} onDrop={onDrop}
-          onInit={instance => { reactFlowInstance.current = instance }}
+          onInit={instance => {
+            reactFlowInstance.current = instance
+            useUIStore.getState().setGetViewportCenter(() => {
+              const vp = instance.getViewport()
+              const el = reactFlowWrapper.current
+              const w = el ? el.clientWidth : 800
+              const h = el ? el.clientHeight : 600
+              return {
+                x: (-vp.x + w / 2) / vp.zoom,
+                y: (-vp.y + h / 2) / vp.zoom,
+              }
+            })
+          }}
           nodeTypes={nodeTypes} edgeTypes={edgeTypes}
           selectionOnDrag={interactionMode === 'select'}
           selectionMode={SelectionMode.Partial}
@@ -522,7 +536,9 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
           maxZoom={2.5}
           fitView
           className="bg-background"
-        />
+        >
+          <Background variant={BackgroundVariant.Lines} gap={20} lineWidth={1} color="hsl(var(--border))" />
+        </ReactFlow>
         {contextMenu && contextMenu.type !== 'addNode' && (
           <ContextMenu x={contextMenu.x} y={contextMenu.y} items={getContextMenuItems()} onClose={() => setContextMenu(null)} />
         )}

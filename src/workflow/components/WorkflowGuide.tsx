@@ -95,8 +95,8 @@ function buildSteps(actions: {
     },
     {
       key: 'config',
-      target: '[data-guide="right-panel"]',
-      side: 'left',
+      target: '[data-guide="canvas"]',
+      side: 'top',
     },
     {
       key: 'run',

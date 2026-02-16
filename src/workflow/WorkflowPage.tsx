@@ -1,16 +1,14 @@
 /**
  * WorkflowPage — top-level page component for the /workflow route.
  *
- * Top bar: Workflow tabs (like browser tabs) + Run All + Save + Settings
- * Right sidebar: Config + Results tabs
+ * Top bar: Workflow tabs (like browser tabs) + Run All + Save + Settings.
+ * Config and Results are shown inside the selected node card on the canvas (no right sidebar).
  */
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { WorkflowCanvas } from './components/canvas/WorkflowCanvas'
 import { NodePalette } from './components/canvas/NodePalette'
-import { NodeConfigPanel } from './components/panels/NodeConfigPanel'
-import { ResultsPanel } from './components/panels/ResultsPanel'
 import { WorkflowList } from './components/WorkflowList'
 import { RunMonitor } from './components/canvas/RunMonitor'
 import { useWorkflowStore } from './stores/workflow.store'
@@ -28,7 +26,12 @@ import { WorkflowGuide, useWorkflowGuide } from './components/WorkflowGuide'
 import type { Template } from '@/types/template'
 import type { NodeTypeDefinition } from '@/workflow/types/node-defs'
 
-type ModelSyncStatus = 'idle' | 'loading' | 'synced' | 'error' | 'no-key'
+type ModelSyncStatus = 'idle' | 'loading' | 'synced' | 'error' | 'no-key' | 'unavailable'
+const WORKFLOW_API_UNAVAILABLE_MSG = 'Workflow API not available (run in Electron)'
+function isWorkflowApiUnavailable(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err)
+  return msg.includes(WORKFLOW_API_UNAVAILABLE_MSG)
+}
 
 /* ── Tab snapshot for multi-tab support ─────────────────────────────── */
 interface TabSnapshot {
@@ -98,7 +101,6 @@ export function WorkflowPage() {
   const wasRunning = useExecutionStore(s => s._wasRunning)
   const nodeStatuses = useExecutionStore(s => s.nodeStatuses)
   const isRunning = activeExecutions.size > 0
-  const [rightTab, setRightTab] = useState<'config' | 'results'>('config')
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
   const [saveToast, setSaveToast] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [saveToastMsg, setSaveToastMsg] = useState('')
@@ -276,7 +278,16 @@ export function WorkflowPage() {
   const [confirmCloseTabId, setConfirmCloseTabId] = useState<string | null>(null)
 
   const doCloseTab = useCallback((tabId: string) => {
-    if (tabs.length <= 1) return
+    if (tabs.length <= 1) {
+      // Last tab — reset to a clean blank workflow
+      const blankName = 'Untitled Workflow'
+      tabIdCounter++
+      const newTabId = `tab-${tabIdCounter}`
+      useWorkflowStore.setState({ workflowId: null, workflowName: blankName, nodes: [], edges: [], isDirty: false })
+      setTabs([{ tabId: newTabId, workflowId: null, workflowName: blankName, nodes: [], edges: [], isDirty: false }])
+      setActiveTabId(newTabId)
+      return
+    }
     const remaining = tabs.filter(t => t.tabId !== tabId)
     setTabs(remaining)
     if (tabId === activeTabId) {
@@ -294,7 +305,6 @@ export function WorkflowPage() {
 
   const closeTab = useCallback((tabId: string, e: React.MouseEvent) => {
     e.stopPropagation()
-    if (tabs.length <= 1) return
     const tab = tabs.find(t => t.tabId === tabId)
     if (tab?.isDirty) {
       setConfirmCloseTabId(tabId)
@@ -343,7 +353,6 @@ export function WorkflowPage() {
 
     switch (action) {
       case 'close':
-        if (tabs.length <= 1) return
         doCloseTab(tabId)
         break
       case 'closeOthers': {
@@ -654,7 +663,6 @@ export function WorkflowPage() {
       const ctrlOrCmd = navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? e.metaKey : e.ctrlKey
       if (ctrlOrCmd && e.key === 'w') {
         e.preventDefault()
-        if (tabs.length <= 1) return
         const tab = tabs.find(t => t.tabId === activeTabId)
         if (tab?.isDirty) {
           setConfirmCloseTabId(activeTabId)
@@ -684,7 +692,11 @@ export function WorkflowPage() {
     if (!apiKey) { setModelSyncStatus('no-key'); return }
     setModelSyncStatus('loading'); setModelSyncError('')
     try { await fetchModels(true) } catch (err) {
-      setModelSyncStatus('error'); setModelSyncError(err instanceof Error ? err.message : 'Failed')
+      if (isWorkflowApiUnavailable(err)) {
+        setModelSyncStatus('unavailable')
+      } else {
+        setModelSyncStatus('error'); setModelSyncError(err instanceof Error ? err.message : 'Failed')
+      }
     }
   }, [apiKey, fetchModels])
 
@@ -698,11 +710,19 @@ export function WorkflowPage() {
   useEffect(() => {
     if (desktopModels.length > 0) {
       modelsIpc.sync(desktopModels).then(() => { setModelSyncStatus('synced'); setModelCount(desktopModels.length) })
-        .catch(err => { setModelSyncStatus('error'); setModelSyncError(err instanceof Error ? err.message : 'Sync failed') })
+        .catch(err => {
+          if (isWorkflowApiUnavailable(err)) setModelSyncStatus('unavailable')
+          else { setModelSyncStatus('error'); setModelSyncError(err instanceof Error ? err.message : 'Sync failed') }
+        })
     }
   }, [desktopModels])
 
-  useEffect(() => { if (modelsError) { setModelSyncStatus('error'); setModelSyncError(modelsError) } }, [modelsError])
+  useEffect(() => {
+    if (modelsError) {
+      if (modelsError.includes(WORKFLOW_API_UNAVAILABLE_MSG)) setModelSyncStatus('unavailable')
+      else { setModelSyncStatus('error'); setModelSyncError(modelsError) }
+    }
+  }, [modelsError])
 
   // Cost estimate (debounced)
   useEffect(() => {
@@ -723,10 +743,6 @@ export function WorkflowPage() {
     costIpc.getBudget().then(b => setDailyLimit(b.dailyLimit)).catch(() => {})
   }, [workflowId, isRunning])
 
-  // Param defs for selected node
-  const selectedNode = nodes.find(n => n.id === selectedNodeId)
-  const paramDefs = selectedNode?.data?.paramDefinitions ?? []
-  const showRightPanel = selectedNodeId !== null || guideStepKey === 'config'
 
   // Run All — with node labels for monitor
   const handleRunAll = async (times = 1) => {
@@ -874,6 +890,11 @@ export function WorkflowPage() {
       {modelSyncStatus === 'loading' && (
         <div className="px-4 py-1.5 bg-blue-500/10 border-b border-blue-500/30 text-xs text-blue-400 animate-pulse">Loading models...</div>
       )}
+      {modelSyncStatus === 'unavailable' && (
+        <div className="flex items-center gap-2 px-4 py-1.5 bg-muted/50 border-b border-border text-xs text-muted-foreground">
+          <span>{t('workflow.modelSyncDesktopOnly', 'Model sync is available in the WaveSpeed Desktop app.')}</span>
+        </div>
+      )}
       {modelSyncStatus === 'error' && (
         <div className="flex items-center gap-2 px-4 py-1.5 bg-red-500/10 border-b border-red-500/30 text-xs text-red-400">
           <span>Models failed: {modelSyncError}</span>
@@ -963,7 +984,7 @@ export function WorkflowPage() {
                   <span className="truncate flex-1" onDoubleClick={e => { e.stopPropagation(); startRenameTab(tab.tabId) }}>{tab.workflowName}</span>
                 )}
                 {!isEditing && tab.isDirty && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />}
-                {!isEditing && tabs.length > 1 && (
+                {!isEditing && (
                   <button onClick={(e) => closeTab(tab.tabId, e)}
                     className="w-4 h-4 flex items-center justify-center rounded-sm text-[10px] text-muted-foreground hover:text-foreground hover:bg-accent/80 opacity-0 group-hover:opacity-100 transition-opacity">
                     ✕
@@ -1172,40 +1193,6 @@ export function WorkflowPage() {
         <div data-guide="canvas" className="flex-1 h-full min-w-0">
           <WorkflowCanvas nodeDefs={nodeDefs} />
         </div>
-        {showRightPanel && <ResizableSidebar>
-          {selectedNodeId ? (
-            <div data-guide="right-panel" className="flex flex-col h-full">
-              <div className="flex border-b border-border flex-shrink-0">
-                <button onClick={() => setRightTab('config')}
-                  className={`flex-1 px-3 py-2 text-xs font-medium transition-colors ${rightTab === 'config' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
-                  {t('workflow.config', 'Model')}
-                </button>
-                <button onClick={() => setRightTab('results')}
-                  className={`flex-1 px-3 py-2 text-xs font-medium transition-colors ${rightTab === 'results' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
-                  {t('workflow.results', 'Results')}
-                </button>
-              </div>
-              <div className="flex-1 overflow-hidden min-w-0 flex flex-col">
-                {rightTab === 'config' && <NodeConfigPanel paramDefs={paramDefs} />}
-                {rightTab === 'results' && <ResultsPanel />}
-              </div>
-            </div>
-          ) : (
-            <div data-guide="right-panel" className="flex flex-col h-full">
-              <div className="flex border-b border-border flex-shrink-0">
-                <button className="flex-1 px-3 py-2 text-xs font-medium border-b-2 border-primary text-primary">
-                  {t('workflow.config', 'Model')}
-                </button>
-                <button className="flex-1 px-3 py-2 text-xs font-medium text-muted-foreground">
-                  {t('workflow.results', 'Results')}
-                </button>
-              </div>
-              <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground px-4 text-center">
-                {t('workflow.selectNodeHint', 'Select a node to configure its parameters')}
-              </div>
-            </div>
-          )}
-        </ResizableSidebar>}
       </div>
 
       {/* Preview overlay — covers the canvas area only (absolute within the page) */}
@@ -1377,8 +1364,8 @@ export function WorkflowPage() {
           <div ref={tabContextMenuRef}
             className="fixed z-[9999] w-48 rounded-lg border border-border bg-popover shadow-xl py-1 text-xs"
             style={{ left: tabContextMenu.x, top: tabContextMenu.y }}>
-            <button onClick={() => handleTabContextAction('close')} disabled={tabs.length <= 1}
-              className="w-full text-left px-3 py-1.5 hover:bg-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+            <button onClick={() => handleTabContextAction('close')}
+              className="w-full text-left px-3 py-1.5 hover:bg-accent transition-colors">
               {t('workflow.tabClose', 'Close')}
             </button>
             <button onClick={() => handleTabContextAction('closeOthers')} disabled={tabs.length <= 1}
@@ -1432,45 +1419,6 @@ export function WorkflowPage() {
 
       {/* Workflow Guide */}
       <WorkflowGuide open={guide.open} onClose={guide.dismiss} onStepChange={setGuideStepKey} />
-    </div>
-  )
-}
-
-/* ── Resizable Sidebar ─────────────────────────────────────────────── */
-
-function ResizableSidebar({ children }: { children: React.ReactNode }) {
-  const [basis, setBasis] = useState(300)
-  const [dragging, setDragging] = useState(false)
-
-  const onMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault()
-    setDragging(true)
-    const startX = e.clientX
-    const startBasis = basis
-
-    const onMove = (ev: MouseEvent) => {
-      const delta = startX - ev.clientX
-      setBasis(Math.max(260, Math.min(600, startBasis + delta)))
-    }
-    const onUp = () => {
-      setDragging(false)
-      document.removeEventListener('mousemove', onMove)
-      document.removeEventListener('mouseup', onUp)
-    }
-    document.addEventListener('mousemove', onMove)
-    document.addEventListener('mouseup', onUp)
-  }, [basis])
-
-  return (
-    <div
-      className="flex flex-col bg-card overflow-hidden border-l border-border relative flex-shrink-0"
-      style={{ width: basis, minWidth: 260 }}
-    >
-      <div
-        onMouseDown={onMouseDown}
-        className={`absolute left-0 top-0 bottom-0 w-1 cursor-col-resize z-10 transition-colors ${dragging ? 'bg-primary' : 'hover:bg-primary/50'}`}
-      />
-      {children}
     </div>
   )
 }

@@ -46,8 +46,9 @@ export function NodePalette({ definitions }: NodePaletteProps) {
   const handleClick = useCallback((def: NodeTypeDefinition) => {
     const defaultParams: Record<string, unknown> = {}
     for (const p of def.params) { if (p.default !== undefined) defaultParams[p.key] = p.default }
-    const x = 200 + Math.random() * 100
-    const y = 150 + Math.random() * 100
+    const center = useUIStore.getState().getViewportCenter()
+    const x = center.x + (Math.random() - 0.5) * 60
+    const y = center.y + (Math.random() - 0.5) * 60
     const localizedLabel = t(`workflow.nodeDefs.${def.type}.label`, def.label)
     addNode(def.type, { x, y }, defaultParams, `${def.icon} ${localizedLabel}`, def.params, def.inputs, def.outputs)
     recordRecentNodeType(def.type)

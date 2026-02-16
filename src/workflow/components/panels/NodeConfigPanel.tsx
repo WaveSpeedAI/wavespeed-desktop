@@ -63,9 +63,11 @@ function pushRecentModel(model: WaveSpeedModel) {
 
 interface NodeConfigPanelProps {
   paramDefs: ParamDefinition[]
+  /** When true, render without title and with compact padding (e.g. inside node card) */
+  embeddedInNode?: boolean
 }
 
-export function NodeConfigPanel({ paramDefs }: NodeConfigPanelProps) {
+export function NodeConfigPanel({ paramDefs, embeddedInNode }: NodeConfigPanelProps) {
   const { t } = useTranslation()
   const selectedNodeId = useUIStore(s => s.selectedNodeId)
   const nodes = useWorkflowStore(s => s.nodes)
@@ -86,14 +88,16 @@ export function NodeConfigPanel({ paramDefs }: NodeConfigPanelProps) {
   const handleChange = (key: string, value: unknown) => updateNodeParams(selectedNodeId, { ...params, [key]: value })
 
   return (
-    <div className="p-3 overflow-hidden w-full min-w-0 flex flex-col flex-1">
-      <h3 className="text-sm font-semibold mb-3 flex-shrink-0">
-        {isAITask ? t('workflow.modelSelection', 'Model Selection') : t('workflow.config', 'Configuration')}
-      </h3>
+    <div className={embeddedInNode ? 'p-2 overflow-hidden w-full min-w-0 flex flex-col flex-1 min-h-0' : 'p-3 overflow-hidden w-full min-w-0 flex flex-col flex-1'}>
+      {!embeddedInNode && (
+        <h3 className="text-sm font-semibold mb-3 flex-shrink-0">
+          {isAITask ? t('workflow.modelSelection', 'Model Selection') : t('workflow.config', 'Configuration')}
+        </h3>
+      )}
       {isAITask ? (
-        <AITaskModelSelector params={params} onChange={handleChange} />
+        <AITaskModelSelector params={params} onChange={handleChange} embedded={embeddedInNode} />
       ) : (
-        <div className="flex-1 overflow-y-auto scrollbar-auto-hide">
+        <div className={embeddedInNode ? 'overflow-y-auto scrollbar-auto-hide max-h-[280px]' : 'flex-1 overflow-y-auto scrollbar-auto-hide'}>
           <StaticParamForm nodeType={node.data.nodeType} paramDefs={paramDefs} params={params} onChange={handleChange} />
         </div>
       )}
@@ -103,7 +107,7 @@ export function NodeConfigPanel({ paramDefs }: NodeConfigPanelProps) {
 
 /* ── AI Task Model Selector ─────────────────────────────────────────── */
 
-function AITaskModelSelector({ params, onChange }: { params: Record<string, unknown>; onChange: (key: string, value: unknown) => void }) {
+function AITaskModelSelector({ params, onChange, embedded }: { params: Record<string, unknown>; onChange: (key: string, value: unknown) => void; embedded?: boolean }) {
   const { t } = useTranslation()
   const selectedNodeId = useUIStore(s => s.selectedNodeId)
   const updateNodeData = useWorkflowStore(s => s.updateNodeData)
@@ -348,7 +352,7 @@ function AITaskModelSelector({ params, onChange }: { params: Record<string, unkn
   }
 
   return (
-    <div className="overflow-hidden min-w-0 w-full flex flex-col flex-1">
+    <div className={`overflow-hidden min-w-0 w-full flex flex-col ${embedded ? 'flex-1 min-h-0' : 'flex-1'}`}>
       {error && <div className="text-destructive text-xs p-2 mb-3 rounded border border-destructive bg-destructive/10">{error}</div>}
 
       {/* Top-level model search */}
@@ -435,7 +439,7 @@ function AITaskModelSelector({ params, onChange }: { params: Record<string, unkn
       )}
 
       {/* Model list */}
-      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden scrollbar-auto-hide">
+      <div className={`flex-1 min-h-0 overflow-y-auto overflow-x-hidden scrollbar-auto-hide ${embedded ? 'max-h-[220px]' : ''}`}>
         {loading && <div className="text-[10px] text-blue-400 animate-pulse px-2 py-1">{t('workflow.modelSelector.refreshing', 'Refreshing...')}</div>}
         {displayResults.slice(0, 50).map(model => (
           <div key={model.modelId} onClick={() => handleSelectModel(model)}

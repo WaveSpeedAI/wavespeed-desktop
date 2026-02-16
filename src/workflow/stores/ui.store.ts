@@ -25,6 +25,10 @@ export interface UIState {
   namingDialogResolve: ((result: { name: string; overwriteId?: string } | null) => void) | null
   /** Canvas interaction mode: 'select' for marquee selection, 'hand' for pan */
   interactionMode: 'select' | 'hand'
+  /** Returns the center of the current ReactFlow viewport in flow coordinates */
+  getViewportCenter: () => { x: number; y: number }
+  /** Register the getter (called once from WorkflowCanvas onInit) */
+  setGetViewportCenter: (fn: () => { x: number; y: number }) => void
 
   selectNode: (nodeId: string | null) => void
   selectNodes: (nodeIds: string[]) => void
@@ -60,6 +64,8 @@ export const useUIStore = create<UIState>((set, get) => ({
   namingDialogDefault: '',
   namingDialogResolve: null,
   interactionMode: 'hand',
+  getViewportCenter: () => ({ x: 200, y: 150 }),
+  setGetViewportCenter: (fn) => set({ getViewportCenter: fn }),
 
   selectNode: (nodeId) => set({
     selectedNodeId: nodeId,

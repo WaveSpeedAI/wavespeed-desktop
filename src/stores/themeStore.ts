@@ -5,12 +5,12 @@ export type Theme = 'auto' | 'dark' | 'light'
 const THEME_STORAGE_KEY = 'wavespeed_theme'
 
 function getStoredTheme(): Theme {
-  if (typeof window === 'undefined') return 'dark'
+  if (typeof window === 'undefined') return 'auto'
   const stored = localStorage.getItem(THEME_STORAGE_KEY)
   if (stored === 'dark' || stored === 'light' || stored === 'auto') {
     return stored
   }
-  return 'dark' // Default to dark theme
+  return 'auto'
 }
 
 function applyTheme(theme: Theme) {

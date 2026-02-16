@@ -12,7 +12,12 @@ import { historyIpc } from '../../ipc/ipc-client'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import type { NodeExecutionRecord } from '@/workflow/types/execution'
 
-export function ResultsPanel() {
+interface ResultsPanelProps {
+  /** When true, compact layout for embedding inside node card */
+  embeddedInNode?: boolean
+}
+
+export function ResultsPanel({ embeddedInNode }: ResultsPanelProps = {}) {
   const { t } = useTranslation()
   const selectedNodeId = useUIStore(s => s.selectedNodeId)
   const openPreview = useUIStore(s => s.openPreview)
@@ -114,10 +119,10 @@ export function ResultsPanel() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className={`flex flex-col ${embeddedInNode ? 'min-h-0 flex-1' : 'h-full'}`}>
       {/* Header */}
-      <div className="flex justify-between items-center px-3 pt-3 pb-2">
-        <h3 className="text-sm font-semibold">{t('workflow.results', 'Results')} ({records.length})</h3>
+      <div className={`flex justify-between items-center flex-shrink-0 ${embeddedInNode ? 'px-2 pt-1.5 pb-1' : 'px-3 pt-3 pb-2'}`}>
+        <h3 className={`font-semibold ${embeddedInNode ? 'text-xs' : 'text-sm'}`}>{t('workflow.results', 'Results')} ({records.length})</h3>
         <div className="flex items-center gap-2">
           {records.length > 0 && (
             <button onClick={handleDeleteAll}
@@ -141,7 +146,7 @@ export function ResultsPanel() {
       </div>
 
       {/* Execution list */}
-      <ScrollArea className="flex-1 px-3 pb-3">
+      <ScrollArea className={`flex-1 min-h-0 ${embeddedInNode ? 'max-h-[240px] px-2 pb-2' : 'px-3 pb-3'}`}>
         {records.length === 0 && <p className="text-muted-foreground text-sm py-6 text-center">No executions yet</p>}
 
         <div className="space-y-2">

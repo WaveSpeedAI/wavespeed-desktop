@@ -146,12 +146,10 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
   return (
     <div
       className={cn(
-        "flex h-full flex-col border-r border-border/70 bg-background/95 backdrop-blur transition-all duration-300",
-        // Desktop styles
-        "hidden md:flex",
+        "flex h-full flex-col border-r border-border/70 bg-background/95 backdrop-blur transition-all duration-300 shrink-0",
         collapsed ? "w-16" : "w-52",
-        // Mobile styles - fixed positioned drawer
-        isMobileOpen && "!flex fixed inset-y-0 left-0 z-50 w-72 shadow-2xl"
+        // Mobile overlay when hamburger opens
+        isMobileOpen && "!fixed inset-y-0 left-0 z-50 w-72 shadow-2xl"
       )}
     >
       {/* Mobile close button */}
@@ -299,7 +297,7 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
           })}
         </nav>
 
-        {/* Toggle Button - hidden on mobile */}
+        {/* Collapse/expand: bottom button toggles; state also syncs to window width on resize */}
         {!isMobileOpen && (
           <Tooltip delayDuration={0} open={collapsed && tooltipReady ? undefined : false}>
             <TooltipTrigger asChild>
@@ -308,7 +306,7 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
                 size="sm"
                 onClick={onToggle}
                 className={cn(
-                  "mt-2 hidden h-9 w-full rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground md:flex",
+                  "mt-2 h-9 w-full rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground",
                   collapsed ? "justify-center px-2" : "justify-start gap-3 px-3"
                 )}
               >

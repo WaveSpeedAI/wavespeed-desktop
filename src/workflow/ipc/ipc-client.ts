@@ -1,6 +1,7 @@
 /**
  * Type-safe IPC client for workflow renderer process.
- * Uses window.workflowAPI (isolated from Desktop's window.electronAPI).
+ * In Electron: uses window.workflowAPI (preload). In browser: uses browser adapter
+ * (localStorage workflows + static node defs; execution/storage require Electron).
  */
 import type {
   IpcChannelName,
@@ -16,30 +17,43 @@ import type {
 import type { Workflow } from '@/workflow/types/workflow'
 import type { NodeExecutionRecord, NodeStatusUpdate, ProgressUpdate, EdgeStatus } from '@/workflow/types/execution'
 import type { NodeTypeDefinition, WaveSpeedModel } from '@/workflow/types/node-defs'
+import { browserWorkflowAPI } from '@/workflow/browser/workflow-api'
 
 function getApi() {
-  return window.workflowAPI
+  if (typeof window === 'undefined') return undefined
+  return window.workflowAPI ?? browserWorkflowAPI
+}
+
+/** True when running inside Electron (full API). False when using browser adapter. */
+export function isWorkflowApiAvailable(): boolean {
+  return typeof window !== 'undefined' && Boolean(window.workflowAPI)
 }
 
 export function invoke<C extends IpcChannelName>(
   channel: C,
   args: IpcArgs<C>
 ): Promise<IpcResult<C>> {
-  return getApi().invoke(channel, args) as Promise<IpcResult<C>>
+  const api = getApi()
+  if (!api) return Promise.reject(new Error('Workflow API not available'))
+  return api.invoke(channel, args) as Promise<IpcResult<C>>
 }
 
 export function on<C extends IpcChannelName>(
   channel: C,
   callback: (args: IpcArgs<C>) => void
 ): void {
-  getApi().on(channel, callback as (...args: unknown[]) => void)
+  const api = getApi()
+  if (!api) return
+  api.on(channel, callback as (...args: unknown[]) => void)
 }
 
 export function removeListener<C extends IpcChannelName>(
   channel: C,
   callback: (args: IpcArgs<C>) => void
 ): void {
-  getApi().removeListener(channel, callback as (...args: unknown[]) => void)
+  const api = getApi()
+  if (!api) return
+  api.removeListener(channel, callback as (...args: unknown[]) => void)
 }
 
 
@@ -150,8 +164,11 @@ export const modelsIpc = {
 // ─── Storage IPC ─────────────────────────────────────────────────────────────
 
 // Storage channels are not in the typed IpcChannelName union, so we use raw invoke
-const rawInvoke = (channel: string, args?: unknown): Promise<unknown> =>
-  getApi().invoke(channel, args)
+const rawInvoke = (channel: string, args?: unknown): Promise<unknown> => {
+  const api = getApi()
+  if (!api) return Promise.reject(new Error('Workflow API not available (run in Electron)'))
+  return api.invoke(channel, args)
+}
 
 export const storageIpc = {
   getWorkflowSnapshot: (workflowId: string) =>

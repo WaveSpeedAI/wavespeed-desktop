@@ -17,6 +17,8 @@ import { SegmentPointPicker, type SegmentPoint } from '../SegmentPointPicker'
 import { Paintbrush, MousePointer2 } from 'lucide-react'
 import { modelsIpc } from '../../ipc/ipc-client'
 import { fuzzySearch } from '@/lib/fuzzySearch'
+import { NodeConfigPanel } from '../panels/NodeConfigPanel'
+import { ResultsPanel } from '../panels/ResultsPanel'
 // Status constants (kept for edge component compatibility)
 // import { NODE_STATUS_COLORS, NODE_STATUS_BORDER } from '@/workflow/constants'
 import type { NodeStatus } from '@/workflow/types/execution'
@@ -603,6 +605,17 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
 
       {/* ── Body ───────────────────────────────────────────────────── */}
       <div className="px-1 py-2 space-y-px">
+        {selected && data.nodeType !== 'annotation' ? (
+          <div className="nodrag min-h-0 flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="flex-shrink-0 border-b border-border/50">
+              <NodeConfigPanel paramDefs={data.paramDefinitions ?? []} embeddedInNode />
+            </div>
+            <div className="flex-1 min-h-0 flex flex-col mt-1">
+              <ResultsPanel embeddedInNode />
+            </div>
+          </div>
+        ) : (
+        <div className="contents">
         {/* Free-tool ML model download hint (not for ffmpeg-based converters/trimmer/merger) */}
         {status === 'idle' && resultGroups.length === 0 && (() => {
           const ML_FREE_TOOLS = new Set([
@@ -962,6 +975,8 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
             </div>
           </div>
         )}
+        </div>
+      )}
       </div>
 
       {/* ── Results — grouped by execution run ─────────────────── */}

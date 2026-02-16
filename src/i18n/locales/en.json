@@ -1045,6 +1045,7 @@
     "workflows": "Workflows",
     "newWorkflow": "New Workflow",
     "untitled": "Untitled Workflow",
+    "modelSyncDesktopOnly": "Model sync is available in the WaveSpeed Desktop app.",
     "save": "Save",
     "saved": "Saved",
     "saving": "Saving...",
@@ -1398,7 +1399,7 @@
       },
       "config": {
         "title": "Configure & View Results",
-        "desc": "Click any node to select it. The right panel shows two tabs:\n• Config — Set model parameters, upload files, enter prompts\n• Results — View execution outputs (images, videos, 3D models)\n\nParameters update dynamically based on the node type and selected model. Results support fullscreen preview and download."
+        "desc": "Click any node to select it. Config and Results appear inside the node card:\n• Config — Set model parameters, upload files, enter prompts\n• Results — View execution outputs (images, videos, 3D models)\n\nParameters update dynamically based on the node type and selected model. Results support fullscreen preview and download."
       },
       "run": {
         "title": "Run Your Workflow",

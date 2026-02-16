@@ -194,25 +194,19 @@ export function PlaygroundPage() {
     }
   }, [modelId, models, tabs.length, createTab])
 
-  // Set model from URL param when navigating
-  // Sync model when URL modelId differs from current active tab's model
+  // Set model from URL only when the active tab has no model (e.g. initial load or new empty tab).
+  // Do NOT overwrite when the tab already has a model, so tab switching never wipes form values
+  // (otherwise URL can lag and we'd set the wrong model on the newly active tab and reset its form).
   useEffect(() => {
-    if (modelId && models.length > 0 && activeTab) {
-      // Try to decode, but use original if decoding fails (for paths with slashes)
-      let decodedId = modelId
-      try {
-        decodedId = decodeURIComponent(modelId)
-      } catch {
-        // Use original modelId if decoding fails
-      }
-      const currentModelId = activeTab.selectedModel?.model_id
-      if (currentModelId !== decodedId) {
-        const model = models.find(m => m.model_id === decodedId)
-        if (model) {
-          setSelectedModel(model)
-        }
-      }
+    if (!modelId || models.length === 0 || !activeTab || activeTab.selectedModel != null) return
+    let decodedId = modelId
+    try {
+      decodedId = decodeURIComponent(modelId)
+    } catch {
+      // Use original modelId if decoding fails
     }
+    const model = models.find(m => m.model_id === decodedId)
+    if (model) setSelectedModel(model)
   }, [modelId, models, activeTab, setSelectedModel])
 
   const handleModelChange = (modelId: string) => {
@@ -538,6 +532,11 @@ export function PlaygroundPage() {
                 <h2 className="font-semibold text-lg">{t('playground.output')}</h2>
                 {activeTab.selectedModel && (
                   <span className="text-sm text-muted-foreground">· {activeTab.selectedModel.name}</span>
+                )}
+                {activeTab.currentPrediction?.timings?.inference != null && (
+                  <span className="text-sm text-muted-foreground">
+                    ({(activeTab.currentPrediction.timings.inference / 1000).toFixed(2)}s)
+                  </span>
                 )}
               </div>
               {activeTab.selectedModel && (

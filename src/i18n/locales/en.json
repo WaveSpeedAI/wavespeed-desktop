@@ -1043,7 +1043,7 @@
     "settings": "Settings",
     "runAll": "Run All",
     "run": "Run",
-    "runWorkflow": "Run Workflow",
+    "runWorkflow": "Run",
     "runFromHere": "Run from here",
     "nameYourWorkflow": "Name your workflow",
     "nameYourWorkflowDesc": "Give it a name to save to disk and enable execution.",
@@ -1071,7 +1071,7 @@
     "importFailed": "Import failed",
     "exported": "Exported successfully",
     "exportFailed": "Export failed",
-    "estimated": "Cost",
+    "estimated": "Est.",
     "fitView": "Fit View",
     "autoLayout": "Auto Layout",
     "freeToolModelHint": "First run will auto-download the AI model, please wait",
@@ -1334,7 +1334,7 @@
       "optimizing": "Optimizing...",
       "optimizeNow": "Optimize now",
       "autoOnRunTitle": "Only optimize when Run is clicked",
-      "autoOnRun": "Auto on Run",
+      "autoOnRun": "Optimize on Run",
       "chars": "chars",
       "optimizeOnRunEnabled": "Enabled: optimize on Run",
       "optimizeOffHint": "Default: no optimization (run with original text)",
@@ -1382,7 +1382,7 @@
       },
       "run": {
         "title": "Run Your Workflow",
-        "desc": "Click \"Run Workflow\" to execute the entire pipeline:\n• Set a run count (×1 to ×99) for batch processing\n• Cancel anytime with the stop button\n• Monitor real-time progress in the Execution Monitor\n• Each node shows its status: queued → running → done"
+        "desc": "Click \"Run\" to execute the entire pipeline:\n• Set a run count (×1 to ×99) for batch processing\n• Cancel anytime with the stop button\n• Monitor real-time progress in the Execution Monitor\n• Each node shows its status: queued → running → done"
       },
       "templates": {
         "title": "Templates, Import & Export",
@@ -1398,7 +1398,7 @@
       "text": "Text",
       "textPlaceholder": "Text to expand or use as context...",
       "autoOnRunTitle": "Optimize automatically when clicking Run",
-      "autoOnRun": "Auto on Run",
+      "autoOnRun": "Optimize on Run",
       "quickOptimizeTitle": "Quick Optimize ({{mode}})",
       "quickOptimizeLabel": "Optimize",
       "params": "Params",

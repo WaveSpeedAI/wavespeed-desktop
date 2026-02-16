@@ -1041,7 +1041,7 @@
     "settings": "Pengaturan",
     "runAll": "Jalankan semua",
     "run": "Jalankan",
-    "runWorkflow": "Jalankan alur kerja",
+    "runWorkflow": "Jalankan",
     "runFromHere": "Jalankan dari sini",
     "nameYourWorkflow": "Beri nama alur kerja",
     "nameYourWorkflowDesc": "Beri nama untuk menyimpan ke disk dan mengaktifkan eksekusi.",
@@ -1318,7 +1318,7 @@
       "optimizing": "Mengoptimalkan...",
       "optimizeNow": "Optimalkan sekarang",
       "autoOnRunTitle": "Optimalkan hanya saat mengklik Jalankan",
-      "autoOnRun": "Otomatis saat jalankan",
+      "autoOnRun": "Optimalkan saat Jalankan",
       "chars": "karakter",
       "optimizeOnRunEnabled": "Diaktifkan: optimalkan saat jalankan",
       "optimizeOffHint": "Default: tidak ada optimisasi (jalankan dengan teks asli)",
@@ -1334,7 +1334,7 @@
       "text": "Teks",
       "textPlaceholder": "Teks untuk diperluas atau sebagai konteks...",
       "autoOnRunTitle": "Optimalkan otomatis saat mengklik Jalankan",
-      "autoOnRun": "Otomatis saat jalankan",
+      "autoOnRun": "Optimalkan saat Jalankan",
       "quickOptimizeTitle": "Optimalkan cepat ({{mode}})",
       "quickOptimizeLabel": "Optimalkan",
       "params": "Parameter",
@@ -1396,7 +1396,7 @@
       },
       "run": {
         "title": "Jalankan Workflow Anda",
-        "desc": "Klik \"Run Workflow\" untuk mengeksekusi seluruh pipeline:\n• Atur jumlah run (×1 hingga ×99) untuk pemrosesan batch\n• Batalkan kapan saja dengan tombol stop\n• Pantau progres real-time di Execution Monitor\n• Setiap node menampilkan status: queued → running → done"
+        "desc": "Klik \"Jalankan\" untuk mengeksekusi seluruh pipeline:\n• Atur jumlah run (×1 hingga ×99) untuk pemrosesan batch\n• Batalkan kapan saja dengan tombol stop\n• Pantau progres real-time di Execution Monitor\n• Setiap node menampilkan status: queued → running → done"
       },
       "templates": {
         "title": "Template, Impor & Ekspor",

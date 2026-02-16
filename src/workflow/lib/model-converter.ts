@@ -4,6 +4,7 @@
  * Keeps workflow model list in sync with Models browser / Playground (same API source).
  */
 import type { Model } from '@/types/model'
+import type { FormFieldConfig } from '@/lib/schemaToForm'
 import type { WaveSpeedModel, ModelParamSchema } from '@/workflow/types/node-defs'
 
 const HIDDEN_FIELDS = new Set(['enable_base64_output', 'enable_sync_mode'])
@@ -178,4 +179,56 @@ function parseParam(name: string, prop: Record<string, unknown>): ModelParamSche
 
   param.fieldType = 'text'
   return param
+}
+
+/** Map Playground form fields (from schemaToForm) to workflow ModelParamSchema for node display. */
+export function formFieldsToModelParamSchema(fields: FormFieldConfig[]): ModelParamSchema[] {
+  return fields.map(f => {
+    const base: ModelParamSchema = {
+      name: f.name,
+      label: f.label,
+      description: f.description,
+      default: f.default,
+      required: f.required,
+      hidden: f.hidden,
+      accept: f.accept,
+      placeholder: f.placeholder,
+      min: f.min,
+      max: f.max,
+      step: f.step,
+    }
+    switch (f.type) {
+      case 'text':
+        return { ...base, type: 'string', fieldType: 'text' }
+      case 'textarea':
+        return { ...base, type: 'string', fieldType: 'textarea' }
+      case 'number':
+        return { ...base, type: 'number', fieldType: 'number' }
+      case 'slider':
+        return { ...base, type: 'number', fieldType: 'slider' }
+      case 'boolean':
+        return { ...base, type: 'boolean', fieldType: 'boolean' }
+      case 'select':
+        return {
+          ...base,
+          type: 'enum',
+          fieldType: 'select',
+          enum: (f.options ?? []).map(String),
+        }
+      case 'file': {
+        const media = f.accept?.startsWith('image') ? 'image' : f.accept?.startsWith('video') ? 'video' : f.accept?.startsWith('audio') ? 'audio' : undefined
+        return { ...base, type: 'string', fieldType: 'file', mediaType: media }
+      }
+      case 'file-array': {
+        const media = f.accept?.includes('image') ? 'image' as const : f.accept?.includes('video') ? 'video' as const : f.accept?.includes('audio') ? 'audio' as const : undefined
+        return { ...base, type: 'string', fieldType: 'file-array', mediaType: media, maxItems: f.maxFiles }
+      }
+      case 'size':
+        return { ...base, type: 'string', fieldType: 'size' }
+      case 'loras':
+        return { ...base, type: 'string', fieldType: 'loras', maxItems: f.maxFiles }
+      default:
+        return { ...base, type: 'string', fieldType: 'text' }
+    }
+  })
 }

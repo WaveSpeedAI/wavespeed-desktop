@@ -16,7 +16,8 @@ import { MaskEditor } from '@/components/playground/MaskEditor'
 import { SegmentPointPicker, type SegmentPoint } from '../SegmentPointPicker'
 import { Paintbrush, MousePointer2 } from 'lucide-react'
 import { useModelsStore } from '@/stores/modelsStore'
-import { convertDesktopModel } from '../../lib/model-converter'
+import { getFormFieldsFromModel } from '@/lib/schemaToForm'
+import { convertDesktopModel, formFieldsToModelParamSchema } from '../../lib/model-converter'
 import { fuzzySearch } from '@/lib/fuzzySearch'
 // Status constants (kept for edge component compatibility)
 // import { NODE_STATUS_COLORS, NODE_STATUS_BORDER } from '@/workflow/constants'
@@ -233,11 +234,19 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
 
   const paramDefs = data.paramDefinitions ?? []
   const inputDefs = data.inputDefinitions ?? []
-  const schema = data.modelInputSchema ?? []
-
   const isAITask = data.nodeType === 'ai-task/run'
+  const currentModelId = String(data.params?.modelId ?? '').trim()
+  const currentModel = useModelsStore(s => s.getModelById(currentModelId))
+
+  /** Use Playground schema logic when model is in store; else fall back to persisted modelInputSchema. */
+  const schema = useMemo(() => {
+    if (isAITask && currentModel) {
+      return formFieldsToModelParamSchema(getFormFieldsFromModel(currentModel))
+    }
+    return data.modelInputSchema ?? []
+  }, [isAITask, currentModel, data.modelInputSchema])
+
   const hasSchema = schema.length > 0
-  const currentModelId = String(data.params.modelId ?? '').trim()
   const isPreviewNode = data.nodeType === 'output/preview'
   const modelSearchResults = useMemo(() => {
     const q = modelSearchQuery.trim()
@@ -273,9 +282,15 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
   const removeEdgesByIds = useWorkflowStore(s => s.removeEdgesByIds)
 
   const handleInlineSelectModel = useCallback((model: WaveSpeedModel) => {
+    // Use Playground schema when we have the desktop Model so param set and persisted schema match display
+    const desktopModel = useModelsStore.getState().models.find(m => m.model_id === model.modelId)
+    const inputSchemaForNode = desktopModel
+      ? formFieldsToModelParamSchema(getFormFieldsFromModel(desktopModel))
+      : model.inputSchema
+
     // Smart edge pruning: keep edges whose param name exists in the new model, remove the rest
     if (currentModelId) {
-      const newParamNames = new Set(model.inputSchema.map(p => p.name))
+      const newParamNames = new Set(inputSchemaForNode.map(p => p.name))
       const edgesToRemove = edges.filter(e => {
         // Output edges (this node is source): always keep
         if (e.source === id) return false
@@ -304,7 +319,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
     delete internalParams.__hiddenRuns
 
     const nextParams: Record<string, unknown> = { ...internalParams, modelId: model.modelId }
-    for (const p of model.inputSchema) {
+    for (const p of inputSchemaForNode) {
       if (p.default !== undefined) nextParams[p.name] = p.default
     }
 
@@ -323,7 +338,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
     }
 
     updateNodeData(id, {
-      modelInputSchema: model.inputSchema,
+      modelInputSchema: inputSchemaForNode,
       label: finalLabel
     })
 
@@ -345,11 +360,15 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
     if (isAITask && storeModels.length === 0) fetchModels()
   }, [isAITask, storeModels.length, fetchModels])
 
-  const mediaParams = useMemo(() => schema.filter(p => p.mediaType && p.fieldType !== 'loras'), [schema])
-  const loraParams = useMemo(() => schema.filter(p => p.fieldType === 'loras'), [schema])
-  const jsonParams = useMemo(() => schema.filter(p => p.fieldType === 'json'), [schema])
-  const requiredParams = useMemo(() => schema.filter(p => !p.mediaType && p.fieldType !== 'loras' && p.fieldType !== 'json' && p.name !== 'modelId' && (p.required || !p.hidden)), [schema])
-  const optionalParams = useMemo(() => schema.filter(p => !p.mediaType && p.fieldType !== 'loras' && p.fieldType !== 'json' && p.name !== 'modelId' && !p.required && p.hidden), [schema])
+  /** Params in schema order (same as playground / x-order-properties) */
+  const orderedVisibleParams = useMemo(() =>
+    schema.filter(p => p.name !== 'modelId' && (p.required || !p.hidden)),
+    [schema]
+  )
+  const optionalParams = useMemo(() =>
+    schema.filter(p => p.name !== 'modelId' && !p.required && p.hidden),
+    [schema]
+  )
   const defParams = paramDefs.filter(p => p.key !== 'modelId')
   const [showOptional, setShowOptional] = useState(false)
 
@@ -705,26 +724,27 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
           </div>
         )}
 
-        {mediaParams.map(p => (
-          <MediaRow key={p.name} nodeId={id} schema={p} value={data.params[p.name]}
-            connected={connectedSet.has(`param-${p.name}`)} connectedSet={connectedSet}
-            edges={edges} nodes={useWorkflowStore.getState().nodes}
-            onChange={v => setParam(p.name, v)} onPreview={openPreview} />
-        ))}
-
-        {loraParams.map(p => (
-          <LoraRow key={p.name} schema={p} value={data.params[p.name]} onChange={v => setParam(p.name, v)} />
-        ))}
-
-        {jsonParams.map(p => (
-          <JsonRow key={p.name} nodeId={id} schema={p} value={data.params[p.name]}
-            connected={connectedSet.has(`param-${p.name}`)}
-            edges={edges} nodes={useWorkflowStore.getState().nodes}
-            onChange={v => setParam(p.name, v)} />
-        ))}
-
-        {requiredParams.map(p => {
+        {orderedVisibleParams.map(p => {
           const hid = `param-${p.name}`
+          if (p.mediaType && p.fieldType !== 'loras') {
+            return (
+              <MediaRow key={p.name} nodeId={id} schema={p} value={data.params[p.name]}
+                connected={connectedSet.has(hid)} connectedSet={connectedSet}
+                edges={edges} nodes={useWorkflowStore.getState().nodes}
+                onChange={v => setParam(p.name, v)} onPreview={openPreview} />
+            )
+          }
+          if (p.fieldType === 'loras') {
+            return <LoraRow key={p.name} schema={p} value={data.params[p.name]} onChange={v => setParam(p.name, v)} />
+          }
+          if (p.fieldType === 'json') {
+            return (
+              <JsonRow key={p.name} nodeId={id} schema={p} value={data.params[p.name]}
+                connected={connectedSet.has(hid)}
+                edges={edges} nodes={useWorkflowStore.getState().nodes}
+                onChange={v => setParam(p.name, v)} />
+            )
+          }
           return (
             <ParamRow key={p.name} nodeId={id} schema={p} value={data.params[p.name]}
               connected={connectedSet.has(hid)}
@@ -739,7 +759,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
           )
         })}
 
-        {/* Collapsible optional/hidden params */}
+        {/* Collapsible optional/hidden params — same schema order */}
         {optionalParams.length > 0 && (
           <>
             <div className="px-3 py-1">
@@ -760,8 +780,8 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
                     if (edge) useWorkflowStore.getState().removeEdge(edge.id)
                   }}
                   onChange={v => setParam(p.name, v)}
-              optimizerSettings={(data.params.__optimizerSettings as Record<string, unknown>) ?? {}}
-              onOptimizerSettingsChange={v => setParam('__optimizerSettings', v)} />
+                  optimizerSettings={(data.params.__optimizerSettings as Record<string, unknown>) ?? {}}
+                  onOptimizerSettingsChange={v => setParam('__optimizerSettings', v)} />
               )
             })}
           </>
@@ -2348,7 +2368,7 @@ function TextInputBody({ params, onParamChange }: {
             title={t('workflow.textInput.autoOnRunTitle', 'Only optimize when Run is clicked')}
           >
             <span className={`inline-block h-1.5 w-1.5 rounded-full ${optimizeOnRun ? 'bg-emerald-500 dark:bg-emerald-300' : 'bg-[hsl(var(--muted-foreground))]/70'}`} />
-            {t('workflow.textInput.autoOnRun', 'Auto on Run')}
+            {t('workflow.textInput.autoOnRun', 'Optimize on Run')}
           </button>
         </div>
 

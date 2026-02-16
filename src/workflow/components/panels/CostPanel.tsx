@@ -23,6 +23,9 @@ export function CostPanel() {
   return (
     <div className="p-3">
       <h3 className="text-sm font-semibold mb-3">Cost Control</h3>
+      <p className="text-[11px] text-muted-foreground mb-3">
+        Estimates use model base prices; actual API cost may vary with inputs (resolution, length, etc.).
+      </p>
       <div className="mb-3">
         <div className="text-xs text-muted-foreground">Daily Spend</div>
         <div className={`text-lg font-bold ${dailySpend > budget.dailyLimit * 0.8 ? 'text-destructive' : 'text-green-400'}`}>

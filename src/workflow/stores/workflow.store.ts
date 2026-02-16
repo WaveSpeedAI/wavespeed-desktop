@@ -85,30 +85,42 @@ function pushUndoDebounced(s: Snapshot) {
 /* ── Save concurrency guard ────────────────────────────────────────────── */
 let _saveInProgress = false
 
+export interface SaveWorkflowOptions {
+  /** When true, untitled workflows are saved with an auto-generated name instead of prompting. */
+  forRun?: boolean
+}
+
 /** Internal save implementation — extracted so the concurrency guard stays clean. */
 async function _doSaveWorkflow(
   get: () => WorkflowState,
-  set: (partial: Partial<WorkflowState>) => void
+  set: (partial: Partial<WorkflowState>) => void,
+  options?: SaveWorkflowOptions
 ) {
   let { workflowId } = get()
   const { workflowName, nodes, edges } = get()
 
-  // Don't save unnamed workflows — prompt user for a name via UI dialog
+  // Don't save unnamed workflows — prompt user for a name via UI dialog (unless saving for run)
   const isUntitled = !workflowName || /^Untitled Workflow(\s+\d+)?$/.test(workflowName)
   if (isUntitled) {
-    const uiStoreModule = await import('./ui.store')
-    const uiStore = resolveStoreExport<{ promptWorkflowName: (defaultName?: string) => Promise<{ name: string; overwriteId?: string } | null> }>(uiStoreModule, 'useUIStore')
-    const promptWorkflowName = uiStore?.getState().promptWorkflowName
-    if (typeof promptWorkflowName !== 'function') {
-      throw new Error('Workflow naming dialog is unavailable')
-    }
-    const result = await promptWorkflowName(workflowName || '')
-    if (!result || !result.name.trim() || /^Untitled Workflow(\s+\d+)?$/.test(result.name.trim())) return
-    set({ workflowName: result.name.trim() })
-    // If user chose to overwrite an existing workflow, use that workflow's ID
-    if (result.overwriteId) {
-      workflowId = result.overwriteId
-      set({ workflowId: result.overwriteId })
+    if (options?.forRun) {
+      // Auto-generate a name so Run Workflow never requires naming
+      const autoName = `Workflow ${new Date().toISOString().slice(0, 19).replace('T', ' ')}`
+      set({ workflowName: autoName })
+    } else {
+      const uiStoreModule = await import('./ui.store')
+      const uiStore = resolveStoreExport<{ promptWorkflowName: (defaultName?: string) => Promise<{ name: string; overwriteId?: string } | null> }>(uiStoreModule, 'useUIStore')
+      const promptWorkflowName = uiStore?.getState().promptWorkflowName
+      if (typeof promptWorkflowName !== 'function') {
+        throw new Error('Workflow naming dialog is unavailable')
+      }
+      const result = await promptWorkflowName(workflowName || '')
+      if (!result || !result.name.trim() || /^Untitled Workflow(\s+\d+)?$/.test(result.name.trim())) return
+      set({ workflowName: result.name.trim() })
+      // If user chose to overwrite an existing workflow, use that workflow's ID
+      if (result.overwriteId) {
+        workflowId = result.overwriteId
+        set({ workflowId: result.overwriteId })
+      }
     }
   }
 
@@ -194,7 +206,7 @@ export interface WorkflowState {
   onEdgesChange: (changes: EdgeChange[]) => void
   undo: () => void
   redo: () => void
-  saveWorkflow: () => Promise<void>
+  saveWorkflow: (options?: SaveWorkflowOptions) => Promise<void>
   loadWorkflow: (id: string) => Promise<void>
   newWorkflow: (name: string) => Promise<void>
   setWorkflowName: (name: string) => void
@@ -406,13 +418,13 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     set({ nodes: next.nodes, edges: next.edges, isDirty: true, canUndo: true, canRedo: redoStack.length > 0 })
   },
 
-  saveWorkflow: async () => {
+  saveWorkflow: async (options) => {
     // Prevent concurrent saves — two overlapping calls can both see workflowId=null
     // and each create a separate workflow, resulting in duplicates.
     if (_saveInProgress) return
     _saveInProgress = true
     try {
-      await _doSaveWorkflow(get, set)
+      await _doSaveWorkflow(get, set, options)
     } finally {
       _saveInProgress = false
     }

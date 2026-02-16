@@ -1,4 +1,4 @@
-import type { SchemaProperty } from '@/types/model'
+import type { Model, SchemaProperty } from '@/types/model'
 
 export interface FormFieldConfig {
   name: string
@@ -302,4 +302,25 @@ export function getDefaultValues(fields: FormFieldConfig[]): Record<string, unkn
   }
 
   return defaults
+}
+
+/** Extract form fields from a Desktop API Model using the same logic as the Playground (DynamicForm). */
+export function getFormFieldsFromModel(model: Model): FormFieldConfig[] {
+  const apiSchemas = (model.api_schema as Record<string, unknown> | undefined)?.api_schemas as Array<{
+    type: string
+    request_schema?: {
+      properties?: Record<string, SchemaProperty>
+      required?: string[]
+      'x-order-properties'?: string[]
+    }
+  }> | undefined
+  const requestSchema = apiSchemas?.find(s => s.type === 'model_run')?.request_schema
+  if (!requestSchema?.properties) {
+    return []
+  }
+  return schemaToFormFields(
+    requestSchema.properties,
+    requestSchema.required ?? [],
+    requestSchema['x-order-properties']
+  )
 }

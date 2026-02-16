@@ -14,7 +14,7 @@ import { RunMonitor } from './components/canvas/RunMonitor'
 import { useWorkflowStore } from './stores/workflow.store'
 import { useExecutionStore } from './stores/execution.store'
 import { useUIStore } from './stores/ui.store'
-import { registryIpc, modelsIpc, storageIpc, costIpc, workflowIpc } from './ipc/ipc-client'
+import { registryIpc, modelsIpc, storageIpc, workflowIpc, isWorkflowApiAvailable } from './ipc/ipc-client'
 import { useModelsStore } from '@/stores/modelsStore'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
 import { useTemplateStore } from '@/stores/templateStore'
@@ -611,34 +611,6 @@ export function WorkflowPage() {
   const [modelSyncError, setModelSyncError] = useState('')
   const [, setModelCount] = useState(0)
 
-  // Cost display
-  const [estimatedCost, setEstimatedCost] = useState<number | null>(null)
-  // Daily spend tracking — data fetched for future budget display
-  const [, setDailySpend] = useState(0)
-  const [, setDailyLimit] = useState(100)
-  const estimateNodeIdsSignature = useMemo(
-    () => [...nodes.map(n => n.id)].sort().join('|'),
-    [nodes]
-  )
-  const costEstimateSignature = useMemo(() => {
-    // Only include cost-relevant node fields and ignore UI-only/internal keys
-    // so moving/resizing nodes won't trigger cost re-estimation.
-    return nodes
-      .map((n) => {
-        const rawParams = (n.data?.params ?? {}) as Record<string, unknown>
-        const sanitizedEntries = Object.entries(rawParams)
-          .filter(([key]) => !key.startsWith('__'))
-          .sort(([a], [b]) => a.localeCompare(b))
-        return JSON.stringify({
-          id: n.id,
-          nodeType: n.data?.nodeType ?? '',
-          params: sanitizedEntries
-        })
-      })
-      .sort()
-      .join('|')
-  }, [nodes])
-
   // API key state
   const apiKey = useApiKeyStore(s => s.apiKey)
   const hasAttemptedLoad = useApiKeyStore(s => s.hasAttemptedLoad)
@@ -724,28 +696,28 @@ export function WorkflowPage() {
     }
   }, [modelsError])
 
-  // Cost estimate (debounced)
-  useEffect(() => {
-    const nodeIds = estimateNodeIdsSignature ? estimateNodeIdsSignature.split('|') : []
-    if (!workflowId || nodeIds.length === 0) { setEstimatedCost(null); return }
-    const t = setTimeout(async () => {
-      try {
-        const est = await costIpc.estimate(workflowId, nodeIds)
-        setEstimatedCost(est.totalEstimated)
-      } catch { setEstimatedCost(null) }
-    }, 800)
-    return () => clearTimeout(t)
-  }, [workflowId, estimateNodeIdsSignature, costEstimateSignature])
-
-  useEffect(() => {
-    if (!workflowId) return
-    costIpc.getDailySpend().then(setDailySpend).catch(() => {})
-    costIpc.getBudget().then(b => setDailyLimit(b.dailyLimit)).catch(() => {})
-  }, [workflowId, isRunning])
 
 
-  // Run All — with node labels for monitor
+  // Run All — with node labels for monitor (Electron: IPC; browser: in-process executor)
   const handleRunAll = async (times = 1) => {
+    if (!isWorkflowApiAvailable()) {
+      // Browser mode: run in-process (no save required)
+      if (nodes.length === 0) return
+      const runAllInBrowser = useExecutionStore.getState().runAllInBrowser
+      const browserNodes = nodes.map(n => ({ id: n.id, data: { nodeType: n.data?.nodeType ?? '', params: n.data?.params, label: n.data?.label } }))
+      const browserEdges = edges.map(e => ({ source: e.source, target: e.target, sourceHandle: e.sourceHandle ?? undefined, targetHandle: e.targetHandle ?? undefined }))
+      setIsBatchRunning(true)
+      try {
+        await runAllInBrowser(browserNodes, browserEdges)
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        setExecToast({ type: 'error', msg: msg || t('workflow.runFailed', 'Run failed') })
+        setTimeout(() => setExecToast(null), 4000)
+      } finally {
+        setIsBatchRunning(false)
+      }
+      return
+    }
     let wfId = workflowId
     let workflowExists = false
     if (wfId) {
@@ -757,9 +729,10 @@ export function WorkflowPage() {
       }
     }
     // Executor reads from persisted workflow DB, so save first when dirty.
+    // Use forRun: true so untitled workflows get an auto-generated name and we don't prompt.
     if (!wfId || isDirty || !workflowExists) {
       if (nodes.length === 0) return
-      await saveWorkflow()
+      await saveWorkflow({ forRun: true })
       wfId = useWorkflowStore.getState().workflowId
       if (!wfId) return
     }
@@ -1012,31 +985,30 @@ export function WorkflowPage() {
           <span className="text-[10px] text-orange-400">{t('workflow.unsaved', 'unsaved')}</span>
         )}
 
-        {/* Cost info */}
-        {estimatedCost !== null && estimatedCost > 0 && (
-          <span className="text-[11px] text-muted-foreground ml-2">
-            {t('workflow.estimated', 'Cost')}{' '}
-            <span className="font-medium text-blue-400">${estimatedCost.toFixed(4)}</span>
-          </span>
-        )}
-
         {/* Spacer */}
         <div className="flex-1" />
 
         {/* Right: Run controls */}
         <div className="flex items-center gap-1.5" data-guide="run-controls">
           <div className="flex items-center rounded-lg overflow-hidden shadow-sm">
-            {/* Run button */}
-            <button
-              className="h-8 px-3.5 flex items-center gap-1.5 bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={nodes.length === 0 || isRunning || isBatchRunning}
-              onClick={() => handleRunAll(runCount)}
-            >
+            {/* Run button — disabled in browser (no execution API) */}
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <button
+                  className="h-8 px-3.5 flex items-center gap-1.5 bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={nodes.length === 0 || isRunning || isBatchRunning}
+                  onClick={() => handleRunAll(runCount)}
+                >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none">
                 <polygon points="6,3 20,12 6,21" />
               </svg>
-              {isRunning || isBatchRunning ? t('workflow.running', 'Running...') : t('workflow.runWorkflow', 'Run Workflow')}
-            </button>
+                  {isRunning || isBatchRunning ? t('workflow.running', 'Running...') : t('workflow.runWorkflow', 'Run')}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                {nodes.length === 0 ? t('workflow.addNodesToRun', 'Add nodes to run') : t('workflow.runWorkflow', 'Run')}
+              </TooltipContent>
+            </Tooltip>
             {/* Run count */}
             <div className="h-8 flex items-center bg-[hsl(var(--muted))] border-l border-[hsl(var(--border))]">
               <input
@@ -1148,11 +1120,8 @@ export function WorkflowPage() {
         />
       </div>
 
-      {/* ── Run Monitor panel ─────────────────────────────────── */}
-      <RunMonitor workflowId={workflowId} />
-
       {/* ── Main content ───────────────────────────────────────── */}
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="flex flex-1 min-h-0 overflow-hidden relative">
         {/* Left panels as overlay so they don't shift the canvas layout */}
         {showNodePalette && (
           <div className="absolute top-0 left-0 bottom-0 z-30 h-full">
@@ -1194,6 +1163,9 @@ export function WorkflowPage() {
           <WorkflowCanvas nodeDefs={nodeDefs} />
         </div>
       </div>
+
+      {/* ── Execution Monitor (bottom, collapsible) ───────────────── */}
+      <RunMonitor workflowId={workflowId} />
 
       {/* Preview overlay — covers the canvas area only (absolute within the page) */}
       {previewSrc && (

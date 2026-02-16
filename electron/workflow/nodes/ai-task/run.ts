@@ -40,9 +40,19 @@ export class AITaskHandler extends BaseNodeHandler {
       // Use Desktop's apiClient.run() which handles submit + poll
       const result = await client.run(modelId, apiParams)
 
-      const outputUrl = Array.isArray(result.outputs) && result.outputs.length > 0
-        ? String(result.outputs[0])
-        : ''
+      // Normalize first output to URL string (API may return string or { url: "..." })
+      const firstOutput = Array.isArray(result.outputs) && result.outputs.length > 0 ? result.outputs[0] : null
+      const outputUrl = firstOutput == null ? '' : (typeof firstOutput === 'object' && firstOutput !== null && typeof (firstOutput as { url?: string }).url === 'string'
+        ? (firstOutput as { url: string }).url
+        : String(firstOutput))
+
+      // Build resultUrls array with same normalization for each item (e.g. z-image/turbo)
+      const rawOutputs = Array.isArray(result.outputs) ? result.outputs : []
+      const resultUrls = rawOutputs.map((o: unknown) =>
+        typeof o === 'object' && o !== null && typeof (o as { url?: string }).url === 'string'
+          ? (o as { url: string }).url
+          : String(o)
+      ).filter((u: string) => u && u !== '[object Object]')
 
       const model = getModelById(modelId)
       const cost = model?.costPerRun ?? 0
@@ -55,7 +65,7 @@ export class AITaskHandler extends BaseNodeHandler {
           // Store output by handle key so resolveInputs can find it
           output: outputUrl,
           resultUrl: outputUrl,
-          resultUrls: Array.isArray(result.outputs) ? result.outputs : [outputUrl],
+          resultUrls: resultUrls.length > 0 ? resultUrls : [outputUrl],
           modelId,
           raw: result
         },

@@ -1025,6 +1025,7 @@
     "newWorkflow": "New Workflow",
     "untitled": "Untitled Workflow",
     "modelSyncDesktopOnly": "Model sync is available in the WaveSpeed Desktop app.",
+    "aiTaskNodeLabel": "WaveSpeed API",
     "save": "Save",
     "saved": "Saved",
     "saving": "Saving...",

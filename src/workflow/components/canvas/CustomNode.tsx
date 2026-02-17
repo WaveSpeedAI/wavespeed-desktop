@@ -163,9 +163,9 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
   const nodeRef = useRef<HTMLDivElement>(null)
   const [resizing, setResizing] = useState(false)
   const { getViewport, setNodes } = useReactFlow()
-  // Title bar: for AI task use custom model label (strip legacy 🤖 prefix if present); for others use node-type translation
-  const nodeLabel = data.nodeType === 'ai-task/run' && data.label
-    ? String(data.label).replace(/^🤖\s*/, '').trim() || t(`workflow.nodeDefs.${data.nodeType}.label`, data.nodeType?.split('/').pop() ?? 'Node')
+  // Title bar: for AI task always show "WaveSpeed API"; for others use node-type translation
+  const nodeLabel = data.nodeType === 'ai-task/run'
+    ? t('workflow.aiTaskNodeLabel', 'WaveSpeed API')
     : t(`workflow.nodeDefs.${data.nodeType}.label`, data.nodeType?.split('/').pop() ?? 'Node')
   const localizeInputLabel = useCallback((key: string, fallback: string) =>
     t(`workflow.nodeDefs.${data.nodeType}.inputs.${key}.label`, fallback), [data.nodeType, t])

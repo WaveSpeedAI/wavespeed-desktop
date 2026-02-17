@@ -112,10 +112,10 @@ export function RunMonitor({ workflowId }: { workflowId?: string | null }) {
   const errorMessages = useExecutionStore(s => s.errorMessages)
   const cancelAll = useExecutionStore(s => s.cancelAll)
 
-  // Filter sessions to current workflow. In browser mode workflowId may be null; show sessions with workflowId 'browser'.
-  const filteredSessions = workflowId
-    ? runSessions.filter(s => s.workflowId === workflowId)
-    : runSessions.filter(s => s.workflowId === 'browser')
+  // Filter sessions to current workflow when we have one; otherwise show all sessions.
+  // If filtering by workflowId yields none but sessions exist, show all (avoids empty list after run/save race).
+  const byWorkflow = workflowId ? runSessions.filter(s => s.workflowId === workflowId) : runSessions
+  const filteredSessions = byWorkflow.length > 0 ? byWorkflow : runSessions
 
   const activeCount = filteredSessions.filter(s => s.status === 'running').length
   const errorCount = filteredSessions.filter(s => s.status === 'error').length

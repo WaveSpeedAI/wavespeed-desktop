@@ -9,7 +9,6 @@ export const mediaUploadDef: NodeTypeDefinition = {
   type: 'input/media-upload',
   category: 'input',
   label: 'Upload',
-  icon: '📁',
   inputs: [{ key: 'media', label: 'Media', dataType: 'url', required: false }],
   outputs: [{ key: 'output', label: 'URL', dataType: 'url', required: true }],
   params: [
@@ -23,7 +22,6 @@ export const textInputDef: NodeTypeDefinition = {
   type: 'input/text-input',
   category: 'input',
   label: 'Text',
-  icon: '✏️',
   inputs: [],
   outputs: [{ key: 'output', label: 'Text', dataType: 'text', required: true }],
   params: [
@@ -36,7 +34,6 @@ export const aiTaskDef: NodeTypeDefinition = {
   type: 'ai-task/run',
   category: 'ai-task',
   label: 'Generate',
-  icon: '🤖',
   inputs: [],
   outputs: [{ key: 'output', label: 'Output', dataType: 'url', required: true }],
   params: [
@@ -49,7 +46,6 @@ export const fileExportDef: NodeTypeDefinition = {
   type: 'output/file',
   category: 'output',
   label: 'File Export',
-  icon: '💾',
   inputs: [{ key: 'url', label: 'URL', dataType: 'url', required: true }],
   outputs: [],
   params: [
@@ -76,7 +72,6 @@ export const previewDisplayDef: NodeTypeDefinition = {
   type: 'output/preview',
   category: 'output',
   label: 'Preview',
-  icon: '👀',
   inputs: [{ key: 'input', label: 'URL', dataType: 'url', required: true }],
   outputs: [],
   params: [
@@ -113,7 +108,6 @@ export const imageEnhancerDef: NodeTypeDefinition = {
   type: 'free-tool/image-enhancer',
   category: 'free-tool',
   label: 'Image Enhancer',
-  icon: '🖼️',
   inputs: [{ key: 'input', label: 'Image', dataType: 'image', required: true }],
   outputs: [{ key: 'output', label: 'Output', dataType: 'image', required: true }],
   params: [
@@ -126,7 +120,6 @@ export const backgroundRemoverDef: NodeTypeDefinition = {
   type: 'free-tool/background-remover',
   category: 'free-tool',
   label: 'Background Remover',
-  icon: '🧹',
   inputs: [{ key: 'input', label: 'Image', dataType: 'image', required: true }],
   outputs: [{ key: 'output', label: 'Output', dataType: 'image', required: true }],
   params: [
@@ -150,7 +143,6 @@ export const faceEnhancerDef: NodeTypeDefinition = {
   type: 'free-tool/face-enhancer',
   category: 'free-tool',
   label: 'Face Enhancer',
-  icon: '✨',
   inputs: [{ key: 'input', label: 'Image', dataType: 'image', required: true }],
   outputs: [{ key: 'output', label: 'Output', dataType: 'image', required: true }],
   params: []
@@ -160,7 +152,6 @@ export const videoEnhancerDef: NodeTypeDefinition = {
   type: 'free-tool/video-enhancer',
   category: 'free-tool',
   label: 'Video Enhancer',
-  icon: '🎬',
   inputs: [{ key: 'input', label: 'Video', dataType: 'video', required: true }],
   outputs: [{ key: 'output', label: 'Output', dataType: 'video', required: true }],
   params: [
@@ -173,7 +164,6 @@ export const faceSwapperDef: NodeTypeDefinition = {
   type: 'free-tool/face-swapper',
   category: 'free-tool',
   label: 'Face Swapper',
-  icon: '🔁',
   inputs: [
     { key: 'source', label: 'Source Face', dataType: 'image', required: true },
     { key: 'target', label: 'Target Image', dataType: 'image', required: true }
@@ -186,7 +176,6 @@ export const imageEraserDef: NodeTypeDefinition = {
   type: 'free-tool/image-eraser',
   category: 'free-tool',
   label: 'Image Eraser',
-  icon: '🪄',
   inputs: [
     { key: 'input', label: 'Image', dataType: 'image', required: true },
     { key: 'mask', label: 'Mask', dataType: 'image', required: true }
@@ -199,7 +188,6 @@ export const segmentAnythingDef: NodeTypeDefinition = {
   type: 'free-tool/segment-anything',
   category: 'free-tool',
   label: 'Segment Anything',
-  icon: '🖱️',
   inputs: [{ key: 'input', label: 'Image', dataType: 'image', required: true }],
   outputs: [{ key: 'output', label: 'Mask', dataType: 'image', required: true }],
   params: [{ key: 'invertMask', label: 'Invert Mask', type: 'boolean', default: false }]
@@ -231,7 +219,6 @@ export const videoConverterDef: NodeTypeDefinition = {
   type: 'free-tool/video-converter',
   category: 'free-tool',
   label: 'Video Converter',
-  icon: '🎞️',
   inputs: [{ key: 'input', label: 'Video', dataType: 'video', required: true }],
   outputs: [{ key: 'output', label: 'Output', dataType: 'video', required: true }],
   params: [
@@ -247,7 +234,6 @@ export const audioConverterDef: NodeTypeDefinition = {
   type: 'free-tool/audio-converter',
   category: 'free-tool',
   label: 'Audio Converter',
-  icon: '🎵',
   inputs: [{ key: 'input', label: 'Audio', dataType: 'audio', required: true }],
   outputs: [{ key: 'output', label: 'Output', dataType: 'audio', required: true }],
   params: [
@@ -261,7 +247,6 @@ export const imageConverterDef: NodeTypeDefinition = {
   type: 'free-tool/image-converter',
   category: 'free-tool',
   label: 'Image Converter',
-  icon: '🧾',
   inputs: [{ key: 'input', label: 'Image', dataType: 'image', required: true }],
   outputs: [{ key: 'output', label: 'Output', dataType: 'image', required: true }],
   params: [
@@ -273,7 +258,6 @@ export const mediaTrimmerDef: NodeTypeDefinition = {
   type: 'free-tool/media-trimmer',
   category: 'free-tool',
   label: 'Media Trimmer',
-  icon: '✂️',
   inputs: [{ key: 'input', label: 'Media', dataType: 'video', required: true }],
   outputs: [{ key: 'output', label: 'Output', dataType: 'url', required: true }],
   params: [
@@ -287,7 +271,6 @@ export const mediaMergerDef: NodeTypeDefinition = {
   type: 'free-tool/media-merger',
   category: 'free-tool',
   label: 'Media Merger',
-  icon: '🧩',
   inputs: [
     { key: 'input1', label: 'Input 1', dataType: 'video', required: true },
     { key: 'input2', label: 'Input 2', dataType: 'video', required: true },

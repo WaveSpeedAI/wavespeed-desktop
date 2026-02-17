@@ -18,9 +18,6 @@ import { Paintbrush, MousePointer2, Dices } from 'lucide-react'
 import { useModelsStore } from '@/stores/modelsStore'
 import { getFormFieldsFromModel } from '@/lib/schemaToForm'
 import { convertDesktopModel, formFieldsToModelParamSchema } from '../../lib/model-converter'
-import { fuzzySearch } from '@/lib/fuzzySearch'
-// Status constants (kept for edge component compatibility)
-// import { NODE_STATUS_COLORS, NODE_STATUS_BORDER } from '@/workflow/constants'
 import type { NodeStatus } from '@/workflow/types/execution'
 import type { ParamDefinition, PortDefinition, ModelParamSchema, WaveSpeedModel } from '@/workflow/types/node-defs'
 
@@ -28,6 +25,7 @@ import { CompInput, CompTextarea } from './composition-input'
 import { ResultsPanel } from '../panels/ResultsPanel'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { FormField } from '@/components/playground/FormField'
+import { ModelSelector } from '@/components/playground/ModelSelector'
 import type { FormFieldConfig } from '@/lib/schemaToForm'
 
 /** Convert workflow ParamDefinition to Playground FormFieldConfig for consistent FormField rendering */
@@ -149,17 +147,15 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
   const updateNodeData = useWorkflowStore(s => s.updateNodeData)
   const workflowId = useWorkflowStore(s => s.workflowId)
   const isDirty = useWorkflowStore(s => s.isDirty)
-  const { runNode, cancelNode, retryNode, clearNodeResults } = useExecutionStore()
+  const { runNode, cancelNode, retryNode } = useExecutionStore()
   const openPreview = useUIStore(s => s.openPreview)
   const allNodes = useWorkflowStore(s => s.nodes)
   const allLastResults = useExecutionStore(s => s.lastResults)
   const [hovered, setHovered] = useState(false)
   const [segmentPointPickerOpen, setSegmentPointPickerOpen] = useState(false)
-  const [modelSearchQuery, setModelSearchQuery] = useState('')
-  const [modelSwitchBlocked, setModelSwitchBlocked] = useState(false)
   const storeModels = useModelsStore(s => s.models)
+  const getModelById = useModelsStore(s => s.getModelById)
   const fetchModels = useModelsStore(s => s.fetchModels)
-  const availableModels = useMemo(() => storeModels.map(convertDesktopModel), [storeModels])
 
   // ── Resizable dimensions (use ref + direct DOM for zero-lag) ──
   const savedWidth = (data.params.__nodeWidth as number) ?? DEFAULT_NODE_WIDTH
@@ -167,9 +163,9 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
   const nodeRef = useRef<HTMLDivElement>(null)
   const [resizing, setResizing] = useState(false)
   const { getViewport, setNodes } = useReactFlow()
-  // Title bar: for AI task use custom model label (🤖 Model name); for others use only node-type translation so the title never changes to "Config & Results" or other wrong text when selected
-  const nodeLabel = data.nodeType === 'ai-task/run' && data.label && String(data.label).startsWith('🤖')
-    ? String(data.label)
+  // Title bar: for AI task use custom model label (strip legacy 🤖 prefix if present); for others use node-type translation
+  const nodeLabel = data.nodeType === 'ai-task/run' && data.label
+    ? String(data.label).replace(/^🤖\s*/, '').trim() || t(`workflow.nodeDefs.${data.nodeType}.label`, data.nodeType?.split('/').pop() ?? 'Node')
     : t(`workflow.nodeDefs.${data.nodeType}.label`, data.nodeType?.split('/').pop() ?? 'Node')
   const localizeInputLabel = useCallback((key: string, fallback: string) =>
     t(`workflow.nodeDefs.${data.nodeType}.inputs.${key}.label`, fallback), [data.nodeType, t])
@@ -278,39 +274,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
     return data.modelInputSchema ?? []
   }, [isAITask, currentModel, data.modelInputSchema])
 
-  const hasSchema = schema.length > 0
   const isPreviewNode = data.nodeType === 'output/preview'
-  const modelSearchResults = useMemo(() => {
-    const q = modelSearchQuery.trim()
-    if (!q) return []
-    return fuzzySearch(availableModels, q, (m) => [
-      m.displayName,
-      m.modelId,
-      m.category,
-      m.provider
-    ]).map(r => r.item).slice(0, 40)
-  }, [availableModels, modelSearchQuery])
-
-  const modelListWhenNoSearch = useMemo(() => {
-    if (modelSearchQuery.trim()) return []
-    const current = currentModelId
-    const getFamily = (modelId: string) => modelId.split('/').slice(0, 2).join('/')
-    const selectedFamily = getFamily(current)
-    const isSameFamily = (m: WaveSpeedModel) => getFamily(m.modelId) === selectedFamily
-    const isSameProvider = (m: WaveSpeedModel) => m.modelId.split('/')[0] === current.split('/')[0]
-    return [...availableModels].sort((a, b) => {
-      const af = isSameFamily(a), bf = isSameFamily(b)
-      if (af && !bf) return -1
-      if (!af && bf) return 1
-      const ap = isSameProvider(a), bp = isSameProvider(b)
-      if (ap && !bp) return -1
-      if (!ap && bp) return 1
-      return a.displayName.localeCompare(b.displayName)
-    }).slice(0, 80)
-  }, [availableModels, modelSearchQuery, currentModelId])
-
-  const modelDisplayList = modelSearchQuery.trim() ? modelSearchResults : modelListWhenNoSearch
-
   const removeEdgesByIds = useWorkflowStore(s => s.removeEdgesByIds)
 
   const handleInlineSelectModel = useCallback((model: WaveSpeedModel) => {
@@ -361,12 +325,12 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
     const baseName = model.displayName
     const otherLabels = allNodes
       .filter(n => n.id !== id && n.data?.nodeType === 'ai-task/run')
-      .map(n => String(n.data?.label ?? ''))
-    let finalLabel = `🤖 ${baseName}`
+      .map(n => String(n.data?.label ?? '').replace(/^🤖\s*/, '').trim())
+    let finalLabel = baseName
     if (otherLabels.includes(finalLabel)) {
       let idx = 2
-      while (otherLabels.includes(`🤖 ${baseName} (${idx})`)) idx++
-      finalLabel = `🤖 ${baseName} (${idx})`
+      while (otherLabels.includes(`${baseName} (${idx})`)) idx++
+      finalLabel = `${baseName} (${idx})`
     }
 
     updateNodeData(id, {
@@ -383,9 +347,6 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
       newFetched.delete(id)
       return { lastResults: newResults, _fetchedNodes: newFetched }
     })
-
-    setModelSearchQuery('')
-    setModelSwitchBlocked(false)
   }, [currentModelId, data.params, edges, id, updateNodeData, updateNodeParams, removeEdgesByIds, allNodes])
 
   useEffect(() => {
@@ -553,10 +514,25 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
     removeNode(id)
   }
 
+  // Let wheel scroll text areas instead of zooming the canvas
+  const onWheel = (e: React.WheelEvent) => {
+    const el = e.target as Node | null
+    if (!el) return
+    const tag = el instanceof HTMLElement ? el.tagName.toLowerCase() : ''
+    if (tag === 'textarea' || tag === 'input') {
+      e.stopPropagation()
+      return
+    }
+    if (el instanceof HTMLElement && el.isContentEditable) {
+      e.stopPropagation()
+    }
+  }
+
   return (
     <div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onWheel={onWheel}
       className="relative"
     >
       {/* Invisible hover extension above the node so mouse can reach the toolbar */}
@@ -732,45 +708,16 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
 
         {isAITask && (
           <div className="nodrag px-3 mb-1" onClick={e => e.stopPropagation()}>
-            <div className="relative pl-2">
-              <svg className="absolute left-[18px] top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))]" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-              </svg>
-              <input
-                type="text"
-                value={modelSearchQuery}
-                onChange={e => {
-                  setModelSearchQuery(e.target.value)
-                  if (modelSwitchBlocked) setModelSwitchBlocked(false)
-                }}
-                placeholder={t('workflow.modelSelector.searchAllPlaceholder', 'Search all models...')}
-                className="w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] pl-6 pr-2 py-1.5 text-[11px] text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50"
-              />
-            </div>
-            <div className="nodrag mt-1 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] max-h-[200px] overflow-y-auto">
-              {modelDisplayList.length === 0 ? (
-                <div className="px-2 py-2 text-[10px] text-muted-foreground text-center">
-                  {t('workflow.modelSelector.noModelsFound', 'No models found')}
-                </div>
-              ) : (
-                modelDisplayList.map(model => (
-                  <button
-                    key={model.modelId}
-                    type="button"
-                    onClick={e => { e.stopPropagation(); handleInlineSelectModel(model) }}
-                    className="w-full text-left px-2 py-1.5 hover:bg-[hsl(var(--accent))] transition-colors border-b border-[hsl(var(--border))]/40 last:border-b-0"
-                  >
-                    <div className="text-[11px] font-medium truncate">{model.displayName}</div>
-                    <div className="text-[10px] text-muted-foreground truncate">{model.category} · {model.provider}</div>
-                  </button>
-                ))
-              )}
-            </div>
-            {modelSwitchBlocked && (
-              <div className="mt-1 text-[10px] text-amber-300">
-                {t('workflow.modelSelector.disconnectBeforeSwitch', 'Please disconnect this node before switching model.')}
-              </div>
-            )}
+            <ModelSelector
+              models={storeModels}
+              value={currentModelId || undefined}
+              onChange={(modelId) => {
+                const storeModel = getModelById(modelId)
+                if (!storeModel) return
+                handleInlineSelectModel(convertDesktopModel(storeModel))
+              }}
+              disabled={running}
+            />
           </div>
         )}
 

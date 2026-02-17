@@ -34,9 +34,21 @@ function AnnotationNodeComponent({ id, data, selected }: NodeProps<AnnotationDat
     updateNodeParams(id, { ...params, [key]: value })
   }
 
+  const onWheel = (e: React.WheelEvent) => {
+    const el = e.target as Node | null
+    if (!el) return
+    const tag = el instanceof HTMLElement ? el.tagName.toLowerCase() : ''
+    if (tag === 'textarea' || tag === 'input') {
+      e.stopPropagation()
+    } else if (el instanceof HTMLElement && el.isContentEditable) {
+      e.stopPropagation()
+    }
+  }
+
   return (
     <div
       onDoubleClick={e => { e.stopPropagation(); setEditing(true) }}
+      onWheel={onWheel}
       className={`rounded-lg border-2 p-3 min-w-[200px] max-w-[350px] transition-shadow
         ${selected ? 'border-blue-500/50 ring-1 ring-blue-500/20' : 'border-transparent'}`}
       style={{ background: bgColor, fontSize: 13 }}

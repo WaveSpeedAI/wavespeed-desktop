@@ -6,7 +6,6 @@ export const faceEnhancerDef: NodeTypeDefinition = {
   type: 'free-tool/face-enhancer',
   category: 'free-tool',
   label: 'Face Enhancer',
-  icon: '✨',
   inputs: [{ key: 'input', label: 'Image', dataType: 'image', required: true }],
   outputs: [{ key: 'output', label: 'Output', dataType: 'image', required: true }],
   params: []

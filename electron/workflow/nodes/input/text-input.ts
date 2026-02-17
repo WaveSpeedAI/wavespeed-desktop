@@ -21,7 +21,6 @@ export const textInputDef: NodeTypeDefinition = {
   type: 'input/text-input',
   category: 'input',
   label: 'Text',
-  icon: '✏️',
   inputs: [],
   outputs: [
     { key: 'output', label: 'Text', dataType: 'text', required: true }

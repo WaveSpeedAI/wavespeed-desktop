@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { v4 as uuidv4 } from 'uuid'
 import ReactFlow, {
   ReactFlowProvider,
+  useReactFlow,
   Background,
   BackgroundVariant,
   SelectionMode,
@@ -49,6 +50,42 @@ function saveRecentNodeTypes(types: string[]) {
 
 const nodeTypes = { custom: CustomNode, annotation: AnnotationNode }
 const edgeTypes = { custom: CustomEdge }
+
+/** Zoom in/out and fit view controls, positioned on the right of the canvas. */
+function CanvasZoomControls() {
+  const { t } = useTranslation()
+  const { zoomIn, zoomOut, fitView } = useReactFlow()
+  return (
+    <div className="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex flex-col rounded-lg border border-border bg-card shadow-lg overflow-hidden">
+      <button
+        type="button"
+        onClick={() => zoomIn({ duration: 200 })}
+        className="flex items-center justify-center w-9 h-9 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+        title={t('workflow.zoomIn', 'Zoom in')}
+      >
+        <span className="text-lg font-medium leading-none">+</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => zoomOut({ duration: 200 })}
+        className="flex items-center justify-center w-9 h-9 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors border-t border-border"
+        title={t('workflow.zoomOut', 'Zoom out')}
+      >
+        <span className="text-lg font-medium leading-none">−</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => fitView({ padding: 0.2, duration: 300, minZoom: 0.05, maxZoom: 1.5 })}
+        className="flex items-center justify-center w-9 h-9 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors border-t border-border"
+        title={t('workflow.fitView', 'Fit View')}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+        </svg>
+      </button>
+    </div>
+  )
+}
 
 interface WorkflowCanvasProps {
   nodeDefs?: NodeTypeDefinition[]
@@ -185,7 +222,7 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
       if (p.default !== undefined) defaultParams[p.key] = p.default
     }
     const localizedLabel = t(`workflow.nodeDefs.${def.type}.label`, def.label)
-    addNode(def.type, position, defaultParams, `${def.icon} ${localizedLabel}`, def.params, def.inputs, def.outputs)
+    addNode(def.type, position, defaultParams, localizedLabel, def.params, def.inputs, def.outputs)
     recordRecentNodeType(def.type)
     setContextMenu(null)
   }, [addNode, contextMenu, projectMenuPosition, t, recordRecentNodeType])
@@ -348,7 +385,7 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
     const def = nodeDefs.find(d => d.type === nodeType)
     const defaultParams: Record<string, unknown> = {}
     if (def) { for (const p of def.params) { if (p.default !== undefined) defaultParams[p.key] = p.default } }
-    const newNodeId = addNode(nodeType, position, defaultParams, def ? `${def.icon} ${t(`workflow.nodeDefs.${def.type}.label`, def.label)}` : nodeType, def?.params ?? [], def?.inputs ?? [], def?.outputs ?? [])
+    const newNodeId = addNode(nodeType, position, defaultParams, def ? t(`workflow.nodeDefs.${def.type}.label`, def.label) : nodeType, def?.params ?? [], def?.inputs ?? [], def?.outputs ?? [])
     recordRecentNodeType(nodeType)
     // Auto-select the newly dropped node so the right config panel opens
     selectNode(newNodeId)
@@ -360,6 +397,47 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
     }
     window.addEventListener('workflow:fit-view', handleFitView)
     return () => window.removeEventListener('workflow:fit-view', handleFitView)
+  }, [])
+
+  // Capture-phase wheel: when target is a text field or scrollable element (or inside one), scroll it and prevent React Flow from zooming
+  useEffect(() => {
+    const wrapper = reactFlowWrapper.current
+    if (!wrapper) return
+    const onWheelCapture = (e: WheelEvent) => {
+      let el = e.target as Node | null
+      if (!el || !(el instanceof HTMLElement)) return
+      const tag = el.tagName.toLowerCase()
+      const isInputOrTextarea = tag === 'textarea' || tag === 'input'
+      const isContentEditable = el.isContentEditable
+
+      // Find scrollable: the element itself or the nearest scrollable ancestor (e.g. ModelSelector dropdown list)
+      const getScrollable = (elem: HTMLElement): HTMLElement | null => {
+        for (let n: HTMLElement | null = elem; n && n !== wrapper; n = n.parentElement) {
+          const oy = typeof getComputedStyle === 'function' ? getComputedStyle(n).overflowY : ''
+          if (/auto|scroll|overlay/.test(oy)) return n
+        }
+        return null
+      }
+
+      let scrollable: HTMLElement | null = null
+      if (isInputOrTextarea || isContentEditable) {
+        scrollable = el as HTMLElement
+      } else {
+        scrollable = getScrollable(el)
+      }
+
+      if (!scrollable) return
+      // Prevent zoom whenever we're over a scroll container (even if it has no overflow yet)
+      e.preventDefault()
+      e.stopPropagation()
+      e.stopImmediatePropagation()
+      const s = scrollable as HTMLElement & { scrollTop: number; scrollHeight: number; clientHeight: number }
+      if (typeof s.scrollTop === 'number' && s.scrollHeight > s.clientHeight) {
+        s.scrollTop = Math.max(0, Math.min(s.scrollHeight - s.clientHeight, s.scrollTop + e.deltaY))
+      }
+    }
+    wrapper.addEventListener('wheel', onWheelCapture, { capture: true })
+    return () => wrapper.removeEventListener('wheel', onWheelCapture, { capture: true })
   }, [])
 
   // Auto-layout: arrange nodes in a clean left-to-right DAG layout
@@ -503,7 +581,7 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
 
   return (
     <ReactFlowProvider>
-      <div ref={reactFlowWrapper} className="flex-1 h-full">
+      <div ref={reactFlowWrapper} className="flex-1 h-full relative">
         <ReactFlow
           nodes={nodes} edges={edges}
           onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}
@@ -539,6 +617,7 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
         >
           <Background variant={BackgroundVariant.Lines} gap={20} lineWidth={1} color="hsl(var(--border))" />
         </ReactFlow>
+        <CanvasZoomControls />
         {contextMenu && contextMenu.type !== 'addNode' && (
           <ContextMenu x={contextMenu.x} y={contextMenu.y} items={getContextMenuItems()} onClose={() => setContextMenu(null)} />
         )}
@@ -582,8 +661,7 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
                           className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                           title={t('workflow.dragOrClickToAdd', 'Drag to canvas or click to add')}
                         >
-                          <span className="text-base leading-none">{def.icon}</span>
-                          <span>{t(`workflow.nodeDefs.${def.type}.label`, def.label)}</span>
+                        <span>{t(`workflow.nodeDefs.${def.type}.label`, def.label)}</span>
                         </button>
                       ))}
                     </div>

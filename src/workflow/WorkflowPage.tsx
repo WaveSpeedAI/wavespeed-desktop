@@ -498,7 +498,7 @@ export function WorkflowPage() {
         const defMap = new Map(
           nodeDefs.map(def => [
             def.type,
-            { params: def.params ?? [], inputs: def.inputs ?? [], outputs: def.outputs ?? [], icon: def.icon ?? '', label: def.label ?? def.type }
+            { params: def.params ?? [], inputs: def.inputs ?? [], outputs: def.outputs ?? [], label: def.label ?? def.type }
           ])
         )
         // Fetch models list to resolve modelInputSchema for ai-task nodes
@@ -516,7 +516,7 @@ export function WorkflowPage() {
           const def = defMap.get(n.nodeType)
           const meta = n.params?.__meta as Record<string, unknown> | undefined
           let modelInputSchema = (meta?.modelInputSchema as unknown[]) ?? []
-          const label = (meta?.label as string) || (def ? `${def.icon} ${def.label}` : n.nodeType)
+          const label = (meta?.label as string) || (def ? def.label : n.nodeType)
           const { __meta: _, ...cleanParams } = (n.params ?? {}) as Record<string, unknown>
           // If modelInputSchema is empty but modelId exists, resolve from models list
           const modelId = cleanParams.modelId as string | undefined
@@ -799,14 +799,15 @@ export function WorkflowPage() {
   }, [loadWorkflow, saveCurrentTabSnapshot, t])
 
   const handleExport = useCallback(async () => {
-    if (!workflowId) return
     try {
       const wfNodes = nodes.map(n => ({
         id: n.id, nodeType: n.data.nodeType, position: n.position,
         params: { ...(n.data.params ?? {}), __meta: { label: n.data.label, modelInputSchema: n.data.modelInputSchema ?? [] } }
       }))
       const wfEdges = useWorkflowStore.getState().edges.map(e => ({ id: e.id, sourceNodeId: e.source, targetNodeId: e.target, sourceOutputKey: e.sourceHandle ?? 'output', targetInputKey: e.targetHandle ?? 'input' }))
-      await storageIpc.exportWorkflowJson(workflowId, workflowName, { nodes: wfNodes, edges: wfEdges })
+      const idForExport = workflowId ?? ''
+      const nameForExport = workflowName || 'Untitled Workflow'
+      await storageIpc.exportWorkflowJson(idForExport, nameForExport, { nodes: wfNodes, edges: wfEdges })
       showIoToast('success', t('workflow.exported', 'Exported successfully'))
     } catch (err) {
       console.error('Export failed:', err)
@@ -1234,7 +1235,7 @@ export function WorkflowPage() {
             const defMap = new Map(
               nodeDefs.map(def => [
                 def.type,
-                { params: def.params ?? [], inputs: def.inputs ?? [], outputs: def.outputs ?? [], icon: def.icon ?? '', label: def.label ?? def.type }
+                { params: def.params ?? [], inputs: def.inputs ?? [], outputs: def.outputs ?? [], label: def.label ?? def.type }
               ])
             )
 
@@ -1254,7 +1255,7 @@ export function WorkflowPage() {
               // Extract __meta (same as loadWorkflow does)
               const meta = n.params?.__meta as Record<string, unknown> | undefined
               let modelInputSchema = (meta?.modelInputSchema as unknown[]) ?? []
-              const label = (meta?.label as string) || (def ? `${def.icon} ${def.label}` : n.nodeType)
+              const label = (meta?.label as string) || (def ? def.label : n.nodeType)
               const { __meta: _, ...cleanParams } = (n.params ?? {}) as Record<string, unknown>
               // If modelInputSchema is empty but modelId exists, resolve from models list
               const modelId = cleanParams.modelId as string | undefined
@@ -1587,16 +1588,13 @@ function MoreMenu({ workflowId, onImport, onExport, onSave, onSaveAsTemplate, cl
             </svg>
             {t('workflow.import', 'Import')}
           </button>
-          {workflowId && (
-            <button onClick={() => { onExport(); setOpen(false) }}
-              className="w-full px-3 py-1.5 text-xs text-left hover:bg-[hsl(var(--accent))] transition-colors flex items-center gap-2">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-              </svg>
-              {t('workflow.export', 'Export')}
-            </button>
-          )}
-          <div className="mx-2 my-1 h-px bg-[hsl(var(--border))]" />
+          <button onClick={() => { onExport(); setOpen(false) }}
+            className="w-full px-3 py-1.5 text-xs text-left hover:bg-[hsl(var(--accent))] transition-colors flex items-center gap-2">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            {t('workflow.export', 'Export')}
+          </button>
           {workflowId && (
             <button onClick={() => { onSaveAsTemplate(); setOpen(false) }}
               className="w-full px-3 py-1.5 text-xs text-left hover:bg-[hsl(var(--accent))] transition-colors flex items-center gap-2">
@@ -1606,7 +1604,6 @@ function MoreMenu({ workflowId, onImport, onExport, onSave, onSaveAsTemplate, cl
               {t('workflow.saveAsTemplate', 'Save as Template')}
             </button>
           )}
-          <div className="mx-2 my-1 h-px bg-[hsl(var(--border))]" />
           <button onClick={() => { onSave(); setOpen(false) }}
             className="w-full px-3 py-1.5 text-xs text-left hover:bg-[hsl(var(--accent))] transition-colors flex items-center gap-2">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

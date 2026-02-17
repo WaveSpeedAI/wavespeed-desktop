@@ -56,7 +56,6 @@ export const videoConverterDef: NodeTypeDefinition = {
   type: 'free-tool/video-converter',
   category: 'free-tool',
   label: 'Video Converter',
-  icon: '🎞️',
   inputs: [{ key: 'input', label: 'Video', dataType: 'video', required: true }],
   outputs: [{ key: 'output', label: 'Output', dataType: 'video', required: true }],
   params: [

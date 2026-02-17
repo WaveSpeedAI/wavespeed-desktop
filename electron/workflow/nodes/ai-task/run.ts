@@ -11,7 +11,6 @@ export const aiTaskDef: NodeTypeDefinition = {
   type: 'ai-task/run',
   category: 'ai-task',
   label: 'Generate',
-  icon: '🤖',
   inputs: [],
   outputs: [
     { key: 'output', label: 'Output', dataType: 'url', required: true }

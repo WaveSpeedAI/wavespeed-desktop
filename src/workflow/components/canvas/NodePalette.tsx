@@ -50,7 +50,7 @@ export function NodePalette({ definitions }: NodePaletteProps) {
     const x = center.x + (Math.random() - 0.5) * 60
     const y = center.y + (Math.random() - 0.5) * 60
     const localizedLabel = t(`workflow.nodeDefs.${def.type}.label`, def.label)
-    addNode(def.type, { x, y }, defaultParams, `${def.icon} ${localizedLabel}`, def.params, def.inputs, def.outputs)
+    addNode(def.type, { x, y }, defaultParams, localizedLabel, def.params, def.inputs, def.outputs)
     recordRecentNodeType(def.type)
   }, [addNode, t])
 
@@ -151,7 +151,6 @@ export function NodePalette({ definitions }: NodePaletteProps) {
                       active:cursor-grabbing active:bg-accent/80"
                     title={t('workflow.dragOrClickToAdd', 'Drag to canvas or click to add')}
                   >
-                    <span className="text-base leading-none w-5 text-center shrink-0">{def.icon}</span>
                     <span>{t(`workflow.nodeDefs.${def.type}.label`, def.label)}</span>
                     {isAiTask && (
                       <span className="ml-auto text-[9px] font-semibold text-primary bg-primary/25 px-1.5 py-0.5 rounded">AI</span>

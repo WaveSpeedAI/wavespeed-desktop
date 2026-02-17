@@ -117,14 +117,32 @@ export function RunMonitor({ workflowId }: { workflowId?: string | null }) {
     ? runSessions.filter(s => s.workflowId === workflowId)
     : runSessions.filter(s => s.workflowId === 'browser')
 
+  const activeCount = filteredSessions.filter(s => s.status === 'running').length
+  const errorCount = filteredSessions.filter(s => s.status === 'error').length
+  const completedCount = filteredSessions.filter(s => s.status === 'completed').length
+  const statusIndicator =
+    activeCount > 0
+      ? { color: 'bg-blue-500 animate-pulse', label: `${activeCount} running` }
+      : errorCount > 0
+        ? { color: 'bg-orange-500', label: `${errorCount} with errors` }
+        : completedCount > 0
+          ? { color: 'bg-green-500', label: `${completedCount} completed` }
+          : { color: 'bg-muted-foreground', label: 'No runs' }
+
   return (
-    <div className="flex-shrink-0 border-t border-border bg-card flex flex-col min-h-0 w-full">
+    <div className={`flex-shrink-0 border-t border-border bg-card flex flex-col min-h-0 w-full ${showRunMonitor ? 'max-h-[360px]' : ''}`}>
       {/* Header bar — click entire row to toggle expand/collapse */}
       <div
         className="flex items-center justify-between px-3 py-2 bg-muted/50 border-b border-border cursor-pointer hover:bg-muted/70 transition-colors flex-shrink-0"
         onClick={() => toggleRunMonitor()}
       >
-        <span className="text-xs font-semibold">Execution Monitor</span>
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-xs font-semibold truncate">Execution Monitor</span>
+          <span
+            className={`w-2 h-2 rounded-full flex-shrink-0 ${statusIndicator.color}`}
+            title={statusIndicator.label}
+          />
+        </div>
         <button
           onClick={(e) => { e.stopPropagation(); toggleRunMonitor() }}
           className="text-muted-foreground hover:text-foreground p-1 rounded transition-colors"
@@ -134,9 +152,9 @@ export function RunMonitor({ workflowId }: { workflowId?: string | null }) {
         </button>
       </div>
 
-      {/* Content — collapsible */}
+      {/* Content — collapsible, fixed height so panel doesn't grow infinitely */}
       {showRunMonitor && (
-        <div className="overflow-y-auto max-h-[320px] min-h-0">
+        <div className="flex-1 min-h-0 overflow-y-auto max-h-[320px]">
           {filteredSessions.length === 0 && (
             <div className="p-4 text-center text-xs text-muted-foreground">No runs yet</div>
           )}

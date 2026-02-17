@@ -432,7 +432,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
 
   loadWorkflow: async (id) => {
     const wf = await workflowIpc.load(id)
-    let defMap = new Map<string, { params: unknown[]; inputs: unknown[]; outputs: unknown[]; icon: string; label: string }>()
+    let defMap = new Map<string, { params: unknown[]; inputs: unknown[]; outputs: unknown[]; label: string }>()
     try {
       const defs = await registryIpc.getAll()
       defMap = new Map(
@@ -442,7 +442,6 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
             params: def.params ?? [],
             inputs: def.inputs ?? [],
             outputs: def.outputs ?? [],
-            icon: def.icon ?? '',
             label: def.label ?? def.type
           }
         ])
@@ -456,7 +455,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       const meta = (n.params as Record<string, unknown>).__meta as Record<string, unknown> | undefined
       const modelInputSchema = meta?.modelInputSchema as unknown[] | undefined
       const def = defMap.get(n.nodeType)
-      const label = (meta?.label as string) || (def ? `${def.icon} ${def.label}` : n.nodeType)
+      const label = (meta?.label as string) || (def ? def.label : n.nodeType)
       // Strip __meta from the params passed to the node
       const { __meta: _, ...cleanParams } = n.params as Record<string, unknown>
       return {

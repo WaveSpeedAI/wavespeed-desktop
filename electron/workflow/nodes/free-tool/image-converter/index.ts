@@ -8,7 +8,6 @@ export const imageConverterDef: NodeTypeDefinition = {
   type: 'free-tool/image-converter',
   category: 'free-tool',
   label: 'Image Converter',
-  icon: '🧾',
   inputs: [{ key: 'input', label: 'Image', dataType: 'image', required: true }],
   outputs: [{ key: 'output', label: 'Output', dataType: 'image', required: true }],
   params: [

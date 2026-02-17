@@ -90,8 +90,7 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
       status: 'running'
     }
     set(s => ({
-      runSessions: [session, ...s.runSessions].slice(0, MAX_SESSIONS),
-      showRunMonitor: true
+      runSessions: [session, ...s.runSessions].slice(0, MAX_SESSIONS)
     }))
 
     try {
@@ -126,8 +125,7 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
         nodeResults,
         nodeCosts: {},
         status: 'running'
-      }, ...s.runSessions].slice(0, MAX_SESSIONS),
-      showRunMonitor: true
+      }, ...s.runSessions].slice(0, MAX_SESSIONS)
     }))
 
     try {

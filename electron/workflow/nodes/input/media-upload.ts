@@ -21,7 +21,6 @@ export const mediaUploadDef: NodeTypeDefinition = {
   type: 'input/media-upload',
   category: 'input',
   label: 'Upload',
-  icon: '📁',
   inputs: [
     { key: 'media', label: 'Media', dataType: 'url', required: false }
   ],

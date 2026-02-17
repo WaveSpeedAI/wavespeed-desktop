@@ -1079,6 +1079,8 @@
     "exportFailed": "Export failed",
     "estimated": "Est.",
     "fitView": "Fit View",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
     "autoLayout": "Auto Layout",
     "freeToolModelHint": "First run will auto-download the AI model, please wait",
     "more": "More",

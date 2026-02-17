@@ -6,7 +6,6 @@ export const segmentAnythingDef: NodeTypeDefinition = {
   type: 'free-tool/segment-anything',
   category: 'free-tool',
   label: 'Segment Anything',
-  icon: '🖱️',
   inputs: [{ key: 'input', label: 'Image', dataType: 'image', required: true }],
   outputs: [{ key: 'output', label: 'Mask', dataType: 'image', required: true }],
   params: [

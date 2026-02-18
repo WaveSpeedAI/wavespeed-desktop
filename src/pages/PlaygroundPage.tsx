@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { usePlaygroundStore } from '@/stores/playgroundStore'
 import { useModelsStore } from '@/stores/modelsStore'
@@ -39,6 +39,7 @@ export function PlaygroundPage() {
   const modelId = params['*'] || params.modelId
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { models, fetchModels } = useModelsStore()
   const { isLoading: isLoadingApiKey, isValidated, loadApiKey, apiKey, hasAttemptedLoad } = useApiKeyStore()
   const {
@@ -156,6 +157,22 @@ export function PlaygroundPage() {
       }
     }
   }, [searchParams, templates, templatesLoaded, activeTab, setFormValues, setSearchParams])
+
+  // Receive prompt from Smart Generate page via location.state
+  const locationStateLoadedRef = useRef(false)
+  useEffect(() => {
+    const state = location.state as { prompt?: string } | null
+    if (state?.prompt && activeTab && !locationStateLoadedRef.current) {
+      locationStateLoadedRef.current = true
+      setFormValue('prompt', state.prompt)
+      // Clear the state to prevent re-applying on re-render
+      window.history.replaceState({}, document.title)
+      toast({
+        title: t('playground.promptLoaded'),
+        description: t('playground.promptLoadedDesc'),
+      })
+    }
+  }, [location.state, activeTab, setFormValue, t])
 
   const handleSaveTemplate = () => {
     if (!activeTab?.selectedModel || !newTemplateName.trim()) return

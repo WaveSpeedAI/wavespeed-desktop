@@ -49,6 +49,7 @@
     "settings": "Tetapan",
     "collapse": "Kuncupkan",
     "workflow": "Aliran kerja",
+    "smartGenerate": "Jana Pintar",
     "expand": "Kembang"
   },
   "welcome": {
@@ -86,6 +87,11 @@
         "title": "Z-Image",
         "description": "Penjanaan imej AI setempat - berjalan pada peranti anda, tidak memerlukan kunci API",
         "badge": "Tempatan"
+      },
+      "smartGenerate": {
+        "title": "Jana Pintar",
+        "description": "AI-powered multi-model generation with automatic quality scoring",
+        "badge": "Smart"
       },
       "freeTools": {
         "title": "Alat Percuma",
@@ -137,6 +143,8 @@
     "templateName": "Nama Templat",
     "templateSaved": "Templat disimpan",
     "templateLoaded": "Templat dimuatkan",
+    "promptLoaded": "Prompt loaded",
+    "promptLoadedDesc": "Loaded prompt from Smart Generate",
     "loadedTemplate": "Memuatkan \"{{name}}\"",
     "savedAs": "Disimpan sebagai \"{{name}}\"",
     "resetForm": "Reset borang",
@@ -1283,6 +1291,205 @@
         "loadingOptimizer": "Memuat pengoptimum...",
         "loadConfigFailed": "Tidak dapat memuat konfigurasi pengoptimum"
       }
+    }
+  },
+  "smartGenerate": {
+    "start": "Start Smart Generate",
+    "cancel": "Cancel",
+    "cancelling": "Membatalkan...",
+    "target": "Target",
+    "round": "Round {{round}}",
+    "mode": {
+      "text-to-image": "Text to Image",
+      "image-edit": "Image Edit",
+      "text-to-video": "Text to Video",
+      "image-to-video": "Image to Video"
+    },
+    "tab": {
+      "config": "Config",
+      "output": "Output",
+      "chat": "Chat"
+    },
+    "config": {
+      "sourceImage": "Source Image",
+      "referenceImage": "Reference Image (optional)",
+      "uploadImage": "Upload image",
+      "addImage": "Tambah gambar lain",
+      "uploading": "Memuat naik...",
+      "optionalReference": "Optional: upload a reference image",
+      "prompt": "Prompt",
+      "promptPlaceholder": "Describe what you want to generate...",
+      "size": "Saiz / Nisbah",
+      "resolution": "Resolusi",
+      "model": "Model",
+      "parallel": "Parallel Mode",
+      "standard": "Standard",
+      "standardDesc": "2 variants per round",
+      "deep": "Deep",
+      "deepDesc": "3 variants per round",
+      "budget": "Budget Limit",
+      "recommended": "Recommended",
+      "estimated": "Estimated",
+      "advanced": "Advanced Settings",
+      "videoResolution": "Resolusi Video",
+      "duration": "Tempoh",
+      "loras": "Model LoRA",
+      "loraPlaceholder": "Tampal URL LoRA (cth. Civitai)",
+      "imageTools": "Alat Imej",
+      "imageToolsAngle": "Sudut",
+      "imageToolsRelight": "Pencahayaan",
+      "horizontalAngle": "Sudut Mendatar",
+      "verticalAngle": "Sudut Menegak",
+      "distance": "Jarak",
+      "distanceClose": "Dekat",
+      "distanceMedium": "Sederhana",
+      "distanceWide": "Jauh",
+      "verticalLow": "Rendah",
+      "verticalEye": "Paras Mata",
+      "verticalHigh": "Tinggi",
+      "verticalTop": "Atas",
+      "lightType": "Jenis Cahaya",
+      "lightDirection": "Arah Cahaya",
+      "lightDirFront": "Hadapan",
+      "lightDirSide": "Sisi",
+      "lightDirBottom": "Bawah",
+      "lightDirTopDown": "Atas",
+      "runTool": "Jalankan",
+      "toolRunning": "Sedang berjalan...",
+      "discardResult": "Buang",
+      "recentResults": "Hasil Terkini",
+      "noRecentResults": "Tiada hasil lagi",
+      "fromMode": "Dari {{mode}}",
+      "toolResult": "Alat",
+      "optimizePrompt": "Optimumkan prompt dengan AI"
+    },
+    "phase": {
+      "idle": "Ready",
+      "checkingBalance": "Checking balance...",
+      "moderating": "Content moderation...",
+      "understanding": "Understanding image...",
+      "optimizing": "Optimizing prompt...",
+      "generating": "Generating...",
+      "evaluating": "Evaluating quality...",
+      "retrying": "Retrying with feedback...",
+      "switching": "Switching model...",
+      "paused": "Dijeda — semak keputusan",
+      "complete": "Complete",
+      "failed": "Failed"
+    },
+    "score": {
+      "perfect": "Perfect",
+      "excellent": "Excellent",
+      "good": "Good",
+      "fair": "Fair",
+      "needsWork": "Needs Work"
+    },
+    "tag": {
+      "recommended": "Recommended",
+      "ultimate": "Ultimate",
+      "value": "Value",
+      "fast": "Fast",
+      "turbo": "Turbo",
+      "flagship": "Flagship",
+      "premium": "Premium",
+      "chinese": "Chinese",
+      "detail": "Detail",
+      "understanding": "Understand",
+      "lora": "LoRA"
+    },
+    "status": {
+      "generating": "Generating",
+      "moderating": "Checking",
+      "scoring": "Scoring",
+      "complete": "Done",
+      "failed": "Failed",
+      "nsfw": "Blocked"
+    },
+    "output": {
+      "bestResult": "Best Result",
+      "allResults": "All Results",
+      "playWhileWaiting": "Play while waiting...",
+      "empty": "Results will appear here after generation starts",
+      "continueRefining": "Teruskan penambahbaikan",
+      "newTask": "Tugas baharu",
+      "newTaskTitle": "Mula tugas baharu?",
+      "newTaskDesc": "Ini akan memadam semua keputusan dan sejarah sembang semasa. Tetapan anda akan dikekalkan.",
+      "confirmNewTask": "Mula baharu",
+      "useAsSource": "Guna sebagai imej sumber"
+    },
+    "timeline": {
+      "title": "Timeline",
+      "results": "results",
+      "round": "Round {{n}}",
+      "switched": "Model switched"
+    },
+    "chat": {
+      "title": "Refinement",
+      "saveTemplate": "Save Template",
+      "goPlayground": "Go to Playground",
+      "aiUnderstanding": "AI Understanding",
+      "emptyHint": "Tell the AI what you'd like to change, or use the quick feedback buttons above",
+      "placeholder": "Type your feedback...",
+      "regenerate": "Regenerate",
+      "extraCost": "extra cost",
+      "useNewPrompt": "Use suggested prompt",
+      "error": "Sorry, an error occurred. Please try again.",
+      "applyPrompt": "Gunakan pada prompt",
+      "suggestedPrompt": "Saya cadangkan prompt yang ditambah baik ini:",
+      "pickResult": "Select a result to refine",
+      "refiningSelected": "Refining selected result"
+    },
+    "template": {
+      "saveTitle": "Save as Template",
+      "saveDesc": "Save your Smart Generate configuration for reuse",
+      "name": "Template Name",
+      "namePlaceholder": "My awesome template",
+      "mode": "Mode",
+      "model": "Model",
+      "prompt": "Prompt",
+      "variants": "Optimized Variants",
+      "variantsCount": "variants saved",
+      "settings": "Settings",
+      "saved": "Template saved",
+      "savedDesc": "Saved \"{{name}}\" successfully"
+    },
+    "editShortcut": {
+      "changeBackground": "Change background",
+      "changeStyle": "Change style",
+      "removeElement": "Remove element",
+      "addElement": "Add element"
+    },
+    "error": {
+      "insufficientBalance": "Insufficient balance (${{balance}}). Please top up to continue.",
+      "promptViolation": "Prompt violates content policy: {{reason}}",
+      "imageViolation": "Uploaded image violates content policy"
+    },
+    "toast": {
+      "complete": "Smart Generate Complete",
+      "completeDesc": "Best result scored {{score}}/100",
+      "paused": "Smart Generate dijeda",
+      "pausedDesc": "Keputusan terbaik skor {{score}}/100. Semak dan perbaiki keputusan anda.",
+      "needsAction": "Tindakan diperlukan",
+      "needsActionDesc": "Skor sasaran tidak dicapai. Cuba sesuaikan prompt atau gambar.",
+      "failed": "Smart Generate Failed",
+      "cancelled": "Generation Cancelled",
+      "cancelledDesc": "Spent ${{spent}} before cancellation",
+      "nsfwDetected": "Prompt Dioptimumkan",
+      "nsfwDetectedDesc": "Prompt anda telah dioptimumkan untuk keserasian yang lebih baik. Sila semak dan gunakan.",
+      "budgetWarning": "Had Bajet Tercapai",
+      "budgetWarningDesc": "Telah membelanjakan ${{spent}} daripada ${{budget}} bajet. Tidak mencukupi untuk pusingan seterusnya.",
+      "referenceApplied": "Imej rujukan digunakan",
+      "referenceAppliedDesc": "Penerangan imej rujukan anda telah ditambahkan ke prompt."
+    },
+    "guide": {
+      "title": "Jana Pintar",
+      "step1Title": "Describe Your Vision",
+      "step1Desc": "Enter a prompt. AI optimizes it into multiple creative variants.",
+      "step2Title": "Parallel Generation",
+      "step2Desc": "Multiple models generate in parallel. Auto-retry until quality target is met.",
+      "step3Title": "Quality Scoring",
+      "step3Desc": "AI evaluates each result on clarity, composition, and prompt adherence.",
+      "getStarted": "Get Started"
     }
   }
 }

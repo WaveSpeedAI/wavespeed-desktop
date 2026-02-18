@@ -12,6 +12,7 @@ import { FeaturedModelsPage } from '@/pages/FeaturedModelsPage'
 import { SmartPlaygroundPage } from '@/pages/SmartPlaygroundPage'
 import { FreeToolsPage } from '@/pages/FreeToolsPage'
 import { ZImagePage } from '@/pages/ZImagePage'
+import { SmartGeneratePage } from '@/pages/SmartGeneratePage'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
 import { useModelsStore } from '@/stores/modelsStore'
 import { useThemeStore } from '@/stores/themeStore'
@@ -71,6 +72,7 @@ function App() {
         <Route path="templates" element={<TemplatesPage />} />
         <Route path="history" element={<HistoryPage />} />
         <Route path="assets" element={<AssetsPage />} />
+        <Route path="smart-generate" element={<SmartGeneratePage />} />
         <Route path="z-image" element={<ZImagePage />} />
         <Route path="free-tools" element={<FreeToolsPage />} />
         {/* Workflow page - persistent rendered */}

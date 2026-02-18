@@ -47,6 +47,7 @@
     "zImage": "Z-Image",
     "freeTools": "Free Tools",
     "workflow": "Workflow",
+    "smartGenerate": "Smart Generate",
     "settings": "Settings",
     "collapse": "Collapse",
     "expand": "Expand"
@@ -86,6 +87,10 @@
         "title": "Z-Image",
         "description": "Local AI image generation - runs on your device, no API key needed",
         "badge": "Local"
+      },
+      "smartGenerate": {
+        "title": "Smart Generate",
+        "description": "AI-driven quality loop: auto-optimize, parallel generate, score & retry"
       },
       "freeTools": {
         "title": "Free Tools",
@@ -137,6 +142,8 @@
     "templateName": "Template Name",
     "templateSaved": "Template saved",
     "templateLoaded": "Template loaded",
+    "promptLoaded": "Prompt loaded",
+    "promptLoadedDesc": "Prompt from Smart Generate has been applied",
     "loadedTemplate": "Loaded \"{{name}}\"",
     "savedAs": "Saved as \"{{name}}\"",
     "resetForm": "Reset form",
@@ -1286,6 +1293,205 @@
         "loadingOptimizer": "Loading optimizer...",
         "loadConfigFailed": "Unable to load optimizer configuration"
       }
+    }
+  },
+  "smartGenerate": {
+    "start": "Start Smart Generate",
+    "cancel": "Cancel",
+    "cancelling": "Cancelling...",
+    "target": "Target",
+    "round": "Round {{round}}",
+    "mode": {
+      "text-to-image": "Text to Image",
+      "image-edit": "Image Edit",
+      "text-to-video": "Text to Video",
+      "image-to-video": "Image to Video"
+    },
+    "tab": {
+      "config": "Config",
+      "output": "Output",
+      "chat": "Chat"
+    },
+    "config": {
+      "sourceImage": "Source Image",
+      "referenceImage": "Reference Image (optional)",
+      "uploadImage": "Upload image",
+      "addImage": "Add another image",
+      "uploading": "Uploading...",
+      "optionalReference": "Optional: upload a reference image",
+      "prompt": "Prompt",
+      "promptPlaceholder": "Describe what you want to generate...",
+      "size": "Size / Aspect Ratio",
+      "resolution": "Resolution",
+      "model": "Model",
+      "parallel": "Parallel Mode",
+      "standard": "Standard",
+      "standardDesc": "2 variants per round",
+      "deep": "Deep",
+      "deepDesc": "3 variants per round",
+      "budget": "Budget Limit",
+      "recommended": "Recommended",
+      "estimated": "Estimated",
+      "advanced": "Advanced Settings",
+      "videoResolution": "Video Resolution",
+      "duration": "Duration",
+      "loras": "LoRA Models",
+      "loraPlaceholder": "Paste LoRA URL (e.g. Civitai)",
+      "imageTools": "Image Tools",
+      "imageToolsAngle": "Angle",
+      "imageToolsRelight": "Relight",
+      "horizontalAngle": "Horizontal Angle",
+      "verticalAngle": "Vertical Angle",
+      "distance": "Distance",
+      "distanceClose": "Close",
+      "distanceMedium": "Medium",
+      "distanceWide": "Wide",
+      "verticalLow": "Low",
+      "verticalEye": "Eye",
+      "verticalHigh": "High",
+      "verticalTop": "Top",
+      "lightType": "Light Type",
+      "lightDirection": "Light Direction",
+      "lightDirFront": "Front",
+      "lightDirSide": "Side",
+      "lightDirBottom": "Bottom",
+      "lightDirTopDown": "Top-Down",
+      "runTool": "Run",
+      "toolRunning": "Running...",
+      "discardResult": "Discard",
+      "recentResults": "Recent Results",
+      "noRecentResults": "No results yet",
+      "fromMode": "From {{mode}}",
+      "toolResult": "Tool",
+      "optimizePrompt": "Optimize prompt with AI"
+    },
+    "phase": {
+      "idle": "Ready",
+      "checkingBalance": "Checking balance...",
+      "moderating": "Content moderation...",
+      "understanding": "Understanding image...",
+      "optimizing": "Optimizing prompt...",
+      "generating": "Generating...",
+      "evaluating": "Evaluating quality...",
+      "retrying": "Retrying with feedback...",
+      "switching": "Switching model...",
+      "paused": "Paused — review results",
+      "complete": "Complete",
+      "failed": "Failed"
+    },
+    "score": {
+      "perfect": "Perfect",
+      "excellent": "Excellent",
+      "good": "Good",
+      "fair": "Fair",
+      "needsWork": "Needs Work"
+    },
+    "tag": {
+      "recommended": "Recommended",
+      "ultimate": "Ultimate",
+      "value": "Value",
+      "fast": "Fast",
+      "turbo": "Turbo",
+      "flagship": "Flagship",
+      "premium": "Premium",
+      "chinese": "Chinese",
+      "detail": "Detail",
+      "understanding": "Understand",
+      "lora": "LoRA"
+    },
+    "status": {
+      "generating": "Generating",
+      "moderating": "Checking",
+      "scoring": "Scoring",
+      "complete": "Done",
+      "failed": "Failed",
+      "nsfw": "Blocked"
+    },
+    "output": {
+      "bestResult": "Best Result",
+      "allResults": "All Results",
+      "playWhileWaiting": "Play while waiting...",
+      "empty": "Results will appear here after generation starts",
+      "continueRefining": "Continue Refining",
+      "newTask": "New Task",
+      "newTaskTitle": "Start New Task?",
+      "newTaskDesc": "This will clear all current results and chat history. Your preferences will be preserved.",
+      "confirmNewTask": "Start New",
+      "useAsSource": "Use as source image"
+    },
+    "timeline": {
+      "title": "Timeline",
+      "results": "results",
+      "round": "Round {{n}}",
+      "switched": "Model switched"
+    },
+    "chat": {
+      "title": "Refinement",
+      "saveTemplate": "Save Template",
+      "goPlayground": "Go to Playground",
+      "aiUnderstanding": "AI Understanding",
+      "emptyHint": "Tell the AI what you'd like to change, or use the quick feedback buttons above",
+      "placeholder": "Type your feedback...",
+      "regenerate": "Regenerate",
+      "extraCost": "extra cost",
+      "useNewPrompt": "Use suggested prompt",
+      "error": "Sorry, an error occurred. Please try again.",
+      "applyPrompt": "Apply to Prompt",
+      "suggestedPrompt": "I suggest this improved prompt:",
+      "pickResult": "Select a result to refine",
+      "refiningSelected": "Refining selected result"
+    },
+    "template": {
+      "saveTitle": "Save as Template",
+      "saveDesc": "Save your Smart Generate configuration for reuse",
+      "name": "Template Name",
+      "namePlaceholder": "My awesome template",
+      "mode": "Mode",
+      "model": "Model",
+      "prompt": "Prompt",
+      "variants": "Optimized Variants",
+      "variantsCount": "variants saved",
+      "settings": "Settings",
+      "saved": "Template saved",
+      "savedDesc": "Saved \"{{name}}\" successfully"
+    },
+    "editShortcut": {
+      "changeBackground": "Change background",
+      "changeStyle": "Change style",
+      "removeElement": "Remove element",
+      "addElement": "Add element"
+    },
+    "error": {
+      "insufficientBalance": "Insufficient balance (${{balance}}). Please top up to continue.",
+      "promptViolation": "Prompt violates content policy: {{reason}}",
+      "imageViolation": "Uploaded image violates content policy"
+    },
+    "toast": {
+      "complete": "Smart Generate Complete",
+      "completeDesc": "Best result scored {{score}}/100",
+      "paused": "Smart Generate Paused",
+      "pausedDesc": "Best result scored {{score}}/100. Review and refine your results.",
+      "needsAction": "Needs Your Input",
+      "needsActionDesc": "Could not meet target score. Try adjusting your prompt or image.",
+      "failed": "Smart Generate Failed",
+      "cancelled": "Generation Cancelled",
+      "cancelledDesc": "Spent ${{spent}} before cancellation",
+      "nsfwDetected": "Prompt Optimized",
+      "nsfwDetectedDesc": "Your prompt has been optimized for better compatibility. Please review and apply.",
+      "budgetWarning": "Budget Limit Reached",
+      "budgetWarningDesc": "Spent ${{spent}} of ${{budget}} budget. Not enough for next round.",
+      "referenceApplied": "Reference Image Applied",
+      "referenceAppliedDesc": "Your reference image description has been added to the prompt to guide generation."
+    },
+    "guide": {
+      "title": "Smart Generate",
+      "step1Title": "Describe Your Vision",
+      "step1Desc": "Enter a prompt. AI optimizes it into multiple creative variants.",
+      "step2Title": "Parallel Generation",
+      "step2Desc": "Multiple models generate in parallel. Auto-retry until quality target is met.",
+      "step3Title": "Quality Scoring",
+      "step3Desc": "AI evaluates each result on clarity, composition, and prompt adherence.",
+      "getStarted": "Get Started"
     }
   }
 }

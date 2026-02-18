@@ -173,7 +173,16 @@ export function WelcomePage() {
     }] : []),
 
     {
-      icon: <Wand2 className="h-6 w-6 text-orange-600 dark:text-orange-400" />,
+      icon: <Wand2 className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />,
+      title: t('welcome.features.smartGenerate.title'),
+      description: t('welcome.features.smartGenerate.description'),
+      gradient: 'bg-gradient-to-br from-indigo-500/40 via-violet-500/20 to-transparent',
+      shapeGradient: 'from-indigo-500/40 to-violet-500/30',
+      href: '/smart-generate',
+      badge: 'AI'
+    },
+    {
+      icon: <Sparkles className="h-6 w-6 text-orange-600 dark:text-orange-400" />,
       title: t('welcome.features.freeTools.title'),
       description: t('welcome.features.freeTools.description'),
       gradient: 'bg-gradient-to-br from-orange-500/40 via-amber-500/20 to-transparent',

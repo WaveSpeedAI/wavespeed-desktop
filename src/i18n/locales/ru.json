@@ -49,6 +49,7 @@
     "settings": "Настройки",
     "collapse": "Свернуть",
     "workflow": "Рабочий процесс",
+    "smartGenerate": "Умная генерация",
     "expand": "Развернуть"
   },
   "welcome": {
@@ -86,6 +87,11 @@
         "title": "Z-Image",
         "description": "Локальная генерация изображений ИИ — работает на вашем устройстве, ключ API не требуется",
         "badge": "Локально"
+      },
+      "smartGenerate": {
+        "title": "Умная генерация",
+        "description": "AI-powered multi-model generation with automatic quality scoring",
+        "badge": "Smart"
       },
       "freeTools": {
         "title": "Бесплатные Инструменты",
@@ -137,6 +143,8 @@
     "templateName": "Название шаблона",
     "templateSaved": "Шаблон сохранён",
     "templateLoaded": "Шаблон загружен",
+    "promptLoaded": "Prompt loaded",
+    "promptLoadedDesc": "Loaded prompt from Smart Generate",
     "loadedTemplate": "Загружен \"{{name}}\"",
     "savedAs": "Сохранён как \"{{name}}\"",
     "resetForm": "Сбросить форму",
@@ -1283,6 +1291,205 @@
         "loadingOptimizer": "Загрузка оптимизатора...",
         "loadConfigFailed": "Не удалось загрузить конфигурацию оптимизатора"
       }
+    }
+  },
+  "smartGenerate": {
+    "start": "Start Smart Generate",
+    "cancel": "Cancel",
+    "cancelling": "Отмена...",
+    "target": "Target",
+    "round": "Round {{round}}",
+    "mode": {
+      "text-to-image": "Text to Image",
+      "image-edit": "Image Edit",
+      "text-to-video": "Text to Video",
+      "image-to-video": "Image to Video"
+    },
+    "tab": {
+      "config": "Config",
+      "output": "Output",
+      "chat": "Chat"
+    },
+    "config": {
+      "sourceImage": "Source Image",
+      "referenceImage": "Reference Image (optional)",
+      "uploadImage": "Upload image",
+      "addImage": "Добавить еще одно изображение",
+      "uploading": "Загрузка...",
+      "optionalReference": "Optional: upload a reference image",
+      "prompt": "Prompt",
+      "promptPlaceholder": "Describe what you want to generate...",
+      "size": "Размер / Соотношение",
+      "resolution": "Разрешение",
+      "model": "Model",
+      "parallel": "Parallel Mode",
+      "standard": "Standard",
+      "standardDesc": "2 variants per round",
+      "deep": "Deep",
+      "deepDesc": "3 variants per round",
+      "budget": "Budget Limit",
+      "recommended": "Recommended",
+      "estimated": "Estimated",
+      "advanced": "Advanced Settings",
+      "videoResolution": "Разрешение видео",
+      "duration": "Длительность",
+      "loras": "Модели LoRA",
+      "loraPlaceholder": "Вставьте URL LoRA (напр. Civitai)",
+      "imageTools": "Инструменты изображения",
+      "imageToolsAngle": "Угол",
+      "imageToolsRelight": "Освещение",
+      "horizontalAngle": "Горизонтальный угол",
+      "verticalAngle": "Вертикальный угол",
+      "distance": "Расстояние",
+      "distanceClose": "Близко",
+      "distanceMedium": "Средне",
+      "distanceWide": "Далеко",
+      "verticalLow": "Низко",
+      "verticalEye": "Уровень глаз",
+      "verticalHigh": "Высоко",
+      "verticalTop": "Сверху",
+      "lightType": "Тип света",
+      "lightDirection": "Направление света",
+      "lightDirFront": "Спереди",
+      "lightDirSide": "Сбоку",
+      "lightDirBottom": "Снизу",
+      "lightDirTopDown": "Сверху",
+      "runTool": "Запустить",
+      "toolRunning": "Выполняется...",
+      "discardResult": "Отклонить",
+      "recentResults": "Недавние результаты",
+      "noRecentResults": "Пока нет результатов",
+      "fromMode": "Из {{mode}}",
+      "toolResult": "Инструмент",
+      "optimizePrompt": "Оптимизировать промпт с помощью ИИ"
+    },
+    "phase": {
+      "idle": "Ready",
+      "checkingBalance": "Checking balance...",
+      "moderating": "Content moderation...",
+      "understanding": "Understanding image...",
+      "optimizing": "Optimizing prompt...",
+      "generating": "Generating...",
+      "evaluating": "Evaluating quality...",
+      "retrying": "Retrying with feedback...",
+      "switching": "Switching model...",
+      "paused": "Приостановлено — проверьте результаты",
+      "complete": "Complete",
+      "failed": "Failed"
+    },
+    "score": {
+      "perfect": "Perfect",
+      "excellent": "Excellent",
+      "good": "Good",
+      "fair": "Fair",
+      "needsWork": "Needs Work"
+    },
+    "tag": {
+      "recommended": "Recommended",
+      "ultimate": "Ultimate",
+      "value": "Value",
+      "fast": "Fast",
+      "turbo": "Turbo",
+      "flagship": "Flagship",
+      "premium": "Premium",
+      "chinese": "Chinese",
+      "detail": "Detail",
+      "understanding": "Understand",
+      "lora": "LoRA"
+    },
+    "status": {
+      "generating": "Generating",
+      "moderating": "Checking",
+      "scoring": "Scoring",
+      "complete": "Done",
+      "failed": "Failed",
+      "nsfw": "Blocked"
+    },
+    "output": {
+      "bestResult": "Best Result",
+      "allResults": "All Results",
+      "playWhileWaiting": "Play while waiting...",
+      "empty": "Results will appear here after generation starts",
+      "continueRefining": "Продолжить улучшение",
+      "newTask": "Новая задача",
+      "newTaskTitle": "Начать новую задачу?",
+      "newTaskDesc": "Все текущие результаты и история чата будут удалены. Ваши настройки сохранятся.",
+      "confirmNewTask": "Начать новую",
+      "useAsSource": "Использовать как исходное изображение"
+    },
+    "timeline": {
+      "title": "Timeline",
+      "results": "results",
+      "round": "Round {{n}}",
+      "switched": "Model switched"
+    },
+    "chat": {
+      "title": "Refinement",
+      "saveTemplate": "Save Template",
+      "goPlayground": "Go to Playground",
+      "aiUnderstanding": "AI Understanding",
+      "emptyHint": "Tell the AI what you'd like to change, or use the quick feedback buttons above",
+      "placeholder": "Type your feedback...",
+      "regenerate": "Regenerate",
+      "extraCost": "extra cost",
+      "useNewPrompt": "Use suggested prompt",
+      "error": "Sorry, an error occurred. Please try again.",
+      "applyPrompt": "Применить к запросу",
+      "suggestedPrompt": "Предлагаю улучшенный запрос:",
+      "pickResult": "Select a result to refine",
+      "refiningSelected": "Refining selected result"
+    },
+    "template": {
+      "saveTitle": "Save as Template",
+      "saveDesc": "Save your Smart Generate configuration for reuse",
+      "name": "Template Name",
+      "namePlaceholder": "My awesome template",
+      "mode": "Mode",
+      "model": "Model",
+      "prompt": "Prompt",
+      "variants": "Optimized Variants",
+      "variantsCount": "variants saved",
+      "settings": "Settings",
+      "saved": "Template saved",
+      "savedDesc": "Saved \"{{name}}\" successfully"
+    },
+    "editShortcut": {
+      "changeBackground": "Change background",
+      "changeStyle": "Change style",
+      "removeElement": "Remove element",
+      "addElement": "Add element"
+    },
+    "error": {
+      "insufficientBalance": "Insufficient balance (${{balance}}). Please top up to continue.",
+      "promptViolation": "Prompt violates content policy: {{reason}}",
+      "imageViolation": "Uploaded image violates content policy"
+    },
+    "toast": {
+      "complete": "Smart Generate Complete",
+      "completeDesc": "Best result scored {{score}}/100",
+      "paused": "Умная генерация приостановлена",
+      "pausedDesc": "Лучший результат: {{score}}/100. Проверьте и улучшите ваши результаты.",
+      "needsAction": "Требуется действие",
+      "needsActionDesc": "Целевой балл не достигнут. Попробуйте изменить промпт или изображение.",
+      "failed": "Smart Generate Failed",
+      "cancelled": "Generation Cancelled",
+      "cancelledDesc": "Spent ${{spent}} before cancellation",
+      "nsfwDetected": "Промпт оптимизирован",
+      "nsfwDetectedDesc": "Ваш промпт был оптимизирован для лучшей совместимости. Проверьте и примените.",
+      "budgetWarning": "Лимит бюджета достигнут",
+      "budgetWarningDesc": "Потрачено ${{spent}} из ${{budget}} бюджета. Недостаточно для следующего раунда.",
+      "referenceApplied": "Референс применён",
+      "referenceAppliedDesc": "Описание вашего референса было добавлено в промпт."
+    },
+    "guide": {
+      "title": "Умная генерация",
+      "step1Title": "Describe Your Vision",
+      "step1Desc": "Enter a prompt. AI optimizes it into multiple creative variants.",
+      "step2Title": "Parallel Generation",
+      "step2Desc": "Multiple models generate in parallel. Auto-retry until quality target is met.",
+      "step3Title": "Quality Scoring",
+      "step3Desc": "AI evaluates each result on clarity, composition, and prompt adherence.",
+      "getStarted": "Get Started"
     }
   }
 }

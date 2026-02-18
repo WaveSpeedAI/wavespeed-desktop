@@ -49,6 +49,7 @@
     "settings": "الإعدادات",
     "collapse": "طي",
     "workflow": "سير العمل",
+    "smartGenerate": "التوليد الذكي",
     "expand": "توسيع"
   },
   "welcome": {
@@ -86,6 +87,10 @@
         "title": "Z-Image",
         "description": "توليد صور بالذكاء الاصطناعي محليًا - يعمل على جهازك، لا حاجة لمفتاح API",
         "badge": "محلي"
+      },
+      "smartGenerate": {
+        "title": "التوليد الذكي",
+        "description": "AI-driven quality loop: auto-optimize, parallel generate, score & retry"
       },
       "freeTools": {
         "title": "أدوات مجانية",
@@ -137,6 +142,8 @@
     "templateName": "اسم القالب",
     "templateSaved": "تم حفظ القالب",
     "templateLoaded": "تم تحميل القالب",
+    "promptLoaded": "Prompt loaded",
+    "promptLoadedDesc": "Prompt from Smart Generate has been applied",
     "loadedTemplate": "تم تحميل \"{{name}}\"",
     "savedAs": "تم الحفظ باسم \"{{name}}\"",
     "resetForm": "إعادة تعيين النموذج",
@@ -1283,6 +1290,205 @@
         "loadingOptimizer": "جاري تحميل المحسّن...",
         "loadConfigFailed": "تعذر تحميل تكوين المحسّن"
       }
+    }
+  },
+  "smartGenerate": {
+    "start": "Start Smart Generate",
+    "cancel": "Cancel",
+    "cancelling": "جارٍ الإلغاء...",
+    "target": "Target",
+    "round": "Round {{round}}",
+    "mode": {
+      "text-to-image": "Text to Image",
+      "image-edit": "Image Edit",
+      "text-to-video": "Text to Video",
+      "image-to-video": "Image to Video"
+    },
+    "tab": {
+      "config": "Config",
+      "output": "Output",
+      "chat": "Chat"
+    },
+    "config": {
+      "sourceImage": "Source Image",
+      "referenceImage": "Reference Image (optional)",
+      "uploadImage": "Upload image",
+      "addImage": "إضافة صورة أخرى",
+      "uploading": "جارٍ الرفع...",
+      "optionalReference": "Optional: upload a reference image",
+      "prompt": "Prompt",
+      "promptPlaceholder": "Describe what you want to generate...",
+      "size": "الحجم / النسبة",
+      "resolution": "الدقة",
+      "model": "Model",
+      "parallel": "Parallel Mode",
+      "standard": "Standard",
+      "standardDesc": "2 variants per round",
+      "deep": "Deep",
+      "deepDesc": "3 variants per round",
+      "budget": "Budget Limit",
+      "recommended": "Recommended",
+      "estimated": "Estimated",
+      "advanced": "Advanced Settings",
+      "videoResolution": "دقة الفيديو",
+      "duration": "المدة",
+      "loras": "نماذج LoRA",
+      "loraPlaceholder": "لصق رابط LoRA (مثل Civitai)",
+      "imageTools": "أدوات الصورة",
+      "imageToolsAngle": "الزاوية",
+      "imageToolsRelight": "الإضاءة",
+      "horizontalAngle": "الزاوية الأفقية",
+      "verticalAngle": "الزاوية العمودية",
+      "distance": "المسافة",
+      "distanceClose": "قريب",
+      "distanceMedium": "متوسط",
+      "distanceWide": "بعيد",
+      "verticalLow": "منخفض",
+      "verticalEye": "مستوى العين",
+      "verticalHigh": "مرتفع",
+      "verticalTop": "من الأعلى",
+      "lightType": "نوع الضوء",
+      "lightDirection": "اتجاه الضوء",
+      "lightDirFront": "أمامي",
+      "lightDirSide": "جانبي",
+      "lightDirBottom": "سفلي",
+      "lightDirTopDown": "علوي",
+      "runTool": "تشغيل",
+      "toolRunning": "جارٍ التشغيل...",
+      "discardResult": "تجاهل",
+      "recentResults": "النتائج الأخيرة",
+      "noRecentResults": "لا توجد نتائج بعد",
+      "fromMode": "من {{mode}}",
+      "toolResult": "أداة",
+      "optimizePrompt": "تحسين النص بالذكاء الاصطناعي"
+    },
+    "phase": {
+      "idle": "Ready",
+      "checkingBalance": "Checking balance...",
+      "moderating": "Content moderation...",
+      "understanding": "Understanding image...",
+      "optimizing": "Optimizing prompt...",
+      "generating": "Generating...",
+      "evaluating": "Evaluating quality...",
+      "retrying": "Retrying with feedback...",
+      "switching": "Switching model...",
+      "paused": "متوقف مؤقتاً — مراجعة النتائج",
+      "complete": "Complete",
+      "failed": "Failed"
+    },
+    "score": {
+      "perfect": "Perfect",
+      "excellent": "Excellent",
+      "good": "Good",
+      "fair": "Fair",
+      "needsWork": "Needs Work"
+    },
+    "tag": {
+      "recommended": "Recommended",
+      "ultimate": "Ultimate",
+      "value": "Value",
+      "fast": "Fast",
+      "turbo": "Turbo",
+      "flagship": "Flagship",
+      "premium": "Premium",
+      "chinese": "Chinese",
+      "detail": "Detail",
+      "understanding": "Understand",
+      "lora": "LoRA"
+    },
+    "status": {
+      "generating": "Generating",
+      "moderating": "Checking",
+      "scoring": "Scoring",
+      "complete": "Done",
+      "failed": "Failed",
+      "nsfw": "Blocked"
+    },
+    "output": {
+      "bestResult": "Best Result",
+      "allResults": "All Results",
+      "playWhileWaiting": "Play while waiting...",
+      "empty": "Results will appear here after generation starts",
+      "continueRefining": "متابعة التحسين",
+      "newTask": "مهمة جديدة",
+      "newTaskTitle": "بدء مهمة جديدة؟",
+      "newTaskDesc": "سيتم مسح جميع النتائج الحالية وسجل المحادثة. سيتم الاحتفاظ بتفضيلاتك.",
+      "confirmNewTask": "بدء جديد",
+      "useAsSource": "استخدم كصورة مصدر"
+    },
+    "timeline": {
+      "title": "Timeline",
+      "results": "results",
+      "round": "Round {{n}}",
+      "switched": "Model switched"
+    },
+    "chat": {
+      "title": "Refinement",
+      "saveTemplate": "Save Template",
+      "goPlayground": "Go to Playground",
+      "aiUnderstanding": "AI Understanding",
+      "emptyHint": "Tell the AI what you'd like to change, or use the quick feedback buttons above",
+      "placeholder": "Type your feedback...",
+      "regenerate": "Regenerate",
+      "extraCost": "extra cost",
+      "useNewPrompt": "Use suggested prompt",
+      "error": "Sorry, an error occurred. Please try again.",
+      "applyPrompt": "تطبيق على الأمر",
+      "suggestedPrompt": "أقترح هذا الأمر المحسّن:",
+      "pickResult": "Select a result to refine",
+      "refiningSelected": "Refining selected result"
+    },
+    "template": {
+      "saveTitle": "Save as Template",
+      "saveDesc": "Save your Smart Generate configuration for reuse",
+      "name": "Template Name",
+      "namePlaceholder": "My awesome template",
+      "mode": "Mode",
+      "model": "Model",
+      "prompt": "Prompt",
+      "variants": "Optimized Variants",
+      "variantsCount": "variants saved",
+      "settings": "Settings",
+      "saved": "Template saved",
+      "savedDesc": "Saved \"{{name}}\" successfully"
+    },
+    "editShortcut": {
+      "changeBackground": "Change background",
+      "changeStyle": "Change style",
+      "removeElement": "Remove element",
+      "addElement": "Add element"
+    },
+    "error": {
+      "insufficientBalance": "Insufficient balance (${{balance}}). Please top up to continue.",
+      "promptViolation": "Prompt violates content policy: {{reason}}",
+      "imageViolation": "Uploaded image violates content policy"
+    },
+    "toast": {
+      "complete": "Smart Generate Complete",
+      "completeDesc": "Best result scored {{score}}/100",
+      "paused": "التوليد الذكي متوقف",
+      "pausedDesc": "أفضل نتيجة: {{score}}/100. راجع وحسّن نتائجك.",
+      "needsAction": "يلزم إجراء",
+      "needsActionDesc": "لم يتم الوصول إلى الدرجة المستهدفة. حاول تعديل النص أو الصورة.",
+      "failed": "Smart Generate Failed",
+      "cancelled": "Generation Cancelled",
+      "cancelledDesc": "Spent ${{spent}} before cancellation",
+      "nsfwDetected": "تم تحسين النص",
+      "nsfwDetectedDesc": "تم تحسين النص لتوافق أفضل. يرجى المراجعة والتطبيق.",
+      "budgetWarning": "تم الوصول إلى حد الميزانية",
+      "budgetWarningDesc": "تم إنفاق ${{spent}} من ${{budget}} الميزانية. غير كافٍ للجولة التالية.",
+      "referenceApplied": "تم تطبيق الصورة المرجعية",
+      "referenceAppliedDesc": "تمت إضافة وصف الصورة المرجعية إلى النص لتوجيه عملية التوليد."
+    },
+    "guide": {
+      "title": "التوليد الذكي",
+      "step1Title": "Describe Your Vision",
+      "step1Desc": "Enter a prompt. AI optimizes it into multiple creative variants.",
+      "step2Title": "Parallel Generation",
+      "step2Desc": "Multiple models generate in parallel. Auto-retry until quality target is met.",
+      "step3Title": "Quality Scoring",
+      "step3Desc": "AI evaluates each result on clarity, composition, and prompt adherence.",
+      "getStarted": "Get Started"
     }
   }
 }

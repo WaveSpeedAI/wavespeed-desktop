@@ -49,6 +49,7 @@
     "settings": "설정",
     "collapse": "접기",
     "workflow": "워크플로우",
+    "smartGenerate": "스마트 생성",
     "expand": "펼치기"
   },
   "welcome": {
@@ -86,6 +87,11 @@
         "title": "Z-Image",
         "description": "로컬 AI 이미지 생성 - 기기에서 실행되며 API 키가 필요 없습니다",
         "badge": "로컬"
+      },
+      "smartGenerate": {
+        "title": "스마트 생성",
+        "description": "AI-powered multi-model generation with automatic quality scoring",
+        "badge": "Smart"
       },
       "freeTools": {
         "title": "무료 도구",
@@ -137,6 +143,8 @@
     "templateName": "템플릿 이름",
     "templateSaved": "템플릿 저장됨",
     "templateLoaded": "템플릿 로드됨",
+    "promptLoaded": "Prompt loaded",
+    "promptLoadedDesc": "Loaded prompt from Smart Generate",
     "loadedTemplate": "\"{{name}}\" 로드됨",
     "savedAs": "\"{{name}}\"으로 저장됨",
     "resetForm": "양식 초기화",
@@ -1283,6 +1291,205 @@
         "loadingOptimizer": "최적화 도구 로드 중...",
         "loadConfigFailed": "최적화 도구 구성을 로드할 수 없습니다"
       }
+    }
+  },
+  "smartGenerate": {
+    "start": "Start Smart Generate",
+    "cancel": "Cancel",
+    "cancelling": "취소 중...",
+    "target": "Target",
+    "round": "Round {{round}}",
+    "mode": {
+      "text-to-image": "Text to Image",
+      "image-edit": "Image Edit",
+      "text-to-video": "Text to Video",
+      "image-to-video": "Image to Video"
+    },
+    "tab": {
+      "config": "Config",
+      "output": "Output",
+      "chat": "Chat"
+    },
+    "config": {
+      "sourceImage": "Source Image",
+      "referenceImage": "Reference Image (optional)",
+      "uploadImage": "Upload image",
+      "addImage": "다른 이미지 추가",
+      "uploading": "업로드 중...",
+      "optionalReference": "Optional: upload a reference image",
+      "prompt": "Prompt",
+      "promptPlaceholder": "Describe what you want to generate...",
+      "size": "크기 / 비율",
+      "resolution": "해상도",
+      "model": "Model",
+      "parallel": "Parallel Mode",
+      "standard": "Standard",
+      "standardDesc": "2 variants per round",
+      "deep": "Deep",
+      "deepDesc": "3 variants per round",
+      "budget": "Budget Limit",
+      "recommended": "Recommended",
+      "estimated": "Estimated",
+      "advanced": "고급 설정",
+      "videoResolution": "영상 해상도",
+      "duration": "재생 시간",
+      "loras": "LoRA 모델",
+      "loraPlaceholder": "LoRA URL 붙여넣기 (예: Civitai)",
+      "imageTools": "이미지 도구",
+      "imageToolsAngle": "각도",
+      "imageToolsRelight": "조명",
+      "horizontalAngle": "수평 각도",
+      "verticalAngle": "수직 각도",
+      "distance": "거리",
+      "distanceClose": "가까이",
+      "distanceMedium": "중간",
+      "distanceWide": "멀리",
+      "verticalLow": "낮음",
+      "verticalEye": "눈높이",
+      "verticalHigh": "높음",
+      "verticalTop": "위에서",
+      "lightType": "광원 유형",
+      "lightDirection": "조명 방향",
+      "lightDirFront": "정면",
+      "lightDirSide": "측면",
+      "lightDirBottom": "하단",
+      "lightDirTopDown": "상단",
+      "runTool": "실행",
+      "toolRunning": "실행 중...",
+      "discardResult": "삭제",
+      "recentResults": "최근 결과",
+      "noRecentResults": "아직 결과가 없습니다",
+      "fromMode": "{{mode}}에서",
+      "toolResult": "도구",
+      "optimizePrompt": "AI로 프롬프트 최적화"
+    },
+    "phase": {
+      "idle": "Ready",
+      "checkingBalance": "Checking balance...",
+      "moderating": "Content moderation...",
+      "understanding": "Understanding image...",
+      "optimizing": "Optimizing prompt...",
+      "generating": "Generating...",
+      "evaluating": "Evaluating quality...",
+      "retrying": "Retrying with feedback...",
+      "switching": "Switching model...",
+      "paused": "일시정지 — 결과 확인",
+      "complete": "Complete",
+      "failed": "Failed"
+    },
+    "score": {
+      "perfect": "Perfect",
+      "excellent": "Excellent",
+      "good": "Good",
+      "fair": "Fair",
+      "needsWork": "Needs Work"
+    },
+    "tag": {
+      "recommended": "Recommended",
+      "ultimate": "Ultimate",
+      "value": "Value",
+      "fast": "Fast",
+      "turbo": "Turbo",
+      "flagship": "Flagship",
+      "premium": "Premium",
+      "chinese": "Chinese",
+      "detail": "Detail",
+      "understanding": "Understand",
+      "lora": "LoRA"
+    },
+    "status": {
+      "generating": "Generating",
+      "moderating": "Checking",
+      "scoring": "Scoring",
+      "complete": "Done",
+      "failed": "Failed",
+      "nsfw": "Blocked"
+    },
+    "output": {
+      "bestResult": "Best Result",
+      "allResults": "All Results",
+      "playWhileWaiting": "Play while waiting...",
+      "empty": "Results will appear here after generation starts",
+      "continueRefining": "계속 개선",
+      "newTask": "새 작업",
+      "newTaskTitle": "새 작업을 시작할까요?",
+      "newTaskDesc": "현재 모든 결과와 채팅 기록이 삭제됩니다. 환경 설정은 유지됩니다.",
+      "confirmNewTask": "새로 시작",
+      "useAsSource": "소스 이미지로 사용"
+    },
+    "timeline": {
+      "title": "Timeline",
+      "results": "개 결과",
+      "round": "Round {{n}}",
+      "switched": "Model switched"
+    },
+    "chat": {
+      "title": "Refinement",
+      "saveTemplate": "Save Template",
+      "goPlayground": "Go to Playground",
+      "aiUnderstanding": "AI Understanding",
+      "emptyHint": "Tell the AI what you'd like to change, or use the quick feedback buttons above",
+      "placeholder": "Type your feedback...",
+      "regenerate": "Regenerate",
+      "extraCost": "extra cost",
+      "useNewPrompt": "Use suggested prompt",
+      "error": "Sorry, an error occurred. Please try again.",
+      "applyPrompt": "프롬프트에 적용",
+      "suggestedPrompt": "개선된 프롬프트를 제안합니다:",
+      "pickResult": "개선할 결과 선택",
+      "refiningSelected": "선택한 결과 개선 중"
+    },
+    "template": {
+      "saveTitle": "Save as Template",
+      "saveDesc": "Save your Smart Generate configuration for reuse",
+      "name": "Template Name",
+      "namePlaceholder": "My awesome template",
+      "mode": "Mode",
+      "model": "Model",
+      "prompt": "Prompt",
+      "variants": "Optimized Variants",
+      "variantsCount": "variants saved",
+      "settings": "Settings",
+      "saved": "Template saved",
+      "savedDesc": "Saved \"{{name}}\" successfully"
+    },
+    "editShortcut": {
+      "changeBackground": "Change background",
+      "changeStyle": "Change style",
+      "removeElement": "Remove element",
+      "addElement": "Add element"
+    },
+    "error": {
+      "insufficientBalance": "Insufficient balance (${{balance}}). Please top up to continue.",
+      "promptViolation": "Prompt violates content policy: {{reason}}",
+      "imageViolation": "Uploaded image violates content policy"
+    },
+    "toast": {
+      "complete": "Smart Generate Complete",
+      "completeDesc": "Best result scored {{score}}/100",
+      "paused": "스마트 생성 일시정지",
+      "pausedDesc": "최고 점수 {{score}}/100. 결과를 확인하고 개선해 주세요.",
+      "needsAction": "조치가 필요합니다",
+      "needsActionDesc": "목표 점수에 도달하지 못했습니다. 프롬프트나 이미지를 조정해 주세요.",
+      "failed": "Smart Generate Failed",
+      "cancelled": "Generation Cancelled",
+      "cancelledDesc": "Spent ${{spent}} before cancellation",
+      "nsfwDetected": "프롬프트 최적화 완료",
+      "nsfwDetectedDesc": "프롬프트가 호환성을 위해 최적화되었습니다. 확인 후 적용해주세요.",
+      "budgetWarning": "예산 한도 도달",
+      "budgetWarningDesc": "${{spent}} / ${{budget}} 예산을 사용했습니다. 다음 라운드에 부족합니다.",
+      "referenceApplied": "참고 이미지 적용됨",
+      "referenceAppliedDesc": "참고 이미지 설명이 프롬프트에 추가되어 생성을 안내합니다."
+    },
+    "guide": {
+      "title": "스마트 생성",
+      "step1Title": "Describe Your Vision",
+      "step1Desc": "Enter a prompt. AI optimizes it into multiple creative variants.",
+      "step2Title": "Parallel Generation",
+      "step2Desc": "Multiple models generate in parallel. Auto-retry until quality target is met.",
+      "step3Title": "Quality Scoring",
+      "step3Desc": "AI evaluates each result on clarity, composition, and prompt adherence.",
+      "getStarted": "Get Started"
     }
   }
 }

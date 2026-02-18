@@ -23,7 +23,8 @@ import {
   Sparkles,
   GitBranch,
   Star,
-  X
+  X,
+  Wand2
 } from 'lucide-react'
 import { AppLogo } from './AppLogo'
 
@@ -80,6 +81,11 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
       href: '/playground',
       icon: PlayCircle,
       matchPrefix: true
+    },
+    {
+      titleKey: 'nav.smartGenerate',
+      href: '/smart-generate',
+      icon: Wand2,
     },
   ]
 

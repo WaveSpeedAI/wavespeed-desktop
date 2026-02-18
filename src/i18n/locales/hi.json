@@ -49,6 +49,7 @@
     "settings": "सेटिंग्स",
     "collapse": "संक्षिप्त करें",
     "workflow": "वर्कफ़्लो",
+    "smartGenerate": "स्मार्ट जेनरेट",
     "expand": "विस्तार करें"
   },
   "welcome": {
@@ -86,6 +87,10 @@
         "title": "Z-Image",
         "description": "स्थानीय AI छवि निर्माण - आपके डिवाइस पर चलता है, API कुंजी की आवश्यकता नहीं",
         "badge": "स्थानीय"
+      },
+      "smartGenerate": {
+        "title": "स्मार्ट जेनरेट",
+        "description": "AI-driven quality loop: auto-optimize, parallel generate, score & retry"
       },
       "freeTools": {
         "title": "मुफ्त उपकरण",
@@ -137,6 +142,8 @@
     "templateName": "टेम्पलेट नाम",
     "templateSaved": "टेम्पलेट सहेजा गया",
     "templateLoaded": "टेम्पलेट लोड किया गया",
+    "promptLoaded": "Prompt loaded",
+    "promptLoadedDesc": "Loaded prompt from Smart Generate",
     "loadedTemplate": "\"{{name}}\" लोड किया गया",
     "savedAs": "\"{{name}}\" के रूप में सहेजा गया",
     "resetForm": "फ़ॉर्म रीसेट करें",
@@ -1283,6 +1290,205 @@
         "loadingOptimizer": "ऑप्टिमाइज़र लोड हो रहा है...",
         "loadConfigFailed": "ऑप्टिमाइज़र कॉन्फ़िगरेशन लोड नहीं हो सका"
       }
+    }
+  },
+  "smartGenerate": {
+    "start": "Start Smart Generate",
+    "cancel": "Cancel",
+    "cancelling": "रद्द हो रहा है...",
+    "target": "Target",
+    "round": "Round {{round}}",
+    "mode": {
+      "text-to-image": "Text to Image",
+      "image-edit": "Image Edit",
+      "text-to-video": "Text to Video",
+      "image-to-video": "Image to Video"
+    },
+    "tab": {
+      "config": "Config",
+      "output": "Output",
+      "chat": "Chat"
+    },
+    "config": {
+      "sourceImage": "Source Image",
+      "referenceImage": "Reference Image (optional)",
+      "uploadImage": "Upload image",
+      "addImage": "एक और छवि जोड़ें",
+      "uploading": "अपलोड हो रहा है...",
+      "optionalReference": "Optional: upload a reference image",
+      "prompt": "Prompt",
+      "promptPlaceholder": "Describe what you want to generate...",
+      "size": "आकार / अनुपात",
+      "resolution": "रिज़ॉल्यूशन",
+      "model": "Model",
+      "parallel": "Parallel Mode",
+      "standard": "Standard",
+      "standardDesc": "2 variants per round",
+      "deep": "Deep",
+      "deepDesc": "3 variants per round",
+      "budget": "Budget Limit",
+      "recommended": "Recommended",
+      "estimated": "Estimated",
+      "advanced": "Advanced Settings",
+      "videoResolution": "वीडियो रेज़ोल्यूशन",
+      "duration": "अवधि",
+      "loras": "LoRA मॉडल",
+      "loraPlaceholder": "LoRA URL पेस्ट करें (जैसे Civitai)",
+      "imageTools": "छवि उपकरण",
+      "imageToolsAngle": "कोण",
+      "imageToolsRelight": "प्रकाश",
+      "horizontalAngle": "क्षैतिज कोण",
+      "verticalAngle": "लंबवत कोण",
+      "distance": "दूरी",
+      "distanceClose": "पास",
+      "distanceMedium": "मध्यम",
+      "distanceWide": "दूर",
+      "verticalLow": "नीचा",
+      "verticalEye": "आँख स्तर",
+      "verticalHigh": "ऊँचा",
+      "verticalTop": "ऊपर से",
+      "lightType": "प्रकाश प्रकार",
+      "lightDirection": "प्रकाश दिशा",
+      "lightDirFront": "सामने",
+      "lightDirSide": "बगल",
+      "lightDirBottom": "नीचे",
+      "lightDirTopDown": "ऊपर से",
+      "runTool": "चलाएँ",
+      "toolRunning": "चल रहा है...",
+      "discardResult": "हटाएँ",
+      "recentResults": "हाल के परिणाम",
+      "noRecentResults": "अभी तक कोई परिणाम नहीं",
+      "fromMode": "{{mode}} से",
+      "toolResult": "उपकरण",
+      "optimizePrompt": "AI से प्रॉम्प्ट ऑप्टिमाइज़ करें"
+    },
+    "phase": {
+      "idle": "Ready",
+      "checkingBalance": "Checking balance...",
+      "moderating": "Content moderation...",
+      "understanding": "Understanding image...",
+      "optimizing": "Optimizing prompt...",
+      "generating": "Generating...",
+      "evaluating": "Evaluating quality...",
+      "retrying": "Retrying with feedback...",
+      "switching": "Switching model...",
+      "paused": "रुका हुआ — परिणाम देखें",
+      "complete": "Complete",
+      "failed": "Failed"
+    },
+    "score": {
+      "perfect": "Perfect",
+      "excellent": "Excellent",
+      "good": "Good",
+      "fair": "Fair",
+      "needsWork": "Needs Work"
+    },
+    "tag": {
+      "recommended": "Recommended",
+      "ultimate": "Ultimate",
+      "value": "Value",
+      "fast": "Fast",
+      "turbo": "Turbo",
+      "flagship": "Flagship",
+      "premium": "Premium",
+      "chinese": "Chinese",
+      "detail": "Detail",
+      "understanding": "Understand",
+      "lora": "LoRA"
+    },
+    "status": {
+      "generating": "Generating",
+      "moderating": "Checking",
+      "scoring": "Scoring",
+      "complete": "Done",
+      "failed": "Failed",
+      "nsfw": "Blocked"
+    },
+    "output": {
+      "bestResult": "Best Result",
+      "allResults": "All Results",
+      "playWhileWaiting": "Play while waiting...",
+      "empty": "Results will appear here after generation starts",
+      "continueRefining": "सुधार जारी रखें",
+      "newTask": "नया कार्य",
+      "newTaskTitle": "नया कार्य शुरू करें?",
+      "newTaskDesc": "यह सभी मौजूदा परिणामों और चैट इतिहास को साफ़ कर देगा। आपकी प्राथमिकताएँ सुरक्षित रहेंगी।",
+      "confirmNewTask": "नया शुरू करें",
+      "useAsSource": "स्रोत छवि के रूप में उपयोग करें"
+    },
+    "timeline": {
+      "title": "Timeline",
+      "results": "results",
+      "round": "Round {{n}}",
+      "switched": "Model switched"
+    },
+    "chat": {
+      "title": "Refinement",
+      "saveTemplate": "Save Template",
+      "goPlayground": "Go to Playground",
+      "aiUnderstanding": "AI Understanding",
+      "emptyHint": "Tell the AI what you'd like to change, or use the quick feedback buttons above",
+      "placeholder": "Type your feedback...",
+      "regenerate": "Regenerate",
+      "extraCost": "extra cost",
+      "useNewPrompt": "Use suggested prompt",
+      "error": "Sorry, an error occurred. Please try again.",
+      "applyPrompt": "प्रॉम्प्ट पर लागू करें",
+      "suggestedPrompt": "मैं यह बेहतर प्रॉम्प्ट सुझाता हूँ:",
+      "pickResult": "Select a result to refine",
+      "refiningSelected": "Refining selected result"
+    },
+    "template": {
+      "saveTitle": "Save as Template",
+      "saveDesc": "Save your Smart Generate configuration for reuse",
+      "name": "Template Name",
+      "namePlaceholder": "My awesome template",
+      "mode": "Mode",
+      "model": "Model",
+      "prompt": "Prompt",
+      "variants": "Optimized Variants",
+      "variantsCount": "variants saved",
+      "settings": "Settings",
+      "saved": "Template saved",
+      "savedDesc": "Saved \"{{name}}\" successfully"
+    },
+    "editShortcut": {
+      "changeBackground": "Change background",
+      "changeStyle": "Change style",
+      "removeElement": "Remove element",
+      "addElement": "Add element"
+    },
+    "error": {
+      "insufficientBalance": "Insufficient balance (${{balance}}). Please top up to continue.",
+      "promptViolation": "Prompt violates content policy: {{reason}}",
+      "imageViolation": "Uploaded image violates content policy"
+    },
+    "toast": {
+      "complete": "Smart Generate Complete",
+      "completeDesc": "Best result scored {{score}}/100",
+      "paused": "स्मार्ट जनरेट रुका हुआ",
+      "pausedDesc": "सर्वोत्तम परिणाम स्कोर {{score}}/100। अपने परिणामों की समीक्षा करें और सुधारें।",
+      "needsAction": "आपकी कार्रवाई चाहिए",
+      "needsActionDesc": "लक्ष्य स्कोर तक नहीं पहुँचा। प्रॉम्प्ट या छवि समायोजित करें।",
+      "failed": "Smart Generate Failed",
+      "cancelled": "Generation Cancelled",
+      "cancelledDesc": "Spent ${{spent}} before cancellation",
+      "nsfwDetected": "प्रॉम्प्ट अनुकूलित",
+      "nsfwDetectedDesc": "आपका प्रॉम्प्ट बेहतर अनुकूलता के लिए अनुकूलित किया गया है। कृपया समीक्षा करें और लागू करें।",
+      "budgetWarning": "बजट सीमा पहुंची",
+      "budgetWarningDesc": "${{spent}} / ${{budget}} बजट खर्च हुआ। अगले राउंड के लिए अपर्याप्त।",
+      "referenceApplied": "संदर्भ छवि लागू की गई",
+      "referenceAppliedDesc": "आपकी संदर्भ छवि का विवरण प्रॉम्प्ट में जोड़ा गया है।"
+    },
+    "guide": {
+      "title": "स्मार्ट जेनरेट",
+      "step1Title": "Describe Your Vision",
+      "step1Desc": "Enter a prompt. AI optimizes it into multiple creative variants.",
+      "step2Title": "Parallel Generation",
+      "step2Desc": "Multiple models generate in parallel. Auto-retry until quality target is met.",
+      "step3Title": "Quality Scoring",
+      "step3Desc": "AI evaluates each result on clarity, composition, and prompt adherence.",
+      "getStarted": "Get Started"
     }
   }
 }

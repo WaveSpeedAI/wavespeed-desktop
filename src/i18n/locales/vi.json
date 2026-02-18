@@ -49,6 +49,7 @@
     "settings": "Cài đặt",
     "collapse": "Thu gọn",
     "workflow": "Quy trình",
+    "smartGenerate": "Tạo Thông Minh",
     "expand": "Mở rộng"
   },
   "welcome": {
@@ -86,6 +87,11 @@
         "title": "Z-Image",
         "description": "Tạo ảnh AI cục bộ - chạy trên thiết bị của bạn, không cần khóa API",
         "badge": "Cục bộ"
+      },
+      "smartGenerate": {
+        "title": "Tạo Thông Minh",
+        "description": "AI-powered multi-model generation with automatic quality scoring",
+        "badge": "Smart"
       },
       "freeTools": {
         "title": "Công cụ Miễn phí",
@@ -137,6 +143,8 @@
     "templateName": "Tên mẫu",
     "templateSaved": "Đã lưu mẫu",
     "templateLoaded": "Đã tải mẫu",
+    "promptLoaded": "Prompt loaded",
+    "promptLoadedDesc": "Loaded prompt from Smart Generate",
     "loadedTemplate": "Đã tải \"{{name}}\"",
     "savedAs": "Đã lưu thành \"{{name}}\"",
     "resetForm": "Đặt lại biểu mẫu",
@@ -1283,6 +1291,205 @@
         "loadingOptimizer": "Đang tải trình tối ưu...",
         "loadConfigFailed": "Không thể tải cấu hình trình tối ưu"
       }
+    }
+  },
+  "smartGenerate": {
+    "start": "Start Smart Generate",
+    "cancel": "Cancel",
+    "cancelling": "Đang hủy...",
+    "target": "Target",
+    "round": "Round {{round}}",
+    "mode": {
+      "text-to-image": "Text to Image",
+      "image-edit": "Image Edit",
+      "text-to-video": "Text to Video",
+      "image-to-video": "Image to Video"
+    },
+    "tab": {
+      "config": "Config",
+      "output": "Output",
+      "chat": "Chat"
+    },
+    "config": {
+      "sourceImage": "Source Image",
+      "referenceImage": "Reference Image (optional)",
+      "uploadImage": "Upload image",
+      "addImage": "Thêm ảnh khác",
+      "uploading": "Đang tải lên...",
+      "optionalReference": "Optional: upload a reference image",
+      "prompt": "Prompt",
+      "promptPlaceholder": "Describe what you want to generate...",
+      "size": "Kích thước / Tỷ lệ",
+      "resolution": "Độ phân giải",
+      "model": "Model",
+      "parallel": "Parallel Mode",
+      "standard": "Standard",
+      "standardDesc": "2 variants per round",
+      "deep": "Deep",
+      "deepDesc": "3 variants per round",
+      "budget": "Budget Limit",
+      "recommended": "Recommended",
+      "estimated": "Estimated",
+      "advanced": "Advanced Settings",
+      "videoResolution": "Độ phân giải video",
+      "duration": "Thời lượng",
+      "loras": "Mô hình LoRA",
+      "loraPlaceholder": "Dán URL LoRA (VD: Civitai)",
+      "imageTools": "Công cụ ảnh",
+      "imageToolsAngle": "Góc",
+      "imageToolsRelight": "Ánh sáng",
+      "horizontalAngle": "Góc ngang",
+      "verticalAngle": "Góc dọc",
+      "distance": "Khoảng cách",
+      "distanceClose": "Gần",
+      "distanceMedium": "Trung bình",
+      "distanceWide": "Xa",
+      "verticalLow": "Thấp",
+      "verticalEye": "Ngang mắt",
+      "verticalHigh": "Cao",
+      "verticalTop": "Trên xuống",
+      "lightType": "Loại ánh sáng",
+      "lightDirection": "Hướng ánh sáng",
+      "lightDirFront": "Trước",
+      "lightDirSide": "Bên",
+      "lightDirBottom": "Dưới",
+      "lightDirTopDown": "Trên",
+      "runTool": "Chạy",
+      "toolRunning": "Đang chạy...",
+      "discardResult": "Bỏ",
+      "recentResults": "Kết quả gần đây",
+      "noRecentResults": "Chưa có kết quả",
+      "fromMode": "Từ {{mode}}",
+      "toolResult": "Công cụ",
+      "optimizePrompt": "Tối ưu prompt bằng AI"
+    },
+    "phase": {
+      "idle": "Ready",
+      "checkingBalance": "Checking balance...",
+      "moderating": "Content moderation...",
+      "understanding": "Understanding image...",
+      "optimizing": "Optimizing prompt...",
+      "generating": "Generating...",
+      "evaluating": "Evaluating quality...",
+      "retrying": "Retrying with feedback...",
+      "switching": "Switching model...",
+      "paused": "Tạm dừng — xem kết quả",
+      "complete": "Complete",
+      "failed": "Failed"
+    },
+    "score": {
+      "perfect": "Perfect",
+      "excellent": "Excellent",
+      "good": "Good",
+      "fair": "Fair",
+      "needsWork": "Needs Work"
+    },
+    "tag": {
+      "recommended": "Recommended",
+      "ultimate": "Ultimate",
+      "value": "Value",
+      "fast": "Fast",
+      "turbo": "Turbo",
+      "flagship": "Flagship",
+      "premium": "Premium",
+      "chinese": "Chinese",
+      "detail": "Detail",
+      "understanding": "Understand",
+      "lora": "LoRA"
+    },
+    "status": {
+      "generating": "Generating",
+      "moderating": "Checking",
+      "scoring": "Scoring",
+      "complete": "Done",
+      "failed": "Failed",
+      "nsfw": "Blocked"
+    },
+    "output": {
+      "bestResult": "Best Result",
+      "allResults": "All Results",
+      "playWhileWaiting": "Play while waiting...",
+      "empty": "Results will appear here after generation starts",
+      "continueRefining": "Tiếp tục cải thiện",
+      "newTask": "Tác vụ mới",
+      "newTaskTitle": "Bắt đầu tác vụ mới?",
+      "newTaskDesc": "Tất cả kết quả hiện tại và lịch sử trò chuyện sẽ bị xóa. Tùy chọn của bạn sẽ được giữ lại.",
+      "confirmNewTask": "Bắt đầu mới",
+      "useAsSource": "Dùng làm ảnh nguồn"
+    },
+    "timeline": {
+      "title": "Timeline",
+      "results": "results",
+      "round": "Round {{n}}",
+      "switched": "Model switched"
+    },
+    "chat": {
+      "title": "Refinement",
+      "saveTemplate": "Save Template",
+      "goPlayground": "Go to Playground",
+      "aiUnderstanding": "AI Understanding",
+      "emptyHint": "Tell the AI what you'd like to change, or use the quick feedback buttons above",
+      "placeholder": "Type your feedback...",
+      "regenerate": "Regenerate",
+      "extraCost": "extra cost",
+      "useNewPrompt": "Use suggested prompt",
+      "error": "Sorry, an error occurred. Please try again.",
+      "applyPrompt": "Áp dụng vào prompt",
+      "suggestedPrompt": "Tôi đề xuất prompt cải tiến này:",
+      "pickResult": "Select a result to refine",
+      "refiningSelected": "Refining selected result"
+    },
+    "template": {
+      "saveTitle": "Save as Template",
+      "saveDesc": "Save your Smart Generate configuration for reuse",
+      "name": "Template Name",
+      "namePlaceholder": "My awesome template",
+      "mode": "Mode",
+      "model": "Model",
+      "prompt": "Prompt",
+      "variants": "Optimized Variants",
+      "variantsCount": "variants saved",
+      "settings": "Settings",
+      "saved": "Template saved",
+      "savedDesc": "Saved \"{{name}}\" successfully"
+    },
+    "editShortcut": {
+      "changeBackground": "Change background",
+      "changeStyle": "Change style",
+      "removeElement": "Remove element",
+      "addElement": "Add element"
+    },
+    "error": {
+      "insufficientBalance": "Insufficient balance (${{balance}}). Please top up to continue.",
+      "promptViolation": "Prompt violates content policy: {{reason}}",
+      "imageViolation": "Uploaded image violates content policy"
+    },
+    "toast": {
+      "complete": "Smart Generate Complete",
+      "completeDesc": "Best result scored {{score}}/100",
+      "paused": "Tạo thông minh tạm dừng",
+      "pausedDesc": "Kết quả tốt nhất đạt {{score}}/100. Xem lại và cải thiện kết quả của bạn.",
+      "needsAction": "Cần thao tác",
+      "needsActionDesc": "Chưa đạt điểm mục tiêu. Hãy thử điều chỉnh prompt hoặc thay đổi hình ảnh.",
+      "failed": "Smart Generate Failed",
+      "cancelled": "Generation Cancelled",
+      "cancelledDesc": "Spent ${{spent}} before cancellation",
+      "nsfwDetected": "Đã tối ưu prompt",
+      "nsfwDetectedDesc": "Prompt của bạn đã được tối ưu để tương thích tốt hơn. Vui lòng xem lại và áp dụng.",
+      "budgetWarning": "Đã đạt giới hạn ngân sách",
+      "budgetWarningDesc": "Đã sử dụng ${{spent}} / ${{budget}} ngân sách. Không đủ cho vòng tiếp theo.",
+      "referenceApplied": "Đã áp dụng ảnh tham chiếu",
+      "referenceAppliedDesc": "Mô tả ảnh tham chiếu đã được thêm vào prompt."
+    },
+    "guide": {
+      "title": "Tạo Thông Minh",
+      "step1Title": "Describe Your Vision",
+      "step1Desc": "Enter a prompt. AI optimizes it into multiple creative variants.",
+      "step2Title": "Parallel Generation",
+      "step2Desc": "Multiple models generate in parallel. Auto-retry until quality target is met.",
+      "step3Title": "Quality Scoring",
+      "step3Desc": "AI evaluates each result on clarity, composition, and prompt adherence.",
+      "getStarted": "Get Started"
     }
   }
 }

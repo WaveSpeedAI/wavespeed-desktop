@@ -49,6 +49,7 @@
     "settings": "การตั้งค่า",
     "collapse": "ยุบ",
     "workflow": "เวิร์กโฟลว์",
+    "smartGenerate": "สร้างอัจฉริยะ",
     "expand": "ขยาย"
   },
   "welcome": {
@@ -86,6 +87,11 @@
         "title": "Z-Image",
         "description": "การสร้างภาพ AI ในเครื่อง - ทำงานบนอุปกรณ์ของคุณ ไม่ต้องใช้ API key",
         "badge": "ในเครื่อง"
+      },
+      "smartGenerate": {
+        "title": "สร้างอัจฉริยะ",
+        "description": "AI-powered multi-model generation with automatic quality scoring",
+        "badge": "Smart"
       },
       "freeTools": {
         "title": "เครื่องมือฟรี",
@@ -137,6 +143,8 @@
     "templateName": "ชื่อเทมเพลต",
     "templateSaved": "บันทึกเทมเพลตแล้ว",
     "templateLoaded": "โหลดเทมเพลตแล้ว",
+    "promptLoaded": "Prompt loaded",
+    "promptLoadedDesc": "Loaded prompt from Smart Generate",
     "loadedTemplate": "โหลด \"{{name}}\" แล้ว",
     "savedAs": "บันทึกเป็น \"{{name}}\" แล้ว",
     "resetForm": "รีเซ็ตฟอร์ม",
@@ -1283,6 +1291,205 @@
         "loadingOptimizer": "กำลังโหลดตัวปรับปรุง...",
         "loadConfigFailed": "ไม่สามารถโหลดการกำหนดค่าตัวปรับปรุงได้"
       }
+    }
+  },
+  "smartGenerate": {
+    "start": "Start Smart Generate",
+    "cancel": "Cancel",
+    "cancelling": "กำลังยกเลิก...",
+    "target": "Target",
+    "round": "Round {{round}}",
+    "mode": {
+      "text-to-image": "Text to Image",
+      "image-edit": "Image Edit",
+      "text-to-video": "Text to Video",
+      "image-to-video": "Image to Video"
+    },
+    "tab": {
+      "config": "Config",
+      "output": "Output",
+      "chat": "Chat"
+    },
+    "config": {
+      "sourceImage": "Source Image",
+      "referenceImage": "Reference Image (optional)",
+      "uploadImage": "Upload image",
+      "addImage": "เพิ่มรูปภาพอื่น",
+      "uploading": "กำลังอัปโหลด...",
+      "optionalReference": "Optional: upload a reference image",
+      "prompt": "Prompt",
+      "promptPlaceholder": "Describe what you want to generate...",
+      "size": "ขนาด / สัดส่วน",
+      "resolution": "ความละเอียด",
+      "model": "Model",
+      "parallel": "Parallel Mode",
+      "standard": "Standard",
+      "standardDesc": "2 variants per round",
+      "deep": "Deep",
+      "deepDesc": "3 variants per round",
+      "budget": "Budget Limit",
+      "recommended": "Recommended",
+      "estimated": "Estimated",
+      "advanced": "Advanced Settings",
+      "videoResolution": "ความละเอียดวิดีโอ",
+      "duration": "ระยะเวลา",
+      "loras": "โมเดล LoRA",
+      "loraPlaceholder": "วาง URL LoRA (เช่น Civitai)",
+      "imageTools": "เครื่องมือรูปภาพ",
+      "imageToolsAngle": "มุม",
+      "imageToolsRelight": "แสง",
+      "horizontalAngle": "มุมแนวนอน",
+      "verticalAngle": "มุมแนวตั้ง",
+      "distance": "ระยะทาง",
+      "distanceClose": "ใกล้",
+      "distanceMedium": "กลาง",
+      "distanceWide": "ไกล",
+      "verticalLow": "ต่ำ",
+      "verticalEye": "ระดับตา",
+      "verticalHigh": "สูง",
+      "verticalTop": "ด้านบน",
+      "lightType": "ประเภทแสง",
+      "lightDirection": "ทิศทางแสง",
+      "lightDirFront": "ด้านหน้า",
+      "lightDirSide": "ด้านข้าง",
+      "lightDirBottom": "ด้านล่าง",
+      "lightDirTopDown": "จากด้านบน",
+      "runTool": "เรียกใช้",
+      "toolRunning": "กำลังทำงาน...",
+      "discardResult": "ทิ้ง",
+      "recentResults": "ผลลัพธ์ล่าสุด",
+      "noRecentResults": "ยังไม่มีผลลัพธ์",
+      "fromMode": "จาก {{mode}}",
+      "toolResult": "เครื่องมือ",
+      "optimizePrompt": "ปรับแต่งพรอมต์ด้วย AI"
+    },
+    "phase": {
+      "idle": "Ready",
+      "checkingBalance": "Checking balance...",
+      "moderating": "Content moderation...",
+      "understanding": "Understanding image...",
+      "optimizing": "Optimizing prompt...",
+      "generating": "Generating...",
+      "evaluating": "Evaluating quality...",
+      "retrying": "Retrying with feedback...",
+      "switching": "Switching model...",
+      "paused": "หยุดชั่วคราว — ตรวจสอบผลลัพธ์",
+      "complete": "Complete",
+      "failed": "Failed"
+    },
+    "score": {
+      "perfect": "Perfect",
+      "excellent": "Excellent",
+      "good": "Good",
+      "fair": "Fair",
+      "needsWork": "Needs Work"
+    },
+    "tag": {
+      "recommended": "Recommended",
+      "ultimate": "Ultimate",
+      "value": "Value",
+      "fast": "Fast",
+      "turbo": "Turbo",
+      "flagship": "Flagship",
+      "premium": "Premium",
+      "chinese": "Chinese",
+      "detail": "Detail",
+      "understanding": "Understand",
+      "lora": "LoRA"
+    },
+    "status": {
+      "generating": "Generating",
+      "moderating": "Checking",
+      "scoring": "Scoring",
+      "complete": "Done",
+      "failed": "Failed",
+      "nsfw": "Blocked"
+    },
+    "output": {
+      "bestResult": "Best Result",
+      "allResults": "All Results",
+      "playWhileWaiting": "Play while waiting...",
+      "empty": "Results will appear here after generation starts",
+      "continueRefining": "ปรับปรุงต่อ",
+      "newTask": "งานใหม่",
+      "newTaskTitle": "เริ่มงานใหม่?",
+      "newTaskDesc": "ผลลัพธ์และประวัติแชทปัจจุบันจะถูกลบ การตั้งค่าของคุณจะถูกเก็บรักษาไว้",
+      "confirmNewTask": "เริ่มใหม่",
+      "useAsSource": "ใช้เป็นภาพต้นฉบับ"
+    },
+    "timeline": {
+      "title": "Timeline",
+      "results": "results",
+      "round": "Round {{n}}",
+      "switched": "Model switched"
+    },
+    "chat": {
+      "title": "Refinement",
+      "saveTemplate": "Save Template",
+      "goPlayground": "Go to Playground",
+      "aiUnderstanding": "AI Understanding",
+      "emptyHint": "Tell the AI what you'd like to change, or use the quick feedback buttons above",
+      "placeholder": "Type your feedback...",
+      "regenerate": "Regenerate",
+      "extraCost": "extra cost",
+      "useNewPrompt": "Use suggested prompt",
+      "error": "Sorry, an error occurred. Please try again.",
+      "applyPrompt": "ใช้กับพรอมต์",
+      "suggestedPrompt": "ผมแนะนำพรอมต์ที่ปรับปรุงนี้:",
+      "pickResult": "Select a result to refine",
+      "refiningSelected": "Refining selected result"
+    },
+    "template": {
+      "saveTitle": "Save as Template",
+      "saveDesc": "Save your Smart Generate configuration for reuse",
+      "name": "Template Name",
+      "namePlaceholder": "My awesome template",
+      "mode": "Mode",
+      "model": "Model",
+      "prompt": "Prompt",
+      "variants": "Optimized Variants",
+      "variantsCount": "variants saved",
+      "settings": "Settings",
+      "saved": "Template saved",
+      "savedDesc": "Saved \"{{name}}\" successfully"
+    },
+    "editShortcut": {
+      "changeBackground": "Change background",
+      "changeStyle": "Change style",
+      "removeElement": "Remove element",
+      "addElement": "Add element"
+    },
+    "error": {
+      "insufficientBalance": "Insufficient balance (${{balance}}). Please top up to continue.",
+      "promptViolation": "Prompt violates content policy: {{reason}}",
+      "imageViolation": "Uploaded image violates content policy"
+    },
+    "toast": {
+      "complete": "Smart Generate Complete",
+      "completeDesc": "Best result scored {{score}}/100",
+      "paused": "Smart Generate หยุดชั่วคราว",
+      "pausedDesc": "ผลลัพธ์ดีที่สุดได้คะแนน {{score}}/100 ตรวจสอบและปรับปรุงผลลัพธ์ของคุณ",
+      "needsAction": "ต้องการการดำเนินการ",
+      "needsActionDesc": "ไม่ถึงคะแนนเป้าหมาย ลองปรับ prompt หรือเปลี่ยนรูปภาพ",
+      "failed": "Smart Generate Failed",
+      "cancelled": "Generation Cancelled",
+      "cancelledDesc": "Spent ${{spent}} before cancellation",
+      "nsfwDetected": "ปรับปรุงพรอมต์แล้ว",
+      "nsfwDetectedDesc": "พรอมต์ของคุณได้รับการปรับปรุงเพื่อความเข้ากันได้ที่ดีขึ้น กรุณาตรวจสอบและใช้งาน",
+      "budgetWarning": "ถึงขีดจำกัดงบประมาณแล้ว",
+      "budgetWarningDesc": "ใช้จ่าย ${{spent}} จาก ${{budget}} งบประมาณ ไม่เพียงพอสำหรับรอบถัดไป",
+      "referenceApplied": "ใช้ภาพอ้างอิงแล้ว",
+      "referenceAppliedDesc": "คำอธิบายภาพอ้างอิงถูกเพิ่มลงในพรอมต์แล้ว"
+    },
+    "guide": {
+      "title": "สร้างอัจฉริยะ",
+      "step1Title": "Describe Your Vision",
+      "step1Desc": "Enter a prompt. AI optimizes it into multiple creative variants.",
+      "step2Title": "Parallel Generation",
+      "step2Desc": "Multiple models generate in parallel. Auto-retry until quality target is met.",
+      "step3Title": "Quality Scoring",
+      "step3Desc": "AI evaluates each result on clarity, composition, and prompt adherence.",
+      "getStarted": "Get Started"
     }
   }
 }

@@ -47,6 +47,7 @@
     "zImage": "Z-Image",
     "freeTools": "免费工具",
     "workflow": "工作流",
+    "smartGenerate": "智能生成",
     "settings": "设置",
     "collapse": "收起",
     "expand": "展开"
@@ -86,6 +87,10 @@
         "title": "Z-Image",
         "description": "本地 AI 图像生成 - 在您的设备上运行，无需 API Key",
         "badge": "本地"
+      },
+      "smartGenerate": {
+        "title": "智能生成",
+        "description": "AI 驱动的质量闭环：自动优化、并行生成、评分与重试"
       },
       "freeTools": {
         "title": "免费工具",
@@ -137,6 +142,8 @@
     "templateName": "模板名称",
     "templateSaved": "模板已保存",
     "templateLoaded": "模板已加载",
+    "promptLoaded": "提示词已加载",
+    "promptLoadedDesc": "来自智能生成的提示词已填入",
     "loadedTemplate": "已加载「{{name}}」",
     "savedAs": "已保存为「{{name}}」",
     "resetForm": "重置表单",
@@ -1283,6 +1290,205 @@
         "loadingOptimizer": "正在加载优化器...",
         "loadConfigFailed": "无法加载优化器配置"
       }
+    }
+  },
+  "smartGenerate": {
+    "start": "开始智能生成",
+    "cancel": "取消",
+    "cancelling": "取消中...",
+    "target": "目标",
+    "round": "第 {{round}} 轮",
+    "mode": {
+      "text-to-image": "文生图",
+      "image-edit": "图片编辑",
+      "text-to-video": "文生视频",
+      "image-to-video": "图生视频"
+    },
+    "tab": {
+      "config": "配置",
+      "output": "输出",
+      "chat": "对话"
+    },
+    "config": {
+      "sourceImage": "源图片",
+      "referenceImage": "参考图片（可选）",
+      "uploadImage": "上传图片",
+      "addImage": "添加更多图片",
+      "uploading": "上传中...",
+      "optionalReference": "可选：上传一张参考图片",
+      "prompt": "提示词",
+      "promptPlaceholder": "描述你想生成的内容...",
+      "size": "尺寸 / 比例",
+      "resolution": "分辨率",
+      "model": "模型",
+      "parallel": "并行模式",
+      "standard": "标准",
+      "standardDesc": "每轮 2 个变体",
+      "deep": "深度",
+      "deepDesc": "每轮 3 个变体",
+      "budget": "预算上限",
+      "recommended": "推荐",
+      "estimated": "预估",
+      "advanced": "高级设置",
+      "videoResolution": "视频分辨率",
+      "duration": "时长",
+      "loras": "LoRA 模型",
+      "loraPlaceholder": "粘贴 LoRA URL（如 Civitai）",
+      "imageTools": "图片工具",
+      "imageToolsAngle": "角度",
+      "imageToolsRelight": "打光",
+      "horizontalAngle": "水平角度",
+      "verticalAngle": "垂直角度",
+      "distance": "距离",
+      "distanceClose": "近",
+      "distanceMedium": "中",
+      "distanceWide": "远",
+      "verticalLow": "低",
+      "verticalEye": "平视",
+      "verticalHigh": "高",
+      "verticalTop": "俯视",
+      "lightType": "光源类型",
+      "lightDirection": "光照方向",
+      "lightDirFront": "正面",
+      "lightDirSide": "侧面",
+      "lightDirBottom": "底部",
+      "lightDirTopDown": "顶部",
+      "runTool": "运行",
+      "toolRunning": "运行中...",
+      "discardResult": "丢弃",
+      "recentResults": "历史结果",
+      "noRecentResults": "暂无结果",
+      "fromMode": "来自 {{mode}}",
+      "toolResult": "工具",
+      "optimizePrompt": "AI 优化提示词"
+    },
+    "phase": {
+      "idle": "就绪",
+      "checkingBalance": "检查余额...",
+      "moderating": "内容审核...",
+      "understanding": "理解图片...",
+      "optimizing": "优化提示词...",
+      "generating": "生成中...",
+      "evaluating": "评估质量...",
+      "retrying": "根据反馈重试...",
+      "switching": "切换模型...",
+      "paused": "已暂停 — 查看结果",
+      "complete": "完成",
+      "failed": "失败"
+    },
+    "score": {
+      "perfect": "完美",
+      "excellent": "优秀",
+      "good": "良好",
+      "fair": "一般",
+      "needsWork": "需改进"
+    },
+    "tag": {
+      "recommended": "推荐",
+      "ultimate": "极致",
+      "value": "性价比",
+      "fast": "快速",
+      "turbo": "极速",
+      "flagship": "旗舰",
+      "premium": "高端",
+      "chinese": "中文优",
+      "detail": "细节",
+      "understanding": "理解力",
+      "lora": "LoRA"
+    },
+    "status": {
+      "generating": "生成中",
+      "moderating": "审核中",
+      "scoring": "评分中",
+      "complete": "完成",
+      "failed": "失败",
+      "nsfw": "违规"
+    },
+    "output": {
+      "bestResult": "最佳结果",
+      "allResults": "全部结果",
+      "playWhileWaiting": "等待时玩个小游戏...",
+      "empty": "开始生成后结果将显示在这里",
+      "continueRefining": "继续优化",
+      "newTask": "新任务",
+      "newTaskTitle": "开始新任务？",
+      "newTaskDesc": "这将清除当前所有结果和聊天记录。你的偏好设置会被保留。",
+      "confirmNewTask": "开始新任务",
+      "useAsSource": "用作源图"
+    },
+    "timeline": {
+      "title": "时间线",
+      "results": "个结果",
+      "round": "第 {{n}} 轮",
+      "switched": "已切换模型"
+    },
+    "chat": {
+      "title": "优化调整",
+      "saveTemplate": "保存模板",
+      "goPlayground": "去演练场",
+      "aiUnderstanding": "AI 理解摘要",
+      "emptyHint": "告诉 AI 你想修改什么，或使用上方的快捷反馈按钮",
+      "placeholder": "输入你的反馈...",
+      "regenerate": "重新生成",
+      "extraCost": "额外费用",
+      "useNewPrompt": "使用建议的提示词",
+      "error": "抱歉，发生了错误，请重试。",
+      "applyPrompt": "应用到提示词",
+      "suggestedPrompt": "我建议使用这个优化后的提示词：",
+      "pickResult": "选择要优化的结果",
+      "refiningSelected": "正在优化选中的结果"
+    },
+    "template": {
+      "saveTitle": "保存为模板",
+      "saveDesc": "保存你的智能生成配置以便复用",
+      "name": "模板名称",
+      "namePlaceholder": "我的模板",
+      "mode": "模式",
+      "model": "模型",
+      "prompt": "提示词",
+      "variants": "优化变体",
+      "variantsCount": "个变体已保存",
+      "settings": "设置",
+      "saved": "模板已保存",
+      "savedDesc": "「{{name}}」保存成功"
+    },
+    "editShortcut": {
+      "changeBackground": "换背景",
+      "changeStyle": "换风格",
+      "removeElement": "去元素",
+      "addElement": "加元素"
+    },
+    "error": {
+      "insufficientBalance": "余额不足（${{balance}}），请充值后继续。",
+      "promptViolation": "提示词违反内容规范：{{reason}}",
+      "imageViolation": "上传的图片违反内容规范"
+    },
+    "toast": {
+      "complete": "智能生成完成",
+      "completeDesc": "最佳结果评分 {{score}}/100",
+      "paused": "智能生成已暂停",
+      "pausedDesc": "最佳结果评分 {{score}}/100。请查看并优化你的结果。",
+      "needsAction": "需要你的操作",
+      "needsActionDesc": "未达到目标评分，请尝试调整提示词或更换图片。",
+      "failed": "智能生成失败",
+      "cancelled": "已取消生成",
+      "cancelledDesc": "取消前已花费 ${{spent}}",
+      "nsfwDetected": "提示词已优化",
+      "nsfwDetectedDesc": "您的提示词已优化以提高兼容性，请查看并应用。",
+      "budgetWarning": "预算即将用完",
+      "budgetWarningDesc": "已花费 ${{spent}} / ${{budget}} 预算，不足以进行下一轮生成。",
+      "referenceApplied": "参考图已应用",
+      "referenceAppliedDesc": "参考图的描述已自动添加到提示词中，以引导生成效果。"
+    },
+    "guide": {
+      "title": "智能生成",
+      "step1Title": "描述你的想法",
+      "step1Desc": "输入提示词，AI 自动优化为多个创意变体。",
+      "step2Title": "并行生成",
+      "step2Desc": "多模型并行生成，自动重试直到达到质量目标。",
+      "step3Title": "质量评分",
+      "step3Desc": "AI 从清晰度、构图、提示词匹配度等维度评估每个结果。",
+      "getStarted": "开始使用"
     }
   }
 }

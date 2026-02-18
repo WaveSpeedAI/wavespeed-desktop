@@ -49,6 +49,7 @@
     "settings": "Ayarlar",
     "collapse": "Daralt",
     "workflow": "İş Akışı",
+    "smartGenerate": "Akıllı Oluşturma",
     "expand": "Genişlet"
   },
   "welcome": {
@@ -86,6 +87,11 @@
         "title": "Z-Image",
         "description": "Yerel AI görüntü üretimi - cihazınızda çalışır, API anahtarı gerekmez",
         "badge": "Yerel"
+      },
+      "smartGenerate": {
+        "title": "Akıllı Oluşturma",
+        "description": "AI-powered multi-model generation with automatic quality scoring",
+        "badge": "Smart"
       },
       "freeTools": {
         "title": "Ücretsiz Araçlar",
@@ -137,6 +143,8 @@
     "templateName": "Şablon Adı",
     "templateSaved": "Şablon kaydedildi",
     "templateLoaded": "Şablon yüklendi",
+    "promptLoaded": "Prompt loaded",
+    "promptLoadedDesc": "Loaded prompt from Smart Generate",
     "loadedTemplate": "\"{{name}}\" yüklendi",
     "savedAs": "\"{{name}}\" olarak kaydedildi",
     "resetForm": "Formu sıfırla",
@@ -1283,6 +1291,205 @@
         "loadingOptimizer": "Optimize edici yükleniyor...",
         "loadConfigFailed": "Optimize edici yapılandırması yüklenemedi"
       }
+    }
+  },
+  "smartGenerate": {
+    "start": "Start Smart Generate",
+    "cancel": "Cancel",
+    "cancelling": "İptal ediliyor...",
+    "target": "Target",
+    "round": "Round {{round}}",
+    "mode": {
+      "text-to-image": "Text to Image",
+      "image-edit": "Image Edit",
+      "text-to-video": "Text to Video",
+      "image-to-video": "Image to Video"
+    },
+    "tab": {
+      "config": "Config",
+      "output": "Output",
+      "chat": "Chat"
+    },
+    "config": {
+      "sourceImage": "Source Image",
+      "referenceImage": "Reference Image (optional)",
+      "uploadImage": "Upload image",
+      "addImage": "Başka bir görüntü ekle",
+      "uploading": "Yükleniyor...",
+      "optionalReference": "Optional: upload a reference image",
+      "prompt": "Prompt",
+      "promptPlaceholder": "Describe what you want to generate...",
+      "size": "Boyut / Oran",
+      "resolution": "Çözünürlük",
+      "model": "Model",
+      "parallel": "Parallel Mode",
+      "standard": "Standard",
+      "standardDesc": "2 variants per round",
+      "deep": "Deep",
+      "deepDesc": "3 variants per round",
+      "budget": "Budget Limit",
+      "recommended": "Recommended",
+      "estimated": "Estimated",
+      "advanced": "Advanced Settings",
+      "videoResolution": "Video Çözünürlüğü",
+      "duration": "Süre",
+      "loras": "LoRA Modelleri",
+      "loraPlaceholder": "LoRA URL yapıştır (ör. Civitai)",
+      "imageTools": "Görüntü Araçları",
+      "imageToolsAngle": "Açı",
+      "imageToolsRelight": "Aydınlatma",
+      "horizontalAngle": "Yatay Açı",
+      "verticalAngle": "Dikey Açı",
+      "distance": "Mesafe",
+      "distanceClose": "Yakın",
+      "distanceMedium": "Orta",
+      "distanceWide": "Uzak",
+      "verticalLow": "Düşük",
+      "verticalEye": "Göz Hizası",
+      "verticalHigh": "Yüksek",
+      "verticalTop": "Yukarıdan",
+      "lightType": "Işık Türü",
+      "lightDirection": "Işık Yönü",
+      "lightDirFront": "Ön",
+      "lightDirSide": "Yan",
+      "lightDirBottom": "Alt",
+      "lightDirTopDown": "Üstten",
+      "runTool": "Çalıştır",
+      "toolRunning": "Çalışıyor...",
+      "discardResult": "Sil",
+      "recentResults": "Son Sonuçlar",
+      "noRecentResults": "Henüz sonuç yok",
+      "fromMode": "{{mode}} kaynağından",
+      "toolResult": "Araç",
+      "optimizePrompt": "Promptu yapay zeka ile optimize et"
+    },
+    "phase": {
+      "idle": "Ready",
+      "checkingBalance": "Checking balance...",
+      "moderating": "Content moderation...",
+      "understanding": "Understanding image...",
+      "optimizing": "Optimizing prompt...",
+      "generating": "Generating...",
+      "evaluating": "Evaluating quality...",
+      "retrying": "Retrying with feedback...",
+      "switching": "Switching model...",
+      "paused": "Duraklatıldı — sonuçları inceleyin",
+      "complete": "Complete",
+      "failed": "Failed"
+    },
+    "score": {
+      "perfect": "Perfect",
+      "excellent": "Excellent",
+      "good": "Good",
+      "fair": "Fair",
+      "needsWork": "Needs Work"
+    },
+    "tag": {
+      "recommended": "Recommended",
+      "ultimate": "Ultimate",
+      "value": "Value",
+      "fast": "Fast",
+      "turbo": "Turbo",
+      "flagship": "Flagship",
+      "premium": "Premium",
+      "chinese": "Chinese",
+      "detail": "Detail",
+      "understanding": "Understand",
+      "lora": "LoRA"
+    },
+    "status": {
+      "generating": "Generating",
+      "moderating": "Checking",
+      "scoring": "Scoring",
+      "complete": "Done",
+      "failed": "Failed",
+      "nsfw": "Blocked"
+    },
+    "output": {
+      "bestResult": "Best Result",
+      "allResults": "All Results",
+      "playWhileWaiting": "Play while waiting...",
+      "empty": "Results will appear here after generation starts",
+      "continueRefining": "İyileştirmeye devam et",
+      "newTask": "Yeni görev",
+      "newTaskTitle": "Yeni görev başlat?",
+      "newTaskDesc": "Tüm mevcut sonuçlar ve sohbet geçmişi silinecek. Tercihleriniz korunacak.",
+      "confirmNewTask": "Yeni başlat",
+      "useAsSource": "Kaynak görsel olarak kullan"
+    },
+    "timeline": {
+      "title": "Timeline",
+      "results": "results",
+      "round": "Round {{n}}",
+      "switched": "Model switched"
+    },
+    "chat": {
+      "title": "Refinement",
+      "saveTemplate": "Save Template",
+      "goPlayground": "Go to Playground",
+      "aiUnderstanding": "AI Understanding",
+      "emptyHint": "Tell the AI what you'd like to change, or use the quick feedback buttons above",
+      "placeholder": "Type your feedback...",
+      "regenerate": "Regenerate",
+      "extraCost": "extra cost",
+      "useNewPrompt": "Use suggested prompt",
+      "error": "Sorry, an error occurred. Please try again.",
+      "applyPrompt": "İsteme uygula",
+      "suggestedPrompt": "Bu geliştirilmiş istemi öneriyorum:",
+      "pickResult": "Select a result to refine",
+      "refiningSelected": "Refining selected result"
+    },
+    "template": {
+      "saveTitle": "Save as Template",
+      "saveDesc": "Save your Smart Generate configuration for reuse",
+      "name": "Template Name",
+      "namePlaceholder": "My awesome template",
+      "mode": "Mode",
+      "model": "Model",
+      "prompt": "Prompt",
+      "variants": "Optimized Variants",
+      "variantsCount": "variants saved",
+      "settings": "Settings",
+      "saved": "Template saved",
+      "savedDesc": "Saved \"{{name}}\" successfully"
+    },
+    "editShortcut": {
+      "changeBackground": "Change background",
+      "changeStyle": "Change style",
+      "removeElement": "Remove element",
+      "addElement": "Add element"
+    },
+    "error": {
+      "insufficientBalance": "Insufficient balance (${{balance}}). Please top up to continue.",
+      "promptViolation": "Prompt violates content policy: {{reason}}",
+      "imageViolation": "Uploaded image violates content policy"
+    },
+    "toast": {
+      "complete": "Smart Generate Complete",
+      "completeDesc": "Best result scored {{score}}/100",
+      "paused": "Akıllı Üretim duraklatıldı",
+      "pausedDesc": "En iyi sonuç puanı: {{score}}/100. Sonuçlarınızı inceleyin ve iyileştirin.",
+      "needsAction": "İşlem gerekli",
+      "needsActionDesc": "Hedef puana ulaşılamadı. Promptu veya görseli ayarlamayı deneyin.",
+      "failed": "Smart Generate Failed",
+      "cancelled": "Generation Cancelled",
+      "cancelledDesc": "Spent ${{spent}} before cancellation",
+      "nsfwDetected": "Prompt Optimize Edildi",
+      "nsfwDetectedDesc": "Promptunuz daha iyi uyumluluk için optimize edildi. Lütfen inceleyin ve uygulayın.",
+      "budgetWarning": "Bütçe Limiti Ulaşıldı",
+      "budgetWarningDesc": "${{spent}} / ${{budget}} bütçe harcandı. Sonraki tur için yetersiz.",
+      "referenceApplied": "Referans görsel uygulandı",
+      "referenceAppliedDesc": "Referans görselinizin açıklaması prompt'a eklendi."
+    },
+    "guide": {
+      "title": "Akıllı Oluşturma",
+      "step1Title": "Describe Your Vision",
+      "step1Desc": "Enter a prompt. AI optimizes it into multiple creative variants.",
+      "step2Title": "Parallel Generation",
+      "step2Desc": "Multiple models generate in parallel. Auto-retry until quality target is met.",
+      "step3Title": "Quality Scoring",
+      "step3Desc": "AI evaluates each result on clarity, composition, and prompt adherence.",
+      "getStarted": "Get Started"
     }
   }
 }

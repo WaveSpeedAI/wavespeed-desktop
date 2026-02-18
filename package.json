@@ -1,6 +1,6 @@
 {
   "name": "wavespeed-desktop",
-  "version": "2.0.0",
+  "version": "2.0.3",
   "description": "WaveSpeedAI Desktop Application - A playground for AI models",
   "main": "./out/main/index.js",
   "author": {
@@ -26,8 +26,8 @@
     "build:all": "npm run build && electron-builder --win --mac --linux",
     "dist": "npm run build && electron-builder",
     "build:web": "vite build",
-    "preview:web": "vite preview --port 8989 --host 0.0.0.0",
-    "dev:web": "vite --port 8989 --host 0.0.0.0"
+    "preview:web": "vite preview --port 5173 --host 0.0.0.0",
+    "dev:web": "vite --port 5173 --host 0.0.0.0"
   },
   "dependencies": {
     "adm-zip": "^0.5.16",
@@ -112,6 +112,15 @@
       "buildResources": "build",
       "output": "dist"
     },
+    "extraResources": [
+      {
+        "from": "data",
+        "to": "data",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
     "files": [
       "out/**/*",
       "!node_modules/**/@img/sharp-linux*/**",

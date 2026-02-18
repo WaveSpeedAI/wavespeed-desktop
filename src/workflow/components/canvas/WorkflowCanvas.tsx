@@ -7,7 +7,11 @@ import { useTranslation } from 'react-i18next'
 import { v4 as uuidv4 } from 'uuid'
 import ReactFlow, {
   ReactFlowProvider,
-  type Connection, type ReactFlowInstance, type Node
+  useReactFlow,
+  Background,
+  BackgroundVariant,
+  SelectionMode,
+  type Connection, type ReactFlowInstance, type Node, type NodeChange, type OnSelectionChangeParams
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import { useWorkflowStore } from '../../stores/workflow.store'
@@ -47,15 +51,55 @@ function saveRecentNodeTypes(types: string[]) {
 const nodeTypes = { custom: CustomNode, annotation: AnnotationNode }
 const edgeTypes = { custom: CustomEdge }
 
+/** Zoom in/out and fit view controls, positioned on the right of the canvas. */
+function CanvasZoomControls() {
+  const { t } = useTranslation()
+  const { zoomIn, zoomOut, fitView } = useReactFlow()
+  return (
+    <div className="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex flex-col rounded-lg border border-border bg-card shadow-lg overflow-hidden">
+      <button
+        type="button"
+        onClick={() => zoomIn({ duration: 200 })}
+        className="flex items-center justify-center w-9 h-9 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+        title={t('workflow.zoomIn', 'Zoom in')}
+      >
+        <span className="text-lg font-medium leading-none">+</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => zoomOut({ duration: 200 })}
+        className="flex items-center justify-center w-9 h-9 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors border-t border-border"
+        title={t('workflow.zoomOut', 'Zoom out')}
+      >
+        <span className="text-lg font-medium leading-none">−</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => fitView({ padding: 0.2, duration: 300, minZoom: 0.05, maxZoom: 1.5 })}
+        className="flex items-center justify-center w-9 h-9 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors border-t border-border"
+        title={t('workflow.fitView', 'Fit View')}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+        </svg>
+      </button>
+    </div>
+  )
+}
+
 interface WorkflowCanvasProps {
   nodeDefs?: NodeTypeDefinition[]
 }
 
 export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
   const { t } = useTranslation()
-  const { nodes, edges, onNodesChange, onEdgesChange, addEdge, addNode, removeNode, undo, redo, saveWorkflow } = useWorkflowStore()
+  const { nodes, edges, onNodesChange, onEdgesChange, addEdge, addNode, removeNode, removeNodes, undo, redo, saveWorkflow } = useWorkflowStore()
   const selectedNodeId = useUIStore(s => s.selectedNodeId)
+  const selectedNodeIds = useUIStore(s => s.selectedNodeIds)
   const selectNode = useUIStore(s => s.selectNode)
+  const selectNodes = useUIStore(s => s.selectNodes)
+  const interactionMode = useUIStore(s => s.interactionMode)
+  const setInteractionMode = useUIStore(s => s.setInteractionMode)
   const reactFlowWrapper = useRef<HTMLDivElement>(null)
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null)
   const [contextMenu, setContextMenu] = useState<{
@@ -80,13 +124,22 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') return
       const ctrlOrCmd = navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? event.metaKey : event.ctrlKey
 
-      if (event.key === 'Delete' && selectedNodeId) {
-        event.preventDefault(); removeNode(selectedNodeId); selectNode(null)
+      if ((event.key === 'Delete' || event.key === 'Backspace') && selectedNodeIds.size > 0) {
+        event.preventDefault()
+        if (selectedNodeIds.size === 1) {
+          removeNode([...selectedNodeIds][0]); selectNode(null)
+        } else {
+          removeNodes([...selectedNodeIds]); selectNode(null)
+        }
       }
       if (ctrlOrCmd && event.key === 'c' && selectedNodeId) {
         event.preventDefault()
         const node = nodes.find(n => n.id === selectedNodeId)
         if (node) localStorage.setItem('copiedNode', JSON.stringify(node))
+      }
+      if (ctrlOrCmd && event.key === 'a') {
+        event.preventDefault()
+        selectNodes(nodes.map(n => n.id))
       }
       if (ctrlOrCmd && event.key === 's') {
         event.preventDefault(); saveWorkflow().catch(console.error)
@@ -100,14 +153,21 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
       if (ctrlOrCmd && event.key === 'y') {
         event.preventDefault(); redo()
       }
+      // V = Select mode, H = Hand (pan) mode
+      if (event.key === 'v' || event.key === 'V') {
+        if (!ctrlOrCmd) { setInteractionMode('select') }
+      }
+      if (event.key === 'h' || event.key === 'H') {
+        if (!ctrlOrCmd) { setInteractionMode('hand') }
+      }
       if (ctrlOrCmd && event.key === 'v') {
         event.preventDefault()
         const copiedNode = localStorage.getItem('copiedNode')
         if (copiedNode && reactFlowInstance.current) {
           try {
             const node = JSON.parse(copiedNode)
-            const center = reactFlowInstance.current.getViewport()
-            addNode(node.data.nodeType, { x: -center.x / center.zoom + 100, y: -center.y / center.zoom + 100 },
+            const center = useUIStore.getState().getViewportCenter()
+            addNode(node.data.nodeType, { x: center.x + (Math.random() - 0.5) * 60, y: center.y + (Math.random() - 0.5) * 60 },
               node.data.params, node.data.label, node.data.paramDefinitions ?? [], node.data.inputDefinitions ?? [], node.data.outputDefinitions ?? [])
             if (typeof node.data?.nodeType === 'string') recordRecentNodeType(node.data.nodeType)
           } catch (e) { console.error('Failed to paste node:', e) }
@@ -116,11 +176,17 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
     }
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [selectedNodeId, removeNode, selectNode, nodes, addNode, undo, redo, saveWorkflow, recordRecentNodeType])
+  }, [selectedNodeId, selectedNodeIds, removeNode, removeNodes, selectNode, selectNodes, nodes, addNode, undo, redo, saveWorkflow, recordRecentNodeType])
 
   const onConnect = useCallback((connection: Connection) => addEdge(connection), [addEdge])
   const onNodeClick = useCallback((_: React.MouseEvent, node: { id: string }) => selectNode(node.id), [selectNode])
   const onPaneClick = useCallback(() => { selectNode(null); setContextMenu(null) }, [selectNode])
+
+  const onSelectionChange = useCallback(({ nodes: selectedNodes }: OnSelectionChangeParams) => {
+    const ids = selectedNodes.map(n => n.id)
+    if (ids.length === 0) return // pane click handles deselect
+    selectNodes(ids)
+  }, [selectNodes])
 
   const onNodeContextMenu = useCallback((event: React.MouseEvent, node: Node) => {
     event.preventDefault()
@@ -156,7 +222,7 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
       if (p.default !== undefined) defaultParams[p.key] = p.default
     }
     const localizedLabel = t(`workflow.nodeDefs.${def.type}.label`, def.label)
-    addNode(def.type, position, defaultParams, `${def.icon} ${localizedLabel}`, def.params, def.inputs, def.outputs)
+    addNode(def.type, position, defaultParams, localizedLabel, def.params, def.inputs, def.outputs)
     recordRecentNodeType(def.type)
     setContextMenu(null)
   }, [addNode, contextMenu, projectMenuPosition, t, recordRecentNodeType])
@@ -213,11 +279,11 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
       const nodeStatus = nodeStatuses[nodeId]
       const items: ContextMenuItem[] = []
 
-      // Run actions — always available, will auto-save/create workflow if needed
+      // Run actions — always available, will auto-save/create workflow if needed (forRun: true = no name prompt)
       const ensureAndRun = async (action: (wfId: string, nId: string) => Promise<void>) => {
         let wfId = useWorkflowStore.getState().workflowId
         if (!wfId) {
-          await useWorkflowStore.getState().saveWorkflow()
+          await useWorkflowStore.getState().saveWorkflow({ forRun: true })
           wfId = useWorkflowStore.getState().workflowId
           if (!wfId) return
         }
@@ -262,7 +328,11 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
         label: t('common.copy', 'Copy'), icon: '📋', shortcut: 'Ctrl+C',
         action: () => { const n = nodes.find(n => n.id === nodeId); if (n) localStorage.setItem('copiedNode', JSON.stringify(n)) }
       })
-      items.push({ label: t('workflow.delete', 'Delete'), icon: '🗑️', shortcut: 'Del', action: () => removeNode(nodeId), destructive: true })
+      if (selectedNodeIds.size > 1 && selectedNodeIds.has(nodeId)) {
+        items.push({ label: t('workflow.deleteSelected', 'Delete Selected ({{count}})', { count: selectedNodeIds.size }), icon: '🗑️', shortcut: 'Del', action: () => { removeNodes([...selectedNodeIds]); selectNode(null) }, destructive: true })
+      } else {
+        items.push({ label: t('workflow.delete', 'Delete'), icon: '🗑️', shortcut: 'Del', action: () => removeNode(nodeId), destructive: true })
+      }
       return items
     }
 
@@ -302,7 +372,7 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
       })
     }
     return items
-  }, [contextMenu, removeNode, nodes, addNode, openAddNodeMenu, t, recordRecentNodeType])
+  }, [contextMenu, removeNode, removeNodes, selectedNodeIds, selectNode, nodes, addNode, openAddNodeMenu, t, recordRecentNodeType])
 
   const onDragOver = useCallback((event: DragEvent) => { event.preventDefault(); event.dataTransfer.dropEffect = 'move' }, [])
 
@@ -315,9 +385,11 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
     const def = nodeDefs.find(d => d.type === nodeType)
     const defaultParams: Record<string, unknown> = {}
     if (def) { for (const p of def.params) { if (p.default !== undefined) defaultParams[p.key] = p.default } }
-    addNode(nodeType, position, defaultParams, def ? `${def.icon} ${def.label}` : nodeType, def?.params ?? [], def?.inputs ?? [], def?.outputs ?? [])
+    const newNodeId = addNode(nodeType, position, defaultParams, def ? t(`workflow.nodeDefs.${def.type}.label`, def.label) : nodeType, def?.params ?? [], def?.inputs ?? [], def?.outputs ?? [])
     recordRecentNodeType(nodeType)
-  }, [addNode, nodeDefs, recordRecentNodeType])
+    // Auto-select the newly dropped node so the right config panel opens
+    selectNode(newNodeId)
+  }, [addNode, nodeDefs, recordRecentNodeType, selectNode, t])
 
   useEffect(() => {
     const handleFitView = () => {
@@ -327,24 +399,225 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
     return () => window.removeEventListener('workflow:fit-view', handleFitView)
   }, [])
 
+  // Capture-phase wheel: when target is a text field or scrollable element (or inside one), scroll it and prevent React Flow from zooming
+  useEffect(() => {
+    const wrapper = reactFlowWrapper.current
+    if (!wrapper) return
+    const onWheelCapture = (e: WheelEvent) => {
+      let el = e.target as Node | null
+      if (!el || !(el instanceof HTMLElement)) return
+      const tag = el.tagName.toLowerCase()
+      const isInputOrTextarea = tag === 'textarea' || tag === 'input'
+      const isContentEditable = el.isContentEditable
+
+      // Find scrollable: the element itself or the nearest scrollable ancestor (e.g. ModelSelector dropdown list)
+      const getScrollable = (elem: HTMLElement): HTMLElement | null => {
+        for (let n: HTMLElement | null = elem; n && n !== wrapper; n = n.parentElement) {
+          const oy = typeof getComputedStyle === 'function' ? getComputedStyle(n).overflowY : ''
+          if (/auto|scroll|overlay/.test(oy)) return n
+        }
+        return null
+      }
+
+      let scrollable: HTMLElement | null = null
+      if (isInputOrTextarea || isContentEditable) {
+        scrollable = el as HTMLElement
+      } else {
+        scrollable = getScrollable(el)
+      }
+
+      if (!scrollable) return
+      // Prevent zoom whenever we're over a scroll container (even if it has no overflow yet)
+      e.preventDefault()
+      e.stopPropagation()
+      e.stopImmediatePropagation()
+      const s = scrollable as HTMLElement & { scrollTop: number; scrollHeight: number; clientHeight: number }
+      if (typeof s.scrollTop === 'number' && s.scrollHeight > s.clientHeight) {
+        s.scrollTop = Math.max(0, Math.min(s.scrollHeight - s.clientHeight, s.scrollTop + e.deltaY))
+      }
+    }
+    wrapper.addEventListener('wheel', onWheelCapture, { capture: true })
+    return () => wrapper.removeEventListener('wheel', onWheelCapture, { capture: true })
+  }, [])
+
+  // Auto-layout: arrange nodes in a clean left-to-right DAG layout
+  // Uses actual DOM measurements for node sizes to prevent overlap
+  useEffect(() => {
+    const handleAutoLayout = () => {
+      const { nodes: currentNodes, edges: currentEdges, onNodesChange: applyChanges } = useWorkflowStore.getState()
+      if (currentNodes.length === 0) return
+
+      // ── Measure actual node sizes from DOM ──
+      const nodeSize = new Map<string, { w: number; h: number }>()
+      for (const n of currentNodes) {
+        const el = document.querySelector(`[data-id="${n.id}"]`) as HTMLElement | null
+        if (el) {
+          nodeSize.set(n.id, { w: el.offsetWidth, h: el.offsetHeight })
+        } else {
+          // Fallback: use saved width or default
+          const w = (n.data?.params?.__nodeWidth as number) ?? 380
+          nodeSize.set(n.id, { w, h: 200 })
+        }
+      }
+
+      // ── Build adjacency ──
+      const outgoing = new Map<string, string[]>()
+      const incoming = new Map<string, string[]>()
+      for (const n of currentNodes) {
+        outgoing.set(n.id, [])
+        incoming.set(n.id, [])
+      }
+      for (const e of currentEdges) {
+        outgoing.get(e.source)?.push(e.target)
+        incoming.get(e.target)?.push(e.source)
+      }
+
+      // ── Assign layers via longest-path (ensures proper depth) ──
+      const layer = new Map<string, number>()
+      const visited = new Set<string>()
+
+      function assignLayer(id: string): number {
+        if (layer.has(id)) return layer.get(id)!
+        if (visited.has(id)) return 0 // cycle guard
+        visited.add(id)
+        const parents = incoming.get(id) ?? []
+        const depth = parents.length === 0 ? 0 : Math.max(...parents.map(p => assignLayer(p) + 1))
+        layer.set(id, depth)
+        return depth
+      }
+      for (const n of currentNodes) assignLayer(n.id)
+
+      // ── Group by layer ──
+      const layers = new Map<number, string[]>()
+      for (const [id, l] of layer) {
+        if (!layers.has(l)) layers.set(l, [])
+        layers.get(l)!.push(id)
+      }
+
+      // Sort layers by key
+      const sortedLayerKeys = [...layers.keys()].sort((a, b) => a - b)
+
+      // ── Barycenter ordering to minimize edge crossings ──
+      // For each layer (except the first), sort nodes by the average Y position
+      // of their connected nodes in the previous layer.
+      // Run multiple passes for better results.
+      const nodeOrder = new Map<string, number>()
+      // Initialize order by original position (top to bottom)
+      for (const l of sortedLayerKeys) {
+        const ids = layers.get(l)!
+        ids.sort((a, b) => {
+          const na = currentNodes.find(n => n.id === a)
+          const nb = currentNodes.find(n => n.id === b)
+          return (na?.position?.y ?? 0) - (nb?.position?.y ?? 0)
+        })
+        ids.forEach((id, i) => nodeOrder.set(id, i))
+      }
+
+      // Barycenter passes (forward + backward)
+      for (let pass = 0; pass < 4; pass++) {
+        const keys = pass % 2 === 0 ? sortedLayerKeys : [...sortedLayerKeys].reverse()
+        for (const l of keys) {
+          const ids = layers.get(l)!
+          const bary = new Map<string, number>()
+          for (const id of ids) {
+            const neighbors = pass % 2 === 0
+              ? (incoming.get(id) ?? [])
+              : (outgoing.get(id) ?? [])
+            if (neighbors.length > 0) {
+              const avg = neighbors.reduce((sum, nid) => sum + (nodeOrder.get(nid) ?? 0), 0) / neighbors.length
+              bary.set(id, avg)
+            } else {
+              bary.set(id, nodeOrder.get(id) ?? 0)
+            }
+          }
+          ids.sort((a, b) => (bary.get(a) ?? 0) - (bary.get(b) ?? 0))
+          ids.forEach((id, i) => nodeOrder.set(id, i))
+        }
+      }
+
+      // ── Compute column X positions based on max width per layer ──
+      const H_GAP = 100 // horizontal gap between columns
+      const V_GAP = 60  // vertical gap between nodes in same column
+      const layerX = new Map<number, number>()
+      let currentX = 0
+      for (const l of sortedLayerKeys) {
+        layerX.set(l, currentX)
+        const ids = layers.get(l)!
+        const maxW = Math.max(...ids.map(id => nodeSize.get(id)?.w ?? 380))
+        currentX += maxW + H_GAP
+      }
+
+      // ── Position nodes: center each column vertically ──
+      const changes: NodeChange[] = []
+      for (const l of sortedLayerKeys) {
+        const ids = layers.get(l)!
+        // Calculate total height of this column
+        const heights = ids.map(id => nodeSize.get(id)?.h ?? 200)
+        const totalHeight = heights.reduce((sum, h) => sum + h, 0) + (ids.length - 1) * V_GAP
+        let y = -totalHeight / 2
+
+        ids.forEach((id, i) => {
+          changes.push({
+            type: 'position',
+            id,
+            position: {
+              x: layerX.get(l) ?? 0,
+              y
+            }
+          } as NodeChange)
+          y += heights[i] + V_GAP
+        })
+      }
+      applyChanges(changes)
+
+      // Fit view after layout
+      setTimeout(() => {
+        reactFlowInstance.current?.fitView({ padding: 0.2, duration: 300, minZoom: 0.05, maxZoom: 1.5 })
+      }, 50)
+    }
+    window.addEventListener('workflow:auto-layout', handleAutoLayout)
+    return () => window.removeEventListener('workflow:auto-layout', handleAutoLayout)
+  }, [])
+
   return (
     <ReactFlowProvider>
-      <div ref={reactFlowWrapper} className="flex-1 h-full">
+      <div ref={reactFlowWrapper} className="flex-1 h-full relative">
         <ReactFlow
           nodes={nodes} edges={edges}
           onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}
           onConnect={onConnect} onNodeClick={onNodeClick} onPaneClick={onPaneClick}
+          onSelectionChange={onSelectionChange}
           onNodeContextMenu={onNodeContextMenu} onEdgeContextMenu={onEdgeContextMenu}
           onPaneContextMenu={onPaneContextMenu}
           proOptions={{ hideAttribution: true }}
           onDragOver={onDragOver} onDrop={onDrop}
-          onInit={instance => { reactFlowInstance.current = instance }}
+          onInit={instance => {
+            reactFlowInstance.current = instance
+            useUIStore.getState().setGetViewportCenter(() => {
+              const vp = instance.getViewport()
+              const el = reactFlowWrapper.current
+              const w = el ? el.clientWidth : 800
+              const h = el ? el.clientHeight : 600
+              return {
+                x: (-vp.x + w / 2) / vp.zoom,
+                y: (-vp.y + h / 2) / vp.zoom,
+              }
+            })
+          }}
           nodeTypes={nodeTypes} edgeTypes={edgeTypes}
+          selectionOnDrag={interactionMode === 'select'}
+          selectionMode={SelectionMode.Partial}
+          multiSelectionKeyCode="Shift"
+          panOnDrag={interactionMode === 'hand'}
+          deleteKeyCode={null}
           minZoom={0.05}
           maxZoom={2.5}
           fitView
           className="bg-background"
-        />
+        >
+          <Background variant={BackgroundVariant.Lines} gap={20} lineWidth={1} color="hsl(var(--border))" />
+        </ReactFlow>
+        <CanvasZoomControls />
         {contextMenu && contextMenu.type !== 'addNode' && (
           <ContextMenu x={contextMenu.x} y={contextMenu.y} items={getContextMenuItems()} onClose={() => setContextMenu(null)} />
         )}
@@ -388,8 +661,7 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
                           className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                           title={t('workflow.dragOrClickToAdd', 'Drag to canvas or click to add')}
                         >
-                          <span className="text-base leading-none">{def.icon}</span>
-                          <span>{t(`workflow.nodeDefs.${def.type}.label`, def.label)}</span>
+                        <span>{t(`workflow.nodeDefs.${def.type}.label`, def.label)}</span>
                         </button>
                       ))}
                     </div>

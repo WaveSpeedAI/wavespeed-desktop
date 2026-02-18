@@ -34,7 +34,9 @@
     "downloadFailed": "다운로드에 실패했습니다. 네트워크 연결을 확인해 주세요.",
     "openInBrowser": "브라우저에서 열기",
     "settings": "설정",
-    "clearAll": "모두 지우기"
+    "clearAll": "모두 지우기",
+    "add": "Add",
+    "saving": "Saving..."
   },
   "nav": {
     "home": "홈",
@@ -365,7 +367,71 @@
     "deleteTemplates": "템플릿 삭제",
     "templatesDeleted": "템플릿 삭제됨",
     "deletedCount": "{{count}}개의 템플릿을 삭제했습니다",
-    "batchDeleteConfirm": "{{count}}개의 템플릿을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다."
+    "batchDeleteConfirm": "{{count}}개의 템플릿을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+    "deletedSuccessfully": "\"{{name}}\"을(를) 삭제했습니다",
+    "updatedSuccessfully": "\"{{name}}\"을(를) 업데이트했습니다",
+    "exportedSuccessfully": "\"{{name}}\"을(를) 내보냈습니다",
+    "allExportedSuccessfully": "모든 템플릿을 내보냈습니다",
+    "importedSuccessfully": "{{imported}}개 템플릿 가져옴, {{skipped}}개 건너뜀",
+    "filters": "필터",
+    "templateType": "템플릿 유형",
+    "allTypes": "모든 유형",
+    "playground": "플레이그라운드",
+    "workflow": "워크플로",
+    "source": "소스",
+    "allSources": "모든 소스",
+    "public": "공개",
+    "myTemplates": "내 템플릿",
+    "favorites": "즐겨찾기",
+    "favoritesOnly": "즐겨찾기만",
+    "sortBy": "정렬",
+    "newest": "최신순",
+    "mostUsed": "사용순",
+    "category": "카테고리",
+    "allCategories": "모든 카테고리",
+    "imageProcessing": "이미지 처리",
+    "videoEditing": "동영상 편집",
+    "audioConversion": "오디오 변환",
+    "aiGeneration": "AI 생성",
+    "workflowNotSupported": "워크플로 미지원",
+    "workflowNotSupportedDesc": "워크플로 템플릿은 아직 지원되지 않습니다",
+    "loadTemplate": "템플릿 불러오기",
+    "browseAll": "모든 템플릿 보기",
+    "drawerDesc": "템플릿을 둘러보고 적용",
+    "createTemplate": "템플릿 만들기",
+    "createTemplateDesc": "현재 구성을 재사용 가능한 템플릿으로 저장",
+    "editTemplate": "템플릿 수정",
+    "editTemplateDesc": "템플릿 세부 정보 업데이트",
+    "descriptionLabel": "설명",
+    "tags": "태그",
+    "tagsPlaceholder": "태그 입력...",
+    "descriptionPlaceholder": "이 템플릿을 설명하세요...",
+    "categoryPlaceholder": "예: 이미지 처리",
+    "nodes": "노드",
+    "favorite": "즐겨찾기에 추가",
+    "unfavorite": "즐겨찾기에서 제거",
+    "uses": "사용 수",
+    "coverImage": "커버 이미지",
+    "uploadCover": "클릭하여 커버 이미지 업로드",
+    "importDesc": "이전에 내보낸 파일에서 템플릿 가져오기"
+  },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "이미지를 비디오로",
+      "description": "정적 이미지를 동적 비디오로 변환하고 HD 업스케일링 처리"
+    },
+    "musicGenerate": {
+      "name": "음악 생성",
+      "description": "가사와 스타일 태그로 오리지널 음악 생성, 다양한 장르 지원"
+    },
+    "imageEdit": {
+      "name": "이미지 편집",
+      "description": "AI 모델과 사용자 정의 프롬프트로 이미지를 정밀하게 편집"
+    },
+    "videoEdit": {
+      "name": "비디오 편집",
+      "description": "AI 모델과 프롬프트 기반으로 비디오 콘텐츠의 요소를 편집"
+    }
   },
   "assets": {
     "title": "내 에셋",
@@ -942,46 +1008,25 @@
     "downloadStarted": "다운로드 시작됨",
     "downloadFailed": "다운로드 실패"
   },
-  "game": {
-    "waitingLong": "오래 기다리셨나요? 미니 게임 해보세요!",
-    "clickToPlay": "클릭하여 시작"
-  },
   "smartPlayground": {
-    "autoDetected": "Auto-detected variant",
-    "willCall": "Will call",
-    "toggleSpeed": "Speed",
-    "toggleMode": "Mode",
-    "toggleQuality": "Quality",
-    "speedNormal": "Normal",
-    "speedFast": "Fast",
-    "modeNormal": "Normal",
-    "modeSequential": "Sequential",
-    "qualityPro": "Pro",
-    "qualityStd": "Standard",
-    "qualityUltra": "Ultra",
-    "qualityMulti": "Multi",
-    "run": "Run",
-    "running": "Running...",
-    "input": "Input",
-    "output": "Output",
-    "back": "Back"
-  },
-  "videoConverter": {
-    "title": "비디오 변환기",
-    "description": "브라우저에서 비디오 형식 변환",
-    "invalidFile": "유효한 비디오 파일을 선택하세요",
-    "input": "입력 비디오",
-    "inputDesc": "변환할 비디오 파일을 선택하거나 드래그하세요",
-    "dropzone": "클릭하거나 비디오를 여기에 드래그",
-    "supportedFormats": "MP4, WebM, MOV, AVI 지원",
-    "settings": "설정",
-    "outputFormat": "출력 형식",
-    "convert": "비디오 변환",
-    "converting": "변환 중...",
-    "noCodecSupport": "지원되는 비디오 코덱을 찾을 수 없습니다",
-    "result": "결과",
-    "codecUsed": "사용된 코덱",
-    "download": "다운로드"
+    "autoDetected": "자동 감지된 변형",
+    "willCall": "호출 예정",
+    "toggleSpeed": "속도",
+    "toggleMode": "모드",
+    "toggleQuality": "품질",
+    "speedNormal": "보통",
+    "speedFast": "빠름",
+    "modeNormal": "보통",
+    "modeSequential": "순차",
+    "qualityPro": "프로",
+    "qualityStd": "표준",
+    "qualityUltra": "울트라",
+    "qualityMulti": "멀티",
+    "run": "실행",
+    "running": "실행 중...",
+    "input": "입력",
+    "output": "출력",
+    "back": "뒤로"
   },
   "workflow": {
     "workflows": "워크플로우",
@@ -993,6 +1038,11 @@
     "saveFailed": "저장 실패",
     "savedAt": "저장됨",
     "unsaved": "저장 안 됨",
+    "selectNodeHint": "노드를 선택하여 매개변수를 설정하세요",
+    "outputDirFallbackHint": "미설정: 워크플로우 기본 디렉토리로 내보내기",
+    "selectDirectory": "디렉토리 선택",
+    "openFolder": "폴더 열기",
+    "openWorkflowFolder": "워크플로우 폴더 열기",
     "nodes": "노드",
     "config": "구성",
     "results": "결과",
@@ -1000,6 +1050,12 @@
     "settings": "설정",
     "runAll": "모두 실행",
     "run": "실행",
+    "runWorkflow": "실행",
+    "runFromHere": "여기서부터 실행",
+    "nameYourWorkflow": "워크플로 이름 지정",
+    "nameYourWorkflowDesc": "디스크에 저장하려면 이름을 지정하세요.",
+    "nameYourWorkflowPlaceholder": "예: 제품 이미지 파이프라인",
+    "nameDuplicate": "같은 이름의 워크플로가 이미 존재합니다",
     "runTarget": "대상 실행",
     "runTargetAll": "모든 노드 실행",
     "runTargetSelected": "선택한 노드 실행",
@@ -1015,6 +1071,9 @@
     "exportFailed": "내보내기 실패",
     "estimated": "예상 비용",
     "fitView": "뷰 맞춤",
+    "autoLayout": "자동 정렬",
+    "freeToolModelHint": "첫 실행 시 AI 모델이 자동 다운로드됩니다, 잠시 기다려 주세요",
+    "more": "더보기",
     "previousImage": "이전 이미지",
     "nextImage": "다음 이미지",
     "previewNavHint": "← / →로 이미지 탐색 ({{current}}/{{total}})",
@@ -1052,7 +1111,10 @@
       "hint": "왼쪽 클릭 = 포함, 오른쪽 클릭 = 제외",
       "points": "포인트",
       "clear": "지우기",
-      "done": "완료"
+      "done": "완료",
+      "encoding": "Analyzing image...",
+      "waitingEncode": "Preparing...",
+      "decoding": "Updating mask..."
     },
     "pickPoints": "포인트 선택",
     "pickPointsNeedInput": "먼저 입력 이미지를 설정하세요",
@@ -1091,7 +1153,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "모델 실행",
+        "label": "WaveSpeed API",
         "emptyHint": "이 노드를 클릭한 다음 모델 선택 →",
         "params": {
           "modelId": {
@@ -1101,6 +1163,11 @@
       },
       "input/media-upload": {
         "label": "업로드",
+        "inputs": {
+          "media": {
+            "label": "미디어"
+          }
+        },
         "outputs": {
           "output": {
             "label": "URL"
@@ -1147,7 +1214,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "출력 디렉토리"
+            "label": "출력 디렉토리",
+            "placeholder": "비워두면 워크플로우 기본 출력 디렉토리 사용"
           },
           "filename": {
             "label": "파일명 접두사"
@@ -1193,6 +1261,9 @@
           "pointY": {
             "label": "포인트 Y",
             "description": "세그먼트 포인트의 정규화 Y (0-1)"
+          },
+          "invertMask": {
+            "label": "마스크 반전"
           }
         }
       },
@@ -1256,12 +1327,60 @@
       "optimizing": "최적화 중...",
       "optimizeNow": "지금 최적화",
       "autoOnRunTitle": "실행 클릭 시에만 최적화",
-      "autoOnRun": "실행 시 자동 최적화",
+      "autoOnRun": "실행 시 최적화",
       "chars": "자",
       "optimizeOnRunEnabled": "활성화: 실행 시 최적화",
       "optimizeOffHint": "기본값: 최적화 없음(원문으로 실행)",
       "manualOptimizedHint": "수동 최적화됨. 텍스트가 변경될 때까지 자동 최적화를 건너뜁니다.",
       "enterTextOrPrompt": "텍스트 또는 프롬프트 입력..."
+    },
+    "guide": {
+      "skip": "건너뛰기",
+      "prev": "이전",
+      "next": "다음",
+      "finish": "시작하기",
+      "welcome": {
+        "title": "워크플로우에 오신 것을 환영합니다",
+        "desc": "워크플로우는 비주얼 AI 파이프라인 편집기입니다. 노드를 캔버스에 드래그하고 연결하여 이미지 생성부터 비디오 향상까지 자동화된 AI 처리 흐름을 실행하세요."
+      },
+      "nodePaletteBtn": {
+        "title": "노드 팔레트",
+        "desc": "이 버튼을 클릭하여 노드 팔레트를 엽니다 — 사용 가능한 모든 노드의 도구 상자입니다. 검색, 드래그 또는 클릭으로 캔버스에 노드를 추가할 수 있습니다."
+      },
+      "nodePalette": {
+        "title": "노드 카테고리",
+        "desc": "노드는 카테고리별로 정리되어 있습니다:\n• 입력 — 파일을 업로드하거나 텍스트를 입력하여 시작 데이터로 사용\n• AI 작업 — 모든 WaveSpeed AI 모델 실행 (다음 단계 참조)\n• 무료 도구 — 배경 제거, 얼굴 보정, 형식 변환 등 12가지 내장 도구\n• 출력 — 결과 미리보기 또는 파일을 디스크로 내보내기\n\n노드를 캔버스에 드래그하거나 클릭하여 추가합니다."
+      },
+      "aiTask": {
+        "title": "AI 작업 노드 — 핵심 기능",
+        "desc": "AI 작업 노드는 워크플로우에서 가장 강력한 노드입니다. 이미지 생성, 비디오 제작, 스타일 전환 등 모든 WaveSpeed AI 모델을 실행할 수 있습니다.",
+        "features": {
+          "modelSwitch": "수백 개의 AI 모델 중 선택 — 선택한 모델에 따라 매개변수 패널이 동적으로 업데이트됩니다",
+          "dynamicParams": "각 모델에는 고유한 매개변수(프롬프트, 이미지 크기, 시드 등)가 있으며 선택 시 자동으로 표시됩니다",
+          "costEstimate": "실행당 실시간 비용 추정으로 실행 전 항상 가격을 확인할 수 있습니다",
+          "upstream": "상위 노드 출력(이미지, 텍스트)을 입력으로 연결 — 다단계 AI 파이프라인 구축"
+        }
+      },
+      "canvas": {
+        "title": "캔버스 상호작용",
+        "desc": "중앙 캔버스가 작업 공간입니다:\n• 팔레트에서 노드를 드래그하여 배치\n• 출력 포트에서 입력 포트로 드래그하여 연결 생성\n• 우클릭으로 컨텍스트 메뉴 (복사, 붙여넣기, 삭제)\n• 스크롤로 확대/축소, 배경 드래그로 이동\n• 단축키: Ctrl+Z 실행 취소, Ctrl+C/V 복사/붙여넣기, Delete로 삭제"
+      },
+      "canvasTools": {
+        "title": "캔버스 도구",
+        "desc": "캔버스 탐색 및 정리를 위한 3가지 편리한 도구:\n• 선택 / 손 모드 — 노드 선택(V)과 캔버스 이동(H) 전환\n• 화면에 맞추기 — 모든 노드가 뷰포트에 맞도록 자동 확대/축소\n• 자동 레이아웃 — 노드를 깔끔하고 읽기 쉽게 자동 배치"
+      },
+      "config": {
+        "title": "설정 및 결과 확인",
+        "desc": "노드를 클릭하여 선택합니다. 오른쪽 패널에 두 개의 탭이 표시됩니다:\n• 설정 — 모델 매개변수 설정, 파일 업로드, 프롬프트 입력\n• 결과 — 실행 출력 보기 (이미지, 비디오, 3D 모델)\n\n매개변수는 노드 유형과 선택한 모델에 따라 동적으로 업데이트됩니다. 결과는 전체 화면 미리보기와 다운로드를 지원합니다."
+      },
+      "run": {
+        "title": "워크플로우 실행",
+        "desc": "\"워크플로우 실행\"을 클릭하여 전체 파이프라인을 실행합니다:\n• 일괄 처리를 위한 실행 횟수 설정 (×1~×99)\n• 중지 버튼으로 언제든지 취소 가능\n• 실행 모니터에서 실시간 진행 상황 확인\n• 각 노드의 상태 표시: 대기 중 → 실행 중 → 완료"
+      },
+      "templates": {
+        "title": "템플릿, 가져오기 및 내보내기",
+        "desc": "⋮ 메뉴를 클릭하여 고급 기능에 접근:\n• 워크플로우를 재사용 가능한 템플릿으로 저장\n• 워크플로우를 JSON으로 가져오기/내보내기하여 공유\n• 브라우저처럼 탭에서 여러 워크플로우 열기\n• 도구 모음에서 사전 제작된 템플릿 둘러보기"
+      }
     },
     "promptOptimizer": {
       "optimizationFailed": "최적화 실패",
@@ -1272,8 +1391,9 @@
       "text": "텍스트",
       "textPlaceholder": "확장하거나 컨텍스트로 사용할 텍스트...",
       "autoOnRunTitle": "실행 클릭 시 자동 최적화",
-      "autoOnRun": "실행 시 자동 최적화",
+      "autoOnRun": "실행 시 최적화",
       "quickOptimizeTitle": "빠른 최적화 ({{mode}})",
+      "quickOptimizeLabel": "최적화",
       "params": "매개변수",
       "prompt": "프롬프트",
       "emptyPrompt": "(비어 있음)",
@@ -1291,7 +1411,28 @@
         "loadingOptimizer": "최적화 도구 로드 중...",
         "loadConfigFailed": "최적화 도구 구성을 로드할 수 없습니다"
       }
-    }
+    },
+    "modelSyncDesktopOnly": "Model sync is available in the WaveSpeed Desktop app.",
+    "nameExists": "같은 이름의 워크플로가 이미 있습니다. 저장하면 덮어씁니다.",
+    "overwriteWorkflow": "워크플로 덮어쓰기",
+    "overwriteConfirm": "\"{{name}}\" 워크플로가 이미 있습니다. 덮어쓸까요?",
+    "overwrite": "덮어쓰기",
+    "rename": "이름 바꾸기",
+    "duplicate": "복제",
+    "deleteWorkflow": "삭제",
+    "deleteConfirm": "\"{{name}}\"을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+    "cleaning": "정리 중...",
+    "cleanOutputs": "결과 정리",
+    "tabClose": "닫기",
+    "tabCloseOthers": "다른 탭 닫기",
+    "tabCloseRight": "오른쪽 닫기",
+    "tabCloseSaved": "저장된 탭 닫기",
+    "tabCloseAll": "모두 닫기",
+    "deleteSelected": "선택 항목 삭제 ({{count}})",
+    "selectMode": "Select (V)",
+    "handMode": "Hand (H)",
+    "interactionSelect": "Select",
+    "interactionHand": "Hand"
   },
   "smartGenerate": {
     "start": "Start Smart Generate",

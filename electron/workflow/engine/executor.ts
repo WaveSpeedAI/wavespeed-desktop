@@ -44,20 +44,7 @@ export class ExecutionEngine {
     const nodeIds = nodes.map(n => n.id)
     const simpleEdges = edges.map(e => ({ sourceNodeId: e.sourceNodeId, targetNodeId: e.targetNodeId }))
 
-    const nodeTypes = new Map(nodes.map(n => [n.id, n.nodeType]))
-    const costByNodeId = new Map<string, number>()
-    for (const n of nodes) {
-      const handler = this.registry.getHandler(n.nodeType)
-      if (handler) {
-        // Estimate by node ID so multiple ai-task/run nodes with different models are summed correctly.
-        costByNodeId.set(n.id, handler.estimateCost(n.params))
-      }
-    }
-    const estimate = this.costService.estimate(nodeIds, nodeTypes, costByNodeId)
-    if (!estimate.withinBudget) {
-      throw new Error(`Budget exceeded: ${estimate.reason}`)
-    }
-
+    // Cost estimate (for UI only) is done via cost:estimate IPC; we don't block runs on budget since actual API cost varies by inputs.
     const levels = topologicalLevels(nodeIds, simpleEdges)
     const nodeMap = new Map(nodes.map(n => [n.id, n]))
     const failedNodes = new Set<string>()
@@ -274,10 +261,13 @@ export class ExecutionEngine {
     }
 
     const durationMs = result.durationMs || (Date.now() - startTime)
+    const resultMetadata =
+      result.resultMetadata ??
+      (result.status === 'error' && result.error ? { error: result.error } : null)
     const dbConn = getDatabase()
     dbConn.run(
       `UPDATE node_executions SET status = ?, result_path = ?, result_metadata = ?, duration_ms = ?, cost = ? WHERE id = ?`,
-      [result.status, result.resultPath ?? null, result.resultMetadata ? JSON.stringify(result.resultMetadata) : null,
+      [result.status, result.resultPath ?? null, resultMetadata ? JSON.stringify(resultMetadata) : null,
        durationMs, result.cost, executionId]
     )
     persistDatabase()
@@ -291,7 +281,7 @@ export class ExecutionEngine {
         durationMs,
         cost: result.cost,
         createdAt: new Date().toISOString(),
-        resultMetadata: result.resultMetadata || {}
+        resultMetadata: resultMetadata ?? result.resultMetadata ?? {}
       })
     } catch (error) {
       console.error('[Executor] Failed to save execution snapshot:', error)

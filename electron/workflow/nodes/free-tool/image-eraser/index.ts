@@ -6,7 +6,6 @@ export const imageEraserDef: NodeTypeDefinition = {
   type: 'free-tool/image-eraser',
   category: 'free-tool',
   label: 'Image Eraser',
-  icon: '🪄',
   inputs: [
     { key: 'input', label: 'Image', dataType: 'image', required: true },
     { key: 'mask', label: 'Mask', dataType: 'image', required: true }

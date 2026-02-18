@@ -209,8 +209,8 @@ export function WorkflowPromptOptimizer({
       <div
         className={`mt-1 rounded-lg border p-2 transition-opacity ${
           inactive
-            ? 'border-[hsl(var(--border))]/70 bg-[hsl(var(--muted))]/25 opacity-70'
-            : 'border-[hsl(var(--border))] bg-[hsl(var(--muted))]/40'
+            ? 'border-blue-500/20 bg-blue-500/5 opacity-70'
+            : 'border-blue-500/20 bg-blue-500/5'
         }`}
         onClick={e => e.stopPropagation()}
       >
@@ -261,23 +261,7 @@ export function WorkflowPromptOptimizer({
   return (
     <div className="relative inline-flex" ref={containerRef} onClick={e => e.stopPropagation()}>
       <div className="flex items-center gap-1.5">
-        {/* Prominent run-time auto optimize toggle */}
-        {showRunToggle && (
-          <button
-            type="button"
-            onClick={() => onOptimizeOnRunChange?.(!optimizeOnRun)}
-            title={t('workflow.promptOptimizer.autoOnRunTitle', 'Optimize automatically when clicking Run')}
-            className={`h-5 rounded-md border px-2.5 text-[10px] font-semibold transition-colors ${
-              optimizeOnRun
-                ? 'border-blue-500/50 bg-blue-500/20 text-blue-300'
-                : 'border-[hsl(var(--border))] bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
-            }`}
-          >
-            {t('workflow.promptOptimizer.autoOnRun', 'Auto on Run')}
-          </button>
-        )}
-
-        {/* ── Split Button ───────────────────────────────────── */}
+        {/* ── Split Button (Optimize + Params) ───────────────────────────────────── */}
         <div className={`flex items-center rounded-md border overflow-hidden transition-colors
           ${isOptimizing ? 'border-blue-500/50 bg-blue-500/10' : 'border-[hsl(var(--border))] hover:border-blue-500/30'}`}>
 
@@ -287,8 +271,9 @@ export function WorkflowPromptOptimizer({
               <button onClick={handleQuickOptimize}
                 disabled={disabled || isOptimizing || !currentPrompt.trim()}
                 title={t('workflow.promptOptimizer.quickOptimizeTitle', { mode: modeSummary, defaultValue: `Quick Optimize (${modeSummary})` })}
-                className="flex items-center justify-center w-6 h-5 text-[hsl(var(--muted-foreground))] hover:text-blue-400 hover:bg-blue-500/15 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                className="flex items-center justify-center gap-1 h-5 px-1.5 text-blue-400 hover:text-blue-300 hover:bg-blue-500/15 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
                 {isOptimizing ? <SpinnerIcon /> : <SparklesIcon />}
+                <span className="text-[10px] font-medium">{t('workflow.promptOptimizer.quickOptimizeLabel', 'Optimize')}</span>
               </button>
               <div className="w-px h-3.5 bg-[hsl(var(--border))]" />
             </>
@@ -314,6 +299,22 @@ export function WorkflowPromptOptimizer({
             <ChevronIcon />
           </button>
         </div>
+
+        {/* Optimize on Run — after Optimize */}
+        {showRunToggle && (
+          <button
+            type="button"
+            onClick={() => onOptimizeOnRunChange?.(!optimizeOnRun)}
+            title={t('workflow.promptOptimizer.autoOnRunTitle', 'Optimize automatically when clicking Run')}
+            className={`h-5 rounded-md border px-2.5 text-[10px] font-semibold transition-colors ${
+              optimizeOnRun
+                ? 'border-blue-500/50 bg-blue-500/20 text-blue-300'
+                : 'border-[hsl(var(--border))] bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
+            }`}
+          >
+            {t('workflow.promptOptimizer.autoOnRun', 'Optimize on Run')}
+          </button>
+        )}
       </div>
 
       {/* ── Error Toast ────────────────────────────────────── */}

@@ -34,7 +34,9 @@
     "downloadFailed": "डाउनलोड विफल। कृपया अपना नेटवर्क कनेक्शन जांचें।",
     "openInBrowser": "ब्राउज़र में खोलें",
     "settings": "सेटिंग्स",
-    "clearAll": "सभी साफ़ करें"
+    "clearAll": "सभी साफ़ करें",
+    "add": "Add",
+    "saving": "Saving..."
   },
   "nav": {
     "home": "होम",
@@ -364,7 +366,71 @@
     "deleteTemplates": "टेम्पलेट हटाएं",
     "templatesDeleted": "टेम्पलेट हटाए गए",
     "deletedCount": "{{count}} टेम्पलेट हटाए गए",
-    "batchDeleteConfirm": "क्या आप वाकई {{count}} टेम्पलेट हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।"
+    "batchDeleteConfirm": "क्या आप वाकई {{count}} टेम्पलेट हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।",
+    "deletedSuccessfully": "\"{{name}}\" सफलतापूर्वक हटाया गया",
+    "updatedSuccessfully": "\"{{name}}\" सफलतापूर्वक अपडेट किया गया",
+    "exportedSuccessfully": "\"{{name}}\" सफलतापूर्वक निर्यात किया गया",
+    "allExportedSuccessfully": "सभी टेम्पलेट सफलतापूर्वक निर्यात किए गए",
+    "importedSuccessfully": "{{imported}} टेम्पलेट आयात किए गए, {{skipped}} छोड़े गए",
+    "filters": "फ़िल्टर",
+    "templateType": "टेम्पलेट प्रकार",
+    "allTypes": "सभी प्रकार",
+    "playground": "प्लेग्राउंड",
+    "workflow": "वर्कफ़्लो",
+    "source": "स्रोत",
+    "allSources": "सभी स्रोत",
+    "public": "सार्वजनिक",
+    "myTemplates": "मेरे टेम्पलेट",
+    "favorites": "पसंदीदा",
+    "favoritesOnly": "केवल पसंदीदा",
+    "sortBy": "क्रमबद्ध करें",
+    "newest": "नवीनतम",
+    "mostUsed": "सबसे अधिक उपयोग",
+    "category": "श्रेणी",
+    "allCategories": "सभी श्रेणियाँ",
+    "imageProcessing": "छवि प्रसंस्करण",
+    "videoEditing": "वीडियो संपादन",
+    "audioConversion": "ऑडियो रूपांतरण",
+    "aiGeneration": "AI जनरेशन",
+    "workflowNotSupported": "वर्कफ़्लो समर्थित नहीं",
+    "workflowNotSupportedDesc": "वर्कफ़्लो टेम्पलेट अभी समर्थित नहीं हैं",
+    "loadTemplate": "टेम्पलेट लोड करें",
+    "browseAll": "सभी टेम्पलेट देखें",
+    "drawerDesc": "टेम्पलेट ब्राउज़ करें और लागू करें",
+    "createTemplate": "टेम्पलेट बनाएं",
+    "createTemplateDesc": "अपने वर्तमान कॉन्फ़िगरेशन को पुन: उपयोग योग्य टेम्पलेट के रूप में सहेजें",
+    "editTemplate": "टेम्पलेट संपादित करें",
+    "editTemplateDesc": "टेम्पलेट विवरण अपडेट करें",
+    "descriptionLabel": "विवरण",
+    "tags": "टैग",
+    "tagsPlaceholder": "एक टैग दर्ज करें...",
+    "descriptionPlaceholder": "इस टेम्पलेट का वर्णन करें...",
+    "categoryPlaceholder": "जैसे: इमेज प्रोसेसिंग",
+    "nodes": "नोड्स",
+    "favorite": "पसंदीदा में जोड़ें",
+    "unfavorite": "पसंदीदा से हटाएं",
+    "uses": "उपयोग",
+    "coverImage": "कवर छवि",
+    "uploadCover": "कवर छवि अपलोड करने के लिए क्लिक करें",
+    "importDesc": "पहले एक्सपोर्ट की गई फ़ाइल से टेम्पलेट आयात करें"
+  },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "छवि से वीडियो",
+      "description": "स्थिर छवियों को गतिशील वीडियो में बदलें HD अपस्केलिंग के साथ"
+    },
+    "musicGenerate": {
+      "name": "संगीत निर्माण",
+      "description": "गीत और शैली टैग से मूल संगीत बनाएं"
+    },
+    "imageEdit": {
+      "name": "छवि संपादन",
+      "description": "AI मॉडल और कस्टम प्रॉम्प्ट से छवियों को संपादित करें"
+    },
+    "videoEdit": {
+      "name": "वीडियो संपादन",
+      "description": "AI मॉडल और प्रॉम्प्ट से वीडियो सामग्री संपादित करें"
+    }
   },
   "assets": {
     "title": "मेरी संपत्तियां",
@@ -941,46 +1007,25 @@
     "downloadStarted": "डाउनलोड शुरू हो गया",
     "downloadFailed": "डाउनलोड विफल"
   },
-  "game": {
-    "waitingLong": "ज़्यादा इंतज़ार? एक मिनी गेम खेलें!",
-    "clickToPlay": "शुरू करने के लिए क्लिक करें"
-  },
   "smartPlayground": {
-    "autoDetected": "Auto-detected variant",
-    "willCall": "Will call",
-    "toggleSpeed": "Speed",
-    "toggleMode": "Mode",
-    "toggleQuality": "Quality",
-    "speedNormal": "Normal",
-    "speedFast": "Fast",
-    "modeNormal": "Normal",
-    "modeSequential": "Sequential",
-    "qualityPro": "Pro",
-    "qualityStd": "Standard",
-    "qualityUltra": "Ultra",
-    "qualityMulti": "Multi",
-    "run": "Run",
-    "running": "Running...",
-    "input": "Input",
-    "output": "Output",
-    "back": "Back"
-  },
-  "videoConverter": {
-    "title": "वीडियो कनवर्टर",
-    "description": "अपने ब्राउज़र का उपयोग करके वीडियो को फॉर्मेट के बीच कनवर्ट करें",
-    "invalidFile": "कृपया एक वैध वीडियो फ़ाइल चुनें",
-    "input": "इनपुट वीडियो",
-    "inputDesc": "कनवर्ट करने के लिए एक वीडियो फ़ाइल चुनें या खींचें",
-    "dropzone": "क्लिक करें या वीडियो यहां खींचें",
-    "supportedFormats": "MP4, WebM, MOV, AVI समर्थित",
-    "settings": "सेटिंग्स",
-    "outputFormat": "आउटपुट फॉर्मेट",
-    "convert": "वीडियो कनवर्ट करें",
-    "converting": "कनवर्ट हो रहा है...",
-    "noCodecSupport": "कोई समर्थित वीडियो कोडेक नहीं मिला",
-    "result": "परिणाम",
-    "codecUsed": "उपयोग किया गया कोडेक",
-    "download": "डाउनलोड"
+    "autoDetected": "स्वचालित रूप से पहचाना गया संस्करण",
+    "willCall": "कॉल करेगा",
+    "toggleSpeed": "गति",
+    "toggleMode": "मोड",
+    "toggleQuality": "गुणवत्ता",
+    "speedNormal": "सामान्य",
+    "speedFast": "तेज़",
+    "modeNormal": "सामान्य",
+    "modeSequential": "क्रमिक",
+    "qualityPro": "प्रो",
+    "qualityStd": "मानक",
+    "qualityUltra": "अल्ट्रा",
+    "qualityMulti": "मल्टी",
+    "run": "चलाएं",
+    "running": "चल रहा है...",
+    "input": "इनपुट",
+    "output": "आउटपुट",
+    "back": "वापस"
   },
   "workflow": {
     "workflows": "वर्कफ़्लो",
@@ -992,6 +1037,10 @@
     "saveFailed": "सहेजने में विफल",
     "savedAt": "सहेजा गया",
     "unsaved": "असहेजा",
+    "outputDirFallbackHint": "सेट नहीं: वर्कफ़्लो डिफ़ॉल्ट निर्देशिका में निर्यात किया जाएगा",
+    "selectDirectory": "निर्देशिका चुनें",
+    "openFolder": "फ़ोल्डर खोलें",
+    "openWorkflowFolder": "वर्कफ़्लो फ़ोल्डर खोलें",
     "nodes": "नोड",
     "config": "कॉन्फ़िगरेशन",
     "results": "परिणाम",
@@ -999,6 +1048,12 @@
     "settings": "सेटिंग्स",
     "runAll": "सभी चलाएं",
     "run": "चलाएं",
+    "runWorkflow": "चलाएं",
+    "runFromHere": "यहां से चलाएं",
+    "nameYourWorkflow": "वर्कफ़्लो का नाम दें",
+    "nameYourWorkflowDesc": "डिस्क पर सहेजने के लिए नाम दें।",
+    "nameYourWorkflowPlaceholder": "उदा: उत्पाद छवि पाइपलाइन",
+    "nameDuplicate": "इस नाम का वर्कफ़्लो पहले से मौजूद है",
     "runTarget": "लक्ष्य चलाएं",
     "runTargetAll": "सभी नोड चलाएं",
     "runTargetSelected": "चयनित नोड चलाएं",
@@ -1014,6 +1069,9 @@
     "exportFailed": "निर्यात विफल",
     "estimated": "अनुमानित लागत",
     "fitView": "दृश्य फिट करें",
+    "autoLayout": "स्वचालित व्यवस्था",
+    "freeToolModelHint": "पहली बार चलाने पर AI मॉडल स्वचालित रूप से डाउनलोड होगा, कृपया प्रतीक्षा करें",
+    "more": "और",
     "previousImage": "पिछली छवि",
     "nextImage": "अगली छवि",
     "previewNavHint": "छवियों में नेविगेट करने के लिए ← / → का उपयोग करें ({{current}}/{{total}})",
@@ -1051,7 +1109,10 @@
       "hint": "बायाँ क्लिक = शामिल, दायाँ क्लिक = बाहर",
       "points": "अंक",
       "clear": "साफ़ करें",
-      "done": "हो गया"
+      "done": "हो गया",
+      "encoding": "Analyzing image...",
+      "waitingEncode": "Preparing...",
+      "decoding": "Updating mask..."
     },
     "pickPoints": "बिंदु चुनें",
     "pickPointsNeedInput": "पहले इनपुट छवि सेट करें",
@@ -1090,7 +1151,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "मॉडल चलाएं",
+        "label": "WaveSpeed API",
         "emptyHint": "इस नोड पर क्लिक करें, फिर मॉडल चुनें →",
         "params": {
           "modelId": {
@@ -1100,6 +1161,11 @@
       },
       "input/media-upload": {
         "label": "अपलोड",
+        "inputs": {
+          "media": {
+            "label": "मीडिया"
+          }
+        },
         "outputs": {
           "output": {
             "label": "URL"
@@ -1146,7 +1212,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "आउटपुट निर्देशिका"
+            "label": "आउटपुट निर्देशिका",
+            "placeholder": "वर्कफ़्लो डिफ़ॉल्ट आउटपुट निर्देशिका का उपयोग करने के लिए खाली छोड़ें"
           },
           "filename": {
             "label": "फ़ाइल नाम उपसर्ग"
@@ -1192,6 +1259,9 @@
           "pointY": {
             "label": "बिंदु Y",
             "description": "सेगमेंटेशन पॉइंट के लिए सामान्यीकृत Y (0-1)"
+          },
+          "invertMask": {
+            "label": "मास्क उलटें"
           }
         }
       },
@@ -1255,7 +1325,7 @@
       "optimizing": "अनुकूलन हो रहा है...",
       "optimizeNow": "अभी अनुकूलन",
       "autoOnRunTitle": "रन पर क्लिक करने पर ही अनुकूलन",
-      "autoOnRun": "रन पर ऑटो",
+      "autoOnRun": "रन पर अनुकूलन",
       "chars": "अक्षर",
       "optimizeOnRunEnabled": "सक्षम: रन पर अनुकूलन",
       "optimizeOffHint": "डिफ़ॉल्ट: कोई अनुकूलन नहीं (मूल टेक्स्ट के साथ चलाएं)",
@@ -1271,8 +1341,9 @@
       "text": "टेक्स्ट",
       "textPlaceholder": "विस्तार करने या संदर्भ के रूप में उपयोग करने के लिए टेक्स्ट...",
       "autoOnRunTitle": "रन पर क्लिक करने पर स्वचालित रूप से अनुकूलन",
-      "autoOnRun": "रन पर ऑटो",
+      "autoOnRun": "रन पर अनुकूलन",
       "quickOptimizeTitle": "त्वरित अनुकूलन ({{mode}})",
+      "quickOptimizeLabel": "अनुकूलन",
       "params": "पैरामीटर",
       "prompt": "प्रॉम्प्ट",
       "emptyPrompt": "(खाली)",
@@ -1290,7 +1361,77 @@
         "loadingOptimizer": "ऑप्टिमाइज़र लोड हो रहा है...",
         "loadConfigFailed": "ऑप्टिमाइज़र कॉन्फ़िगरेशन लोड नहीं हो सका"
       }
-    }
+    },
+    "guide": {
+      "skip": "छोड़ें",
+      "prev": "पीछे",
+      "next": "अगला",
+      "finish": "शुरू करें",
+      "welcome": {
+        "title": "Workflow में आपका स्वागत है",
+        "desc": "Workflow एक विज़ुअल AI पाइपलाइन एडिटर है। नोड्स को कैनवास पर ड्रैग करें, उन्हें कनेक्ट करें, और ऑटोमेटेड AI प्रोसेसिंग फ्लो चलाएं — इमेज जनरेशन से लेकर वीडियो एन्हांसमेंट तक और भी बहुत कुछ।"
+      },
+      "nodePaletteBtn": {
+        "title": "नोड पैलेट",
+        "desc": "इस बटन पर क्लिक करके नोड पैलेट खोलें — उपलब्ध सभी नोड्स का आपका टूलबॉक्स। आप खोज सकते हैं, ड्रैग कर सकते हैं, या क्लिक करके कैनवास में नोड जोड़ सकते हैं।"
+      },
+      "nodePalette": {
+        "title": "नोड श्रेणियां",
+        "desc": "नोड्स श्रेणियों के अनुसार व्यवस्थित हैं:\n• इनपुट — शुरुआती डेटा के लिए फाइल अपलोड करें या टेक्स्ट दर्ज करें\n• AI टास्क — कोई भी WaveSpeed AI मॉडल चलाएं (अगला चरण देखें)\n• फ्री टूल्स — 12 बिल्ट-इन टूल्स, जैसे बैकग्राउंड हटाना, फेस एन्हांसमेंट, फॉर्मेट कन्वर्ज़न\n• आउटपुट — परिणाम देखें या फाइलों को डिस्क में एक्सपोर्ट करें\n\nनोड को कैनवास पर ड्रैग करें या क्लिक करके जोड़ें।"
+      },
+      "aiTask": {
+        "title": "AI टास्क नोड — मुख्य हिस्सा",
+        "desc": "AI टास्क नोड Workflow का सबसे शक्तिशाली नोड है। यह इमेज जनरेशन, वीडियो क्रिएशन, स्टाइल ट्रांसफर और अधिक के लिए किसी भी WaveSpeed AI मॉडल को चला सकता है।",
+        "features": {
+          "modelSwitch": "सैकड़ों AI मॉडलों में से चुनें — चयनित मॉडल के आधार पर पैरामीटर पैनल डायनामिक रूप से अपडेट होता है",
+          "dynamicParams": "हर मॉडल के अपने पैरामीटर (प्रॉम्प्ट, इमेज साइज़, सीड आदि) होते हैं, जो चयन के बाद अपने आप दिखते हैं",
+          "costEstimate": "हर रन के लिए रियल-टाइम लागत अनुमान, ताकि रन से पहले ही कीमत पता रहे",
+          "upstream": "अपस्ट्रीम नोड आउटपुट (इमेज, टेक्स्ट) को इनपुट के रूप में जोड़कर मल्टी-स्टेप AI पाइपलाइन बनाएं"
+        }
+      },
+      "canvas": {
+        "title": "कैनवास इंटरैक्शन",
+        "desc": "केंद्रीय कैनवास आपका कार्यक्षेत्र है:\n• नोड्स को पैलेट से ड्रैग करके स्थान दें\n• कनेक्शन बनाने के लिए आउटपुट पोर्ट से इनपुट पोर्ट तक ड्रैग करें\n• कॉन्टेक्स्ट मेनू (कॉपी, पेस्ट, डिलीट) के लिए राइट-क्लिक करें\n• ज़ूम के लिए स्क्रॉल करें, पैन करने के लिए बैकग्राउंड ड्रैग करें\n• शॉर्टकट: Ctrl+Z undo, Ctrl+C/V copy-paste, Delete हटाने के लिए"
+      },
+      "canvasTools": {
+        "title": "कैनवास टूल्स",
+        "desc": "कैनवास नेविगेट और व्यवस्थित करने के लिए 3 उपयोगी टूल्स:\n• Select / Hand मोड — नोड चुनने (V) और कैनवास पैन करने (H) के बीच टॉगल\n• Fit View — सभी नोड्स को व्यूपोर्ट में फिट करने के लिए ऑटो-ज़ूम\n• Auto Layout — नोड्स को साफ और पढ़ने योग्य लेआउट में स्वतः व्यवस्थित करें"
+      },
+      "config": {
+        "title": "कॉन्फ़िगर करें और परिणाम देखें",
+        "desc": "किसी भी नोड को चुनने के लिए उस पर क्लिक करें। दाईं ओर का पैनल दो टैब दिखाता है:\n• Config — मॉडल पैरामीटर सेट करें, फाइल अपलोड करें, प्रॉम्प्ट दर्ज करें\n• Results — रन आउटपुट देखें (इमेज, वीडियो, 3D मॉडल)\n\nनोड प्रकार और चयनित मॉडल के आधार पर पैरामीटर डायनामिक रूप से अपडेट होते हैं। परिणाम फुलस्क्रीन प्रीव्यू और डाउनलोड को सपोर्ट करते हैं।"
+      },
+      "run": {
+        "title": "अपना Workflow चलाएं",
+        "desc": "पूरी पाइपलाइन चलाने के लिए \"चलाएं\" पर क्लिक करें:\n• बैच प्रोसेसिंग के लिए रन काउंट (×1 से ×99) सेट करें\n• स्टॉप बटन से कभी भी रद्द करें\n• Execution Monitor में रियल-टाइम प्रगति देखें\n• हर नोड की स्थिति दिखती है: queued → running → done"
+      },
+      "templates": {
+        "title": "टेम्पलेट, इम्पोर्ट और एक्सपोर्ट",
+        "desc": "एडवांस फीचर्स के लिए ⋮ मेनू पर क्लिक करें:\n• अपने workflow को पुन: प्रयोज्य टेम्पलेट के रूप में सहेजें\n• शेयर करने के लिए workflows को JSON के रूप में इम्पोर्ट/एक्सपोर्ट करें\n• कई workflows को टैब्स में खोलें (ब्राउज़र की तरह)\n• टूलबार से पहले से बने टेम्पलेट ब्राउज़ करें"
+      }
+    },
+    "selectNodeHint": "Select a node to configure its parameters",
+    "modelSyncDesktopOnly": "Model sync is available in the WaveSpeed Desktop app.",
+    "nameExists": "इस नाम का वर्कफ़्लो पहले से मौजूद है। सहेजने पर इसे ओवरराइट कर दिया जाएगा।",
+    "overwriteWorkflow": "वर्कफ़्लो ओवरराइट करें",
+    "overwriteConfirm": "\"{{name}}\" नाम का वर्कफ़्लो पहले से मौजूद है। क्या आप इसे ओवरराइट करना चाहते हैं?",
+    "overwrite": "ओवरराइट करें",
+    "rename": "नाम बदलें",
+    "duplicate": "डुप्लिकेट",
+    "deleteWorkflow": "हटाएं",
+    "deleteConfirm": "क्या आप वाकई \"{{name}}\" को हटाना चाहते हैं? इसे पूर्ववत नहीं किया जा सकता।",
+    "cleaning": "साफ़ कर रहा है...",
+    "cleanOutputs": "आउटपुट साफ़ करें",
+    "tabClose": "बंद करें",
+    "tabCloseOthers": "दूसरे बंद करें",
+    "tabCloseRight": "दाएं तक बंद करें",
+    "tabCloseSaved": "सहेजे गए बंद करें",
+    "tabCloseAll": "सभी बंद करें",
+    "deleteSelected": "चयनित हटाएं ({{count}})",
+    "selectMode": "Select (V)",
+    "handMode": "Hand (H)",
+    "interactionSelect": "Select",
+    "interactionHand": "Hand"
   },
   "smartGenerate": {
     "start": "Start Smart Generate",

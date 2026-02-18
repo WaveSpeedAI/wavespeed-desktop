@@ -77,6 +77,23 @@ export function initializeSchema(db: SqlJsDatabase): void {
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
   )`)
 
+  db.run(`CREATE TABLE IF NOT EXISTS templates (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT,
+    tags TEXT,
+    type TEXT NOT NULL CHECK (type IN ('public', 'custom')),
+    template_type TEXT NOT NULL CHECK (template_type IN ('playground', 'workflow')),
+    is_favorite INTEGER NOT NULL DEFAULT 0 CHECK (is_favorite IN (0, 1)),
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    author TEXT,
+    use_count INTEGER NOT NULL DEFAULT 0,
+    thumbnail TEXT,
+    playground_data TEXT,
+    workflow_data TEXT
+  )`)
+
   // Indexes
   db.run('CREATE INDEX IF NOT EXISTS idx_wf_nodes_workflow ON nodes(workflow_id)')
   db.run('CREATE INDEX IF NOT EXISTS idx_wf_edges_workflow ON edges(workflow_id)')
@@ -87,6 +104,11 @@ export function initializeSchema(db: SqlJsDatabase): void {
   db.run('CREATE INDEX IF NOT EXISTS idx_wf_edges_source ON edges(source_node_id)')
   db.run('CREATE INDEX IF NOT EXISTS idx_wf_edges_target ON edges(target_node_id)')
   db.run('CREATE INDEX IF NOT EXISTS idx_wf_daily_spend_date ON daily_spend(date)')
+  db.run('CREATE INDEX IF NOT EXISTS idx_templates_type ON templates(type)')
+  db.run('CREATE INDEX IF NOT EXISTS idx_templates_template_type ON templates(template_type)')
+  db.run('CREATE INDEX IF NOT EXISTS idx_templates_favorite ON templates(is_favorite)')
+  db.run('CREATE INDEX IF NOT EXISTS idx_templates_created ON templates(created_at DESC)')
+  db.run('CREATE INDEX IF NOT EXISTS idx_templates_use_count ON templates(use_count DESC)')
 
   // Default config
   db.run('INSERT OR IGNORE INTO budget_config (id, per_execution_limit, daily_limit) VALUES (1, ?, ?)',
@@ -100,7 +122,38 @@ export function runMigrations(db: SqlJsDatabase): void {
   const currentVersion = (result[0]?.values?.[0]?.[0] as number) ?? 0
 
   const migrations: Array<{ version: number; apply: (db: SqlJsDatabase) => void }> = [
-    // Future migrations here
+    // Migration 2: Add templates table
+    {
+      version: 2,
+      apply: (db: SqlJsDatabase) => {
+        console.log('[Schema] Applying migration 2: Add templates table')
+        
+        db.run(`CREATE TABLE IF NOT EXISTS templates (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          description TEXT,
+          tags TEXT,
+          type TEXT NOT NULL CHECK (type IN ('public', 'custom')),
+          template_type TEXT NOT NULL CHECK (template_type IN ('playground', 'workflow')),
+          is_favorite INTEGER NOT NULL DEFAULT 0 CHECK (is_favorite IN (0, 1)),
+          created_at TEXT NOT NULL DEFAULT (datetime('now')),
+          updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+          author TEXT,
+          use_count INTEGER NOT NULL DEFAULT 0,
+          thumbnail TEXT,
+          playground_data TEXT,
+          workflow_data TEXT
+        )`)
+        
+        db.run('CREATE INDEX IF NOT EXISTS idx_templates_type ON templates(type)')
+        db.run('CREATE INDEX IF NOT EXISTS idx_templates_template_type ON templates(template_type)')
+        db.run('CREATE INDEX IF NOT EXISTS idx_templates_favorite ON templates(is_favorite)')
+        db.run('CREATE INDEX IF NOT EXISTS idx_templates_created ON templates(created_at DESC)')
+        db.run('CREATE INDEX IF NOT EXISTS idx_templates_use_count ON templates(use_count DESC)')
+        
+        db.run('INSERT INTO schema_version (version) VALUES (2)')
+      }
+    }
   ]
 
   for (const m of migrations) {

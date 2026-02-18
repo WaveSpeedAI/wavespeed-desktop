@@ -32,7 +32,8 @@ export function NodePalette({ definitions }: NodePaletteProps) {
   const { t } = useTranslation()
   const toggleNodePalette = useUIStore(s => s.toggleNodePalette)
   const addNode = useWorkflowStore(s => s.addNode)
-  const [width, setWidth] = useState(180)
+  const width = useUIStore(s => s.sidebarWidth)
+  const setSidebarWidth = useUIStore(s => s.setSidebarWidth)
   const [dragging, setDragging] = useState(false)
   const [query, setQuery] = useState('')
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
@@ -45,10 +46,11 @@ export function NodePalette({ definitions }: NodePaletteProps) {
   const handleClick = useCallback((def: NodeTypeDefinition) => {
     const defaultParams: Record<string, unknown> = {}
     for (const p of def.params) { if (p.default !== undefined) defaultParams[p.key] = p.default }
-    const x = 200 + Math.random() * 100
-    const y = 150 + Math.random() * 100
+    const center = useUIStore.getState().getViewportCenter()
+    const x = center.x + (Math.random() - 0.5) * 60
+    const y = center.y + (Math.random() - 0.5) * 60
     const localizedLabel = t(`workflow.nodeDefs.${def.type}.label`, def.label)
-    addNode(def.type, { x, y }, defaultParams, `${def.icon} ${localizedLabel}`, def.params, def.inputs, def.outputs)
+    addNode(def.type, { x, y }, defaultParams, localizedLabel, def.params, def.inputs, def.outputs)
     recordRecentNodeType(def.type)
   }, [addNode, t])
 
@@ -88,8 +90,7 @@ export function NodePalette({ definitions }: NodePaletteProps) {
     const startX = e.clientX
     const startWidth = width
     const onMove = (ev: MouseEvent) => {
-      const newWidth = Math.max(140, Math.min(360, startWidth + (ev.clientX - startX)))
-      setWidth(newWidth)
+      setSidebarWidth(startWidth + (ev.clientX - startX))
     }
     const onUp = () => {
       setDragging(false)
@@ -98,11 +99,12 @@ export function NodePalette({ definitions }: NodePaletteProps) {
     }
     document.addEventListener('mousemove', onMove)
     document.addEventListener('mouseup', onUp)
-  }, [width])
+  }, [width, setSidebarWidth])
 
   return (
-    <div className="border-r border-border bg-card text-card-foreground flex flex-col relative overflow-hidden"
-      style={{ flexBasis: width, flexShrink: 1, flexGrow: 0, minWidth: 0 }}>
+    <div className="border-r border-border bg-card text-card-foreground flex flex-col relative overflow-hidden h-full"
+      data-guide="node-palette"
+      style={{ width, minWidth: 0 }}>
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-border">
         <span className="font-semibold text-xs">{t('workflow.nodes', 'Nodes')}</span>
@@ -135,23 +137,27 @@ export function NodePalette({ definitions }: NodePaletteProps) {
                 <span>{categoryLabel(category)}</span>
                 <span className="ml-auto text-[10px] opacity-70">{defs.length}</span>
               </button>
-              {!isCollapsed && defs.map(def => (
-                <div
-                  key={def.type}
-                  draggable
-                  onDragStart={e => onDragStart(e, def.type)}
-                  onClick={() => handleClick(def)}
-                  className="flex items-center gap-2 px-3 py-2 mx-1.5 rounded-md cursor-grab
-                    text-xs text-muted-foreground
-                    hover:bg-accent hover:text-foreground
-                    active:cursor-grabbing active:bg-accent/80
-                    transition-colors select-none"
-                  title={t('workflow.dragOrClickToAdd', 'Drag to canvas or click to add')}
-                >
-                  <span className="text-base leading-none">{def.icon}</span>
-                  <span>{t(`workflow.nodeDefs.${def.type}.label`, def.label)}</span>
-                </div>
-              ))}
+              {!isCollapsed && defs.map(def => {
+                const isAiTask = def.category === 'ai-task'
+                return (
+                  <div
+                    key={def.type}
+                    draggable
+                    onDragStart={e => onDragStart(e, def.type)}
+                    onClick={() => handleClick(def)}
+                    className="flex items-center gap-2 px-3 py-2 mx-1.5 rounded-md cursor-grab
+                      text-xs text-muted-foreground select-none transition-colors
+                      hover:bg-accent hover:text-foreground
+                      active:cursor-grabbing active:bg-accent/80"
+                    title={t('workflow.dragOrClickToAdd', 'Drag to canvas or click to add')}
+                  >
+                    <span>{t(`workflow.nodeDefs.${def.type}.label`, def.label)}</span>
+                    {isAiTask && (
+                      <span className="ml-auto text-[9px] font-semibold text-primary bg-primary/25 px-1.5 py-0.5 rounded">AI</span>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           )
         })}

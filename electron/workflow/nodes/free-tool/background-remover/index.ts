@@ -12,7 +12,6 @@ export const backgroundRemoverDef: NodeTypeDefinition = {
   type: 'free-tool/background-remover',
   category: 'free-tool',
   label: 'Background Remover',
-  icon: '🧹',
   inputs: [{ key: 'input', label: 'Image', dataType: 'image', required: true }],
   outputs: [{ key: 'output', label: 'Output', dataType: 'image', required: true }],
   params: [

@@ -17,7 +17,6 @@ import { segmentAnythingDef, SegmentAnythingHandler } from './segment-anything'
 type FreeToolSpec = {
   type: string
   label: string
-  icon: string
   inputType?: 'image' | 'video' | 'audio' | 'url'
   outputType?: 'image' | 'video' | 'audio' | 'url'
 }
@@ -38,7 +37,6 @@ function toDefinition(spec: FreeToolSpec): NodeTypeDefinition {
     type: spec.type,
     category: 'free-tool',
     label: spec.label,
-    icon: spec.icon,
     inputs: [
       {
         key: 'input',

@@ -14,7 +14,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { Download, ExternalLink, Copy, Check, AlertTriangle, X, Save, FolderHeart, Gamepad2, Sparkles } from 'lucide-react'
+import { Download, ExternalLink, Copy, Check, AlertTriangle, X, Save, FolderHeart, Gamepad2 } from 'lucide-react'
 import { AudioPlayer } from '@/components/shared/AudioPlayer'
 import { FlappyBird } from './FlappyBird'
 import { toast } from '@/hooks/useToast'
@@ -401,33 +401,17 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
   }
 
   return (
-    <div className="h-full flex flex-col relative">
-      {/* Play game button - top left */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute left-3 top-3 z-10 h-8 w-8 rounded-lg border border-border/70 bg-background/80 opacity-70 backdrop-blur hover:opacity-100"
-            onClick={() => {
-              setShowGame(true)
-              setGameEndedWithResults(true)
-            }}
-          >
-            <Gamepad2 className="h-4 w-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          {t('playground.flappyBird.playWhileWaiting', 'Play while waiting')}
-        </TooltipContent>
-      </Tooltip>
+    <div className="group h-full flex flex-col relative">
       {!hideGameButton && (
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
-              className="absolute top-2 left-2 z-10 h-8 w-8 opacity-50 hover:opacity-100"
+              className={cn(
+                "absolute left-3 top-3 z-10 h-8 w-8 rounded-lg border border-border/70 bg-background/80 backdrop-blur transition-opacity",
+                isCapacitorNative() ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+              )}
               onClick={() => {
                 setShowGame(true)
                 setGameEndedWithResults(true)
@@ -442,12 +426,10 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
         </Tooltip>
       )}
 
-      {/* Outputs - fill remaining space */}
+      {/* Outputs - scrollable list so each output has good size */}
       <div className={cn(
-        "flex-1 min-h-0",
-        gridLayout && outputs.length > 1
-          ? "grid grid-cols-2 md:grid-cols-3 gap-3 auto-rows-min overflow-auto"
-          : "flex flex-col gap-4"
+        "flex-1 min-h-0 overflow-auto",
+        outputs.length > 1 ? "flex flex-col gap-4" : "flex flex-col"
       )}>
         {outputs.map((output, index) => {
           const isObject = typeof output === 'object' && output !== null
@@ -461,18 +443,10 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
             <div
               key={index}
               className={cn(
-                "relative group rounded-lg border overflow-hidden bg-muted/30 flex items-center justify-center",
-                gridLayout && outputs.length > 1
-                  ? "aspect-square"
-                  : "flex-1 min-h-0"
+                "relative group rounded-lg border overflow-hidden bg-muted/30 flex items-center justify-center flex-shrink-0",
+                outputs.length > 1 ? "min-h-[min(360px,50vh)]" : "flex-1 min-h-0"
               )}
             >
-              <div className="absolute left-2 top-2 z-10">
-                <Badge variant="secondary" className="rounded-md bg-background/80 px-2 py-0.5 text-[11px] backdrop-blur">
-                  <Sparkles className="mr-1 h-3 w-3" />
-                  #{index + 1}
-                </Badge>
-              </div>
               {isImage && (
                 <img
                   src={outputStr}
@@ -527,15 +501,10 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
                 </div>
               )}
 
-              {/* Timing overlay */}
-              {prediction?.timings?.inference && (
+              {/* NSFW overlay */}
+              {prediction?.has_nsfw_contents?.some(Boolean) && (
                 <div className="absolute bottom-2 left-2 flex items-center gap-1">
-                  <Badge variant="secondary" className="border-0 bg-black/60 text-xs text-white">
-                    {(prediction.timings.inference / 1000).toFixed(2)}s
-                  </Badge>
-                  {prediction.has_nsfw_contents?.some(Boolean) && (
-                    <Badge variant="destructive" className="text-xs">NSFW</Badge>
-                  )}
+                  <Badge variant="destructive" className="text-xs">NSFW</Badge>
                 </div>
               )}
 

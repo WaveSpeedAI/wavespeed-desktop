@@ -6,7 +6,6 @@ export const faceSwapperDef: NodeTypeDefinition = {
   type: 'free-tool/face-swapper',
   category: 'free-tool',
   label: 'Face Swapper',
-  icon: '🔁',
   inputs: [
     { key: 'source', label: 'Source Face', dataType: 'image', required: true },
     { key: 'target', label: 'Target Image', dataType: 'image', required: true }

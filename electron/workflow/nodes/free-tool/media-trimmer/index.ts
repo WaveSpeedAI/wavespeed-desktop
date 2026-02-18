@@ -6,7 +6,6 @@ export const mediaTrimmerDef: NodeTypeDefinition = {
   type: 'free-tool/media-trimmer',
   category: 'free-tool',
   label: 'Media Trimmer',
-  icon: '✂️',
   inputs: [{ key: 'input', label: 'Media', dataType: 'video', required: true }],
   outputs: [{ key: 'output', label: 'Output', dataType: 'url', required: true }],
   params: [

@@ -11,7 +11,7 @@ import http from 'http'
 import { randomUUID } from 'crypto'
 
 export const fileExportDef: NodeTypeDefinition = {
-  type: 'output/file', category: 'output', label: 'File Export', icon: '💾',
+  type: 'output/file', category: 'output', label: 'File Export',
   inputs: [
     { key: 'url', label: 'URL', dataType: 'url', required: true }
   ],

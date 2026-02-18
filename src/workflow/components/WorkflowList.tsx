@@ -20,6 +20,7 @@ function formatBytes(bytes: number): string {
 
 interface WorkflowListProps {
   onOpen?: (id: string) => Promise<void>
+  onDelete?: (id: string) => void
 }
 
 interface ContextMenuState {
@@ -28,7 +29,7 @@ interface ContextMenuState {
   y: number
 }
 
-export function WorkflowList({ onOpen }: WorkflowListProps) {
+export function WorkflowList({ onOpen, onDelete }: WorkflowListProps) {
   const { t } = useTranslation()
   const [workflows, setWorkflows] = useState<WorkflowSummary[]>([])
   const [diskUsage, setDiskUsage] = useState<Record<string, number>>({})
@@ -38,11 +39,12 @@ export function WorkflowList({ onOpen }: WorkflowListProps) {
   const [renamingValue, setRenamingValue] = useState('')
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
-  const [width, setWidth] = useState(220)
   const [dragging, setDragging] = useState(false)
   const { loadWorkflow, newWorkflow } = useWorkflowStore()
   const currentWorkflowId = useWorkflowStore(s => s.workflowId)
   const toggleWorkflowPanel = useUIStore(s => s.toggleWorkflowPanel)
+  const width = useUIStore(s => s.sidebarWidth)
+  const setSidebarWidth = useUIStore(s => s.setSidebarWidth)
   const contextMenuRef = useRef<HTMLDivElement>(null)
 
   const refresh = useCallback(() => {
@@ -66,13 +68,22 @@ export function WorkflowList({ onOpen }: WorkflowListProps) {
         setContextMenu(null)
       }
     }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
+    document.addEventListener('mousedown', handler, true)
+    return () => document.removeEventListener('mousedown', handler, true)
   }, [contextMenu])
 
   const handleCreate = async () => {
     if (!newName.trim()) return
-    await newWorkflow(newName.trim())
+    const trimmed = newName.trim()
+
+    // Check for duplicate name
+    const duplicate = workflows.find(w => w.name === trimmed)
+    if (duplicate) {
+      // Name already taken — don't create
+      return
+    }
+
+    await newWorkflow(trimmed)
     setNewName('')
     refresh()
   }
@@ -89,6 +100,7 @@ export function WorkflowList({ onOpen }: WorkflowListProps) {
     await workflowIpc.delete(id)
     await storageIpc.deleteWorkflowFiles(id).catch(() => {})
     setConfirmDeleteId(null)
+    onDelete?.(id)
     refresh()
   }
 
@@ -102,9 +114,20 @@ export function WorkflowList({ onOpen }: WorkflowListProps) {
     if (!renamingId) return
     const trimmed = renamingValue.trim()
     if (!trimmed) { setRenamingId(null); return }
-    await workflowIpc.rename(renamingId, trimmed)
+
+    // Check for duplicate name in the current list (excluding self)
+    const duplicate = workflows.find(w => w.id !== renamingId && w.name === trimmed)
+    if (duplicate) {
+      // Name already taken — don't allow
+      setRenamingId(null)
+      return
+    }
+
+    const result = await workflowIpc.rename(renamingId, trimmed) as unknown as { finalName: string } | void
+    const actualName = (result && typeof result === 'object' && 'finalName' in result) ? result.finalName : trimmed
+
     if (currentWorkflowId === renamingId) {
-      useWorkflowStore.getState().setWorkflowName(trimmed)
+      useWorkflowStore.getState().setWorkflowName(actualName)
     }
     setRenamingId(null)
     refresh()
@@ -127,7 +150,7 @@ export function WorkflowList({ onOpen }: WorkflowListProps) {
     const startX = e.clientX
     const startWidth = width
     const onMove = (ev: MouseEvent) => {
-      setWidth(Math.max(180, Math.min(400, startWidth + (ev.clientX - startX))))
+      setSidebarWidth(startWidth + (ev.clientX - startX))
     }
     const onUp = () => {
       setDragging(false)
@@ -136,13 +159,13 @@ export function WorkflowList({ onOpen }: WorkflowListProps) {
     }
     document.addEventListener('mousemove', onMove)
     document.addEventListener('mouseup', onUp)
-  }, [width])
+  }, [width, setSidebarWidth])
 
   const totalDiskUsage = Object.values(diskUsage).reduce((sum, v) => sum + v, 0)
 
   return (
-    <div className="border-r border-border bg-card text-card-foreground flex flex-col relative overflow-hidden"
-      style={{ flexBasis: width, flexShrink: 1, flexGrow: 0, minWidth: 0 }}>
+    <div className="border-r border-border bg-card text-card-foreground flex flex-col relative overflow-hidden h-full"
+      style={{ width, minWidth: 0 }}>
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-border">
         <span className="font-semibold text-xs">{t('workflow.workflows', 'Workflows')}</span>
@@ -154,8 +177,9 @@ export function WorkflowList({ onOpen }: WorkflowListProps) {
       {/* Create new */}
       <div className="px-2.5 py-2 border-b border-border flex gap-1.5">
         <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder={t('workflow.newWorkflowName', 'New workflow...')}
-          onKeyDown={e => e.key === 'Enter' && handleCreate()} className="flex-1 h-7 text-xs" />
-        <button onClick={handleCreate} disabled={!newName.trim()}
+          onKeyDown={e => e.key === 'Enter' && handleCreate()}
+          className={`flex-1 h-7 text-xs ${newName.trim() && workflows.some(w => w.name === newName.trim()) ? 'border-red-500 focus-visible:ring-red-500/50' : ''}`} />
+        <button onClick={handleCreate} disabled={!newName.trim() || workflows.some(w => w.name === newName.trim())}
           className="h-7 px-2 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
           +
         </button>
@@ -191,7 +215,11 @@ export function WorkflowList({ onOpen }: WorkflowListProps) {
                     }}
                     onClick={e => e.stopPropagation()}
                     autoFocus
-                    className="w-full text-xs font-medium bg-transparent border-b border-primary outline-none"
+                    className={`w-full text-xs font-medium bg-transparent border-b outline-none ${
+                      renamingValue.trim() && workflows.some(w => w.id !== renamingId && w.name === renamingValue.trim())
+                        ? 'border-red-500 text-red-400'
+                        : 'border-primary'
+                    }`}
                   />
                 ) : (
                   <div className="font-medium truncate" onDoubleClick={e => {
@@ -261,6 +289,24 @@ export function WorkflowList({ onOpen }: WorkflowListProps) {
               </svg>
               {t('workflow.rename', 'Rename')}
             </button>
+            {/* Duplicate */}
+            <button
+              onClick={async () => {
+                setContextMenu(null)
+                try {
+                  const newWf = await workflowIpc.duplicate(wf.id)
+                  refresh()
+                  if (newWf?.id) await handleOpen(newWf.id)
+                } catch {
+                  refresh()
+                }
+              }}
+              className="w-full text-left px-3 py-1.5 flex items-center gap-2 hover:bg-accent transition-colors">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              {t('workflow.duplicate', 'Duplicate')}
+            </button>
             {/* Clean outputs */}
             {usage !== undefined && usage > 0 && (
               <button
@@ -270,8 +316,8 @@ export function WorkflowList({ onOpen }: WorkflowListProps) {
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
                 </svg>
-                {cleaning === wf.id ? t('workflow.cleaning', 'Cleaning...') : t('workflow.cleanOutputs', 'Clean outputs')}
-                <span className="ml-auto text-[10px] opacity-60">{formatBytes(usage)}</span>
+                <span className="whitespace-nowrap">{cleaning === wf.id ? t('workflow.cleaning', 'Cleaning...') : t('workflow.cleanOutputs', 'Clean outputs')}</span>
+                <span className="ml-auto text-[10px] opacity-60 whitespace-nowrap">{formatBytes(usage)}</span>
               </button>
             )}
             <div className="border-t border-border my-1" />

@@ -9,7 +9,7 @@ Cross-platform applications for running AI models from [WaveSpeedAI](https://wav
 [![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Mobile.apk)
 
 ![Playground Screenshot](https://github.com/user-attachments/assets/904a3ff8-c302-4b84-851b-34a76486c891)
-![Workflow Screenshot](https://github.com/user-attachments/assets/f54bea9d-7d63-42c2-80ce-ea76e5dc5de4)
+![Workflow Screenshot](https://github.com/user-attachments/assets/4886252b-3510-46d3-959d-f4b4f09e72ab)
 ![Face Swapper Screenshot](https://github.com/user-attachments/assets/f9eb0022-4bf7-4efd-a9a6-43138ab5cfcb)
 ![Z-Image Screenshot](https://github.com/user-attachments/assets/f2eabfb1-a613-4b01-9f84-a5ae5fd07638)
 

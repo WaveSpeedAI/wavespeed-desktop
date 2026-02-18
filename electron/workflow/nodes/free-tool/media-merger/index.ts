@@ -8,7 +8,6 @@ export const mediaMergerDef: NodeTypeDefinition = {
   type: 'free-tool/media-merger',
   category: 'free-tool',
   label: 'Media Merger',
-  icon: '🧩',
   inputs: [
     { key: 'input1', label: 'Input 1', dataType: 'video', required: true },
     { key: 'input2', label: 'Input 2', dataType: 'video', required: true },

@@ -17,7 +17,6 @@ export const imageEnhancerDef: NodeTypeDefinition = {
   type: 'free-tool/image-enhancer',
   category: 'free-tool',
   label: 'Image Enhancer',
-  icon: '🖼️',
   inputs: [{ key: 'input', label: 'Image', dataType: 'image', required: true }],
   outputs: [{ key: 'output', label: 'Output', dataType: 'image', required: true }],
   params: [

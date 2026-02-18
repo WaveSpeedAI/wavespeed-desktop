@@ -6,7 +6,7 @@ This file provides guidance for Claude Code when working with this repository.
 
 WaveSpeed Desktop is an Electron-based cross-platform desktop application that provides a playground interface for [WaveSpeedAI](https://wavespeed.ai) models. It allows users to browse models, run predictions, view their history, and manage saved assets.
 
-**Workflow** is a node-based visual editor (under `src/workflow/`) for chaining WaveSpeed AI Task nodes, free-tool nodes, and I/O nodes. Workflows are persisted via the Electron main process (sql.js DB), with execution, cost estimation, and per-node history.
+**Workflow** is a node-based visual editor (under `src/workflow/`) for chaining WaveSpeed AI Task nodes, free-tool nodes, and I/O nodes. Workflows are persisted via the Electron main process (sql.js DB), with execution and per-node history. Workflows can run in Electron (main process) or in the browser (in-process executor using apiClient + free-tool runners when workflow IPC is unavailable). Cost is informational only (no estimate UI or budget blocking).
 
 **Z-Image** is the local image generation flow backed by stable-diffusion.cpp with model and auxiliary downloads, progress reporting, and log streaming.
 
@@ -48,7 +48,8 @@ wavespeed-desktop/
 │   │   ├── types/        # workflow, node-defs, execution, ipc
 │   │   ├── ipc/          # ipc-client.ts (invoke workflow/execution/models/cost/history IPC)
 │   │   ├── hooks/        # useUndoRedo, useFreeToolListener
-│   │   └── lib/          # free-tool-runner, constants
+│   │   ├── browser/     # run-in-browser.ts (in-process executor for browser mode)
+│   │   └── lib/         # free-tool-runner, model-converter, outputDisplay, topological
 │   └── workers/          # Web Workers (upscaler, backgroundRemover, imageEraser, faceEnhancer, segmentAnything, ffmpeg)
 ├── .github/workflows/    # GitHub Actions for CI/CD
 │   ├── build.yml         # Build on push/tag/PR
@@ -71,14 +72,18 @@ wavespeed-desktop/
 - **`src/workflow/stores/execution.store.ts`**: Execution state (running, results, history, progress)
 - **`src/workflow/stores/ui.store.ts`**: Workflow UI state (selected node, panels, add-node palette)
 - **`src/workflow/components/panels/NodeConfigPanel.tsx`**: Model selector for AI Task nodes; categories sorted by popularity (model count), recent models, search
-- **`src/workflow/components/panels/ResultsPanel.tsx`**: Execution results and per-node history
-- **`src/workflow/components/panels/CostPanel.tsx`**: Cost estimate and budget config
+- **`src/workflow/components/panels/ResultsPanel.tsx`**: Execution results and per-node history; shows lastResults when history is empty (e.g. browser run)
+- **`src/workflow/components/panels/CostPanel.tsx`**: Cost display (informational; no estimate UI or budget blocking)
 - **`src/workflow/components/panels/SettingsPanel.tsx`**: Workflow settings (API keys, etc.)
 - **`src/workflow/components/canvas/WorkflowCanvas.tsx`**: React Flow canvas, add-node palette, node/edge rendering
 - **`src/workflow/components/canvas/NodePalette.tsx`**: Add-node palette (input, ai-task, free-tool, output, etc.)
 - **`src/workflow/components/canvas/CustomNode.tsx`**: Custom node UI (AI Task, free-tool, I/O, annotation)
 - **`src/workflow/components/canvas/CustomEdge.tsx`**: Custom edge rendering
 - **`src/workflow/components/canvas/AnnotationNode.tsx`**: Annotation node for notes
+- **`src/workflow/components/canvas/RunMonitor.tsx`**: Execution Monitor (bottom, collapsible); session cards and node rows with output preview (image/video/audio/text via outputDisplay); Lucide ChevronUp/ChevronDown for expand/collapse
+- **`src/workflow/lib/outputDisplay.ts`**: Shared output type classification (image/video/audio/text/3d/file) and data: URL handling for Results panel and RunMonitor
+- **`src/workflow/lib/topological.ts`**: Shared topological sort for workflow execution order (browser and main)
+- **`src/workflow/browser/run-in-browser.ts`**: In-process workflow executor for browser mode (AI task via apiClient, free-tool nodes, I/O nodes)
 - **`src/workflow/ipc/ipc-client.ts`**: Typed IPC client for workflow, execution, models, cost, history, registry, settings
 - **`src/workflow/types/node-defs.ts`**: NodeTypeDefinition, WaveSpeedModel, ParamDefinition
 - **`src/workflow/types/ipc.ts`**: IPC channel types (workflow:*, execution:*, models:*, cost:*, history:*, etc.)
@@ -182,7 +187,7 @@ npm run build:all    # Build for all platforms
 ### Adding a new page
 1. Create component in `src/pages/`
 2. Add route in `src/App.tsx`
-3. Add navigation item in `src/components/layout/Sidebar.tsx`
+3. Add navigation item in `src/components/layout/Sidebar.tsx` under the appropriate section (Create, Manage, or Tools)
 
 ### Adding a new API method
 1. Add method to `WaveSpeedClient` class in `src/api/client.ts`
@@ -253,9 +258,14 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - Asset metadata is stored in `{userData}/assets-metadata.json` with tags, favorites, and file references
 - Asset file naming format: `{model-slug}_{predictionId}_{resultindex}.{ext}` (e.g., `flux-schnell_pred-abc123_0.png`)
 - Layout.tsx handles unified API key login screen - pages don't need individual ApiKeyRequired checks
-- Workflow page is at `/workflow`; rendered persistently in Layout (like free-tools). Sidebar has "Workflow" (nav.workflow) with GitBranch icon. Layout auto-collapses sidebar when entering workflow.
-- Workflow uses IPC from main: `workflow:create|save|load|list|rename|delete`, `execution:run-all|run-node|continue-from|retry|cancel`, `models:list|search|refresh|get-schema`, `cost:estimate|get-budget|set-budget|get-daily-spend`, `history:list|set-current|star|score`, `registry:get-all`, `settings:get-api-keys|set-api-keys`. Electron main initializes workflow module (sql.js DB, node registry, IPC handlers) on app load.
+- Sidebar navigation sections are ordered: **Create** (Home, Featured Models, Models, Playground), **Manage** (Templates, History, Assets), **Tools** (Workflow, Free Tools, Z-Image). Settings is at the bottom.
+- Workflow page is at `/workflow`; rendered persistently in Layout (like free-tools). Sidebar has "Workflow" (nav.workflow) with GitBranch icon under Tools. Layout auto-collapses sidebar when entering workflow.
+- Workflow uses IPC from main: `workflow:create|save|load|list|rename|delete`, `execution:run-all|run-node|continue-from|retry|cancel`, `models:list|search|refresh|get-schema`, `cost:get-budget|set-budget|get-daily-spend`, `history:list|set-current|star|score`, `registry:get-all`, `settings:get-api-keys|set-api-keys`. Electron main initializes workflow module (sql.js DB, node registry, IPC handlers) on app load. Approximate cost estimate UI has been removed; cost is informational only.
+- Execution Monitor is a bottom bar (collapsible via header chevron). When expanded it shows run sessions with node rows; expanding a node shows output preview (image/video/audio/text) from persisted history or lastResults. Uses `src/workflow/lib/outputDisplay.ts` for output type classification.
+- Workflow can run in browser: `runAllInBrowser` in execution store uses `src/workflow/browser/run-in-browser.ts` and topological sort; no execution history persisted in browser, but lastResults and RunMonitor show latest run output.
+- Playground tab switching preserves form values: URL→model sync only runs when the active tab has no model (so switching tabs never overwrites the tab's model or wipes form).
 - Workflow model selector (NodeConfigPanel): categories are sorted by popularity (model count per category, descending), then alphabetically for ties; "全部" / "All" stays first.
+- AI Task node (electron/workflow/nodes/ai-task/run.ts) normalizes API outputs: if the API returns `outputs: [{ url: "..." }]` (e.g. z-image/turbo), resultUrls are extracted from object.url so Results and Execution Monitor show correct previews.
 - useFreeToolListener is mounted in Layout so workflow execution can trigger free-tool runs and receive results via IPC.
 - Settings page (`/settings`) is a public path accessible without API key
 - Free Tools pages are public paths accessible without API key: `/free-tools`, `/free-tools/image-enhancer`, `/free-tools/video-enhancer`, `/free-tools/background-remover`, `/free-tools/face-enhancer`, `/free-tools/face-swapper`, `/free-tools/image-eraser`, `/free-tools/segment-anything`, `/free-tools/video-converter`, `/free-tools/audio-converter`, `/free-tools/image-converter`, `/free-tools/media-trimmer`, `/free-tools/media-merger`

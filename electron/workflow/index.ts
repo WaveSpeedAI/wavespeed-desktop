@@ -26,6 +26,9 @@ import { registerStorageIpc } from './ipc/storage.ipc'
 import { registerUploadIpc } from './ipc/upload.ipc'
 import { registerSettingsIpc } from './ipc/settings.ipc'
 import { registerFreeToolIpc } from './ipc/free-tool.ipc'
+import { registerTemplateIpc } from './ipc/template.ipc'
+import { migrateTemplatesFromLocalStorage } from './services/template-migration'
+import { initializeDefaultTemplates } from './services/template-init'
 
 export async function initWorkflowModule(): Promise<void> {
   console.log('[Workflow] Initializing workflow module...')
@@ -80,6 +83,21 @@ export async function initWorkflowModule(): Promise<void> {
   registerUploadIpc()
   registerSettingsIpc()
   registerFreeToolIpc()
+  registerTemplateIpc()
+
+  // 7. Migrate templates from localStorage (if needed)
+  try {
+    await migrateTemplatesFromLocalStorage()
+  } catch (err) {
+    console.error('[Workflow] Template migration failed (non-fatal):', err)
+  }
+
+  // 8. Initialize default templates from data/templates directory
+  try {
+    initializeDefaultTemplates()
+  } catch (err) {
+    console.error('[Workflow] Default template init failed (non-fatal):', err)
+  }
 
   console.log('[Workflow] Module initialized successfully')
 }

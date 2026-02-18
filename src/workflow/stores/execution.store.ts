@@ -6,6 +6,7 @@
 import { create } from 'zustand'
 import { v4 as uuid } from 'uuid'
 import { executionIpc, historyIpc } from '../ipc/ipc-client'
+import { executeWorkflowInBrowser } from '../browser/run-in-browser'
 import type { NodeStatus, EdgeStatus, NodeStatusUpdate, ProgressUpdate } from '@/workflow/types/execution'
 
 export interface RunSession {
@@ -40,6 +41,8 @@ export interface ExecutionState {
   toggleRunMonitor: () => void
 
   runAll: (workflowId: string, workflowName?: string, nodeLabels?: Record<string, string>) => Promise<void>
+  /** Run workflow in browser (no Electron). Uses current graph from args. */
+  runAllInBrowser: (nodes: Array<{ id: string; data: { nodeType: string; params?: Record<string, unknown>; label?: string } }>, edges: Array<{ source: string; target: string; sourceHandle?: string | null; targetHandle?: string | null }>) => Promise<void>
   runNode: (workflowId: string, nodeId: string) => Promise<void>
   continueFrom: (workflowId: string, nodeId: string) => Promise<void>
   retryNode: (workflowId: string, nodeId: string) => Promise<void>
@@ -87,8 +90,7 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
       status: 'running'
     }
     set(s => ({
-      runSessions: [session, ...s.runSessions].slice(0, MAX_SESSIONS),
-      showRunMonitor: true
+      runSessions: [session, ...s.runSessions].slice(0, MAX_SESSIONS)
     }))
 
     try {
@@ -97,6 +99,55 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
       const msg = error instanceof Error ? error.message : String(error)
       console.error('[ExecutionStore] runAll error:', msg)
       // Mark session as error
+      set(s => ({
+        runSessions: s.runSessions.map(rs => rs.id === sessionId ? { ...rs, status: 'error' as const } : rs)
+      }))
+    }
+  },
+
+  runAllInBrowser: async (nodes, edges) => {
+    const nodeLabels: Record<string, string> = {}
+    for (const n of nodes) {
+      nodeLabels[n.id] = (n.data?.label as string) || n.data?.nodeType || n.id.slice(0, 8)
+    }
+    const sessionId = uuid()
+    const nodeIds = nodes.map(n => n.id)
+    const nodeResults: Record<string, 'running' | 'done' | 'error'> = {}
+    for (const nid of nodeIds) nodeResults[nid] = 'running'
+    set(s => ({
+      runSessions: [{
+        id: sessionId,
+        workflowId: 'browser',
+        workflowName: 'Browser run',
+        startedAt: new Date().toISOString(),
+        nodeIds,
+        nodeLabels,
+        nodeResults,
+        nodeCosts: {},
+        status: 'running'
+      }, ...s.runSessions].slice(0, MAX_SESSIONS)
+    }))
+
+    try {
+      await executeWorkflowInBrowser(nodes, edges, {
+        onNodeStatus: (nodeId, status, errorMessage) => {
+          get().updateNodeStatus(nodeId, status, errorMessage)
+        },
+        onProgress: (nodeId, progress, message) => {
+          get().updateProgress(nodeId, progress, message)
+        },
+        onNodeComplete: (nodeId, { urls, cost }) => {
+          set(s => ({
+            lastResults: {
+              ...s.lastResults,
+              [nodeId]: [{ urls, time: new Date().toISOString(), cost }]
+            }
+          }))
+        }
+      })
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
+      console.error('[ExecutionStore] runAllInBrowser error:', msg)
       set(s => ({
         runSessions: s.runSessions.map(rs => rs.id === sessionId ? { ...rs, status: 'error' as const } : rs)
       }))

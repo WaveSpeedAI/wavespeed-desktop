@@ -34,7 +34,9 @@
     "openInBrowser": "Buka dalam pelayar",
     "settings": "Tetapan",
     "clearAll": "Kosongkan semua",
-    "deselectAll": "Nyahpilih Semua"
+    "deselectAll": "Nyahpilih Semua",
+    "add": "Add",
+    "saving": "Saving..."
   },
   "nav": {
     "home": "Laman Utama",
@@ -365,7 +367,71 @@
     "deleteTemplates": "Padam Templat",
     "templatesDeleted": "Templat dipadam",
     "deletedCount": "{{count}} templat dipadam",
-    "batchDeleteConfirm": "Adakah anda pasti mahu memadamkan {{count}} templat? Tindakan ini tidak boleh dibuat asal."
+    "batchDeleteConfirm": "Adakah anda pasti mahu memadamkan {{count}} templat? Tindakan ini tidak boleh dibuat asal.",
+    "deletedSuccessfully": "\"{{name}}\" berjaya dipadam",
+    "updatedSuccessfully": "\"{{name}}\" berjaya dikemas kini",
+    "exportedSuccessfully": "\"{{name}}\" berjaya dieksport",
+    "allExportedSuccessfully": "Semua templat berjaya dieksport",
+    "importedSuccessfully": "{{imported}} templat diimport, {{skipped}} dilangkau",
+    "filters": "Penapis",
+    "templateType": "Jenis Templat",
+    "allTypes": "Semua Jenis",
+    "playground": "Playground",
+    "workflow": "Aliran Kerja",
+    "source": "Sumber",
+    "allSources": "Semua Sumber",
+    "public": "Awam",
+    "myTemplates": "Templat Saya",
+    "favorites": "Kegemaran",
+    "favoritesOnly": "Kegemaran Sahaja",
+    "sortBy": "Susun Mengikut",
+    "newest": "Terbaharu",
+    "mostUsed": "Paling Banyak Digunakan",
+    "category": "Kategori",
+    "allCategories": "Semua Kategori",
+    "imageProcessing": "Pemprosesan Imej",
+    "videoEditing": "Penyuntingan Video",
+    "audioConversion": "Penukaran Audio",
+    "aiGeneration": "Penjanaan AI",
+    "workflowNotSupported": "Aliran Kerja Tidak Disokong",
+    "workflowNotSupportedDesc": "Templat aliran kerja belum disokong",
+    "loadTemplate": "Muat Templat",
+    "browseAll": "Semak Semua Templat",
+    "drawerDesc": "Semak dan guna templat",
+    "createTemplate": "Cipta Templat",
+    "createTemplateDesc": "Simpan konfigurasi semasa anda sebagai templat yang boleh digunakan semula",
+    "editTemplate": "Edit Templat",
+    "editTemplateDesc": "Kemas kini butiran templat",
+    "descriptionLabel": "Penerangan",
+    "tags": "Tag",
+    "tagsPlaceholder": "Masukkan tag...",
+    "descriptionPlaceholder": "Terangkan templat ini...",
+    "categoryPlaceholder": "cth. Pemprosesan Imej",
+    "nodes": "nod",
+    "favorite": "Tambah ke kegemaran",
+    "unfavorite": "Buang daripada kegemaran",
+    "uses": "penggunaan",
+    "coverImage": "Imej sampul",
+    "uploadCover": "Klik untuk memuat naik imej sampul",
+    "importDesc": "Import templat daripada fail yang dieksport sebelum ini"
+  },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "Imej ke Video",
+      "description": "Tukar imej statik kepada video dinamik dengan peningkatan resolusi HD"
+    },
+    "musicGenerate": {
+      "name": "Penjanaan Muzik",
+      "description": "Jana muzik asli daripada lirik dan tag gaya"
+    },
+    "imageEdit": {
+      "name": "Penyuntingan Imej",
+      "description": "Sunting imej menggunakan model AI dengan prompt tersuai"
+    },
+    "videoEdit": {
+      "name": "Penyuntingan Video",
+      "description": "Sunting kandungan video menggunakan model AI dengan pengubahsuaian berasaskan prompt"
+    }
   },
   "assets": {
     "title": "Aset Saya",
@@ -943,45 +1009,24 @@
     "downloadFailed": "Muat turun gagal"
   },
   "smartPlayground": {
-    "autoDetected": "Auto-detected variant",
-    "willCall": "Will call",
-    "toggleSpeed": "Speed",
-    "toggleMode": "Mode",
-    "toggleQuality": "Quality",
-    "speedNormal": "Normal",
-    "speedFast": "Fast",
-    "modeNormal": "Normal",
-    "modeSequential": "Sequential",
+    "autoDetected": "Varian dikesan automatik",
+    "willCall": "Akan memanggil",
+    "toggleSpeed": "Kelajuan",
+    "toggleMode": "Mod",
+    "toggleQuality": "Kualiti",
+    "speedNormal": "Biasa",
+    "speedFast": "Pantas",
+    "modeNormal": "Biasa",
+    "modeSequential": "Berurutan",
     "qualityPro": "Pro",
     "qualityStd": "Standard",
     "qualityUltra": "Ultra",
     "qualityMulti": "Multi",
-    "run": "Run",
-    "running": "Running...",
+    "run": "Jalankan",
+    "running": "Berjalan...",
     "input": "Input",
     "output": "Output",
-    "back": "Back"
-  },
-  "videoConverter": {
-    "title": "Penukar Video",
-    "description": "Tukar video antara format menggunakan pelayar anda",
-    "invalidFile": "Sila pilih fail video yang sah",
-    "input": "Video Input",
-    "inputDesc": "Pilih atau seret fail video untuk ditukar",
-    "dropzone": "Klik atau seret video ke sini",
-    "supportedFormats": "Menyokong MP4, WebM, MOV, AVI",
-    "settings": "Tetapan",
-    "outputFormat": "Format Output",
-    "convert": "Tukar Video",
-    "converting": "Menukar...",
-    "noCodecSupport": "Tiada codec video yang disokong ditemui",
-    "result": "Hasil",
-    "codecUsed": "Codec yang digunakan",
-    "download": "Muat turun"
-  },
-  "game": {
-    "waitingLong": "Menunggu terlalu lama",
-    "clickToPlay": "Klik untuk mula"
+    "back": "Kembali"
   },
   "workflow": {
     "workflows": "Aliran kerja",
@@ -993,6 +1038,10 @@
     "saveFailed": "Gagal menyimpan",
     "savedAt": "Disimpan",
     "unsaved": "Belum disimpan",
+    "outputDirFallbackHint": "Tidak ditetapkan: akan dieksport ke direktori lalai aliran kerja",
+    "selectDirectory": "Pilih direktori",
+    "openFolder": "Buka folder",
+    "openWorkflowFolder": "Buka folder aliran kerja",
     "nodes": "Nod",
     "config": "Konfigurasi",
     "results": "Hasil",
@@ -1000,6 +1049,12 @@
     "settings": "Tetapan",
     "runAll": "Jalankan semua",
     "run": "Jalankan",
+    "runWorkflow": "Jalankan",
+    "runFromHere": "Jalankan dari sini",
+    "nameYourWorkflow": "Namakan alur kerja anda",
+    "nameYourWorkflowDesc": "Beri nama untuk menyimpan ke cakera.",
+    "nameYourWorkflowPlaceholder": "Cth: Saluran Imej Produk",
+    "nameDuplicate": "Alur kerja dengan nama ini sudah ada",
     "runTarget": "Jalankan sasaran",
     "runTargetAll": "Jalankan semua nod",
     "runTargetSelected": "Jalankan nod terpilih",
@@ -1015,6 +1070,9 @@
     "exportFailed": "Gagal mengeksport",
     "estimated": "Anggaran kos",
     "fitView": "Sesuaikan pandangan",
+    "autoLayout": "Susun atur automatik",
+    "freeToolModelHint": "Larian pertama akan memuat turun model AI secara automatik, sila tunggu",
+    "more": "Lagi",
     "previousImage": "Imej sebelumnya",
     "nextImage": "Imej seterusnya",
     "previewNavHint": "Gunakan ← / → untuk menavigasi ({{current}}/{{total}})",
@@ -1052,7 +1110,10 @@
       "hint": "Klik kiri = masukkan, klik kanan = kecualikan",
       "points": "titik",
       "clear": "Kosongkan",
-      "done": "Selesai"
+      "done": "Selesai",
+      "encoding": "Analyzing image...",
+      "waitingEncode": "Preparing...",
+      "decoding": "Updating mask..."
     },
     "pickPoints": "Pilih titik",
     "pickPointsNeedInput": "Tetapkan imej input terlebih dahulu",
@@ -1091,7 +1152,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "Jalankan model",
+        "label": "WaveSpeed API",
         "emptyHint": "Klik nod ini, kemudian pilih model →",
         "params": {
           "modelId": {
@@ -1101,6 +1162,11 @@
       },
       "input/media-upload": {
         "label": "Muat naik",
+        "inputs": {
+          "media": {
+            "label": "Media"
+          }
+        },
         "outputs": {
           "output": {
             "label": "URL"
@@ -1147,7 +1213,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "Direktori output"
+            "label": "Direktori output",
+            "placeholder": "Biarkan kosong untuk menggunakan direktori output lalai aliran kerja"
           },
           "filename": {
             "label": "Awalan nama fail"
@@ -1193,6 +1260,9 @@
           "pointY": {
             "label": "Titik Y",
             "description": "Koordinat Y ternormal (0-1) untuk titik segmentasi"
+          },
+          "invertMask": {
+            "label": "Songsangkan topeng"
           }
         }
       },
@@ -1256,7 +1326,7 @@
       "optimizing": "Mengoptimumkan...",
       "optimizeNow": "Optimumkan sekarang",
       "autoOnRunTitle": "Optimumkan hanya bila klik Jalankan",
-      "autoOnRun": "Auto pada Jalankan",
+      "autoOnRun": "Optimumkan pada Jalankan",
       "chars": "aksara",
       "optimizeOnRunEnabled": "Didayakan: optimumkan pada Jalankan",
       "optimizeOffHint": "Lalai: tiada pengoptimuman (jalankan dengan teks asal)",
@@ -1272,8 +1342,9 @@
       "text": "Teks",
       "textPlaceholder": "Teks untuk diperluas atau sebagai konteks...",
       "autoOnRunTitle": "Optimumkan secara auto bila klik Jalankan",
-      "autoOnRun": "Auto pada Jalankan",
+      "autoOnRun": "Optimumkan pada Jalankan",
       "quickOptimizeTitle": "Optimumkan pantas ({{mode}})",
+      "quickOptimizeLabel": "Optimum",
       "params": "Parameter",
       "prompt": "Prompt",
       "emptyPrompt": "(kosong)",
@@ -1291,7 +1362,77 @@
         "loadingOptimizer": "Memuat pengoptimum...",
         "loadConfigFailed": "Tidak dapat memuat konfigurasi pengoptimum"
       }
-    }
+    },
+    "guide": {
+      "skip": "Langkau",
+      "prev": "Kembali",
+      "next": "Seterusnya",
+      "finish": "Mula",
+      "welcome": {
+        "title": "Selamat datang ke Workflow",
+        "desc": "Workflow ialah editor saluran AI visual. Seret nod ke kanvas, sambungkannya, dan jalankan aliran pemprosesan AI automatik — daripada penjanaan imej hingga peningkatan video dan banyak lagi."
+      },
+      "nodePaletteBtn": {
+        "title": "Palet Nod",
+        "desc": "Klik butang ini untuk membuka Palet Nod — kotak alat anda untuk semua nod yang tersedia. Anda juga boleh cari, seret, atau klik untuk menambah nod ke kanvas."
+      },
+      "nodePalette": {
+        "title": "Kategori Nod",
+        "desc": "Nod disusun mengikut kategori:\n• Input — Muat naik fail atau masukkan teks sebagai data permulaan\n• Tugasan AI — Jalankan mana-mana model WaveSpeed AI (lihat langkah seterusnya)\n• Alat Percuma — 12 alat terbina dalam seperti buang latar, peningkatan wajah, penukaran format\n• Output — Pratonton hasil atau eksport fail ke cakera\n\nSeret nod ke kanvas atau klik untuk menambahkannya."
+      },
+      "aiTask": {
+        "title": "Nod Tugasan AI — Teras Utama",
+        "desc": "Nod Tugasan AI ialah nod paling berkuasa dalam Workflow. Ia boleh menjalankan mana-mana model WaveSpeed AI untuk penjanaan imej, penciptaan video, pemindahan gaya dan banyak lagi.",
+        "features": {
+          "modelSwitch": "Pilih daripada ratusan model AI — panel parameter dikemas kini secara dinamik berdasarkan model yang dipilih",
+          "dynamicParams": "Setiap model mempunyai parameter tersendiri (prompt, saiz imej, seed, dll.) yang akan muncul secara automatik apabila dipilih",
+          "costEstimate": "Anggaran kos masa nyata bagi setiap pelaksanaan supaya anda sentiasa tahu harga sebelum berjalan",
+          "upstream": "Sambungkan output nod huluan (imej, teks) sebagai input — bina saluran AI berbilang langkah"
+        }
+      },
+      "canvas": {
+        "title": "Interaksi Kanvas",
+        "desc": "Kanvas pusat ialah ruang kerja anda:\n• Seret nod dari palet untuk meletakkannya\n• Seret dari port output ke port input untuk membuat sambungan\n• Klik kanan untuk menu konteks (salin, tampal, padam)\n• Skrol untuk zum, seret latar belakang untuk pan\n• Pintasan: Ctrl+Z undur, Ctrl+C/V salin-tampal, Delete untuk buang"
+      },
+      "canvasTools": {
+        "title": "Alat Kanvas",
+        "desc": "Tiga alat berguna untuk menavigasi dan menyusun kanvas:\n• Mod Pilih / Tangan — tukar antara memilih nod (V) dan mengalih kanvas (H)\n• Muat Paparan — zum automatik supaya semua nod muat dalam viewport\n• Susun Atur Auto — susun nod secara automatik agar kemas dan mudah dibaca"
+      },
+      "config": {
+        "title": "Konfigurasi & Lihat Hasil",
+        "desc": "Klik mana-mana nod untuk memilihnya. Panel kanan memaparkan dua tab:\n• Konfigurasi — Tetapkan parameter model, muat naik fail, masukkan prompt\n• Hasil — Lihat output pelaksanaan (imej, video, model 3D)\n\nParameter dikemas kini secara dinamik berdasarkan jenis nod dan model yang dipilih. Hasil menyokong pratonton skrin penuh dan muat turun."
+      },
+      "run": {
+        "title": "Jalankan Workflow Anda",
+        "desc": "Klik \"Jalankan Workflow\" untuk menjalankan keseluruhan saluran:\n• Tetapkan bilangan larian (×1 hingga ×99) untuk pemprosesan kelompok\n• Batalkan pada bila-bila masa dengan butang henti\n• Pantau kemajuan masa nyata dalam Pemantau Pelaksanaan\n• Setiap nod menunjukkan status: queued → running → done"
+      },
+      "templates": {
+        "title": "Templat, Import & Eksport",
+        "desc": "Klik menu ⋮ untuk ciri lanjutan:\n• Simpan workflow anda sebagai templat boleh guna semula\n• Import/Eksport workflow sebagai JSON untuk dikongsi\n• Buka berbilang workflow dalam tab (seperti pelayar)\n• Semak templat siap bina dari bar alat"
+      }
+    },
+    "selectNodeHint": "Select a node to configure its parameters",
+    "modelSyncDesktopOnly": "Model sync is available in the WaveSpeed Desktop app.",
+    "nameExists": "Alur kerja dengan nama ini sudah wujud. Menyimpan akan menulis ganti.",
+    "overwriteWorkflow": "Tulis Ganti Aliran Kerja",
+    "overwriteConfirm": "Alur kerja bernama \"{{name}}\" sudah wujud. Adakah anda mahu menulis ganti?",
+    "overwrite": "Tulis ganti",
+    "rename": "Namakan semula",
+    "duplicate": "Salin",
+    "deleteWorkflow": "Padam",
+    "deleteConfirm": "Adakah anda pasti mahu memadam \"{{name}}\"? Tindakan ini tidak boleh dibatalkan.",
+    "cleaning": "Membersihkan...",
+    "cleanOutputs": "Bersihkan output",
+    "tabClose": "Tutup",
+    "tabCloseOthers": "Tutup Lain",
+    "tabCloseRight": "Tutup ke Kanan",
+    "tabCloseSaved": "Tutup Tersimpan",
+    "tabCloseAll": "Tutup Semua",
+    "deleteSelected": "Padam Terpilih ({{count}})",
+    "selectMode": "Select (V)",
+    "handMode": "Hand (H)",
+    "interactionSelect": "Select",
+    "interactionHand": "Hand"
   },
   "smartGenerate": {
     "start": "Start Smart Generate",

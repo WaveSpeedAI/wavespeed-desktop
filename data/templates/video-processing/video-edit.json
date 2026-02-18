@@ -1,0 +1,128 @@
+{
+  "name": "视频编辑",
+  "i18nKey": "videoEdit",
+  "description": "使用AI模型编辑视频内容，支持通过提示词修改视频中的元素",
+  "tags": [
+    "视频",
+    "编辑",
+    "AI"
+  ],
+  "category": "video-editing",
+  "author": "WaveSpeed",
+  "thumbnail": "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1763608542503495122_E5Jc0qQc.png",
+  "workflowId": "866a1411-310f-4a50-bde1-5112b0f67c45",
+  "graphDefinition": {
+    "nodes": [
+      {
+        "id": "dad8f36d-923c-40d4-b084-a737926ee378",
+        "workflowId": "866a1411-310f-4a50-bde1-5112b0f67c45",
+        "nodeType": "ai-task/run",
+        "position": {
+          "x": 424.5525140646752,
+          "y": -118.7920717818251
+        },
+        "params": {
+          "modelId": "wavespeed-ai/wan-2.2/video-edit",
+          "resolution": "720p",
+          "seed": -1,
+          "prompt": "Change the woman's vest to red dress.",
+          "__meta": {
+            "label": "🤖 wavespeed-ai/wan-2.2/video-edit",
+            "modelInputSchema": [
+              {
+                "name": "video",
+                "type": "string",
+                "description": "The video for generating the output.",
+                "mediaType": "video",
+                "fieldType": "file",
+                "required": true
+              },
+              {
+                "name": "prompt",
+                "type": "string",
+                "description": "The positive prompt for the generation.",
+                "fieldType": "textarea",
+                "required": true
+              },
+              {
+                "name": "resolution",
+                "type": "enum",
+                "description": "The resolution of the output video.",
+                "default": "480p",
+                "enum": [
+                  "480p",
+                  "720p"
+                ],
+                "fieldType": "select"
+              },
+              {
+                "name": "seed",
+                "type": "integer",
+                "description": "The random seed to use for the generation. -1 means a random seed will be used.",
+                "default": -1,
+                "fieldType": "number"
+              }
+            ]
+          }
+        },
+        "currentOutputId": null
+      },
+      {
+        "id": "3a20d558-c4d7-4076-8b93-172d695c03f1",
+        "workflowId": "866a1411-310f-4a50-bde1-5112b0f67c45",
+        "nodeType": "input/media-upload",
+        "position": {
+          "x": -2.6222719768283014,
+          "y": -122.45036626816056
+        },
+        "params": {
+          "uploadedUrl": "https://d1q70pf5vjeyhc.cloudfront.net/media/fb8f674bbb1a429d947016fd223cfae1/videos/1757933920133129114_SnZ6xCMQ.mp4",
+          "mediaType": "video",
+          "fileName": "1757933920133129114_SnZ6xCMQ.mp4",
+          "__meta": {
+            "label": "📁 Upload",
+            "modelInputSchema": []
+          }
+        },
+        "currentOutputId": null
+      },
+      {
+        "id": "acaab842-6f7c-478d-9336-7312b5e7d5fe",
+        "workflowId": "866a1411-310f-4a50-bde1-5112b0f67c45",
+        "nodeType": "output/preview",
+        "position": {
+          "x": 817.9194307310036,
+          "y": -199.1704090693201
+        },
+        "params": {
+          "autoDetect": true,
+          "forceType": "auto",
+          "__meta": {
+            "label": "👀 Preview",
+            "modelInputSchema": []
+          }
+        },
+        "currentOutputId": null
+      }
+    ],
+    "edges": [
+      {
+        "id": "f2698fce-d946-4936-8a90-3c4f327813b2",
+        "workflowId": "866a1411-310f-4a50-bde1-5112b0f67c45",
+        "sourceNodeId": "3a20d558-c4d7-4076-8b93-172d695c03f1",
+        "sourceOutputKey": "output",
+        "targetNodeId": "dad8f36d-923c-40d4-b084-a737926ee378",
+        "targetInputKey": "param-video"
+      },
+      {
+        "id": "cb0792a0-7c43-4824-944a-a2e0a6f75e35",
+        "workflowId": "866a1411-310f-4a50-bde1-5112b0f67c45",
+        "sourceNodeId": "dad8f36d-923c-40d4-b084-a737926ee378",
+        "sourceOutputKey": "output",
+        "targetNodeId": "acaab842-6f7c-478d-9336-7312b5e7d5fe",
+        "targetInputKey": "input-input"
+      }
+    ]
+  },
+  "savedAt": "2026-02-14T19:02:28.291Z"
+}

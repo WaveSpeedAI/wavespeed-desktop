@@ -34,7 +34,9 @@
     "openInBrowser": "在浏览器中打开",
     "settings": "设置",
     "clearAll": "全部清除",
-    "deselectAll": "取消全选"
+    "deselectAll": "取消全选",
+    "add": "添加",
+    "saving": "保存中..."
   },
   "nav": {
     "home": "首页",
@@ -330,12 +332,19 @@
     "renameDesc": "输入此模板的新名称",
     "templateName": "模板名称",
     "templateNamePlaceholder": "我的模板",
+    "coverImage": "封面图",
+    "uploadCover": "点击上传封面图",
     "deleteTemplate": "删除模板",
     "deleteConfirm": "确定要删除「{{name}}」吗？此操作无法撤销。",
     "templateUpdated": "模板已更新",
     "renamedTo": "已重命名为「{{name}}」",
     "templateDeleted": "模板已删除",
     "deleted": "已删除「{{name}}」",
+    "deletedSuccessfully": "成功删除「{{name}}」",
+    "updatedSuccessfully": "成功更新「{{name}}」",
+    "exportedSuccessfully": "成功导出「{{name}}」",
+    "allExportedSuccessfully": "成功导出所有模板",
+    "importedSuccessfully": "已导入 {{imported}} 个模板，跳过 {{skipped}} 个",
     "lastUpdated": "最后更新",
     "export": "导出",
     "import": "导入",
@@ -364,7 +373,64 @@
     "deleteTemplates": "删除模板",
     "templatesDeleted": "模板已删除",
     "deletedCount": "已删除 {{count}} 个模板",
-    "batchDeleteConfirm": "确定要删除 {{count}} 个模板吗？此操作无法撤销。"
+    "batchDeleteConfirm": "确定要删除 {{count}} 个模板吗？此操作无法撤销。",
+    "filters": "筛选",
+    "templateType": "模板类型",
+    "allTypes": "所有类型",
+    "playground": "演练场",
+    "workflow": "工作流",
+    "source": "来源",
+    "allSources": "所有来源",
+    "public": "公共",
+    "myTemplates": "我的模板",
+    "favorites": "收藏",
+    "favoritesOnly": "仅收藏",
+    "sortBy": "排序方式",
+    "newest": "最新",
+    "mostUsed": "最常用",
+    "category": "分类",
+    "allCategories": "所有分类",
+    "imageProcessing": "图像处理",
+    "videoEditing": "视频编辑",
+    "audioConversion": "音频转换",
+    "aiGeneration": "AI 生成",
+    "workflowNotSupported": "不支持工作流",
+    "workflowNotSupportedDesc": "暂不支持工作流模板",
+    "loadTemplate": "加载模板",
+    "browseAll": "浏览全部模板",
+    "drawerDesc": "浏览并应用模板",
+    "createTemplate": "创建模板",
+    "createTemplateDesc": "将当前配置保存为可复用模板",
+    "editTemplate": "编辑模板",
+    "editTemplateDesc": "更新模板详情",
+    "descriptionLabel": "描述",
+    "tags": "标签",
+    "tagsPlaceholder": "输入标签...",
+    "descriptionPlaceholder": "描述此模板...",
+    "categoryPlaceholder": "例如：图像处理",
+    "nodes": "个节点",
+    "favorite": "添加到收藏",
+    "unfavorite": "取消收藏",
+    "uses": "次使用",
+    "importDesc": "从之前导出的文件导入模板"
+  },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "图生视频",
+      "description": "将静态图片转换为动态视频，并进行高清放大处理"
+    },
+    "musicGenerate": {
+      "name": "音乐生成",
+      "description": "通过歌词和风格标签生成原创音乐，支持多种音乐风格"
+    },
+    "imageEdit": {
+      "name": "图像编辑",
+      "description": "使用AI模型编辑图像，支持自定义提示词进行精确修改"
+    },
+    "videoEdit": {
+      "name": "视频编辑",
+      "description": "使用AI模型编辑视频内容，支持通过提示词修改视频中的元素"
+    }
   },
   "assets": {
     "title": "我的资产",
@@ -941,46 +1007,25 @@
     "downloadStarted": "下载已开始",
     "downloadFailed": "下载失败"
   },
-  "game": {
-    "waitingLong": "等待时间较长",
-    "clickToPlay": "点击玩个小游戏打发时间"
-  },
   "smartPlayground": {
-    "autoDetected": "Auto-detected variant",
-    "willCall": "Will call",
-    "toggleSpeed": "Speed",
-    "toggleMode": "Mode",
-    "toggleQuality": "Quality",
-    "speedNormal": "Normal",
-    "speedFast": "Fast",
-    "modeNormal": "Normal",
-    "modeSequential": "Sequential",
-    "qualityPro": "Pro",
-    "qualityStd": "Standard",
-    "qualityUltra": "Ultra",
-    "qualityMulti": "Multi",
-    "run": "Run",
-    "running": "Running...",
-    "input": "Input",
-    "output": "Output",
-    "back": "Back"
-  },
-  "videoConverter": {
-    "title": "视频转换器",
-    "description": "在浏览器中转换视频格式",
-    "invalidFile": "请选择有效的视频文件",
-    "input": "输入视频",
-    "inputDesc": "选择或拖拽视频文件进行转换",
-    "dropzone": "点击或拖拽视频到此处",
-    "supportedFormats": "支持 MP4, WebM, MOV, AVI",
-    "settings": "设置",
-    "outputFormat": "输出格式",
-    "convert": "转换视频",
-    "converting": "转换中...",
-    "noCodecSupport": "未找到支持的视频编码器",
-    "result": "结果",
-    "codecUsed": "使用的编码器",
-    "download": "下载"
+    "autoDetected": "自动检测变体",
+    "willCall": "将调用",
+    "toggleSpeed": "速度",
+    "toggleMode": "模式",
+    "toggleQuality": "质量",
+    "speedNormal": "正常",
+    "speedFast": "快速",
+    "modeNormal": "正常",
+    "modeSequential": "顺序",
+    "qualityPro": "专业",
+    "qualityStd": "标准",
+    "qualityUltra": "超高",
+    "qualityMulti": "多重",
+    "run": "运行",
+    "running": "运行中...",
+    "input": "输入",
+    "output": "输出",
+    "back": "返回"
   },
   "workflow": {
     "workflows": "工作流",
@@ -992,6 +1037,11 @@
     "saveFailed": "保存失败",
     "savedAt": "已保存",
     "unsaved": "未保存",
+    "selectNodeHint": "选择一个节点以配置其参数",
+    "outputDirFallbackHint": "未设置：将导出到工作流默认目录",
+    "selectDirectory": "选择目录",
+    "openFolder": "打开文件夹",
+    "openWorkflowFolder": "打开工作流目录",
     "nodes": "节点",
     "config": "配置",
     "results": "结果",
@@ -999,6 +1049,28 @@
     "settings": "设置",
     "runAll": "全部运行",
     "run": "运行",
+    "runWorkflow": "运行",
+    "runFromHere": "从此执行",
+    "nameYourWorkflow": "命名工作流",
+    "nameYourWorkflowDesc": "为工作流命名以保存到磁盘。",
+    "nameYourWorkflowPlaceholder": "例如：产品图片处理流程",
+    "nameDuplicate": "已存在同名工作流",
+    "nameExists": "已存在同名工作流，保存将覆盖该工作流。",
+    "overwriteWorkflow": "覆盖工作流",
+    "overwriteConfirm": "已存在名为 \"{{name}}\" 的工作流，是否覆盖？",
+    "overwrite": "覆盖",
+    "rename": "重命名",
+    "duplicate": "复制",
+    "deleteWorkflow": "删除",
+    "deleteConfirm": "确定要删除「{{name}}」吗？此操作无法撤销。",
+    "cleaning": "清理中...",
+    "cleanOutputs": "清理输出",
+    "tabClose": "关闭",
+    "tabCloseOthers": "关闭其他",
+    "tabCloseRight": "关闭右侧标签页",
+    "tabCloseSaved": "关闭已保存",
+    "tabCloseAll": "全部关闭",
+    "cancel": "取消",
     "runTarget": "运行目标",
     "runTargetAll": "运行全部节点",
     "runTargetSelected": "运行选中节点",
@@ -1014,6 +1086,9 @@
     "exportFailed": "导出失败",
     "estimated": "预估",
     "fitView": "适配视图",
+    "autoLayout": "整理布局",
+    "freeToolModelHint": "首次运行时将自动下载 AI 模型，请耐心等待",
+    "more": "更多",
     "previousImage": "上一张图片",
     "nextImage": "下一张图片",
     "previewNavHint": "使用 ← / → 查看图片（{{current}}/{{total}}）",
@@ -1023,7 +1098,6 @@
     "annotationHint": "双击画布上的备注即可编辑。",
     "continueFrom": "从此继续",
     "retry": "重试",
-    "cancel": "取消",
     "noWorkflows": "暂无工作流",
     "create": "创建",
     "open": "打开",
@@ -1034,6 +1108,11 @@
     "deleteConnection": "删除连接",
     "add": "添加",
     "delete": "删除",
+    "deleteSelected": "删除选中 ({{count}})",
+    "selectMode": "选择 (V)",
+    "handMode": "拖动 (H)",
+    "interactionSelect": "选择",
+    "interactionHand": "拖动",
     "currentModel": "当前模型",
     "modelIdLabel": "模型 ID",
     "selectNode": "选择节点进行配置",
@@ -1051,7 +1130,10 @@
       "hint": "左键点击=包含，右键点击=排除",
       "points": "个点",
       "clear": "清空",
-      "done": "完成"
+      "done": "完成",
+      "encoding": "Analyzing image...",
+      "waitingEncode": "Preparing...",
+      "decoding": "Updating mask..."
     },
     "pickPoints": "点选",
     "pickPointsNeedInput": "请先设置输入图片",
@@ -1090,7 +1172,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "执行模型",
+        "label": "WaveSpeed API",
         "emptyHint": "点击此节点，然后选择模型 →",
         "params": {
           "modelId": {
@@ -1100,6 +1182,11 @@
       },
       "input/media-upload": {
         "label": "上传",
+        "inputs": {
+          "media": {
+            "label": "媒体"
+          }
+        },
         "outputs": {
           "output": {
             "label": "URL"
@@ -1146,7 +1233,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "输出目录"
+            "label": "输出目录",
+            "placeholder": "留空使用工作流默认输出目录"
           },
           "filename": {
             "label": "文件名前缀"
@@ -1192,6 +1280,9 @@
           "pointY": {
             "label": "点 Y",
             "description": "分割点归一化 Y 坐标（0-1）"
+          },
+          "invertMask": {
+            "label": "反转蒙版"
           }
         }
       },
@@ -1255,12 +1346,60 @@
       "optimizing": "优化中...",
       "optimizeNow": "立即优化",
       "autoOnRunTitle": "仅在点击运行时优化",
-      "autoOnRun": "运行时自动优化",
+      "autoOnRun": "运行并优化",
       "chars": "字",
       "optimizeOnRunEnabled": "已开启：运行时优化",
       "optimizeOffHint": "默认：不优化（按原文运行）",
       "manualOptimizedHint": "已手动优化。在文本变更前将跳过运行时自动优化。",
       "enterTextOrPrompt": "输入文本或提示词..."
+    },
+    "guide": {
+      "skip": "跳过",
+      "prev": "上一步",
+      "next": "下一步",
+      "finish": "开始使用",
+      "welcome": {
+        "title": "欢迎使用工作流",
+        "desc": "工作流是一个可视化 AI 流水线编辑器。将节点拖拽到画布上，连接它们，即可运行自动化的 AI 处理流程——从图像生成到视频增强，无所不能。"
+      },
+      "nodePaletteBtn": {
+        "title": "节点面板",
+        "desc": "点击此按钮打开节点面板——你的节点工具箱。可以搜索、拖拽或点击将节点添加到画布。"
+      },
+      "nodePalette": {
+        "title": "节点分类",
+        "desc": "节点按分类组织：\n• 输入 — 上传文件或输入文本作为起始数据\n• AI 任务 — 运行任意 WaveSpeed AI 模型（详见下一步）\n• 免费工具 — 12 个内置工具，如背景移除、人脸增强、格式转换\n• 输出 — 预览结果或导出文件到磁盘\n\n拖拽节点到画布或点击即可添加。"
+      },
+      "aiTask": {
+        "title": "AI 任务节点 — 核心能力",
+        "desc": "AI 任务节点是工作流中最强大的节点。它可以运行任意 WaveSpeed AI 模型，用于图像生成、视频创作、风格迁移等。",
+        "features": {
+          "modelSwitch": "从数百个 AI 模型中选择——参数面板会根据所选模型动态更新",
+          "dynamicParams": "每个模型有独立的参数（提示词、图片尺寸、种子等），选择后自动显示",
+          "costEstimate": "实时显示每次执行的费用估算，运行前即可了解价格",
+          "upstream": "连接上游节点的输出（图片、文本）作为输入——构建多步骤 AI 流水线"
+        }
+      },
+      "canvas": {
+        "title": "画布操作",
+        "desc": "中央画布是你的工作区：\n• 从节点面板拖拽节点到画布上定位\n• 从输出端口拖拽到输入端口创建连接\n• 右键打开上下文菜单（复制、粘贴、删除）\n• 滚轮缩放，拖拽背景平移\n• 快捷键：Ctrl+Z 撤销、Ctrl+C/V 复制粘贴、Delete 删除"
+      },
+      "canvasTools": {
+        "title": "画布工具",
+        "desc": "三个实用的画布导航与整理工具：\n• 选择 / 手型模式 — 在选择节点（V）和平移画布（H）之间切换\n• 适应视图 — 自动缩放以将所有节点显示在视口中\n• 自动布局 — 自动将节点排列为整洁、易读的布局"
+      },
+      "config": {
+        "title": "配置与查看结果",
+        "desc": "点击任意节点选中它。右侧面板显示两个标签页：\n• 配置 — 设置模型参数、上传文件、输入提示词\n• 结果 — 查看执行输出（图片、视频、3D 模型）\n\n参数会根据节点类型和所选模型动态更新。结果支持全屏预览和下载。"
+      },
+      "run": {
+        "title": "运行工作流",
+        "desc": "点击「运行工作流」执行整个流水线：\n• 设置运行次数（×1 到 ×99）进行批量处理\n• 随时点击停止按钮取消执行\n• 在执行监视器中实时查看进度\n• 每个节点显示状态：排队 → 运行中 → 完成"
+      },
+      "templates": {
+        "title": "模板、导入与导出",
+        "desc": "点击 ⋮ 菜单使用高级功能：\n• 将工作流保存为可复用模板\n• 导入/导出工作流 JSON 文件进行分享\n• 在多个标签页中同时打开工作流（类似浏览器）\n• 从工具栏浏览预置模板"
+      }
     },
     "promptOptimizer": {
       "optimizationFailed": "优化失败",
@@ -1271,8 +1410,9 @@
       "text": "文本",
       "textPlaceholder": "用于扩展或作为上下文的文本...",
       "autoOnRunTitle": "点击运行时自动优化",
-      "autoOnRun": "运行时自动优化",
+      "autoOnRun": "运行并优化",
       "quickOptimizeTitle": "快速优化（{{mode}}）",
+      "quickOptimizeLabel": "优化",
       "params": "参数",
       "prompt": "提示词",
       "emptyPrompt": "（空）",
@@ -1290,7 +1430,8 @@
         "loadingOptimizer": "正在加载优化器...",
         "loadConfigFailed": "无法加载优化器配置"
       }
-    }
+    },
+    "modelSyncDesktopOnly": "Model sync is available in the WaveSpeed Desktop app."
   },
   "smartGenerate": {
     "start": "开始智能生成",

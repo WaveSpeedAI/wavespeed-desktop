@@ -137,8 +137,8 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
 
   const navGroups = [
     { key: 'create', label: 'Create', items: createItems },
-    { key: 'tools', label: 'Tools', items: toolsItems },
     { key: 'manage', label: 'Manage', items: manageItems },
+    { key: 'tools', label: 'Tools', items: toolsItems },
   ]
 
   const bottomNavItems = [
@@ -152,12 +152,10 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
   return (
     <div
       className={cn(
-        "flex h-full flex-col border-r border-border/70 bg-background/95 backdrop-blur transition-all duration-300",
-        // Desktop styles
-        "hidden md:flex",
-        collapsed ? "w-20" : "w-52",
-        // Mobile styles - fixed positioned drawer
-        isMobileOpen && "!flex fixed inset-y-0 left-0 z-50 w-72 shadow-2xl"
+        "flex h-full flex-col border-r border-border/70 bg-background/95 backdrop-blur transition-all duration-300 shrink-0",
+        collapsed ? "w-16" : "w-52",
+        // Mobile overlay when hamburger opens
+        isMobileOpen && "!fixed inset-y-0 left-0 z-50 w-72 shadow-2xl"
       )}
     >
       {/* Mobile close button */}
@@ -188,8 +186,8 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
       </div>
 
       {/* Navigation */}
-      <ScrollArea className="flex-1 px-3 py-4">
-        <nav className="flex flex-col gap-4">
+      <ScrollArea className="flex-1 px-2 py-4">
+        <nav className="flex flex-col gap-4 px-1">
           {navGroups.map((group) => (
             <div key={group.key} className="space-y-1">
               {(!collapsed || isMobileOpen) && (
@@ -218,7 +216,7 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
                         }}
                         className={cn(
                           buttonVariants({ variant: 'ghost', size: 'sm' }),
-                          'h-10 w-full rounded-xl text-sm transition-all relative overflow-visible',
+                          'h-9 w-full rounded-xl text-sm transition-all relative overflow-visible',
                           collapsed && !isMobileOpen ? 'justify-center px-2' : 'justify-start gap-3 px-3',
                           active
                             ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/95 hover:text-primary-foreground'
@@ -231,7 +229,7 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
                           <span className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 animate-pulse" />
                         )}
                         
-                        <item.icon className="h-4 w-4 shrink-0 relative z-10" />
+                        <item.icon className="h-5 w-5 shrink-0 relative z-10" />
                         {(!collapsed || isMobileOpen) && (
                           <>
                             <span className="relative z-10">
@@ -244,8 +242,8 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
                             )}
                           </>
                         )}
-                        {/* Red dot for collapsed state */}
-                        {isNewFeature && (collapsed && !isMobileOpen) && (
+                        {/* Blue dot for collapsed state — only when not active */}
+                        {isNewFeature && !active && (collapsed && !isMobileOpen) && (
                           <span className="absolute top-1 right-1 flex h-2 w-2 z-10">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
@@ -284,14 +282,14 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
                     onClick={() => navigate(item.href)}
                     className={cn(
                       buttonVariants({ variant: 'ghost', size: 'sm' }),
-                      'h-10 w-full rounded-xl transition-all',
+                      'h-9 w-full rounded-xl transition-all',
                       collapsed && !isMobileOpen ? 'justify-center px-2' : 'justify-start gap-3 px-3',
                       active
                         ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/95 hover:text-primary-foreground'
                         : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                     )}
                   >
-                    <item.icon className="h-4 w-4 shrink-0" />
+                    <item.icon className="h-5 w-5 shrink-0" />
                     {(!collapsed || isMobileOpen) && <span>{t(item.titleKey)}</span>}
                   </button>
                 </TooltipTrigger>
@@ -305,7 +303,7 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
           })}
         </nav>
 
-        {/* Toggle Button - hidden on mobile */}
+        {/* Collapse/expand: bottom button toggles; state also syncs to window width on resize */}
         {!isMobileOpen && (
           <Tooltip delayDuration={0} open={collapsed && tooltipReady ? undefined : false}>
             <TooltipTrigger asChild>
@@ -314,15 +312,15 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
                 size="sm"
                 onClick={onToggle}
                 className={cn(
-                  "mt-2 hidden h-10 w-full rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground md:flex",
+                  "mt-2 h-9 w-full rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground",
                   collapsed ? "justify-center px-2" : "justify-start gap-3 px-3"
                 )}
               >
                 {collapsed ? (
-                  <PanelLeft className="h-4 w-4" />
+                  <PanelLeft className="h-5 w-5" />
                 ) : (
                   <>
-                    <PanelLeftClose className="h-4 w-4" style={{ flexShrink: 0 }} />
+                    <PanelLeftClose className="h-5 w-5" style={{ flexShrink: 0 }} />
                     <span>{t('nav.collapse')}</span>
                   </>
                 )}

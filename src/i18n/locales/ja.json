@@ -34,7 +34,9 @@
     "downloadFailed": "ダウンロードに失敗しました。ネットワーク接続を確認してください。",
     "openInBrowser": "ブラウザで開く",
     "settings": "設定",
-    "clearAll": "すべてクリア"
+    "clearAll": "すべてクリア",
+    "add": "Add",
+    "saving": "Saving..."
   },
   "nav": {
     "home": "ホーム",
@@ -364,7 +366,71 @@
     "deleteTemplates": "テンプレートを削除",
     "templatesDeleted": "テンプレートを削除しました",
     "deletedCount": "{{count}}個のテンプレートを削除しました",
-    "batchDeleteConfirm": "{{count}}個のテンプレートを削除してもよろしいですか？この操作は取り消せません。"
+    "batchDeleteConfirm": "{{count}}個のテンプレートを削除してもよろしいですか？この操作は取り消せません。",
+    "deletedSuccessfully": "「{{name}}」を正常に削除しました",
+    "updatedSuccessfully": "「{{name}}」を正常に更新しました",
+    "exportedSuccessfully": "「{{name}}」を正常にエクスポートしました",
+    "allExportedSuccessfully": "すべてのテンプレートを正常にエクスポートしました",
+    "importedSuccessfully": "{{imported}}個のテンプレートをインポート、{{skipped}}個スキップ",
+    "filters": "フィルター",
+    "templateType": "テンプレートタイプ",
+    "allTypes": "すべてのタイプ",
+    "playground": "プレイグラウンド",
+    "workflow": "ワークフロー",
+    "source": "ソース",
+    "allSources": "すべてのソース",
+    "public": "公開",
+    "myTemplates": "マイテンプレート",
+    "favorites": "お気に入り",
+    "favoritesOnly": "お気に入りのみ",
+    "sortBy": "並び替え",
+    "newest": "最新",
+    "mostUsed": "よく使う",
+    "category": "カテゴリ",
+    "allCategories": "すべてのカテゴリ",
+    "imageProcessing": "画像処理",
+    "videoEditing": "動画編集",
+    "audioConversion": "音声変換",
+    "aiGeneration": "AI生成",
+    "workflowNotSupported": "ワークフロー未対応",
+    "workflowNotSupportedDesc": "ワークフローテンプレートはまだサポートされていません",
+    "loadTemplate": "テンプレートを読み込む",
+    "browseAll": "すべてのテンプレートを表示",
+    "drawerDesc": "テンプレートを閲覧して適用",
+    "createTemplate": "テンプレートを作成",
+    "createTemplateDesc": "現在の設定を再利用可能なテンプレートとして保存",
+    "editTemplate": "テンプレートを編集",
+    "editTemplateDesc": "テンプレート詳細を更新",
+    "descriptionLabel": "説明",
+    "tags": "タグ",
+    "tagsPlaceholder": "タグを入力...",
+    "descriptionPlaceholder": "このテンプレートの説明を入力...",
+    "categoryPlaceholder": "例: 画像処理",
+    "nodes": "ノード",
+    "favorite": "お気に入りに追加",
+    "unfavorite": "お気に入りから削除",
+    "uses": "使用回数",
+    "coverImage": "カバー画像",
+    "uploadCover": "クリックしてカバー画像をアップロード",
+    "importDesc": "以前にエクスポートしたファイルからテンプレートをインポート"
+  },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "画像から動画",
+      "description": "静止画像をダイナミックな動画に変換し、HD アップスケーリング処理"
+    },
+    "musicGenerate": {
+      "name": "音楽生成",
+      "description": "歌詞とスタイルタグからオリジナル音楽を生成、多様なジャンルに対応"
+    },
+    "imageEdit": {
+      "name": "画像編集",
+      "description": "AIモデルとカスタムプロンプトで画像を精密に編集"
+    },
+    "videoEdit": {
+      "name": "動画編集",
+      "description": "AIモデルとプロンプトで動画コンテンツの要素を編集"
+    }
   },
   "assets": {
     "title": "マイアセット",
@@ -941,58 +1007,52 @@
     "downloadStarted": "ダウンロードを開始しました",
     "downloadFailed": "ダウンロード失敗"
   },
-  "game": {
-    "waitingLong": "待ち時間が長い？ミニゲームで遊ぼう！",
-    "clickToPlay": "クリックして開始"
-  },
   "smartPlayground": {
-    "autoDetected": "Auto-detected variant",
-    "willCall": "Will call",
-    "toggleSpeed": "Speed",
-    "toggleMode": "Mode",
-    "toggleQuality": "Quality",
-    "speedNormal": "Normal",
-    "speedFast": "Fast",
-    "modeNormal": "Normal",
-    "modeSequential": "Sequential",
-    "qualityPro": "Pro",
-    "qualityStd": "Standard",
-    "qualityUltra": "Ultra",
-    "qualityMulti": "Multi",
-    "run": "Run",
-    "running": "Running...",
-    "input": "Input",
-    "output": "Output",
-    "back": "Back"
-  },
-  "videoConverter": {
-    "title": "動画コンバーター",
-    "description": "ブラウザで動画形式を変換",
-    "invalidFile": "有効な動画ファイルを選択してください",
-    "input": "入力動画",
-    "inputDesc": "変換する動画ファイルを選択またはドラッグ",
-    "dropzone": "クリックまたは動画をここにドラッグ",
-    "supportedFormats": "MP4, WebM, MOV, AVI対応",
-    "settings": "設定",
-    "outputFormat": "出力形式",
-    "convert": "動画を変換",
-    "converting": "変換中...",
-    "noCodecSupport": "サポートされているコーデックが見つかりません",
-    "result": "結果",
-    "codecUsed": "使用コーデック",
-    "download": "ダウンロード"
+    "autoDetected": "自動検出されたバリアント",
+    "willCall": "呼び出します",
+    "toggleSpeed": "速度",
+    "toggleMode": "モード",
+    "toggleQuality": "品質",
+    "speedNormal": "通常",
+    "speedFast": "高速",
+    "modeNormal": "通常",
+    "modeSequential": "順次",
+    "qualityPro": "プロ",
+    "qualityStd": "標準",
+    "qualityUltra": "ウルトラ",
+    "qualityMulti": "マルチ",
+    "run": "実行",
+    "running": "実行中...",
+    "input": "入力",
+    "output": "出力",
+    "back": "戻る"
   },
   "workflow": {
     "workflows": "ワークフロー",
     "newWorkflow": "新規ワークフロー",
     "untitled": "無題のワークフロー",
     "save": "保存",
+    "saved": "保存済み",
+    "saving": "保存中...",
+    "saveFailed": "保存に失敗しました",
+    "savedAt": "保存済み",
     "unsaved": "未保存",
+    "selectNodeHint": "ノードを選択してパラメータを設定",
+    "outputDirFallbackHint": "未設定：ワークフローのデフォルトディレクトリにエクスポートされます",
+    "selectDirectory": "ディレクトリを選択",
+    "openFolder": "フォルダを開く",
+    "openWorkflowFolder": "ワークフローフォルダを開く",
     "nodes": "ノード",
     "config": "設定",
     "results": "結果",
     "runAll": "すべて実行",
     "run": "実行",
+    "runWorkflow": "実行",
+    "runFromHere": "ここから実行",
+    "nameYourWorkflow": "ワークフローに名前を付ける",
+    "nameYourWorkflowDesc": "ディスクに保存するために名前を付けてください。",
+    "nameYourWorkflowPlaceholder": "例：商品画像パイプライン",
+    "nameDuplicate": "同じ名前のワークフローが既に存在します",
     "runTarget": "実行対象",
     "runTargetAll": "すべてのノードを実行",
     "runTargetSelected": "選択ノードを実行",
@@ -1001,6 +1061,9 @@
     "runNode": "ノード実行",
     "modelSelection": "モデル選択",
     "fitView": "ビューに合わせる",
+    "autoLayout": "自動整列",
+    "freeToolModelHint": "初回実行時にAIモデルを自動ダウンロードします、しばらくお待ちください",
+    "more": "その他",
     "previousImage": "前の画像",
     "nextImage": "次の画像",
     "previewNavHint": "← / → で画像を切り替え（{{current}}/{{total}}）",
@@ -1040,7 +1103,10 @@
       "hint": "左クリック=含める、右クリック=除外",
       "points": "点",
       "clear": "クリア",
-      "done": "完了"
+      "done": "完了",
+      "encoding": "Analyzing image...",
+      "waitingEncode": "Preparing...",
+      "decoding": "Updating mask..."
     },
     "nodeCategory": {
       "recent": "最近使用",
@@ -1053,7 +1119,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "モデル実行",
+        "label": "WaveSpeed API",
         "emptyHint": "このノードをクリックし、モデルを選択 →",
         "params": {
           "modelId": {
@@ -1063,6 +1129,11 @@
       },
       "input/media-upload": {
         "label": "アップロード",
+        "inputs": {
+          "media": {
+            "label": "メディア"
+          }
+        },
         "outputs": {
           "output": {
             "label": "URL"
@@ -1109,7 +1180,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "出力ディレクトリ"
+            "label": "出力ディレクトリ",
+            "placeholder": "空欄の場合、ワークフローのデフォルト出力ディレクトリを使用"
           },
           "filename": {
             "label": "ファイル名プレフィックス"
@@ -1155,6 +1227,9 @@
           "pointY": {
             "label": "ポイント Y",
             "description": "セグメントポイントの正規化Y (0-1)"
+          },
+          "invertMask": {
+            "label": "マスク反転"
           }
         }
       },
@@ -1218,12 +1293,60 @@
       "optimizing": "最適化中...",
       "optimizeNow": "今すぐ最適化",
       "autoOnRunTitle": "実行時のみ最適化",
-      "autoOnRun": "実行時に自動最適化",
+      "autoOnRun": "実行時に最適化",
       "chars": "文字",
       "optimizeOnRunEnabled": "有効: 実行時に最適化",
       "optimizeOffHint": "デフォルト: 最適化なし（元のテキストで実行）",
       "manualOptimizedHint": "手動で最適化済み。テキストが変更されるまで実行時自動最適化をスキップします。",
       "enterTextOrPrompt": "テキストまたはプロンプトを入力..."
+    },
+    "guide": {
+      "skip": "スキップ",
+      "prev": "戻る",
+      "next": "次へ",
+      "finish": "始めましょう",
+      "welcome": {
+        "title": "ワークフローへようこそ",
+        "desc": "ワークフローはビジュアルAIパイプラインエディターです。ノードをキャンバスにドラッグし、接続して、画像生成から動画エンハンスメントまで、自動化されたAI処理フローを実行できます。"
+      },
+      "nodePaletteBtn": {
+        "title": "ノードパレット",
+        "desc": "このボタンをクリックしてノードパレットを開きます。利用可能なすべてのノードのツールボックスです。検索、ドラッグ、またはクリックでノードをキャンバスに追加できます。"
+      },
+      "nodePalette": {
+        "title": "ノードカテゴリ",
+        "desc": "ノードはカテゴリ別に整理されています：\n• 入力 — ファイルをアップロードまたはテキストを入力して開始データとする\n• AIタスク — 任意のWaveSpeed AIモデルを実行（次のステップを参照）\n• 無料ツール — 背景除去、顔補正、フォーマット変換など12種類の内蔵ツール\n• 出力 — 結果をプレビューまたはファイルをディスクにエクスポート\n\nノードをキャンバスにドラッグするか、クリックして追加します。"
+      },
+      "aiTask": {
+        "title": "AIタスクノード — コア機能",
+        "desc": "AIタスクノードはワークフローで最も強力なノードです。画像生成、動画作成、スタイル転送など、任意のWaveSpeed AIモデルを実行できます。",
+        "features": {
+          "modelSwitch": "数百のAIモデルから選択 — 選択したモデルに応じてパラメータパネルが動的に更新されます",
+          "dynamicParams": "各モデルには独自のパラメータ（プロンプト、画像サイズ、シードなど）があり、選択時に自動的に表示されます",
+          "costEstimate": "実行ごとのリアルタイムコスト見積もりで、実行前に常に価格を確認できます",
+          "upstream": "上流ノードの出力（画像、テキスト）を入力として接続 — マルチステップAIパイプラインを構築"
+        }
+      },
+      "canvas": {
+        "title": "キャンバス操作",
+        "desc": "中央のキャンバスがワークスペースです：\n• パレットからノードをドラッグして配置\n• 出力ポートから入力ポートにドラッグして接続を作成\n• 右クリックでコンテキストメニュー（コピー、貼り付け、削除）\n• スクロールでズーム、背景をドラッグでパン\n• ショートカット：Ctrl+Z 元に戻す、Ctrl+C/V コピー＆ペースト、Delete で削除"
+      },
+      "canvasTools": {
+        "title": "キャンバスツール",
+        "desc": "キャンバスのナビゲーションと整理に便利な3つのツール：\n• 選択 / ハンドモード — ノードの選択（V）とキャンバスのパン（H）を切り替え\n• ビューに合わせる — すべてのノードがビューポートに収まるよう自動ズーム\n• 自動レイアウト — ノードを見やすく整然と自動配置"
+      },
+      "config": {
+        "title": "設定と結果の確認",
+        "desc": "任意のノードをクリックして選択します。右パネルに2つのタブが表示されます：\n• 設定 — モデルパラメータの設定、ファイルのアップロード、プロンプトの入力\n• 結果 — 実行出力の表示（画像、動画、3Dモデル）\n\nパラメータはノードタイプと選択したモデルに応じて動的に更新されます。結果はフルスクリーンプレビューとダウンロードに対応しています。"
+      },
+      "run": {
+        "title": "ワークフローを実行",
+        "desc": "「ワークフローを実行」をクリックしてパイプライン全体を実行します：\n• バッチ処理用に実行回数を設定（×1〜×99）\n• 停止ボタンでいつでもキャンセル可能\n• 実行モニターでリアルタイムの進捗を監視\n• 各ノードのステータスを表示：待機中 → 実行中 → 完了"
+      },
+      "templates": {
+        "title": "テンプレート、インポート＆エクスポート",
+        "desc": "⋮メニューをクリックして高度な機能にアクセス：\n• ワークフローを再利用可能なテンプレートとして保存\n• ワークフローをJSONとしてインポート/エクスポートして共有\n• ブラウザのようにタブで複数のワークフローを開く\n• ツールバーからプリビルトテンプレートを閲覧"
+      }
     },
     "promptOptimizer": {
       "optimizationFailed": "最適化に失敗しました",
@@ -1234,8 +1357,9 @@
       "text": "テキスト",
       "textPlaceholder": "展開や文脈に使うテキスト...",
       "autoOnRunTitle": "実行時に自動で最適化",
-      "autoOnRun": "実行時に自動最適化",
+      "autoOnRun": "実行時に最適化",
       "quickOptimizeTitle": "クイック最適化（{{mode}}）",
+      "quickOptimizeLabel": "最適化",
       "params": "パラメータ",
       "prompt": "プロンプト",
       "emptyPrompt": "（空）",
@@ -1254,10 +1378,6 @@
         "loadConfigFailed": "最適化器の設定を読み込めません"
       }
     },
-    "saved": "保存済み",
-    "saving": "保存中...",
-    "saveFailed": "保存に失敗しました",
-    "savedAt": "保存済み",
     "cost": "コスト",
     "settings": "設定",
     "running": "実行中...",
@@ -1290,7 +1410,28 @@
     "hideRun": "この実行を非表示",
     "show": "表示",
     "hide": "非表示",
-    "optional": "オプション"
+    "optional": "オプション",
+    "modelSyncDesktopOnly": "Model sync is available in the WaveSpeed Desktop app.",
+    "nameExists": "同じ名前のワークフローが既に存在します。保存すると上書きされます。",
+    "overwriteWorkflow": "ワークフローを上書き",
+    "overwriteConfirm": "「{{name}}」というワークフローが既に存在します。上書きしますか？",
+    "overwrite": "上書き",
+    "rename": "名前を変更",
+    "duplicate": "複製",
+    "deleteWorkflow": "削除",
+    "deleteConfirm": "「{{name}}」を削除してもよろしいですか？この操作は元に戻せません。",
+    "cleaning": "クリーンアップ中...",
+    "cleanOutputs": "出力をクリア",
+    "tabClose": "閉じる",
+    "tabCloseOthers": "その他を閉じる",
+    "tabCloseRight": "右を閉じる",
+    "tabCloseSaved": "保存済みを閉じる",
+    "tabCloseAll": "すべて閉じる",
+    "deleteSelected": "選択を削除 ({{count}})",
+    "selectMode": "Select (V)",
+    "handMode": "Hand (H)",
+    "interactionSelect": "Select",
+    "interactionHand": "Hand"
   },
   "smartGenerate": {
     "start": "Start Smart Generate",

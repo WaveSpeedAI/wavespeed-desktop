@@ -1,28 +1,37 @@
 /**
  * WorkflowPage — top-level page component for the /workflow route.
  *
- * Top bar: Workflow tabs (like browser tabs) + Run All + Save + Settings
- * Right sidebar: Config + Results tabs
+ * Top bar: Workflow tabs (like browser tabs) + Run All + Save + Settings.
+ * Config and Results are shown inside the selected node card on the canvas (no right sidebar).
  */
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { WorkflowCanvas } from './components/canvas/WorkflowCanvas'
 import { NodePalette } from './components/canvas/NodePalette'
-import { NodeConfigPanel } from './components/panels/NodeConfigPanel'
-import { ResultsPanel } from './components/panels/ResultsPanel'
 import { WorkflowList } from './components/WorkflowList'
 import { RunMonitor } from './components/canvas/RunMonitor'
 import { useWorkflowStore } from './stores/workflow.store'
 import { useExecutionStore } from './stores/execution.store'
 import { useUIStore } from './stores/ui.store'
-import { registryIpc, modelsIpc, storageIpc, costIpc, workflowIpc } from './ipc/ipc-client'
-import { useFreeToolListener } from './hooks/useFreeToolListener'
+import { registryIpc, modelsIpc, storageIpc, workflowIpc, isWorkflowApiAvailable } from './ipc/ipc-client'
 import { useModelsStore } from '@/stores/modelsStore'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { useTemplateStore } from '@/stores/templateStore'
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
+import { MousePointer2, Hand } from 'lucide-react'
+import { TemplatePickerDialog } from '@/components/templates/TemplatePickerDialog'
+import { TemplateDialog } from '@/components/templates/TemplateDialog'
+import { WorkflowGuide, useWorkflowGuide } from './components/WorkflowGuide'
+import type { Template } from '@/types/template'
 import type { NodeTypeDefinition } from '@/workflow/types/node-defs'
 
-type ModelSyncStatus = 'idle' | 'loading' | 'synced' | 'error' | 'no-key'
+type ModelSyncStatus = 'idle' | 'loading' | 'synced' | 'error' | 'no-key' | 'unavailable'
+const WORKFLOW_API_UNAVAILABLE_MSG = 'Workflow API not available (run in Electron)'
+function isWorkflowApiUnavailable(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err)
+  return msg.includes(WORKFLOW_API_UNAVAILABLE_MSG)
+}
 
 /* ── Tab snapshot for multi-tab support ─────────────────────────────── */
 interface TabSnapshot {
@@ -71,6 +80,7 @@ let tabIdCounter = 1
 
 export function WorkflowPage() {
   const { t } = useTranslation()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [nodeDefs, setNodeDefs] = useState<NodeTypeDefinition[]>([])
   const workflowName = useWorkflowStore(s => s.workflowName)
   const workflowId = useWorkflowStore(s => s.workflowId)
@@ -79,15 +89,18 @@ export function WorkflowPage() {
   const edges = useWorkflowStore(s => s.edges)
   const saveWorkflow = useWorkflowStore(s => s.saveWorkflow)
   const loadWorkflow = useWorkflowStore(s => s.loadWorkflow)
+  const { loadTemplates, useTemplate, createTemplate } = useTemplateStore()
   const { showNodePalette, showWorkflowPanel,
     toggleNodePalette, toggleWorkflowPanel, selectedNodeId, previewSrc, previewItems, previewIndex, prevPreview, nextPreview, closePreview,
-    showNamingDialog, namingDialogDefault, resolveNamingDialog } = useUIStore()
+    showNamingDialog, namingDialogDefault, resolveNamingDialog, interactionMode, setInteractionMode } = useUIStore()
+  const [showTemplateDialog, setShowTemplateDialog] = useState(false)
+  const guide = useWorkflowGuide()
+  const [guideStepKey, setGuideStepKey] = useState<string | null>(null)
   const { runAll, runNode, cancelAll, activeExecutions } = useExecutionStore()
   const initListeners = useExecutionStore(s => s.initListeners)
   const wasRunning = useExecutionStore(s => s._wasRunning)
   const nodeStatuses = useExecutionStore(s => s.nodeStatuses)
   const isRunning = activeExecutions.size > 0
-  const [rightTab, setRightTab] = useState<'config' | 'results'>('config')
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
   const [saveToast, setSaveToast] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [saveToastMsg, setSaveToastMsg] = useState('')
@@ -194,10 +207,19 @@ export function WorkflowPage() {
     saveCurrentTabSnapshot()
     tabIdCounter++
     const newTabId = `tab-${tabIdCounter}`
-    setTabs(prev => [...prev, { tabId: newTabId, workflowId: null, workflowName: 'Untitled Workflow', nodes: [], edges: [], isDirty: false }])
-    useWorkflowStore.setState({ workflowId: null, workflowName: 'Untitled Workflow', nodes: [], edges: [], isDirty: false })
+    // Generate a unique name that doesn't collide with existing tabs or persisted workflows
+    const baseName = 'Untitled Workflow'
+    const existingTabNames = new Set(tabs.map(t => t.workflowName))
+    let uniqueName = baseName
+    if (existingTabNames.has(uniqueName)) {
+      let counter = 2
+      while (existingTabNames.has(`${baseName} ${counter}`)) counter++
+      uniqueName = `${baseName} ${counter}`
+    }
+    setTabs(prev => [...prev, { tabId: newTabId, workflowId: null, workflowName: uniqueName, nodes: [], edges: [], isDirty: false }])
+    useWorkflowStore.setState({ workflowId: null, workflowName: uniqueName, nodes: [], edges: [], isDirty: false })
     setActiveTabId(newTabId)
-  }, [saveCurrentTabSnapshot])
+  }, [saveCurrentTabSnapshot, tabs])
 
   // Tab rename — inline editing
   const [editingTabId, setEditingTabId] = useState<string | null>(null)
@@ -218,18 +240,31 @@ export function WorkflowPage() {
       setEditingTabId(null)
       return
     }
-    // Update tab snapshot
-    setTabs(prev => prev.map(t => t.tabId === editingTabId ? { ...t, workflowName: trimmed } : t))
+
+    // Check for duplicate name across all tabs (excluding self)
+    const isDuplicate = tabs.some(t => t.tabId !== editingTabId && t.workflowName === trimmed)
+    if (isDuplicate) {
+      setEditingTabId(null)
+      return
+    }
+
     // If it's the active tab, also update the store and persist to backend
     if (editingTabId === activeTabId) {
       await renameWorkflow(trimmed)
+      // Sync back the actual name (may have been deduplicated by backend)
+      const actualName = useWorkflowStore.getState().workflowName
+      setTabs(prev => prev.map(t => t.tabId === editingTabId ? { ...t, workflowName: actualName } : t))
       invalidateWorkflowListCache()
     } else {
       // For non-active tabs, persist directly via IPC if it has a workflowId
       const tab = tabs.find(t => t.tabId === editingTabId)
       if (tab?.workflowId) {
-        workflowIpc.rename(tab.workflowId, trimmed).catch(console.error)
+        const result = await workflowIpc.rename(tab.workflowId, trimmed) as unknown as { finalName: string } | void
+        const actualName = (result && typeof result === 'object' && 'finalName' in result) ? result.finalName : trimmed
+        setTabs(prev => prev.map(t => t.tabId === editingTabId ? { ...t, workflowName: actualName } : t))
         invalidateWorkflowListCache()
+      } else {
+        setTabs(prev => prev.map(t => t.tabId === editingTabId ? { ...t, workflowName: trimmed } : t))
       }
     }
     setEditingTabId(null)
@@ -243,7 +278,16 @@ export function WorkflowPage() {
   const [confirmCloseTabId, setConfirmCloseTabId] = useState<string | null>(null)
 
   const doCloseTab = useCallback((tabId: string) => {
-    if (tabs.length <= 1) return
+    if (tabs.length <= 1) {
+      // Last tab — reset to a clean blank workflow
+      const blankName = 'Untitled Workflow'
+      tabIdCounter++
+      const newTabId = `tab-${tabIdCounter}`
+      useWorkflowStore.setState({ workflowId: null, workflowName: blankName, nodes: [], edges: [], isDirty: false })
+      setTabs([{ tabId: newTabId, workflowId: null, workflowName: blankName, nodes: [], edges: [], isDirty: false }])
+      setActiveTabId(newTabId)
+      return
+    }
     const remaining = tabs.filter(t => t.tabId !== tabId)
     setTabs(remaining)
     if (tabId === activeTabId) {
@@ -261,7 +305,6 @@ export function WorkflowPage() {
 
   const closeTab = useCallback((tabId: string, e: React.MouseEvent) => {
     e.stopPropagation()
-    if (tabs.length <= 1) return
     const tab = tabs.find(t => t.tabId === tabId)
     if (tab?.isDirty) {
       setConfirmCloseTabId(tabId)
@@ -269,6 +312,78 @@ export function WorkflowPage() {
       doCloseTab(tabId)
     }
   }, [tabs, doCloseTab])
+
+  // ── Tab context menu (right-click) ──────────────────────────────────
+  const [tabContextMenu, setTabContextMenu] = useState<{ tabId: string; x: number; y: number } | null>(null)
+  const tabContextMenuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!tabContextMenu) return
+    const handler = (e: MouseEvent) => {
+      if (tabContextMenuRef.current && !tabContextMenuRef.current.contains(e.target as Node)) {
+        setTabContextMenu(null)
+      }
+    }
+    document.addEventListener('mousedown', handler, true)
+    return () => document.removeEventListener('mousedown', handler, true)
+  }, [tabContextMenu])
+
+  const closeMultipleTabs = useCallback((tabIds: string[]) => {
+    // Filter out tabs that would leave us with zero tabs
+    const remaining = tabs.filter(t => !tabIds.includes(t.tabId))
+    if (remaining.length === 0) return
+    setTabs(remaining)
+    if (tabIds.includes(activeTabId)) {
+      const target = remaining[remaining.length - 1]
+      useWorkflowStore.setState({
+        workflowId: target.workflowId,
+        workflowName: target.workflowName,
+        nodes: target.nodes as ReturnType<typeof useWorkflowStore.getState>['nodes'],
+        edges: target.edges as ReturnType<typeof useWorkflowStore.getState>['edges'],
+        isDirty: target.isDirty
+      })
+      setActiveTabId(target.tabId)
+    }
+  }, [tabs, activeTabId])
+
+  const handleTabContextAction = useCallback((action: string) => {
+    if (!tabContextMenu) return
+    const { tabId } = tabContextMenu
+    setTabContextMenu(null)
+
+    switch (action) {
+      case 'close':
+        doCloseTab(tabId)
+        break
+      case 'closeOthers': {
+        const others = tabs.filter(t => t.tabId !== tabId).map(t => t.tabId)
+        closeMultipleTabs(others)
+        break
+      }
+      case 'closeRight': {
+        const idx = tabs.findIndex(t => t.tabId === tabId)
+        const rightTabs = tabs.slice(idx + 1).map(t => t.tabId)
+        if (rightTabs.length > 0) closeMultipleTabs(rightTabs)
+        break
+      }
+      case 'closeSaved': {
+        const savedTabs = tabs.filter(t => !t.isDirty && t.tabId !== tabId).map(t => t.tabId)
+        if (savedTabs.length > 0) closeMultipleTabs(savedTabs)
+        break
+      }
+      case 'closeAll': {
+        // Keep one new empty tab
+        saveCurrentTabSnapshot()
+        tabIdCounter++
+        const newTabId = `tab-${tabIdCounter}`
+        const newTab: TabSnapshot = { tabId: newTabId, workflowId: null, workflowName: 'Untitled Workflow', nodes: [], edges: [], isDirty: false }
+        setTabs([newTab])
+        useWorkflowStore.setState({ workflowId: null, workflowName: 'Untitled Workflow', nodes: [], edges: [], isDirty: false })
+        setActiveTabId(newTabId)
+        break
+      }
+    }
+  }, [tabContextMenu, tabs, doCloseTab, closeMultipleTabs, saveCurrentTabSnapshot])
 
   // Restore previous editing session (tabs + active tab + canvas state) on startup.
   useEffect(() => {
@@ -357,10 +472,109 @@ export function WorkflowPage() {
     }
   }, [workflowId])
 
+  // Load template from URL query param
+  useEffect(() => {
+    const templateId = searchParams.get('template')
+    if (!templateId || !startupSessionReady) return
+    
+    const loadTemplateData = async () => {
+      try {
+        // Load templates
+        await loadTemplates({ templateType: 'workflow' })
+        
+        // Get the template by ID
+        const result = await window.workflowAPI?.invoke('template:get', { id: templateId }) as Template | null
+        if (!result || !result.workflowData) {
+          showIoToast('error', t('workflow.templateNotFound', 'Template not found'))
+          setSearchParams({}, { replace: true })
+          return
+        }
+        
+        // Increment use count
+        await useTemplate(templateId)
+        
+        // Create new workflow from template — generate fresh IDs to avoid UNIQUE constraint conflicts
+        const { graphDefinition } = result.workflowData
+        const defMap = new Map(
+          nodeDefs.map(def => [
+            def.type,
+            { params: def.params ?? [], inputs: def.inputs ?? [], outputs: def.outputs ?? [], label: def.label ?? def.type }
+          ])
+        )
+        // Fetch models list to resolve modelInputSchema for ai-task nodes
+        let modelMap = new Map<string, unknown[]>()
+        try {
+          const allModels = await modelsIpc.list()
+          modelMap = new Map((allModels ?? []).map((m: any) => [m.modelId, m.inputSchema ?? []]))
+        } catch { /* ignore */ }
+
+        const idMap = new Map<string, string>()
+        graphDefinition.nodes.forEach((n: any) => {
+          idMap.set(String(n.id), crypto.randomUUID())
+        })
+        const wfNodes = graphDefinition.nodes.map((n: any) => {
+          const def = defMap.get(n.nodeType)
+          const meta = n.params?.__meta as Record<string, unknown> | undefined
+          let modelInputSchema = (meta?.modelInputSchema as unknown[]) ?? []
+          const label = (meta?.label as string) || (def ? def.label : n.nodeType)
+          const { __meta: _, ...cleanParams } = (n.params ?? {}) as Record<string, unknown>
+          // If modelInputSchema is empty but modelId exists, resolve from models list
+          const modelId = cleanParams.modelId as string | undefined
+          if ((!modelInputSchema || modelInputSchema.length === 0) && modelId) {
+            modelInputSchema = (modelMap.get(modelId) as unknown[]) ?? []
+          }
+          return {
+            id: idMap.get(String(n.id)) ?? n.id,
+            type: 'custom',
+            position: n.position,
+            data: {
+              nodeType: n.nodeType,
+              label,
+              params: cleanParams,
+              paramDefinitions: def?.params ?? [],
+              inputDefinitions: def?.inputs ?? [],
+              outputDefinitions: def?.outputs ?? [],
+              modelInputSchema,
+            }
+          }
+        })
+        const wfEdges = graphDefinition.edges.map((e: any) => ({
+          id: crypto.randomUUID(),
+          source: idMap.get(String(e.sourceNodeId)) ?? e.sourceNodeId,
+          target: idMap.get(String(e.targetNodeId)) ?? e.targetNodeId,
+          sourceHandle: e.sourceOutputKey,
+          targetHandle: e.targetInputKey,
+          type: 'custom',
+        }))
+        
+        // Update workflow store
+        useWorkflowStore.setState({
+          workflowId: null,
+          workflowName: result.name,
+          nodes: wfNodes,
+          edges: wfEdges,
+          isDirty: true
+        })
+        
+        showIoToast('success', `${t('workflow.templateLoaded', 'Template loaded')}: ${result.name}`)
+        
+        // Clear the query param
+        setSearchParams({}, { replace: true })
+      } catch (err) {
+        console.error('Failed to load template:', err)
+        showIoToast('error', t('workflow.templateLoadFailed', 'Failed to load template'))
+        setSearchParams({}, { replace: true })
+      }
+    }
+    
+    loadTemplateData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, startupSessionReady]) // Only depend on searchParams and startupSessionReady
+
   // Auto-save: when workflow has a name and is dirty, save after 2s debounce
   // Triggers on: param changes, connections, model switches, node adds/removes
   useEffect(() => {
-    if (!isDirty || !workflowId || !workflowName || workflowName === 'Untitled Workflow') return
+    if (!isDirty || !workflowId || !workflowName || /^Untitled Workflow(\s+\d+)?$/.test(workflowName)) return
     const timer = setTimeout(async () => {
       try {
         await saveWorkflow()
@@ -372,7 +586,7 @@ export function WorkflowPage() {
 
   // Auto-save after execution completes
   useEffect(() => {
-    if (!isRunning && workflowId && workflowName && workflowName !== 'Untitled Workflow') {
+    if (!isRunning && workflowId && workflowName && !/^Untitled Workflow(\s+\d+)?$/.test(workflowName)) {
       saveWorkflow().then(() => setLastSavedAt(new Date())).catch(() => {})
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -397,34 +611,6 @@ export function WorkflowPage() {
   const [modelSyncError, setModelSyncError] = useState('')
   const [, setModelCount] = useState(0)
 
-  // Cost display
-  const [estimatedCost, setEstimatedCost] = useState<number | null>(null)
-  // Daily spend tracking — data fetched for future budget display
-  const [, setDailySpend] = useState(0)
-  const [, setDailyLimit] = useState(100)
-  const estimateNodeIdsSignature = useMemo(
-    () => [...nodes.map(n => n.id)].sort().join('|'),
-    [nodes]
-  )
-  const costEstimateSignature = useMemo(() => {
-    // Only include cost-relevant node fields and ignore UI-only/internal keys
-    // so moving/resizing nodes won't trigger cost re-estimation.
-    return nodes
-      .map((n) => {
-        const rawParams = (n.data?.params ?? {}) as Record<string, unknown>
-        const sanitizedEntries = Object.entries(rawParams)
-          .filter(([key]) => !key.startsWith('__'))
-          .sort(([a], [b]) => a.localeCompare(b))
-        return JSON.stringify({
-          id: n.id,
-          nodeType: n.data?.nodeType ?? '',
-          params: sanitizedEntries
-        })
-      })
-      .sort()
-      .join('|')
-  }, [nodes])
-
   // API key state
   const apiKey = useApiKeyStore(s => s.apiKey)
   const hasAttemptedLoad = useApiKeyStore(s => s.hasAttemptedLoad)
@@ -443,9 +629,25 @@ export function WorkflowPage() {
     return () => window.removeEventListener('keydown', onKeyDown, true)
   }, [handleSave])
 
-  // Init
-  // Note: useFreeToolListener is now called globally in Layout.tsx
+  // Global Ctrl/Cmd+W handler — close active tab
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const ctrlOrCmd = navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? e.metaKey : e.ctrlKey
+      if (ctrlOrCmd && e.key === 'w') {
+        e.preventDefault()
+        const tab = tabs.find(t => t.tabId === activeTabId)
+        if (tab?.isDirty) {
+          setConfirmCloseTabId(activeTabId)
+        } else {
+          doCloseTab(activeTabId)
+        }
+      }
+    }
+    window.addEventListener('keydown', onKeyDown, true)
+    return () => window.removeEventListener('keydown', onKeyDown, true)
+  }, [tabs, activeTabId, doCloseTab])
 
+  // Init
   useEffect(() => {
     registryIpc.getAll().then(defs => setNodeDefs(defs ?? [])).catch(console.error)
     initListeners()
@@ -462,7 +664,11 @@ export function WorkflowPage() {
     if (!apiKey) { setModelSyncStatus('no-key'); return }
     setModelSyncStatus('loading'); setModelSyncError('')
     try { await fetchModels(true) } catch (err) {
-      setModelSyncStatus('error'); setModelSyncError(err instanceof Error ? err.message : 'Failed')
+      if (isWorkflowApiUnavailable(err)) {
+        setModelSyncStatus('unavailable')
+      } else {
+        setModelSyncStatus('error'); setModelSyncError(err instanceof Error ? err.message : 'Failed')
+      }
     }
   }, [apiKey, fetchModels])
 
@@ -476,38 +682,42 @@ export function WorkflowPage() {
   useEffect(() => {
     if (desktopModels.length > 0) {
       modelsIpc.sync(desktopModels).then(() => { setModelSyncStatus('synced'); setModelCount(desktopModels.length) })
-        .catch(err => { setModelSyncStatus('error'); setModelSyncError(err instanceof Error ? err.message : 'Sync failed') })
+        .catch(err => {
+          if (isWorkflowApiUnavailable(err)) setModelSyncStatus('unavailable')
+          else { setModelSyncStatus('error'); setModelSyncError(err instanceof Error ? err.message : 'Sync failed') }
+        })
     }
   }, [desktopModels])
 
-  useEffect(() => { if (modelsError) { setModelSyncStatus('error'); setModelSyncError(modelsError) } }, [modelsError])
-
-  // Cost estimate (debounced)
   useEffect(() => {
-    const nodeIds = estimateNodeIdsSignature ? estimateNodeIdsSignature.split('|') : []
-    if (!workflowId || nodeIds.length === 0) { setEstimatedCost(null); return }
-    const t = setTimeout(async () => {
-      try {
-        const est = await costIpc.estimate(workflowId, nodeIds)
-        setEstimatedCost(est.totalEstimated)
-      } catch { setEstimatedCost(null) }
-    }, 800)
-    return () => clearTimeout(t)
-  }, [workflowId, estimateNodeIdsSignature, costEstimateSignature])
+    if (modelsError) {
+      if (modelsError.includes(WORKFLOW_API_UNAVAILABLE_MSG)) setModelSyncStatus('unavailable')
+      else { setModelSyncStatus('error'); setModelSyncError(modelsError) }
+    }
+  }, [modelsError])
 
-  useEffect(() => {
-    if (!workflowId) return
-    costIpc.getDailySpend().then(setDailySpend).catch(() => {})
-    costIpc.getBudget().then(b => setDailyLimit(b.dailyLimit)).catch(() => {})
-  }, [workflowId, isRunning])
 
-  // Param defs for selected node
-  const selectedNode = nodes.find(n => n.id === selectedNodeId)
-  const paramDefs = selectedNode?.data?.paramDefinitions ?? []
-  const showRightPanel = selectedNodeId !== null
 
-  // Run All — with node labels for monitor
+  // Run All — with node labels for monitor (Electron: IPC; browser: in-process executor)
   const handleRunAll = async (times = 1) => {
+    if (!isWorkflowApiAvailable()) {
+      // Browser mode: run in-process (no save required)
+      if (nodes.length === 0) return
+      const runAllInBrowser = useExecutionStore.getState().runAllInBrowser
+      const browserNodes = nodes.map(n => ({ id: n.id, data: { nodeType: n.data?.nodeType ?? '', params: n.data?.params, label: n.data?.label } }))
+      const browserEdges = edges.map(e => ({ source: e.source, target: e.target, sourceHandle: e.sourceHandle ?? undefined, targetHandle: e.targetHandle ?? undefined }))
+      setIsBatchRunning(true)
+      try {
+        await runAllInBrowser(browserNodes, browserEdges)
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        setExecToast({ type: 'error', msg: msg || t('workflow.runFailed', 'Run failed') })
+        setTimeout(() => setExecToast(null), 4000)
+      } finally {
+        setIsBatchRunning(false)
+      }
+      return
+    }
     let wfId = workflowId
     let workflowExists = false
     if (wfId) {
@@ -519,9 +729,10 @@ export function WorkflowPage() {
       }
     }
     // Executor reads from persisted workflow DB, so save first when dirty.
+    // Use forRun: true so untitled workflows get an auto-generated name and we don't prompt.
     if (!wfId || isDirty || !workflowExists) {
       if (nodes.length === 0) return
-      await saveWorkflow()
+      await saveWorkflow({ forRun: true })
       wfId = useWorkflowStore.getState().workflowId
       if (!wfId) return
     }
@@ -549,6 +760,10 @@ export function WorkflowPage() {
 
   const handleFitView = useCallback(() => {
     window.dispatchEvent(new Event('workflow:fit-view'))
+  }, [])
+
+  const handleAutoLayout = useCallback(() => {
+    window.dispatchEvent(new Event('workflow:auto-layout'))
   }, [])
 
   // Import / Export with toast feedback
@@ -584,17 +799,59 @@ export function WorkflowPage() {
   }, [loadWorkflow, saveCurrentTabSnapshot, t])
 
   const handleExport = useCallback(async () => {
-    if (!workflowId) return
     try {
-      const wfNodes = nodes.map(n => ({ id: n.id, nodeType: n.data.nodeType, position: n.position, params: n.data.params ?? {} }))
+      const wfNodes = nodes.map(n => ({
+        id: n.id, nodeType: n.data.nodeType, position: n.position,
+        params: { ...(n.data.params ?? {}), __meta: { label: n.data.label, modelInputSchema: n.data.modelInputSchema ?? [] } }
+      }))
       const wfEdges = useWorkflowStore.getState().edges.map(e => ({ id: e.id, sourceNodeId: e.source, targetNodeId: e.target, sourceOutputKey: e.sourceHandle ?? 'output', targetInputKey: e.targetHandle ?? 'input' }))
-      await storageIpc.exportWorkflowJson(workflowId, workflowName, { nodes: wfNodes, edges: wfEdges })
+      const idForExport = workflowId ?? ''
+      const nameForExport = workflowName || 'Untitled Workflow'
+      await storageIpc.exportWorkflowJson(idForExport, nameForExport, { nodes: wfNodes, edges: wfEdges })
       showIoToast('success', t('workflow.exported', 'Exported successfully'))
     } catch (err) {
       console.error('Export failed:', err)
       showIoToast('error', t('workflow.exportFailed', 'Export failed'))
     }
   }, [workflowId, workflowName, nodes, t])
+
+  const [showSaveTemplateDialog, setShowSaveTemplateDialog] = useState(false)
+
+  const handleSaveAsTemplate = useCallback(() => {
+    if (!workflowId) return
+    setShowSaveTemplateDialog(true)
+  }, [workflowId])
+
+  const handleSaveTemplateConfirm = useCallback(async (data: import('@/components/templates/TemplateDialog').TemplateFormData) => {
+    try {
+      const wfNodes = nodes.map(n => ({
+        id: n.id, nodeType: n.data.nodeType, position: n.position,
+        params: { ...(n.data.params ?? {}), __meta: { label: n.data.label, modelInputSchema: n.data.modelInputSchema ?? [] } }
+      }))
+      const wfEdges = useWorkflowStore.getState().edges.map(e => ({ id: e.id, sourceNodeId: e.source, targetNodeId: e.target, sourceOutputKey: e.sourceHandle ?? 'output', targetInputKey: e.targetHandle ?? 'input' }))
+      const nodeTypes = Array.from(new Set(nodes.map(n => n.data.nodeType)))
+
+      await createTemplate({
+        name: data.name,
+        description: data.description || null,
+        tags: data.tags,
+        thumbnail: data.thumbnail || null,
+        type: 'custom',
+        templateType: 'workflow',
+        workflowData: {
+          category: data.category || 'ai-generation',
+          graphDefinition: { nodes: wfNodes, edges: wfEdges },
+          nodeTypes,
+          nodeCount: nodes.length,
+          useCases: []
+        }
+      })
+      showIoToast('success', t('workflow.templateSaved', 'Saved as template'))
+    } catch (err) {
+      console.error('Save template failed:', err)
+      showIoToast('error', t('workflow.saveTemplateFailed', 'Failed to save template'))
+    }
+  }, [nodes, createTemplate, t])
 
   return (
     <div className="flex flex-col h-full relative">
@@ -607,6 +864,11 @@ export function WorkflowPage() {
       {modelSyncStatus === 'loading' && (
         <div className="px-4 py-1.5 bg-blue-500/10 border-b border-blue-500/30 text-xs text-blue-400 animate-pulse">Loading models...</div>
       )}
+      {modelSyncStatus === 'unavailable' && (
+        <div className="flex items-center gap-2 px-4 py-1.5 bg-muted/50 border-b border-border text-xs text-muted-foreground">
+          <span>{t('workflow.modelSyncDesktopOnly', 'Model sync is available in the WaveSpeed Desktop app.')}</span>
+        </div>
+      )}
       {modelSyncStatus === 'error' && (
         <div className="flex items-center gap-2 px-4 py-1.5 bg-red-500/10 border-b border-red-500/30 text-xs text-red-400">
           <span>Models failed: {modelSyncError}</span>
@@ -615,16 +877,44 @@ export function WorkflowPage() {
       )}
 
       {/* ── Toolbar — unified header ──────────────────────────── */}
-      <div className="flex items-center border-b border-border bg-card py-1.5 gap-1.5 min-h-[40px]">
+      <div className="flex items-center border-b border-border bg-card py-1.5 px-2 gap-1.5 min-h-[40px]">
         {/* Left: Panel toggles */}
-        <button onClick={toggleWorkflowPanel}
-          className={`h-7 px-3 rounded-md text-xs font-medium transition-colors ${showWorkflowPanel ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`}>
-          {t('workflow.workflows', 'Workflows')}
-        </button>
-        <button onClick={toggleNodePalette}
-          className={`h-7 px-3 rounded-md text-xs font-medium transition-colors ${showNodePalette ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`}>
-          {t('workflow.nodes', 'Nodes')}
-        </button>
+        <div className="flex items-center gap-3">
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <button onClick={toggleWorkflowPanel}
+                className={`h-7 w-7 rounded-md text-xs font-medium transition-colors flex items-center justify-center ${showWorkflowPanel ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="3" width="20" height="18" rx="2"/><path d="M2 9h20"/><path d="M10 21V9"/>
+                </svg>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">{t('workflow.workflows', 'Workflows')}</TooltipContent>
+          </Tooltip>
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <button onClick={toggleNodePalette}
+                data-guide="node-palette-btn"
+                className={`h-7 w-7 rounded-md text-xs font-medium transition-colors flex items-center justify-center ${showNodePalette ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M6 9v3a3 3 0 0 0 3 3h3"/><path d="M15 15l3 3"/>
+                </svg>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">{t('workflow.nodes', 'Nodes')}</TooltipContent>
+          </Tooltip>
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <button onClick={() => setShowTemplateDialog(true)}
+                className={`h-7 w-7 rounded-md text-xs font-medium transition-colors flex items-center justify-center ${showTemplateDialog ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/><path d="M13 13h4"/><path d="M13 17h4"/>
+                </svg>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">{t('templates.title', 'Templates')}</TooltipContent>
+          </Tooltip>
+        </div>
         <div className="w-px h-5 bg-border mx-1" />
 
         {/* Tabs — inline, scrollable */}
@@ -635,7 +925,12 @@ export function WorkflowPage() {
             return (
               <div key={tab.tabId}
                 onClick={() => switchTab(tab.tabId)}
-                className={`group flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-md cursor-pointer text-xs select-none max-w-[160px] transition-colors
+                onContextMenu={e => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setTabContextMenu({ tabId: tab.tabId, x: e.clientX, y: e.clientY })
+                }}
+                className={`group flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-md cursor-pointer text-xs select-none min-w-[72px] max-w-[160px] transition-colors
                   ${isActive
                     ? 'bg-accent text-foreground'
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
@@ -653,13 +948,17 @@ export function WorkflowPage() {
                     }}
                     onClick={e => e.stopPropagation()}
                     autoFocus
-                    className="flex-1 min-w-0 bg-transparent border-b border-primary text-xs outline-none px-0 py-0"
+                    className={`flex-1 min-w-0 bg-transparent border-b text-xs outline-none px-0 py-0 ${
+                      editingTabName.trim() && tabs.some(t => t.tabId !== editingTabId && t.workflowName === editingTabName.trim())
+                        ? 'border-red-500 text-red-400'
+                        : 'border-primary'
+                    }`}
                   />
                 ) : (
                   <span className="truncate flex-1" onDoubleClick={e => { e.stopPropagation(); startRenameTab(tab.tabId) }}>{tab.workflowName}</span>
                 )}
                 {!isEditing && tab.isDirty && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />}
-                {!isEditing && tabs.length > 1 && (
+                {!isEditing && (
                   <button onClick={(e) => closeTab(tab.tabId, e)}
                     className="w-4 h-4 flex items-center justify-center rounded-sm text-[10px] text-muted-foreground hover:text-foreground hover:bg-accent/80 opacity-0 group-hover:opacity-100 transition-opacity">
                     ✕
@@ -687,31 +986,30 @@ export function WorkflowPage() {
           <span className="text-[10px] text-orange-400">{t('workflow.unsaved', 'unsaved')}</span>
         )}
 
-        {/* Cost info */}
-        {estimatedCost !== null && estimatedCost > 0 && (
-          <span className="text-[11px] text-muted-foreground ml-2">
-            {t('workflow.estimated', 'Cost')}{' '}
-            <span className="font-medium text-blue-400">${estimatedCost.toFixed(4)}</span>
-          </span>
-        )}
-
         {/* Spacer */}
         <div className="flex-1" />
 
         {/* Right: Run controls */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5" data-guide="run-controls">
           <div className="flex items-center rounded-lg overflow-hidden shadow-sm">
-            {/* Run button */}
-            <button
-              className="h-8 px-3.5 flex items-center gap-1.5 bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={nodes.length === 0 || isRunning || isBatchRunning}
-              onClick={() => handleRunAll(runCount)}
-            >
+            {/* Run button — disabled in browser (no execution API) */}
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <button
+                  className="h-8 px-3.5 flex items-center gap-1.5 bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={nodes.length === 0 || isRunning || isBatchRunning}
+                  onClick={() => handleRunAll(runCount)}
+                >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none">
                 <polygon points="6,3 20,12 6,21" />
               </svg>
-              {isRunning || isBatchRunning ? t('workflow.running', 'Running...') : t('workflow.run', 'Run')}
-            </button>
+                  {isRunning || isBatchRunning ? t('workflow.running', 'Running...') : t('workflow.runWorkflow', 'Run')}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                {nodes.length === 0 ? t('workflow.addNodesToRun', 'Add nodes to run') : t('workflow.runWorkflow', 'Run')}
+              </TooltipContent>
+            </Tooltip>
             {/* Run count */}
             <div className="h-8 flex items-center bg-[hsl(var(--muted))] border-l border-[hsl(var(--border))]">
               <input
@@ -720,7 +1018,7 @@ export function WorkflowPage() {
                 max={99}
                 value={runCount}
                 onChange={e => setRunCount(Math.max(1, Math.min(99, Number(e.target.value) || 1)))}
-                className="w-10 h-full bg-transparent px-1 text-xs text-center text-foreground focus:outline-none"
+                className="w-10 h-full bg-transparent px-1 text-xs text-center text-foreground focus:outline-none dark:[color-scheme:dark]"
                 title={t('workflow.runCount', 'Run count')}
               />
             </div>
@@ -740,39 +1038,99 @@ export function WorkflowPage() {
               </svg>
             </button>
           )}
-          <button
-            onClick={handleFitView}
-            className="h-8 px-2 rounded-md border border-[hsl(var(--border))] text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-            title={t('workflow.fitView', 'Fit View')}
-          >
-            {t('workflow.fitView', 'Fit View')}
-          </button>
+        </div>
+        {/* Canvas tools: Select/Hand, Fit View, Auto Layout */}
+        <div className="flex items-center gap-1.5" data-guide="canvas-tools">
+          {/* Interaction mode toggle (Select / Hand) */}
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setInteractionMode(interactionMode === 'hand' ? 'select' : 'hand')}
+                className={`h-8 w-8 rounded-md border transition-colors flex items-center justify-center ${
+                  interactionMode === 'select'
+                    ? 'border-primary/50 bg-primary/10 text-primary'
+                    : 'border-[hsl(var(--border))] text-muted-foreground hover:text-foreground hover:bg-accent'
+                }`}
+              >
+                {interactionMode === 'select'
+                  ? <MousePointer2 className="w-3.5 h-3.5" />
+                  : <Hand className="w-3.5 h-3.5" />}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              {interactionMode === 'select'
+                ? t('workflow.selectMode', 'Select (V)')
+                : t('workflow.handMode', 'Hand (H)')}
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <button
+                onClick={handleFitView}
+                className="h-8 w-8 rounded-md border border-[hsl(var(--border))] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center justify-center"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M2 7V2h5"/><path d="M17 2h5v5"/><path d="M22 17v5h-5"/><path d="M7 22H2v-5"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">{t('workflow.fitView', 'Fit View')}</TooltipContent>
+          </Tooltip>
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <button
+                onClick={handleAutoLayout}
+                className="h-8 w-8 rounded-md border border-[hsl(var(--border))] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center justify-center"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="6" height="6" rx="1"/><rect x="15" y="3" width="6" height="6" rx="1"/><rect x="9" y="15" width="6" height="6" rx="1"/><path d="M9 6h6"/><path d="M12 9v6"/>
+                </svg>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">{t('workflow.autoLayout', 'Auto Layout')}</TooltipContent>
+          </Tooltip>
         </div>
 
         {/* Monitor toggle */}
         <MonitorToggleBtn />
 
-        <div className="w-px h-5 bg-border mx-1" />
+        {/* Help / Guide button */}
+        <Tooltip delayDuration={0}>
+          <TooltipTrigger asChild>
+            <button
+              onClick={guide.show}
+              className="h-8 w-8 rounded-md border border-[hsl(var(--border))] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center justify-center"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">{t('workflow.guide.welcome.title', 'Guide')}</TooltipContent>
+        </Tooltip>
 
-        <button onClick={handleImport} className="px-2 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors">{t('workflow.import', 'Import')}</button>
-        {workflowId && <button onClick={handleExport} className="px-2 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors">{t('workflow.export', 'Export')}</button>}
-        <button onClick={handleSave}
-          className="px-2 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors">{t('workflow.save', 'Save')}</button>
+        {/* ── More menu (Import / Export / Save) ─────────────── */}
+        <MoreMenu
+          workflowId={workflowId}
+          onImport={handleImport}
+          onExport={handleExport}
+          onSave={handleSave}
+          className="mr-1"
+          onSaveAsTemplate={handleSaveAsTemplate}
+          data-guide="toolbar-more"
+        />
       </div>
 
-      {/* ── Run Monitor panel ─────────────────────────────────── */}
-      <RunMonitor workflowId={workflowId} />
-
       {/* ── Main content ───────────────────────────────────────── */}
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="flex flex-1 min-h-0 overflow-hidden relative">
         {/* Left panels as overlay so they don't shift the canvas layout */}
         {showNodePalette && (
-          <div className="absolute top-0 left-0 bottom-0 z-30">
+          <div className="absolute top-0 left-0 bottom-0 z-30 h-full">
             <NodePalette definitions={nodeDefs} />
           </div>
         )}
         {showWorkflowPanel && (
-          <div className="absolute top-0 left-0 bottom-0 z-30">
+          <div className="absolute top-0 left-0 bottom-0 z-30 h-full">
             <WorkflowList onOpen={async (id) => {
               const existingTab = tabs.find(t => t.workflowId === id)
               if (existingTab) {
@@ -785,31 +1143,30 @@ export function WorkflowPage() {
                 setActiveTabId(newTabId)
                 await loadWorkflow(id)
               }
+            }} onDelete={(deletedId) => {
+              // Close any tab that has this workflow open
+              const tabToClose = tabs.find(t => t.workflowId === deletedId)
+              if (tabToClose) {
+                if (tabs.length <= 1) {
+                  // Last tab — reset to blank instead of closing
+                  const blankName = 'Untitled Workflow'
+                  useWorkflowStore.setState({ workflowId: null, workflowName: blankName, nodes: [], edges: [], isDirty: false })
+                  setTabs([{ ...tabToClose, workflowId: null, workflowName: blankName, nodes: [], edges: [], isDirty: false }])
+                } else {
+                  doCloseTab(tabToClose.tabId)
+                }
+              }
+              invalidateWorkflowListCache()
             }} />
           </div>
         )}
-        <WorkflowCanvas nodeDefs={nodeDefs} />
-        {showRightPanel && <ResizableSidebar>
-          {selectedNodeId ? (
-            <>
-              <div className="flex border-b border-border flex-shrink-0">
-                <button onClick={() => setRightTab('config')}
-                  className={`flex-1 px-3 py-2 text-xs font-medium transition-colors ${rightTab === 'config' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
-                  {t('workflow.config', 'Model')}
-                </button>
-                <button onClick={() => setRightTab('results')}
-                  className={`flex-1 px-3 py-2 text-xs font-medium transition-colors ${rightTab === 'results' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
-                  {t('workflow.results', 'Results')}
-                </button>
-              </div>
-              <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 scrollbar-auto-hide">
-                {rightTab === 'config' && <NodeConfigPanel paramDefs={paramDefs} />}
-                {rightTab === 'results' && <ResultsPanel />}
-              </div>
-            </>
-          ) : null}
-        </ResizableSidebar>}
+        <div data-guide="canvas" className="flex-1 h-full min-w-0">
+          <WorkflowCanvas nodeDefs={nodeDefs} />
+        </div>
       </div>
+
+      {/* ── Execution Monitor (bottom, collapsible) ───────────────── */}
+      <RunMonitor workflowId={workflowId} />
 
       {/* Preview overlay — covers the canvas area only (absolute within the page) */}
       {previewSrc && (
@@ -861,6 +1218,96 @@ export function WorkflowPage() {
       {/* Naming dialog */}
       {showNamingDialog && <NamingDialog defaultValue={namingDialogDefault} onConfirm={resolveNamingDialog} />}
 
+      {/* Workflow Template Picker Dialog */}
+      <TemplatePickerDialog
+        open={showTemplateDialog}
+        onOpenChange={setShowTemplateDialog}
+        templateType="workflow"
+        onUseTemplate={async (template) => {
+          if (template.workflowData?.graphDefinition) {
+            saveCurrentTabSnapshot()
+            tabIdCounter++
+            const newTabId = `tab-${tabIdCounter}`
+            setTabs(prev => [...prev, { tabId: newTabId, workflowId: null, workflowName: template.name, nodes: [], edges: [], isDirty: false }])
+            setActiveTabId(newTabId)
+
+            // Build a definition map from already-loaded nodeDefs
+            const defMap = new Map(
+              nodeDefs.map(def => [
+                def.type,
+                { params: def.params ?? [], inputs: def.inputs ?? [], outputs: def.outputs ?? [], label: def.label ?? def.type }
+              ])
+            )
+
+            // Fetch models list to resolve modelInputSchema for ai-task nodes
+            let modelMap = new Map<string, unknown[]>()
+            try {
+              const allModels = await modelsIpc.list()
+              modelMap = new Map((allModels ?? []).map((m: any) => [m.modelId, m.inputSchema ?? []]))
+            } catch { /* ignore — schemas will be empty */ }
+
+            const gd = template.workflowData.graphDefinition
+            const idMap = new Map<string, string>()
+            const newNodes = (gd.nodes ?? []).map((n: any) => {
+              const newId = `node-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+              idMap.set(n.id, newId)
+              const def = defMap.get(n.nodeType)
+              // Extract __meta (same as loadWorkflow does)
+              const meta = n.params?.__meta as Record<string, unknown> | undefined
+              let modelInputSchema = (meta?.modelInputSchema as unknown[]) ?? []
+              const label = (meta?.label as string) || (def ? def.label : n.nodeType)
+              const { __meta: _, ...cleanParams } = (n.params ?? {}) as Record<string, unknown>
+              // If modelInputSchema is empty but modelId exists, resolve from models list
+              const modelId = cleanParams.modelId as string | undefined
+              if ((!modelInputSchema || modelInputSchema.length === 0) && modelId) {
+                modelInputSchema = (modelMap.get(modelId) as unknown[]) ?? []
+              }
+              return {
+                id: newId,
+                type: 'custom',
+                position: n.position ?? { x: 0, y: 0 },
+                data: {
+                  nodeType: n.nodeType,
+                  label,
+                  params: cleanParams,
+                  paramDefinitions: def?.params ?? [],
+                  inputDefinitions: def?.inputs ?? [],
+                  outputDefinitions: def?.outputs ?? [],
+                  modelInputSchema,
+                }
+              }
+            })
+            const newEdges = (gd.edges ?? []).map((e: any) => ({
+              id: `edge-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+              source: idMap.get(e.sourceNodeId) ?? e.sourceNodeId,
+              target: idMap.get(e.targetNodeId) ?? e.targetNodeId,
+              sourceHandle: e.sourceOutputKey ?? 'output',
+              targetHandle: e.targetInputKey ?? 'input',
+              type: 'custom',
+            }))
+
+            useWorkflowStore.setState({
+              workflowId: null,
+              workflowName: template.name,
+              nodes: newNodes,
+              edges: newEdges,
+              isDirty: true,
+            })
+            showIoToast('success', `${t('workflow.templateLoaded', 'Loaded template')} "${template.name}"`)
+          }
+        }}
+      />
+
+      {/* Save as Template Dialog */}
+      <TemplateDialog
+        open={showSaveTemplateDialog}
+        onOpenChange={setShowSaveTemplateDialog}
+        mode="create"
+        defaultName={workflowName}
+        isWorkflow
+        onSave={handleSaveTemplateConfirm}
+      />
+
       {/* Close tab confirmation dialog */}
       {confirmCloseTabId && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60" onClick={() => setConfirmCloseTabId(null)}>
@@ -880,6 +1327,40 @@ export function WorkflowPage() {
           </div>
         </div>
       )}
+
+      {/* Tab context menu (right-click) */}
+      {tabContextMenu && (() => {
+        const idx = tabs.findIndex(t => t.tabId === tabContextMenu.tabId)
+        const hasRight = idx < tabs.length - 1
+        const hasSaved = tabs.some(t => !t.isDirty && t.tabId !== tabContextMenu.tabId)
+        return (
+          <div ref={tabContextMenuRef}
+            className="fixed z-[9999] w-48 rounded-lg border border-border bg-popover shadow-xl py-1 text-xs"
+            style={{ left: tabContextMenu.x, top: tabContextMenu.y }}>
+            <button onClick={() => handleTabContextAction('close')}
+              className="w-full text-left px-3 py-1.5 hover:bg-accent transition-colors">
+              {t('workflow.tabClose', 'Close')}
+            </button>
+            <button onClick={() => handleTabContextAction('closeOthers')} disabled={tabs.length <= 1}
+              className="w-full text-left px-3 py-1.5 hover:bg-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+              {t('workflow.tabCloseOthers', 'Close Others')}
+            </button>
+            <button onClick={() => handleTabContextAction('closeRight')} disabled={!hasRight}
+              className="w-full text-left px-3 py-1.5 hover:bg-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+              {t('workflow.tabCloseRight', 'Close to the Right')}
+            </button>
+            <button onClick={() => handleTabContextAction('closeSaved')} disabled={!hasSaved}
+              className="w-full text-left px-3 py-1.5 hover:bg-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+              {t('workflow.tabCloseSaved', 'Close Saved')}
+            </button>
+            <div className="border-t border-border my-1" />
+            <button onClick={() => handleTabContextAction('closeAll')}
+              className="w-full text-left px-3 py-1.5 hover:bg-accent transition-colors text-red-500 dark:text-red-400">
+              {t('workflow.tabCloseAll', 'Close All')}
+            </button>
+          </div>
+        )
+      })()}
 
       {/* Toasts — stacked at bottom center */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[1000] flex flex-col items-center gap-2">
@@ -908,82 +1389,105 @@ export function WorkflowPage() {
           </div>
         )}
       </div>
-    </div>
-  )
-}
 
-/* ── Resizable Sidebar ─────────────────────────────────────────────── */
-
-function ResizableSidebar({ children }: { children: React.ReactNode }) {
-  const [basis, setBasis] = useState(300)
-  const [dragging, setDragging] = useState(false)
-
-  const onMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault()
-    setDragging(true)
-    const startX = e.clientX
-    const startBasis = basis
-
-    const onMove = (ev: MouseEvent) => {
-      const delta = startX - ev.clientX
-      setBasis(Math.max(260, Math.min(600, startBasis + delta)))
-    }
-    const onUp = () => {
-      setDragging(false)
-      document.removeEventListener('mousemove', onMove)
-      document.removeEventListener('mouseup', onUp)
-    }
-    document.addEventListener('mousemove', onMove)
-    document.addEventListener('mouseup', onUp)
-  }, [basis])
-
-  return (
-    <div
-      className="flex flex-col bg-card overflow-hidden border-l border-border relative flex-shrink-0"
-      style={{ width: basis, minWidth: 260 }}
-    >
-      <div
-        onMouseDown={onMouseDown}
-        className={`absolute left-0 top-0 bottom-0 w-1 cursor-col-resize z-10 transition-colors ${dragging ? 'bg-primary' : 'hover:bg-primary/50'}`}
-      />
-      {children}
+      {/* Workflow Guide */}
+      <WorkflowGuide open={guide.open} onClose={guide.dismiss} onStepChange={setGuideStepKey} />
     </div>
   )
 }
 
 /* ── Naming Dialog Component ───────────────────────────────────────── */
 
-function NamingDialog({ defaultValue, onConfirm }: { defaultValue: string; onConfirm: (name: string | null) => void }) {
-  const [value, setValue] = useState(defaultValue === 'Untitled Workflow' ? '' : defaultValue)
+/** Same format as auto-name in workflow.store when saving forRun (so dialog can pre-fill). */
+function defaultWorkflowName() {
+  return `Workflow ${new Date().toISOString().slice(0, 19).replace('T', ' ')}`
+}
+
+function NamingDialog({ defaultValue, onConfirm }: { defaultValue: string; onConfirm: (result: { name: string; overwriteId?: string } | null) => void }) {
+  const { t } = useTranslation()
+  const [value, setValue] = useState(() => {
+    const d = defaultValue
+    if (!d || /^Untitled Workflow(\s+\d+)?$/.test(d)) return defaultWorkflowName()
+    return d
+  })
+  const [existingWorkflows, setExistingWorkflows] = useState<Array<{ id: string; name: string }>>([])
+  const [showOverwriteConfirm, setShowOverwriteConfirm] = useState(false)
+  const currentWorkflowId = useWorkflowStore(s => s.workflowId)
+
+  // Load existing workflow names on mount
+  useEffect(() => {
+    workflowIpc.list().then(list => {
+      setExistingWorkflows((list ?? []).filter(w => w.id !== currentWorkflowId).map(w => ({ id: w.id, name: w.name })))
+    }).catch(() => {})
+  }, [currentWorkflowId])
+
+  const trimmed = value.trim()
+  const duplicateWorkflow = trimmed.length > 0 ? existingWorkflows.find(w => w.name === trimmed) : undefined
 
   const handleSubmit = () => {
-    const trimmed = value.trim()
     if (!trimmed) return
-    onConfirm(trimmed)
+    if (duplicateWorkflow) {
+      setShowOverwriteConfirm(true)
+      return
+    }
+    onConfirm({ name: trimmed })
+  }
+
+  const handleOverwrite = () => {
+    if (duplicateWorkflow) {
+      onConfirm({ name: trimmed, overwriteId: duplicateWorkflow.id })
+    }
+  }
+
+  if (showOverwriteConfirm && duplicateWorkflow) {
+    return (
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60" onClick={() => setShowOverwriteConfirm(false)}>
+        <div className="w-[360px] rounded-xl border border-border bg-card p-5 shadow-xl" onClick={e => e.stopPropagation()}>
+          <h3 className="text-sm font-semibold mb-1">{t('workflow.overwriteWorkflow', 'Overwrite Workflow')}</h3>
+          <p className="text-xs text-muted-foreground mb-4">
+            {t('workflow.overwriteConfirm', { name: trimmed, defaultValue: 'A workflow named "{{name}}" already exists. Do you want to overwrite it?' })}
+          </p>
+          <div className="flex justify-end gap-2">
+            <button onClick={() => setShowOverwriteConfirm(false)}
+              className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+              {t('workflow.cancel', 'Cancel')}
+            </button>
+            <button onClick={handleOverwrite}
+              className="px-4 py-1.5 rounded-md text-xs font-medium bg-orange-500 text-white hover:bg-orange-600 transition-colors">
+              {t('workflow.overwrite', 'Overwrite')}
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60" onClick={() => onConfirm(null)}>
       <div className="w-[360px] rounded-xl border border-border bg-card p-5 shadow-xl" onClick={e => e.stopPropagation()}>
-        <h3 className="text-sm font-semibold mb-1">Name your workflow</h3>
-        <p className="text-xs text-muted-foreground mb-3">Give it a name to save to disk and enable execution.</p>
+        <h3 className="text-sm font-semibold mb-1">{t('workflow.nameYourWorkflow', 'Name your workflow')}</h3>
+        <p className="text-xs text-muted-foreground mb-3">{t('workflow.nameYourWorkflowDesc', 'Give it a name to save to disk.')}</p>
         <input
           type="text"
           value={value}
           onChange={e => setValue(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-          placeholder="e.g. Product Image Pipeline"
+          placeholder={t('workflow.nameYourWorkflowPlaceholder', 'e.g. Product Image Pipeline')}
           autoFocus
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary mb-3"
+          className={`w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 mb-1 ${duplicateWorkflow ? 'border-orange-500 focus:ring-orange-500/50' : 'border-input focus:ring-primary'}`}
         />
+        {duplicateWorkflow && (
+          <p className="text-[11px] text-orange-400 mb-2">{t('workflow.nameExists', 'A workflow with this name already exists. Saving will overwrite it.')}</p>
+        )}
+        {!duplicateWorkflow && <div className="mb-2" />}
         <div className="flex justify-end gap-2">
           <button onClick={() => onConfirm(null)}
             className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
-            Cancel
+            {t('workflow.cancel', 'Cancel')}
           </button>
-          <button onClick={handleSubmit} disabled={!value.trim()}
+          <button onClick={handleSubmit} disabled={!trimmed}
             className="px-4 py-1.5 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-            Save
+            {t('workflow.save', 'Save')}
           </button>
         </div>
       </div>
@@ -1006,24 +1510,110 @@ export function invalidateWorkflowListCache() {
 
 /* ── Monitor Toggle Button ─────────────────────────────────────────── */
 function MonitorToggleBtn() {
+  const { t } = useTranslation()
   const toggleRunMonitor = useExecutionStore(s => s.toggleRunMonitor)
   const showRunMonitor = useExecutionStore(s => s.showRunMonitor)
   const runSessions = useExecutionStore(s => s.runSessions)
   const activeRuns = runSessions.filter(s => s.status === 'running').length
 
   return (
-    <button onClick={toggleRunMonitor}
-      className={`relative px-2 py-1 text-xs transition-colors ${showRunMonitor ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-      title="Execution monitor">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/>
-      </svg>
-      {activeRuns > 0 && (
-        <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-blue-500 text-white text-[8px] flex items-center justify-center font-bold animate-pulse">
-          {activeRuns}
-        </span>
+    <Tooltip delayDuration={0}>
+      <TooltipTrigger asChild>
+        <button onClick={toggleRunMonitor}
+          className={`relative px-2 py-1 text-xs transition-colors ${showRunMonitor ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/>
+          </svg>
+          {activeRuns > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-blue-500 text-white text-[8px] flex items-center justify-center font-bold animate-pulse">
+              {activeRuns}
+            </span>
+          )}
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="bottom">{t('workflow.executionMonitor', 'Execution Monitor')}</TooltipContent>
+    </Tooltip>
+  )
+}
+
+/* ── More Menu — collapsed Import / Export / Save ──────────────────── */
+function MoreMenu({ workflowId, onImport, onExport, onSave, onSaveAsTemplate, className, 'data-guide': dataGuide }: {
+  workflowId: string | null
+  onImport: () => void
+  onExport: () => void
+  onSave: () => void
+  onSaveAsTemplate: () => void
+  className?: string
+  'data-guide'?: string
+}) {
+  const { t } = useTranslation()
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: PointerEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    const keyHandler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    window.addEventListener('pointerdown', handler, true)
+    window.addEventListener('keydown', keyHandler)
+    return () => {
+      window.removeEventListener('pointerdown', handler, true)
+      window.removeEventListener('keydown', keyHandler)
+    }
+  }, [open])
+
+  return (
+    <div className={`relative ${className ?? ''}`} ref={ref} data-guide={dataGuide}>
+      <Tooltip delayDuration={0}>
+        <TooltipTrigger asChild>
+          <button
+            onClick={() => setOpen(!open)}
+            className={`h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors ${open ? 'bg-accent text-foreground' : ''}`}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
+            </svg>
+          </button>
+        </TooltipTrigger>
+        {!open && <TooltipContent side="bottom">{t('workflow.more', 'More')}</TooltipContent>}
+      </Tooltip>
+      {open && (
+        <div className="absolute top-8 right-0 z-[100] w-36 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--popover))] text-[hsl(var(--popover-foreground))] shadow-xl py-1">
+          <button onClick={() => { onImport(); setOpen(false) }}
+            className="w-full px-3 py-1.5 text-xs text-left hover:bg-[hsl(var(--accent))] transition-colors flex items-center gap-2">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            {t('workflow.import', 'Import')}
+          </button>
+          <button onClick={() => { onExport(); setOpen(false) }}
+            className="w-full px-3 py-1.5 text-xs text-left hover:bg-[hsl(var(--accent))] transition-colors flex items-center gap-2">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            {t('workflow.export', 'Export')}
+          </button>
+          {workflowId && (
+            <button onClick={() => { onSaveAsTemplate(); setOpen(false) }}
+              className="w-full px-3 py-1.5 text-xs text-left hover:bg-[hsl(var(--accent))] transition-colors flex items-center gap-2">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+              </svg>
+              {t('workflow.saveAsTemplate', 'Save as Template')}
+            </button>
+          )}
+          <button onClick={() => { onSave(); setOpen(false) }}
+            className="w-full px-3 py-1.5 text-xs text-left hover:bg-[hsl(var(--accent))] transition-colors flex items-center gap-2">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+            </svg>
+            {t('workflow.save', 'Save')}
+          </button>
+        </div>
       )}
-    </button>
+    </div>
   )
 }
 

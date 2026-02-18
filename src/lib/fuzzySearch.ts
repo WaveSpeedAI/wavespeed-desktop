@@ -20,8 +20,9 @@ interface MatchResult {
 /**
  * Check if query should be case sensitive (has uppercase letters)
  */
-function isCaseSensitive(query: string): boolean {
-  return query !== query.toLowerCase()
+function isCaseSensitive(_query: string): boolean {
+  // Always case-insensitive so uppercase letters also match
+  return false
 }
 
 /**

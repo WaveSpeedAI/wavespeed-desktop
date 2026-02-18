@@ -34,7 +34,9 @@
     "openInBrowser": "فتح في المتصفح",
     "settings": "الإعدادات",
     "clearAll": "مسح الكل",
-    "deselectAll": "إلغاء تحديد الكل"
+    "deselectAll": "إلغاء تحديد الكل",
+    "add": "Add",
+    "saving": "Saving..."
   },
   "nav": {
     "home": "الرئيسية",
@@ -364,7 +366,71 @@
     "deleteTemplates": "حذف القوالب",
     "templatesDeleted": "تم حذف القوالب",
     "deletedCount": "تم حذف {{count}} قالب",
-    "batchDeleteConfirm": "هل أنت متأكد من حذف {{count}} قالب؟ لا يمكن التراجع عن هذا الإجراء."
+    "batchDeleteConfirm": "هل أنت متأكد من حذف {{count}} قالب؟ لا يمكن التراجع عن هذا الإجراء.",
+    "deletedSuccessfully": "تم حذف \"{{name}}\" بنجاح",
+    "updatedSuccessfully": "تم تحديث \"{{name}}\" بنجاح",
+    "exportedSuccessfully": "تم تصدير \"{{name}}\" بنجاح",
+    "allExportedSuccessfully": "تم تصدير جميع القوالب بنجاح",
+    "importedSuccessfully": "تم استيراد {{imported}} قالب، تم تخطي {{skipped}}",
+    "filters": "عوامل التصفية",
+    "templateType": "نوع القالب",
+    "allTypes": "جميع الأنواع",
+    "playground": "ساحة التجربة",
+    "workflow": "سير العمل",
+    "source": "المصدر",
+    "allSources": "جميع المصادر",
+    "public": "عام",
+    "myTemplates": "قوالبي",
+    "favorites": "المفضلة",
+    "favoritesOnly": "المفضلة فقط",
+    "sortBy": "ترتيب حسب",
+    "newest": "الأحدث",
+    "mostUsed": "الأكثر استخداماً",
+    "category": "الفئة",
+    "allCategories": "جميع الفئات",
+    "imageProcessing": "معالجة الصور",
+    "videoEditing": "تحرير الفيديو",
+    "audioConversion": "تحويل الصوت",
+    "aiGeneration": "توليد الذكاء الاصطناعي",
+    "workflowNotSupported": "سير العمل غير مدعوم",
+    "workflowNotSupportedDesc": "قوالب سير العمل غير مدعومة بعد",
+    "loadTemplate": "تحميل القالب",
+    "browseAll": "تصفح كل القوالب",
+    "drawerDesc": "تصفح القوالب وطبّقها",
+    "createTemplate": "إنشاء قالب",
+    "createTemplateDesc": "احفظ الإعداد الحالي كقالب قابل لإعادة الاستخدام",
+    "editTemplate": "تعديل القالب",
+    "editTemplateDesc": "تحديث تفاصيل القالب",
+    "descriptionLabel": "الوصف",
+    "tags": "الوسوم",
+    "tagsPlaceholder": "أدخل وسمًا...",
+    "descriptionPlaceholder": "اكتب وصفًا لهذا القالب...",
+    "categoryPlaceholder": "مثال: معالجة الصور",
+    "nodes": "عُقد",
+    "favorite": "إضافة إلى المفضلة",
+    "unfavorite": "إزالة من المفضلة",
+    "uses": "مرات الاستخدام",
+    "coverImage": "صورة الغلاف",
+    "uploadCover": "انقر لرفع صورة الغلاف",
+    "importDesc": "استيراد القوالب من ملف تم تصديره سابقاً"
+  },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "صورة إلى فيديو",
+      "description": "تحويل الصور الثابتة إلى فيديوهات ديناميكية مع تحسين الدقة"
+    },
+    "musicGenerate": {
+      "name": "توليد الموسيقى",
+      "description": "إنشاء موسيقى أصلية من كلمات الأغاني وعلامات الأسلوب"
+    },
+    "imageEdit": {
+      "name": "تحرير الصور",
+      "description": "تحرير الصور باستخدام نماذج الذكاء الاصطناعي مع أوامر مخصصة"
+    },
+    "videoEdit": {
+      "name": "تحرير الفيديو",
+      "description": "تحرير محتوى الفيديو باستخدام نماذج الذكاء الاصطناعي"
+    }
   },
   "assets": {
     "title": "أصولي",
@@ -942,45 +1008,24 @@
     "downloadFailed": "فشل التنزيل"
   },
   "smartPlayground": {
-    "autoDetected": "Auto-detected variant",
-    "willCall": "Will call",
-    "toggleSpeed": "Speed",
-    "toggleMode": "Mode",
-    "toggleQuality": "Quality",
-    "speedNormal": "Normal",
-    "speedFast": "Fast",
-    "modeNormal": "Normal",
-    "modeSequential": "Sequential",
-    "qualityPro": "Pro",
-    "qualityStd": "Standard",
-    "qualityUltra": "Ultra",
-    "qualityMulti": "Multi",
-    "run": "Run",
-    "running": "Running...",
-    "input": "Input",
-    "output": "Output",
-    "back": "Back"
-  },
-  "videoConverter": {
-    "title": "محول الفيديو",
-    "description": "تحويل مقاطع الفيديو بين الصيغ باستخدام متصفحك",
-    "invalidFile": "الرجاء تحديد ملف فيديو صالح",
-    "input": "فيديو الإدخال",
-    "inputDesc": "حدد أو اسحب ملف فيديو للتحويل",
-    "dropzone": "انقر أو اسحب الفيديو هنا",
-    "supportedFormats": "يدعم MP4، WebM، MOV، AVI",
-    "settings": "الإعدادات",
-    "outputFormat": "صيغة الإخراج",
-    "convert": "تحويل الفيديو",
-    "converting": "جاري التحويل...",
-    "noCodecSupport": "لم يتم العثور على برنامج ترميز فيديو مدعوم",
-    "result": "النتيجة",
-    "codecUsed": "برنامج الترميز المستخدم",
-    "download": "تحميل"
-  },
-  "game": {
-    "waitingLong": "انتظار طويل جداً",
-    "clickToPlay": "انقر للبدء"
+    "autoDetected": "متغير تم اكتشافه تلقائيًا",
+    "willCall": "سيتم الاتصال",
+    "toggleSpeed": "السرعة",
+    "toggleMode": "الوضع",
+    "toggleQuality": "الجودة",
+    "speedNormal": "عادي",
+    "speedFast": "سريع",
+    "modeNormal": "عادي",
+    "modeSequential": "تسلسلي",
+    "qualityPro": "احترافي",
+    "qualityStd": "قياسي",
+    "qualityUltra": "فائق",
+    "qualityMulti": "متعدد",
+    "run": "تشغيل",
+    "running": "قيد التشغيل...",
+    "input": "إدخال",
+    "output": "إخراج",
+    "back": "رجوع"
   },
   "workflow": {
     "workflows": "سير العمل",
@@ -992,6 +1037,10 @@
     "saveFailed": "فشل الحفظ",
     "savedAt": "تم الحفظ",
     "unsaved": "غير محفوظ",
+    "outputDirFallbackHint": "غير محدد: سيتم التصدير إلى المجلد الافتراضي لسير العمل",
+    "selectDirectory": "اختر المجلد",
+    "openFolder": "فتح المجلد",
+    "openWorkflowFolder": "فتح مجلد سير العمل",
     "nodes": "العقد",
     "config": "الإعدادات",
     "results": "النتائج",
@@ -999,6 +1048,12 @@
     "settings": "الإعدادات",
     "runAll": "تشغيل الكل",
     "run": "تشغيل",
+    "runWorkflow": "تشغيل",
+    "runFromHere": "تشغيل من هنا",
+    "nameYourWorkflow": "سمِّ سير العمل",
+    "nameYourWorkflowDesc": "أعطه اسمًا للحفظ على القرص.",
+    "nameYourWorkflowPlaceholder": "مثال: خط أنابيب صور المنتج",
+    "nameDuplicate": "يوجد سير عمل بهذا الاسم بالفعل",
     "runTarget": "تشغيل الهدف",
     "runTargetAll": "تشغيل جميع العقد",
     "runTargetSelected": "تشغيل العقدة المحددة",
@@ -1014,6 +1069,9 @@
     "exportFailed": "فشل التصدير",
     "estimated": "التكلفة",
     "fitView": "تأقلم العرض",
+    "autoLayout": "ترتيب تلقائي",
+    "freeToolModelHint": "سيتم تنزيل نموذج الذكاء الاصطناعي تلقائيًا عند التشغيل الأول، يرجى الانتظار",
+    "more": "المزيد",
     "previousImage": "الصورة السابقة",
     "nextImage": "الصورة التالية",
     "previewNavHint": "استخدم ← / → للتنقل بين الصور ({{current}}/{{total}})",
@@ -1051,7 +1109,10 @@
       "hint": "النقر الأيسر = تضمين، النقر الأيمن = استبعاد",
       "points": "نقاط",
       "clear": "مسح",
-      "done": "تم"
+      "done": "تم",
+      "encoding": "Analyzing image...",
+      "waitingEncode": "Preparing...",
+      "decoding": "Updating mask..."
     },
     "pickPoints": "اختر النقاط",
     "pickPointsNeedInput": "قم بتعيين صورة الإدخال أولاً",
@@ -1090,7 +1151,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "تشغيل النموذج",
+        "label": "WaveSpeed API",
         "emptyHint": "انقر على هذه العقدة، ثم اختر النموذج ←",
         "params": {
           "modelId": {
@@ -1100,6 +1161,11 @@
       },
       "input/media-upload": {
         "label": "تحميل",
+        "inputs": {
+          "media": {
+            "label": "وسائط"
+          }
+        },
         "outputs": {
           "output": {
             "label": "رابط"
@@ -1146,7 +1212,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "مجلد الإخراج"
+            "label": "مجلد الإخراج",
+            "placeholder": "اتركه فارغاً لاستخدام مجلد الإخراج الافتراضي لسير العمل"
           },
           "filename": {
             "label": "بادئة اسم الملف"
@@ -1192,6 +1259,9 @@
           "pointY": {
             "label": "النقطة Y",
             "description": "إحداثي Y الطبيعي (0-1) لنقطة التقسيم"
+          },
+          "invertMask": {
+            "label": "عكس القناع"
           }
         }
       },
@@ -1255,7 +1325,7 @@
       "optimizing": "جاري التحسين...",
       "optimizeNow": "تحسين الآن",
       "autoOnRunTitle": "تحسين فقط عند النقر على تشغيل",
-      "autoOnRun": "تحسين تلقائي عند التشغيل",
+      "autoOnRun": "تحسين عند التشغيل",
       "chars": "أحرف",
       "optimizeOnRunEnabled": "مفعّل: تحسين عند التشغيل",
       "optimizeOffHint": "الافتراضي: لا تحسين (تشغيل بالنص الأصلي)",
@@ -1271,8 +1341,9 @@
       "text": "النص",
       "textPlaceholder": "نص للتوسيع أو استخدامه كسياق...",
       "autoOnRunTitle": "تحسين تلقائي عند النقر على تشغيل",
-      "autoOnRun": "تحسين تلقائي عند التشغيل",
+      "autoOnRun": "تحسين عند التشغيل",
       "quickOptimizeTitle": "تحسين سريع ({{mode}})",
+      "quickOptimizeLabel": "تحسين",
       "params": "المعاملات",
       "prompt": "التلميح",
       "emptyPrompt": "(فارغ)",
@@ -1290,7 +1361,77 @@
         "loadingOptimizer": "جاري تحميل المحسّن...",
         "loadConfigFailed": "تعذر تحميل تكوين المحسّن"
       }
-    }
+    },
+    "guide": {
+      "skip": "تخطي",
+      "prev": "رجوع",
+      "next": "التالي",
+      "finish": "ابدأ الآن",
+      "welcome": {
+        "title": "مرحبًا بك في Workflow",
+        "desc": "Workflow هو محرر مرئي لخطوط معالجة الذكاء الاصطناعي. اسحب العقد إلى اللوحة، صِل بينها، ثم شغّل تدفقات معالجة آلية بالذكاء الاصطناعي — من توليد الصور إلى تحسين الفيديو وأكثر."
+      },
+      "nodePaletteBtn": {
+        "title": "لوحة العقد",
+        "desc": "اضغط هذا الزر لفتح لوحة العقد — صندوق أدواتك الذي يحتوي على جميع العقد المتاحة. يمكنك أيضًا البحث أو السحب أو النقر لإضافة عقد إلى اللوحة."
+      },
+      "nodePalette": {
+        "title": "فئات العقد",
+        "desc": "يتم تنظيم العقد حسب الفئة:\n• إدخال — ارفع ملفات أو أدخل نصًا كنقطة بداية\n• مهمة ذكاء اصطناعي — شغّل أي نموذج WaveSpeed AI (انظر الخطوة التالية)\n• أدوات مجانية — 12 أداة مدمجة مثل إزالة الخلفية وتحسين الوجه وتحويل الصيغ\n• إخراج — عاين النتائج أو صدّر الملفات إلى القرص\n\nاسحب عقدة إلى اللوحة أو انقر لإضافتها."
+      },
+      "aiTask": {
+        "title": "عقدة مهمة الذكاء الاصطناعي — الأساس",
+        "desc": "عقدة مهمة الذكاء الاصطناعي هي أقوى عقدة في Workflow. يمكنها تشغيل أي نموذج WaveSpeed AI لتوليد الصور، وإنشاء الفيديو، ونقل الأنماط، والمزيد.",
+        "features": {
+          "modelSwitch": "اختر من بين مئات نماذج الذكاء الاصطناعي — يتم تحديث لوحة المعلمات تلقائيًا حسب النموذج المحدد",
+          "dynamicParams": "لكل نموذج معلماته الخاصة (الوصف، حجم الصورة، البذرة، إلخ) وتظهر تلقائيًا عند الاختيار",
+          "costEstimate": "تقدير تكلفة لحظي لكل تشغيل حتى تعرف السعر دائمًا قبل التنفيذ",
+          "upstream": "وصّل مخرجات العقد السابقة (صور، نص) كمدخلات لبناء خطوط معالجة ذكاء اصطناعي متعددة الخطوات"
+        }
+      },
+      "canvas": {
+        "title": "التفاعل مع اللوحة",
+        "desc": "اللوحة المركزية هي مساحة عملك:\n• اسحب العقد من اللوحة لوضعها\n• اسحب من منافذ الإخراج إلى منافذ الإدخال لإنشاء اتصالات\n• انقر بزر الفأرة الأيمن لفتح القائمة السياقية (نسخ، لصق، حذف)\n• مرّر للتكبير، واسحب الخلفية لتحريك العرض\n• الاختصارات: Ctrl+Z للتراجع، Ctrl+C/V للنسخ واللصق، Delete للحذف"
+      },
+      "canvasTools": {
+        "title": "أدوات اللوحة",
+        "desc": "ثلاث أدوات مفيدة للتنقل وتنظيم اللوحة:\n• وضع التحديد / اليد — بدّل بين تحديد العقد (V) وتحريك اللوحة (H)\n• احتواء العرض — تكبير/تصغير تلقائي لإظهار كل العقد داخل نافذة العرض\n• تخطيط تلقائي — ترتيب العقد تلقائيًا بشكل منظم وسهل القراءة"
+      },
+      "config": {
+        "title": "الإعداد وعرض النتائج",
+        "desc": "انقر أي عقدة لتحديدها. تعرض اللوحة اليمنى تبويبين:\n• الإعداد — اضبط معلمات النموذج، ارفع ملفات، أدخل المطالبات\n• النتائج — اعرض مخرجات التنفيذ (صور، فيديوهات، نماذج ثلاثية الأبعاد)\n\nتتحدث المعلمات ديناميكيًا حسب نوع العقدة والنموذج المحدد. وتدعم النتائج المعاينة بملء الشاشة والتنزيل."
+      },
+      "run": {
+        "title": "شغّل سير العمل",
+        "desc": "انقر \"تشغيل سير العمل\" لتنفيذ المسار بالكامل:\n• عيّن عدد مرات التشغيل (×1 إلى ×99) للمعالجة الدفعية\n• أوقف التنفيذ في أي وقت عبر زر الإيقاف\n• راقب التقدم اللحظي في شاشة التنفيذ\n• تعرض كل عقدة حالتها: في الانتظار → قيد التشغيل → تم"
+      },
+      "templates": {
+        "title": "القوالب والاستيراد والتصدير",
+        "desc": "انقر قائمة ⋮ للوصول إلى الميزات المتقدمة:\n• احفظ سير العمل كقالب قابل لإعادة الاستخدام\n• استيراد/تصدير سير العمل بصيغة JSON للمشاركة\n• افتح عدة مسارات في تبويبات (مثل المتصفح)\n• تصفح القوالب الجاهزة من شريط الأدوات"
+      }
+    },
+    "selectNodeHint": "Select a node to configure its parameters",
+    "modelSyncDesktopOnly": "Model sync is available in the WaveSpeed Desktop app.",
+    "nameExists": "يوجد سير عمل بهذا الاسم مسبقاً. الحفظ سيعيد الكتابة فوقه.",
+    "overwriteWorkflow": "كتابة فوق سير العمل",
+    "overwriteConfirm": "سير عمل باسم \"{{name}}\" موجود مسبقاً. هل تريد الكتابة فوقه؟",
+    "overwrite": "كتابة فوق",
+    "rename": "إعادة تسمية",
+    "duplicate": "نسخ",
+    "deleteWorkflow": "حذف",
+    "deleteConfirm": "هل أنت متأكد من حذف \"{{name}}\"؟ لا يمكن التراجع.",
+    "cleaning": "جاري التنظيف...",
+    "cleanOutputs": "مسح المخرجات",
+    "tabClose": "إغلاق",
+    "tabCloseOthers": "إغلاق الآخرين",
+    "tabCloseRight": "إغلاق إلى اليمين",
+    "tabCloseSaved": "إغلاق المحفوظة",
+    "tabCloseAll": "إغلاق الكل",
+    "deleteSelected": "حذف المحدد ({{count}})",
+    "selectMode": "Select (V)",
+    "handMode": "Hand (H)",
+    "interactionSelect": "Select",
+    "interactionHand": "Hand"
   },
   "smartGenerate": {
     "start": "Start Smart Generate",

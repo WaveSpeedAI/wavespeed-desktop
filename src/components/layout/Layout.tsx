@@ -12,7 +12,7 @@ import { apiClient } from '@/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { KeyRound, Eye, EyeOff, Loader2, Zap, ExternalLink, Menu } from 'lucide-react'
+import { KeyRound, Eye, EyeOff, Loader2, Zap, ExternalLink } from 'lucide-react'
 import { VideoEnhancerPage } from '@/pages/VideoEnhancerPage'
 import { ImageEnhancerPage } from '@/pages/ImageEnhancerPage'
 import { BackgroundRemoverPage } from '@/pages/BackgroundRemoverPage'
@@ -33,29 +33,26 @@ import { useFreeToolListener } from '@/workflow/hooks/useFreeToolListener'
 let keyCounter = 0
 const nextKey = () => ++keyCounter
 
+const SIDEBAR_EXPAND_BREAKPOINT = 1024 // px: below = collapsed, >= = expanded; sync on resize
+
 export function Layout() {
   const { t } = useTranslation()
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth < SIDEBAR_EXPAND_BREAKPOINT : false
+  )
+  // Sync sidebar collapsed state to window width on resize (and initial layout)
+  useEffect(() => {
+    const onResize = () => setSidebarCollapsed(window.innerWidth < SIDEBAR_EXPAND_BREAKPOINT)
+    window.addEventListener('resize', onResize)
+    onResize()
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
   const navigate = useNavigate()
   const location = useLocation()
   const hasShownUpdateToast = useRef(false)
 
   // Register free-tool IPC listener globally (must be always mounted for workflow execution)
   useFreeToolListener()
-
-  // Close mobile menu when route changes; auto-collapse sidebar for workflow
-  const prevPathRef = useRef(location.pathname)
-  useEffect(() => {
-    setMobileMenuOpen(false)
-    // Auto-collapse when entering workflow, auto-expand when leaving
-    if (location.pathname === '/workflow' && prevPathRef.current !== '/workflow') {
-      setSidebarCollapsed(true)
-    } else if (location.pathname !== '/workflow' && prevPathRef.current === '/workflow') {
-      setSidebarCollapsed(false)
-    }
-    prevPathRef.current = location.pathname
-  }, [location.pathname])
 
   // Track which persistent pages have been visited (to delay initial mount)
   const [visitedPages, setVisitedPages] = useState<Set<string>>(new Set())
@@ -280,29 +277,12 @@ export function Layout() {
     <PageResetContext.Provider value={{ resetPage }}>
     <TooltipProvider>
       <div className="flex h-screen overflow-hidden relative">
-        {/* Mobile menu button */}
-        <button
-          className="fixed left-3 top-3 z-50 rounded-lg border border-border/70 bg-background/85 p-2 shadow-lg backdrop-blur md:hidden"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle menu"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
-
-        {/* Mobile overlay */}
-        {mobileMenuOpen && (
-          <div
-            className="fixed inset-0 bg-black/50 z-40 md:hidden"
-            onClick={() => setMobileMenuOpen(false)}
-          />
-        )}
-
         <Sidebar
           collapsed={sidebarCollapsed}
-          onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+          onToggle={() => setSidebarCollapsed(prev => !prev)}
           lastFreeToolsPage={lastFreeToolsPage}
-          isMobileOpen={mobileMenuOpen}
-          onMobileClose={() => setMobileMenuOpen(false)}
+          isMobileOpen={false}
+          onMobileClose={() => {}}
         />
         <main className="relative flex-1 overflow-hidden md:pl-0">
           {requiresLogin ? loginContent : (

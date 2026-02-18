@@ -14,15 +14,48 @@ import { WorkflowPromptOptimizer } from './WorkflowPromptOptimizer'
 import { apiClient } from '@/api/client'
 import { MaskEditor } from '@/components/playground/MaskEditor'
 import { SegmentPointPicker, type SegmentPoint } from '../SegmentPointPicker'
-import { Paintbrush, MousePointer2 } from 'lucide-react'
-import { modelsIpc } from '../../ipc/ipc-client'
-import { fuzzySearch } from '@/lib/fuzzySearch'
-// Status constants (kept for edge component compatibility)
-// import { NODE_STATUS_COLORS, NODE_STATUS_BORDER } from '@/workflow/constants'
+import { Paintbrush, MousePointer2, Dices } from 'lucide-react'
+import { useModelsStore } from '@/stores/modelsStore'
+import { getFormFieldsFromModel } from '@/lib/schemaToForm'
+import { convertDesktopModel, formFieldsToModelParamSchema } from '../../lib/model-converter'
 import type { NodeStatus } from '@/workflow/types/execution'
 import type { ParamDefinition, PortDefinition, ModelParamSchema, WaveSpeedModel } from '@/workflow/types/node-defs'
 
 import { CompInput, CompTextarea } from './composition-input'
+import { ResultsPanel } from '../panels/ResultsPanel'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { FormField } from '@/components/playground/FormField'
+import { ModelSelector } from '@/components/playground/ModelSelector'
+import type { FormFieldConfig } from '@/lib/schemaToForm'
+
+/** Convert workflow ParamDefinition to Playground FormFieldConfig for consistent FormField rendering */
+function paramDefToFormFieldConfig(p: ParamDefinition, nodeType?: string): FormFieldConfig | null {
+  if (nodeType === 'output/file' && p.key === 'outputDir') return null
+  const typeMap = {
+    string: 'text' as const,
+    number: 'number' as const,
+    boolean: 'boolean' as const,
+    select: 'select' as const,
+    file: 'file' as const,
+    textarea: 'textarea' as const,
+    slider: 'slider' as const
+  }
+  const formType = typeMap[p.type]
+  if (!formType) return null
+  const options = p.options?.map(o => o.value)
+  return {
+    name: p.key,
+    type: formType,
+    label: p.label,
+    required: false,
+    default: p.default,
+    min: p.validation?.min,
+    max: p.validation?.max,
+    step: p.validation?.step,
+    options,
+    description: p.description
+  }
+}
 
 /* ── types ───────────────────────────────────────────────────────────── */
 
@@ -114,15 +147,15 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
   const updateNodeData = useWorkflowStore(s => s.updateNodeData)
   const workflowId = useWorkflowStore(s => s.workflowId)
   const isDirty = useWorkflowStore(s => s.isDirty)
-  const { runNode, cancelNode, retryNode, clearNodeResults } = useExecutionStore()
+  const { runNode, cancelNode, retryNode } = useExecutionStore()
   const openPreview = useUIStore(s => s.openPreview)
   const allNodes = useWorkflowStore(s => s.nodes)
   const allLastResults = useExecutionStore(s => s.lastResults)
   const [hovered, setHovered] = useState(false)
   const [segmentPointPickerOpen, setSegmentPointPickerOpen] = useState(false)
-  const [modelSearchQuery, setModelSearchQuery] = useState('')
-  const [availableModels, setAvailableModels] = useState<WaveSpeedModel[]>([])
-  const [modelSwitchBlocked, setModelSwitchBlocked] = useState(false)
+  const storeModels = useModelsStore(s => s.models)
+  const getModelById = useModelsStore(s => s.getModelById)
+  const fetchModels = useModelsStore(s => s.fetchModels)
 
   // ── Resizable dimensions (use ref + direct DOM for zero-lag) ──
   const savedWidth = (data.params.__nodeWidth as number) ?? DEFAULT_NODE_WIDTH
@@ -130,9 +163,10 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
   const nodeRef = useRef<HTMLDivElement>(null)
   const [resizing, setResizing] = useState(false)
   const { getViewport, setNodes } = useReactFlow()
-  const nodeLabel = data.nodeType === 'ai-task/run' && data.label && String(data.label).startsWith('🤖')
-    ? String(data.label)
-    : t(`workflow.nodeDefs.${data.nodeType}.label`, data.label)
+  // Title bar: for AI task always show "WaveSpeed API"; for others use node-type translation
+  const nodeLabel = data.nodeType === 'ai-task/run'
+    ? t('workflow.aiTaskNodeLabel', 'WaveSpeed API')
+    : t(`workflow.nodeDefs.${data.nodeType}.label`, data.nodeType?.split('/').pop() ?? 'Node')
   const localizeInputLabel = useCallback((key: string, fallback: string) =>
     t(`workflow.nodeDefs.${data.nodeType}.inputs.${key}.label`, fallback), [data.nodeType, t])
   const localizeParamLabel = useCallback((key: string, fallback: string) =>
@@ -228,36 +262,31 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
 
   const paramDefs = data.paramDefinitions ?? []
   const inputDefs = data.inputDefinitions ?? []
-  const schema = data.modelInputSchema ?? []
-
   const isAITask = data.nodeType === 'ai-task/run'
-  const hasSchema = schema.length > 0
-  const currentModelId = String(data.params.modelId ?? '').trim()
-  const currentModelDisplayName = useMemo(() => {
-    const rawLabel = String(data.label ?? '').trim()
-    if (rawLabel.startsWith('🤖')) return rawLabel.replace(/^🤖\s*/, '')
-    if (!currentModelId) return ''
-    const parts = currentModelId.split('/')
-    return parts[parts.length - 1] || currentModelId
-  }, [data.label, currentModelId])
-  const isPreviewNode = data.nodeType === 'output/preview'
-  const modelSearchResults = useMemo(() => {
-    const q = modelSearchQuery.trim()
-    if (!q) return []
-    return fuzzySearch(availableModels, q, (m) => [
-      m.displayName,
-      m.modelId,
-      m.category,
-      m.provider
-    ]).map(r => r.item).slice(0, 8)
-  }, [availableModels, modelSearchQuery])
+  const currentModelId = String(data.params?.modelId ?? '').trim()
+  const currentModel = useModelsStore(s => s.getModelById(currentModelId))
 
+  /** Use Playground schema logic when model is in store; else fall back to persisted modelInputSchema. */
+  const schema = useMemo(() => {
+    if (isAITask && currentModel) {
+      return formFieldsToModelParamSchema(getFormFieldsFromModel(currentModel))
+    }
+    return data.modelInputSchema ?? []
+  }, [isAITask, currentModel, data.modelInputSchema])
+
+  const isPreviewNode = data.nodeType === 'output/preview'
   const removeEdgesByIds = useWorkflowStore(s => s.removeEdgesByIds)
 
   const handleInlineSelectModel = useCallback((model: WaveSpeedModel) => {
+    // Use Playground schema when we have the desktop Model so param set and persisted schema match display
+    const desktopModel = useModelsStore.getState().models.find(m => m.model_id === model.modelId)
+    const inputSchemaForNode = desktopModel
+      ? formFieldsToModelParamSchema(getFormFieldsFromModel(desktopModel))
+      : model.inputSchema
+
     // Smart edge pruning: keep edges whose param name exists in the new model, remove the rest
     if (currentModelId) {
-      const newParamNames = new Set(model.inputSchema.map(p => p.name))
+      const newParamNames = new Set(inputSchemaForNode.map(p => p.name))
       const edgesToRemove = edges.filter(e => {
         // Output edges (this node is source): always keep
         if (e.source === id) return false
@@ -286,7 +315,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
     delete internalParams.__hiddenRuns
 
     const nextParams: Record<string, unknown> = { ...internalParams, modelId: model.modelId }
-    for (const p of model.inputSchema) {
+    for (const p of inputSchemaForNode) {
       if (p.default !== undefined) nextParams[p.name] = p.default
     }
 
@@ -296,16 +325,16 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
     const baseName = model.displayName
     const otherLabels = allNodes
       .filter(n => n.id !== id && n.data?.nodeType === 'ai-task/run')
-      .map(n => String(n.data?.label ?? ''))
-    let finalLabel = `🤖 ${baseName}`
+      .map(n => String(n.data?.label ?? '').replace(/^🤖\s*/, '').trim())
+    let finalLabel = baseName
     if (otherLabels.includes(finalLabel)) {
       let idx = 2
-      while (otherLabels.includes(`🤖 ${baseName} (${idx})`)) idx++
-      finalLabel = `🤖 ${baseName} (${idx})`
+      while (otherLabels.includes(`${baseName} (${idx})`)) idx++
+      finalLabel = `${baseName} (${idx})`
     }
 
     updateNodeData(id, {
-      modelInputSchema: model.inputSchema,
+      modelInputSchema: inputSchemaForNode,
       label: finalLabel
     })
 
@@ -318,54 +347,44 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
       newFetched.delete(id)
       return { lastResults: newResults, _fetchedNodes: newFetched }
     })
-
-    setModelSearchQuery('')
-    setModelSwitchBlocked(false)
   }, [currentModelId, data.params, edges, id, updateNodeData, updateNodeParams, removeEdgesByIds, allNodes])
 
   useEffect(() => {
-    if (!isAITask) return
-    let cancelled = false
-    modelsIpc.list().then((m) => {
-      if (!cancelled) setAvailableModels(m ?? [])
-    }).catch(() => {
-      if (!cancelled) setAvailableModels([])
-    })
-    return () => { cancelled = true }
-  }, [isAITask])
+    if (isAITask && storeModels.length === 0) fetchModels()
+  }, [isAITask, storeModels.length, fetchModels])
 
-  const mediaParams = useMemo(() => schema.filter(p => p.mediaType && p.fieldType !== 'loras'), [schema])
-  const loraParams = useMemo(() => schema.filter(p => p.fieldType === 'loras'), [schema])
-  const jsonParams = useMemo(() => schema.filter(p => p.fieldType === 'json'), [schema])
-  const requiredParams = useMemo(() => schema.filter(p => !p.mediaType && p.fieldType !== 'loras' && p.fieldType !== 'json' && p.name !== 'modelId' && (p.required || !p.hidden)), [schema])
-  const optionalParams = useMemo(() => schema.filter(p => !p.mediaType && p.fieldType !== 'loras' && p.fieldType !== 'json' && p.name !== 'modelId' && !p.required && p.hidden), [schema])
+  /** Params in schema order (same as playground / x-order-properties) */
+  const orderedVisibleParams = useMemo(() =>
+    schema.filter(p => p.name !== 'modelId' && (p.required || !p.hidden)),
+    [schema]
+  )
+  const optionalParams = useMemo(() =>
+    schema.filter(p => p.name !== 'modelId' && !p.required && p.hidden),
+    [schema]
+  )
   const defParams = paramDefs.filter(p => p.key !== 'modelId')
   const [showOptional, setShowOptional] = useState(false)
 
-  // All execution result groups for inline preview (newest first)
-  const resultGroups = useExecutionStore(s => s.lastResults[id]) ?? []
-  // Hidden run timestamps — persisted in node params so they survive remount/tab switch
-  const hiddenRunTimes = (data.params.__hiddenRuns as string[]) ?? []
-  const hiddenSet = useMemo(() => new Set(hiddenRunTimes), [hiddenRunTimes])
-  const visibleGroups = resultGroups.filter(g => !hiddenSet.has(g.time))
-  const hideRun = useCallback((time: string) => {
-    updateNodeParams(id, { ...data.params, __hiddenRuns: [...hiddenRunTimes, time] })
-  }, [id, data.params, hiddenRunTimes, updateNodeParams])
-  /** Show all: clear ALL hidden + turn OFF latest — single atomic update */
-  const showAllRuns = useCallback(() => {
-    const { __hiddenRuns: _, __showLatestOnly: _2, ...rest } = data.params as Record<string, unknown>
-    updateNodeParams(id, { ...rest, __showLatestOnly: false })
-  }, [id, data.params, updateNodeParams])
+  /** Playground form fields for AI Task — reuse same schema/rendering as Playground */
+  const formFields = useMemo<FormFieldConfig[]>(() => {
+    if (!isAITask || !currentModel) return []
+    return getFormFieldsFromModel(currentModel).filter(f => f.name !== 'modelId')
+  }, [isAITask, currentModel])
+  const formValues = useMemo(() => {
+    const p = data.params ?? {}
+    return Object.fromEntries(Object.entries(p).filter(([k]) => !k.startsWith('__')))
+  }, [data.params])
+  const [enabledHiddenFields, setEnabledHiddenFields] = useState<Set<string>>(new Set())
+  const visibleFormFields = useMemo(() => formFields.filter(f => !f.hidden), [formFields])
+  const hiddenFormFields = useMemo(() => formFields.filter(f => f.hidden), [formFields])
+  const usePlaygroundForm = isAITask && formFields.length > 0
 
-  // Opt 3: Download result
-  const handleDownload = useCallback((url: string) => {
-    const filename = url.split('/').pop() || 'result'
-    if (window.electronAPI?.downloadFile) {
-      window.electronAPI.downloadFile(url, filename)
-    } else {
-      const a = document.createElement('a'); a.href = url; a.download = filename; a.click()
-    }
-  }, [])
+  useEffect(() => {
+    if (usePlaygroundForm) setEnabledHiddenFields(new Set())
+  }, [currentModelId, usePlaygroundForm])
+
+  // All execution result groups (e.g. for free-tool hint when empty)
+  const resultGroups = useExecutionStore(s => s.lastResults[id]) ?? []
 
   const saveWorkflow = useWorkflowStore(s => s.saveWorkflow)
   const removeNode = useWorkflowStore(s => s.removeNode)
@@ -373,9 +392,9 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
 
   const ensureWorkflowId = async () => {
     let wfId = workflowId
-    // Executor reads from persisted workflow DB, so save first when dirty.
+    // Executor reads from persisted workflow DB, so save first when dirty. forRun: true = auto-name untitled, no prompt.
     if (!wfId || isDirty) {
-      await saveWorkflow()
+      await saveWorkflow({ forRun: true })
       wfId = useWorkflowStore.getState().workflowId
     }
     return wfId
@@ -495,10 +514,25 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
     removeNode(id)
   }
 
+  // Let wheel scroll text areas instead of zooming the canvas
+  const onWheel = (e: React.WheelEvent) => {
+    const el = e.target as Node | null
+    if (!el) return
+    const tag = el instanceof HTMLElement ? el.tagName.toLowerCase() : ''
+    if (tag === 'textarea' || tag === 'input') {
+      e.stopPropagation()
+      return
+    }
+    if (el instanceof HTMLElement && el.isContentEditable) {
+      e.stopPropagation()
+    }
+  }
+
   return (
     <div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onWheel={onWheel}
       className="relative"
     >
       {/* Invisible hover extension above the node so mouse can reach the toolbar */}
@@ -515,14 +549,14 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
           ) : (
             <>
               <button onClick={onRun}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium shadow-lg backdrop-blur-sm bg-blue-500 text-white hover:bg-blue-600 transition-all"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium shadow-lg backdrop-blur-sm bg-blue-500 text-white hover:bg-blue-600 transition-all whitespace-nowrap"
                 title={t('workflow.runNode', 'Run Node')}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 20,12 6,21"/></svg> {t('workflow.run', 'Run')}
               </button>
               <button onClick={onRunFromHere}
-                className="flex items-center justify-center w-8 h-8 rounded-full shadow-lg backdrop-blur-sm bg-green-600 text-white hover:bg-green-700 transition-all"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium shadow-lg backdrop-blur-sm bg-green-600 text-white hover:bg-green-700 transition-all whitespace-nowrap"
                 title={t('workflow.continueFrom', 'Continue From')}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="4,4 14,12 4,20"/><polygon points="12,4 22,12 12,20"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="4,4 14,12 4,20"/><polygon points="12,4 22,12 12,20"/></svg> {t('workflow.runFromHere', 'Run from here')}
               </button>
               <button onClick={onDelete}
                 className="flex items-center justify-center w-8 h-8 rounded-full shadow-lg backdrop-blur-sm bg-[hsl(var(--muted))] text-muted-foreground hover:bg-red-500/20 hover:text-red-400 transition-all"
@@ -610,16 +644,55 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
 
       {/* ── Body ───────────────────────────────────────────────────── */}
       <div className="px-1 py-2 space-y-px">
+        {/* Free-tool ML model download hint (not for ffmpeg-based converters/trimmer/merger) */}
+        {status === 'idle' && resultGroups.length === 0 && (() => {
+          const ML_FREE_TOOLS = new Set([
+            'free-tool/image-enhancer', 'free-tool/background-remover', 'free-tool/face-enhancer',
+            'free-tool/video-enhancer', 'free-tool/face-swapper', 'free-tool/image-eraser',
+            'free-tool/segment-anything'
+          ])
+          return ML_FREE_TOOLS.has(data.nodeType) ? (
+            <div className="mx-3 mb-1 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
+              <svg className="flex-shrink-0 text-amber-400" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span className="text-[10px] text-amber-400/90 leading-tight">
+                {t('workflow.freeToolModelHint', 'First run will auto-download the AI model, please wait')}
+              </span>
+            </div>
+          ) : null
+        })()}
+
         {/* Media Upload node — special UI */}
         {data.nodeType === 'input/media-upload' && (
-          <MediaUploadBody
-            params={data.params}
-            onBatchChange={(updates) => {
-              const newParams = { ...data.params, ...updates }
-              updateNodeParams(id, newParams)
-            }}
-            onPreview={openPreview}
-          />
+          <>
+            {/* Input handle for receiving media from upstream nodes */}
+            {inputDefs.map(inp => {
+              const hid = `input-${inp.key}`
+              const conn = connectedSet.has(hid)
+              return (
+                <Row key={inp.key} handleId={hid} handleType="target" connected={conn} media>
+                  <div className="flex items-center justify-between gap-2 w-full">
+                    <span className={`text-xs whitespace-nowrap flex-shrink-0 ${conn ? 'text-green-400 font-semibold' : 'text-[hsl(var(--muted-foreground))]'}`}>
+                      {localizeInputLabel(inp.key, inp.label)}
+                    </span>
+                    {conn && <ConnectedInputControl nodeId={id} handleId={hid} edges={edges} nodes={useWorkflowStore.getState().nodes} onPreview={openPreview} />}
+                  </div>
+                </Row>
+              )
+            })}
+            {/* Show upload body only when input is NOT connected */}
+            {!connectedSet.has('input-media') && (
+              <MediaUploadBody
+                params={data.params}
+                onBatchChange={(updates) => {
+                  const newParams = { ...data.params, ...updates }
+                  updateNodeParams(id, newParams)
+                }}
+                onPreview={openPreview}
+              />
+            )}
+          </>
         )}
 
         {/* Text Input node — special UI */}
@@ -634,76 +707,121 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
         )}
 
         {isAITask && (
-          <div className="px-3 mb-1">
-            <div className="relative pl-2">
-              <svg className="absolute left-[18px] top-1/2 -translate-y-1/2 text-[hsl(var(--muted-foreground))]" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-              </svg>
-              <input
-                type="text"
-                value={modelSearchQuery}
-                onChange={e => {
-                  setModelSearchQuery(e.target.value)
-                  if (modelSwitchBlocked) setModelSwitchBlocked(false)
-                }}
-                placeholder={t('workflow.modelSelector.searchAllPlaceholder', 'Search all models...')}
-                className="w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] pl-6 pr-2 py-1.5 text-[11px] text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50"
-                onClick={e => e.stopPropagation()}
-              />
-            </div>
-            {modelSearchQuery.trim() && (
-              <div className="mt-1 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] max-h-[170px] overflow-y-auto">
-                {modelSearchResults.map(model => (
-                  <button
-                    key={model.modelId}
-                    onClick={e => { e.stopPropagation(); handleInlineSelectModel(model) }}
-                    className="w-full text-left px-2 py-1.5 hover:bg-[hsl(var(--accent))] transition-colors border-b border-[hsl(var(--border))]/40 last:border-b-0"
-                  >
-                    <div className="text-[11px] font-medium truncate">{model.displayName}</div>
-                    <div className="text-[10px] text-muted-foreground truncate">{model.category} · {model.provider}</div>
-                  </button>
-                ))}
-                {modelSearchResults.length === 0 && (
-                  <div className="px-2 py-2 text-[10px] text-muted-foreground text-center">
-                    {t('workflow.modelSelector.noModelsFound', 'No models found')}
-                  </div>
-                )}
-              </div>
-            )}
-            {modelSwitchBlocked && (
-              <div className="mt-1 text-[10px] text-amber-300">
-                {t('workflow.modelSelector.disconnectBeforeSwitch', 'Please disconnect this node before switching model.')}
-              </div>
-            )}
+          <div className="nodrag px-3 mb-1" onClick={e => e.stopPropagation()}>
+            <ModelSelector
+              models={storeModels}
+              value={currentModelId || undefined}
+              onChange={(modelId) => {
+                const storeModel = getModelById(modelId)
+                if (!storeModel) return
+                handleInlineSelectModel(convertDesktopModel(storeModel))
+              }}
+              disabled={running}
+            />
           </div>
         )}
 
-        {isAITask && !hasSchema && (
-          <div className="mx-2 text-center py-4 text-[hsl(var(--muted-foreground))] text-xs italic border border-dashed border-[hsl(var(--border))] rounded-lg my-1">
-            {t('workflow.nodeDefs.ai-task/run.emptyHint', 'Click this node, then select a model →')}
-          </div>
+        {/* AI Task: reuse Playground form (FormField) when model is loaded */}
+        {usePlaygroundForm && (
+          <>
+            {visibleFormFields.map((field) => {
+              const hid = `param-${field.name}`
+              const conn = connectedSet.has(hid)
+              return (
+                <Row key={field.name} handleId={hid} handleType="target" connected={conn}>
+                  {conn ? (
+                    <LinkedBadge
+                      nodeId={id}
+                      handleId={hid}
+                      edges={edges}
+                      nodes={useWorkflowStore.getState().nodes}
+                      onDisconnect={() => {
+                        const edge = edges.find(e => e.target === id && e.targetHandle === hid)
+                        if (edge) useWorkflowStore.getState().removeEdge(edge.id)
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full min-w-0 nodrag" onClick={e => e.stopPropagation()}>
+                      <FormField
+                        field={field}
+                        value={formValues[field.name]}
+                        onChange={(v) => setParam(field.name, v)}
+                        disabled={running}
+                        modelType={currentModel?.type}
+                        imageValue={field.name === 'prompt' ? (formValues['image'] as string) : undefined}
+                        formValues={formValues}
+                      />
+                    </div>
+                  )}
+                </Row>
+              )
+            })}
+            {hiddenFormFields.length > 0 && (
+              <div className="space-y-2 px-3 py-1">
+                {hiddenFormFields.map((field) => {
+                  const isEnabled = enabledHiddenFields.has(field.name)
+                  return (
+                    <div key={field.name} className="space-y-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEnabledHiddenFields((prev) => {
+                            const next = new Set(prev)
+                            if (next.has(field.name)) {
+                              next.delete(field.name)
+                              setParam(field.name, undefined)
+                            } else next.add(field.name)
+                            return next
+                          })
+                        }}
+                        className="flex items-center gap-2 px-2 py-1.5 rounded-md text-[11px] font-medium border border-[hsl(var(--border))] bg-[hsl(var(--background))] hover:bg-[hsl(var(--muted))] transition-colors"
+                      >
+                        <span className={`w-2.5 h-2.5 rounded-full border-2 ${isEnabled ? 'bg-primary border-primary' : 'border-muted-foreground'}`} />
+                        {field.label}
+                      </button>
+                      {isEnabled && (
+                        <div className="pl-2 border-l-2 border-primary/50 ml-1">
+                          <FormField
+                            field={field}
+                            value={formValues[field.name]}
+                            onChange={(v) => setParam(field.name, v)}
+                            disabled={running}
+                            modelType={currentModel?.type}
+                            formValues={formValues}
+                            hideLabel
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </>
         )}
 
-        {mediaParams.map(p => (
-          <MediaRow key={p.name} nodeId={id} schema={p} value={data.params[p.name]}
-            connected={connectedSet.has(`param-${p.name}`)} connectedSet={connectedSet}
-            edges={edges} nodes={useWorkflowStore.getState().nodes}
-            onChange={v => setParam(p.name, v)} onPreview={openPreview} />
-        ))}
-
-        {loraParams.map(p => (
-          <LoraRow key={p.name} schema={p} value={data.params[p.name]} onChange={v => setParam(p.name, v)} />
-        ))}
-
-        {jsonParams.map(p => (
-          <JsonRow key={p.name} nodeId={id} schema={p} value={data.params[p.name]}
-            connected={connectedSet.has(`param-${p.name}`)}
-            edges={edges} nodes={useWorkflowStore.getState().nodes}
-            onChange={v => setParam(p.name, v)} />
-        ))}
-
-        {requiredParams.map(p => {
+        {/* Fallback: schema-based ParamRow/MediaRow when not using Playground form */}
+        {!usePlaygroundForm && orderedVisibleParams.map(p => {
           const hid = `param-${p.name}`
+          if (p.mediaType && p.fieldType !== 'loras') {
+            return (
+              <MediaRow key={p.name} nodeId={id} schema={p} value={data.params[p.name]}
+                connected={connectedSet.has(hid)} connectedSet={connectedSet}
+                edges={edges} nodes={useWorkflowStore.getState().nodes}
+                onChange={v => setParam(p.name, v)} onPreview={openPreview} />
+            )
+          }
+          if (p.fieldType === 'loras') {
+            return <LoraRow key={p.name} schema={p} value={data.params[p.name]} onChange={v => setParam(p.name, v)} />
+          }
+          if (p.fieldType === 'json') {
+            return (
+              <JsonRow key={p.name} nodeId={id} schema={p} value={data.params[p.name]}
+                connected={connectedSet.has(hid)}
+                edges={edges} nodes={useWorkflowStore.getState().nodes}
+                onChange={v => setParam(p.name, v)} />
+            )
+          }
           return (
             <ParamRow key={p.name} nodeId={id} schema={p} value={data.params[p.name]}
               connected={connectedSet.has(hid)}
@@ -718,8 +836,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
           )
         })}
 
-        {/* Collapsible optional/hidden params */}
-        {optionalParams.length > 0 && (
+        {!usePlaygroundForm && optionalParams.length > 0 && (
           <>
             <div className="px-3 py-1">
               <button onClick={e => { e.stopPropagation(); setShowOptional(!showOptional) }}
@@ -739,14 +856,16 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
                     if (edge) useWorkflowStore.getState().removeEdge(edge.id)
                   }}
                   onChange={v => setParam(p.name, v)}
-              optimizerSettings={(data.params.__optimizerSettings as Record<string, unknown>) ?? {}}
-              onOptimizerSettingsChange={v => setParam('__optimizerSettings', v)} />
+                  optimizerSettings={(data.params.__optimizerSettings as Record<string, unknown>) ?? {}}
+                  onOptimizerSettingsChange={v => setParam('__optimizerSettings', v)} />
               )
             })}
           </>
         )}
 
         {inputDefs.map(inp => {
+          // Skip media-upload inputs — already rendered above with custom UI
+          if (data.nodeType === 'input/media-upload') return null
           const hid = `input-${inp.key}`
           const conn = connectedSet.has(hid)
           if (!isPreviewNode) {
@@ -862,11 +981,54 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
           </div>
         )}
 
-        {/* Hide defParams for nodes with custom body UI */}
+        {/* defParams: use Playground FormField when convertible, else DefParamControl (e.g. outputDir picker) */}
         {data.nodeType !== 'input/media-upload' && data.nodeType !== 'input/text-input' && defParams.map(p => {
           const hid = `param-${p.key}`
           const canConnect = p.connectable !== false && p.dataType !== undefined
           const conn = canConnect ? connectedSet.has(hid) : false
+          const fieldConfig = paramDefToFormFieldConfig(p, data.nodeType)
+
+          if (fieldConfig) {
+            if (!canConnect) {
+              return (
+                <div key={p.key} className="px-3 py-1 nodrag" onClick={e => e.stopPropagation()}>
+                  <FormField
+                    field={fieldConfig}
+                    value={formValues[p.key]}
+                    onChange={(v) => setParam(p.key, v)}
+                    disabled={running}
+                    formValues={formValues}
+                  />
+                </div>
+              )
+            }
+            return (
+              <Row key={p.key} handleId={hid} handleType="target" connected={conn}>
+                {conn ? (
+                  <LinkedBadge
+                    nodeId={id}
+                    handleId={hid}
+                    edges={edges}
+                    nodes={useWorkflowStore.getState().nodes}
+                    onDisconnect={() => {
+                      const edge = edges.find(e => e.target === id && e.targetHandle === hid)
+                      if (edge) useWorkflowStore.getState().removeEdge(edge.id)
+                    }}
+                  />
+                ) : (
+                  <div className="w-full min-w-0 nodrag" onClick={e => e.stopPropagation()}>
+                    <FormField
+                      field={fieldConfig}
+                      value={formValues[p.key]}
+                      onChange={(v) => setParam(p.key, v)}
+                      disabled={running}
+                      formValues={formValues}
+                    />
+                  </div>
+                )}
+              </Row>
+            )
+          }
 
           if (!canConnect) {
             return (
@@ -890,7 +1052,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
                   {localizeParamDescription(p.key, p.description) && <Tip text={String(localizeParamDescription(p.key, p.description))} />}
                 </span>
                 {conn
-                  ? <LinkedBadge nodeId={id} handleId={hid} edges={edges} nodes={useWorkflowStore.getState().nodes} />
+                  ? <LinkedBadge nodeId={id} handleId={hid} edges={edges} nodes={useWorkflowStore.getState().nodes} onDisconnect={() => { const edge = edges.find(e => e.target === id && e.targetHandle === hid); if (edge) useWorkflowStore.getState().removeEdge(edge.id) }} />
                   : <DefParamControl nodeId={id} param={p} value={data.params[p.key]} onChange={v => setParam(p.key, v)} />}
               </div>
             </Row>
@@ -928,144 +1090,13 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
             </div>
           </div>
         )}
-      </div>
-
-      {/* ── Results — grouped by execution run ─────────────────── */}
-      {resultGroups.length > 0 && (() => {
-        /*
-         * Results display logic:
-         *
-         * latestOnly ON:
-         *   - Show ONLY resultGroups[0] (the absolute newest, regardless of hidden)
-         *   - ✕ hides it → show "Latest result hidden" + "Show all"
-         *   - "Show all" clears hidden + turns OFF latest → shows everything
-         *   - "Latest" label only on resultGroups[0]
-         *
-         * latestOnly OFF:
-         *   - Show all visibleGroups (hidden ones filtered out)
-         *   - ✕ hides individual results
-         *   - "Show all" clears all hidden
-         *   - "Latest" label on resultGroups[0] if visible
-         *
-         * "Show all" button: ALWAYS clickable. Clears hidden + turns off latest (atomic).
-         * "Latest" toggle: ON→OFF just switches mode. OFF→ON just switches mode.
-         */
-        const latestOnly = data.params.__showLatestOnly !== false
-        const toggleLatest = (e: React.MouseEvent) => {
-          e.stopPropagation()
-          updateNodeParams(id, { ...data.params, __showLatestOnly: !latestOnly })
-        }
-
-        const newestGroup = resultGroups[0]
-        const newestHidden = newestGroup ? hiddenSet.has(newestGroup.time) : false
-
-        // What to actually display
-        let displayGroups: typeof resultGroups
-        if (latestOnly) {
-          displayGroups = newestGroup && !newestHidden ? [newestGroup] : []
-        } else {
-          displayGroups = visibleGroups
-        }
-
-        const isImageUrl = (url: string): boolean => {
-          const normalized = (() => {
-            if (/^local-asset:\/\//i.test(url)) {
-              try {
-                return decodeURIComponent(url.replace(/^local-asset:\/\//i, '')).toLowerCase().split('?')[0]
-              } catch {
-                return url.toLowerCase().split('?')[0]
-              }
-            }
-            return url.toLowerCase().split('?')[0]
-          })()
-          return Boolean(normalized.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg|avif)$/i))
-        }
-
-        const allDisplayImageUrls = displayGroups.flatMap(g => g.urls).filter(isImageUrl)
-
-        return (
-          <div className="px-3 pb-2 pt-1 border-t border-[hsl(var(--border))]">
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <span className="text-[10px] text-green-400 font-medium">
-                {t('workflow.results', 'Results')} ({displayGroups.length}/{resultGroups.length})
-              </span>
-              <div className="flex-1" />
-              {/* Clear all results + delete files */}
-              <button onClick={async e => {
-                  e.stopPropagation()
-                  try {
-                    const { historyIpc } = await import('../../ipc/ipc-client')
-                    await historyIpc.deleteAll(id)
-                  } catch { /* best-effort */ }
-                  clearNodeResults(id)
-                  // Also clear hidden runs metadata from params
-                  const { __hiddenRuns: _, __showLatestOnly: _2, ...rest } = data.params as Record<string, unknown>
-                  updateNodeParams(id, rest)
-                }}
-                className="text-[9px] text-red-400/70 hover:text-red-400 transition-colors"
-                title={t('workflow.clearAllResults', 'Clear all results')}>
-                {t('workflow.clearAll', 'Clear all')}
-              </button>
-              {/* Show all — always clickable, clears hidden + turns off latest */}
-              <button onClick={e => { e.stopPropagation(); showAllRuns() }}
-                className="text-[9px] text-blue-400 hover:text-blue-300 transition-colors">
-                {t('workflow.showAll', 'Show all')}
-              </button>
-              {/* Latest-only toggle */}
-              <button onClick={toggleLatest}
-                className={`flex items-center gap-1 text-[9px] transition-colors ${latestOnly ? 'text-blue-400' : 'text-muted-foreground hover:text-foreground'}`}
-                title={latestOnly ? t('workflow.showAllRuns', 'Show all runs') : t('workflow.showLatestOnly', 'Show latest only')}>
-                <span className={`w-6 h-3 rounded-full relative transition-colors ${latestOnly ? 'bg-blue-500' : 'bg-muted-foreground/30'}`}>
-                  <span className={`absolute top-0.5 w-2 h-2 rounded-full bg-white transition-transform ${latestOnly ? 'left-3.5' : 'left-0.5'}`} />
-                </span>
-                <span>{t('workflow.latest', 'Latest')}</span>
-              </button>
-            </div>
-            <div className="space-y-2">
-              {displayGroups.map((group) => {
-                const isNewest = group === newestGroup
-                return (
-                  <div key={group.time} className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] overflow-hidden">
-                    <div className="flex items-center gap-2 px-2.5 py-1.5 bg-[hsl(var(--muted))]">
-                      {isNewest && <span className="text-[10px] text-green-400 font-semibold">{t('workflow.latest', 'Latest')}</span>}
-                      <span className="text-[10px] text-foreground/80 font-medium">
-                        {new Date(group.time).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                      </span>
-                      {group.durationMs != null && <span className="text-[10px] text-blue-400/80 font-medium">⏱ {(group.durationMs / 1000).toFixed(1)}s</span>}
-                      {group.cost != null && group.cost > 0 && <span className="text-[10px] text-amber-400/80 font-medium">💰 ${group.cost.toFixed(4)}</span>}
-                      <div className="flex-1" />
-                      <button onClick={e => { e.stopPropagation(); hideRun(group.time) }}
-                        className="text-[10px] text-muted-foreground hover:text-red-400 transition-colors" title={t('workflow.hideRun', 'Hide this run')}>
-                        ✕
-                      </button>
-                    </div>
-                    <div className="p-1.5 flex gap-1.5 flex-wrap">
-                      {group.urls.map((url, ui) => (
-                        <ResultThumb
-                          key={`${url}-${ui}`}
-                          url={url}
-                          onPreview={(src) => {
-                            openPreview(src, isImageUrl(src) ? allDisplayImageUrls : undefined)
-                          }}
-                          onDownload={handleDownload}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )
-              })}
-              {/* Empty state */}
-              {displayGroups.length === 0 && (
-                <div className="text-center py-3 text-[10px] text-muted-foreground">
-                  {latestOnly && newestHidden ? t('workflow.latestHidden', 'Latest result hidden.') : t('workflow.noVisibleResults', 'No visible results.')}
-                  <button onClick={e => { e.stopPropagation(); showAllRuns() }}
-                    className="text-blue-400 hover:text-blue-300 ml-1">{t('workflow.showAll', 'Show all')}</button>
-                </div>
-              )}
-            </div>
+        {/* Results — at bottom of card, merged into normal view */}
+        {data.nodeType !== 'annotation' && (
+          <div className="nodrag min-h-0 flex flex-col flex-1 mt-2 border-t border-border/50 pt-2">
+            <ResultsPanel embeddedInNode nodeId={id} />
           </div>
-        )
-      })()}
+        )}
+      </div>
 
       {/* ── Output handle — top-right, aligned with title bar ───── */}
       <Handle type="source" position={Position.Right} id="output"
@@ -1151,6 +1182,9 @@ function Row({ children, handleId, handleType, connected, media }: {
    ParamRow — one row per regular (non-media) schema parameter
    ══════════════════════════════════════════════════════════════════════ */
 
+// Same range as playground (FormField generateRandomSeed)
+const RANDOM_SEED_MAX = 65536
+
 function ParamRow({ nodeId, schema, value, connected, onChange, onDisconnect, edges, nodes, optimizerSettings, onOptimizerSettingsChange }: {
   nodeId: string; schema: ModelParamSchema; value: unknown; connected: boolean
   onChange: (v: unknown) => void
@@ -1160,6 +1194,7 @@ function ParamRow({ nodeId, schema, value, connected, onChange, onDisconnect, ed
   optimizerSettings?: Record<string, unknown>
   onOptimizerSettingsChange?: (settings: Record<string, unknown>) => void
 }) {
+  const { t } = useTranslation()
   const label = schema.label ?? formatLabel(schema.name)
   const ft = schema.fieldType ?? (TEXTAREA_NAMES.has(schema.name.toLowerCase()) ? 'textarea' : undefined)
   const isSeed = schema.name.toLowerCase() === 'seed'
@@ -1277,12 +1312,29 @@ function ParamRow({ nodeId, schema, value, connected, onChange, onDisconnect, ed
             ) : schema.type === 'boolean' || ft === 'boolean' ? <ToggleSwitch checked={Boolean(cur)} onChange={onChange} />
             : schema.type === 'number' || schema.type === 'integer' || ft === 'number' ? (
               <>
-                <NumberInput value={cur as number | undefined} min={schema.min} max={schema.max} step={schema.step ?? (schema.type === 'integer' ? 1 : 0.1)} onChange={onChange} />
+                <NumberInput
+                  value={cur as number | undefined}
+                  min={schema.min}
+                  max={schema.max}
+                  step={schema.step ?? (schema.type === 'integer' ? 1 : 0.1)}
+                  onChange={onChange}
+                  placeholder={isSeed && !schema.required ? t('workflow.seedRandomPlaceholder', 'Random') : undefined}
+                />
                 {isSeed && (
-                  <button onClick={() => onChange(Math.floor(Math.random() * 2147483647))}
-                    title="Randomize seed" className="px-1.5 py-1 rounded text-[16px] leading-none bg-blue-500/10 hover:bg-blue-500/20 transition-colors flex-shrink-0">
-                    🎲
-                  </button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => onChange(Math.floor(Math.random() * RANDOM_SEED_MAX))}
+                        className="p-1.5 rounded bg-blue-500/10 hover:bg-blue-500/20 transition-colors flex-shrink-0"
+                      >
+                        <Dices className="h-4 w-4 text-blue-400" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <p>{t('playground.randomSeed')}</p>
+                    </TooltipContent>
+                  </Tooltip>
                 )}
               </>
             ) : (
@@ -1560,18 +1612,15 @@ function ConnectedInputControl({
     const isMediaLike = (u: string) =>
       /^https?:\/\//i.test(u) || /^blob:/i.test(u) || /^local-asset:\/\//i.test(u) || /^data:/i.test(u)
 
+    // Prefer actual execution results — this is the real output of the source node
     if (latestResultUrl && isMediaLike(latestResultUrl)) return latestResultUrl
 
-    // Media upload node and common source-node params fallback
-    const candidates = [
-      String(sourceParams.uploadedUrl ?? ''),
-      String(sourceParams.output ?? ''),
-      String(sourceParams.input ?? ''),
-      String(sourceParams.url ?? '')
-    ]
-    for (const c of candidates) {
-      if (c && isMediaLike(c)) return c
-    }
+    // Only fall back to source params for input-type nodes (media-upload)
+    // that store their value directly in params. Do NOT use generic params
+    // like 'input'/'output' which are the source node's own inputs, not outputs.
+    const uploadedUrl = String(sourceParams.uploadedUrl ?? '')
+    if (uploadedUrl && isMediaLike(uploadedUrl)) return uploadedUrl
+
     return ''
   }
 
@@ -1646,8 +1695,8 @@ function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: (v: u
   )
 }
 
-function NumberInput({ value, min, max, step, onChange }: {
-  value: number | undefined; min?: number; max?: number; step: number; onChange: (v: unknown) => void
+function NumberInput({ value, min, max, step, onChange, placeholder }: {
+  value: number | undefined; min?: number; max?: number; step: number; onChange: (v: unknown) => void; placeholder?: string
 }) {
   // Clamp value to min/max on blur
   const handleBlur = () => {
@@ -1663,7 +1712,8 @@ function NumberInput({ value, min, max, step, onChange }: {
       <input type="number" value={value !== undefined && value !== null ? value : ''} min={min} max={max} step={step}
         onChange={e => onChange(e.target.value === '' ? undefined : Number(e.target.value))}
         onBlur={handleBlur}
-        className="w-full max-w-[120px] rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1.5 text-xs text-right text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+        placeholder={placeholder}
+        className="w-full max-w-[120px] rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1.5 text-xs text-right text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50 placeholder:text-[hsl(var(--muted-foreground))] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
       {min !== undefined && max !== undefined && <span className="text-[9px] text-[hsl(var(--muted-foreground))] whitespace-nowrap">{min}–{max}</span>}
     </div>
   )
@@ -1759,14 +1809,14 @@ function DefParamControl({ nodeId, param, value, onChange }: { nodeId: string; p
             type="text"
             value={textVal}
             onChange={e => onChange(e.target.value)}
-            placeholder={t('workflow.nodeDefs.output/file.params.outputDir.placeholder', '留空使用工作流默认输出目录')}
+            placeholder={t('workflow.nodeDefs.output/file.params.outputDir.placeholder', 'Leave empty to use workflow default output directory')}
             className={`${cls} flex-1`}
             onClick={e => e.stopPropagation()}
           />
           <button
             type="button"
             onClick={e => { e.stopPropagation(); handlePickDirectory() }}
-            title={t('workflow.selectDirectory', '选择目录')}
+            title={t('workflow.selectDirectory', 'Select directory')}
             className={`flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-md border border-[hsl(var(--border))] transition-colors ${
               selectingDir ? 'bg-blue-500/25 animate-pulse text-blue-300' : 'bg-blue-500/15 text-blue-400 hover:bg-blue-500/25'
             }`}
@@ -1776,7 +1826,7 @@ function DefParamControl({ nodeId, param, value, onChange }: { nodeId: string; p
           <button
             type="button"
             onClick={e => { e.stopPropagation(); handleOpenDirectory() }}
-            title={textVal.trim() ? t('workflow.openFolder', '打开文件夹') : t('workflow.openWorkflowFolder', '打开工作流目录')}
+            title={textVal.trim() ? t('workflow.openFolder', 'Open folder') : t('workflow.openWorkflowFolder', 'Open workflow folder')}
             className={`flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-md border border-[hsl(var(--border))] transition-colors ${
               openingDir ? 'bg-blue-500/25 animate-pulse text-blue-300' : 'bg-blue-500/15 text-blue-400 hover:bg-blue-500/25'
             }`}
@@ -1784,8 +1834,8 @@ function DefParamControl({ nodeId, param, value, onChange }: { nodeId: string; p
             ↗
           </button>
         </div>
-        <div className="text-[10px] text-muted-foreground truncate" title={textVal || t('workflow.outputDirFallbackHint', '未设置：将导出到工作流默认目录')}>
-          {textVal || t('workflow.outputDirFallbackHint', '未设置：将导出到工作流默认目录')}
+        <div className="text-[10px] text-muted-foreground truncate" title={textVal || t('workflow.outputDirFallbackHint', 'Not set: will export to workflow default directory')}>
+          {textVal || t('workflow.outputDirFallbackHint', 'Not set: will export to workflow default directory')}
         </div>
       </div>
     )
@@ -2356,6 +2406,8 @@ function TextInputBody({ params, onParamChange }: {
 
   return (
     <div className="px-3 py-2" onClick={e => e.stopPropagation()}>
+      {/* Toolbar + optimizer config — unified background */}
+      <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-2 mb-2">
       {/* Toolbar */}
       <div className="flex items-center gap-0.5 mb-1.5">
         {/* Snippet Library */}
@@ -2442,7 +2494,7 @@ function TextInputBody({ params, onParamChange }: {
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z"/>
                 </svg>
-                {t('workflow.textInput.optimizeNow', 'Optimize now')}
+                Prompt {t('workflow.textInput.optimizeNow', 'Optimize now')}
               </>
             )}
           </button>
@@ -2457,7 +2509,7 @@ function TextInputBody({ params, onParamChange }: {
             title={t('workflow.textInput.autoOnRunTitle', 'Only optimize when Run is clicked')}
           >
             <span className={`inline-block h-1.5 w-1.5 rounded-full ${optimizeOnRun ? 'bg-emerald-500 dark:bg-emerald-300' : 'bg-[hsl(var(--muted-foreground))]/70'}`} />
-            {t('workflow.textInput.autoOnRun', 'Auto on Run')}
+            {t('workflow.textInput.autoOnRun', 'Optimize on Run')}
           </button>
         </div>
 
@@ -2467,7 +2519,7 @@ function TextInputBody({ params, onParamChange }: {
         <span className="text-[9px] text-[hsl(var(--muted-foreground))]">{text.length} {t('workflow.textInput.chars', 'chars')}</span>
       </div>
 
-      <div className="mb-1 flex items-center justify-between rounded-md border border-[hsl(var(--border))]/70 bg-[hsl(var(--muted))]/20 px-2 py-1">
+      <div className="mb-1 flex items-center justify-between rounded-md border border-blue-500/20 bg-blue-500/10 px-2 py-1">
         {optimizeOnRun ? (
           <span className="text-[10px] font-medium text-emerald-300">{t('workflow.textInput.optimizeOnRunEnabled', 'Enabled: optimize on Run')}</span>
         ) : (
@@ -2485,6 +2537,7 @@ function TextInputBody({ params, onParamChange }: {
           {optimizeError}
         </div>
       )}
+      </div>{/* end unified background wrapper */}
 
       <WorkflowPromptOptimizer
         currentPrompt={text}
@@ -2649,105 +2702,6 @@ function JsonRow({ nodeId, schema, value, connected, onChange, edges, nodes }: {
 }
 
 /** Size input — dual W×H number fields. Value format: "W*H" (e.g. "1024*1024") */
-/* ══════════════════════════════════════════════════════════════════════
-   ResultThumb — smart thumbnail for each result URL in grouped view
-   ══════════════════════════════════════════════════════════════════════ */
-
-function ResultThumb({ url, onPreview, onDownload }: { url: string; onPreview: (src: string) => void; onDownload: (url: string) => void }) {
-  const detectSource = (() => {
-    if (/^local-asset:\/\//i.test(url)) {
-      try {
-        return decodeURIComponent(url.replace(/^local-asset:\/\//i, '')).toLowerCase()
-      } catch {
-        return url.toLowerCase()
-      }
-    }
-    return url.toLowerCase()
-  })().split('?')[0]
-
-  // Detect if the result is plain text (not a URL)
-  const isUrl = /^https?:\/\//i.test(url) || /^blob:/i.test(url) || /^local-asset:\/\//i.test(url)
-  const is3D = isUrl && /\.(glb|gltf)$/.test(detectSource)
-  const isImage = isUrl && /\.(jpg|jpeg|png|gif|webp|bmp|svg|avif)$/.test(detectSource)
-  const isVideo = isUrl && /\.(mp4|webm|mov|avi|mkv)$/.test(detectSource)
-  const isAudio = isUrl && /\.(mp3|wav|ogg|flac|aac|m4a)$/.test(detectSource)
-
-  // Plain text result — show inline text preview
-  if (!isUrl) {
-    return (
-      <div className="flex-1 min-w-[80px] rounded border border-[hsl(var(--border))] bg-[hsl(var(--muted))] p-2 cursor-default"
-        onClick={e => e.stopPropagation()}>
-        <div className="text-[10px] text-[hsl(var(--foreground))] leading-snug line-clamp-4 break-words whitespace-pre-wrap">
-          {url}
-        </div>
-        {url.length > 200 && (
-          <button onClick={e => { e.stopPropagation(); onPreview(url) }}
-            className="mt-1 text-[9px] text-blue-400 hover:text-blue-300 transition-colors">
-            Show full text
-          </button>
-        )}
-      </div>
-    )
-  }
-
-  if (isImage) {
-    return (
-      <div className="relative group flex-1 min-w-[80px]">
-        <img src={url} alt="" onClick={e => { e.stopPropagation(); onPreview(url) }}
-          className="w-full max-h-[120px] rounded border border-[hsl(var(--border))] object-contain cursor-pointer hover:ring-2 hover:ring-blue-500/40 bg-black/10" />
-        <button onClick={e => { e.stopPropagation(); onDownload(url) }}
-          className="absolute top-1 right-1 w-7 h-7 rounded-md bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/><line x1="4" y1="21" x2="20" y2="21"/>
-          </svg>
-        </button>
-      </div>
-    )
-  }
-
-  if (is3D) {
-    return (
-      <div className="relative group flex-1 min-w-[80px] cursor-pointer rounded border border-[hsl(var(--border))] bg-gradient-to-br from-[#1a1a2e] to-[#0f3460] p-3 flex flex-col items-center justify-center text-center hover:ring-2 hover:ring-blue-500/40 transition-all"
-        style={{ minHeight: 120 }}
-        onClick={e => { e.stopPropagation(); onPreview(url) }}>
-        <div className="text-2xl mb-1">🧊</div>
-        <div className="text-[10px] text-blue-300 font-medium">3D Model</div>
-        <div className="text-[8px] text-white/30 truncate mt-0.5 max-w-full">{url.split('/').pop()?.split('?')[0]}</div>
-      </div>
-    )
-  }
-
-  if (isVideo) {
-    return (
-      <div className="relative group flex-1 min-w-[80px]">
-        <video src={url} className="w-full max-h-[120px] rounded border border-[hsl(var(--border))] object-contain cursor-pointer"
-          onClick={e => { e.stopPropagation(); onPreview(url) }} />
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-6 h-6 rounded-full bg-black/50 flex items-center justify-center">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (isAudio) {
-    return (
-      <div className="flex-1 min-w-[80px] rounded border border-[hsl(var(--border))] bg-[hsl(var(--muted))] p-2">
-        <audio src={url} controls className="w-full" onClick={e => e.stopPropagation()} />
-      </div>
-    )
-  }
-
-  // Generic
-  return (
-    <div className="flex-1 min-w-[80px] rounded border border-[hsl(var(--border))] bg-[hsl(var(--muted))] p-2 text-center cursor-pointer hover:bg-accent transition-colors"
-      onClick={e => { e.stopPropagation(); onPreview(url) }}>
-      <div className="text-[9px] text-muted-foreground truncate">{url.split('/').pop()?.split('?')[0] || 'File'}</div>
-    </div>
-  )
-}
-
 function SizeInput({ value, onChange, min, max }: { value: string; onChange: (v: string) => void; min?: number; max?: number }) {
   const parts = value.split('*')
   const w = parseInt(parts[0]) || 512

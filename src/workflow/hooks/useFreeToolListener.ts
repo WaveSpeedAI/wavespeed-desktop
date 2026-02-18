@@ -4,6 +4,7 @@
  */
 import { useEffect } from 'react'
 import { freeToolIpc } from '../ipc/ipc-client'
+import { useExecutionStore } from '../stores/execution.store'
 import { runImageEnhancer, runBackgroundRemover, runFaceEnhancer, runVideoEnhancer, runFaceSwapper, runImageEraser, runSegmentAnything } from '../lib/free-tool-runner'
 
 function getApi() {
@@ -22,11 +23,16 @@ export function useFreeToolListener(): void {
     }) => {
       const { requestId, nodeType, workflowId, nodeId, inputs, params } = data
 
+      // Progress callback that updates the execution store directly
+      const onProgress = (progress: number, message?: string) => {
+        useExecutionStore.getState().updateProgress(nodeId, progress, message)
+      }
+
       try {
         if (nodeType === 'free-tool/image-enhancer') {
           const inputUrl = inputs.input
           if (!inputUrl) throw new Error('Missing input')
-          const outputData = await runImageEnhancer(inputUrl, params as { model?: string; scale?: string })
+          const outputData = await runImageEnhancer(inputUrl, params as { model?: string; scale?: string }, onProgress)
           await freeToolIpc.complete({
             requestId,
             workflowId,
@@ -38,7 +44,7 @@ export function useFreeToolListener(): void {
         } else if (nodeType === 'free-tool/background-remover') {
           const inputUrl = inputs.input
           if (!inputUrl) throw new Error('Missing input')
-          const outputData = await runBackgroundRemover(inputUrl, params as { model?: string })
+          const outputData = await runBackgroundRemover(inputUrl, params as { model?: string }, onProgress)
           await freeToolIpc.complete({
             requestId,
             workflowId,
@@ -50,7 +56,7 @@ export function useFreeToolListener(): void {
         } else if (nodeType === 'free-tool/face-enhancer') {
           const inputUrl = inputs.input
           if (!inputUrl) throw new Error('Missing input')
-          const outputData = await runFaceEnhancer(inputUrl, params)
+          const outputData = await runFaceEnhancer(inputUrl, params, onProgress)
           await freeToolIpc.complete({
             requestId,
             workflowId,
@@ -62,7 +68,7 @@ export function useFreeToolListener(): void {
         } else if (nodeType === 'free-tool/video-enhancer') {
           const inputUrl = inputs.input
           if (!inputUrl) throw new Error('Missing input')
-          const outputData = await runVideoEnhancer(inputUrl, params as { model?: string; scale?: string })
+          const outputData = await runVideoEnhancer(inputUrl, params as { model?: string; scale?: string }, onProgress)
           await freeToolIpc.complete({
             requestId,
             workflowId,
@@ -75,7 +81,7 @@ export function useFreeToolListener(): void {
           const sourceUrl = inputs.source
           const targetUrl = inputs.target
           if (!sourceUrl || !targetUrl) throw new Error('Missing source or target image')
-          const outputData = await runFaceSwapper(sourceUrl, targetUrl, params)
+          const outputData = await runFaceSwapper(sourceUrl, targetUrl, params, onProgress)
           await freeToolIpc.complete({
             requestId,
             workflowId,
@@ -88,7 +94,7 @@ export function useFreeToolListener(): void {
           const imageUrl = inputs.input
           const maskUrl = inputs.mask
           if (!imageUrl || !maskUrl) throw new Error('Missing image or mask')
-          const outputData = await runImageEraser(imageUrl, maskUrl, params)
+          const outputData = await runImageEraser(imageUrl, maskUrl, params, onProgress)
           await freeToolIpc.complete({
             requestId,
             workflowId,
@@ -100,7 +106,7 @@ export function useFreeToolListener(): void {
         } else if (nodeType === 'free-tool/segment-anything') {
           const inputUrl = inputs.input
           if (!inputUrl) throw new Error('Missing input')
-          const outputData = await runSegmentAnything(inputUrl, params as { pointX?: number; pointY?: number; __segmentPoints?: string; __previewMask?: string })
+          const outputData = await runSegmentAnything(inputUrl, params as { pointX?: number; pointY?: number; __segmentPoints?: string; __previewMask?: string; invertMask?: boolean }, onProgress)
           await freeToolIpc.complete({
             requestId,
             workflowId,
@@ -123,9 +129,11 @@ export function useFreeToolListener(): void {
       }
     }
 
-    getApi().on('free-tool:execute', handler)
+    const api = getApi()
+    if (!api) return
+    api.on('free-tool:execute', handler)
     return () => {
-      getApi().removeListener('free-tool:execute', handler)
+      api.removeListener('free-tool:execute', handler)
     }
   }, [])
 }

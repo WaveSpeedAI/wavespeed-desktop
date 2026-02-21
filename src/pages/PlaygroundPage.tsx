@@ -529,9 +529,6 @@ export function PlaygroundPage() {
             <div className="flex items-center justify-between border-b bg-background/60 px-4 py-3">
               <div className="flex items-center gap-2">
                 <h2 className="font-semibold text-lg">{t('playground.output')}</h2>
-                {activeTab.selectedModel && (
-                  <span className="text-sm text-muted-foreground">· {activeTab.selectedModel.name}</span>
-                )}
                 {activeTab.currentPrediction?.timings?.inference != null && (
                   <span className="text-sm text-muted-foreground">
                     ({(activeTab.currentPrediction.timings.inference / 1000).toFixed(2)}s)

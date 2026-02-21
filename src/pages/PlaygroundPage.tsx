@@ -325,7 +325,7 @@ export function PlaygroundPage() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-gradient-to-b from-background via-background to-muted/20 pt-12 md:pt-0">
+    <div className="flex h-full flex-col bg-gradient-to-b from-background via-background to-muted/20 md:pt-0">
       {/* Tab Bar */}
       <div className="page-header bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/55">
         <ScrollArea className="w-full">
@@ -435,7 +435,7 @@ export function PlaygroundPage() {
           <div className="flex flex-1 flex-col overflow-hidden md:flex-row md:gap-3 md:p-3">
             {/* Left Panel - Configuration */}
             <div className={cn(
-              "w-full md:w-[430px] md:max-w-[430px] md:flex-none flex flex-col border-b bg-card/70 md:overflow-hidden md:rounded-xl md:border md:shadow-sm",
+              "w-full md:w-[430px] md:max-w-[430px] md:flex-none flex flex-col min-h-0 border-b bg-card/70 md:overflow-hidden md:rounded-xl md:border md:shadow-sm",
               // Mobile: show/hide based on mobileView, full height on mobile
               mobileView === 'config' ? "flex flex-1" : "hidden md:flex"
             )}>
@@ -449,12 +449,11 @@ export function PlaygroundPage() {
                 models={models}
                 value={activeTab.selectedModel?.model_id}
                 onChange={handleModelChange}
-                disabled={activeTab.isRunning}
               />
             </div>
 
-            {/* Parameters */}
-            <div className="flex-1 overflow-hidden px-4 py-3">
+            {/* Parameters — min-h-0 + overflow-y-auto so this panel scrolls on mobile/short viewports */}
+            <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3">
               {activeTab.selectedModel ? (
                 <DynamicForm
                   model={activeTab.selectedModel}
@@ -463,8 +462,8 @@ export function PlaygroundPage() {
                   onChange={setFormValue}
                   onSetDefaults={handleSetDefaults}
                   onFieldsChange={setFormFields}
-                  disabled={activeTab.isRunning}
                   onUploadingChange={setUploading}
+                  scrollable={false}
                 />
               ) : (
                 <div className="h-full flex items-center justify-center text-muted-foreground">
@@ -512,7 +511,7 @@ export function PlaygroundPage() {
                 <Button
                   variant="outline"
                   onClick={() => setShowSaveTemplateDialog(true)}
-                  disabled={!activeTab.selectedModel || activeTab.isRunning}
+                  disabled={!activeTab.selectedModel}
                   title={t('playground.saveAsTemplate')}
                 >
                   <Save className="h-4 w-4" />

@@ -558,7 +558,7 @@ export function SmartPlaygroundPage() {
                       field={field}
                       value={formValues[field.name]}
                       onChange={(value) => handleFieldChange(field.name, value)}
-                      disabled={isRunning}
+                      disabled={false}
                       formValues={formValues}
                       onUploadingChange={setIsUploading}
                     />
@@ -570,7 +570,6 @@ export function SmartPlaygroundPage() {
                     field={field}
                     value={formValues[field.name]}
                     onChange={(value) => handleFieldChange(field.name, value)}
-                    disabled={isRunning}
                     formValues={formValues}
                     onUploadingChange={setIsUploading}
                   />
@@ -614,7 +613,7 @@ export function SmartPlaygroundPage() {
                 <DropdownMenuTrigger asChild>
                   <Button
                     className="rounded-l-none px-2"
-                    disabled={isRunning || isUploading}
+                    disabled={isUploading}
                   >
                     <ChevronDown className="h-4 w-4" />
                   </Button>

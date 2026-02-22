@@ -805,6 +805,9 @@ export const useSmartGenerateStore = create<SmartGenerateState>((set, get) => {
           }
         }
 
+        // Successful round — reset temp retry counter
+        tempRetryCount = 0
+
         // Update context layer 1
         if (roundBest) {
           pipelineSet(s => ({

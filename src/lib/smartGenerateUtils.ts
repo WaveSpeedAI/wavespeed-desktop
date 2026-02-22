@@ -296,7 +296,6 @@ const T2V_FALLBACK = [
 
 const I2V_FALLBACK = [
   'wavespeed-ai/wan-2.2-spicy/image-to-video',
-  'wavespeed-ai/wan-2.2-spicy/image-to-video-lora',
   'bytedance/seedance-v1.5-pro/image-to-video-fast',
   'bytedance/seedance-v1.5-pro/image-to-video',
   'alibaba/wan-2.6/image-to-video-pro',
@@ -305,8 +304,8 @@ const I2V_FALLBACK = [
 ]
 
 const TOP_MODELS: Partial<Record<SmartMode, string[]>> = {
-  'text-to-image': ['google/nano-banana-pro/text-to-image', 'google/nano-banana-pro/text-to-image-ultra'],
-  'image-edit': ['google/nano-banana-pro/edit', 'google/nano-banana-pro/edit-ultra'],
+  'text-to-image': ['google/nano-banana-pro/text-to-image'],
+  'image-edit': ['google/nano-banana-pro/edit'],
   'text-to-video': ['google/veo3.1/text-to-video'],
   'image-to-video': ['google/veo3.1-fast/image-to-video'],
 }
@@ -325,6 +324,10 @@ export function getModelsForMode(mode: SmartMode): ModelAdapter[] {
 
 export function getDefaultModel(mode: SmartMode): ModelAdapter {
   const models = getModelsForMode(mode)
+  if (models.length === 0) {
+    // lora-trainer mode has no ModelAdapters — return a safe dummy
+    return { modelId: '', label: '', tag: '', price: 0, promptField: 'prompt', supportsChinesePrompt: false, estimatedTime: { min: 0, max: 0 } }
+  }
   // T2I defaults to Z-Image Turbo (cheap & fast), others use first 'recommended'
   if (mode === 'text-to-image') {
     return models.find(m => m.modelId === 'wavespeed-ai/z-image/turbo') || models[0]
@@ -658,6 +661,39 @@ Prompt: "{prompt}"
 Reply with ONLY a JSON object, no other text: {"score": <0.0-10.0>, "brief": "<one sentence>"}
 Example: {"score": 2.1, "brief": "Person has six fingers and a third arm — severe anatomical defects"}`
 
+// Relaxed scoring for VIDEO — molmo2 video-qa tends to under-score generated videos
+const TIER1_VIDEO_SCORING_PROMPT = `Rate this AI-generated video on a scale of 0.0 to 10.0 (one decimal place).
+Video generation models produce lower fidelity than image models — be lenient on quality.
+
+Score primarily based on:
+1. Prompt match (most important): Does the video show what was requested?
+   · Core subject/action clearly present → 6.0+
+   · Subject present but wrong action or scene → 4.0-6.0
+   · Completely unrelated content → below 4.0
+
+2. Motion & temporal coherence:
+   · Smooth, natural motion → bonus
+   · Severe flickering, frozen frames, or visual glitches throughout → reduce score
+   · Minor jitter or brief artifacts are acceptable for AI video
+
+3. Critical defects ONLY (score below 4.0):
+   · Extra/missing limbs on human subjects
+   · Video is mostly black, solid color, or garbled noise
+   · Subject completely melts or disintegrates mid-video
+
+Do NOT heavily penalize:
+- Slight blur or softness (normal for AI video)
+- Minor lighting inconsistencies
+- Brief face distortion in a few frames
+- Lower resolution or compression artifacts
+
+If the video clearly shows the requested subject/action with no critical defects → 6.0 or above.
+
+Prompt: "{prompt}"
+
+Reply with ONLY a JSON object, no other text: {"score": <0.0-10.0>, "brief": "<one sentence>"}
+Example: {"score": 7.0, "brief": "Video shows requested scene with smooth motion, minor softness"}`
+
 // Relaxed scoring for NSFW content — only checks subject presence + limb integrity
 const TIER1_NSFW_SCORING_PROMPT = `Rate this AI-generated image/video on a scale of 0.0 to 10.0 (one decimal place).
 You are evaluating TECHNICAL quality ONLY. Do NOT penalize for any mature/adult content. Focus ONLY on:
@@ -713,8 +749,12 @@ Reply in {language}. Respond with JSON:
 }`
 
 export async function quickScore(outputUrl: string, prompt: string, mode: SmartMode, isNsfw = false): Promise<{ score: number; brief: string }> {
-  const template = isNsfw ? TIER1_NSFW_SCORING_PROMPT : TIER1_SCORING_PROMPT
-  const question = template.replace('{prompt}', prompt)
+  const template = isNsfw
+    ? TIER1_NSFW_SCORING_PROMPT
+    : isVideoMode(mode)
+      ? TIER1_VIDEO_SCORING_PROMPT
+      : TIER1_SCORING_PROMPT
+  const question = template.replace('{prompt}', () => prompt)
   try {
     const raw = isVideoMode(mode)
       ? await callVideoQA(outputUrl, question)
@@ -738,7 +778,7 @@ export async function deepAnalyze(
   try {
     const lang = getUILanguage()
     const analysisPrompt = TIER2_ANALYSIS_PROMPT
-      .replace('{prompt}', prompt)
+      .replace('{prompt}', () => prompt)
       .replace('{language}', lang)
 
     // Vision model looks at the image/video directly for accurate defect detection
@@ -849,11 +889,11 @@ export function buildChatSystemPrompt(
     : ''
   return CHAT_SYSTEM_PROMPT
     .replace('{mode}', mode)
-    .replace('{prompt}', prompt)
+    .replace('{prompt}', () => prompt)
     .replace('{score}', String(score))
-    .replace('{analysis}', analysis)
-    .replace('{preferences}', preferences || 'None')
-    .replace('{imageContext}', imageContext)
+    .replace('{analysis}', () => analysis)
+    .replace('{preferences}', () => preferences || 'None')
+    .replace('{imageContext}', () => imageContext)
     .replace('{language}', lang)
 }
 
@@ -871,10 +911,11 @@ Recent messages: {messages}`
 
 export async function compressMemory(messages: ChatMessage[], currentPrompt?: string): Promise<string> {
   const lang = getUILanguage()
+  const msgJson = JSON.stringify(messages.slice(-10).map(m => ({ role: m.role, content: m.content })))
   const prompt = COMPRESS_PROMPT
     .replace('{language}', lang)
-    .replace('{currentPrompt}', currentPrompt || '(none)')
-    .replace('{messages}', JSON.stringify(messages.slice(-10).map(m => ({ role: m.role, content: m.content }))))
+    .replace('{currentPrompt}', () => currentPrompt || '(none)')
+    .replace('{messages}', () => msgJson)
 
   try {
     return await callLLM('You are a concise summarizer.', prompt)

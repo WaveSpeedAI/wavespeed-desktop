@@ -305,7 +305,7 @@ export function RefinementChat({ className }: RefinementChatProps) {
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault()
-                handleSend()
+                if (!isSending) handleSend()
               }
             }}
             placeholder={t('smartGenerate.chat.placeholder')}

@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "Yükleniyor...",
     "save": "Kaydet",
@@ -1444,7 +1444,8 @@
       "text-to-image": "Text to Image",
       "image-edit": "Image Edit",
       "text-to-video": "Text to Video",
-      "image-to-video": "Image to Video"
+      "image-to-video": "Image to Video",
+      "lora-trainer": "LoRA Eğit"
     },
     "tab": {
       "config": "Config",
@@ -1549,6 +1550,7 @@
     "output": {
       "bestResult": "Best Result",
       "allResults": "All Results",
+      "moreInHistory": "Son 40 gösteriliyor — daha fazlası için Geçmiş'e gidin",
       "playWhileWaiting": "Play while waiting...",
       "empty": "Results will appear here after generation starts",
       "continueRefining": "İyileştirmeye devam et",
@@ -1603,7 +1605,9 @@
     "error": {
       "insufficientBalance": "Insufficient balance (${{balance}}). Please top up to continue.",
       "promptViolation": "Prompt violates content policy: {{reason}}",
-      "imageViolation": "Uploaded image violates content policy"
+      "imageViolation": "Uploaded image violates content policy",
+      "noOutput": "Çıktı döndürülmedi",
+      "failed": "İşlem başarısız"
     },
     "toast": {
       "complete": "Smart Generate Complete",
@@ -1620,7 +1624,9 @@
       "budgetWarning": "Bütçe Limiti Ulaşıldı",
       "budgetWarningDesc": "${{spent}} / ${{budget}} bütçe harcandı. Sonraki tur için yetersiz.",
       "referenceApplied": "Referans görsel uygulandı",
-      "referenceAppliedDesc": "Referans görselinizin açıklaması prompt'a eklendi."
+      "referenceAppliedDesc": "Referans görselinizin açıklaması prompt'a eklendi.",
+      "upscaling": "Görsel büyütülüyor",
+      "upscalingDesc": "Kaynak görsel bu model için çok küçük. Önce 4K'ya büyütülüyor..."
     },
     "guide": {
       "title": "Akıllı Oluşturma",
@@ -1631,6 +1637,25 @@
       "step3Title": "Quality Scoring",
       "step3Desc": "AI evaluates each result on clarity, composition, and prompt adherence.",
       "getStarted": "Get Started"
+    },
+    "trainer": {
+      "images": "Eğitim Görselleri",
+      "uploadImages": "Eğitim görsellerini yükle",
+      "addMore": "Daha fazla görsel ekle",
+      "imageCount": "görsel",
+      "overSize": "100 MB sınırını aşıyor",
+      "triggerWord": "Tetikleyici Kelime",
+      "model": "Eğitici Model",
+      "steps": "Eğitim Adımları",
+      "learningRate": "Öğrenme Oranı",
+      "loraRank": "LoRA Rank",
+      "startTraining": "Eğitimi Başlat",
+      "training": "Eğitim",
+      "result": "Eğitim Sonucu",
+      "loraUrl": "LoRA URL",
+      "lora": "LoRA",
+      "completeToast": "Eğitim Tamamlandı",
+      "completeToastDesc": "LoRA modeliniz kullanıma hazır."
     }
   }
 }

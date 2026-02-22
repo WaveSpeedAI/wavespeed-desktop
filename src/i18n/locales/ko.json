@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "로딩 중...",
     "save": "저장",
@@ -1444,7 +1444,8 @@
       "text-to-image": "Text to Image",
       "image-edit": "Image Edit",
       "text-to-video": "Text to Video",
-      "image-to-video": "Image to Video"
+      "image-to-video": "Image to Video",
+      "lora-trainer": "LoRA 학습"
     },
     "tab": {
       "config": "Config",
@@ -1549,6 +1550,7 @@
     "output": {
       "bestResult": "Best Result",
       "allResults": "All Results",
+      "moreInHistory": "최근 40개 표시 중 — 더 보려면 기록으로 이동",
       "playWhileWaiting": "Play while waiting...",
       "empty": "Results will appear here after generation starts",
       "continueRefining": "계속 개선",
@@ -1603,7 +1605,9 @@
     "error": {
       "insufficientBalance": "Insufficient balance (${{balance}}). Please top up to continue.",
       "promptViolation": "Prompt violates content policy: {{reason}}",
-      "imageViolation": "Uploaded image violates content policy"
+      "imageViolation": "Uploaded image violates content policy",
+      "noOutput": "출력이 반환되지 않았습니다",
+      "failed": "작업 실패"
     },
     "toast": {
       "complete": "Smart Generate Complete",
@@ -1620,7 +1624,9 @@
       "budgetWarning": "예산 한도 도달",
       "budgetWarningDesc": "${{spent}} / ${{budget}} 예산을 사용했습니다. 다음 라운드에 부족합니다.",
       "referenceApplied": "참고 이미지 적용됨",
-      "referenceAppliedDesc": "참고 이미지 설명이 프롬프트에 추가되어 생성을 안내합니다."
+      "referenceAppliedDesc": "참고 이미지 설명이 프롬프트에 추가되어 생성을 안내합니다.",
+      "upscaling": "이미지 업스케일링",
+      "upscalingDesc": "원본 이미지가 이 모델에 너무 작습니다. 먼저 4K로 업스케일링합니다..."
     },
     "guide": {
       "title": "스마트 생성",
@@ -1631,6 +1637,25 @@
       "step3Title": "Quality Scoring",
       "step3Desc": "AI evaluates each result on clarity, composition, and prompt adherence.",
       "getStarted": "Get Started"
+    },
+    "trainer": {
+      "images": "학습 이미지",
+      "uploadImages": "학습 이미지 업로드",
+      "addMore": "이미지 추가",
+      "imageCount": "장 이미지",
+      "overSize": "100 MB 제한 초과",
+      "triggerWord": "트리거 단어",
+      "model": "트레이너 모델",
+      "steps": "학습 단계",
+      "learningRate": "학습률",
+      "loraRank": "LoRA 랭크",
+      "startTraining": "학습 시작",
+      "training": "학습 중",
+      "result": "학습 결과",
+      "loraUrl": "LoRA URL",
+      "lora": "LoRA",
+      "completeToast": "학습 완료",
+      "completeToastDesc": "LoRA 모델을 사용할 수 있습니다."
     }
   }
 }

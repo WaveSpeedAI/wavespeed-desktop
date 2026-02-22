@@ -1,3 +1,4 @@
+import JSZip from 'jszip'
 import { apiClient } from '@/api/client'
 import type { PredictionResult } from '@/types/prediction'
 import { useModelsStore } from '@/stores/modelsStore'
@@ -5,7 +6,7 @@ import i18n from '@/i18n'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export type SmartMode = 'text-to-image' | 'image-edit' | 'text-to-video' | 'image-to-video'
+export type SmartMode = 'text-to-image' | 'image-edit' | 'text-to-video' | 'image-to-video' | 'lora-trainer'
 
 export interface ExtraConfigField {
   fieldName: string
@@ -49,6 +50,7 @@ export interface GenerationAttempt {
   cost: number
   inferenceTime: number | null
   timestamp: number
+  isUpscaled?: boolean
 }
 
 export interface ChatMessage {
@@ -82,6 +84,11 @@ export const TEXT_TO_IMAGE_MODELS: ModelAdapter[] = [
   },
   { modelId: 'bytedance/seedream-v4.5', label: 'Seedream', tag: 'recommended', price: 0.04, promptField: 'prompt', supportsChinesePrompt: false, estimatedTime: { min: 5, max: 15 }, seedField: 'seed' },
   { modelId: 'wavespeed-ai/flux-2-dev/text-to-image', label: 'Flux 2 Dev', tag: 'detail', price: 0.012, promptField: 'prompt', supportsChinesePrompt: false, estimatedTime: { min: 5, max: 15 }, seedField: 'seed' },
+  {
+    modelId: 'wavespeed-ai/flux-2-dev/text-to-image-lora', label: 'Flux 2 Dev LoRA', tag: 'lora', price: 0.012,
+    promptField: 'prompt', supportsChinesePrompt: false, estimatedTime: { min: 5, max: 15 }, seedField: 'seed',
+    extraConfigFields: [{ fieldName: 'loras', labelKey: 'smartGenerate.config.loras', type: 'lora' }],
+  },
   { modelId: 'alibaba/wan-2.6/text-to-image', label: 'Wan 2.6', tag: 'chinese', price: 0.03, promptField: 'prompt', supportsChinesePrompt: true, estimatedTime: { min: 5, max: 15 }, seedField: 'seed' },
 ]
 
@@ -94,17 +101,64 @@ export const IMAGE_EDIT_MODELS: ModelAdapter[] = [
     promptField: 'prompt', imageField: 'images', supportsChinesePrompt: true, estimatedTime: { min: 5, max: 15 }, seedField: 'seed',
     extraConfigFields: [{ fieldName: 'loras', labelKey: 'smartGenerate.config.loras', type: 'lora' }],
   },
+  {
+    modelId: 'wavespeed-ai/flux-2-dev/edit-lora', label: 'Flux 2 Dev Edit LoRA', tag: 'lora', price: 0.012,
+    promptField: 'prompt', imageField: 'images', supportsChinesePrompt: false, estimatedTime: { min: 5, max: 15 }, seedField: 'seed',
+    extraConfigFields: [{ fieldName: 'loras', labelKey: 'smartGenerate.config.loras', type: 'lora' }],
+  },
   { modelId: 'bytedance/seedream-v4.5/edit', label: 'Seedream Edit', tag: 'recommended', price: 0.04, promptField: 'prompt', imageField: 'images', supportsChinesePrompt: false, estimatedTime: { min: 5, max: 15 } },
   { modelId: 'openai/gpt-image-1', label: 'GPT Image 1', tag: 'understanding', price: 0.042, promptField: 'prompt', imageField: 'image', supportsChinesePrompt: true, estimatedTime: { min: 8, max: 20 } },
 ]
 
 export const TEXT_TO_VIDEO_MODELS: ModelAdapter[] = [
-  { modelId: 'bytedance/seedance-v1.5-pro/text-to-video', label: 'Seedance Pro', tag: 'recommended', price: 0.26, promptField: 'prompt', supportsChinesePrompt: false, estimatedTime: { min: 30, max: 90 } },
-  { modelId: 'bytedance/seedance-v1.5-pro/text-to-video-fast', label: 'Seedance Fast', tag: 'fast', price: 0.20, promptField: 'prompt', supportsChinesePrompt: false, estimatedTime: { min: 15, max: 60 }, seedField: 'seed' },
-  { modelId: 'openai/sora-2/text-to-video', label: 'Sora 2', tag: 'flagship', price: 0.40, promptField: 'prompt', supportsChinesePrompt: true, estimatedTime: { min: 30, max: 120 } },
-  { modelId: 'google/veo3.1-fast/text-to-video', label: 'Veo 3.1 Fast', tag: 'premium', price: 1.20, promptField: 'prompt', supportsChinesePrompt: false, estimatedTime: { min: 30, max: 90 } },
-  { modelId: 'google/veo3.1/text-to-video', label: 'Veo 3.1', tag: 'ultimate', price: 3.20, promptField: 'prompt', supportsChinesePrompt: false, estimatedTime: { min: 60, max: 180 } },
-  { modelId: 'alibaba/wan-2.6/text-to-video', label: 'Wan 2.6', tag: 'chinese', price: 0.50, promptField: 'prompt', supportsChinesePrompt: true, estimatedTime: { min: 30, max: 120 }, seedField: 'seed' },
+  {
+    modelId: 'bytedance/seedance-v1.5-pro/text-to-video', label: 'Seedance Pro', tag: 'recommended', price: 0.26,
+    promptField: 'prompt', supportsChinesePrompt: false, estimatedTime: { min: 30, max: 90 },
+    extraDefaults: { duration: 5 },
+    extraConfigFields: [
+      { fieldName: 'duration', labelKey: 'smartGenerate.config.duration', type: 'enum', options: ['5', '8', '12'], default: '5' },
+    ],
+  },
+  {
+    modelId: 'bytedance/seedance-v1.5-pro/text-to-video-fast', label: 'Seedance Fast', tag: 'fast', price: 0.20,
+    promptField: 'prompt', supportsChinesePrompt: false, estimatedTime: { min: 15, max: 60 }, seedField: 'seed',
+    extraDefaults: { duration: 5 },
+    extraConfigFields: [
+      { fieldName: 'duration', labelKey: 'smartGenerate.config.duration', type: 'enum', options: ['5', '8', '12'], default: '5' },
+    ],
+  },
+  {
+    modelId: 'openai/sora-2/text-to-video', label: 'Sora 2', tag: 'flagship', price: 0.40,
+    promptField: 'prompt', supportsChinesePrompt: true, estimatedTime: { min: 30, max: 120 },
+    extraDefaults: { duration: 4 },
+    extraConfigFields: [
+      { fieldName: 'duration', labelKey: 'smartGenerate.config.duration', type: 'enum', options: ['4', '8', '12'], default: '4' },
+    ],
+  },
+  {
+    modelId: 'google/veo3.1-fast/text-to-video', label: 'Veo 3.1 Fast', tag: 'premium', price: 1.20,
+    promptField: 'prompt', supportsChinesePrompt: false, estimatedTime: { min: 30, max: 90 },
+    extraDefaults: { duration: 8 },
+    extraConfigFields: [
+      { fieldName: 'duration', labelKey: 'smartGenerate.config.duration', type: 'enum', options: ['4', '6', '8'], default: '8' },
+    ],
+  },
+  {
+    modelId: 'google/veo3.1/text-to-video', label: 'Veo 3.1', tag: 'ultimate', price: 3.20,
+    promptField: 'prompt', supportsChinesePrompt: false, estimatedTime: { min: 60, max: 180 },
+    extraDefaults: { duration: 8 },
+    extraConfigFields: [
+      { fieldName: 'duration', labelKey: 'smartGenerate.config.duration', type: 'enum', options: ['4', '6', '8'], default: '8' },
+    ],
+  },
+  {
+    modelId: 'alibaba/wan-2.6/text-to-video', label: 'Wan 2.6', tag: 'chinese', price: 0.50,
+    promptField: 'prompt', supportsChinesePrompt: true, estimatedTime: { min: 30, max: 120 }, seedField: 'seed',
+    extraDefaults: { duration: 5 },
+    extraConfigFields: [
+      { fieldName: 'duration', labelKey: 'smartGenerate.config.duration', type: 'enum', options: ['5', '10', '15'], default: '5' },
+    ],
+  },
   {
     modelId: 'wavespeed-ai/wan-2.2/t2v-720p-lora-ultra-fast', label: 'Wan 2.2 LoRA', tag: 'lora', price: 0.15,
     promptField: 'prompt', supportsChinesePrompt: true, estimatedTime: { min: 10, max: 40 }, seedField: 'seed',
@@ -117,11 +171,46 @@ export const TEXT_TO_VIDEO_MODELS: ModelAdapter[] = [
 ]
 
 export const IMAGE_TO_VIDEO_MODELS: ModelAdapter[] = [
-  { modelId: 'bytedance/seedance-v1.5-pro/image-to-video', label: 'Seedance', tag: 'recommended', price: 0.26, promptField: 'prompt', imageField: 'image', supportsChinesePrompt: false, estimatedTime: { min: 30, max: 90 } },
-  { modelId: 'bytedance/seedance-v1.5-pro/image-to-video-fast', label: 'Seedance Fast', tag: 'fast', price: 0.20, promptField: 'prompt', imageField: 'image', supportsChinesePrompt: false, estimatedTime: { min: 15, max: 60 }, seedField: 'seed' },
-  { modelId: 'openai/sora-2/image-to-video', label: 'Sora 2', tag: 'flagship', price: 0.40, promptField: 'prompt', imageField: 'image', supportsChinesePrompt: true, estimatedTime: { min: 30, max: 120 } },
-  { modelId: 'google/veo3.1-fast/image-to-video', label: 'Veo 3.1 Fast', tag: 'premium', price: 1.20, promptField: 'prompt', imageField: 'image', supportsChinesePrompt: false, estimatedTime: { min: 30, max: 90 } },
-  { modelId: 'alibaba/wan-2.6/image-to-video', label: 'Wan 2.6', tag: 'chinese', price: 0.50, promptField: 'prompt', imageField: 'image', supportsChinesePrompt: true, estimatedTime: { min: 30, max: 120 }, seedField: 'seed' },
+  {
+    modelId: 'bytedance/seedance-v1.5-pro/image-to-video', label: 'Seedance', tag: 'recommended', price: 0.26,
+    promptField: 'prompt', imageField: 'image', supportsChinesePrompt: false, estimatedTime: { min: 30, max: 90 },
+    extraDefaults: { duration: 5 },
+    extraConfigFields: [
+      { fieldName: 'duration', labelKey: 'smartGenerate.config.duration', type: 'enum', options: ['5', '8', '12'], default: '5' },
+    ],
+  },
+  {
+    modelId: 'bytedance/seedance-v1.5-pro/image-to-video-fast', label: 'Seedance Fast', tag: 'fast', price: 0.20,
+    promptField: 'prompt', imageField: 'image', supportsChinesePrompt: false, estimatedTime: { min: 15, max: 60 }, seedField: 'seed',
+    extraDefaults: { duration: 5 },
+    extraConfigFields: [
+      { fieldName: 'duration', labelKey: 'smartGenerate.config.duration', type: 'enum', options: ['5', '8', '12'], default: '5' },
+    ],
+  },
+  {
+    modelId: 'openai/sora-2/image-to-video', label: 'Sora 2', tag: 'flagship', price: 0.40,
+    promptField: 'prompt', imageField: 'image', supportsChinesePrompt: true, estimatedTime: { min: 30, max: 120 },
+    extraDefaults: { duration: 4 },
+    extraConfigFields: [
+      { fieldName: 'duration', labelKey: 'smartGenerate.config.duration', type: 'enum', options: ['4', '8', '12'], default: '4' },
+    ],
+  },
+  {
+    modelId: 'google/veo3.1-fast/image-to-video', label: 'Veo 3.1 Fast', tag: 'premium', price: 1.20,
+    promptField: 'prompt', imageField: 'image', supportsChinesePrompt: false, estimatedTime: { min: 30, max: 90 },
+    extraDefaults: { duration: 8 },
+    extraConfigFields: [
+      { fieldName: 'duration', labelKey: 'smartGenerate.config.duration', type: 'enum', options: ['4', '6', '8'], default: '8' },
+    ],
+  },
+  {
+    modelId: 'alibaba/wan-2.6/image-to-video-pro', label: 'Wan 2.6 Pro', tag: 'chinese', price: 0.50,
+    promptField: 'prompt', imageField: 'image', supportsChinesePrompt: true, estimatedTime: { min: 30, max: 120 },
+    extraDefaults: { duration: 5, enable_prompt_expansion: false },
+    extraConfigFields: [
+      { fieldName: 'duration', labelKey: 'smartGenerate.config.duration', type: 'enum', options: ['5', '10', '15'], default: '5' },
+    ],
+  },
   {
     modelId: 'wavespeed-ai/wan-2.2-spicy/image-to-video', label: 'Wan Spicy', tag: 'value', price: 0.15,
     promptField: 'prompt', imageField: 'image', supportsChinesePrompt: true, estimatedTime: { min: 15, max: 60 }, seedField: 'seed',
@@ -140,6 +229,44 @@ export const IMAGE_TO_VIDEO_MODELS: ModelAdapter[] = [
     ],
   },
 ]
+
+// ─── Trainer Models ──────────────────────────────────────────────────────────
+
+export interface TrainerAdapter {
+  modelId: string
+  label: string
+  tag: string
+  defaults: { steps: number; learningRate: number; loraRank: number }
+  stepRange: { min: number; max: number }
+  rankRange: { min: number; max: number }
+}
+
+export const TRAINER_MODELS: TrainerAdapter[] = [
+  { modelId: 'wavespeed-ai/z-image/base-lora-trainer', label: 'Z-Image Base', tag: 'recommended', defaults: { steps: 1000, learningRate: 0.0001, loraRank: 16 }, stepRange: { min: 100, max: 5000 }, rankRange: { min: 4, max: 64 } },
+  { modelId: 'wavespeed-ai/z-image/lora-trainer', label: 'Z-Image', tag: 'value', defaults: { steps: 1000, learningRate: 0.0001, loraRank: 16 }, stepRange: { min: 100, max: 5000 }, rankRange: { min: 4, max: 64 } },
+  { modelId: 'wavespeed-ai/qwen-image-lora-trainer', label: 'Qwen Image', tag: 'value', defaults: { steps: 1000, learningRate: 0.0004, loraRank: 16 }, stepRange: { min: 100, max: 5000 }, rankRange: { min: 4, max: 64 } },
+  { modelId: 'wavespeed-ai/qwen-image-2512-lora-trainer', label: 'Qwen 2512', tag: 'value', defaults: { steps: 1000, learningRate: 0.0004, loraRank: 16 }, stepRange: { min: 100, max: 5000 }, rankRange: { min: 4, max: 64 } },
+  { modelId: 'wavespeed-ai/wan-2.2-image-lora-trainer', label: 'Wan 2.2 Image', tag: 'chinese', defaults: { steps: 1000, learningRate: 0.0002, loraRank: 32 }, stepRange: { min: 100, max: 5000 }, rankRange: { min: 4, max: 128 } },
+]
+
+export function isTrainerMode(mode: SmartMode): boolean {
+  return mode === 'lora-trainer'
+}
+
+export function getTrainerAdapter(modelId: string): TrainerAdapter | undefined {
+  return TRAINER_MODELS.find(m => m.modelId === modelId)
+}
+
+export async function buildTrainingZip(files: File[]): Promise<File> {
+  const zip = new JSZip()
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i]
+    const ext = file.name.includes('.') ? file.name.split('.').pop()! : 'jpg'
+    zip.file(`${i + 1}.${ext}`, file)
+  }
+  const blob = await zip.generateAsync({ type: 'blob' })
+  return new File([blob], 'training_data.zip', { type: 'application/zip' })
+}
 
 // ─── Fallback Chains ────────────────────────────────────────────────────────
 
@@ -172,12 +299,12 @@ const I2V_FALLBACK = [
   'wavespeed-ai/wan-2.2-spicy/image-to-video-lora',
   'bytedance/seedance-v1.5-pro/image-to-video-fast',
   'bytedance/seedance-v1.5-pro/image-to-video',
-  'alibaba/wan-2.6/image-to-video',
+  'alibaba/wan-2.6/image-to-video-pro',
   'openai/sora-2/image-to-video',
   'google/veo3.1-fast/image-to-video',
 ]
 
-const TOP_MODELS: Record<SmartMode, string[]> = {
+const TOP_MODELS: Partial<Record<SmartMode, string[]>> = {
   'text-to-image': ['google/nano-banana-pro/text-to-image', 'google/nano-banana-pro/text-to-image-ultra'],
   'image-edit': ['google/nano-banana-pro/edit', 'google/nano-banana-pro/edit-ultra'],
   'text-to-video': ['google/veo3.1/text-to-video'],
@@ -192,6 +319,7 @@ export function getModelsForMode(mode: SmartMode): ModelAdapter[] {
     case 'image-edit': return IMAGE_EDIT_MODELS
     case 'text-to-video': return TEXT_TO_VIDEO_MODELS
     case 'image-to-video': return IMAGE_TO_VIDEO_MODELS
+    case 'lora-trainer': return [] // trainer uses TrainerAdapter, not ModelAdapter
   }
 }
 
@@ -222,10 +350,14 @@ function getFallbackChain(mode: SmartMode): string[] {
     case 'image-edit': return EDIT_FALLBACK
     case 'text-to-video': return T2V_FALLBACK
     case 'image-to-video': return I2V_FALLBACK
+    case 'lora-trainer': return [] // no fallback for trainer
   }
 }
 
 export function isTopModel(mode: SmartMode, modelId: string): boolean {
+  // LoRA models should never fallback — user's LoRA is model-specific
+  const adapter = getModelAdapter(modelId)
+  if (adapter?.tag === 'lora') return true
   return TOP_MODELS[mode]?.includes(modelId) ?? false
 }
 
@@ -348,6 +480,21 @@ export function isImageMode(mode: SmartMode): boolean {
 
 export function needsSourceImage(mode: SmartMode): boolean {
   return mode === 'image-edit' || mode === 'image-to-video'
+}
+
+export function extractTrainingOutput(result: PredictionResult): string | null {
+  if (!result.outputs || result.outputs.length === 0) return null
+  const out = result.outputs[0]
+  if (typeof out === 'string') return out
+  if (typeof out === 'object' && out !== null) {
+    const obj = out as Record<string, unknown>
+    // Training API may return lora_url, url, output, or diffusers_lora_file
+    if (typeof obj.lora_url === 'string') return obj.lora_url
+    if (typeof obj.diffusers_lora_file === 'string') return obj.diffusers_lora_file
+    if (typeof obj.url === 'string') return obj.url
+    if (typeof obj.output === 'string') return obj.output
+  }
+  return null
 }
 
 // ─── API Wrappers ────────────────────────────────────────────────────────────
@@ -491,43 +638,94 @@ const TIER1_SCORING_PROMPT = `Rate this AI-generated image/video on a scale of 0
 - How well it matches the prompt (most important)
 - Visual quality and clarity
 - Composition and aesthetics
+- Anatomical defects (ANY of these → score below 4.0):
+  · Extra/missing/fused limbs, fingers, arms, legs
+  · Deformed, webbed, or claw-like hands/fingers; floating or disconnected body parts
+  · Distorted, asymmetrical, or double faces; mutated facial features
+  · Impossible body proportions; stretched, melted, or misaligned body parts
+- Structural defects (heavily reduce score):
+  · Melted or merged objects; duplicated/cloned elements
+  · Impossible geometry, crooked perspective, misaligned edges
+  · Garbled, unreadable, or phantom text; watermarks, signatures, logos
+  · Unnatural skin texture (waxy, plastic); uncanny valley effect
+- Quality defects (reduce score):
+  · Blurry, pixelated, or noisy regions; compression artifacts
+  · Overexposed/underexposed areas; inconsistent lighting/shadows
+  · Weird double edges; unfinished or low-detail areas
 
 Prompt: "{prompt}"
 
 Reply with ONLY a JSON object, no other text: {"score": <0.0-10.0>, "brief": "<one sentence>"}
-Example: {"score": 7.3, "brief": "Good composition but slightly blurry details"}`
+Example: {"score": 2.1, "brief": "Person has six fingers and a third arm — severe anatomical defects"}`
 
-const TIER2_ANALYSIS_PROMPT = `You are a professional content quality analyst. Analyze the generated content in detail.
+// Relaxed scoring for NSFW content — only checks subject presence + limb integrity
+const TIER1_NSFW_SCORING_PROMPT = `Rate this AI-generated image/video on a scale of 0.0 to 10.0 (one decimal place).
+You are evaluating TECHNICAL quality ONLY. Do NOT penalize for any mature/adult content. Focus ONLY on:
+
+1. Subject presence (most important): Does the output contain the main subject described in the prompt? (person, character, scene elements)
+   · Subject clearly present and recognizable → 6.0+
+   · Subject missing or completely wrong → below 4.0
+
+2. Limb & body integrity (critical):
+   · Extra limbs (3+ arms, 3+ legs) → score below 4.0
+   · Missing limbs (0 arms when should have 2) → score below 4.0
+   · Fused/merged body parts → score below 4.0
+   · Normal anatomy with minor imperfections → 6.0+
+
+3. Basic visual coherence:
+   · Image/video is not a black screen, solid color, or garbled noise
+   · Main subject is not completely melted or unrecognizable
+
+If subject is present AND no extra/missing limbs → score 6.0 or above.
+Minor quality issues (lighting, blur, small artifacts) should NOT reduce score below 6.0.
+
+Prompt: "{prompt}"
+
+Reply with ONLY a JSON object, no other text: {"score": <0.0-10.0>, "brief": "<one sentence>"}
+Example: {"score": 7.5, "brief": "Subject present with correct anatomy, minor lighting issues"}`
+
+const TIER2_ANALYSIS_PROMPT = `You are a professional content quality analyst. Look at this AI-generated image/video carefully and analyze it in detail.
 
 Original prompt: "{prompt}"
-Content description: "{description}"
 
 Score each dimension on a 0.0-10.0 scale (one decimal place) and provide overall analysis:
-1. Clarity & sharpness
-2. Composition & aesthetics
+1. Clarity & sharpness (blurry regions, pixelation, noise, compression artifacts, unfinished details)
+2. Composition & aesthetics (crooked perspective, misaligned edges, cluttered/duplicated elements, bad framing)
 3. Prompt adherence
-4. Color & lighting
-5. Overall impression
+4. Color & lighting (overexposed/underexposed, washed-out, inconsistent shadows, unnatural reflections, color banding)
+5. Anatomical & structural correctness — CRITICAL, check ALL of:
+   · Extra/missing/fused limbs, fingers, arms, legs; floating or disconnected body parts
+   · Deformed, webbed, or claw-like hands; wrong finger count
+   · Distorted, asymmetrical, or double faces; mutated or misplaced facial features
+   · Impossible body proportions; stretched, melted, or misaligned body parts
+   · Melted/merged objects; garbled/phantom text; watermarks, signatures, logos
+   · Unnatural skin (waxy, plastic); uncanny valley effect; weird double edges
+   ANY anatomical or severe structural defect → anatomy score ≤ 4.0, totalScore capped at 4.0
+6. Overall impression
 
 Reply in {language}. Respond with JSON:
 {
-  "scores": {"clarity": <0.0-10.0>, "composition": <n>, "adherence": <n>, "color": <n>, "overall": <n>},
+  "scores": {"clarity": <0.0-10.0>, "composition": <n>, "adherence": <n>, "color": <n>, "anatomy": <n>, "overall": <n>},
   "totalScore": <0.0-10.0>,
   "analysis": "<detailed analysis>",
   "improvements": ["<suggestion1>", "<suggestion2>", "<suggestion3>"],
   "quickFeedback": ["<feedback option 1>", "<feedback option 2>", "<feedback option 3>"]
 }`
 
-export async function quickScore(outputUrl: string, prompt: string, mode: SmartMode): Promise<{ score: number; brief: string }> {
-  const question = TIER1_SCORING_PROMPT.replace('{prompt}', prompt)
+export async function quickScore(outputUrl: string, prompt: string, mode: SmartMode, isNsfw = false): Promise<{ score: number; brief: string }> {
+  const template = isNsfw ? TIER1_NSFW_SCORING_PROMPT : TIER1_SCORING_PROMPT
+  const question = template.replace('{prompt}', prompt)
   try {
     const raw = isVideoMode(mode)
       ? await callVideoQA(outputUrl, question)
       : await callVisionLLM([outputUrl], question)
-    console.log('[SmartGen] Tier1 raw response:', raw)
-    return parseScoreResponse(raw)
+    const result = parseScoreResponse(raw)
+    // NSFW bonus: +10 base score so borderline content (50+) can pass the 60 threshold
+    if (isNsfw) {
+      result.score = Math.min(100, result.score + 10)
+    }
+    return result
   } catch (err) {
-    console.error('[SmartGen] Tier1 scoring failed:', err)
     return { score: 50, brief: 'Scoring failed' }
   }
 }
@@ -538,23 +736,17 @@ export async function deepAnalyze(
   mode: SmartMode
 ): Promise<{ totalScore: number; analysis: string; improvements: string[]; quickFeedback: string[] }> {
   try {
-    // Step 1: Get description via captioner
-    const description = isVideoMode(mode)
-      ? await callVideoCaptioner(outputUrl)
-      : await callImageCaptioner(outputUrl)
-
-    // Step 2: LLM analysis
     const lang = getUILanguage()
     const analysisPrompt = TIER2_ANALYSIS_PROMPT
       .replace('{prompt}', prompt)
-      .replace('{description}', description)
       .replace('{language}', lang)
 
-    const raw = await callLLM('You are a professional quality analyst.', analysisPrompt)
-    console.log('[SmartGen] Tier2 raw response:', raw.substring(0, 200))
+    // Vision model looks at the image/video directly for accurate defect detection
+    const raw = isVideoMode(mode)
+      ? await callVideoQA(outputUrl, analysisPrompt)
+      : await callVisionLLM([outputUrl], analysisPrompt)
     return parseTier2Response(raw)
   } catch (err) {
-    console.error('[SmartGen] Tier2 analysis failed:', err)
     return { totalScore: 50, analysis: 'Analysis failed', improvements: [], quickFeedback: [] }
   }
 }
@@ -667,20 +859,22 @@ export function buildChatSystemPrompt(
 
 // ─── Context Memory ──────────────────────────────────────────────────────────
 
-const COMPRESS_PROMPT = `Summarize the user's preferences and style requirements from these conversation messages into a concise paragraph. Focus on:
+const COMPRESS_PROMPT = `Summarize the user's preferences and style requirements from the conversation messages and their current prompt into a concise paragraph. The current prompt reflects the user's LATEST intent and should take priority over older messages. Focus on:
 - Preferred visual styles, colors, moods
 - Quality expectations
 - Common feedback patterns
 - Specific likes/dislikes
 
 Reply in {language}.
-Messages: {messages}`
+Current prompt: {currentPrompt}
+Recent messages: {messages}`
 
-export async function compressMemory(messages: ChatMessage[]): Promise<string> {
+export async function compressMemory(messages: ChatMessage[], currentPrompt?: string): Promise<string> {
   const lang = getUILanguage()
   const prompt = COMPRESS_PROMPT
     .replace('{language}', lang)
-    .replace('{messages}', JSON.stringify(messages.map(m => ({ role: m.role, content: m.content }))))
+    .replace('{currentPrompt}', currentPrompt || '(none)')
+    .replace('{messages}', JSON.stringify(messages.slice(-10).map(m => ({ role: m.role, content: m.content }))))
 
   try {
     return await callLLM('You are a concise summarizer.', prompt)
@@ -877,6 +1071,7 @@ export function getTagLabelKey(tag: string): string {
     chinese: 'smartGenerate.tag.chinese',
     detail: 'smartGenerate.tag.detail',
     understanding: 'smartGenerate.tag.understanding',
+    lora: 'smartGenerate.tag.lora',
   }
   return map[tag] || tag
 }
@@ -984,6 +1179,35 @@ export async function runGeneration(
 
 export function generateRandomSeed(): number {
   return Math.floor(Math.random() * 65536)
+}
+
+/**
+ * Upscale an image to 2K using WaveSpeed's upscaler API.
+ * Used when a model (e.g. Seedream Edit) requires a minimum source image size.
+ */
+const UPSCALER_MODEL = 'wavespeed-ai/ultimate-image-upscaler'
+
+export async function upscaleImage(imageUrl: string): Promise<string> {
+  const result = await apiClient.run(UPSCALER_MODEL, {
+    image: imageUrl,
+    target_resolution: '4k',
+    output_format: 'jpeg',
+    enable_base64_output: false,
+  })
+  const output = extractOutput(result)
+  if (!output) throw new Error('Upscaler returned no output')
+  return output
+}
+
+/**
+ * Check if a model requires minimum source image pixels.
+ * Returns the min pixel count from schema, or 0 if no minimum.
+ */
+export function getModelMinPixels(modelId: string): number {
+  const cfg = getSizeFieldConfig(modelId)
+  if (!cfg || cfg.type !== 'dimensions') return 0
+  const minDim = cfg.min || 0
+  return minDim * minDim
 }
 
 export { extractOutput }

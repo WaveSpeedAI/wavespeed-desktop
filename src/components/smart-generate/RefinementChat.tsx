@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { useSmartGenerateStore } from '@/stores/smartGenerateStore'
-import { estimateCost, getDefaultModel } from '@/lib/smartGenerateUtils'
+import { estimateCost, getDefaultModel, isTrainerMode, TRAINER_MODELS } from '@/lib/smartGenerateUtils'
 import { SaveTemplateDialog } from './SaveTemplateDialog'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -30,6 +30,7 @@ export function RefinementChat({ className }: RefinementChatProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [input, setInput] = useState('')
+  const [isSending, setIsSending] = useState(false)
   const [showMemory, setShowMemory] = useState(false)
   const [pickerManualToggle, setPickerManualToggle] = useState<boolean | null>(null)
   const [showTemplate, setShowTemplate] = useState(false)
@@ -62,7 +63,7 @@ export function RefinementChat({ className }: RefinementChatProps) {
   const showPicker = pickerManualToggle ?? completedAttempts.length <= 8
   const setShowPicker = (v: boolean) => setPickerManualToggle(v)
 
-  const modelId = selectedModelId || getDefaultModel(mode).modelId
+  const modelId = selectedModelId || (isTrainerMode(mode) ? TRAINER_MODELS[0].modelId : getDefaultModel(mode).modelId)
   const regenCost = estimateCost(modelId, parallelCount, 1)
   const isPaused = phase === 'paused' || phase === 'failed'
   const bestScore = bestAttempt?.tier2Score ?? bestAttempt?.tier1Score ?? 0
@@ -78,10 +79,15 @@ export function RefinementChat({ className }: RefinementChatProps) {
   }, [chatMessages])
 
   const handleSend = async () => {
-    if (!input.trim()) return
+    if (!input.trim() || isSending) return
     const msg = input.trim()
     setInput('')
-    await sendChatMessage(msg)
+    setIsSending(true)
+    try {
+      await sendChatMessage(msg)
+    } finally {
+      setIsSending(false)
+    }
   }
 
 
@@ -181,10 +187,10 @@ export function RefinementChat({ className }: RefinementChatProps) {
       )}
 
       {/* Selected attempt indicator */}
-      {selectedAttemptForChat && (
+      {selectedAttemptForChat && selectedAttemptForChat.outputUrl && (
         <div className="border-b bg-primary/5 px-3 py-1.5 shrink-0 flex items-center gap-2">
           <img
-            src={selectedAttemptForChat.outputUrl!}
+            src={selectedAttemptForChat.outputUrl}
             alt=""
             className="h-8 w-8 rounded object-cover"
           />
@@ -309,7 +315,7 @@ export function RefinementChat({ className }: RefinementChatProps) {
           <Button
             size="sm"
             onClick={handleSend}
-            disabled={!input.trim()}
+            disabled={!input.trim() || isSending}
             className="h-9 w-9 p-0"
           >
             <Send className="h-4 w-4" />

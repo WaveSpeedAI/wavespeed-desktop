@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "جاري التحميل...",
     "save": "حفظ",
@@ -1443,7 +1443,8 @@
       "text-to-image": "Text to Image",
       "image-edit": "Image Edit",
       "text-to-video": "Text to Video",
-      "image-to-video": "Image to Video"
+      "image-to-video": "Image to Video",
+      "lora-trainer": "تدريب LoRA"
     },
     "tab": {
       "config": "Config",
@@ -1548,6 +1549,7 @@
     "output": {
       "bestResult": "Best Result",
       "allResults": "All Results",
+      "moreInHistory": "عرض آخر 40 — عرض المزيد في السجل",
       "playWhileWaiting": "Play while waiting...",
       "empty": "Results will appear here after generation starts",
       "continueRefining": "متابعة التحسين",
@@ -1602,7 +1604,9 @@
     "error": {
       "insufficientBalance": "Insufficient balance (${{balance}}). Please top up to continue.",
       "promptViolation": "Prompt violates content policy: {{reason}}",
-      "imageViolation": "Uploaded image violates content policy"
+      "imageViolation": "Uploaded image violates content policy",
+      "noOutput": "لم يتم إرجاع نتيجة",
+      "failed": "فشلت العملية"
     },
     "toast": {
       "complete": "Smart Generate Complete",
@@ -1619,7 +1623,9 @@
       "budgetWarning": "تم الوصول إلى حد الميزانية",
       "budgetWarningDesc": "تم إنفاق ${{spent}} من ${{budget}} الميزانية. غير كافٍ للجولة التالية.",
       "referenceApplied": "تم تطبيق الصورة المرجعية",
-      "referenceAppliedDesc": "تمت إضافة وصف الصورة المرجعية إلى النص لتوجيه عملية التوليد."
+      "referenceAppliedDesc": "تمت إضافة وصف الصورة المرجعية إلى النص لتوجيه عملية التوليد.",
+      "upscaling": "تكبير الصورة",
+      "upscalingDesc": "الصورة المصدر صغيرة جدًا لهذا النموذج. جاري التكبير إلى 4K أولاً..."
     },
     "guide": {
       "title": "التوليد الذكي",
@@ -1630,6 +1636,25 @@
       "step3Title": "Quality Scoring",
       "step3Desc": "AI evaluates each result on clarity, composition, and prompt adherence.",
       "getStarted": "Get Started"
+    },
+    "trainer": {
+      "images": "صور التدريب",
+      "uploadImages": "رفع صور التدريب",
+      "addMore": "إضافة المزيد من الصور",
+      "imageCount": "صور",
+      "overSize": "يتجاوز حد 100 ميجابايت",
+      "triggerWord": "كلمة التشغيل",
+      "model": "نموذج التدريب",
+      "steps": "خطوات التدريب",
+      "learningRate": "معدل التعلم",
+      "loraRank": "رتبة LoRA",
+      "startTraining": "بدء التدريب",
+      "training": "جاري التدريب",
+      "result": "نتيجة التدريب",
+      "loraUrl": "رابط LoRA",
+      "lora": "LoRA",
+      "completeToast": "اكتمل التدريب",
+      "completeToastDesc": "نموذج LoRA الخاص بك جاهز للاستخدام."
     }
   }
 }

@@ -172,7 +172,8 @@ export function WelcomePage() {
       badge: t('welcome.features.workflow.badge')
     }] : []),
 
-    {
+    // Smart Generate: desktop only (complex multi-step feature)
+    ...(!isMobile ? [{
       icon: <Wand2 className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />,
       title: t('welcome.features.smartGenerate.title'),
       description: t('welcome.features.smartGenerate.description'),
@@ -180,7 +181,7 @@ export function WelcomePage() {
       shapeGradient: 'from-indigo-500/40 to-violet-500/30',
       href: '/smart-generate',
       badge: 'AI'
-    },
+    }] : []),
     {
       icon: <Sparkles className="h-6 w-6 text-orange-600 dark:text-orange-400" />,
       title: t('welcome.features.freeTools.title'),

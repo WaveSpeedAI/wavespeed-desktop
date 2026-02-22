@@ -29,9 +29,11 @@ export function SmartGeneratePage() {
 
   const {
     phase,
+    mode,
     isFirstVisit,
     dismissFirstVisit,
     startPipeline,
+    startTraining,
     chatMessages,
     updateEstimatedCost,
   } = useSmartGenerateStore()
@@ -53,7 +55,11 @@ export function SmartGeneratePage() {
   }, [updateEstimatedCost])
 
   const handleStart = () => {
-    startPipeline()
+    if (mode === 'lora-trainer') {
+      startTraining()
+    } else {
+      startPipeline()
+    }
     if (isMobile) setMobileTab('output')
   }
 

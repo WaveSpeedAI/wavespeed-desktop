@@ -13,7 +13,6 @@ interface PipelineProgressProps {
 const PHASE_ORDER: PipelinePhase[] = [
   'checking-balance',
   'understanding',
-  'optimizing',
   'generating',
   'evaluating',
 ]

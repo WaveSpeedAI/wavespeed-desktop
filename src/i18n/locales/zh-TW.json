@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "載入中...",
     "save": "儲存",
@@ -1443,7 +1443,8 @@
       "text-to-image": "Text to Image",
       "image-edit": "Image Edit",
       "text-to-video": "Text to Video",
-      "image-to-video": "Image to Video"
+      "image-to-video": "Image to Video",
+      "lora-trainer": "訓練 LoRA"
     },
     "tab": {
       "config": "Config",
@@ -1548,6 +1549,7 @@
     "output": {
       "bestResult": "Best Result",
       "allResults": "All Results",
+      "moreInHistory": "僅顯示最近 40 筆，更多請查看歷史紀錄",
       "playWhileWaiting": "Play while waiting...",
       "empty": "Results will appear here after generation starts",
       "continueRefining": "繼續優化",
@@ -1602,7 +1604,9 @@
     "error": {
       "insufficientBalance": "Insufficient balance (${{balance}}). Please top up to continue.",
       "promptViolation": "Prompt violates content policy: {{reason}}",
-      "imageViolation": "Uploaded image violates content policy"
+      "imageViolation": "Uploaded image violates content policy",
+      "noOutput": "未返回輸出結果",
+      "failed": "操作失敗"
     },
     "toast": {
       "complete": "Smart Generate Complete",
@@ -1619,7 +1623,9 @@
       "budgetWarning": "預算即將用完",
       "budgetWarningDesc": "已花費 ${{spent}} / ${{budget}} 預算，不足以進行下一輪生成。",
       "referenceApplied": "參考圖已應用",
-      "referenceAppliedDesc": "參考圖的描述已自動添加到提示詞中，以引導生成效果。"
+      "referenceAppliedDesc": "參考圖的描述已自動添加到提示詞中，以引導生成效果。",
+      "upscaling": "正在放大圖片",
+      "upscalingDesc": "來源圖片像素不足，正在先放大到4K..."
     },
     "guide": {
       "title": "智慧生成",
@@ -1630,6 +1636,25 @@
       "step3Title": "Quality Scoring",
       "step3Desc": "AI evaluates each result on clarity, composition, and prompt adherence.",
       "getStarted": "Get Started"
+    },
+    "trainer": {
+      "images": "訓練圖片",
+      "uploadImages": "上傳訓練圖片",
+      "addMore": "新增更多圖片",
+      "imageCount": "張圖片",
+      "overSize": "超過 100 MB 限制",
+      "triggerWord": "觸發詞",
+      "model": "訓練模型",
+      "steps": "訓練步數",
+      "learningRate": "學習率",
+      "loraRank": "LoRA 秩",
+      "startTraining": "開始訓練",
+      "training": "訓練中",
+      "result": "訓練結果",
+      "loraUrl": "LoRA 連結",
+      "lora": "LoRA",
+      "completeToast": "訓練完成",
+      "completeToastDesc": "你的 LoRA 模型已可使用。"
     }
   }
 }

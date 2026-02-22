@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "Memuat...",
     "save": "Simpan",
@@ -1443,7 +1443,8 @@
       "text-to-image": "Text to Image",
       "image-edit": "Image Edit",
       "text-to-video": "Text to Video",
-      "image-to-video": "Image to Video"
+      "image-to-video": "Image to Video",
+      "lora-trainer": "Latih LoRA"
     },
     "tab": {
       "config": "Config",
@@ -1548,6 +1549,7 @@
     "output": {
       "bestResult": "Best Result",
       "allResults": "All Results",
+      "moreInHistory": "Menampilkan 40 terbaru — lihat lebih banyak di Riwayat",
       "playWhileWaiting": "Play while waiting...",
       "empty": "Results will appear here after generation starts",
       "continueRefining": "Lanjutkan perbaikan",
@@ -1602,7 +1604,9 @@
     "error": {
       "insufficientBalance": "Insufficient balance (${{balance}}). Please top up to continue.",
       "promptViolation": "Prompt violates content policy: {{reason}}",
-      "imageViolation": "Uploaded image violates content policy"
+      "imageViolation": "Uploaded image violates content policy",
+      "noOutput": "Tidak ada hasil yang dikembalikan",
+      "failed": "Operasi gagal"
     },
     "toast": {
       "complete": "Smart Generate Complete",
@@ -1619,7 +1623,9 @@
       "budgetWarning": "Batas Anggaran Tercapai",
       "budgetWarningDesc": "Telah menghabiskan ${{spent}} dari ${{budget}} anggaran. Tidak cukup untuk putaran berikutnya.",
       "referenceApplied": "Gambar referensi diterapkan",
-      "referenceAppliedDesc": "Deskripsi gambar referensi Anda telah ditambahkan ke prompt."
+      "referenceAppliedDesc": "Deskripsi gambar referensi Anda telah ditambahkan ke prompt.",
+      "upscaling": "Memperbesar gambar",
+      "upscalingDesc": "Gambar sumber terlalu kecil untuk model ini. Memperbesar ke 4K terlebih dahulu..."
     },
     "guide": {
       "title": "Pembuatan Cerdas",
@@ -1630,6 +1636,25 @@
       "step3Title": "Quality Scoring",
       "step3Desc": "AI evaluates each result on clarity, composition, and prompt adherence.",
       "getStarted": "Get Started"
+    },
+    "trainer": {
+      "images": "Gambar Pelatihan",
+      "uploadImages": "Unggah gambar pelatihan",
+      "addMore": "Tambah gambar lagi",
+      "imageCount": "gambar",
+      "overSize": "Melebihi batas 100 MB",
+      "triggerWord": "Kata Pemicu",
+      "model": "Model Pelatih",
+      "steps": "Langkah Pelatihan",
+      "learningRate": "Tingkat Pembelajaran",
+      "loraRank": "Rank LoRA",
+      "startTraining": "Mulai Pelatihan",
+      "training": "Melatih",
+      "result": "Hasil Pelatihan",
+      "loraUrl": "URL LoRA",
+      "lora": "LoRA",
+      "completeToast": "Pelatihan Selesai",
+      "completeToastDesc": "Model LoRA Anda siap digunakan."
     }
   }
 }

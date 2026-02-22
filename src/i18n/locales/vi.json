@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "Đang tải...",
     "save": "Lưu",
@@ -1444,7 +1444,8 @@
       "text-to-image": "Text to Image",
       "image-edit": "Image Edit",
       "text-to-video": "Text to Video",
-      "image-to-video": "Image to Video"
+      "image-to-video": "Image to Video",
+      "lora-trainer": "Huấn luyện LoRA"
     },
     "tab": {
       "config": "Config",
@@ -1549,6 +1550,7 @@
     "output": {
       "bestResult": "Best Result",
       "allResults": "All Results",
+      "moreInHistory": "Hiển thị 40 mới nhất — xem thêm trong Lịch sử",
       "playWhileWaiting": "Play while waiting...",
       "empty": "Results will appear here after generation starts",
       "continueRefining": "Tiếp tục cải thiện",
@@ -1603,7 +1605,9 @@
     "error": {
       "insufficientBalance": "Insufficient balance (${{balance}}). Please top up to continue.",
       "promptViolation": "Prompt violates content policy: {{reason}}",
-      "imageViolation": "Uploaded image violates content policy"
+      "imageViolation": "Uploaded image violates content policy",
+      "noOutput": "Không có kết quả trả về",
+      "failed": "Thao tác thất bại"
     },
     "toast": {
       "complete": "Smart Generate Complete",
@@ -1620,7 +1624,9 @@
       "budgetWarning": "Đã đạt giới hạn ngân sách",
       "budgetWarningDesc": "Đã sử dụng ${{spent}} / ${{budget}} ngân sách. Không đủ cho vòng tiếp theo.",
       "referenceApplied": "Đã áp dụng ảnh tham chiếu",
-      "referenceAppliedDesc": "Mô tả ảnh tham chiếu đã được thêm vào prompt."
+      "referenceAppliedDesc": "Mô tả ảnh tham chiếu đã được thêm vào prompt.",
+      "upscaling": "Đang nâng cấp ảnh",
+      "upscalingDesc": "Ảnh gốc quá nhỏ cho mô hình này. Đang nâng lên 4K trước..."
     },
     "guide": {
       "title": "Tạo Thông Minh",
@@ -1631,6 +1637,25 @@
       "step3Title": "Quality Scoring",
       "step3Desc": "AI evaluates each result on clarity, composition, and prompt adherence.",
       "getStarted": "Get Started"
+    },
+    "trainer": {
+      "images": "Ảnh huấn luyện",
+      "uploadImages": "Tải lên ảnh huấn luyện",
+      "addMore": "Thêm ảnh",
+      "imageCount": "ảnh",
+      "overSize": "Vượt quá giới hạn 100 MB",
+      "triggerWord": "Từ kích hoạt",
+      "model": "Mô hình huấn luyện",
+      "steps": "Số bước huấn luyện",
+      "learningRate": "Tốc độ học",
+      "loraRank": "Hạng LoRA",
+      "startTraining": "Bắt đầu huấn luyện",
+      "training": "Đang huấn luyện",
+      "result": "Kết quả huấn luyện",
+      "loraUrl": "URL LoRA",
+      "lora": "LoRA",
+      "completeToast": "Huấn luyện hoàn tất",
+      "completeToastDesc": "Mô hình LoRA của bạn đã sẵn sàng sử dụng."
     }
   }
 }

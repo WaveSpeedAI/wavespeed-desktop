@@ -19,7 +19,7 @@ import {
 } from '@/lib/smartGenerateUtils'
 import { SizeSelector } from '@/components/playground/SizeSelector'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useState, useRef, useCallback, useMemo } from 'react'
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react'
 import { apiClient } from '@/api/client'
 import {
   Image,
@@ -36,16 +36,19 @@ import {
   ChevronUp,
   Plus,
   Link,
+  Dna,
 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { ImageToolsSection } from './ImageToolsSection'
+import { TrainerConfig } from './TrainerConfig'
 
 const MODE_TABS: { mode: SmartMode; icon: React.ComponentType<{ className?: string }>; labelKey: string }[] = [
   { mode: 'text-to-image', icon: Image, labelKey: 'smartGenerate.mode.text-to-image' },
   { mode: 'image-edit', icon: Pencil, labelKey: 'smartGenerate.mode.image-edit' },
   { mode: 'text-to-video', icon: Film, labelKey: 'smartGenerate.mode.text-to-video' },
   { mode: 'image-to-video', icon: ImagePlus, labelKey: 'smartGenerate.mode.image-to-video' },
+  { mode: 'lora-trainer', icon: Dna, labelKey: 'smartGenerate.mode.lora-trainer' },
 ]
 
 
@@ -95,6 +98,20 @@ export function SmartGenerateConfig({ onStart, className }: SmartGenerateConfigP
     if (mode === 'image-to-video') return null
     return getSizeFieldConfig(modelId)
   }, [modelId, mode])
+
+  // Auto-initialize sizeValue when null — ensures preset highlight + correct API value
+  useEffect(() => {
+    if (!sizeConfig || sizeValue) return
+    if (sizeConfig.type === 'dimensions') {
+      const lo = sizeConfig.min || 256
+      const hi = sizeConfig.max || 1536
+      // Prefer 2K preset if it fits the model range, otherwise 1K
+      const def = (2048 >= lo && 2048 <= hi) ? '2048*2048' : '1024*1024'
+      setSizeValue(def)
+    } else if (sizeConfig.type === 'enum') {
+      setSizeValue(sizeConfig.default || sizeConfig.options?.[0] || null)
+    }
+  }, [sizeConfig, sizeValue, setSizeValue])
 
   // Get resolution field config (e.g. Nano Banana "1k"/"2k"/"4k")
   const resolutionConfig = useMemo(() => {
@@ -150,6 +167,11 @@ export function SmartGenerateConfig({ onStart, className }: SmartGenerateConfigP
         ))}
       </div>
 
+      {/* Trainer mode: render TrainerConfig instead */}
+      {mode === 'lora-trainer' ? (
+        <TrainerConfig onStart={onStart} />
+      ) : (
+      <>
       {/* Scrollable config */}
       <ScrollArea className="flex-1">
         <div className="p-3 space-y-3">
@@ -162,20 +184,18 @@ export function SmartGenerateConfig({ onStart, className }: SmartGenerateConfigP
                   {sourceImages.map((img, idx) => (
                     <div key={idx} className="relative rounded-lg overflow-hidden border w-24 h-24">
                       <img src={img} alt="" className="w-full h-full object-cover" />
-                      {!isRunning && (
-                        <button
-                          onClick={() => removeSourceImage(idx)}
-                          className="absolute top-1 right-1 rounded-full bg-background/80 p-0.5 hover:bg-background"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      )}
+                      <button
+                        onClick={() => removeSourceImage(idx)}
+                        className="absolute top-1 right-1 rounded-full bg-background/80 p-0.5 hover:bg-background"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
                     </div>
                   ))}
                 </div>
               )}
               {/* Upload button: always show for Edit (multi), hide for I2V when 1 already uploaded */}
-              {(!isI2V || sourceImages.length === 0) && !isRunning && (
+              {(!isI2V || sourceImages.length === 0) && (
                 <label className={cn(
                   "flex items-center justify-center h-16 rounded-lg border-2 border-dashed transition-colors",
                   uploading ? "opacity-50 cursor-wait" : "cursor-pointer hover:bg-muted/30"
@@ -219,14 +239,12 @@ export function SmartGenerateConfig({ onStart, className }: SmartGenerateConfigP
               {referenceImage ? (
                 <div className="relative rounded-lg overflow-hidden border">
                   <img src={referenceImage} alt="" className="w-full max-h-40 object-contain bg-muted/30" />
-                  {!isRunning && (
-                    <button
-                      onClick={() => setReferenceImage(null)}
-                      className="absolute top-2 right-2 rounded-full bg-background/80 p-1 hover:bg-background"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  )}
+                  <button
+                    onClick={() => setReferenceImage(null)}
+                    className="absolute top-2 right-2 rounded-full bg-background/80 p-1 hover:bg-background"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
                 </div>
               ) : (
                 <label className={cn(
@@ -270,7 +288,7 @@ export function SmartGenerateConfig({ onStart, className }: SmartGenerateConfigP
                   <button
                     type="button"
                     onClick={async () => {
-                      if (!userPrompt.trim() || optimizingPrompt || isRunning) return
+                      if (!userPrompt.trim() || optimizingPrompt) return
                       setOptimizingPrompt(true)
                       try {
                         const optimized = await callPromptOptimizer(userPrompt, mode, sourceImages[0] ?? undefined)
@@ -284,10 +302,10 @@ export function SmartGenerateConfig({ onStart, className }: SmartGenerateConfigP
                         setOptimizingPrompt(false)
                       }
                     }}
-                    disabled={!userPrompt.trim() || optimizingPrompt || isRunning}
+                    disabled={!userPrompt.trim() || optimizingPrompt}
                     className={cn(
                       'h-5 w-5 flex items-center justify-center rounded transition-colors',
-                      !userPrompt.trim() || isRunning
+                      !userPrompt.trim()
                         ? 'text-muted-foreground/40 cursor-not-allowed'
                         : 'text-muted-foreground hover:text-primary hover:bg-primary/10',
                     )}
@@ -309,7 +327,7 @@ export function SmartGenerateConfig({ onStart, className }: SmartGenerateConfigP
                 setUserPrompt(e.target.value)
                 autoResize()
               }}
-              disabled={isRunning}
+
               placeholder={t('smartGenerate.config.promptPlaceholder')}
               className="w-full min-h-[120px] max-h-[200px] rounded-lg border bg-background/80 p-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50"
             />
@@ -323,7 +341,7 @@ export function SmartGenerateConfig({ onStart, className }: SmartGenerateConfigP
                 <SizeSelector
                   value={sizeValue || sizeConfig.default || '1024*1024'}
                   onChange={(v) => setSizeValue(v)}
-                  disabled={isRunning}
+    
                   min={sizeConfig.min}
                   max={sizeConfig.max}
                 />
@@ -331,7 +349,7 @@ export function SmartGenerateConfig({ onStart, className }: SmartGenerateConfigP
                 <Select
                   value={sizeValue || sizeConfig.default || sizeConfig.options?.[0] || ''}
                   onValueChange={(v) => setSizeValue(v)}
-                  disabled={isRunning}
+    
                 >
                   <SelectTrigger className="h-9 text-sm">
                     <SelectValue />
@@ -355,105 +373,18 @@ export function SmartGenerateConfig({ onStart, className }: SmartGenerateConfigP
                   <button
                     key={opt}
                     onClick={() => setResolutionValue(opt)}
-                    disabled={isRunning}
+
                     className={cn(
                       'flex-1 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors',
                       (resolutionValue || resolutionConfig.default) === opt
                         ? 'border-primary bg-primary/5 text-primary'
                         : 'text-muted-foreground hover:bg-muted/50',
-                      isRunning && 'opacity-50 cursor-not-allowed'
                     )}
                   >
                     {opt.toUpperCase()}
                   </button>
                 ))}
               </div>
-            </div>
-          )}
-
-          {/* Model-specific extra config fields (duration, resolution, loras) */}
-          {extraFields.filter(f => f.type === 'enum').map((field) => (
-            <div key={field.fieldName} className="space-y-1.5">
-              <Label className="text-xs">{t(field.labelKey)}</Label>
-              <div className="flex gap-1.5">
-                {field.options?.map((opt) => (
-                  <button
-                    key={opt}
-                    onClick={() => setExtraConfigValue(field.fieldName, opt)}
-                    disabled={isRunning}
-                    className={cn(
-                      'flex-1 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors',
-                      ((extraConfigValues[field.fieldName] as string) || field.default) === opt
-                        ? 'border-primary bg-primary/5 text-primary'
-                        : 'text-muted-foreground hover:bg-muted/50',
-                      isRunning && 'opacity-50 cursor-not-allowed'
-                    )}
-                  >
-                    {field.fieldName === 'duration' ? `${opt}s` : opt.toUpperCase()}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
-
-          {/* LoRA URLs (for LoRA models) */}
-          {extraFields.some(f => f.type === 'lora') && (
-            <div className="space-y-1.5">
-              <Label className="text-xs">{t('smartGenerate.config.loras')}</Label>
-              {/* Added LoRAs list */}
-              {currentLoras.map((lora, idx) => {
-                // Show short display: domain + filename tail
-                const urlObj = (() => { try { return new URL(lora.path) } catch { return null } })()
-                const shortUrl = urlObj
-                  ? `${urlObj.hostname}/...${lora.path.slice(-20)}`
-                  : lora.path.length > 30 ? `...${lora.path.slice(-28)}` : lora.path
-                return (
-                  <div key={idx} className="rounded-md border bg-muted/20 p-2 space-y-1">
-                    <div className="flex items-center gap-1.5">
-                      <Link className="h-3 w-3 shrink-0 text-muted-foreground" />
-                      <span className="text-xs truncate text-muted-foreground" title={lora.path}>{shortUrl}</span>
-                      {!isRunning && (
-                        <button onClick={() => removeLora(idx)} className="shrink-0 ml-auto text-muted-foreground hover:text-destructive">
-                          <X className="h-3 w-3" />
-                        </button>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-muted-foreground shrink-0 w-12">Scale {lora.scale.toFixed(1)}</span>
-                      <Slider
-                        value={[lora.scale]}
-                        onValueChange={([v]) => updateLoraScale(idx, v)}
-                        min={0}
-                        max={2}
-                        step={0.1}
-                        disabled={isRunning}
-                        className="flex-1"
-                      />
-                    </div>
-                  </div>
-                )
-              })}
-              {/* Add LoRA input */}
-              {!isRunning && (
-                <div className="flex gap-1.5">
-                  <Input
-                    value={loraUrlInput}
-                    onChange={(e) => setLoraUrlInput(e.target.value)}
-                    placeholder={t('smartGenerate.config.loraPlaceholder')}
-                    className="h-8 text-xs flex-1"
-                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addLora() } }}
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8 px-2"
-                    onClick={addLora}
-                    disabled={!loraUrlInput.trim()}
-                  >
-                    <Plus className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              )}
             </div>
           )}
 
@@ -480,9 +411,83 @@ export function SmartGenerateConfig({ onStart, className }: SmartGenerateConfigP
                     mode={mode}
                     selectedModelId={selectedModelId}
                     onSelect={setSelectedModelId}
-                    disabled={isRunning}
                   />
                 </div>
+
+                {/* Model-specific extra config fields (duration, etc.) */}
+                {extraFields.filter(f => f.type === 'enum').map((field) => (
+                  <div key={field.fieldName} className="space-y-1.5">
+                    <Label className="text-xs">{t(field.labelKey)}</Label>
+                    <div className="flex gap-1.5">
+                      {field.options?.map((opt) => (
+                        <button
+                          key={opt}
+                          onClick={() => setExtraConfigValue(field.fieldName, opt)}
+                          className={cn(
+                            'flex-1 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors',
+                            ((extraConfigValues[field.fieldName] as string) || field.default) === opt
+                              ? 'border-primary bg-primary/5 text-primary'
+                              : 'text-muted-foreground hover:bg-muted/50',
+                          )}
+                        >
+                          {field.fieldName === 'duration' ? `${opt}s` : opt.toUpperCase()}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                {/* LoRA URLs (for LoRA models) */}
+                {extraFields.some(f => f.type === 'lora') && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">{t('smartGenerate.config.loras')}</Label>
+                    {currentLoras.map((lora, idx) => {
+                      const shortUrl = lora.path.length > 28
+                        ? `${lora.path.slice(0, 8)}...${lora.path.slice(-16)}`
+                        : lora.path
+                      return (
+                        <div key={idx} className="rounded-md border bg-muted/20 p-2 space-y-1 overflow-hidden">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <Link className="h-3 w-3 shrink-0 text-muted-foreground" />
+                            <span className="text-xs truncate text-muted-foreground min-w-0" title={lora.path}>{shortUrl}</span>
+                            <button onClick={() => removeLora(idx)} className="shrink-0 ml-auto text-muted-foreground hover:text-destructive">
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-muted-foreground shrink-0 w-12">Scale {lora.scale.toFixed(1)}</span>
+                            <Slider
+                              value={[lora.scale]}
+                              onValueChange={([v]) => updateLoraScale(idx, v)}
+                              min={0}
+                              max={2}
+                              step={0.1}
+                              className="flex-1"
+                            />
+                          </div>
+                        </div>
+                      )
+                    })}
+                    <div className="flex gap-1.5 min-w-0">
+                      <Input
+                        value={loraUrlInput}
+                        onChange={(e) => setLoraUrlInput(e.target.value)}
+                        placeholder={t('smartGenerate.config.loraPlaceholder')}
+                        className="h-8 text-xs flex-1 min-w-0"
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addLora() } }}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 px-2"
+                        onClick={addLora}
+                        disabled={!loraUrlInput.trim()}
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Parallel Count */}
                 <div className="space-y-1.5">
@@ -490,22 +495,18 @@ export function SmartGenerateConfig({ onStart, className }: SmartGenerateConfigP
                   <div className="flex gap-1.5">
                     <button
                       onClick={() => setParallelCount(2)}
-                      disabled={isRunning}
                       className={cn(
                         'flex-1 rounded-md border px-2.5 py-1.5 text-xs transition-colors',
                         parallelCount === 2 ? 'border-primary bg-primary/5 text-primary' : 'text-muted-foreground hover:bg-muted/50',
-                        isRunning && 'opacity-50 cursor-not-allowed'
                       )}
                     >
                       <div className="font-medium">{t('smartGenerate.config.standard')}</div>
                     </button>
                     <button
                       onClick={() => setParallelCount(4)}
-                      disabled={isRunning}
                       className={cn(
                         'flex-1 rounded-md border px-2.5 py-1.5 text-xs transition-colors',
                         parallelCount === 4 ? 'border-primary bg-primary/5 text-primary' : 'text-muted-foreground hover:bg-muted/50',
-                        isRunning && 'opacity-50 cursor-not-allowed'
                       )}
                     >
                       <div className="font-medium">{t('smartGenerate.config.deep')}</div>
@@ -525,7 +526,6 @@ export function SmartGenerateConfig({ onStart, className }: SmartGenerateConfigP
                     min={0.10}
                     max={10.00}
                     step={0.10}
-                    disabled={isRunning}
                   />
                   <div className="text-xs text-muted-foreground space-y-0.5">
                     <div className="flex justify-between">
@@ -546,7 +546,7 @@ export function SmartGenerateConfig({ onStart, className }: SmartGenerateConfigP
           {mode === 'image-edit' && sourceImages.length > 0 && (
             <ImageToolsSection
               sourceImages={sourceImages}
-              isLocked={isRunning}
+              isLocked={false}
               onAddToolResult={store.addToolResult}
             />
           )}
@@ -585,6 +585,8 @@ export function SmartGenerateConfig({ onStart, className }: SmartGenerateConfigP
           </Button>
         )}
       </div>
+      </>
+      )}
     </div>
   )
 }

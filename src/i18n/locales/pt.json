@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "Carregando...",
     "save": "Salvar",
@@ -1444,7 +1444,8 @@
       "text-to-image": "Text to Image",
       "image-edit": "Image Edit",
       "text-to-video": "Text to Video",
-      "image-to-video": "Image to Video"
+      "image-to-video": "Image to Video",
+      "lora-trainer": "Treinar LoRA"
     },
     "tab": {
       "config": "Config",
@@ -1549,6 +1550,7 @@
     "output": {
       "bestResult": "Best Result",
       "allResults": "All Results",
+      "moreInHistory": "Mostrando os últimos 40 — ver mais no Histórico",
       "playWhileWaiting": "Play while waiting...",
       "empty": "Results will appear here after generation starts",
       "continueRefining": "Continuar refinando",
@@ -1603,7 +1605,9 @@
     "error": {
       "insufficientBalance": "Insufficient balance (${{balance}}). Please top up to continue.",
       "promptViolation": "Prompt violates content policy: {{reason}}",
-      "imageViolation": "Uploaded image violates content policy"
+      "imageViolation": "Uploaded image violates content policy",
+      "noOutput": "Nenhum resultado retornado",
+      "failed": "Operação falhou"
     },
     "toast": {
       "complete": "Smart Generate Complete",
@@ -1620,7 +1624,9 @@
       "budgetWarning": "Limite de orçamento atingido",
       "budgetWarningDesc": "Gastou ${{spent}} de ${{budget}} orçamento. Insuficiente para próxima rodada.",
       "referenceApplied": "Imagem de referência aplicada",
-      "referenceAppliedDesc": "A descrição da sua imagem de referência foi adicionada ao prompt."
+      "referenceAppliedDesc": "A descrição da sua imagem de referência foi adicionada ao prompt.",
+      "upscaling": "Ampliando imagem",
+      "upscalingDesc": "A imagem de origem é pequena demais para este modelo. Ampliando para 4K primeiro..."
     },
     "guide": {
       "title": "Geração Inteligente",
@@ -1631,6 +1637,25 @@
       "step3Title": "Quality Scoring",
       "step3Desc": "AI evaluates each result on clarity, composition, and prompt adherence.",
       "getStarted": "Get Started"
+    },
+    "trainer": {
+      "images": "Imagens de treinamento",
+      "uploadImages": "Enviar imagens de treinamento",
+      "addMore": "Adicionar mais imagens",
+      "imageCount": "imagens",
+      "overSize": "Excede o limite de 100 MB",
+      "triggerWord": "Palavra-chave",
+      "model": "Modelo de treinamento",
+      "steps": "Etapas de treinamento",
+      "learningRate": "Taxa de aprendizado",
+      "loraRank": "Rank LoRA",
+      "startTraining": "Iniciar treinamento",
+      "training": "Treinando",
+      "result": "Resultado do treinamento",
+      "loraUrl": "URL do LoRA",
+      "lora": "LoRA",
+      "completeToast": "Treinamento concluído",
+      "completeToastDesc": "Seu modelo LoRA está pronto para uso."
     }
   }
 }

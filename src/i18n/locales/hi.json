@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "लोड हो रहा है...",
     "save": "सहेजें",
@@ -1443,7 +1443,8 @@
       "text-to-image": "Text to Image",
       "image-edit": "Image Edit",
       "text-to-video": "Text to Video",
-      "image-to-video": "Image to Video"
+      "image-to-video": "Image to Video",
+      "lora-trainer": "LoRA प्रशिक्षण"
     },
     "tab": {
       "config": "Config",
@@ -1548,6 +1549,7 @@
     "output": {
       "bestResult": "Best Result",
       "allResults": "All Results",
+      "moreInHistory": "नवीनतम 40 दिखा रहे हैं — और देखने के लिए इतिहास पर जाएं",
       "playWhileWaiting": "Play while waiting...",
       "empty": "Results will appear here after generation starts",
       "continueRefining": "सुधार जारी रखें",
@@ -1602,7 +1604,9 @@
     "error": {
       "insufficientBalance": "Insufficient balance (${{balance}}). Please top up to continue.",
       "promptViolation": "Prompt violates content policy: {{reason}}",
-      "imageViolation": "Uploaded image violates content policy"
+      "imageViolation": "Uploaded image violates content policy",
+      "noOutput": "कोई आउटपुट नहीं मिला",
+      "failed": "ऑपरेशन विफल"
     },
     "toast": {
       "complete": "Smart Generate Complete",
@@ -1619,7 +1623,9 @@
       "budgetWarning": "बजट सीमा पहुंची",
       "budgetWarningDesc": "${{spent}} / ${{budget}} बजट खर्च हुआ। अगले राउंड के लिए अपर्याप्त।",
       "referenceApplied": "संदर्भ छवि लागू की गई",
-      "referenceAppliedDesc": "आपकी संदर्भ छवि का विवरण प्रॉम्प्ट में जोड़ा गया है।"
+      "referenceAppliedDesc": "आपकी संदर्भ छवि का विवरण प्रॉम्प्ट में जोड़ा गया है।",
+      "upscaling": "छवि अपस्केल हो रही है",
+      "upscalingDesc": "स्रोत छवि इस मॉडल के लिए बहुत छोटी है। पहले 4K तक अपस्केल किया जा रहा है..."
     },
     "guide": {
       "title": "स्मार्ट जेनरेट",
@@ -1630,6 +1636,25 @@
       "step3Title": "Quality Scoring",
       "step3Desc": "AI evaluates each result on clarity, composition, and prompt adherence.",
       "getStarted": "Get Started"
+    },
+    "trainer": {
+      "images": "प्रशिक्षण चित्र",
+      "uploadImages": "प्रशिक्षण चित्र अपलोड करें",
+      "addMore": "और चित्र जोड़ें",
+      "imageCount": "चित्र",
+      "overSize": "100 MB सीमा से अधिक",
+      "triggerWord": "ट्रिगर शब्द",
+      "model": "ट्रेनर मॉडल",
+      "steps": "प्रशिक्षण चरण",
+      "learningRate": "सीखने की दर",
+      "loraRank": "LoRA रैंक",
+      "startTraining": "प्रशिक्षण शुरू करें",
+      "training": "प्रशिक्षण",
+      "result": "प्रशिक्षण परिणाम",
+      "loraUrl": "LoRA URL",
+      "lora": "LoRA",
+      "completeToast": "प्रशिक्षण पूर्ण",
+      "completeToastDesc": "आपका LoRA मॉडल उपयोग के लिए तैयार है।"
     }
   }
 }

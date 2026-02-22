@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useCallback } from 'react'
+import { useMemo, useState, useRef, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 import { useSmartGenerateStore } from '@/stores/smartGenerateStore'
@@ -6,10 +6,9 @@ import type { GenerationAttempt } from '@/lib/smartGenerateUtils'
 import { getScoreColor, getScoreLabel } from '@/lib/smartGenerateUtils'
 import { PipelineProgress } from './PipelineProgress'
 import { AttemptTimeline } from './AttemptTimeline'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { ChevronDown, ChevronUp, Download, Maximize2, Trophy, RefreshCw, Plus, ImagePlus } from 'lucide-react'
+import { ChevronDown, ChevronUp, Download, Maximize2, Trophy, RefreshCw, Plus, ImagePlus, Dna, Copy, Check, ZoomIn } from 'lucide-react'
 
 interface SmartGenerateOutputProps {
   className?: string
@@ -26,6 +25,7 @@ export function SmartGenerateOutput({ className }: SmartGenerateOutputProps) {
     useResultAsSource,
     isLocked,
     userPrompt,
+    modeSessions,
   } = useSmartGenerateStore()
 
   const [previewIndex, setPreviewIndex] = useState<number>(-1)
@@ -33,18 +33,53 @@ export function SmartGenerateOutput({ className }: SmartGenerateOutputProps) {
   const [showAllResults, setShowAllResults] = useState(false)
   const [showNewTaskDialog, setShowNewTaskDialog] = useState(false)
   const isDone = phase === 'paused' || phase === 'complete' || phase === 'failed'
+  const bestRef = useRef<HTMLDivElement>(null)
+  const timelineRef = useRef<HTMLDivElement>(null)
+  const prevLockedRef = useRef(false)
 
-  // All URLs (from all attempts with output) for preview navigation
-  const allUrls = useMemo(() =>
-    attempts.filter(a => a.outputUrl).map(a => a.outputUrl!),
-    [attempts]
-  )
+  // Auto-scroll to Timeline when generation starts
+  useEffect(() => {
+    if (isLocked && !prevLockedRef.current) {
+      setTimeout(() => {
+        timelineRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 150)
+    }
+    prevLockedRef.current = isLocked
+  }, [isLocked])
 
-  // Latest completed attempts for the carousel
+  // Auto-scroll to Best Result when pipeline finishes (scoring done)
+  useEffect(() => {
+    if (isDone && bestAttempt?.outputUrl) {
+      setTimeout(() => {
+        bestRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 100)
+    }
+  }, [isDone, bestAttempt?.id])
+
+  // All URLs (from all attempts with output, including cross-mode) for preview navigation
+  const allUrls = useMemo(() => {
+    const currentUrls = attempts.filter(a => a.outputUrl).map(a => a.outputUrl!)
+    const sessionUrls = Object.entries(modeSessions)
+      .filter(([m]) => m !== mode)
+      .flatMap(([, session]) => session?.attempts?.filter(a => a.status === 'complete' && a.outputUrl).map(a => a.outputUrl!) ?? [])
+    // Deduplicate while preserving order (current mode first)
+    return [...new Set([...currentUrls, ...sessionUrls])]
+  }, [attempts, modeSessions, mode])
+
+  // Current mode completed attempts (for timeline context)
   const completedAttempts = useMemo(() =>
     attempts.filter(a => a.status === 'complete' && a.outputUrl),
     [attempts]
   )
+
+  // All completed attempts across ALL modes (for All Results)
+  const allCompletedAttempts = useMemo(() => {
+    const current = attempts.filter(a => a.status === 'complete' && a.outputUrl)
+    const fromSessions = Object.entries(modeSessions)
+      .filter(([m]) => m !== mode) // skip current mode (already included)
+      .flatMap(([, session]) => session?.attempts?.filter(a => a.status === 'complete' && a.outputUrl) ?? [])
+    return [...current, ...fromSessions].sort((a, b) => b.timestamp - a.timestamp)
+  }, [attempts, modeSessions, mode])
 
   const openPreview = useCallback((url: string | null) => {
     if (!url) return
@@ -71,29 +106,66 @@ export function SmartGenerateOutput({ className }: SmartGenerateOutputProps) {
         </div>
       )}
 
-      {/* Empty state - centered */}
-      {phase === 'idle' && attempts.length === 0 ? (
+      {/* Empty state - centered (only if no results anywhere) */}
+      {phase === 'idle' && attempts.length === 0 && allCompletedAttempts.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground">
           <Trophy className="h-12 w-12 mb-3 opacity-20" />
           <p className="text-sm">{t('smartGenerate.output.empty')}</p>
         </div>
       ) : (
-        <ScrollArea className="flex-1">
+        <div className="flex-1 overflow-y-auto">
           <div className="p-4 space-y-4">
             {/* Best Result */}
             {bestAttempt && bestAttempt.outputUrl && (
-              <BestResultCard
-                attempt={bestAttempt}
-                onPreview={() => openPreview(bestAttempt.outputUrl)}
-                onDownload={() => setShowNewTaskDialog(true)}
-                onUseAsSource={(mode === 'image-edit' || mode === 'image-to-video') && !isLocked ? useResultAsSource : undefined}
-                t={t}
-              />
+              <div ref={bestRef}>
+                <BestResultCard
+                  attempt={bestAttempt}
+                  onPreview={() => openPreview(bestAttempt.outputUrl)}
+                  onDownload={() => setShowNewTaskDialog(true)}
+                  onUseAsSource={!isLocked ? useResultAsSource : undefined}
+                  t={t}
+                />
+              </div>
             )}
 
-            {/* Timeline (collapsible, default collapsed) */}
-            {attempts.length > 0 && (
+            {/* All Results (collapsible, default collapsed) — aggregated from ALL modes, max 40 */}
+            {allCompletedAttempts.length > 0 && (
               <div className="space-y-2">
+                <button
+                  onClick={() => setShowAllResults(!showAllResults)}
+                  className="flex items-center gap-1.5 text-sm font-semibold hover:text-primary transition-colors w-full"
+                >
+                  <span>{t('smartGenerate.output.allResults')}</span>
+                  <span className="text-xs text-muted-foreground font-normal">
+                    ({Math.min(allCompletedAttempts.length, 40)}{allCompletedAttempts.length > 40 ? '+' : ''})
+                  </span>
+                  {showAllResults
+                    ? <ChevronUp className="h-4 w-4 ml-auto text-muted-foreground" />
+                    : <ChevronDown className="h-4 w-4 ml-auto text-muted-foreground" />
+                  }
+                </button>
+                {showAllResults && (
+                  <>
+                    <ResultCarousel
+                      attempts={allCompletedAttempts.slice(0, 40)}
+                      bestId={bestAttempt?.id}
+                      onPreview={openPreview}
+                      onUseAsSource={!isLocked ? useResultAsSource : undefined}
+                      t={t}
+                    />
+                    {allCompletedAttempts.length > 40 && (
+                      <p className="text-xs text-muted-foreground text-center py-1">
+                        {t('smartGenerate.output.moreInHistory')}
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Timeline (collapsible, default expanded) */}
+            {attempts.length > 0 && (
+              <div ref={timelineRef} className="space-y-2">
                 <button
                   onClick={() => setShowTimeline(!showTimeline)}
                   className="flex items-center gap-1.5 text-sm font-semibold hover:text-primary transition-colors w-full"
@@ -109,34 +181,6 @@ export function SmartGenerateOutput({ className }: SmartGenerateOutputProps) {
                 </button>
                 {showTimeline && (
                   <AttemptTimeline attempts={attempts} onPreview={openPreview} hideTitle />
-                )}
-              </div>
-            )}
-
-            {/* All Results (collapsible) */}
-            {completedAttempts.length > 0 && (
-              <div className="space-y-2">
-                <button
-                  onClick={() => setShowAllResults(!showAllResults)}
-                  className="flex items-center gap-1.5 text-sm font-semibold hover:text-primary transition-colors w-full"
-                >
-                  <span>{t('smartGenerate.output.allResults')}</span>
-                  <span className="text-xs text-muted-foreground font-normal">
-                    ({completedAttempts.length})
-                  </span>
-                  {showAllResults
-                    ? <ChevronUp className="h-4 w-4 ml-auto text-muted-foreground" />
-                    : <ChevronDown className="h-4 w-4 ml-auto text-muted-foreground" />
-                  }
-                </button>
-                {showAllResults && (
-                  <ResultCarousel
-                    attempts={completedAttempts}
-                    bestId={bestAttempt?.id}
-                    onPreview={openPreview}
-                    onUseAsSource={(mode === 'image-edit' || mode === 'image-to-video') && !isLocked ? useResultAsSource : undefined}
-                    t={t}
-                  />
                 )}
               </div>
             )}
@@ -165,7 +209,7 @@ export function SmartGenerateOutput({ className }: SmartGenerateOutputProps) {
               </div>
             )}
           </div>
-        </ScrollArea>
+        </div>
       )}
 
       {/* Fullscreen preview with navigation */}
@@ -199,11 +243,20 @@ export function SmartGenerateOutput({ className }: SmartGenerateOutputProps) {
                 </button>
               )}
 
-              {/* Bottom bar: counter + download */}
+              {/* Bottom bar: counter + actions */}
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2">
                 <div className="bg-black/50 text-white text-xs px-2.5 py-1 rounded-full">
                   {previewIndex + 1} / {allUrls.length}
                 </div>
+                {!isLocked && !previewUrl.match(/\.(mp4|webm|mov)/i) && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); useResultAsSource(previewUrl); setPreviewIndex(-1) }}
+                    title={t('smartGenerate.output.useAsSource')}
+                    className="h-8 w-8 rounded-full bg-black/50 hover:bg-primary flex items-center justify-center text-white transition-colors"
+                  >
+                    <ImagePlus className="h-4 w-4" />
+                  </button>
+                )}
                 <a
                   href={previewUrl}
                   download
@@ -254,7 +307,45 @@ function BestResultCard({
 }) {
   const score = attempt.tier2Score ?? attempt.tier1Score ?? 0
   const isVideo = attempt.outputUrl?.match(/\.(mp4|webm|mov)/i)
+  const isTraining = attempt.id.startsWith('train-')
   const color = getScoreColor(score)
+  const [copied, setCopied] = useState(false)
+
+  const copyUrl = () => {
+    if (attempt.outputUrl) {
+      navigator.clipboard.writeText(attempt.outputUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
+  // Training result: show LoRA URL instead of image preview
+  if (isTraining) {
+    return (
+      <div className="rounded-xl border-2 border-primary/30 bg-primary/5 overflow-hidden">
+        <div className="flex items-center justify-between p-3 border-b">
+          <div className="flex items-center gap-2">
+            <Dna className="h-4 w-4 text-primary" />
+            <span className="text-sm font-semibold">{t('smartGenerate.trainer.result')}</span>
+          </div>
+        </div>
+        <div className="p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground shrink-0">{t('smartGenerate.trainer.loraUrl')}</span>
+          </div>
+          <div className="flex items-center gap-2 bg-muted/30 rounded-lg p-2.5">
+            <code className="text-xs flex-1 break-all text-foreground">{attempt.outputUrl}</code>
+            <button
+              onClick={copyUrl}
+              className="shrink-0 h-7 w-7 rounded-md border bg-background hover:bg-muted flex items-center justify-center transition-colors"
+            >
+              {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="rounded-xl border-2 border-primary/30 bg-primary/5 overflow-hidden">
@@ -266,11 +357,11 @@ function BestResultCard({
         <ScoreBadge score={score} color={color} t={t} />
       </div>
 
-      <div className="relative group cursor-pointer bg-muted/10" onClick={onPreview}>
+      <div className="relative group cursor-pointer flex items-center justify-center bg-muted/10 overflow-hidden" onClick={onPreview}>
         {isVideo ? (
-          <video src={attempt.outputUrl!} className="w-full max-h-[400px] object-contain" muted autoPlay loop />
+          <video src={attempt.outputUrl!} className="max-w-full max-h-[400px] object-contain" muted autoPlay loop />
         ) : (
-          <img src={attempt.outputUrl!} alt="" className="w-full max-h-[400px] object-contain" />
+          <img src={attempt.outputUrl!} alt="" className="max-w-full max-h-[400px] object-contain" />
         )}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
           <Maximize2 className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -290,7 +381,7 @@ function BestResultCard({
             <a
               href={attempt.outputUrl}
               download
-              onClick={(e) => { e.stopPropagation(); onDownload?.() }}
+              onClick={(e) => e.stopPropagation()}
               className="h-8 w-8 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center text-white transition-colors"
             >
               <Download className="h-4 w-4" />
@@ -371,6 +462,34 @@ function CarouselCard({
 }) {
   const score = attempt.tier2Score ?? attempt.tier1Score ?? 0
   const isVideo = attempt.outputUrl?.match(/\.(mp4|webm|mov)/i)
+  const isTraining = attempt.id.startsWith('train-')
+  const [copied, setCopied] = useState(false)
+
+  // Training result card — shows LoRA icon + truncated URL + copy button
+  if (isTraining) {
+    const copyUrl = (e: React.MouseEvent) => {
+      e.stopPropagation()
+      if (attempt.outputUrl) {
+        navigator.clipboard.writeText(attempt.outputUrl)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      }
+    }
+    return (
+      <div className="w-32 rounded-lg border overflow-hidden">
+        <div className="aspect-square bg-muted/30 flex flex-col items-center justify-center gap-2 p-2">
+          <Dna className="h-8 w-8 text-primary" />
+          <span className="text-[10px] text-muted-foreground text-center line-clamp-2 break-all">{attempt.outputUrl}</span>
+        </div>
+        <div className="p-1.5 flex items-center justify-between">
+          <span className="text-[10px] text-muted-foreground truncate">{t('smartGenerate.trainer.lora')}</span>
+          <button onClick={copyUrl} className="shrink-0">
+            {copied ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3 text-muted-foreground hover:text-foreground" />}
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div
@@ -389,6 +508,12 @@ function CarouselCard({
         {isBest && (
           <div className="absolute top-1 left-1">
             <Trophy className="h-3.5 w-3.5 text-primary drop-shadow" />
+          </div>
+        )}
+        {attempt.isUpscaled && (
+          <div className="absolute top-1 right-1 flex items-center gap-0.5 bg-blue-500/80 text-white text-[9px] px-1.5 py-0.5 rounded-full">
+            <ZoomIn className="h-2.5 w-2.5" />
+            <span>4K</span>
           </div>
         )}
         {onUseAsSource && !isVideo && attempt.outputUrl && (

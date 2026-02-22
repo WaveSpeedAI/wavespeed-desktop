@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "กำลังโหลด...",
     "save": "บันทึก",
@@ -1444,7 +1444,8 @@
       "text-to-image": "Text to Image",
       "image-edit": "Image Edit",
       "text-to-video": "Text to Video",
-      "image-to-video": "Image to Video"
+      "image-to-video": "Image to Video",
+      "lora-trainer": "ฝึก LoRA"
     },
     "tab": {
       "config": "Config",
@@ -1549,6 +1550,7 @@
     "output": {
       "bestResult": "Best Result",
       "allResults": "All Results",
+      "moreInHistory": "แสดง 40 รายการล่าสุด — ดูเพิ่มเติมในประวัติ",
       "playWhileWaiting": "Play while waiting...",
       "empty": "Results will appear here after generation starts",
       "continueRefining": "ปรับปรุงต่อ",
@@ -1603,7 +1605,9 @@
     "error": {
       "insufficientBalance": "Insufficient balance (${{balance}}). Please top up to continue.",
       "promptViolation": "Prompt violates content policy: {{reason}}",
-      "imageViolation": "Uploaded image violates content policy"
+      "imageViolation": "Uploaded image violates content policy",
+      "noOutput": "ไม่มีผลลัพธ์ที่ส่งกลับ",
+      "failed": "การดำเนินการล้มเหลว"
     },
     "toast": {
       "complete": "Smart Generate Complete",
@@ -1620,7 +1624,9 @@
       "budgetWarning": "ถึงขีดจำกัดงบประมาณแล้ว",
       "budgetWarningDesc": "ใช้จ่าย ${{spent}} จาก ${{budget}} งบประมาณ ไม่เพียงพอสำหรับรอบถัดไป",
       "referenceApplied": "ใช้ภาพอ้างอิงแล้ว",
-      "referenceAppliedDesc": "คำอธิบายภาพอ้างอิงถูกเพิ่มลงในพรอมต์แล้ว"
+      "referenceAppliedDesc": "คำอธิบายภาพอ้างอิงถูกเพิ่มลงในพรอมต์แล้ว",
+      "upscaling": "กำลังขยายภาพ",
+      "upscalingDesc": "ภาพต้นฉบับเล็กเกินไปสำหรับโมเดลนี้ กำลังขยายเป็น 4K ก่อน..."
     },
     "guide": {
       "title": "สร้างอัจฉริยะ",
@@ -1631,6 +1637,25 @@
       "step3Title": "Quality Scoring",
       "step3Desc": "AI evaluates each result on clarity, composition, and prompt adherence.",
       "getStarted": "Get Started"
+    },
+    "trainer": {
+      "images": "ภาพฝึกฝน",
+      "uploadImages": "อัปโหลดภาพฝึกฝน",
+      "addMore": "เพิ่มภาพเพิ่มเติม",
+      "imageCount": "ภาพ",
+      "overSize": "เกินขีดจำกัด 100 MB",
+      "triggerWord": "คำกระตุ้น",
+      "model": "โมเดลฝึกฝน",
+      "steps": "ขั้นตอนการฝึก",
+      "learningRate": "อัตราการเรียนรู้",
+      "loraRank": "อันดับ LoRA",
+      "startTraining": "เริ่มฝึก",
+      "training": "กำลังฝึก",
+      "result": "ผลการฝึก",
+      "loraUrl": "URL LoRA",
+      "lora": "LoRA",
+      "completeToast": "ฝึกเสร็จสิ้น",
+      "completeToastDesc": "โมเดล LoRA ของคุณพร้อมใช้งาน"
     }
   }
 }

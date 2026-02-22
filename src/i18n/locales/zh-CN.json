@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "加载中...",
     "save": "保存",
@@ -1443,7 +1443,8 @@
       "text-to-image": "文生图",
       "image-edit": "图片编辑",
       "text-to-video": "文生视频",
-      "image-to-video": "图生视频"
+      "image-to-video": "图生视频",
+      "lora-trainer": "训练 LoRA"
     },
     "tab": {
       "config": "配置",
@@ -1548,6 +1549,7 @@
     "output": {
       "bestResult": "最佳结果",
       "allResults": "全部结果",
+      "moreInHistory": "仅显示最近 40 条，更多请查看历史记录",
       "playWhileWaiting": "等待时玩个小游戏...",
       "empty": "开始生成后结果将显示在这里",
       "continueRefining": "继续优化",
@@ -1602,7 +1604,9 @@
     "error": {
       "insufficientBalance": "余额不足（${{balance}}），请充值后继续。",
       "promptViolation": "提示词违反内容规范：{{reason}}",
-      "imageViolation": "上传的图片违反内容规范"
+      "imageViolation": "上传的图片违反内容规范",
+      "noOutput": "未返回输出结果",
+      "failed": "操作失败"
     },
     "toast": {
       "complete": "智能生成完成",
@@ -1619,7 +1623,9 @@
       "budgetWarning": "预算即将用完",
       "budgetWarningDesc": "已花费 ${{spent}} / ${{budget}} 预算，不足以进行下一轮生成。",
       "referenceApplied": "参考图已应用",
-      "referenceAppliedDesc": "参考图的描述已自动添加到提示词中，以引导生成效果。"
+      "referenceAppliedDesc": "参考图的描述已自动添加到提示词中，以引导生成效果。",
+      "upscaling": "正在放大图片",
+      "upscalingDesc": "源图片像素不足，正在先放大到4K..."
     },
     "guide": {
       "title": "智能生成",
@@ -1630,6 +1636,25 @@
       "step3Title": "质量评分",
       "step3Desc": "AI 从清晰度、构图、提示词匹配度等维度评估每个结果。",
       "getStarted": "开始使用"
+    },
+    "trainer": {
+      "images": "训练图片",
+      "uploadImages": "上传训练图片",
+      "addMore": "添加更多图片",
+      "imageCount": "张图片",
+      "overSize": "超过 100 MB 限制",
+      "triggerWord": "触发词",
+      "model": "训练模型",
+      "steps": "训练步数",
+      "learningRate": "学习率",
+      "loraRank": "LoRA 秩",
+      "startTraining": "开始训练",
+      "training": "训练中",
+      "result": "训练结果",
+      "loraUrl": "LoRA 链接",
+      "lora": "LoRA",
+      "completeToast": "训练完成",
+      "completeToastDesc": "你的 LoRA 模型已可使用。"
     }
   }
 }

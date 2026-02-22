@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "Загрузка...",
     "save": "Сохранить",
@@ -1444,7 +1444,8 @@
       "text-to-image": "Text to Image",
       "image-edit": "Image Edit",
       "text-to-video": "Text to Video",
-      "image-to-video": "Image to Video"
+      "image-to-video": "Image to Video",
+      "lora-trainer": "Обучить LoRA"
     },
     "tab": {
       "config": "Config",
@@ -1549,6 +1550,7 @@
     "output": {
       "bestResult": "Best Result",
       "allResults": "All Results",
+      "moreInHistory": "Показаны последние 40 — больше в Истории",
       "playWhileWaiting": "Play while waiting...",
       "empty": "Results will appear here after generation starts",
       "continueRefining": "Продолжить улучшение",
@@ -1603,7 +1605,9 @@
     "error": {
       "insufficientBalance": "Insufficient balance (${{balance}}). Please top up to continue.",
       "promptViolation": "Prompt violates content policy: {{reason}}",
-      "imageViolation": "Uploaded image violates content policy"
+      "imageViolation": "Uploaded image violates content policy",
+      "noOutput": "Результат не возвращён",
+      "failed": "Операция не удалась"
     },
     "toast": {
       "complete": "Smart Generate Complete",
@@ -1620,7 +1624,9 @@
       "budgetWarning": "Лимит бюджета достигнут",
       "budgetWarningDesc": "Потрачено ${{spent}} из ${{budget}} бюджета. Недостаточно для следующего раунда.",
       "referenceApplied": "Референс применён",
-      "referenceAppliedDesc": "Описание вашего референса было добавлено в промпт."
+      "referenceAppliedDesc": "Описание вашего референса было добавлено в промпт.",
+      "upscaling": "Масштабирование изображения",
+      "upscalingDesc": "Исходное изображение слишком маленькое для этой модели. Сначала увеличиваем до 4K..."
     },
     "guide": {
       "title": "Умная генерация",
@@ -1631,6 +1637,25 @@
       "step3Title": "Quality Scoring",
       "step3Desc": "AI evaluates each result on clarity, composition, and prompt adherence.",
       "getStarted": "Get Started"
+    },
+    "trainer": {
+      "images": "Изображения для обучения",
+      "uploadImages": "Загрузить изображения для обучения",
+      "addMore": "Добавить ещё изображения",
+      "imageCount": "изображений",
+      "overSize": "Превышен лимит 100 МБ",
+      "triggerWord": "Триггер-слово",
+      "model": "Модель обучения",
+      "steps": "Шаги обучения",
+      "learningRate": "Скорость обучения",
+      "loraRank": "Ранг LoRA",
+      "startTraining": "Начать обучение",
+      "training": "Обучение",
+      "result": "Результат обучения",
+      "loraUrl": "URL LoRA",
+      "lora": "LoRA",
+      "completeToast": "Обучение завершено",
+      "completeToastDesc": "Ваша модель LoRA готова к использованию."
     }
   }
 }

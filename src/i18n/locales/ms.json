@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "Memuatkan...",
     "save": "Simpan",
@@ -1444,7 +1444,8 @@
       "text-to-image": "Text to Image",
       "image-edit": "Image Edit",
       "text-to-video": "Text to Video",
-      "image-to-video": "Image to Video"
+      "image-to-video": "Image to Video",
+      "lora-trainer": "Latih LoRA"
     },
     "tab": {
       "config": "Config",
@@ -1549,6 +1550,7 @@
     "output": {
       "bestResult": "Best Result",
       "allResults": "All Results",
+      "moreInHistory": "Menunjukkan 40 terkini — lihat lagi di Sejarah",
       "playWhileWaiting": "Play while waiting...",
       "empty": "Results will appear here after generation starts",
       "continueRefining": "Teruskan penambahbaikan",
@@ -1603,7 +1605,9 @@
     "error": {
       "insufficientBalance": "Insufficient balance (${{balance}}). Please top up to continue.",
       "promptViolation": "Prompt violates content policy: {{reason}}",
-      "imageViolation": "Uploaded image violates content policy"
+      "imageViolation": "Uploaded image violates content policy",
+      "noOutput": "Tiada output dikembalikan",
+      "failed": "Operasi gagal"
     },
     "toast": {
       "complete": "Smart Generate Complete",
@@ -1620,7 +1624,9 @@
       "budgetWarning": "Had Bajet Tercapai",
       "budgetWarningDesc": "Telah membelanjakan ${{spent}} daripada ${{budget}} bajet. Tidak mencukupi untuk pusingan seterusnya.",
       "referenceApplied": "Imej rujukan digunakan",
-      "referenceAppliedDesc": "Penerangan imej rujukan anda telah ditambahkan ke prompt."
+      "referenceAppliedDesc": "Penerangan imej rujukan anda telah ditambahkan ke prompt.",
+      "upscaling": "Membesarkan imej",
+      "upscalingDesc": "Imej sumber terlalu kecil untuk model ini. Membesarkan ke 4K dahulu..."
     },
     "guide": {
       "title": "Jana Pintar",
@@ -1631,6 +1637,25 @@
       "step3Title": "Quality Scoring",
       "step3Desc": "AI evaluates each result on clarity, composition, and prompt adherence.",
       "getStarted": "Get Started"
+    },
+    "trainer": {
+      "images": "Imej Latihan",
+      "uploadImages": "Muat naik imej latihan",
+      "addMore": "Tambah lagi imej",
+      "imageCount": "imej",
+      "overSize": "Melebihi had 100 MB",
+      "triggerWord": "Kata Pencetus",
+      "model": "Model Pelatih",
+      "steps": "Langkah Latihan",
+      "learningRate": "Kadar Pembelajaran",
+      "loraRank": "Rank LoRA",
+      "startTraining": "Mula Latihan",
+      "training": "Melatih",
+      "result": "Hasil Latihan",
+      "loraUrl": "URL LoRA",
+      "lora": "LoRA",
+      "completeToast": "Latihan Selesai",
+      "completeToastDesc": "Model LoRA anda sedia untuk digunakan."
     }
   }
 }

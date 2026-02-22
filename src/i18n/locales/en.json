@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "Loading...",
     "save": "Save",
@@ -1447,7 +1447,8 @@
       "text-to-image": "Text to Image",
       "image-edit": "Image Edit",
       "text-to-video": "Text to Video",
-      "image-to-video": "Image to Video"
+      "image-to-video": "Image to Video",
+      "lora-trainer": "Train LoRA"
     },
     "tab": {
       "config": "Config",
@@ -1552,6 +1553,7 @@
     "output": {
       "bestResult": "Best Result",
       "allResults": "All Results",
+      "moreInHistory": "Showing latest 40 — view more in History",
       "playWhileWaiting": "Play while waiting...",
       "empty": "Results will appear here after generation starts",
       "continueRefining": "Continue Refining",
@@ -1606,7 +1608,9 @@
     "error": {
       "insufficientBalance": "Insufficient balance (${{balance}}). Please top up to continue.",
       "promptViolation": "Prompt violates content policy: {{reason}}",
-      "imageViolation": "Uploaded image violates content policy"
+      "imageViolation": "Uploaded image violates content policy",
+      "noOutput": "No output returned",
+      "failed": "Operation failed"
     },
     "toast": {
       "complete": "Smart Generate Complete",
@@ -1623,7 +1627,9 @@
       "budgetWarning": "Budget Limit Reached",
       "budgetWarningDesc": "Spent ${{spent}} of ${{budget}} budget. Not enough for next round.",
       "referenceApplied": "Reference Image Applied",
-      "referenceAppliedDesc": "Your reference image description has been added to the prompt to guide generation."
+      "referenceAppliedDesc": "Your reference image description has been added to the prompt to guide generation.",
+      "upscaling": "Upscaling Image",
+      "upscalingDesc": "Source image is too small for this model. Upscaling to 4K first..."
     },
     "guide": {
       "title": "Smart Generate",
@@ -1634,6 +1640,25 @@
       "step3Title": "Quality Scoring",
       "step3Desc": "AI evaluates each result on clarity, composition, and prompt adherence.",
       "getStarted": "Get Started"
+    },
+    "trainer": {
+      "images": "Training Images",
+      "uploadImages": "Upload training images",
+      "addMore": "Add more images",
+      "imageCount": "images",
+      "overSize": "Exceeds 100 MB limit",
+      "triggerWord": "Trigger Word",
+      "model": "Trainer Model",
+      "steps": "Training Steps",
+      "learningRate": "Learning Rate",
+      "loraRank": "LoRA Rank",
+      "startTraining": "Start Training",
+      "training": "Training",
+      "result": "Training Result",
+      "loraUrl": "LoRA URL",
+      "lora": "LoRA",
+      "completeToast": "Training Complete",
+      "completeToastDesc": "Your LoRA model is ready to use."
     }
   }
 }

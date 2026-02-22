@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "Chargement...",
     "save": "Enregistrer",
@@ -1443,7 +1443,8 @@
       "text-to-image": "Text to Image",
       "image-edit": "Image Edit",
       "text-to-video": "Text to Video",
-      "image-to-video": "Image to Video"
+      "image-to-video": "Image to Video",
+      "lora-trainer": "Entraîner LoRA"
     },
     "tab": {
       "config": "Config",
@@ -1548,6 +1549,7 @@
     "output": {
       "bestResult": "Best Result",
       "allResults": "All Results",
+      "moreInHistory": "Affichage des 40 derniers — voir plus dans l'Historique",
       "playWhileWaiting": "Play while waiting...",
       "empty": "Results will appear here after generation starts",
       "continueRefining": "Continuer à affiner",
@@ -1602,7 +1604,9 @@
     "error": {
       "insufficientBalance": "Insufficient balance (${{balance}}). Please top up to continue.",
       "promptViolation": "Prompt violates content policy: {{reason}}",
-      "imageViolation": "Uploaded image violates content policy"
+      "imageViolation": "Uploaded image violates content policy",
+      "noOutput": "Aucun résultat retourné",
+      "failed": "Opération échouée"
     },
     "toast": {
       "complete": "Smart Generate Complete",
@@ -1619,7 +1623,9 @@
       "budgetWarning": "Limite budgétaire atteinte",
       "budgetWarningDesc": "Budget dépensé : ${{spent}} / ${{budget}}. Insuffisant pour la prochaine génération.",
       "referenceApplied": "Image de référence appliquée",
-      "referenceAppliedDesc": "La description de votre image de référence a été ajoutée au prompt."
+      "referenceAppliedDesc": "La description de votre image de référence a été ajoutée au prompt.",
+      "upscaling": "Mise à l'échelle de l'image",
+      "upscalingDesc": "L'image source est trop petite pour ce modèle. Mise à l'échelle en 4K..."
     },
     "guide": {
       "title": "Génération Intelligente",
@@ -1630,6 +1636,25 @@
       "step3Title": "Quality Scoring",
       "step3Desc": "AI evaluates each result on clarity, composition, and prompt adherence.",
       "getStarted": "Get Started"
+    },
+    "trainer": {
+      "images": "Images d'entraînement",
+      "uploadImages": "Télécharger les images d'entraînement",
+      "addMore": "Ajouter plus d'images",
+      "imageCount": "images",
+      "overSize": "Dépasse la limite de 100 Mo",
+      "triggerWord": "Mot déclencheur",
+      "model": "Modèle d'entraînement",
+      "steps": "Étapes d'entraînement",
+      "learningRate": "Taux d'apprentissage",
+      "loraRank": "Rang LoRA",
+      "startTraining": "Démarrer l'entraînement",
+      "training": "Entraînement",
+      "result": "Résultat de l'entraînement",
+      "loraUrl": "URL LoRA",
+      "lora": "LoRA",
+      "completeToast": "Entraînement terminé",
+      "completeToastDesc": "Votre modèle LoRA est prêt à l'emploi."
     }
   }
 }

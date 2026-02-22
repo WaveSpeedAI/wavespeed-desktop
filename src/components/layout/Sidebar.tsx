@@ -28,6 +28,15 @@ import {
 } from 'lucide-react'
 import { AppLogo } from './AppLogo'
 
+const isCapacitorNative = () => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return !!(window as any).Capacitor?.isNativePlatform?.()
+  } catch {
+    return false
+  }
+}
+
 interface NavItem {
   titleKey: string
   href: string
@@ -60,6 +69,8 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
     }
   }, [collapsed])
 
+  const isMobile = isCapacitorNative()
+
   const createItems: NavItem[] = [
     {
       titleKey: 'nav.home',
@@ -82,11 +93,12 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
       icon: PlayCircle,
       matchPrefix: true
     },
-    {
+    // Smart Generate: desktop only
+    ...(!isMobile ? [{
       titleKey: 'nav.smartGenerate',
       href: '/smart-generate',
       icon: Wand2,
-    },
+    }] : []),
   ]
 
   const manageItems: NavItem[] = [

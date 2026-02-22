@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "Caricamento...",
     "save": "Salva",
@@ -1443,7 +1443,8 @@
       "text-to-image": "Text to Image",
       "image-edit": "Image Edit",
       "text-to-video": "Text to Video",
-      "image-to-video": "Image to Video"
+      "image-to-video": "Image to Video",
+      "lora-trainer": "Addestra LoRA"
     },
     "tab": {
       "config": "Config",
@@ -1548,6 +1549,7 @@
     "output": {
       "bestResult": "Best Result",
       "allResults": "All Results",
+      "moreInHistory": "Mostrando gli ultimi 40 — vedi altri nella Cronologia",
       "playWhileWaiting": "Play while waiting...",
       "empty": "Results will appear here after generation starts",
       "continueRefining": "Continua a perfezionare",
@@ -1602,7 +1604,9 @@
     "error": {
       "insufficientBalance": "Insufficient balance (${{balance}}). Please top up to continue.",
       "promptViolation": "Prompt violates content policy: {{reason}}",
-      "imageViolation": "Uploaded image violates content policy"
+      "imageViolation": "Uploaded image violates content policy",
+      "noOutput": "Nessun risultato restituito",
+      "failed": "Operazione fallita"
     },
     "toast": {
       "complete": "Smart Generate Complete",
@@ -1619,7 +1623,9 @@
       "budgetWarning": "Limite di budget raggiunto",
       "budgetWarningDesc": "Hai speso ${{spent}} su ${{budget}} di budget. Insufficiente per il prossimo round.",
       "referenceApplied": "Immagine di riferimento applicata",
-      "referenceAppliedDesc": "La descrizione della tua immagine di riferimento è stata aggiunta al prompt."
+      "referenceAppliedDesc": "La descrizione della tua immagine di riferimento è stata aggiunta al prompt.",
+      "upscaling": "Ridimensionamento immagine",
+      "upscalingDesc": "L'immagine sorgente è troppo piccola per questo modello. Ridimensionamento a 4K in corso..."
     },
     "guide": {
       "title": "Generazione Intelligente",
@@ -1630,6 +1636,25 @@
       "step3Title": "Quality Scoring",
       "step3Desc": "AI evaluates each result on clarity, composition, and prompt adherence.",
       "getStarted": "Get Started"
+    },
+    "trainer": {
+      "images": "Immagini di addestramento",
+      "uploadImages": "Carica immagini di addestramento",
+      "addMore": "Aggiungi altre immagini",
+      "imageCount": "immagini",
+      "overSize": "Supera il limite di 100 MB",
+      "triggerWord": "Parola chiave",
+      "model": "Modello di addestramento",
+      "steps": "Passaggi di addestramento",
+      "learningRate": "Tasso di apprendimento",
+      "loraRank": "Rango LoRA",
+      "startTraining": "Avvia addestramento",
+      "training": "Addestramento",
+      "result": "Risultato dell'addestramento",
+      "loraUrl": "URL LoRA",
+      "lora": "LoRA",
+      "completeToast": "Addestramento completato",
+      "completeToastDesc": "Il tuo modello LoRA è pronto all'uso."
     }
   }
 }

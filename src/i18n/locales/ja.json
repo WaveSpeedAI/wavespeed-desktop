@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "読み込み中...",
     "save": "保存",
@@ -1443,7 +1443,8 @@
       "text-to-image": "Text to Image",
       "image-edit": "Image Edit",
       "text-to-video": "Text to Video",
-      "image-to-video": "Image to Video"
+      "image-to-video": "Image to Video",
+      "lora-trainer": "LoRA トレーニング"
     },
     "tab": {
       "config": "Config",
@@ -1548,6 +1549,7 @@
     "output": {
       "bestResult": "Best Result",
       "allResults": "All Results",
+      "moreInHistory": "最新40件を表示中 — 詳細は履歴で確認",
       "playWhileWaiting": "Play while waiting...",
       "empty": "Results will appear here after generation starts",
       "continueRefining": "改善を続ける",
@@ -1602,7 +1604,9 @@
     "error": {
       "insufficientBalance": "Insufficient balance (${{balance}}). Please top up to continue.",
       "promptViolation": "Prompt violates content policy: {{reason}}",
-      "imageViolation": "Uploaded image violates content policy"
+      "imageViolation": "Uploaded image violates content policy",
+      "noOutput": "出力が返されませんでした",
+      "failed": "操作に失敗しました"
     },
     "toast": {
       "complete": "Smart Generate Complete",
@@ -1619,7 +1623,9 @@
       "budgetWarning": "予算限度に達しました",
       "budgetWarningDesc": "${{spent}} / ${{budget}} の予算を使用しました。次のラウンドには不十分です。",
       "referenceApplied": "参考画像を適用しました",
-      "referenceAppliedDesc": "参考画像の説明がプロンプトに追加され、生成をガイドします。"
+      "referenceAppliedDesc": "参考画像の説明がプロンプトに追加され、生成をガイドします。",
+      "upscaling": "画像をアップスケール中",
+      "upscalingDesc": "元画像がこのモデルには小さすぎます。先に4Kにアップスケールしています..."
     },
     "guide": {
       "title": "スマート生成",
@@ -1630,6 +1636,25 @@
       "step3Title": "Quality Scoring",
       "step3Desc": "AI evaluates each result on clarity, composition, and prompt adherence.",
       "getStarted": "Get Started"
+    },
+    "trainer": {
+      "images": "トレーニング画像",
+      "uploadImages": "トレーニング画像をアップロード",
+      "addMore": "画像を追加",
+      "imageCount": "枚の画像",
+      "overSize": "100 MBの制限を超えています",
+      "triggerWord": "トリガーワード",
+      "model": "トレーナーモデル",
+      "steps": "トレーニングステップ",
+      "learningRate": "学習率",
+      "loraRank": "LoRA ランク",
+      "startTraining": "トレーニング開始",
+      "training": "トレーニング中",
+      "result": "トレーニング結果",
+      "loraUrl": "LoRA URL",
+      "lora": "LoRA",
+      "completeToast": "トレーニング完了",
+      "completeToastDesc": "LoRAモデルが使用可能になりました。"
     }
   }
 }

@@ -14,6 +14,8 @@ interface DynamicFormProps {
   onFieldsChange?: (fields: FormFieldConfig[]) => void
   disabled?: boolean
   onUploadingChange?: (isUploading: boolean) => void
+  /** When false, render form content only (no ScrollArea); parent is the scroll container. Used in Playground for mobile. */
+  scrollable?: boolean
 }
 
 export function DynamicForm({
@@ -24,7 +26,8 @@ export function DynamicForm({
   onSetDefaults,
   onFieldsChange,
   disabled = false,
-  onUploadingChange
+  onUploadingChange,
+  scrollable = true
 }: DynamicFormProps) {
   // Track which hidden fields are enabled
   const [enabledHiddenFields, setEnabledHiddenFields] = useState<Set<string>>(new Set())
@@ -106,12 +109,11 @@ export function DynamicForm({
     )
   }
 
-  return (
-    <ScrollArea className="h-full">
-      <div className="space-y-4 pr-4 py-2">
-        {fields.map((field) => {
-          // Hidden fields render with a toggle
-          if (field.hidden) {
+  const formContent = (
+    <div className="space-y-4 pr-4 py-2">
+      {fields.map((field) => {
+        // Hidden fields render with a toggle
+        if (field.hidden) {
             const isEnabled = enabledHiddenFields.has(field.name)
             return (
               <div key={field.name} className="space-y-2">
@@ -173,8 +175,10 @@ export function DynamicForm({
               onUploadingChange={onUploadingChange}
             />
           )
-        })}
-      </div>
-    </ScrollArea>
+      })}
+    </div>
   )
+
+  if (!scrollable) return formContent
+  return <ScrollArea className="h-full">{formContent}</ScrollArea>
 }

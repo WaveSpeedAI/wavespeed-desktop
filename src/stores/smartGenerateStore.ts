@@ -265,7 +265,7 @@ export const useSmartGenerateStore = create<SmartGenerateState>((set, get) => {
     const { attempts, pipelineStartIndex } = get()
     // Only consider attempts from the current pipeline run (same prompt)
     const currentRunAttempts = attempts.slice(pipelineStartIndex)
-    const completed = currentRunAttempts.filter(a => a.status === 'complete' && a.outputUrl && !a.id.startsWith('tool-'))
+    const completed = currentRunAttempts.filter(a => a.status === 'complete' && a.outputUrl && !a.id.startsWith('tool-') && !a.id.startsWith('upscale-'))
     if (completed.length === 0) {
       set({ bestAttempt: null })
       return

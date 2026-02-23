@@ -189,11 +189,19 @@ export function RefinementChat({ className }: RefinementChatProps) {
       {/* Selected attempt indicator */}
       {selectedAttemptForChat && selectedAttemptForChat.outputUrl && (
         <div className="border-b bg-primary/5 px-3 py-1.5 shrink-0 flex items-center gap-2">
-          <img
-            src={selectedAttemptForChat.outputUrl}
-            alt=""
-            className="h-8 w-8 rounded object-cover"
-          />
+          {selectedAttemptForChat.outputUrl.match(/\.(mp4|webm|mov)/i) ? (
+            <video
+              src={selectedAttemptForChat.outputUrl}
+              muted
+              className="h-8 w-8 rounded object-cover"
+            />
+          ) : (
+            <img
+              src={selectedAttemptForChat.outputUrl}
+              alt=""
+              className="h-8 w-8 rounded object-cover"
+            />
+          )}
           <span className="text-xs text-muted-foreground flex-1">
             {t('smartGenerate.chat.refiningSelected')}
           </span>
@@ -275,7 +283,7 @@ export function RefinementChat({ className }: RefinementChatProps) {
       )}
 
       {/* Regenerate + Cost */}
-      {isPaused && bestScore < 90 && (
+      {isPaused && (
         <div className="border-t bg-background/40 px-3 py-2 shrink-0">
           <div className="flex items-center justify-between">
             <Button

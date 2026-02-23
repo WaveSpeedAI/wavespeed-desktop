@@ -214,6 +214,14 @@ export const IMAGE_TO_VIDEO_MODELS: ModelAdapter[] = [
     ],
   },
   {
+    modelId: 'alibaba/wan-2.6/image-to-video-spicy', label: 'Wan 2.6 Spicy', tag: 'unrestricted', price: 0.50,
+    promptField: 'prompt', imageField: 'image', supportsChinesePrompt: true, estimatedTime: { min: 30, max: 120 },
+    extraDefaults: { duration: 5, enable_prompt_expansion: false },
+    extraConfigFields: [
+      { fieldName: 'duration', labelKey: 'smartGenerate.config.duration', type: 'enum', options: ['5', '10', '15'], default: '5' },
+    ],
+  },
+  {
     modelId: 'wavespeed-ai/wan-2.2-spicy/image-to-video', label: 'Wan Spicy', tag: 'value', price: 0.15,
     promptField: 'prompt', imageField: 'image', supportsChinesePrompt: true, estimatedTime: { min: 15, max: 60 }, seedField: 'seed',
     extraDefaults: { duration: 5 },
@@ -303,6 +311,7 @@ const I2V_FALLBACK = [
   'bytedance/seedance-v1.5-pro/image-to-video-fast', // $0.20
   'bytedance/seedance-v1.5-pro/image-to-video',      // $0.26
   'openai/sora-2/image-to-video',                     // $0.40
+  'alibaba/wan-2.6/image-to-video-spicy',             // $0.50
   'alibaba/wan-2.6/image-to-video-pro',               // $0.50
   'google/veo3.1-fast/image-to-video',                // $1.20
 ]
@@ -335,6 +344,7 @@ const T2V_NSFW_FALLBACK = [
 ]
 
 const I2V_NSFW_FALLBACK = [
+  'alibaba/wan-2.6/image-to-video-spicy',             // $0.50 — most tolerant
   'wavespeed-ai/wan-2.2-spicy/image-to-video',      // $0.15
   'alibaba/wan-2.6/image-to-video-pro',               // $0.50
   'bytedance/seedance-v1.5-pro/image-to-video-fast', // $0.20

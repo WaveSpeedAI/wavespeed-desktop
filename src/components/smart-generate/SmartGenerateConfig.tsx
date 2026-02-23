@@ -430,10 +430,24 @@ export function SmartGenerateConfig({ onStart, className }: SmartGenerateConfigP
                               : 'text-muted-foreground hover:bg-muted/50',
                           )}
                         >
-                          {field.fieldName === 'duration' ? `${opt}s` : opt.toUpperCase()}
+                          {field.fieldName === 'duration' ? `${opt}s` : opt}
                         </button>
                       ))}
                     </div>
+                  </div>
+                ))}
+
+                {/* Model-specific text fields (negative_prompt, audio URL, etc.) */}
+                {extraFields.filter(f => f.type === 'text').map((field) => (
+                  <div key={field.fieldName} className="space-y-1.5">
+                    <Label className="text-xs">{t(field.labelKey)}</Label>
+                    <input
+                      type="text"
+                      value={(extraConfigValues[field.fieldName] as string) || ''}
+                      onChange={(e) => setExtraConfigValue(field.fieldName, e.target.value)}
+                      placeholder={field.placeholder || ''}
+                      className="w-full rounded-md border bg-background/80 px-2.5 py-1.5 text-xs placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    />
                   </div>
                 ))}
 

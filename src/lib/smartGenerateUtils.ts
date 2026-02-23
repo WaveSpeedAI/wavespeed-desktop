@@ -11,9 +11,10 @@ export type SmartMode = 'text-to-image' | 'image-edit' | 'text-to-video' | 'imag
 export interface ExtraConfigField {
   fieldName: string
   labelKey: string       // i18n key
-  type: 'enum' | 'lora'
+  type: 'enum' | 'lora' | 'text'
   options?: string[]     // for 'enum' type
-  default?: string       // for 'enum' type
+  default?: string       // for 'enum' / 'text' type
+  placeholder?: string   // for 'text' type
 }
 
 export interface LoraItem {
@@ -218,7 +219,11 @@ export const IMAGE_TO_VIDEO_MODELS: ModelAdapter[] = [
     promptField: 'prompt', imageField: 'image', supportsChinesePrompt: true, estimatedTime: { min: 30, max: 120 },
     extraDefaults: { duration: 5, enable_prompt_expansion: false },
     extraConfigFields: [
+      { fieldName: 'resolution', labelKey: 'smartGenerate.config.resolution', type: 'enum', options: ['720p', '1080p'], default: '720p' },
       { fieldName: 'duration', labelKey: 'smartGenerate.config.duration', type: 'enum', options: ['5', '10', '15'], default: '5' },
+      { fieldName: 'shot_type', labelKey: 'smartGenerate.config.shotType', type: 'enum', options: ['single', 'multi'], default: 'single' },
+      { fieldName: 'negative_prompt', labelKey: 'smartGenerate.config.negativePrompt', type: 'text', placeholder: 'e.g. watermark, blur, distortion' },
+      { fieldName: 'audio', labelKey: 'smartGenerate.config.audio', type: 'text', placeholder: 'Paste audio URL (optional)' },
     ],
   },
   {

@@ -72,12 +72,13 @@ export function SmartGenerateOutput({ className }: SmartGenerateOutputProps) {
     [attempts]
   )
 
-  // All completed attempts across ALL modes (for All Results)
+  // All attempts with output across ALL modes (for All Results — show every paid result)
   const allCompletedAttempts = useMemo(() => {
-    const current = attempts.filter(a => a.status === 'complete' && a.outputUrl)
+    const exclude = (a: GenerationAttempt) => a.id.startsWith('tool-') || a.id.startsWith('upscale-')
+    const current = attempts.filter(a => a.outputUrl && !exclude(a))
     const fromSessions = Object.entries(modeSessions)
       .filter(([m]) => m !== mode) // skip current mode (already included)
-      .flatMap(([, session]) => session?.attempts?.filter(a => a.status === 'complete' && a.outputUrl) ?? [])
+      .flatMap(([, session]) => session?.attempts?.filter(a => a.outputUrl && !exclude(a)) ?? [])
     return [...current, ...fromSessions].sort((a, b) => b.timestamp - a.timestamp)
   }, [attempts, modeSessions, mode])
 

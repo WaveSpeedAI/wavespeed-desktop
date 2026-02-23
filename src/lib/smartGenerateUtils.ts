@@ -788,6 +788,16 @@ Reply in {language}. Respond with JSON:
   "quickFeedback": ["<feedback option 1>", "<feedback option 2>", "<feedback option 3>"]
 }`
 
+// Race a promise against a timeout (ms). Rejects with 'timeout' on expiry.
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms)),
+  ])
+}
+
+const SCORING_TIMEOUT_MS = 20_000
+
 export async function quickScore(outputUrl: string, prompt: string, mode: SmartMode, isNsfw = false): Promise<{ score: number; brief: string }> {
   const template = isNsfw
     ? TIER1_NSFW_SCORING_PROMPT
@@ -796,9 +806,12 @@ export async function quickScore(outputUrl: string, prompt: string, mode: SmartM
       : TIER1_SCORING_PROMPT
   const question = template.replace('{prompt}', () => prompt)
   try {
-    const raw = isVideoMode(mode)
-      ? await callVideoQA(outputUrl, question)
-      : await callVisionLLM([outputUrl], question)
+    const raw = await withTimeout(
+      isVideoMode(mode)
+        ? callVideoQA(outputUrl, question)
+        : callVisionLLM([outputUrl], question),
+      SCORING_TIMEOUT_MS,
+    )
     const result = parseScoreResponse(raw)
     // NSFW bonus: +10 base score so borderline content (50+) can pass the 60 threshold
     if (isNsfw) {
@@ -806,7 +819,9 @@ export async function quickScore(outputUrl: string, prompt: string, mode: SmartM
     }
     return result
   } catch (err) {
-    return { score: 50, brief: 'Scoring failed' }
+    // Timeout or API error → default score: images 60, videos 50
+    const defaultScore = isVideoMode(mode) ? 50 : 60
+    return { score: defaultScore, brief: 'Scoring timeout' }
   }
 }
 
@@ -822,12 +837,17 @@ export async function deepAnalyze(
       .replace('{language}', lang)
 
     // Vision model looks at the image/video directly for accurate defect detection
-    const raw = isVideoMode(mode)
-      ? await callVideoQA(outputUrl, analysisPrompt)
-      : await callVisionLLM([outputUrl], analysisPrompt)
+    const raw = await withTimeout(
+      isVideoMode(mode)
+        ? callVideoQA(outputUrl, analysisPrompt)
+        : callVisionLLM([outputUrl], analysisPrompt),
+      SCORING_TIMEOUT_MS,
+    )
     return parseTier2Response(raw)
   } catch (err) {
-    return { totalScore: 50, analysis: 'Analysis failed', improvements: [], quickFeedback: [] }
+    // Timeout or API error → default score: images 60, videos 50
+    const defaultScore = isVideoMode(mode) ? 50 : 60
+    return { totalScore: defaultScore, analysis: 'Analysis timeout', improvements: [], quickFeedback: [] }
   }
 }
 

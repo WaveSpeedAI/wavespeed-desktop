@@ -249,6 +249,12 @@ const initialState = {
   pipelineError: null as string | null,
 }
 
+// Pending source image re-upload (awaited by pipeline before using sourceImages)
+let _sourceUploadPromise: Promise<void> | null = null
+
+// Pipeline generation counter — detects stale pipelines after startNewTask/reset/mode-switch-back
+let _pipelineGeneration = 0
+
 // ─── Store ───────────────────────────────────────────────────────────────────
 
 export const useSmartGenerateStore = create<SmartGenerateState>((set, get) => {
@@ -415,8 +421,12 @@ export const useSmartGenerateStore = create<SmartGenerateState>((set, get) => {
       return
     }
 
-    // Combined stop check: user cancel OR mode switched away
-    const shouldStop = () => isCancelled() || modeChanged()
+    // Increment pipeline generation — stale pipelines (from startNewTask/reset/rapid mode switch) will detect mismatch and stop
+    const myGeneration = ++_pipelineGeneration
+    const isStale = () => _pipelineGeneration !== myGeneration
+
+    // Combined stop check: user cancel OR mode switched away OR pipeline superseded
+    const shouldStop = () => isCancelled() || modeChanged() || isStale()
 
     // Reset cancel flag with raw set() — pipelineSet would no-op since isCancelled() is still true
     set({ cancelRequested: false })
@@ -447,6 +457,9 @@ export const useSmartGenerateStore = create<SmartGenerateState>((set, get) => {
         return
       }
       if (shouldStop()) return finishCancel(pipelineMode)
+
+      // Wait for any pending source image re-upload (useResultAsSource)
+      if (_sourceUploadPromise) await _sourceUploadPromise
 
       // Update AI understanding with current prompt (non-blocking)
       const existingMsgs = get().chatMessages
@@ -650,8 +663,8 @@ export const useSmartGenerateStore = create<SmartGenerateState>((set, get) => {
               const outputUrl = extractOutput(result)
               const inferenceTime = result.timings?.inference ?? null
               // Use set() directly — bypass cancel gate so paid results aren't lost.
-              // Guard with modeChanged() to avoid corrupting a different mode's attempts.
-              if (!modeChanged()) {
+              // Guard with modeChanged()/isStale() to avoid corrupting a different pipeline's attempts.
+              if (!modeChanged() && !isStale()) {
                 const cancelled = isCancelled()
                 set(s => ({
                   attempts: s.attempts.map(a =>
@@ -664,7 +677,7 @@ export const useSmartGenerateStore = create<SmartGenerateState>((set, get) => {
               return { attemptId, outputUrl, inferenceTime, error: null as unknown }
             })
             .catch(error => {
-              if (!modeChanged()) {
+              if (!modeChanged() && !isStale()) {
                 set(s => ({
                   attempts: s.attempts.map(a =>
                     a.id === attemptId ? { ...a, status: 'failed' as const } : a
@@ -1195,10 +1208,17 @@ export const useSmartGenerateStore = create<SmartGenerateState>((set, get) => {
       const saved = s.modeSessions[newMode]
 
       if (saved) {
+        // Clean up stuck attempts from interrupted pipeline
+        const cleanedAttempts = (saved.attempts ?? []).map(a =>
+          a.status === 'generating' ? { ...a, status: 'failed' as const } :
+          a.status === 'scoring' ? { ...a, status: 'complete' as const } :
+          a
+        )
         set({
           mode: newMode,
           modeSessions: { ...s.modeSessions, [currentMode]: currentSession },
           ...saved,
+          attempts: cleanedAttempts,
           pipelineStartIndex: saved.pipelineStartIndex ?? 0,
           // Restore trainer fields from session if present
           trainingImages: saved.trainingImages ?? [],
@@ -1285,22 +1305,21 @@ export const useSmartGenerateStore = create<SmartGenerateState>((set, get) => {
         // image-edit, image-to-video → show immediately, then re-upload to get a stable URL
         // (model output URLs may be temporary/signed and inaccessible to other model backends)
         set({ sourceImages: [imageUrl], imageDescription: null })
-        fetch(imageUrl)
-          .then(r => r.blob())
-          .then(blob => {
+        _sourceUploadPromise = (async () => {
+          try {
+            const blob = await fetch(imageUrl).then(r => r.blob())
             const ext = imageUrl.match(/\.(jpe?g|png|webp|gif)/i)?.[1] || 'jpg'
             const file = new File([blob], `source-${Date.now()}.${ext}`, { type: blob.type })
-            return apiClient.uploadFile(file)
-          })
-          .then(uploadedUrl => {
+            const uploadedUrl = await apiClient.uploadFile(file)
             // Only update if user hasn't changed the source image since
             if (get().sourceImages[0] === imageUrl) {
               set({ sourceImages: [uploadedUrl] })
             }
-          })
-          .catch(() => {
+          } catch {
             // keep original URL as fallback
-          })
+          }
+          _sourceUploadPromise = null
+        })()
       } else if (isTrainerMode(mode)) {
         // lora-trainer → fetch URL and add as training image
         fetch(imageUrl)
@@ -1445,12 +1464,11 @@ export const useSmartGenerateStore = create<SmartGenerateState>((set, get) => {
 
     startNewTask: () => {
       const s = get()
-      // Signal any running pipeline to stop (API calls already submitted will still charge)
-      if (s.isLocked) set({ cancelRequested: true })
       // Clear ALL mode sessions + AI understanding — full reset
       saveLayer2('')
       set({
         ...initialState,
+        cancelRequested: s.isLocked, // keep cancel signal so running pipeline stops
         mode: s.mode,
         selectedModelId: isTrainerMode(s.mode)
           ? TRAINER_MODELS[0].modelId
@@ -1463,10 +1481,10 @@ export const useSmartGenerateStore = create<SmartGenerateState>((set, get) => {
 
     reset: () => {
       const s = get()
-      if (s.isLocked) set({ cancelRequested: true })
       saveLayer2('')
       set({
         ...initialState,
+        cancelRequested: s.isLocked, // keep cancel signal so running pipeline stops
         isFirstVisit: s.isFirstVisit,
         contextLayer2: '',
         modeSessions: {},

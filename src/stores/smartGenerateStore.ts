@@ -307,6 +307,8 @@ export const useSmartGenerateStore = create<SmartGenerateState>((set, get) => {
       if (!cfg) return null
       if (cfg.type === 'enum') {
         if (preferred && cfg.options?.includes(preferred)) return preferred
+        // Edit mode: don't auto-select aspect_ratio — API preserves original image ratio when omitted
+        if (mode === 'image-edit' && !preferred) return null
         return cfg.default ?? cfg.options?.[0] ?? null
       }
       if (cfg.type === 'dimensions') {
@@ -457,19 +459,35 @@ export const useSmartGenerateStore = create<SmartGenerateState>((set, get) => {
         }).catch(() => {})
       }
 
-      // [1] Image understanding (if needed)
+      // [1] Image understanding + NSFW detection (parallel)
       pipelineSet({ phase: 'understanding' })
       let imageDescription: string | undefined = get().imageDescription || undefined
-      const imageToDescribe = sourceImage || referenceImage
-      if (imageToDescribe && !imageDescription) {
-        try {
-          imageDescription = await callImageCaptioner(imageToDescribe)
-          pipelineSet({ imageDescription: imageDescription || null })
-        } catch {
-          // non-fatal
+      let isNsfwContent = false
+
+      const captionerPromise = (async () => {
+        const imageToDescribe = sourceImage || referenceImage
+        if (imageToDescribe && !imageDescription) {
+          try {
+            imageDescription = await callImageCaptioner(imageToDescribe)
+            pipelineSet({ imageDescription: imageDescription || null })
+          } catch {
+            // non-fatal
+          }
         }
-      }
+      })()
+
+      const nsfwPromise = (async () => {
+        try {
+          isNsfwContent = await detectNSFW(userPrompt)
+        } catch {
+          // fail open — assume safe
+        }
+      })()
+
+      await Promise.all([captionerPromise, nsfwPromise])
       if (shouldStop()) return finishCancel(pipelineMode)
+
+      const effectiveTarget = isNsfwContent ? 60 : targetScore
 
       let effectiveSourceImages = sourceImages
 
@@ -556,15 +574,6 @@ export const useSmartGenerateStore = create<SmartGenerateState>((set, get) => {
       const variants = Array(parallelCount).fill(effectivePrompt)
       pipelineSet({ promptVariants: variants })
       if (shouldStop()) return finishCancel(pipelineMode)
-
-      // [2.6] NSFW detection — lower target & skip Tier 2 for NSFW content
-      let isNsfwContent = false
-      try {
-        isNsfwContent = await detectNSFW(userPrompt)
-      } catch {
-        // fail open — assume safe
-      }
-      const effectiveTarget = isNsfwContent ? 60 : targetScore
 
       // ─── Generation Loop ─────────────────────────────────────────
       // Automatic retry: generate → evaluate → score < target → retry with new seeds
@@ -685,7 +694,7 @@ export const useSmartGenerateStore = create<SmartGenerateState>((set, get) => {
         if (outputs.length === 0) {
           if (allPermanentError) {
             // Permanent error → switch model immediately
-            const next = getNextFallbackModel(mode, [...get().failedModels, currentModelIdLocal], currentModelIdLocal)
+            const next = getNextFallbackModel(mode, [...get().failedModels, currentModelIdLocal], currentModelIdLocal, isNsfwContent)
             if (next) {
               // Pre-check budget before switching
               const nextAdapter = getModelAdapter(next)
@@ -722,7 +731,7 @@ export const useSmartGenerateStore = create<SmartGenerateState>((set, get) => {
             continue
           }
           // Temp retries exhausted → try fallback chain before giving up
-          const nextAfterTemp = getNextFallbackModel(mode, [...get().failedModels, currentModelIdLocal], currentModelIdLocal)
+          const nextAfterTemp = getNextFallbackModel(mode, [...get().failedModels, currentModelIdLocal], currentModelIdLocal, isNsfwContent)
           if (nextAfterTemp) {
             // Pre-check budget before switching
             const nextTempAdapter = getModelAdapter(nextAfterTemp)
@@ -837,7 +846,7 @@ export const useSmartGenerateStore = create<SmartGenerateState>((set, get) => {
             pipelineSet({ phase: 'paused' })
             break
           }
-          const next = getNextFallbackModel(mode, [...get().failedModels, currentModelIdLocal], currentModelIdLocal)
+          const next = getNextFallbackModel(mode, [...get().failedModels, currentModelIdLocal], currentModelIdLocal, isNsfwContent)
           if (next) {
             // Pre-check budget before switching — don't switch if budget can't cover the next round
             const nextAdapter = getModelAdapter(next)
@@ -1273,8 +1282,25 @@ export const useSmartGenerateStore = create<SmartGenerateState>((set, get) => {
     useResultAsSource: (imageUrl) => {
       const { mode } = get()
       if (needsSourceImage(mode)) {
-        // image-edit, image-to-video → set as source image
+        // image-edit, image-to-video → show immediately, then re-upload to get a stable URL
+        // (model output URLs may be temporary/signed and inaccessible to other model backends)
         set({ sourceImages: [imageUrl], imageDescription: null })
+        fetch(imageUrl)
+          .then(r => r.blob())
+          .then(blob => {
+            const ext = imageUrl.match(/\.(jpe?g|png|webp|gif)/i)?.[1] || 'jpg'
+            const file = new File([blob], `source-${Date.now()}.${ext}`, { type: blob.type })
+            return apiClient.uploadFile(file)
+          })
+          .then(uploadedUrl => {
+            // Only update if user hasn't changed the source image since
+            if (get().sourceImages[0] === imageUrl) {
+              set({ sourceImages: [uploadedUrl] })
+            }
+          })
+          .catch(() => {
+            // keep original URL as fallback
+          })
       } else if (isTrainerMode(mode)) {
         // lora-trainer → fetch URL and add as training image
         fetch(imageUrl)

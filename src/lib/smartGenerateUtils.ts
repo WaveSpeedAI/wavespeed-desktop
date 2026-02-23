@@ -64,6 +64,7 @@ export interface ChatMessage {
 
 export const TEXT_TO_IMAGE_MODELS: ModelAdapter[] = [
   { modelId: 'google/nano-banana-pro/text-to-image', label: 'NB Pro', tag: 'recommended', price: 0.14, promptField: 'prompt', supportsChinesePrompt: false, estimatedTime: { min: 5, max: 15 }, seedField: 'seed' },
+  { modelId: 'google/nano-banana/text-to-image', label: 'NB', tag: 'value', price: 0.038, promptField: 'prompt', supportsChinesePrompt: false, estimatedTime: { min: 5, max: 15 } },
   { modelId: 'wavespeed-ai/qwen-image/text-to-image-2512', label: 'Qwen 2512', tag: 'value', price: 0.02, promptField: 'prompt', supportsChinesePrompt: true, estimatedTime: { min: 5, max: 15 }, seedField: 'seed' },
   { modelId: 'wavespeed-ai/qwen-image/text-to-image', label: 'Qwen', tag: 'value', price: 0.02, promptField: 'prompt', supportsChinesePrompt: true, estimatedTime: { min: 5, max: 15 }, seedField: 'seed' },
   {
@@ -94,6 +95,7 @@ export const TEXT_TO_IMAGE_MODELS: ModelAdapter[] = [
 
 export const IMAGE_EDIT_MODELS: ModelAdapter[] = [
   { modelId: 'google/nano-banana-pro/edit', label: 'NB Pro Edit', tag: 'recommended', price: 0.14, promptField: 'prompt', imageField: 'images', supportsChinesePrompt: false, estimatedTime: { min: 5, max: 15 } },
+  { modelId: 'google/nano-banana/edit', label: 'NB Edit', tag: 'value', price: 0.038, promptField: 'prompt', imageField: 'images', supportsChinesePrompt: false, estimatedTime: { min: 5, max: 15 } },
   { modelId: 'wavespeed-ai/qwen-image/edit-2511', label: 'Qwen Edit 2511', tag: 'value', price: 0.02, promptField: 'prompt', imageField: 'images', supportsChinesePrompt: true, estimatedTime: { min: 5, max: 15 } },
   { modelId: 'wavespeed-ai/qwen-image/edit-plus', label: 'Qwen Edit Plus', tag: 'value', price: 0.02, promptField: 'prompt', imageField: 'images', supportsChinesePrompt: true, estimatedTime: { min: 5, max: 15 } },
   {
@@ -271,36 +273,74 @@ export async function buildTrainingZip(files: File[]): Promise<File> {
 // ─── Fallback Chains ────────────────────────────────────────────────────────
 
 const T2I_FALLBACK = [
-  'wavespeed-ai/qwen-image/text-to-image-2512',
-  'wavespeed-ai/z-image/turbo',
-  'wavespeed-ai/flux-2-dev/text-to-image',
-  'bytedance/seedream-v4.5',
-  'alibaba/wan-2.6/text-to-image',
-  'google/nano-banana-pro/text-to-image',
+  'wavespeed-ai/z-image/turbo',              // $0.005
+  'wavespeed-ai/flux-2-dev/text-to-image',   // $0.012
+  'wavespeed-ai/qwen-image/text-to-image-2512', // $0.02
+  'alibaba/wan-2.6/text-to-image',           // $0.03
+  'google/nano-banana/text-to-image',        // $0.038
+  'bytedance/seedream-v4.5',                 // $0.04
+  'google/nano-banana-pro/text-to-image',    // $0.14
 ]
 
 const EDIT_FALLBACK = [
-  'wavespeed-ai/qwen-image/edit-2511',
-  'bytedance/seedream-v4.5/edit',
-  'openai/gpt-image-1',
-  'google/nano-banana-pro/edit',
+  'wavespeed-ai/qwen-image/edit-2511',       // $0.02
+  'google/nano-banana/edit',                  // $0.038
+  'bytedance/seedream-v4.5/edit',             // $0.04
+  'openai/gpt-image-1',                      // $0.042
+  'google/nano-banana-pro/edit',              // $0.14
 ]
 
 const T2V_FALLBACK = [
-  'bytedance/seedance-v1.5-pro/text-to-video-fast',
-  'bytedance/seedance-v1.5-pro/text-to-video',
-  'alibaba/wan-2.6/text-to-video',
-  'openai/sora-2/text-to-video',
-  'google/veo3.1-fast/text-to-video',
+  'bytedance/seedance-v1.5-pro/text-to-video-fast', // $0.20
+  'bytedance/seedance-v1.5-pro/text-to-video',      // $0.26
+  'openai/sora-2/text-to-video',                     // $0.40
+  'alibaba/wan-2.6/text-to-video',                   // $0.50
+  'google/veo3.1-fast/text-to-video',                // $1.20
 ]
 
 const I2V_FALLBACK = [
-  'wavespeed-ai/wan-2.2-spicy/image-to-video',
-  'bytedance/seedance-v1.5-pro/image-to-video-fast',
-  'bytedance/seedance-v1.5-pro/image-to-video',
-  'alibaba/wan-2.6/image-to-video-pro',
-  'openai/sora-2/image-to-video',
-  'google/veo3.1-fast/image-to-video',
+  'wavespeed-ai/wan-2.2-spicy/image-to-video',      // $0.15
+  'bytedance/seedance-v1.5-pro/image-to-video-fast', // $0.20
+  'bytedance/seedance-v1.5-pro/image-to-video',      // $0.26
+  'openai/sora-2/image-to-video',                     // $0.40
+  'alibaba/wan-2.6/image-to-video-pro',               // $0.50
+  'google/veo3.1-fast/image-to-video',                // $1.20
+]
+
+// NSFW fallback chains — prioritize models tolerant of mature content
+const T2I_NSFW_FALLBACK = [
+  'alibaba/wan-2.6/text-to-image',              // $0.03
+  'bytedance/seedream-v4.5',                     // $0.04
+  'wavespeed-ai/z-image/turbo',                  // $0.005
+  'wavespeed-ai/flux-2-dev/text-to-image',       // $0.012
+  'wavespeed-ai/qwen-image/text-to-image-2512',  // $0.02
+  'google/nano-banana/text-to-image',            // $0.038
+  'google/nano-banana-pro/text-to-image',        // $0.14
+]
+
+const EDIT_NSFW_FALLBACK = [
+  'bytedance/seedream-v4.5/edit',                // $0.04
+  'wavespeed-ai/qwen-image/edit-2511',           // $0.02
+  'google/nano-banana/edit',                      // $0.038
+  'openai/gpt-image-1',                          // $0.042
+  'google/nano-banana-pro/edit',                  // $0.14
+]
+
+const T2V_NSFW_FALLBACK = [
+  'bytedance/seedance-v1.5-pro/text-to-video',      // $0.26
+  'alibaba/wan-2.6/text-to-video',                   // $0.50
+  'bytedance/seedance-v1.5-pro/text-to-video-fast',  // $0.20
+  'openai/sora-2/text-to-video',                     // $0.40
+  'google/veo3.1-fast/text-to-video',                // $1.20
+]
+
+const I2V_NSFW_FALLBACK = [
+  'wavespeed-ai/wan-2.2-spicy/image-to-video',      // $0.15
+  'alibaba/wan-2.6/image-to-video-pro',               // $0.50
+  'bytedance/seedance-v1.5-pro/image-to-video-fast', // $0.20
+  'bytedance/seedance-v1.5-pro/image-to-video',      // $0.26
+  'openai/sora-2/image-to-video',                     // $0.40
+  'google/veo3.1-fast/image-to-video',                // $1.20
 ]
 
 const TOP_MODELS: Partial<Record<SmartMode, string[]>> = {
@@ -347,12 +387,12 @@ export function getModelAdapter(modelId: string): ModelAdapter | undefined {
   return adapter
 }
 
-function getFallbackChain(mode: SmartMode): string[] {
+function getFallbackChain(mode: SmartMode, isNsfw = false): string[] {
   switch (mode) {
-    case 'text-to-image': return T2I_FALLBACK
-    case 'image-edit': return EDIT_FALLBACK
-    case 'text-to-video': return T2V_FALLBACK
-    case 'image-to-video': return I2V_FALLBACK
+    case 'text-to-image': return isNsfw ? T2I_NSFW_FALLBACK : T2I_FALLBACK
+    case 'image-edit': return isNsfw ? EDIT_NSFW_FALLBACK : EDIT_FALLBACK
+    case 'text-to-video': return isNsfw ? T2V_NSFW_FALLBACK : T2V_FALLBACK
+    case 'image-to-video': return isNsfw ? I2V_NSFW_FALLBACK : I2V_FALLBACK
     case 'lora-trainer': return [] // no fallback for trainer
   }
 }
@@ -364,9 +404,9 @@ export function isTopModel(mode: SmartMode, modelId: string): boolean {
   return TOP_MODELS[mode]?.includes(modelId) ?? false
 }
 
-export function getNextFallbackModel(mode: SmartMode, failedModels: string[], currentModel: string): string | null {
+export function getNextFallbackModel(mode: SmartMode, failedModels: string[], currentModel: string, isNsfw = false): string | null {
   if (isTopModel(mode, currentModel)) return null
-  const chain = getFallbackChain(mode)
+  const chain = getFallbackChain(mode, isNsfw)
   const currentIdx = chain.indexOf(currentModel)
   // Try models after current in chain, skipping failed ones
   for (let i = currentIdx + 1; i < chain.length; i++) {
@@ -1126,6 +1166,7 @@ export function isPermanentError(error: unknown): boolean {
       msg.includes('invalid input') ||
       msg.includes('not supported') ||
       msg.includes('deprecated') ||
+      msg.includes('cannot fetch content') ||
       msg.includes('[404]') ||
       msg.includes('[422]')
   }

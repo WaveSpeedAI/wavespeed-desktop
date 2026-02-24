@@ -185,6 +185,11 @@ export interface ElectronAPI {
   sdGetAuxiliaryModelDownloadPath: (type: 'llm' | 'vae') => Promise<{ success: boolean; path?: string; error?: string }>
   sdGetModelsDir: () => Promise<{ success: boolean; path?: string; error?: string }>
   sdExtractBinary: (zipPath: string, destPath: string) => Promise<{ success: boolean; path?: string; error?: string }>
+
+  // Persistent key-value state (survives app restarts)
+  getState: (key: string) => Promise<unknown>
+  setState: (key: string, value: unknown) => Promise<boolean>
+  removeState: (key: string) => Promise<boolean>
 }
 
 export interface WorkflowAPI {

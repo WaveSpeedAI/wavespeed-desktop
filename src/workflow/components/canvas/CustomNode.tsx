@@ -14,9 +14,9 @@ import { WorkflowPromptOptimizer } from './WorkflowPromptOptimizer'
 import { apiClient } from '@/api/client'
 import { MaskEditor } from '@/components/playground/MaskEditor'
 import { SegmentPointPicker, type SegmentPoint } from '../SegmentPointPicker'
-import { Paintbrush, MousePointer2, Dices } from 'lucide-react'
+import { Paintbrush, MousePointer2, Dices, ChevronRight, ChevronDown } from 'lucide-react'
 import { useModelsStore } from '@/stores/modelsStore'
-import { getFormFieldsFromModel } from '@/lib/schemaToForm'
+import { getFormFieldsFromModel, getSingleImageFromValues } from '@/lib/schemaToForm'
 import { convertDesktopModel, formFieldsToModelParamSchema } from '../../lib/model-converter'
 import type { NodeStatus } from '@/workflow/types/execution'
 import type { ParamDefinition, PortDefinition, ModelParamSchema, WaveSpeedModel } from '@/workflow/types/node-defs'
@@ -57,6 +57,36 @@ function paramDefToFormFieldConfig(p: ParamDefinition, nodeType?: string): FormF
   }
 }
 
+/** Convert input PortDefinition to FormFieldConfig so we can use Playground FormField (text, url, or file). */
+function portToFormFieldConfig(port: PortDefinition, nodeType?: string): FormFieldConfig | null {
+  if (port.dataType === 'text' || port.dataType === 'url') {
+    return {
+      name: port.key,
+      type: 'text',
+      label: port.label,
+      required: port.required,
+      placeholder: port.dataType === 'url' ? 'https://...' : undefined
+    }
+  }
+  if (port.dataType === 'image' || port.dataType === 'video' || port.dataType === 'audio' || port.dataType === 'any') {
+    const rule = nodeType ? NODE_INPUT_ACCEPT_RULES[nodeType] : undefined
+    const acceptFromRule = typeof rule === 'string' ? rule : rule?.[port.key]
+    const accept = acceptFromRule
+      ?? (port.dataType === 'image' ? 'image/*'
+        : port.dataType === 'video' ? 'video/*'
+        : port.dataType === 'audio' ? 'audio/*'
+        : '*/*')
+    return {
+      name: port.key,
+      type: 'file',
+      label: port.label,
+      required: port.required,
+      accept
+    }
+  }
+  return null
+}
+
 /* ── types ───────────────────────────────────────────────────────────── */
 
 interface CustomNodeData {
@@ -89,7 +119,7 @@ const NODE_INPUT_ACCEPT_RULES: Record<string, string | Record<string, string>> =
   'free-tool/face-enhancer': { input: 'image/*' },
   'free-tool/video-enhancer': { input: 'video/*' },
   'free-tool/face-swapper': { source: 'image/*', target: 'image/*' },
-  'free-tool/image-eraser': { input: 'image/*', mask: 'image/*' },
+  'free-tool/image-eraser': { input: 'image/*', mask_image: 'image/*' },
   'free-tool/segment-anything': { input: 'image/*' },
   'free-tool/image-converter': { input: 'image/*' },
   'free-tool/video-converter': { input: 'video/*' },
@@ -153,6 +183,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
   const allLastResults = useExecutionStore(s => s.lastResults)
   const [hovered, setHovered] = useState(false)
   const [segmentPointPickerOpen, setSegmentPointPickerOpen] = useState(false)
+  const [resultsExpanded, setResultsExpanded] = useState(false)
   const storeModels = useModelsStore(s => s.models)
   const getModelById = useModelsStore(s => s.getModelById)
   const fetchModels = useModelsStore(s => s.fetchModels)
@@ -390,15 +421,24 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
   const removeNode = useWorkflowStore(s => s.removeNode)
   const { continueFrom } = useExecutionStore()
 
+  // Used only for storage/path features (e.g. save upload, open folder); execution does not require save.
   const ensureWorkflowId = async () => {
     let wfId = workflowId
-    // Executor reads from persisted workflow DB, so save first when dirty. forRun: true = auto-name untitled, no prompt.
     if (!wfId || isDirty) {
       await saveWorkflow({ forRun: true })
       wfId = useWorkflowStore.getState().workflowId
     }
     return wfId
   }
+
+  const handleWorkflowUploadFile = useCallback(async (file: File): Promise<string> => {
+    const wfId = await ensureWorkflowId()
+    if (!wfId) throw new Error('Workflow not saved yet.')
+    const { storageIpc } = await import('../../ipc/ipc-client')
+    const data = await file.arrayBuffer()
+    const localPath = await storageIpc.saveUploadedFile(wfId, id, file.name, data)
+    return `local-asset://${encodeURIComponent(localPath)}`
+  }, [ensureWorkflowId, id])
 
   const inlineInputPreviewUrl = useMemo(() => {
     if (!isPreviewNode) return ''
@@ -496,17 +536,14 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
     if (!running) {
       await optimizeOnRunIfEnabled()
     }
-    const wfId = await ensureWorkflowId()
-    if (!wfId) return
+    const wfId = workflowId ?? ''
     running ? cancelNode(wfId, id) : runNode(wfId, id)
   }
 
   const onRunFromHere = async (e: React.MouseEvent) => {
     e.stopPropagation()
     await optimizeOnRunIfEnabled()
-    const wfId = await ensureWorkflowId()
-    if (!wfId) return
-    continueFrom(wfId, id)
+    continueFrom(workflowId ?? '', id)
   }
 
   const onDelete = (e: React.MouseEvent) => {
@@ -716,7 +753,6 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
                 if (!storeModel) return
                 handleInlineSelectModel(convertDesktopModel(storeModel))
               }}
-              disabled={running}
             />
           </div>
         )}
@@ -746,9 +782,8 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
                         field={field}
                         value={formValues[field.name]}
                         onChange={(v) => setParam(field.name, v)}
-                        disabled={running}
                         modelType={currentModel?.type}
-                        imageValue={field.name === 'prompt' ? (formValues['image'] as string) : undefined}
+                        imageValue={field.name === 'prompt' ? getSingleImageFromValues(formValues) : undefined}
                         formValues={formValues}
                       />
                     </div>
@@ -785,7 +820,6 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
                             field={field}
                             value={formValues[field.name]}
                             onChange={(v) => setParam(field.name, v)}
-                            disabled={running}
                             modelType={currentModel?.type}
                             formValues={formValues}
                             hideLabel
@@ -868,6 +902,8 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
           if (data.nodeType === 'input/media-upload') return null
           const hid = `input-${inp.key}`
           const conn = connectedSet.has(hid)
+          const portFieldConfig = portToFormFieldConfig(inp, data.nodeType)
+          const useFormFieldForPort = portFieldConfig != null && !conn
           if (!isPreviewNode) {
             return (
               <Row key={inp.key} handleId={hid} handleType="target" connected={conn} media>
@@ -877,15 +913,26 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
                   </span>
                   {conn
                     ? <ConnectedInputControl nodeId={id} handleId={hid} edges={edges} nodes={useWorkflowStore.getState().nodes} onPreview={openPreview} />
-                    : <div className="flex-1 min-w-0"><InputPortControl
-                      nodeId={id}
-                      port={inp}
-                      value={data.params[inp.key]}
-                      onChange={v => setParam(inp.key, v)}
-                      onPreview={openPreview}
-                      referenceImageUrl={data.nodeType === 'free-tool/image-eraser' && inp.key === 'mask' ? String(data.params.input ?? '') : undefined}
-                      showDrawMaskButton={data.nodeType === 'free-tool/image-eraser' && inp.key === 'mask'}
-                    /></div>}
+                    : useFormFieldForPort
+                      ? <div className="flex-1 min-w-0 nodrag" onClick={e => e.stopPropagation()}>
+                          <FormField
+                            field={portFieldConfig}
+                            value={formValues[inp.key]}
+                            onChange={v => setParam(inp.key, v)}
+                            formValues={formValues}
+                            hideLabel
+                            onUploadFile={portFieldConfig.type === 'file' ? handleWorkflowUploadFile : undefined}
+                          />
+                        </div>
+                      : <div className="flex-1 min-w-0"><InputPortControl
+                          nodeId={id}
+                          port={inp}
+                          value={data.params[inp.key]}
+                          onChange={v => setParam(inp.key, v)}
+                          onPreview={openPreview}
+                          referenceImageUrl={data.nodeType === 'free-tool/image-eraser' && inp.key === 'mask_image' ? String(data.params.input ?? '') : undefined}
+                          showDrawMaskButton={data.nodeType === 'free-tool/image-eraser' && inp.key === 'mask_image'}
+                        /></div>}
                 </div>
               </Row>
             )
@@ -901,16 +948,27 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
                 </div>
                 {conn
                   ? <ConnectedInputControl nodeId={id} handleId={hid} edges={edges} nodes={useWorkflowStore.getState().nodes} onPreview={openPreview} showPreview={false} />
-                  : <InputPortControl
-                    nodeId={id}
-                    port={inp}
-                    value={data.params[inp.key]}
-                    onChange={v => setParam(inp.key, v)}
-                    onPreview={openPreview}
-                    referenceImageUrl={data.nodeType === 'free-tool/image-eraser' && inp.key === 'mask' ? String(data.params.input ?? '') : undefined}
-                    showDrawMaskButton={data.nodeType === 'free-tool/image-eraser' && inp.key === 'mask'}
-                    showPreview={false}
-                  />}
+                    : useFormFieldForPort
+                    ? <div className="w-full min-w-0 nodrag" onClick={e => e.stopPropagation()}>
+                        <FormField
+                          field={portFieldConfig}
+                          value={formValues[inp.key]}
+                          onChange={v => setParam(inp.key, v)}
+                          formValues={formValues}
+                          hideLabel
+                          onUploadFile={portFieldConfig.type === 'file' ? handleWorkflowUploadFile : undefined}
+                        />
+                      </div>
+                    : <InputPortControl
+                        nodeId={id}
+                        port={inp}
+                        value={data.params[inp.key]}
+                        onChange={v => setParam(inp.key, v)}
+                        onPreview={openPreview}
+                        referenceImageUrl={data.nodeType === 'free-tool/image-eraser' && inp.key === 'mask_image' ? String(data.params.input ?? '') : undefined}
+                        showDrawMaskButton={data.nodeType === 'free-tool/image-eraser' && inp.key === 'mask_image'}
+                        showPreview={false}
+                      />}
               </div>
             </Row>
           )
@@ -996,7 +1054,6 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
                     field={fieldConfig}
                     value={formValues[p.key]}
                     onChange={(v) => setParam(p.key, v)}
-                    disabled={running}
                     formValues={formValues}
                   />
                 </div>
@@ -1021,7 +1078,6 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
                       field={fieldConfig}
                       value={formValues[p.key]}
                       onChange={(v) => setParam(p.key, v)}
-                      disabled={running}
                       formValues={formValues}
                     />
                   </div>
@@ -1090,10 +1146,22 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
             </div>
           </div>
         )}
-        {/* Results — at bottom of card, merged into normal view */}
+        {/* Results — at bottom of card, collapsed by default */}
         {data.nodeType !== 'annotation' && (
           <div className="nodrag min-h-0 flex flex-col flex-1 mt-2 border-t border-border/50 pt-2">
-            <ResultsPanel embeddedInNode nodeId={id} />
+            <button
+              type="button"
+              onClick={() => setResultsExpanded(prev => !prev)}
+              className="flex items-center gap-1.5 w-full text-left py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {resultsExpanded ? <ChevronDown className="w-3.5 h-3.5 shrink-0" /> : <ChevronRight className="w-3.5 h-3.5 shrink-0" />}
+              <span>{t('workflow.results', 'Results')}</span>
+            </button>
+            {resultsExpanded && (
+              <div className="min-h-0 flex flex-col flex-1">
+                <ResultsPanel embeddedInNode nodeId={id} />
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -1645,24 +1713,45 @@ function ConnectedInputControl({
     <div className="w-full space-y-2">
       <LinkedBadge nodeId={nodeId} handleId={handleId} edges={edges} nodes={nodes} onPreview={onPreview} />
       {showPreview && previewUrl && onPreview && (
-        <div className="mt-1" onClick={e => e.stopPropagation()}>
+        <div className="mt-1 flex items-center gap-1" onClick={e => e.stopPropagation()}>
           {isImage && (
-            <img
-              src={previewUrl}
-              alt=""
+            <button
+              type="button"
               onClick={e => { e.stopPropagation(); onPreview(previewUrl) }}
-              className="w-full max-h-[420px] rounded-lg border border-[hsl(var(--border))] object-contain cursor-pointer hover:ring-2 hover:ring-blue-500/40 transition-shadow bg-black/5"
-            />
+              className="relative rounded-md border border-[hsl(var(--border))] bg-muted/50 overflow-hidden h-16 w-16 flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-blue-500/40 transition-shadow"
+            >
+              <img src={previewUrl} alt="" className="w-full h-full object-cover" />
+            </button>
           )}
           {isVideo && (
-            <video
-              src={previewUrl}
-              controls
-              className="w-full max-h-[420px] rounded-lg border border-[hsl(var(--border))] object-contain"
-            />
+            <button
+              type="button"
+              onClick={e => { e.stopPropagation(); onPreview(previewUrl) }}
+              className="relative rounded-md border border-[hsl(var(--border))] bg-muted/50 overflow-hidden h-16 w-16 flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-blue-500/40 transition-shadow"
+            >
+              <video
+                src={previewUrl}
+                className="w-full h-full object-cover"
+                muted
+                playsInline
+                onMouseEnter={(e) => e.currentTarget.play()}
+                onMouseLeave={(e) => {
+                  e.currentTarget.pause()
+                  e.currentTarget.currentTime = 0
+                }}
+              />
+            </button>
           )}
           {isAudio && (
-            <audio src={previewUrl} controls className="w-full max-h-10 rounded-lg border border-[hsl(var(--border))]" />
+            <button
+              type="button"
+              onClick={e => { e.stopPropagation(); onPreview(previewUrl) }}
+              className="relative rounded-md border border-[hsl(var(--border))] bg-muted/50 overflow-hidden h-16 w-16 flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-blue-500/40 transition-shadow flex items-center justify-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-[hsl(var(--muted-foreground))]">
+                <path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" />
+              </svg>
+            </button>
           )}
         </div>
       )}
@@ -2556,19 +2645,25 @@ function TextInputBody({ params, onParamChange }: {
         inactive={!optimizeOnRun}
       />
 
-      {/* Textarea */}
-      <CompTextarea
+      {/* Textarea — use Playground FormField for consistency */}
+      <FormField
+        field={{
+          name: 'text',
+          type: 'textarea',
+          label: t('workflow.textInput.text', 'Text'),
+          required: false,
+          placeholder: t('workflow.textInput.enterTextOrPrompt', 'Enter text or prompt...')
+        }}
         value={text}
-        onChange={e => {
+        onChange={v => {
           const { lastManualOptimizedText: _manual, ...rest } = optimizerSettings
           onParamChange({
-            text: e.target.value,
+            text: v,
             __optimizerSettings: rest
           })
         }}
-        placeholder={t('workflow.textInput.enterTextOrPrompt', 'Enter text or prompt...')}
-        rows={4}
-        className="nodrag w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2.5 py-2 text-xs text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500 placeholder:text-[hsl(var(--muted-foreground))] resize-y min-h-[80px] max-h-[400px]"
+        formValues={params}
+        hideLabel
       />
     </div>
   )

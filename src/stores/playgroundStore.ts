@@ -3,8 +3,103 @@ import { apiClient } from '@/api/client'
 import type { Model } from '@/types/model'
 import type { PredictionResult } from '@/types/prediction'
 import type { FormFieldConfig } from '@/lib/schemaToForm'
+import { normalizePayloadArrays } from '@/lib/schemaToForm'
 import type { BatchConfig, BatchState, BatchResult } from '@/types/batch'
 import { DEFAULT_BATCH_CONFIG } from '@/types/batch'
+import { persistentStorage } from '@/lib/storage'
+
+/* ── Playground session persistence ───────────────────────────────────── */
+
+const PLAYGROUND_SESSION_KEY = 'wavespeed_playground_session_v1'
+
+interface PersistedPlaygroundTab {
+  id: string
+  selectedModel: Model | null
+  formValues: Record<string, unknown>
+  formFields: FormFieldConfig[]
+  batchConfig: BatchConfig
+  batchResults: BatchResult[]
+}
+
+interface PersistedPlaygroundSession {
+  version: 1
+  activeTabId: string | null
+  tabCounter: number
+  tabs: PersistedPlaygroundTab[]
+}
+
+function parseTabCounter(tabId: string): number {
+  const m = /^tab-(\d+)$/.exec(tabId)
+  return m ? Number(m[1]) : 0
+}
+
+function parsePlaygroundSession(raw: unknown): { tabs: PlaygroundTab[]; activeTabId: string; tabCounter: number } | null {
+  try {
+    if (!raw) return null
+    const parsed = (typeof raw === 'string' ? JSON.parse(raw) : raw) as Partial<PersistedPlaygroundSession>
+    if (parsed.version !== 1 || !Array.isArray(parsed.tabs) || parsed.tabs.length === 0) return null
+    const tabs: PlaygroundTab[] = parsed.tabs.map((t: PersistedPlaygroundTab) => ({
+      id: t.id,
+      selectedModel: t.selectedModel ?? null,
+      formValues: t.formValues ?? {},
+      formFields: t.formFields ?? [],
+      validationErrors: {},
+      isRunning: false,
+      currentPrediction: null,
+      error: null,
+      outputs: [],
+      batchConfig: t.batchConfig ?? { ...DEFAULT_BATCH_CONFIG },
+      batchState: null,
+      batchResults: t.batchResults ?? [],
+      uploadingCount: 0
+    }))
+    const activeTabId = typeof parsed.activeTabId === 'string' && tabs.some(tab => tab.id === parsed.activeTabId)
+      ? parsed.activeTabId
+      : tabs[0].id
+    const tabCounter = typeof parsed.tabCounter === 'number' ? parsed.tabCounter : Math.max(1, ...tabs.map(t => parseTabCounter(t.id)))
+    return { tabs, activeTabId, tabCounter }
+  } catch {
+    return null
+  }
+}
+
+export function persistPlaygroundSession(): void {
+  try {
+    const state = usePlaygroundStore.getState()
+    const payload: PersistedPlaygroundSession = {
+      version: 1,
+      activeTabId: state.activeTabId,
+      tabCounter,
+      tabs: state.tabs.map(tab => ({
+        id: tab.id,
+        selectedModel: tab.selectedModel,
+        formValues: tab.formValues,
+        formFields: tab.formFields,
+        batchConfig: tab.batchConfig,
+        batchResults: tab.batchResults
+      }))
+    }
+    persistentStorage.set(PLAYGROUND_SESSION_KEY, payload)
+  } catch {
+    // ignore
+  }
+}
+
+/** Hydrate playground session from persistent storage (async). */
+export async function hydratePlaygroundSession(): Promise<void> {
+  try {
+    const stored = await persistentStorage.get(PLAYGROUND_SESSION_KEY)
+    if (!stored) return
+    const session = parsePlaygroundSession(stored)
+    if (!session) return
+    const current = usePlaygroundStore.getState()
+    if (current.tabs.length > 0) return
+    tabCounter = session.tabCounter
+    usePlaygroundStore.setState({ tabs: session.tabs, activeTabId: session.activeTabId })
+  } catch {
+    // ignore
+  }
+}
 
 interface PlaygroundTab {
   id: string
@@ -87,9 +182,14 @@ function createEmptyTab(id: string, model?: Model): PlaygroundTab {
 
 let tabCounter = 0
 
+const initialSession = parsePlaygroundSession(persistentStorage.getSync(PLAYGROUND_SESSION_KEY))
+if (initialSession) {
+  tabCounter = initialSession.tabCounter
+}
+
 export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
-  tabs: [],
-  activeTabId: null,
+  tabs: initialSession?.tabs ?? [],
+  activeTabId: initialSession?.activeTabId ?? null,
 
   createTab: (model?: Model) => {
     const id = `tab-${++tabCounter}`
@@ -278,9 +378,10 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
           cleanedInput[key] = value
         }
       }
+      const normalizedInput = normalizePayloadArrays(cleanedInput, formFields)
 
-      const result = await apiClient.run(selectedModel.model_id, cleanedInput, {
-        enableSyncMode: cleanedInput.enable_sync_mode as boolean
+      const result = await apiClient.run(selectedModel.model_id, normalizedInput, {
+        enableSyncMode: normalizedInput.enable_sync_mode as boolean
       })
 
       // Update the specific tab (it might not be active anymore)
@@ -368,7 +469,7 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
     const activeTab = get().getActiveTab()
     if (!activeTab) return
 
-    const { selectedModel } = activeTab
+    const { selectedModel, formFields } = activeTab
     if (!selectedModel) {
       set(state => ({
         tabs: state.tabs.map(tab =>
@@ -442,9 +543,10 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
 
     const promises = inputs.map(async (input, i) => {
       const startTime = Date.now()
+      const normalizedInput = normalizePayloadArrays(input, formFields)
       try {
-        const result = await apiClient.run(selectedModel.model_id, input, {
-          enableSyncMode: input.enable_sync_mode as boolean
+        const result = await apiClient.run(selectedModel.model_id, normalizedInput, {
+          enableSyncMode: normalizedInput.enable_sync_mode as boolean
         })
         const timing = Date.now() - startTime
 

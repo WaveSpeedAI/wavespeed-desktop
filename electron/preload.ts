@@ -230,7 +230,12 @@ const electronAPI = {
   sdGetModelsDir: (): Promise<{ success: boolean; path?: string; error?: string }> =>
     ipcRenderer.invoke('sd-get-models-dir'),
   sdExtractBinary: (zipPath: string, destPath: string): Promise<{ success: boolean; path?: string; error?: string }> =>
-    ipcRenderer.invoke('sd-extract-binary', zipPath, destPath)
+    ipcRenderer.invoke('sd-extract-binary', zipPath, destPath),
+
+  // Persistent key-value state (survives app restarts, unlike renderer localStorage)
+  getState: (key: string): Promise<unknown> => ipcRenderer.invoke('get-state', key),
+  setState: (key: string, value: unknown): Promise<boolean> => ipcRenderer.invoke('set-state', key, value),
+  removeState: (key: string): Promise<boolean> => ipcRenderer.invoke('remove-state', key)
 }
 
 // ─── Workflow API (isolated namespace to avoid collision with electronAPI) ────

@@ -52,6 +52,32 @@ function resolveStoreExport<TState>(mod: unknown, name: string): StoreWithGetSta
   return null
 }
 
+/* ── Default content for new workflows ─────────────────────────────────── */
+
+const DEFAULT_NEW_WORKFLOW_MODEL = 'bytedance/seedream-v4.5'
+const DEFAULT_NEW_WORKFLOW_PROMPT = 'An ethereal female elf with long platinum-blonde hair and pointed ears, wearing an elegant dress made of leaves and vines. She stands barefoot in an ancient forest illuminated by magical light spots, one hand gently touching a glowing mushroom. Her expression is otherworldly and curious. Dreamy soft focus, Tyndall effect light beams filtering through the canopy, magical realism photography.'
+
+/** Returns one AI task node (and no edges) for a new workflow. */
+export function getDefaultNewWorkflowContent(): { nodes: ReactFlowNode[]; edges: ReactFlowEdge[] } {
+  const nodeId = uuid()
+  return {
+    nodes: [{
+      id: nodeId,
+      type: 'custom',
+      position: { x: 120, y: 120 },
+      data: {
+        nodeType: 'ai-task/run',
+        params: { modelId: DEFAULT_NEW_WORKFLOW_MODEL, prompt: DEFAULT_NEW_WORKFLOW_PROMPT },
+        label: '',
+        paramDefinitions: [],
+        inputDefinitions: [],
+        outputDefinitions: []
+      }
+    }],
+    edges: []
+  }
+}
+
 /* ── Undo / Redo history (snapshot-based) ──────────────────────────────── */
 
 const MAX_UNDO = 50
@@ -338,11 +364,6 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   },
 
   removeEdge: (edgeId) => {
-    // Guard: don't remove edges while nodes are running
-    if (getActiveExecutions().size > 0) {
-      alert('Cannot modify connections while workflow is running.')
-      return
-    }
     const { nodes, edges } = get()
     pushUndo({ nodes, edges })
     set(state => ({ edges: state.edges.filter(e => e.id !== edgeId), isDirty: true, canUndo: true, canRedo: false }))
@@ -350,7 +371,6 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
 
   removeEdgesByIds: (edgeIds) => {
     if (edgeIds.length === 0) return
-    if (getActiveExecutions().size > 0) return
     const { nodes, edges } = get()
     pushUndo({ nodes, edges })
     const removeSet = new Set(edgeIds)
@@ -487,7 +507,8 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
 
   newWorkflow: async (name) => {
     const wf = await workflowIpc.create({ name })
-    set({ workflowId: wf.id, workflowName: wf.name, nodes: [], edges: [], isDirty: false })
+    const { nodes, edges } = getDefaultNewWorkflowContent()
+    set({ workflowId: wf.id, workflowName: wf.name, nodes, edges, isDirty: false })
   },
 
   setWorkflowName: (name) => set({ workflowName: name, isDirty: true }),
@@ -504,7 +525,8 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     }
   },
 
-  reset: () => set({
-    nodes: [], edges: [], workflowId: null, workflowName: 'Untitled Workflow', isDirty: false
-  })
+  reset: () => {
+    const { nodes, edges } = getDefaultNewWorkflowContent()
+    set({ nodes, edges, workflowId: null, workflowName: 'Untitled Workflow', isDirty: false })
+  }
 }))

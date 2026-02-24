@@ -110,7 +110,7 @@ export class TextInputHandler extends BaseNodeHandler {
     if (signal.aborted) throw new Error('Aborted')
 
     const client = getWaveSpeedClient()
-    const result = await client.run(OPTIMIZER_MODEL, apiParams)
+    const result = await client.run(OPTIMIZER_MODEL, apiParams, { signal })
 
     if (result.outputs && result.outputs.length > 0) {
       const output = result.outputs[0]

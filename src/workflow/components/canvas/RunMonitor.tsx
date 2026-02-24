@@ -91,7 +91,7 @@ function OutputPreview({ urls, durationMs, cost, label = 'Output' }: {
   )
 }
 
-/** Fallback output UI when we have lastResults but no persisted record (e.g. browser run or record not yet saved). */
+/** Fallback output UI when we have lastResults but no persisted record yet. */
 function LastResultOutput({ nodeId }: { nodeId: string }) {
   const lastResults = useExecutionStore(s => s.lastResults[nodeId] ?? [])
   const latest = lastResults[0]

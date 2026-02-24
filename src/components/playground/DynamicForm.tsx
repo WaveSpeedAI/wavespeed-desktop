@@ -1,6 +1,6 @@
 import { useMemo, useEffect, useState, useRef } from 'react'
 import type { Model } from '@/types/model'
-import { schemaToFormFields, getDefaultValues, type FormFieldConfig } from '@/lib/schemaToForm'
+import { schemaToFormFields, getDefaultValues, getSingleImageFromValues, type FormFieldConfig } from '@/lib/schemaToForm'
 import { FormField } from './FormField'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
@@ -149,7 +149,7 @@ export function DynamicForm({
                       disabled={disabled}
                       error={validationErrors[field.name]}
                       modelType={model.type}
-                      imageValue={field.name === 'prompt' ? (values['image'] as string) : undefined}
+                      imageValue={field.name === 'prompt' ? getSingleImageFromValues(values) : undefined}
                       hideLabel
                       formValues={values}
                       onUploadingChange={onUploadingChange}
@@ -170,7 +170,7 @@ export function DynamicForm({
               disabled={disabled}
               error={validationErrors[field.name]}
               modelType={model.type}
-              imageValue={field.name === 'prompt' ? (values['image'] as string) : undefined}
+              imageValue={field.name === 'prompt' ? getSingleImageFromValues(values) : undefined}
               formValues={values}
               onUploadingChange={onUploadingChange}
             />

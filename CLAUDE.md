@@ -48,7 +48,7 @@ wavespeed-desktop/
 │   │   ├── types/        # workflow, node-defs, execution, ipc
 │   │   ├── ipc/          # ipc-client.ts (invoke workflow/execution/models/cost/history IPC)
 │   │   ├── hooks/        # useUndoRedo, useFreeToolListener
-│   │   ├── browser/     # run-in-browser.ts (in-process executor for browser mode)
+│   │   ├── browser/     # run-in-browser.ts (execution), workflow-api.ts, workflow-storage.ts
 │   │   └── lib/         # free-tool-runner, model-converter, outputDisplay, topological
 │   └── workers/          # Web Workers (upscaler, backgroundRemover, imageEraser, faceEnhancer, segmentAnything, ffmpeg)
 ├── .github/workflows/    # GitHub Actions for CI/CD
@@ -72,7 +72,7 @@ wavespeed-desktop/
 - **`src/workflow/stores/execution.store.ts`**: Execution state (running, results, history, progress)
 - **`src/workflow/stores/ui.store.ts`**: Workflow UI state (selected node, panels, add-node palette)
 - **`src/workflow/components/panels/NodeConfigPanel.tsx`**: Model selector for AI Task nodes; categories sorted by popularity (model count), recent models, search
-- **`src/workflow/components/panels/ResultsPanel.tsx`**: Execution results and per-node history; shows lastResults when history is empty (e.g. browser run)
+- **`src/workflow/components/panels/ResultsPanel.tsx`**: Execution results and per-node history; shows lastResults when history is empty
 - **`src/workflow/components/panels/CostPanel.tsx`**: Cost display (informational; no estimate UI or budget blocking)
 - **`src/workflow/components/panels/SettingsPanel.tsx`**: Workflow settings (API keys, etc.)
 - **`src/workflow/components/canvas/WorkflowCanvas.tsx`**: React Flow canvas, add-node palette, node/edge rendering
@@ -82,8 +82,8 @@ wavespeed-desktop/
 - **`src/workflow/components/canvas/AnnotationNode.tsx`**: Annotation node for notes
 - **`src/workflow/components/canvas/RunMonitor.tsx`**: Execution Monitor (bottom, collapsible); session cards and node rows with output preview (image/video/audio/text via outputDisplay); Lucide ChevronUp/ChevronDown for expand/collapse
 - **`src/workflow/lib/outputDisplay.ts`**: Shared output type classification (image/video/audio/text/3d/file) and data: URL handling for Results panel and RunMonitor
-- **`src/workflow/lib/topological.ts`**: Shared topological sort for workflow execution order (browser and main)
-- **`src/workflow/browser/run-in-browser.ts`**: In-process workflow executor for browser mode (AI task via apiClient, free-tool nodes, I/O nodes)
+- **`src/workflow/lib/topological.ts`**: Topological sort for workflow execution order
+- **`src/workflow/browser/run-in-browser.ts`**: Workflow execution (browser only): AI task via apiClient, free-tool nodes, I/O nodes
 - **`src/workflow/ipc/ipc-client.ts`**: Typed IPC client for workflow, execution, models, cost, history, registry, settings
 - **`src/workflow/types/node-defs.ts`**: NodeTypeDefinition, WaveSpeedModel, ParamDefinition
 - **`src/workflow/types/ipc.ts`**: IPC channel types (workflow:*, execution:*, models:*, cost:*, history:*, etc.)
@@ -262,7 +262,7 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - Workflow page is at `/workflow`; rendered persistently in Layout (like free-tools). Sidebar has "Workflow" (nav.workflow) with GitBranch icon under Tools. Layout auto-collapses sidebar when entering workflow.
 - Workflow uses IPC from main: `workflow:create|save|load|list|rename|delete`, `execution:run-all|run-node|continue-from|retry|cancel`, `models:list|search|refresh|get-schema`, `cost:get-budget|set-budget|get-daily-spend`, `history:list|set-current|star|score`, `registry:get-all`, `settings:get-api-keys|set-api-keys`. Electron main initializes workflow module (sql.js DB, node registry, IPC handlers) on app load. Approximate cost estimate UI has been removed; cost is informational only.
 - Execution Monitor is a bottom bar (collapsible via header chevron). When expanded it shows run sessions with node rows; expanding a node shows output preview (image/video/audio/text) from persisted history or lastResults. Uses `src/workflow/lib/outputDisplay.ts` for output type classification.
-- Workflow can run in browser: `runAllInBrowser` in execution store uses `src/workflow/browser/run-in-browser.ts` and topological sort; no execution history persisted in browser, but lastResults and RunMonitor show latest run output.
+- Workflow execution runs only in the browser (runAllInBrowser / executeWorkflowInBrowser); no main-process execution.
 - Playground tab switching preserves form values: URL→model sync only runs when the active tab has no model (so switching tabs never overwrites the tab's model or wipes form).
 - Workflow model selector (NodeConfigPanel): categories are sorted by popularity (model count per category, descending), then alphabetically for ties; "全部" / "All" stays first.
 - AI Task node (electron/workflow/nodes/ai-task/run.ts) normalizes API outputs: if the API returns `outputs: [{ url: "..." }]` (e.g. z-image/turbo), resultUrls are extracted from object.url so Results and Execution Monitor show correct previews.

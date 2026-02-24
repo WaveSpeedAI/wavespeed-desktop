@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { usePlaygroundStore } from '@/stores/playgroundStore'
+import { usePlaygroundStore, persistPlaygroundSession, hydratePlaygroundSession } from '@/stores/playgroundStore'
 import { useModelsStore } from '@/stores/modelsStore'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
 import { useTemplateStore } from '@/stores/templateStore'
@@ -85,6 +85,24 @@ export function PlaygroundPage() {
     init()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Only run once on mount
+
+  // Hydrate playground session from Electron persistent storage on first mount
+  useEffect(() => {
+    hydratePlaygroundSession()
+  }, [])
+
+  // Persist playground tabs (debounced) so they restore on next visit
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>
+    const unsub = usePlaygroundStore.subscribe(() => {
+      clearTimeout(timer)
+      timer = setTimeout(persistPlaygroundSession, 300)
+    })
+    return () => {
+      clearTimeout(timer)
+      unsub()
+    }
+  }, [])
 
   // Load API key and fetch models on mount
   useEffect(() => {

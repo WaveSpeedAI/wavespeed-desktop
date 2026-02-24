@@ -30,9 +30,10 @@ function loadApiKeyFromDesktopSettings(): string {
 /**
  * Lightweight wrapper that mimics the Desktop apiClient's run/uploadFile interface
  * for use in the workflow engine's main process.
+ * run() accepts an optional AbortSignal so Stop can cancel in-flight requests and polling.
  */
 export interface WaveSpeedMainClient {
-  run(model: string, input: Record<string, unknown>): Promise<{ outputs: unknown[]; [key: string]: unknown }>
+  run(model: string, input: Record<string, unknown>, options?: { signal?: AbortSignal }): Promise<{ outputs: unknown[]; [key: string]: unknown }>
   uploadFile(file: File, filename: string): Promise<string>
 }
 
@@ -45,17 +46,37 @@ export function getWaveSpeedClient(): WaveSpeedMainClient {
   const BASE_URL = 'https://api.wavespeed.ai'
 
   _wsClient = {
-    async run(model: string, input: Record<string, unknown>) {
+    async run(model: string, input: Record<string, unknown>, options?: { signal?: AbortSignal }) {
+      const signal = options?.signal
+
+      /** Throw AbortError as soon as signal is aborted (works even if fetch ignores signal). */
+      function throwIfAborted(): void {
+        if (signal?.aborted) throw new DOMException('Cancelled', 'AbortError')
+      }
+
+      /** Race a promise with the abort signal so we stop immediately on Stop. */
+      async function withAbort<T>(p: Promise<T>): Promise<T> {
+        throwIfAborted()
+        if (!signal) return p
+        const abortPromise = new Promise<never>((_, reject) => {
+          signal.addEventListener('abort', () => reject(new DOMException('Cancelled', 'AbortError')), { once: true })
+        })
+        return Promise.race([p, abortPromise])
+      }
+
       // Submit prediction
-      const submitRes = await fetch(`${BASE_URL}/api/v3/${model}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-          'X-Client-Name': 'wavespeed-desktop-workflow'
-        },
-        body: JSON.stringify(input)
-      })
+      const submitRes = await withAbort(
+        fetch(`${BASE_URL}/api/v3/${model}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
+            'X-Client-Name': 'wavespeed-desktop-workflow'
+          },
+          body: JSON.stringify(input),
+          ...(signal && { signal })
+        })
+      )
       const submitData = await submitRes.json() as { code: number; message: string; data: { id: string; status: string; outputs?: unknown[] } }
       if (submitData.code !== 200) throw new Error(submitData.message || 'Failed to run prediction')
 
@@ -66,18 +87,23 @@ export function getWaveSpeedClient(): WaveSpeedMainClient {
       const startTime = Date.now()
       const timeout = 600000 // 10 min
       while (true) {
+        throwIfAborted()
         if (Date.now() - startTime > timeout) throw new Error('Prediction timed out')
 
-        const pollRes = await fetch(`${BASE_URL}/api/v3/predictions/${requestId}/result`, {
-          headers: { 'Authorization': `Bearer ${apiKey}` }
-        })
+        const pollRes = await withAbort(
+          fetch(`${BASE_URL}/api/v3/predictions/${requestId}/result`, {
+            headers: { 'Authorization': `Bearer ${apiKey}` },
+            ...(signal && { signal })
+          })
+        )
         const pollData = await pollRes.json() as { code: number; data: { status: string; outputs?: unknown[]; error?: string } }
         if (pollData.code !== 200) throw new Error('Failed to get result')
 
         if (pollData.data.status === 'completed') return pollData.data as { outputs: unknown[] }
         if (pollData.data.status === 'failed') throw new Error(pollData.data.error || 'Prediction failed')
 
-        await new Promise(r => setTimeout(r, 1000))
+        // Wait 1s but bail out immediately if aborted
+        await withAbort(new Promise(r => setTimeout(r, 1000)))
       }
     },
 

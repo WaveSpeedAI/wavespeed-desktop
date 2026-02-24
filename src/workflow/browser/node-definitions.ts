@@ -33,7 +33,7 @@ export const textInputDef: NodeTypeDefinition = {
 export const aiTaskDef: NodeTypeDefinition = {
   type: 'ai-task/run',
   category: 'ai-task',
-  label: 'Generate',
+  label: '',
   inputs: [],
   outputs: [{ key: 'output', label: 'Output', dataType: 'url', required: true }],
   params: [
@@ -178,7 +178,7 @@ export const imageEraserDef: NodeTypeDefinition = {
   label: 'Image Eraser',
   inputs: [
     { key: 'input', label: 'Image', dataType: 'image', required: true },
-    { key: 'mask', label: 'Mask', dataType: 'image', required: true }
+    { key: 'mask_image', label: 'Mask', dataType: 'image', required: true }
   ],
   outputs: [{ key: 'output', label: 'Output', dataType: 'image', required: true }],
   params: []
@@ -297,6 +297,35 @@ export const mediaMergerDef: NodeTypeDefinition = {
   ]
 }
 
+// ─── Helper / processing ──────────────────────────────────────────────────
+/** Concatenate multiple values into one array. Connect any number of inputs; empty slots are skipped. */
+export const concatDef: NodeTypeDefinition = {
+  type: 'processing/concat',
+  category: 'processing',
+  label: 'Concat',
+  inputs: [
+    { key: 'value1', label: 'Value 1', dataType: 'any', required: true },
+    { key: 'value2', label: 'Value 2', dataType: 'any', required: true },
+    { key: 'value3', label: 'Value 3', dataType: 'any', required: false },
+    { key: 'value4', label: 'Value 4', dataType: 'any', required: false },
+    { key: 'value5', label: 'Value 5', dataType: 'any', required: false }
+  ],
+  outputs: [{ key: 'output', label: 'Array', dataType: 'any', required: true }],
+  params: []
+}
+
+/** Select one value from an array by index (0-based). Connect an array output (e.g. from Concat). */
+export const selectDef: NodeTypeDefinition = {
+  type: 'processing/select',
+  category: 'processing',
+  label: 'Select',
+  inputs: [{ key: 'input', label: 'Array', dataType: 'any', required: true }],
+  outputs: [{ key: 'output', label: 'Value', dataType: 'any', required: true }],
+  params: [
+    { key: 'index', label: 'Index', type: 'number', default: 0, connectable: false, validation: { min: 0, step: 1 } }
+  ]
+}
+
 // ─── All definitions (registry:get-all) ───────────────────────────────────
 export const BROWSER_NODE_DEFINITIONS: NodeTypeDefinition[] = [
   mediaUploadDef,
@@ -315,5 +344,7 @@ export const BROWSER_NODE_DEFINITIONS: NodeTypeDefinition[] = [
   audioConverterDef,
   imageConverterDef,
   mediaTrimmerDef,
-  mediaMergerDef
+  mediaMergerDef,
+  concatDef,
+  selectDef
 ]

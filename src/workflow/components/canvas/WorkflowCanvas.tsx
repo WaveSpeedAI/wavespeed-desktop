@@ -24,7 +24,7 @@ import { ContextMenu, type ContextMenuItem } from './ContextMenu'
 import type { NodeTypeDefinition, NodeCategory } from '@/workflow/types/node-defs'
 import { fuzzySearch } from '@/lib/fuzzySearch'
 
-const CATEGORY_ORDER: NodeCategory[] = ['input', 'ai-task', 'ai-generation', 'free-tool', 'processing', 'control', 'output']
+const CATEGORY_ORDER: NodeCategory[] = ['ai-task', 'input', 'output', 'processing', 'free-tool', 'ai-generation', 'control']
 const RECENT_NODE_TYPES_KEY = 'workflowRecentNodeTypes'
 const MAX_RECENT_NODE_TYPES = 8
 
@@ -279,27 +279,17 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
       const nodeStatus = nodeStatuses[nodeId]
       const items: ContextMenuItem[] = []
 
-      // Run actions — always available, will auto-save/create workflow if needed (forRun: true = no name prompt)
-      const ensureAndRun = async (action: (wfId: string, nId: string) => Promise<void>) => {
-        let wfId = useWorkflowStore.getState().workflowId
-        if (!wfId) {
-          await useWorkflowStore.getState().saveWorkflow({ forRun: true })
-          wfId = useWorkflowStore.getState().workflowId
-          if (!wfId) return
-        }
-        action(wfId, nodeId)
-      }
+      // Run actions — no save required; execution uses current graph from store
+      const wfId = useWorkflowStore.getState().workflowId ?? ''
+      const runAction = (action: (wfId: string, nId: string) => Promise<void>) => () => { action(wfId, nodeId) }
 
       if (isRunning) {
-        items.push({ label: t('workflow.cancel', 'Cancel'), icon: '⏹', action: () => {
-          const wfId = useWorkflowStore.getState().workflowId
-          if (wfId) cn(wfId, nodeId)
-        }})
+        items.push({ label: t('workflow.cancel', 'Cancel'), icon: '⏹', action: () => { if (wfId) cn(wfId, nodeId) } })
       } else {
-        items.push({ label: t('workflow.runNode', 'Run Node'), icon: '▶', action: () => ensureAndRun(rn) })
-        items.push({ label: t('workflow.continueFrom', 'Continue From'), icon: '⏩', action: () => ensureAndRun(cf) })
+        items.push({ label: t('workflow.runNode', 'Run Node'), icon: '▶', action: runAction(rn) })
+        items.push({ label: t('workflow.continueFrom', 'Continue From'), icon: '⏩', action: runAction(cf) })
         if (nodeStatus === 'error') {
-          items.push({ label: t('workflow.retry', 'Retry'), icon: '🔄', action: () => ensureAndRun(rt) })
+          items.push({ label: t('workflow.retry', 'Retry'), icon: '🔄', action: runAction(rt) })
         }
       }
 

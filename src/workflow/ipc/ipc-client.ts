@@ -1,7 +1,7 @@
 /**
  * Type-safe IPC client for workflow renderer process.
  * In Electron: uses window.workflowAPI (preload). In browser: uses browser adapter
- * (localStorage workflows + static node defs; execution/storage require Electron).
+ * (localStorage workflows + static node defs). Workflow execution runs in-browser only.
  */
 import type {
   IpcChannelName,
@@ -15,18 +15,13 @@ import type {
   ApiKeyConfig
 } from '@/workflow/types/ipc'
 import type { Workflow } from '@/workflow/types/workflow'
-import type { NodeExecutionRecord, NodeStatusUpdate, ProgressUpdate, EdgeStatus } from '@/workflow/types/execution'
+import type { NodeExecutionRecord, EdgeStatus } from '@/workflow/types/execution'
 import type { NodeTypeDefinition, WaveSpeedModel } from '@/workflow/types/node-defs'
 import { browserWorkflowAPI } from '@/workflow/browser/workflow-api'
 
 function getApi() {
   if (typeof window === 'undefined') return undefined
   return window.workflowAPI ?? browserWorkflowAPI
-}
-
-/** True when running inside Electron (full API). False when using browser adapter. */
-export function isWorkflowApiAvailable(): boolean {
-  return typeof window !== 'undefined' && Boolean(window.workflowAPI)
 }
 
 export function invoke<C extends IpcChannelName>(
@@ -74,31 +69,6 @@ export const workflowIpc = {
     invoke('workflow:delete', { id }),
   duplicate: (id: string): Promise<Workflow> =>
     invoke('workflow:duplicate', { id })
-}
-
-// ─── Execution IPC ───────────────────────────────────────────────────────────
-
-export const executionIpc = {
-  runAll: (workflowId: string): Promise<void> =>
-    invoke('execution:run-all', { workflowId }),
-  runNode: (workflowId: string, nodeId: string): Promise<void> =>
-    invoke('execution:run-node', { workflowId, nodeId }),
-  continueFrom: (workflowId: string, nodeId: string): Promise<void> =>
-    invoke('execution:continue-from', { workflowId, nodeId }),
-  retry: (workflowId: string, nodeId: string): Promise<void> =>
-    invoke('execution:retry', { workflowId, nodeId }),
-  cancel: (workflowId: string, nodeId: string): Promise<void> =>
-    invoke('execution:cancel', { workflowId, nodeId }),
-  onNodeStatus: (callback: (update: NodeStatusUpdate) => void): void =>
-    on('execution:node-status', callback),
-  onProgress: (callback: (update: ProgressUpdate) => void): void =>
-    on('execution:progress', callback),
-  onEdgeStatus: (callback: (update: { edgeId: string; status: EdgeStatus }) => void): void =>
-    on('execution:edge-status', callback),
-  removeNodeStatusListener: (callback: (update: NodeStatusUpdate) => void): void =>
-    removeListener('execution:node-status', callback),
-  removeProgressListener: (callback: (update: ProgressUpdate) => void): void =>
-    removeListener('execution:progress', callback)
 }
 
 // ─── History IPC ─────────────────────────────────────────────────────────────
@@ -225,7 +195,6 @@ export const uploadIpc = {
 
 export const ipcClient = {
   workflow: workflowIpc,
-  execution: executionIpc,
   history: historyIpc,
   cost: costIpc,
   settings: settingsIpc,

@@ -92,7 +92,7 @@ export function useFreeToolListener(): void {
           })
         } else if (nodeType === 'free-tool/image-eraser') {
           const imageUrl = inputs.input
-          const maskUrl = inputs.mask
+          const maskUrl = inputs.mask_image
           if (!imageUrl || !maskUrl) throw new Error('Missing image or mask')
           const outputData = await runImageEraser(imageUrl, maskUrl, params, onProgress)
           await freeToolIpc.complete({

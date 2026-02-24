@@ -152,6 +152,27 @@ interface AssetMetadata {
   originalUrl?: string
 }
 
+// ─── Persistent key-value state (survives app restarts, unlike renderer localStorage) ────
+const statePath = join(userDataPath, 'renderer-state.json')
+
+function loadState(): Record<string, unknown> {
+  try {
+    if (existsSync(statePath)) {
+      return JSON.parse(readFileSync(statePath, 'utf-8'))
+    }
+  } catch { /* corrupted file — start fresh */ }
+  return {}
+}
+
+function saveState(state: Record<string, unknown>): void {
+  try {
+    if (!existsSync(userDataPath)) mkdirSync(userDataPath, { recursive: true })
+    writeFileSync(statePath, JSON.stringify(state, null, 2))
+  } catch (error) {
+    console.error('Failed to save renderer state:', error)
+  }
+}
+
 const defaultAssetsDirectory = join(app.getPath('documents'), 'WaveSpeed')
 const assetsMetadataPath = join(userDataPath, 'assets-metadata.json')
 
@@ -354,6 +375,30 @@ ipcMain.handle('set-settings', (_, newSettings: Partial<Settings>) => {
 
 ipcMain.handle('clear-all-data', () => {
   saveSettings(defaultSettings)
+  return true
+})
+
+// Persistent renderer state (key-value, survives restarts)
+ipcMain.handle('get-state', (_, key: string) => {
+  const state = loadState()
+  return state[key] ?? null
+})
+
+ipcMain.handle('set-state', (_, key: string, value: unknown) => {
+  const state = loadState()
+  if (value === null || value === undefined) {
+    delete state[key]
+  } else {
+    state[key] = value
+  }
+  saveState(state)
+  return true
+})
+
+ipcMain.handle('remove-state', (_, key: string) => {
+  const state = loadState()
+  delete state[key]
+  saveState(state)
   return true
 })
 

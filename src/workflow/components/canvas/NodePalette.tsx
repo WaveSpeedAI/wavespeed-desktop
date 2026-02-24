@@ -54,7 +54,7 @@ export function NodePalette({ definitions }: NodePaletteProps) {
     recordRecentNodeType(def.type)
   }, [addNode, t])
 
-  const categoryOrder = ['input', 'ai-task', 'free-tool', 'output', 'processing', 'control']
+  const categoryOrder = ['ai-task', 'input', 'output', 'processing', 'free-tool', 'control']
   const categoryLabel = useCallback((cat: string) => {
     return t(`workflow.nodeCategory.${cat}`, cat)
   }, [t])

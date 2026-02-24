@@ -5,9 +5,9 @@
  */
 import { create } from 'zustand'
 import { v4 as uuid } from 'uuid'
-import { executionIpc, historyIpc } from '../ipc/ipc-client'
+import { historyIpc } from '../ipc/ipc-client'
 import { executeWorkflowInBrowser } from '../browser/run-in-browser'
-import type { NodeStatus, EdgeStatus, NodeStatusUpdate, ProgressUpdate } from '@/workflow/types/execution'
+import type { NodeStatus, EdgeStatus } from '@/workflow/types/execution'
 
 export interface RunSession {
   id: string
@@ -25,6 +25,14 @@ export interface RunSession {
 
 const MAX_SESSIONS = 20
 
+/** AbortController for the current in-browser run; Stop calls abort() on it. */
+let browserRunAbortController: AbortController | null = null
+
+function isAbortError(e: unknown): boolean {
+  return e instanceof DOMException && e.name === 'AbortError' ||
+    (e instanceof Error && e.message?.toLowerCase().includes('abort'))
+}
+
 export interface ExecutionState {
   nodeStatuses: Record<string, NodeStatus>
   edgeStatuses: Record<string, EdgeStatus>
@@ -40,9 +48,10 @@ export interface ExecutionState {
   showRunMonitor: boolean
   toggleRunMonitor: () => void
 
-  runAll: (workflowId: string, workflowName?: string, nodeLabels?: Record<string, string>) => Promise<void>
-  /** Run workflow in browser (no Electron). Uses current graph from args. */
+  /** Run entire workflow in browser (only execution path). */
   runAllInBrowser: (nodes: Array<{ id: string; data: { nodeType: string; params?: Record<string, unknown>; label?: string } }>, edges: Array<{ source: string; target: string; sourceHandle?: string | null; targetHandle?: string | null }>) => Promise<void>
+  /** Run single node (and its upstream) in browser. */
+  runNodeInBrowser: (nodes: Array<{ id: string; data: { nodeType: string; params?: Record<string, unknown>; label?: string } }>, edges: Array<{ source: string; target: string; sourceHandle?: string | null; targetHandle?: string | null }>, nodeId: string) => Promise<void>
   runNode: (workflowId: string, nodeId: string) => Promise<void>
   continueFrom: (workflowId: string, nodeId: string) => Promise<void>
   retryNode: (workflowId: string, nodeId: string) => Promise<void>
@@ -72,39 +81,6 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
 
   toggleRunMonitor: () => set(s => ({ showRunMonitor: !s.showRunMonitor })),
 
-  runAll: async (workflowId, workflowName, nodeLabels) => {
-    // Create a new run session
-    const sessionId = uuid()
-    const nodeIds = Object.keys(nodeLabels ?? {})
-    const nodeResults: Record<string, 'running' | 'done' | 'error'> = {}
-    for (const nid of nodeIds) nodeResults[nid] = 'running'
-    const session: RunSession = {
-      id: sessionId,
-      workflowId,
-      workflowName: workflowName ?? 'Workflow',
-      startedAt: new Date().toISOString(),
-      nodeIds,
-      nodeLabels: nodeLabels ?? {},
-      nodeResults,
-      nodeCosts: {},
-      status: 'running'
-    }
-    set(s => ({
-      runSessions: [session, ...s.runSessions].slice(0, MAX_SESSIONS)
-    }))
-
-    try {
-      await executionIpc.runAll(workflowId)
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error)
-      console.error('[ExecutionStore] runAll error:', msg)
-      // Mark session as error
-      set(s => ({
-        runSessions: s.runSessions.map(rs => rs.id === sessionId ? { ...rs, status: 'error' as const } : rs)
-      }))
-    }
-  },
-
   runAllInBrowser: async (nodes, edges) => {
     const nodeLabels: Record<string, string> = {}
     for (const n of nodes) {
@@ -118,7 +94,7 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
       runSessions: [{
         id: sessionId,
         workflowId: 'browser',
-        workflowName: 'Browser run',
+        workflowName: 'Workflow',
         startedAt: new Date().toISOString(),
         nodeIds,
         nodeLabels,
@@ -128,6 +104,8 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
       }, ...s.runSessions].slice(0, MAX_SESSIONS)
     }))
 
+    const controller = new AbortController()
+    browserRunAbortController = controller
     try {
       await executeWorkflowInBrowser(nodes, edges, {
         onNodeStatus: (nodeId, status, errorMessage) => {
@@ -144,52 +122,118 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
             }
           }))
         }
-      })
+      }, { signal: controller.signal })
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error)
-      console.error('[ExecutionStore] runAllInBrowser error:', msg)
-      set(s => ({
-        runSessions: s.runSessions.map(rs => rs.id === sessionId ? { ...rs, status: 'error' as const } : rs)
-      }))
+      if (isAbortError(error)) {
+        set(s => ({
+          runSessions: s.runSessions.map(rs => rs.id === sessionId ? { ...rs, status: 'cancelled' as const } : rs)
+        }))
+        for (const nid of nodeIds) get().updateNodeStatus(nid, 'idle')
+      } else {
+        const msg = error instanceof Error ? error.message : String(error)
+        console.error('[ExecutionStore] runAllInBrowser error:', msg)
+        set(s => ({
+          runSessions: s.runSessions.map(rs => rs.id === sessionId ? { ...rs, status: 'error' as const } : rs)
+        }))
+      }
+    } finally {
+      browserRunAbortController = null
     }
   },
 
-  runNode: async (workflowId, nodeId) => {
-    // Guard: don't double-run
-    if (get().activeExecutions.has(nodeId)) return
+  runNodeInBrowser: async (nodes, edges, nodeId) => {
+    const upstream = new Set<string>([nodeId])
+    const reverse = new Map<string, string[]>()
+    for (const e of edges) {
+      const list = reverse.get(e.target) ?? []
+      list.push(e.source)
+      reverse.set(e.target, list)
+    }
+    let queue = [nodeId]
+    while (queue.length > 0) {
+      const next: string[] = []
+      for (const id of queue) {
+        for (const src of reverse.get(id) ?? []) {
+          if (!upstream.has(src)) {
+            upstream.add(src)
+            next.push(src)
+          }
+        }
+      }
+      queue = next
+    }
+    const nodeIds = nodes.map(n => n.id).filter(id => upstream.has(id))
+    const nodeLabels: Record<string, string> = {}
+    for (const n of nodes) {
+      if (upstream.has(n.id)) nodeLabels[n.id] = (n.data?.label as string) || n.data?.nodeType || n.id.slice(0, 8)
+    }
+    const sessionId = uuid()
+    const nodeResults: Record<string, 'running' | 'done' | 'error'> = {}
+    for (const nid of nodeIds) nodeResults[nid] = 'running'
+    set(s => ({
+      runSessions: [{
+        id: sessionId,
+        workflowId: 'browser',
+        workflowName: 'Run node',
+        startedAt: new Date().toISOString(),
+        nodeIds,
+        nodeLabels,
+        nodeResults,
+        nodeCosts: {},
+        status: 'running'
+      }, ...s.runSessions].slice(0, MAX_SESSIONS)
+    }))
+    const controller = new AbortController()
+    browserRunAbortController = controller
     try {
-      await executionIpc.runNode(workflowId, nodeId)
+      await executeWorkflowInBrowser(nodes, edges, {
+        onNodeStatus: (nid, status, errorMessage) => { get().updateNodeStatus(nid, status, errorMessage) },
+        onProgress: (nid, progress, message) => { get().updateProgress(nid, progress, message) },
+        onNodeComplete: (nid, { urls, cost }) => {
+          set(s => ({
+            lastResults: {
+              ...s.lastResults,
+              [nid]: [{ urls, time: new Date().toISOString(), cost }]
+            }
+          }))
+        }
+      }, { runOnlyNodeId: nodeId, signal: controller.signal })
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error)
-      console.error('[ExecutionStore] runNode error:', msg)
-      get().updateNodeStatus(nodeId, 'error', msg)
+      if (isAbortError(error)) {
+        set(s => ({
+          runSessions: s.runSessions.map(rs => rs.id === sessionId ? { ...rs, status: 'cancelled' as const } : rs)
+        }))
+        for (const nid of nodeIds) get().updateNodeStatus(nid, 'idle')
+      } else {
+        const msg = error instanceof Error ? error.message : String(error)
+        console.error('[ExecutionStore] runNodeInBrowser error:', msg)
+        set(s => ({
+          runSessions: s.runSessions.map(rs => rs.id === sessionId ? { ...rs, status: 'error' as const } : rs)
+        }))
+      }
+    } finally {
+      browserRunAbortController = null
     }
   },
 
-  continueFrom: async (workflowId, nodeId) => {
-    try { await executionIpc.continueFrom(workflowId, nodeId) }
-    catch (error) {
-      const msg = error instanceof Error ? error.message : String(error)
-      console.error('[ExecutionStore] continueFrom error:', msg)
-    }
+  runNode: async (_workflowId, nodeId) => {
+    const { useWorkflowStore } = await import('./workflow.store')
+    const { nodes, edges } = useWorkflowStore.getState()
+    const browserNodes = nodes.map(n => ({ id: n.id, data: { nodeType: n.data?.nodeType ?? '', params: n.data?.params, label: n.data?.label } }))
+    const browserEdges = edges.map(e => ({ source: e.source, target: e.target, sourceHandle: e.sourceHandle ?? undefined, targetHandle: e.targetHandle ?? undefined }))
+    get().runNodeInBrowser(browserNodes, browserEdges, nodeId)
   },
-  retryNode: async (workflowId, nodeId) => {
-    try { await executionIpc.retry(workflowId, nodeId) }
-    catch (error) {
-      const msg = error instanceof Error ? error.message : String(error)
-      console.error('[ExecutionStore] retryNode error:', msg)
+  continueFrom: async () => { /* Only Run All is supported (browser execution) */ },
+  retryNode: async () => { /* Only Run All is supported (browser execution) */ },
+  cancelNode: async () => {
+    if (browserRunAbortController) {
+      browserRunAbortController.abort()
     }
-  },
-  cancelNode: async (workflowId, nodeId) => {
-    try { await executionIpc.cancel(workflowId, nodeId) }
-    catch (error) { console.error('Cancel failed:', error) }
   },
   cancelAll: async (workflowId) => {
-    const activeNodes = Array.from(get().activeExecutions)
-    await Promise.allSettled(
-      activeNodes.map(nodeId => executionIpc.cancel(workflowId, nodeId))
-    )
-    // Mark running sessions for this workflow as cancelled
+    if (browserRunAbortController) {
+      browserRunAbortController.abort()
+    }
     set(s => ({
       runSessions: s.runSessions.map(rs =>
         rs.workflowId === workflowId && rs.status === 'running' ? { ...rs, status: 'cancelled' as const } : rs
@@ -342,14 +386,6 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
   },
 
   initListeners: () => {
-    executionIpc.onNodeStatus((update: NodeStatusUpdate) => {
-      get().updateNodeStatus(update.nodeId, update.status, update.errorMessage)
-    })
-    executionIpc.onProgress((update: ProgressUpdate) => {
-      get().updateProgress(update.nodeId, update.progress, update.message)
-    })
-    executionIpc.onEdgeStatus((update: { edgeId: string; status: EdgeStatus }) => {
-      get().updateEdgeStatus(update.edgeId, update.status)
-    })
+    // Execution is browser-only; state updates come from runAllInBrowser callbacks
   }
 }))

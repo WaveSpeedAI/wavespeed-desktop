@@ -33,12 +33,14 @@ interface FormFieldProps {
   hideLabel?: boolean
   formValues?: Record<string, unknown>
   onUploadingChange?: (isUploading: boolean) => void
+  /** When provided (e.g. workflow), file uploads use this instead of API. */
+  onUploadFile?: (file: File) => Promise<string>
 }
 
 // Generate a random seed (0 to 65535)
 const generateRandomSeed = () => Math.floor(Math.random() * 65536)
 
-export function FormField({ field, value, onChange, disabled = false, error, modelType, imageValue, hideLabel = false, formValues, onUploadingChange }: FormFieldProps) {
+export function FormField({ field, value, onChange, disabled = false, error, modelType, imageValue, hideLabel = false, formValues, onUploadingChange, onUploadFile }: FormFieldProps) {
   const { t } = useTranslation()
   // Check if this is a seed field
   const isSeedField = field.name.toLowerCase() === 'seed'
@@ -328,6 +330,7 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
             isMaskField={['mask_image', 'mask_image_url', 'mask_images', 'mask_image_urls'].includes(field.name)}
             formValues={formValues}
             onUploadingChange={onUploadingChange}
+            onUploadFile={onUploadFile}
           />
         )
 

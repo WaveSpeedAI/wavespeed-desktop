@@ -14,6 +14,10 @@ export interface UIState {
   showSettings: boolean
   showNodePalette: boolean
   showWorkflowPanel: boolean
+  /** Right panel: workflow results (reversed execution order) */
+  showWorkflowResultsPanel: boolean
+  /** Right panel width (resizable via drag) */
+  workflowResultsPanelWidth: number
   /** Shared left sidebar width for both Workflows and Nodes panels */
   sidebarWidth: number
   previewSrc: string | null
@@ -38,6 +42,8 @@ export interface UIState {
   toggleSettings: () => void
   toggleNodePalette: () => void
   toggleWorkflowPanel: () => void
+  toggleWorkflowResultsPanel: () => void
+  setWorkflowResultsPanelWidth: (width: number) => void
   setSidebarWidth: (width: number) => void
   openPreview: (src: string, items?: string[]) => void
   prevPreview: () => void
@@ -56,6 +62,8 @@ export const useUIStore = create<UIState>((set, get) => ({
   showSettings: false,
   showNodePalette: true,
   showWorkflowPanel: false,
+  showWorkflowResultsPanel: true,
+  workflowResultsPanelWidth: 240,
   sidebarWidth: 220,
   previewSrc: null,
   previewItems: [],
@@ -86,6 +94,8 @@ export const useUIStore = create<UIState>((set, get) => ({
   toggleSettings: () => set(s => ({ showSettings: !s.showSettings, selectedNodeId: s.showSettings ? s.selectedNodeId : null })),
   toggleNodePalette: () => set(s => ({ showNodePalette: !s.showNodePalette, showWorkflowPanel: false })),
   toggleWorkflowPanel: () => set(s => ({ showWorkflowPanel: !s.showWorkflowPanel, showNodePalette: false })),
+  toggleWorkflowResultsPanel: () => set(s => ({ showWorkflowResultsPanel: !s.showWorkflowResultsPanel })),
+  setWorkflowResultsPanelWidth: (width) => set({ workflowResultsPanelWidth: Math.max(180, Math.min(500, width)) }),
   setSidebarWidth: (width) => set({ sidebarWidth: Math.max(180, Math.min(400, width)) }),
   openPreview: (src, items) => set(() => {
     const list = Array.isArray(items) && items.length > 0 ? items : [src]

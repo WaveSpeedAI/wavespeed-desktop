@@ -13,6 +13,7 @@ import {
   runImageEraser,
   runSegmentAnything
 } from '@/workflow/lib/free-tool-runner'
+import { normalizePayloadArrays } from '@/lib/schemaToForm'
 
 const SKIP_KEYS = new Set(['modelId', '__meta', '__locks', '__nodeWidth', '__nodeHeight'])
 
@@ -67,7 +68,7 @@ function buildApiParams(
     }
   }
   if (typeof out.seed === 'number' && (out.seed as number) < 0) delete out.seed
-  return out
+  return normalizePayloadArrays(out, [])
 }
 
 function resolveInputs(
@@ -93,9 +94,9 @@ function resolveInputs(
       if (!inputs[mapKey]) (inputs as Record<string, unknown>)[mapKey] = {} as Record<number, string>
       ((inputs as Record<string, unknown>)[mapKey] as Record<number, string>)[index] = String(outputValue)
     } else if (targetKey.startsWith('param-')) {
-      inputs[targetKey.slice(6)] = String(outputValue)
+      inputs[targetKey.slice(6)] = Array.isArray(outputValue) ? outputValue : String(outputValue)
     } else if (targetKey.startsWith('input-')) {
-      inputs[targetKey.slice(6)] = String(outputValue)
+      inputs[targetKey.slice(6)] = Array.isArray(outputValue) ? outputValue : String(outputValue)
     } else {
       inputs[targetKey] = outputValue
     }
@@ -108,35 +109,84 @@ function base64ToDataUrl(base64: string, mime = 'image/png'): string {
   return `data:${mime};base64,${base64}`
 }
 
+/** Collect nodeId and all nodes that feed into it (upstream subgraph). */
+function upstreamNodeIds(nodeId: string, simpleEdges: SimpleEdge[]): Set<string> {
+  const out = new Set<string>([nodeId])
+  const reverse = new Map<string, string[]>()
+  for (const e of simpleEdges) {
+    const list = reverse.get(e.targetNodeId) ?? []
+    list.push(e.sourceNodeId)
+    reverse.set(e.targetNodeId, list)
+  }
+  let queue = [nodeId]
+  while (queue.length > 0) {
+    const next: string[] = []
+    for (const id of queue) {
+      for (const src of reverse.get(id) ?? []) {
+        if (!out.has(src)) {
+          out.add(src)
+          next.push(src)
+        }
+      }
+    }
+    queue = next
+  }
+  return out
+}
+
 export async function executeWorkflowInBrowser(
   nodes: BrowserNode[],
   edges: BrowserEdge[],
-  callbacks: RunInBrowserCallbacks
+  callbacks: RunInBrowserCallbacks,
+  options?: { runOnlyNodeId?: string; signal?: AbortSignal }
 ): Promise<void> {
-  const nodeMap = new Map(nodes.map(n => [n.id, n]))
-  const nodeIds = nodes.map(n => n.id)
+  const signal = options?.signal
+  const throwIfAborted = (): void => {
+    if (signal?.aborted) throw new DOMException('Cancelled', 'AbortError')
+  }
   const simpleEdges: SimpleEdge[] = edges.map(e => ({
     sourceNodeId: e.source,
     targetNodeId: e.target
   }))
-  const edgesWithHandles = edges.map(e => ({
+  const allNodeIds = nodes.map(n => n.id)
+  let nodeIds: string[]
+  let filteredNodes: BrowserNode[]
+  let filteredEdges: BrowserEdge[]
+  if (options?.runOnlyNodeId && allNodeIds.includes(options.runOnlyNodeId)) {
+    const subset = upstreamNodeIds(options.runOnlyNodeId, simpleEdges)
+    nodeIds = allNodeIds.filter(id => subset.has(id))
+    filteredNodes = nodes.filter(n => subset.has(n.id))
+    filteredEdges = edges.filter(e => subset.has(e.source) && subset.has(e.target))
+  } else {
+    nodeIds = allNodeIds
+    filteredNodes = nodes
+    filteredEdges = edges
+  }
+  const nodeMap = new Map(filteredNodes.map(n => [n.id, n]))
+  const edgesWithHandles = filteredEdges.map(e => ({
     source: e.source,
     target: e.target,
     sourceHandle: e.sourceHandle ?? 'output',
     targetHandle: e.targetHandle ?? 'input'
   }))
+  const simpleEdgesSubgraph: SimpleEdge[] = filteredEdges.map(e => ({
+    sourceNodeId: e.source,
+    targetNodeId: e.target
+  }))
   const results = new Map<string, NodeResult>()
   const failedNodes = new Set<string>()
-  const levels = topologicalLevels(nodeIds, simpleEdges)
+  const levels = topologicalLevels(nodeIds, simpleEdgesSubgraph)
   const upstreamMap = new Map<string, string[]>()
-  for (const e of simpleEdges) {
+  for (const e of simpleEdgesSubgraph) {
     const deps = upstreamMap.get(e.targetNodeId) ?? []
     deps.push(e.sourceNodeId)
     upstreamMap.set(e.targetNodeId, deps)
   }
 
   for (const level of levels) {
+    throwIfAborted()
     await Promise.all(level.map(async nodeId => {
+      throwIfAborted()
       const upstreams = upstreamMap.get(nodeId) ?? []
       if (upstreams.some(uid => failedNodes.has(uid))) {
         failedNodes.add(nodeId)
@@ -162,7 +212,7 @@ export async function executeWorkflowInBrowser(
           }
           const apiParams = buildApiParams(params, inputs)
           callbacks.onProgress(nodeId, 5, `Running ${modelId}...`)
-          const result = await apiClient.run(modelId, apiParams)
+          const result = await apiClient.run(modelId, apiParams, { signal })
           const outputUrl = Array.isArray(result.outputs) && result.outputs.length > 0
             ? String(result.outputs[0])
             : ''
@@ -266,7 +316,7 @@ export async function executeWorkflowInBrowser(
         }
         if (nodeType === 'free-tool/image-eraser') {
           const imageUrl = String(inputs.input ?? '')
-          const maskUrl = String(inputs.mask ?? '')
+          const maskUrl = String(inputs.mask_image ?? '')
           if (!imageUrl || !maskUrl) throw new Error('Missing image or mask')
           const base64 = await runImageEraser(imageUrl, maskUrl, params, onProgress)
           const dataUrl = base64ToDataUrl(base64)
@@ -287,6 +337,56 @@ export async function executeWorkflowInBrowser(
           results.set(nodeId, { outputUrl: dataUrl, resultMetadata: { output: dataUrl, resultUrl: dataUrl } })
           callbacks.onNodeStatus(nodeId, 'confirmed')
           callbacks.onNodeComplete(nodeId, { urls: [dataUrl], cost: 0, durationMs: Date.now() - start })
+          return
+        }
+
+        // Helper / processing nodes
+        if (nodeType === 'processing/concat') {
+          const VALUE_KEYS = ['value1', 'value2', 'value3', 'value4', 'value5']
+          const arr: string[] = []
+          for (const key of VALUE_KEYS) {
+            const v = inputs[key] ?? params[key]
+            if (v === undefined || v === null) continue
+            if (Array.isArray(v)) {
+              for (const item of v) {
+                if (item !== undefined && item !== null && item !== '') arr.push(String(item))
+              }
+            } else {
+              const s = String(v).trim()
+              if (s) arr.push(s)
+            }
+          }
+          if (arr.length === 0) throw new Error('Concat requires at least one non-empty value.')
+          results.set(nodeId, {
+            outputUrl: arr[0],
+            resultMetadata: { output: arr, resultUrl: arr[0], resultUrls: arr }
+          })
+          callbacks.onNodeStatus(nodeId, 'confirmed')
+          callbacks.onNodeComplete(nodeId, { urls: arr, cost: 0, durationMs: Date.now() - start })
+          return
+        }
+        if (nodeType === 'processing/select') {
+          const raw = inputs.input ?? params.input
+          let arr: string[]
+          if (Array.isArray(raw)) {
+            arr = raw.filter((x): x is string => x !== undefined && x !== null).map(String)
+          } else if (raw !== undefined && raw !== null && raw !== '') {
+            const s = String(raw).trim()
+            arr = s.includes(',') ? s.split(',').map(x => x.trim()).filter(Boolean) : [s]
+          } else {
+            arr = []
+          }
+          const index = Math.floor(Number(params.index ?? 0))
+          if (index < 0 || index >= arr.length) {
+            throw new Error(`Index ${index} out of range (array length ${arr.length}).`)
+          }
+          const value = arr[index]
+          results.set(nodeId, {
+            outputUrl: value,
+            resultMetadata: { output: value, resultUrl: value, resultUrls: [value] }
+          })
+          callbacks.onNodeStatus(nodeId, 'confirmed')
+          callbacks.onNodeComplete(nodeId, { urls: [value], cost: 0, durationMs: Date.now() - start })
           return
         }
 

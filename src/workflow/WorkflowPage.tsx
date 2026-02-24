@@ -11,18 +11,20 @@ import { WorkflowCanvas } from './components/canvas/WorkflowCanvas'
 import { NodePalette } from './components/canvas/NodePalette'
 import { WorkflowList } from './components/WorkflowList'
 import { RunMonitor } from './components/canvas/RunMonitor'
-import { useWorkflowStore } from './stores/workflow.store'
+import { WorkflowResultsPanel } from './components/panels/WorkflowResultsPanel'
+import { useWorkflowStore, getDefaultNewWorkflowContent } from './stores/workflow.store'
 import { useExecutionStore } from './stores/execution.store'
 import { useUIStore } from './stores/ui.store'
-import { registryIpc, modelsIpc, storageIpc, workflowIpc, isWorkflowApiAvailable } from './ipc/ipc-client'
+import { registryIpc, modelsIpc, storageIpc, workflowIpc } from './ipc/ipc-client'
 import { useModelsStore } from '@/stores/modelsStore'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
 import { useTemplateStore } from '@/stores/templateStore'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
-import { MousePointer2, Hand } from 'lucide-react'
+import { MousePointer2, Hand, PanelRight, PanelBottom, Workflow } from 'lucide-react'
 import { TemplatePickerDialog } from '@/components/templates/TemplatePickerDialog'
 import { TemplateDialog } from '@/components/templates/TemplateDialog'
 import { WorkflowGuide, useWorkflowGuide } from './components/WorkflowGuide'
+import { persistentStorage } from '@/lib/storage'
 import type { Template } from '@/types/template'
 import type { NodeTypeDefinition } from '@/workflow/types/node-defs'
 
@@ -90,7 +92,7 @@ export function WorkflowPage() {
   const saveWorkflow = useWorkflowStore(s => s.saveWorkflow)
   const loadWorkflow = useWorkflowStore(s => s.loadWorkflow)
   const { loadTemplates, useTemplate, createTemplate } = useTemplateStore()
-  const { showNodePalette, showWorkflowPanel,
+  const { showNodePalette, showWorkflowPanel, showWorkflowResultsPanel, toggleWorkflowResultsPanel,
     toggleNodePalette, toggleWorkflowPanel, selectedNodeId, previewSrc, previewItems, previewIndex, prevPreview, nextPreview, closePreview,
     showNamingDialog, namingDialogDefault, resolveNamingDialog, interactionMode, setInteractionMode } = useUIStore()
   const [showTemplateDialog, setShowTemplateDialog] = useState(false)
@@ -167,9 +169,10 @@ export function WorkflowPage() {
   }, [saveWorkflow])
 
   // ── Multi-tab state ────────────────────────────────────────────────
-  const [tabs, setTabs] = useState<TabSnapshot[]>([
-    { tabId: `tab-${tabIdCounter}`, workflowId: null, workflowName: 'Untitled Workflow', nodes: [], edges: [], isDirty: false }
-  ])
+  const [tabs, setTabs] = useState<TabSnapshot[]>(() => {
+    const { nodes, edges } = getDefaultNewWorkflowContent()
+    return [{ tabId: `tab-${tabIdCounter}`, workflowId: null, workflowName: 'Untitled Workflow', nodes, edges, isDirty: false }]
+  })
   const [activeTabId, setActiveTabId] = useState(`tab-${tabIdCounter}`)
   const [startupSessionReady, setStartupSessionReady] = useState(false)
   const [restoredFromPersistedSession, setRestoredFromPersistedSession] = useState(false)
@@ -216,8 +219,9 @@ export function WorkflowPage() {
       while (existingTabNames.has(`${baseName} ${counter}`)) counter++
       uniqueName = `${baseName} ${counter}`
     }
-    setTabs(prev => [...prev, { tabId: newTabId, workflowId: null, workflowName: uniqueName, nodes: [], edges: [], isDirty: false }])
-    useWorkflowStore.setState({ workflowId: null, workflowName: uniqueName, nodes: [], edges: [], isDirty: false })
+    const { nodes, edges } = getDefaultNewWorkflowContent()
+    setTabs(prev => [...prev, { tabId: newTabId, workflowId: null, workflowName: uniqueName, nodes, edges, isDirty: false }])
+    useWorkflowStore.setState({ workflowId: null, workflowName: uniqueName, nodes, edges, isDirty: false })
     setActiveTabId(newTabId)
   }, [saveCurrentTabSnapshot, tabs])
 
@@ -279,12 +283,13 @@ export function WorkflowPage() {
 
   const doCloseTab = useCallback((tabId: string) => {
     if (tabs.length <= 1) {
-      // Last tab — reset to a clean blank workflow
+      // Last tab — reset to a clean blank workflow (with default seed node)
       const blankName = 'Untitled Workflow'
       tabIdCounter++
       const newTabId = `tab-${tabIdCounter}`
-      useWorkflowStore.setState({ workflowId: null, workflowName: blankName, nodes: [], edges: [], isDirty: false })
-      setTabs([{ tabId: newTabId, workflowId: null, workflowName: blankName, nodes: [], edges: [], isDirty: false }])
+      const { nodes, edges } = getDefaultNewWorkflowContent()
+      useWorkflowStore.setState({ workflowId: null, workflowName: blankName, nodes, edges, isDirty: false })
+      setTabs([{ tabId: newTabId, workflowId: null, workflowName: blankName, nodes, edges, isDirty: false }])
       setActiveTabId(newTabId)
       return
     }
@@ -372,13 +377,14 @@ export function WorkflowPage() {
         break
       }
       case 'closeAll': {
-        // Keep one new empty tab
+        // Keep one new tab with default seed node
         saveCurrentTabSnapshot()
         tabIdCounter++
         const newTabId = `tab-${tabIdCounter}`
-        const newTab: TabSnapshot = { tabId: newTabId, workflowId: null, workflowName: 'Untitled Workflow', nodes: [], edges: [], isDirty: false }
+        const { nodes, edges } = getDefaultNewWorkflowContent()
+        const newTab: TabSnapshot = { tabId: newTabId, workflowId: null, workflowName: 'Untitled Workflow', nodes, edges, isDirty: false }
         setTabs([newTab])
-        useWorkflowStore.setState({ workflowId: null, workflowName: 'Untitled Workflow', nodes: [], edges: [], isDirty: false })
+        useWorkflowStore.setState({ workflowId: null, workflowName: 'Untitled Workflow', nodes, edges, isDirty: false })
         setActiveTabId(newTabId)
         break
       }
@@ -389,11 +395,9 @@ export function WorkflowPage() {
   useEffect(() => {
     if (startupSessionReady) return
 
-    let restored = false
-    try {
-      const raw = localStorage.getItem(WORKFLOW_SESSION_STORAGE_KEY)
-      if (raw) {
-        const parsed = JSON.parse(raw) as Partial<PersistedWorkflowSession>
+    const applySession = (parsed: Partial<PersistedWorkflowSession> | null) => {
+      let restored = false
+      if (parsed) {
         const restoredTabs = sanitizeTabSnapshots(parsed.tabs)
         if (restoredTabs.length > 0) {
           const restoredActiveTabId = typeof parsed.activeTabId === 'string' &&
@@ -419,12 +423,27 @@ export function WorkflowPage() {
           restored = true
         }
       }
-    } catch {
-      // Ignore malformed localStorage data and fallback to normal startup flow.
+
+      if (!restored) {
+        const initial = tabs[0]
+        if (initial) {
+          useWorkflowStore.setState({
+            workflowId: initial.workflowId,
+            workflowName: initial.workflowName,
+            nodes: initial.nodes as ReturnType<typeof useWorkflowStore.getState>['nodes'],
+            edges: initial.edges as ReturnType<typeof useWorkflowStore.getState>['edges'],
+            isDirty: initial.isDirty
+          })
+        }
+      }
+
+      setRestoredFromPersistedSession(restored)
+      setStartupSessionReady(true)
     }
 
-    setRestoredFromPersistedSession(restored)
-    setStartupSessionReady(true)
+    persistentStorage.get<Partial<PersistedWorkflowSession>>(WORKFLOW_SESSION_STORAGE_KEY)
+      .then(stored => applySession(stored))
+      .catch(() => applySession(null))
   }, [startupSessionReady])
 
   // Keep active tab snapshot in sync
@@ -440,13 +459,12 @@ export function WorkflowPage() {
   useEffect(() => {
     if (!startupSessionReady) return
     const timer = setTimeout(() => {
-      const payload: PersistedWorkflowSession = {
+      persistentStorage.set(WORKFLOW_SESSION_STORAGE_KEY, {
         version: 1,
         activeTabId,
         tabIdCounter,
         tabs
-      }
-      localStorage.setItem(WORKFLOW_SESSION_STORAGE_KEY, JSON.stringify(payload))
+      } satisfies PersistedWorkflowSession)
     }, 300)
     return () => clearTimeout(timer)
   }, [startupSessionReady, tabs, activeTabId])
@@ -456,19 +474,20 @@ export function WorkflowPage() {
     if (!startupSessionReady || restoredFromPersistedSession) return
     if (hasRestoredLastWorkflow) return
     setHasRestoredLastWorkflow(true)
-    const lastId = localStorage.getItem('wavespeed_last_workflow_id')
-    if (lastId) {
-      loadWorkflow(lastId).catch(() => {
-        // Last workflow may have been deleted, ignore
-        localStorage.removeItem('wavespeed_last_workflow_id')
-      })
-    }
+
+    persistentStorage.get<string>('wavespeed_last_workflow_id').then(lastId => {
+      if (lastId) {
+        loadWorkflow(lastId).catch(() => {
+          persistentStorage.remove('wavespeed_last_workflow_id')
+        })
+      }
+    })
   }, [startupSessionReady, restoredFromPersistedSession, hasRestoredLastWorkflow, loadWorkflow])
 
   // Persist current workflow ID for next session restore
   useEffect(() => {
     if (workflowId) {
-      localStorage.setItem('wavespeed_last_workflow_id', workflowId)
+      persistentStorage.set('wavespeed_last_workflow_id', workflowId)
     }
   }, [workflowId])
 
@@ -698,60 +717,23 @@ export function WorkflowPage() {
 
 
 
-  // Run All — with node labels for monitor (Electron: IPC; browser: in-process executor)
+  // Run All — browser execution only (in-process via runAllInBrowser)
   const handleRunAll = async (times = 1) => {
-    if (!isWorkflowApiAvailable()) {
-      // Browser mode: run in-process (no save required)
-      if (nodes.length === 0) return
-      const runAllInBrowser = useExecutionStore.getState().runAllInBrowser
-      const browserNodes = nodes.map(n => ({ id: n.id, data: { nodeType: n.data?.nodeType ?? '', params: n.data?.params, label: n.data?.label } }))
-      const browserEdges = edges.map(e => ({ source: e.source, target: e.target, sourceHandle: e.sourceHandle ?? undefined, targetHandle: e.targetHandle ?? undefined }))
-      setIsBatchRunning(true)
-      try {
-        await runAllInBrowser(browserNodes, browserEdges)
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err)
-        setExecToast({ type: 'error', msg: msg || t('workflow.runFailed', 'Run failed') })
-        setTimeout(() => setExecToast(null), 4000)
-      } finally {
-        setIsBatchRunning(false)
-      }
-      return
-    }
-    let wfId = workflowId
-    let workflowExists = false
-    if (wfId) {
-      try {
-        await workflowIpc.load(wfId)
-        workflowExists = true
-      } catch {
-        workflowExists = false
-      }
-    }
-    // Executor reads from persisted workflow DB, so save first when dirty.
-    // Use forRun: true so untitled workflows get an auto-generated name and we don't prompt.
-    if (!wfId || isDirty || !workflowExists) {
-      if (nodes.length === 0) return
-      await saveWorkflow({ forRun: true })
-      wfId = useWorkflowStore.getState().workflowId
-      if (!wfId) return
-    }
+    if (nodes.length === 0) return
+    const runAllInBrowser = useExecutionStore.getState().runAllInBrowser
+    const browserNodes = nodes.map(n => ({ id: n.id, data: { nodeType: n.data?.nodeType ?? '', params: n.data?.params, label: n.data?.label } }))
+    const browserEdges = edges.map(e => ({ source: e.source, target: e.target, sourceHandle: e.sourceHandle ?? undefined, targetHandle: e.targetHandle ?? undefined }))
     const runTimes = Math.max(1, Math.min(99, Math.floor(times || 1)))
     runCancelRef.current = false
     setIsBatchRunning(true)
     try {
       for (let i = 0; i < runTimes; i++) {
         if (runCancelRef.current) break
-        const nodeLabels: Record<string, string> = {}
-        for (const n of nodes) { nodeLabels[n.id] = n.data?.label || n.data?.nodeType || n.id.slice(0, 8) }
-        await runAll(wfId, workflowName, nodeLabels)
+        await runAllInBrowser(browserNodes, browserEdges)
       }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
-      setExecToast({
-        type: 'error',
-        msg: message || t('workflow.runFailed', 'Run failed')
-      })
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      setExecToast({ type: 'error', msg: msg || t('workflow.runFailed', 'Run failed') })
       setTimeout(() => setExecToast(null), 4000)
     } finally {
       setIsBatchRunning(false)
@@ -884,9 +866,7 @@ export function WorkflowPage() {
             <TooltipTrigger asChild>
               <button onClick={toggleWorkflowPanel}
                 className={`h-7 w-7 rounded-md text-xs font-medium transition-colors flex items-center justify-center ${showWorkflowPanel ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="3" width="20" height="18" rx="2"/><path d="M2 9h20"/><path d="M10 21V9"/>
-                </svg>
+                <Workflow className="w-4 h-4" />
               </button>
             </TooltipTrigger>
             <TooltipContent side="bottom">{t('workflow.workflows', 'Workflows')}</TooltipContent>
@@ -1094,6 +1074,25 @@ export function WorkflowPage() {
         {/* Monitor toggle */}
         <MonitorToggleBtn />
 
+        {/* Workflow Results panel (right) toggle */}
+        <Tooltip delayDuration={0}>
+          <TooltipTrigger asChild>
+            <button
+              onClick={toggleWorkflowResultsPanel}
+              className={`h-8 w-8 rounded-md border transition-colors flex items-center justify-center ${
+                showWorkflowResultsPanel
+                  ? 'border-primary/50 bg-primary/10 text-primary'
+                  : 'border-[hsl(var(--border))] text-muted-foreground hover:text-foreground hover:bg-accent'
+              }`}
+            >
+              <PanelRight className="w-4 h-4" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">
+            {t('workflow.workflowResults', 'Workflow Results')}
+          </TooltipContent>
+        </Tooltip>
+
         {/* Help / Guide button */}
         <Tooltip delayDuration={0}>
           <TooltipTrigger asChild>
@@ -1148,10 +1147,11 @@ export function WorkflowPage() {
               const tabToClose = tabs.find(t => t.workflowId === deletedId)
               if (tabToClose) {
                 if (tabs.length <= 1) {
-                  // Last tab — reset to blank instead of closing
+                  // Last tab — reset to blank with default seed node instead of closing
                   const blankName = 'Untitled Workflow'
-                  useWorkflowStore.setState({ workflowId: null, workflowName: blankName, nodes: [], edges: [], isDirty: false })
-                  setTabs([{ ...tabToClose, workflowId: null, workflowName: blankName, nodes: [], edges: [], isDirty: false }])
+                  const { nodes, edges } = getDefaultNewWorkflowContent()
+                  useWorkflowStore.setState({ workflowId: null, workflowName: blankName, nodes, edges, isDirty: false })
+                  setTabs([{ ...tabToClose, workflowId: null, workflowName: blankName, nodes, edges, isDirty: false }])
                 } else {
                   doCloseTab(tabToClose.tabId)
                 }
@@ -1163,6 +1163,7 @@ export function WorkflowPage() {
         <div data-guide="canvas" className="flex-1 h-full min-w-0">
           <WorkflowCanvas nodeDefs={nodeDefs} />
         </div>
+        {showWorkflowResultsPanel && <WorkflowResultsPanel />}
       </div>
 
       {/* ── Execution Monitor (bottom, collapsible) ───────────────── */}
@@ -1519,11 +1520,15 @@ function MonitorToggleBtn() {
   return (
     <Tooltip delayDuration={0}>
       <TooltipTrigger asChild>
-        <button onClick={toggleRunMonitor}
-          className={`relative px-2 py-1 text-xs transition-colors ${showRunMonitor ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/>
-          </svg>
+        <button
+          onClick={toggleRunMonitor}
+          className={`relative h-8 w-8 rounded-md border transition-colors flex items-center justify-center ${
+            showRunMonitor
+              ? 'border-primary/50 bg-primary/10 text-primary'
+              : 'border-[hsl(var(--border))] text-muted-foreground hover:text-foreground hover:bg-accent'
+          }`}
+        >
+          <PanelBottom className="w-4 h-4" />
           {activeRuns > 0 && (
             <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-blue-500 text-white text-[8px] flex items-center justify-center font-bold animate-pulse">
               {activeRuns}

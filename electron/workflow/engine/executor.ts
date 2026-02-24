@@ -233,6 +233,7 @@ export class ExecutionEngine {
 
     const startTime = Date.now()
     let result: NodeExecutionResult
+    let cancelledByUser = false
 
     try {
       const context: NodeExecutionContext = {
@@ -249,6 +250,10 @@ export class ExecutionEngine {
 
       result = await handler.execute(context)
     } catch (error) {
+      const isAbort = (err: unknown) =>
+        err instanceof DOMException && err.name === 'AbortError' ||
+        (err instanceof Error && err.message?.toLowerCase().includes('abort'))
+      cancelledByUser = isAbort(error)
       result = {
         status: 'error',
         outputs: {},
@@ -322,8 +327,11 @@ export class ExecutionEngine {
       return true
     } else {
       const errorMsg = result.error || 'Unknown error'
-      console.error('[Executor] Node execution failed:', errorMsg)
-      this.callbacks.onNodeStatus(workflowId, nodeId, 'error', errorMsg)
+      if (!cancelledByUser) {
+        console.error('[Executor] Node execution failed:', errorMsg)
+        this.callbacks.onNodeStatus(workflowId, nodeId, 'error', errorMsg)
+      }
+      // cancelledByUser: cancel() already set node to idle; don't overwrite with error
 
       const outgoingEdges = edges.filter(e => e.sourceNodeId === nodeId)
       for (const edge of outgoingEdges) {
@@ -390,11 +398,11 @@ export class ExecutionEngine {
       } else if (targetKey.startsWith('param-')) {
         // Single param handle: "param-image" → set inputs.image = value
         const paramName = targetKey.slice(6) // remove "param-"
-        inputs[paramName] = String(outputValue)
+        inputs[paramName] = Array.isArray(outputValue) ? outputValue : String(outputValue)
       } else if (targetKey.startsWith('input-')) {
-        // Input port handle: "input-media" → set inputs.media = value
+        // Input port handle: "input-media" → set inputs.media = value (pass arrays through for e.g. Select node)
         const inputName = targetKey.slice(6) // remove "input-"
-        inputs[inputName] = String(outputValue)
+        inputs[inputName] = Array.isArray(outputValue) ? outputValue : String(outputValue)
       } else {
         // Unknown format, use as-is
         inputs[targetKey] = outputValue

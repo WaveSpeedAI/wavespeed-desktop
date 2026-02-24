@@ -83,7 +83,7 @@ export function ResultsPanel({ embeddedInNode, nodeId: nodeIdProp }: ResultsPane
 
   const currentNodeStatus = nodeStatuses[nodeId]
 
-  // When history is empty (e.g. browser run or just finished), show lastResults as synthetic records so preview is visible
+  // When history is empty (e.g. just finished), show lastResults as synthetic records so preview is visible
   const lastResultsForNode = lastResults[nodeId] ?? []
   const displayRecords: NodeExecutionRecord[] =
     records.length > 0

@@ -6,6 +6,7 @@ import { BaseNodeHandler, type NodeExecutionContext, type NodeExecutionResult } 
 import type { NodeTypeDefinition } from '../../../../src/workflow/types/node-defs'
 import { getWaveSpeedClient } from '../../services/service-locator'
 import { getModelById } from '../../services/model-list'
+import { normalizePayloadArrays } from '../../../../src/lib/schemaToForm'
 
 export const aiTaskDef: NodeTypeDefinition = {
   type: 'ai-task/run',
@@ -36,8 +37,8 @@ export class AITaskHandler extends BaseNodeHandler {
 
     try {
       const client = getWaveSpeedClient()
-      // Use Desktop's apiClient.run() which handles submit + poll
-      const result = await client.run(modelId, apiParams)
+      // Use Desktop's apiClient.run() which handles submit + poll; pass abortSignal so Stop cancels in-flight request/polling
+      const result = await client.run(modelId, apiParams, { signal: ctx.abortSignal })
 
       // Normalize first output to URL string (API may return string or { url: "..." })
       const firstOutput = Array.isArray(result.outputs) && result.outputs.length > 0 ? result.outputs[0] : null
@@ -127,6 +128,6 @@ export class AITaskHandler extends BaseNodeHandler {
       }
     }
     if (typeof params.seed === 'number' && params.seed < 0) delete params.seed
-    return params
+    return normalizePayloadArrays(params, [])
   }
 }

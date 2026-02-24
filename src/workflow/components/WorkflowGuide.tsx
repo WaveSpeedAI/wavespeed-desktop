@@ -15,10 +15,12 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
+import { persistentStorage } from '@/lib/storage'
 
 /* ── Constants ─────────────────────────────────────────────────────── */
 
 const GUIDE_COMPLETED_KEY = 'wavespeed_workflow_guide_completed'
+const GUIDE_WELCOME_SHOWN_KEY = 'wavespeed_workflow_guide_welcome_shown'
 const STAGE_PADDING = 8
 const STAGE_RADIUS = 8
 const POPOVER_GAP = 12
@@ -26,13 +28,18 @@ const POPOVER_GAP = 12
 /* ── Public hook ───────────────────────────────────────────────────── */
 
 export function useWorkflowGuide() {
-  const completed = localStorage.getItem(GUIDE_COMPLETED_KEY) === '1'
-  const [open, setOpen] = useState(!completed)
+  const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    persistentStorage.get<string>(GUIDE_COMPLETED_KEY).then(v => {
+      if (v !== '1') setOpen(true)
+    })
+  }, [])
 
   const show = useCallback(() => setOpen(true), [])
   const dismiss = useCallback(() => {
     setOpen(false)
-    localStorage.setItem(GUIDE_COMPLETED_KEY, '1')
+    persistentStorage.set(GUIDE_COMPLETED_KEY, '1')
   }, [])
 
   return { open, show, dismiss }
@@ -322,10 +329,20 @@ export function WorkflowGuide({ open, onClose, onStepChange }: WorkflowGuideProp
     return () => window.removeEventListener('keydown', handler)
   }, [open, step, total, onClose])
 
-  // Reset step when opening
+  // When opening: start at step 0 (welcome) only if welcome was never shown; otherwise start at step 1 so welcome appears only once
   useEffect(() => {
-    if (open) setStep(0)
+    if (!open) return
+    persistentStorage.get<string>(GUIDE_WELCOME_SHOWN_KEY).then(v => {
+      setStep(v === '1' ? 1 : 0)
+    })
   }, [open])
+
+  // Mark welcome as shown once we display it, so it only ever appears once
+  useEffect(() => {
+    if (open && steps[step]?.key === 'welcome') {
+      persistentStorage.set(GUIDE_WELCOME_SHOWN_KEY, '1')
+    }
+  }, [open, step, steps])
 
   // Notify parent of step changes
   useEffect(() => {

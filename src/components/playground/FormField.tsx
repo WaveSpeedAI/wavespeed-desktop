@@ -35,12 +35,14 @@ interface FormFieldProps {
   onUploadingChange?: (isUploading: boolean) => void
   /** When provided (e.g. workflow), file uploads use this instead of API. */
   onUploadFile?: (file: File) => Promise<string>
+  /** Optional React node rendered inside the label row (e.g. a connection handle anchor). */
+  handleAnchor?: React.ReactNode
 }
 
 // Generate a random seed (0 to 65535)
 const generateRandomSeed = () => Math.floor(Math.random() * 65536)
 
-export function FormField({ field, value, onChange, disabled = false, error, modelType, imageValue, hideLabel = false, formValues, onUploadingChange, onUploadFile }: FormFieldProps) {
+export function FormField({ field, value, onChange, disabled = false, error, modelType, imageValue, hideLabel = false, formValues, onUploadingChange, onUploadFile, handleAnchor }: FormFieldProps) {
   const { t } = useTranslation()
   // Check if this is a seed field
   const isSeedField = field.name.toLowerCase() === 'seed'
@@ -364,6 +366,7 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
     <div className="space-y-2">
       {!hideLabel && (
         <div className="flex items-center gap-2">
+          {handleAnchor}
           <Label
             htmlFor={field.name}
             className={cn(

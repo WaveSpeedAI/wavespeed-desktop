@@ -161,6 +161,55 @@ const handleRight = (): React.CSSProperties => ({
   zIndex: 40,
 })
 
+/* ── HandleAnchor ─────────────────────────────────────────────────────
+   Inline wrapper placed next to a parameter label.  It contains the
+   React-Flow Handle and shifts it horizontally onto the node border so
+   the dot is always vertically centred with the label text, regardless
+   of how much content sits below (textarea, description, etc.).       */
+
+function HandleAnchor({ id, type, connected, media, children }: {
+  id: string; type: 'target' | 'source'; connected: boolean; media?: boolean
+  children?: React.ReactNode
+}) {
+  const ref = useRef<HTMLSpanElement>(null)
+  const [offsetLeft, setOffsetLeft] = useState<number | null>(null)
+  const pos = type === 'target' ? Position.Left : Position.Right
+  const base = type === 'target' ? handleLeft(connected, media) : handleRight()
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    // Walk up to the .react-flow__node wrapper to measure the true offset
+    let node: HTMLElement | null = el
+    while (node && !node.classList.contains('react-flow__node')) node = node.parentElement
+    if (!node) return
+    const nodeRect = node.getBoundingClientRect()
+    const anchorRect = el.getBoundingClientRect()
+    if (type === 'target') {
+      setOffsetLeft(nodeRect.left - anchorRect.left - HANDLE_SIZE / 2 - 1)
+    } else {
+      setOffsetLeft(nodeRect.right - anchorRect.right + HANDLE_SIZE / 2 + 1)
+    }
+  }, [type])
+
+  const handleStyle: React.CSSProperties = {
+    ...base,
+    position: 'absolute',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    ...(type === 'target'
+      ? { left: offsetLeft ?? -(HANDLE_SIZE / 2 + 1) }
+      : { right: offsetLeft ?? -(HANDLE_SIZE / 2 + 1) }),
+  }
+
+  return (
+    <span ref={ref} className="relative inline-flex items-center self-stretch">
+      <Handle type={type} position={pos} id={id} style={handleStyle} />
+      {children}
+    </span>
+  )
+}
+
 /* ── main component ──────────────────────────────────────────────────── */
 
 const MIN_NODE_WIDTH = 300
@@ -709,9 +758,10 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
               const hid = `input-${inp.key}`
               const conn = connectedSet.has(hid)
               return (
-                <Row key={inp.key} handleId={hid} handleType="target" connected={conn} media>
+                <Row key={inp.key}>
                   <div className="flex items-center justify-between gap-2 w-full">
                     <span className={`text-xs whitespace-nowrap flex-shrink-0 ${conn ? 'text-green-400 font-semibold' : 'text-[hsl(var(--muted-foreground))]'}`}>
+                      <HandleAnchor id={hid} type="target" connected={conn} media />
                       {localizeInputLabel(inp.key, inp.label)}
                     </span>
                     {conn && <ConnectedInputControl nodeId={id} handleId={hid} edges={edges} nodes={useWorkflowStore.getState().nodes} onPreview={openPreview} />}
@@ -766,20 +816,24 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
               const conn = connectedSet.has(hid)
               const isMediaField = field.type === 'file' || field.type === 'file-array' || /image|video|audio|mask/i.test(field.name)
               return (
-                <Row key={field.name} handleId={hid} handleType="target" connected={conn} media={isMediaField}>
+                <Row key={field.name}>
                   {conn ? (
-                    isMediaField
-                      ? <ConnectedInputControl nodeId={id} handleId={hid} edges={edges} nodes={useWorkflowStore.getState().nodes} onPreview={openPreview} />
-                      : <LinkedBadge
-                          nodeId={id}
-                          handleId={hid}
-                          edges={edges}
-                          nodes={useWorkflowStore.getState().nodes}
-                          onDisconnect={() => {
-                            const edge = edges.find(e => e.target === id && e.targetHandle === hid)
-                            if (edge) useWorkflowStore.getState().removeEdge(edge.id)
-                          }}
-                        />
+                    <>
+                      <HandleAnchor id={hid} type="target" connected={conn} media={isMediaField} />
+                      {isMediaField
+                        ? <ConnectedInputControl nodeId={id} handleId={hid} edges={edges} nodes={useWorkflowStore.getState().nodes} onPreview={openPreview} />
+                        : <LinkedBadge
+                            nodeId={id}
+                            handleId={hid}
+                            edges={edges}
+                            nodes={useWorkflowStore.getState().nodes}
+                            onDisconnect={() => {
+                              const edge = edges.find(e => e.target === id && e.targetHandle === hid)
+                              if (edge) useWorkflowStore.getState().removeEdge(edge.id)
+                            }}
+                          />
+                      }
+                    </>
                   ) : (
                     <div className="w-full min-w-0 nodrag" onClick={e => e.stopPropagation()}>
                       <FormField
@@ -789,6 +843,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
                         modelType={currentModel?.type}
                         imageValue={field.name === 'prompt' ? getSingleImageFromValues(formValues) : undefined}
                         formValues={formValues}
+                        handleAnchor={<HandleAnchor id={hid} type="target" connected={conn} media={isMediaField} />}
                       />
                     </div>
                   )}
@@ -910,9 +965,10 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
           const useFormFieldForPort = portFieldConfig != null && !conn
           if (!isPreviewNode) {
             return (
-              <Row key={inp.key} handleId={hid} handleType="target" connected={conn} media>
+              <Row key={inp.key}>
                 <div className="flex items-center justify-between gap-2 w-full">
                   <span className={`text-xs whitespace-nowrap flex-shrink-0 ${conn ? 'text-green-400 font-semibold' : 'text-[hsl(var(--muted-foreground))]'}`}>
+                    <HandleAnchor id={hid} type="target" connected={conn} media />
                     {localizeInputLabel(inp.key, inp.label)}{inp.required && <span className="text-red-400"> *</span>}
                   </span>
                   {conn
@@ -943,10 +999,11 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
           }
 
           return (
-            <Row key={inp.key} handleId={hid} handleType="target" connected={conn} media>
+            <Row key={inp.key}>
               <div className="w-full min-w-0 space-y-2">
                 <div className="flex items-center justify-between gap-2">
                   <span className={`text-xs ${conn ? 'text-green-400 font-semibold' : 'text-[hsl(var(--muted-foreground))]'}`}>
+                    <HandleAnchor id={hid} type="target" connected={conn} media />
                     {localizeInputLabel(inp.key, inp.label)}{inp.required && <span className="text-red-400"> *</span>}
                   </span>
                 </div>
@@ -1064,18 +1121,21 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
               )
             }
             return (
-              <Row key={p.key} handleId={hid} handleType="target" connected={conn}>
+              <Row key={p.key}>
                 {conn ? (
-                  <LinkedBadge
-                    nodeId={id}
-                    handleId={hid}
-                    edges={edges}
-                    nodes={useWorkflowStore.getState().nodes}
-                    onDisconnect={() => {
-                      const edge = edges.find(e => e.target === id && e.targetHandle === hid)
-                      if (edge) useWorkflowStore.getState().removeEdge(edge.id)
-                    }}
-                  />
+                  <>
+                    <HandleAnchor id={hid} type="target" connected={conn} />
+                    <LinkedBadge
+                      nodeId={id}
+                      handleId={hid}
+                      edges={edges}
+                      nodes={useWorkflowStore.getState().nodes}
+                      onDisconnect={() => {
+                        const edge = edges.find(e => e.target === id && e.targetHandle === hid)
+                        if (edge) useWorkflowStore.getState().removeEdge(edge.id)
+                      }}
+                    />
+                  </>
                 ) : (
                   <div className="w-full min-w-0 nodrag" onClick={e => e.stopPropagation()}>
                     <FormField
@@ -1083,6 +1143,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
                       value={formValues[p.key]}
                       onChange={(v) => setParam(p.key, v)}
                       formValues={formValues}
+                      handleAnchor={<HandleAnchor id={hid} type="target" connected={conn} />}
                     />
                   </div>
                 )}
@@ -1105,9 +1166,10 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
           }
 
           return (
-            <Row key={p.key} handleId={hid} handleType="target" connected={conn}>
+            <Row key={p.key}>
               <div className="flex items-center justify-between gap-2 w-full">
                 <span className="text-xs text-[hsl(var(--muted-foreground))] flex-shrink-0">
+                  <HandleAnchor id={hid} type="target" connected={conn} />
                   {localizeParamLabel(p.key, p.label)}
                   {localizeParamDescription(p.key, p.description) && <Tip text={String(localizeParamDescription(p.key, p.description))} />}
                 </span>
@@ -1233,19 +1295,13 @@ function Inline3DViewer({ src, onClick }: { src: string; onClick?: () => void })
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   Row — wrapper that positions a Handle aligned to center of the row
+   Row — simple padding wrapper for parameter rows
    ══════════════════════════════════════════════════════════════════════ */
 
-function Row({ children, handleId, handleType, connected, media }: {
-  children: React.ReactNode; handleId: string; handleType: 'target' | 'source'
-  connected: boolean; media?: boolean
-}) {
-  const pos = handleType === 'target' ? Position.Left : Position.Right
-  const style = handleType === 'target' ? handleLeft(connected, media) : handleRight()
+function Row({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative flex items-center min-h-[32px] px-3 py-1">
-      <Handle type={handleType} position={pos} id={handleId} style={style} />
-      <div className="pl-2 flex-1 min-w-0">{children}</div>
+    <div className="min-h-[32px] px-3 py-1">
+      <div className="pl-2 min-w-0">{children}</div>
     </div>
   )
 }
@@ -1282,9 +1338,9 @@ function ParamRow({ nodeId, schema, value, connected, onChange, onDisconnect, ed
   if (ft === 'textarea') {
     const isPromptField = schema.name.toLowerCase() === 'prompt'
     return (
-      <div className="relative px-3 py-1">
-        <Handle type="target" position={Position.Left} id={handleId} style={{ ...handleLeft(connected), top: 16 }} />
+      <div className="px-3 py-1">
         <label className="pl-2 flex items-center gap-1 mb-1 text-xs font-medium text-blue-400">
+          <HandleAnchor id={handleId} type="target" connected={connected} />
           {label}{schema.required && <span className="text-red-400">*</span>}
           {schema.description && <Tip text={schema.description} />}
           {isPromptField && !connected && (
@@ -1317,11 +1373,11 @@ function ParamRow({ nodeId, schema, value, connected, onChange, onDisconnect, ed
   if (ft === 'slider' && schema.min !== undefined && schema.max !== undefined) {
     const numVal = cur !== undefined && cur !== null ? Number(cur) : schema.min
     return (
-      <div className="relative px-3 py-1">
-        <Handle type="target" position={Position.Left} id={handleId} style={{ ...handleLeft(connected), top: '50%', transform: 'translateY(-50%)' }} />
+      <div className="px-3 py-1">
         <div className="pl-2">
           <div className="flex items-center gap-1 mb-0.5">
             <span className="text-xs text-blue-400 font-medium flex items-center gap-1 flex-shrink-0">
+              <HandleAnchor id={handleId} type="target" connected={connected} />
               {label}{schema.required && <span className="text-red-400">*</span>}
               {schema.description && <Tip text={schema.description} />}
             </span>
@@ -1347,9 +1403,10 @@ function ParamRow({ nodeId, schema, value, connected, onChange, onDisconnect, ed
   // ── Size: dropdown if enum, or W×H dual input ──
   if (ft === 'size') {
     return (
-      <Row handleId={handleId} handleType="target" connected={connected}>
+      <Row>
         <div className="flex items-center gap-2">
           <span className="text-xs text-blue-400 font-medium flex items-center gap-1 flex-shrink-0">
+            <HandleAnchor id={handleId} type="target" connected={connected} />
             {label}{schema.description && <Tip text={schema.description} />}
           </span>
           <div className="flex-1 min-w-0 flex justify-end" onClick={e => e.stopPropagation()}>
@@ -1369,9 +1426,10 @@ function ParamRow({ nodeId, schema, value, connected, onChange, onDisconnect, ed
 
   // ── All other types: single row ──
   return (
-    <Row handleId={handleId} handleType="target" connected={connected}>
+    <Row>
       <div className="flex items-center gap-2">
         <span className="text-xs text-blue-400 font-medium whitespace-nowrap flex items-center gap-1 flex-shrink-0">
+          <HandleAnchor id={handleId} type="target" connected={connected} />
           {label}{schema.required && <span className="text-red-400">*</span>}
           {schema.description && <Tip text={schema.description} />}
         </span>
@@ -1501,10 +1559,10 @@ function MediaRow({ nodeId, schema, value, connected, connectedSet, onChange, on
           const conn = connectedSet.has(hid)
           const urlValid = isValidUrl(v)
           return (
-            <div key={i} className="relative flex items-center min-h-[32px] px-3 py-0.5">
-              <Handle type="target" position={Position.Left} id={hid} style={handleLeft(conn, true)} />
-              <div className="pl-2 flex-1 min-w-0">
+            <div key={i} className="min-h-[32px] px-3 py-0.5">
+              <div className="pl-2">
                 <div className="flex items-center gap-1">
+                  <HandleAnchor id={hid} type="target" connected={conn} media />
                   <span className="text-[10px] text-[hsl(var(--muted-foreground))] w-5 flex-shrink-0">[{i + 1}]</span>
                   {conn ? <LinkedBadge nodeId={nodeId} handleId={hid} edges={edges} nodes={nodes} onDisconnect={() => disconnectHandle(hid)} /> : (
                     <>
@@ -1552,9 +1610,9 @@ function MediaRow({ nodeId, schema, value, connected, connectedSet, onChange, on
   const urlValid = isValidUrl(sval)
 
   return (
-    <div className="relative px-3 py-1">
-      <Handle type="target" position={Position.Left} id={handleId} style={{ ...handleLeft(connected, true), top: 16 }} />
+    <div className="px-3 py-1">
       <label className="pl-2 flex items-center gap-1 mb-1 text-xs font-medium text-green-400">
+        <HandleAnchor id={handleId} type="target" connected={connected} media />
         {label}{schema.required && <span className="text-red-400">*</span>}
         {schema.description && <Tip text={schema.description} />}
         <UploadStatusBadge state={uploadState} error={uploadError} />
@@ -2754,9 +2812,9 @@ function JsonRow({ nodeId, schema, value, connected, onChange, edges, nodes }: {
   }
 
   return (
-    <div className="relative px-3 py-1">
-      <Handle type="target" position={Position.Left} id={handleId} style={{ ...handleLeft(connected), top: 16 }} />
+    <div className="px-3 py-1">
       <label className="pl-2 flex items-center gap-1 mb-1 text-xs font-medium text-orange-400">
+        <HandleAnchor id={handleId} type="target" connected={connected} />
         {label}{schema.required && <span className="text-red-400">*</span>}
         {schema.description && <Tip text={schema.description} />}
         <span className="text-[10px] text-[hsl(var(--muted-foreground))] font-normal ml-1">JSON</span>

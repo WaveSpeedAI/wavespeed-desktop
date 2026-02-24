@@ -342,7 +342,7 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
     const activeTab = get().getActiveTab()
     if (!activeTab) return
 
-    const { selectedModel, formValues } = activeTab
+    const { selectedModel, formValues, formFields } = activeTab
     if (!selectedModel) {
       set(state => ({
         tabs: state.tabs.map(tab =>

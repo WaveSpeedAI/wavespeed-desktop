@@ -39,7 +39,14 @@ export function ExecutionToolbar() {
     <div className="flex items-center gap-2 px-4 py-1.5 border-b border-border bg-card">
       <Button variant="outline" size="sm" disabled={nodes.length === 0}
         onClick={() => {
-          const browserNodes = nodes.map(n => ({ id: n.id, data: { nodeType: n.data?.nodeType ?? '', params: n.data?.params, label: n.data?.label } }))
+          const browserNodes = nodes.map(n => ({
+            id: n.id,
+            data: {
+              nodeType: n.data?.nodeType ?? '',
+              params: { ...(n.data?.params ?? {}), __meta: { modelInputSchema: n.data?.modelInputSchema ?? [] } },
+              label: n.data?.label
+            }
+          }))
           const browserEdges = edges.map(e => ({ source: e.source, target: e.target, sourceHandle: e.sourceHandle ?? undefined, targetHandle: e.targetHandle ?? undefined }))
           runAllInBrowser(browserNodes, browserEdges)
         }}>

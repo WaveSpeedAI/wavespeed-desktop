@@ -14,8 +14,12 @@ import {
   runSegmentAnything
 } from '@/workflow/lib/free-tool-runner'
 import { normalizePayloadArrays } from '@/lib/schemaToForm'
+import { BROWSER_NODE_DEFINITIONS } from './node-definitions'
+import type { ModelParamSchema } from '@/workflow/types/node-defs'
 
 const SKIP_KEYS = new Set(['modelId', '__meta', '__locks', '__nodeWidth', '__nodeHeight'])
+
+const nodeDefMap = new Map(BROWSER_NODE_DEFINITIONS.map(d => [d.type, d]))
 
 export interface BrowserNode {
   id: string
@@ -102,6 +106,49 @@ function resolveInputs(
     }
   }
   return inputs
+}
+
+function isEmpty(v: unknown): boolean {
+  if (v === undefined || v === null || v === '') return true
+  if (Array.isArray(v) && v.length === 0) return true
+  return false
+}
+
+/**
+ * Validate that all required fields are present before running a node.
+ * Returns a list of missing field labels (empty = valid).
+ */
+function validateNodeInputs(
+  nodeType: string,
+  params: Record<string, unknown>,
+  inputs: Record<string, unknown>
+): string[] {
+  const missing: string[] = []
+
+  if (nodeType === 'ai-task/run') {
+    const meta = params.__meta as Record<string, unknown> | undefined
+    const schema = (meta?.modelInputSchema ?? []) as ModelParamSchema[]
+    for (const field of schema) {
+      if (!field.required) continue
+      const val = inputs[field.name] ?? params[field.name]
+      if (isEmpty(val) && isEmpty(field.default)) {
+        missing.push(field.label || field.name)
+      }
+    }
+    return missing
+  }
+
+  const def = nodeDefMap.get(nodeType)
+  if (def) {
+    for (const inp of def.inputs) {
+      if (!inp.required) continue
+      const val = inputs[inp.key] ?? inputs[`input-${inp.key}`] ?? params[inp.key]
+      if (isEmpty(val)) {
+        missing.push(inp.label || inp.key)
+      }
+    }
+  }
+  return missing
 }
 
 function base64ToDataUrl(base64: string, mime = 'image/png'): string {
@@ -199,6 +246,14 @@ export async function executeWorkflowInBrowser(
       const nodeType = node.data.nodeType
       const params = node.data.params ?? {}
       const inputs = resolveInputs(nodeId, nodeMap, edgesWithHandles, results)
+
+      // Validate required fields before running
+      const missingFields = validateNodeInputs(nodeType, params, inputs)
+      if (missingFields.length > 0) {
+        failedNodes.add(nodeId)
+        callbacks.onNodeStatus(nodeId, 'error', `Missing required fields: ${missingFields.join(', ')}`)
+        return
+      }
 
       callbacks.onNodeStatus(nodeId, 'running')
       const start = Date.now()

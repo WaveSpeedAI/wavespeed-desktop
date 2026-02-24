@@ -219,7 +219,14 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
   runNode: async (_workflowId, nodeId) => {
     const { useWorkflowStore } = await import('./workflow.store')
     const { nodes, edges } = useWorkflowStore.getState()
-    const browserNodes = nodes.map(n => ({ id: n.id, data: { nodeType: n.data?.nodeType ?? '', params: n.data?.params, label: n.data?.label } }))
+    const browserNodes = nodes.map(n => ({
+      id: n.id,
+      data: {
+        nodeType: n.data?.nodeType ?? '',
+        params: { ...(n.data?.params ?? {}), __meta: { modelInputSchema: n.data?.modelInputSchema ?? [] } },
+        label: n.data?.label
+      }
+    }))
     const browserEdges = edges.map(e => ({ source: e.source, target: e.target, sourceHandle: e.sourceHandle ?? undefined, targetHandle: e.targetHandle ?? undefined }))
     get().runNodeInBrowser(browserNodes, browserEdges, nodeId)
   },

@@ -721,7 +721,14 @@ export function WorkflowPage() {
   const handleRunAll = async (times = 1) => {
     if (nodes.length === 0) return
     const runAllInBrowser = useExecutionStore.getState().runAllInBrowser
-    const browserNodes = nodes.map(n => ({ id: n.id, data: { nodeType: n.data?.nodeType ?? '', params: n.data?.params, label: n.data?.label } }))
+    const browserNodes = nodes.map(n => ({
+      id: n.id,
+      data: {
+        nodeType: n.data?.nodeType ?? '',
+        params: { ...(n.data?.params ?? {}), __meta: { modelInputSchema: n.data?.modelInputSchema ?? [] } },
+        label: n.data?.label
+      }
+    }))
     const browserEdges = edges.map(e => ({ source: e.source, target: e.target, sourceHandle: e.sourceHandle ?? undefined, targetHandle: e.targetHandle ?? undefined }))
     const runTimes = Math.max(1, Math.min(99, Math.floor(times || 1)))
     runCancelRef.current = false

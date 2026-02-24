@@ -194,7 +194,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
   const nodeRef = useRef<HTMLDivElement>(null)
   const [resizing, setResizing] = useState(false)
   const { getViewport, setNodes } = useReactFlow()
-  // Title bar: for AI task always show "WaveSpeed API"; for others use node-type translation
+  const shortId = id.slice(0, 8)
   const nodeLabel = data.nodeType === 'ai-task/run'
     ? t('workflow.aiTaskNodeLabel', 'WaveSpeed API')
     : t(`workflow.nodeDefs.${data.nodeType}.label`, data.nodeType?.split('/').pop() ?? 'Node')
@@ -626,7 +626,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
       >
 
       {/* ── Title bar — color-coded background by status ──────────── */}
-      <div className={`flex items-center gap-2 px-3 py-2 pr-16 select-none
+      <div className={`flex items-center gap-1.5 px-3 py-2 select-none
         ${running ? 'bg-blue-500/10' : status === 'confirmed' ? 'bg-green-500/8' : status === 'error' ? 'bg-red-500/8' : ''}`}>
         {/* Status dot */}
         <span className={`w-2 h-2 rounded-full flex-shrink-0
@@ -635,7 +635,8 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
             status === 'error' ? 'bg-red-500' :
             status === 'unconfirmed' ? 'bg-orange-500' :
             'bg-[hsl(var(--muted-foreground))] opacity-30'}`} />
-        <span className="font-semibold text-[13px] flex-1 truncate">{nodeLabel}</span>
+        <span className="font-semibold text-[13px] truncate">{nodeLabel}</span>
+        <span className="text-[10px] text-[hsl(var(--muted-foreground))] opacity-50 font-mono flex-shrink-0">{shortId}</span>
       </div>
 
       {/* ── Running status bar — prominent, always visible when running ── */}
@@ -763,19 +764,22 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
             {visibleFormFields.map((field) => {
               const hid = `param-${field.name}`
               const conn = connectedSet.has(hid)
+              const isMediaField = field.type === 'file' || field.type === 'file-array' || /image|video|audio|mask/i.test(field.name)
               return (
-                <Row key={field.name} handleId={hid} handleType="target" connected={conn}>
+                <Row key={field.name} handleId={hid} handleType="target" connected={conn} media={isMediaField}>
                   {conn ? (
-                    <LinkedBadge
-                      nodeId={id}
-                      handleId={hid}
-                      edges={edges}
-                      nodes={useWorkflowStore.getState().nodes}
-                      onDisconnect={() => {
-                        const edge = edges.find(e => e.target === id && e.targetHandle === hid)
-                        if (edge) useWorkflowStore.getState().removeEdge(edge.id)
-                      }}
-                    />
+                    isMediaField
+                      ? <ConnectedInputControl nodeId={id} handleId={hid} edges={edges} nodes={useWorkflowStore.getState().nodes} onPreview={openPreview} />
+                      : <LinkedBadge
+                          nodeId={id}
+                          handleId={hid}
+                          edges={edges}
+                          nodes={useWorkflowStore.getState().nodes}
+                          onDisconnect={() => {
+                            const edge = edges.find(e => e.target === id && e.targetHandle === hid)
+                            if (edge) useWorkflowStore.getState().removeEdge(edge.id)
+                          }}
+                        />
                   ) : (
                     <div className="w-full min-w-0 nodrag" onClick={e => e.stopPropagation()}>
                       <FormField
@@ -1588,15 +1592,13 @@ function MediaRow({ nodeId, schema, value, connected, connectedSet, onChange, on
    ══════════════════════════════════════════════════════════════════════ */
 
 /** Shows "linked to NodeLabel" with a lock icon; click lock to disconnect */
-function LinkedBadge({ nodeId, handleId, edges, nodes, onDisconnect, onPreview }: {
+function LinkedBadge({ nodeId, handleId, edges, nodes, onDisconnect }: {
   nodeId?: string; handleId?: string
   edges?: Array<{ id: string; source: string; sourceHandle?: string | null; target: string; targetHandle?: string | null }>
-  nodes?: Array<{ id: string; data: { label?: string; nodeType?: string; params?: Record<string, unknown> } }>
+  nodes?: Array<{ id: string; data: { label?: string; nodeType?: string } }>
   onDisconnect?: () => void
-  onPreview?: (src: string) => void
 }) {
   const { t } = useTranslation()
-  const lastResults = useExecutionStore(s => s.lastResults)
   if (!nodeId || !handleId || !edges || !nodes) {
     return <span className="inline-flex items-center gap-1 text-[11px] text-blue-400 italic"><LockIcon /> {t('workflow.linked', 'linked')}</span>
   }
@@ -1605,22 +1607,9 @@ function LinkedBadge({ nodeId, handleId, edges, nodes, onDisconnect, onPreview }
     return <span className="inline-flex items-center gap-1 text-[11px] text-blue-400 italic"><LockIcon /> {t('workflow.linked', 'linked')}</span>
   }
   const sourceNode = nodes.find(n => n.id === edge.source)
-  const sourceName = sourceNode?.data?.label || edge.source.slice(0, 8)
-  const latestResultUrl = lastResults[edge.source]?.[0]?.urls?.[0]
-  const previewUrl = (() => {
-    if (latestResultUrl && (/^https?:\/\//i.test(latestResultUrl) || /^blob:/i.test(latestResultUrl) || /^local-asset:\/\//i.test(latestResultUrl) || /^data:/i.test(latestResultUrl))) {
-      return latestResultUrl
-    }
-    const params = sourceNode?.data?.params
-    const nodeType = sourceNode?.data?.nodeType
-    if (nodeType === 'input/media-upload') {
-      const uploadedUrl = String(params?.uploadedUrl ?? '')
-      if (uploadedUrl && (/^https?:\/\//i.test(uploadedUrl) || /^blob:/i.test(uploadedUrl) || /^local-asset:\/\//i.test(uploadedUrl) || /^data:/i.test(uploadedUrl))) {
-        return uploadedUrl
-      }
-    }
-    return ''
-  })()
+  const sourceShortId = edge.source.slice(0, 8)
+  const sourceLabel = sourceNode?.data?.label
+  const sourceName = sourceLabel ? `${sourceLabel} #${sourceShortId}` : sourceShortId
 
   return (
     <span className="inline-flex items-center gap-1 text-[11px] text-blue-400 italic">
@@ -1632,18 +1621,6 @@ function LinkedBadge({ nodeId, handleId, edges, nodes, onDisconnect, onPreview }
         </button>
       ) : <LockIcon />}
       {t('workflow.linkedTo', 'linked to')} <span className="font-medium not-italic truncate max-w-[100px]">{sourceName}</span>
-      {onPreview && previewUrl && (
-        <button
-          onClick={e => { e.stopPropagation(); onPreview(previewUrl) }}
-          title={t('workflow.previewUpstreamOutput', 'Preview upstream output')}
-          className="not-italic text-blue-300 hover:text-blue-100 transition-colors"
-        >
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-            <circle cx="12" cy="12" r="3" />
-          </svg>
-        </button>
-      )}
     </span>
   )
 }
@@ -1711,7 +1688,7 @@ function ConnectedInputControl({
 
   return (
     <div className="w-full space-y-2">
-      <LinkedBadge nodeId={nodeId} handleId={handleId} edges={edges} nodes={nodes} onPreview={onPreview} />
+      <LinkedBadge nodeId={nodeId} handleId={handleId} edges={edges} nodes={nodes} />
       {showPreview && previewUrl && onPreview && (
         <div className="mt-1 flex items-center gap-1" onClick={e => e.stopPropagation()}>
           {isImage && (

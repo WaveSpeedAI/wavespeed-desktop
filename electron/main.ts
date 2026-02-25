@@ -214,6 +214,7 @@ function saveSettings(settings: Partial<Settings>): void {
 }
 
 function createWindow(): void {
+  const isMac = process.platform === 'darwin'
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
@@ -222,6 +223,15 @@ function createWindow(): void {
     show: false,
     autoHideMenuBar: true,
     icon: join(__dirname, '../../build/icon.png'),
+    backgroundColor: '#f5f6fa',
+    titleBarStyle: isMac ? 'hiddenInset' : 'hidden',
+    ...(process.platform !== 'darwin' ? {
+      titleBarOverlay: {
+        color: '#f5f6fa',
+        symbolColor: '#6b7280',
+        height: 60
+      }
+    } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
@@ -347,6 +357,21 @@ function createWindow(): void {
 }
 
 // IPC Handlers
+
+// Update title bar overlay colors when theme changes (Windows only)
+ipcMain.handle('update-titlebar-theme', (_, isDark: boolean) => {
+  if (process.platform === 'darwin' || !mainWindow) return
+  try {
+    mainWindow.setTitleBarOverlay({
+      color: isDark ? '#0a0f1a' : '#f5f6fa',
+      symbolColor: isDark ? '#9ca3af' : '#6b7280',
+      height: 60
+    })
+  } catch {
+    // setTitleBarOverlay may not be available on all platforms
+  }
+})
+
 ipcMain.handle('get-api-key', () => {
   const settings = loadSettings()
   return settings.apiKey

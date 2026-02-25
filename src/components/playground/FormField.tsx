@@ -292,11 +292,6 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
               <SelectValue placeholder={`Select ${field.label.toLowerCase()}`} />
             </SelectTrigger>
             <SelectContent>
-              {!field.required && (
-                <SelectItem value="__empty__" className="text-muted-foreground">
-                  — None —
-                </SelectItem>
-              )}
               {field.options?.map((option) => (
                 <SelectItem key={String(option)} value={String(option)}>
                   {String(option)}

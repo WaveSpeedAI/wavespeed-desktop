@@ -7,6 +7,11 @@ import './i18n'
 // Inject the electronAPI mock in browser environments.
 import './lib/electronAPI.web'
 
+// Mark document for Electron-specific CSS (e.g. titlebar overlay spacing)
+if (navigator.userAgent.toLowerCase().includes('electron')) {
+  document.documentElement.classList.add('is-electron')
+}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>

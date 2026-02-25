@@ -10,8 +10,7 @@ import { useTranslation } from 'react-i18next'
 import { WorkflowCanvas } from './components/canvas/WorkflowCanvas'
 import { NodePalette } from './components/canvas/NodePalette'
 import { WorkflowList } from './components/WorkflowList'
-import { RunMonitor } from './components/canvas/RunMonitor'
-import { WorkflowResultsPanel } from './components/panels/WorkflowResultsPanel'
+import { MonitorSidePanel } from './components/panels/MonitorSidePanel'
 import { useWorkflowStore, getDefaultNewWorkflowContent } from './stores/workflow.store'
 import { useExecutionStore } from './stores/execution.store'
 import { useUIStore } from './stores/ui.store'
@@ -20,7 +19,7 @@ import { useModelsStore } from '@/stores/modelsStore'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
 import { useTemplateStore } from '@/stores/templateStore'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
-import { PanelRight, PanelBottom, Workflow } from 'lucide-react'
+import { PanelRight, Workflow, X, Plus } from 'lucide-react'
 import { TemplatePickerDialog } from '@/components/templates/TemplatePickerDialog'
 import { TemplateDialog } from '@/components/templates/TemplateDialog'
 import { WorkflowGuide, useWorkflowGuide } from './components/WorkflowGuide'
@@ -30,6 +29,7 @@ import type { NodeTypeDefinition } from '@/workflow/types/node-defs'
 
 type ModelSyncStatus = 'idle' | 'loading' | 'synced' | 'error' | 'no-key' | 'unavailable'
 const WORKFLOW_API_UNAVAILABLE_MSG = 'Workflow API not available (run in Electron)'
+const isElectron = typeof navigator !== 'undefined' && navigator.userAgent.toLowerCase().includes('electron')
 function isWorkflowApiUnavailable(err: unknown): boolean {
   const msg = err instanceof Error ? err.message : String(err)
   return msg.includes(WORKFLOW_API_UNAVAILABLE_MSG)
@@ -128,13 +128,13 @@ export function WorkflowPage() {
   const saveWorkflow = useWorkflowStore(s => s.saveWorkflow)
   const loadWorkflow = useWorkflowStore(s => s.loadWorkflow)
   const { loadTemplates, useTemplate, createTemplate } = useTemplateStore()
-  const { showNodePalette, showWorkflowPanel, showWorkflowResultsPanel, toggleWorkflowResultsPanel,
+  const { showNodePalette, showWorkflowPanel, showWorkflowResultsPanel,
     toggleNodePalette, toggleWorkflowPanel, selectedNodeId, previewSrc, previewItems, previewIndex, prevPreview, nextPreview, closePreview,
     showNamingDialog, namingDialogDefault, resolveNamingDialog } = useUIStore()
   const [showTemplateDialog, setShowTemplateDialog] = useState(false)
   const guide = useWorkflowGuide()
   const [guideStepKey, setGuideStepKey] = useState<string | null>(null)
-  const { runAll, runNode, cancelAll, activeExecutions } = useExecutionStore()
+  const { cancelAll, activeExecutions } = useExecutionStore()
   const initListeners = useExecutionStore(s => s.initListeners)
   const wasRunning = useExecutionStore(s => s._wasRunning)
   const nodeStatuses = useExecutionStore(s => s.nodeStatuses)
@@ -890,9 +890,9 @@ export function WorkflowPage() {
       )}
 
       {/* ── Toolbar — unified header ──────────────────────────── */}
-      <div className="flex items-center border-b border-border bg-card py-1.5 px-2 gap-1.5 min-h-[40px]">
+      <div className={`flex items-center border-b border-border bg-card px-2 gap-1.5 h-12 electron-drag ${isElectron ? 'pr-[140px]' : ''}`}>
         {/* Left: Panel toggles */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 electron-no-drag">
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
               <button onClick={toggleWorkflowPanel}
@@ -928,8 +928,9 @@ export function WorkflowPage() {
         </div>
         <div className="w-px h-5 bg-border mx-1" />
 
-        {/* Tabs — inline, scrollable */}
-        <div className="flex items-center gap-px overflow-x-auto flex-shrink min-w-0">
+        {/* Tabs — unified style with Playground */}
+        <div className="flex-1 min-w-0 overflow-x-auto hide-scrollbar electron-no-drag">
+          <div className="flex items-center w-max">
           {tabs.map(tab => {
             const isActive = tab.tabId === activeTabId
             const isEditing = editingTabId === tab.tabId
@@ -946,11 +947,11 @@ export function WorkflowPage() {
                   e.stopPropagation()
                   setTabContextMenu({ tabId: tab.tabId, x: e.clientX, y: e.clientY })
                 }}
-                className={`group relative flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-md cursor-pointer text-xs select-none min-w-[72px] max-w-[160px] transition-colors
+                className={`group relative mx-0.5 flex h-8 items-center gap-1.5 rounded-md border px-3 text-xs transition-all cursor-pointer select-none shrink-0 max-w-[160px]
                   ${dragTabId === tab.tabId ? 'opacity-40' : ''}
                   ${isActive
-                    ? 'bg-accent text-foreground'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
+                    ? 'border-primary/30 bg-primary/10 text-foreground shadow-sm'
+                    : 'border-transparent text-muted-foreground hover:border-border hover:bg-muted/60'}`}
               >
                 {/* Drop indicator line */}
                 {dropIndicator?.tabId === tab.tabId && dropIndicator.side === 'left' && (
@@ -984,43 +985,44 @@ export function WorkflowPage() {
                 {!isEditing && tab.isDirty && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />}
                 {!isEditing && (
                   <button onClick={(e) => closeTab(tab.tabId, e)}
-                    className="w-4 h-4 flex items-center justify-center rounded-sm text-[10px] text-muted-foreground hover:text-foreground hover:bg-accent/80 opacity-0 group-hover:opacity-100 transition-opacity">
-                    ✕
+                    className="ml-1 rounded p-0.5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted text-muted-foreground hover:text-foreground">
+                    <X className="h-3 w-3" />
                   </button>
                 )}
               </div>
             )
           })}
-          <button onClick={addTab}
-            className="flex items-center justify-center w-6 h-6 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors text-sm flex-shrink-0"
-            title={t('workflow.newTab', 'New tab')}>
-            +
-          </button>
+          </div>
         </div>
+        <button onClick={addTab}
+          className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 electron-no-drag"
+          title={t('workflow.newTab', 'New tab')}>
+          <Plus className="h-4 w-4" />
+        </button>
 
         <div className="w-px h-5 bg-border mx-1" />
 
         {/* Last saved indicator */}
         {lastSavedAt && (
-          <span className="text-[10px] text-muted-foreground">
+          <span className="text-[10px] text-muted-foreground electron-no-drag">
             {t('workflow.savedAt', 'Saved')} {lastSavedAt.toLocaleTimeString()}
           </span>
         )}
         {isDirty && workflowId && (
-          <span className="text-[10px] text-orange-400">{t('workflow.unsaved', 'unsaved')}</span>
+          <span className="text-[10px] text-orange-400 electron-no-drag">{t('workflow.unsaved', 'unsaved')}</span>
         )}
 
         {/* Spacer */}
         <div className="flex-1" />
 
         {/* Right: Run controls */}
-        <div className="flex items-center gap-1.5" data-guide="run-controls">
+        <div className="flex items-center gap-1.5 electron-no-drag" data-guide="run-controls">
           <div className="flex items-center rounded-lg overflow-hidden shadow-sm">
             {/* Run button — disabled in browser (no execution API) */}
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
                 <button
-                  className="h-8 px-3.5 flex items-center gap-1.5 bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="h-7 px-3 flex items-center gap-1.5 bg-blue-600 text-white text-[11px] font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={nodes.length === 0 || isRunning || isBatchRunning}
                   onClick={() => handleRunAll(runCount)}
                 >
@@ -1035,7 +1037,7 @@ export function WorkflowPage() {
               </TooltipContent>
             </Tooltip>
             {/* Run count */}
-            <div className="h-8 flex items-center bg-[hsl(var(--muted))] border-l border-[hsl(var(--border))]">
+            <div className="h-7 flex items-center bg-[hsl(var(--muted))] border-l border-[hsl(var(--border))]">
               <input
                 type="number"
                 min={1}
@@ -1050,7 +1052,7 @@ export function WorkflowPage() {
           {/* Cancel button */}
           {(isRunning || isBatchRunning) && (
             <button
-              className="h-8 w-8 rounded-lg flex items-center justify-center bg-red-900/60 text-red-300 hover:bg-red-800/70 transition-colors"
+              className="h-7 w-7 rounded-lg flex items-center justify-center bg-red-900/60 text-red-300 hover:bg-red-800/70 transition-colors"
               onClick={() => {
                 runCancelRef.current = true
                 if (workflowId) cancelAll(workflowId)
@@ -1063,34 +1065,16 @@ export function WorkflowPage() {
             </button>
           )}
         </div>
-        {/* Monitor toggle */}
+        {/* Monitor side panel toggle */}
+        <span className="electron-no-drag flex items-center gap-1.5">
         <MonitorToggleBtn />
-
-        {/* Workflow Results panel (right) toggle */}
-        <Tooltip delayDuration={0}>
-          <TooltipTrigger asChild>
-            <button
-              onClick={toggleWorkflowResultsPanel}
-              className={`h-8 w-8 rounded-md border transition-colors flex items-center justify-center ${
-                showWorkflowResultsPanel
-                  ? 'border-primary/50 bg-primary/10 text-primary'
-                  : 'border-[hsl(var(--border))] text-muted-foreground hover:text-foreground hover:bg-accent'
-              }`}
-            >
-              <PanelRight className="w-4 h-4" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">
-            {t('workflow.workflowResults', 'Workflow Results')}
-          </TooltipContent>
-        </Tooltip>
 
         {/* Help / Guide button */}
         <Tooltip delayDuration={0}>
           <TooltipTrigger asChild>
             <button
               onClick={guide.show}
-              className="h-8 w-8 rounded-md border border-[hsl(var(--border))] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center justify-center"
+              className="h-7 w-7 rounded-md border border-[hsl(var(--border))] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center justify-center"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
@@ -1110,6 +1094,7 @@ export function WorkflowPage() {
           onSaveAsTemplate={handleSaveAsTemplate}
           data-guide="toolbar-more"
         />
+        </span>
       </div>
 
       {/* ── Main content ───────────────────────────────────────── */}
@@ -1155,11 +1140,8 @@ export function WorkflowPage() {
         <div data-guide="canvas" className="flex-1 h-full min-w-0">
           <WorkflowCanvas nodeDefs={nodeDefs} />
         </div>
-        {showWorkflowResultsPanel && <WorkflowResultsPanel />}
+        {showWorkflowResultsPanel && <MonitorSidePanel workflowId={workflowId} />}
       </div>
-
-      {/* ── Execution Monitor (bottom, collapsible) ───────────────── */}
-      <RunMonitor workflowId={workflowId} />
 
       {/* Preview overlay — covers the canvas area only (absolute within the page) */}
       {previewSrc && (
@@ -1504,8 +1486,8 @@ export function invalidateWorkflowListCache() {
 /* ── Monitor Toggle Button ─────────────────────────────────────────── */
 function MonitorToggleBtn() {
   const { t } = useTranslation()
-  const toggleRunMonitor = useExecutionStore(s => s.toggleRunMonitor)
-  const showRunMonitor = useExecutionStore(s => s.showRunMonitor)
+  const showPanel = useUIStore(s => s.showWorkflowResultsPanel)
+  const togglePanel = useUIStore(s => s.toggleWorkflowResultsPanel)
   const runSessions = useExecutionStore(s => s.runSessions)
   const activeRuns = runSessions.filter(s => s.status === 'running').length
 
@@ -1513,14 +1495,14 @@ function MonitorToggleBtn() {
     <Tooltip delayDuration={0}>
       <TooltipTrigger asChild>
         <button
-          onClick={toggleRunMonitor}
-          className={`relative h-8 w-8 rounded-md border transition-colors flex items-center justify-center ${
-            showRunMonitor
+          onClick={togglePanel}
+          className={`relative h-7 w-7 rounded-md border transition-colors flex items-center justify-center ${
+            showPanel
               ? 'border-primary/50 bg-primary/10 text-primary'
               : 'border-[hsl(var(--border))] text-muted-foreground hover:text-foreground hover:bg-accent'
           }`}
         >
-          <PanelBottom className="w-4 h-4" />
+          <PanelRight className="w-3.5 h-3.5" />
           {activeRuns > 0 && (
             <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-blue-500 text-white text-[8px] flex items-center justify-center font-bold animate-pulse">
               {activeRuns}

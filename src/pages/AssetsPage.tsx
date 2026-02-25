@@ -595,7 +595,7 @@ export function AssetsPage() {
               {t('assets.subtitle', { count: assets.length })}
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 electron-safe-right">
             {isSelectionMode ? (
               <>
                 <Button variant="outline" size="sm" onClick={handleSelectAll}>

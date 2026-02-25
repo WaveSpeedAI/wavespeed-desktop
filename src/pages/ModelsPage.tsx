@@ -400,7 +400,7 @@ export function ModelsPage() {
             <h1 className="text-2xl font-bold tracking-tight">{t('models.title')}</h1>
             <p className="text-muted-foreground text-sm hidden md:block">{t('models.description')}</p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => fetchModels(true)}>
+          <Button variant="outline" size="sm" onClick={() => fetchModels(true)} className="electron-safe-right">
             <RefreshCw className="mr-2 h-4 w-4" />
             {t('common.refresh')}
           </Button>

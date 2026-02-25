@@ -91,6 +91,9 @@ const electronAPI = {
     ipcRenderer.invoke('download-file', url, defaultFilename),
   openExternal: (url: string): Promise<void> => ipcRenderer.invoke('open-external', url),
 
+  // Title bar theme
+  updateTitlebarTheme: (isDark: boolean): Promise<void> => ipcRenderer.invoke('update-titlebar-theme', isDark),
+
   // Auto-updater APIs
   getAppVersion: (): Promise<string> => ipcRenderer.invoke('get-app-version'),
   getLogFilePath: (): Promise<string> => ipcRenderer.invoke('get-log-file-path'),

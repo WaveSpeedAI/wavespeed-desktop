@@ -29,6 +29,7 @@ export function MediaUploadBody({ params, onBatchChange, onPreview }: {
   const [dragOver, setDragOver] = useState(false)
   const [urlInput, setUrlInput] = useState('')
   const [showUrlInput, setShowUrlInput] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const detectMediaType = (name: string): string => {
     const ext = name.split('.').pop()?.toLowerCase() ?? ''
@@ -40,14 +41,19 @@ export function MediaUploadBody({ params, onBatchChange, onPreview }: {
 
   const handleFile = async (file: File) => {
     setUploadState('uploading'); setUploadError('')
-    onBatchChange({ fileName: file.name, mediaType: detectMediaType(file.name) })
+    const localMediaType = detectMediaType(file.name)
+    // Immediately show local preview via blob URL while uploading in background
+    const blobUrl = URL.createObjectURL(file)
+    onBatchChange({ uploadedUrl: blobUrl, fileName: file.name, mediaType: localMediaType })
     try {
-      const { uploadIpc } = await import('../../../ipc/ipc-client')
-      const url = await uploadIpc.uploadFile(file)
-      onBatchChange({ uploadedUrl: url, fileName: file.name, mediaType: detectMediaType(file.name) })
+      const url = await apiClient.uploadFile(file)
+      // Revoke blob URL and replace with CDN URL
+      URL.revokeObjectURL(blobUrl)
+      onBatchChange({ uploadedUrl: url, fileName: file.name, mediaType: localMediaType })
       setUploadState('success')
       setTimeout(() => setUploadState('idle'), 2000)
     } catch (err) {
+      // Upload failed — keep the local blob preview so user can still see the file
       setUploadState('error')
       setUploadError(err instanceof Error ? err.message : t('workflow.mediaUpload.uploadFailed', 'Upload failed'))
     }
@@ -112,11 +118,14 @@ export function MediaUploadBody({ params, onBatchChange, onPreview }: {
 
   return (
     <div className="px-3 py-2" onClick={e => e.stopPropagation()}>
+      <input ref={fileInputRef} type="file" accept="image/*,video/*,audio/*" className="hidden"
+        onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); if (fileInputRef.current) fileInputRef.current.value = '' }} />
       <div
         onDragOver={e => { e.preventDefault(); e.stopPropagation(); setDragOver(true) }}
         onDragLeave={e => { e.preventDefault(); e.stopPropagation(); setDragOver(false) }}
         onDrop={handleDrop}
-        className={`relative rounded-lg border-2 border-dashed p-4 text-center transition-colors
+        onClick={() => { if (uploadState !== 'uploading') fileInputRef.current?.click() }}
+        className={`relative rounded-lg border-2 border-dashed p-4 text-center transition-colors cursor-pointer
           ${dragOver ? 'border-blue-500 bg-blue-500/10' : 'border-[hsl(var(--border))] hover:border-blue-500/50'}
           ${uploadState === 'uploading' ? 'opacity-60 pointer-events-none' : ''}`}
       >
@@ -132,12 +141,13 @@ export function MediaUploadBody({ params, onBatchChange, onPreview }: {
               {t('workflow.mediaUpload.dropOrBrowse', 'Drop file here or click to browse')}
             </div>
             <div className="flex gap-1.5 justify-center">
-              <label className="px-3 py-1 rounded-md text-[11px] font-medium bg-blue-500/15 text-blue-400 hover:bg-blue-500/25 cursor-pointer transition-colors">
+              <label className="px-3 py-1 rounded-md text-[11px] font-medium bg-blue-500/15 text-blue-400 hover:bg-blue-500/25 cursor-pointer transition-colors"
+                onClick={e => e.stopPropagation()}>
                 {t('workflow.mediaUpload.browse', 'Browse')}
                 <input type="file" accept="image/*,video/*,audio/*" className="hidden"
                   onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f) }} />
               </label>
-              <button onClick={() => setShowUrlInput(!showUrlInput)}
+              <button onClick={e => { e.stopPropagation(); setShowUrlInput(!showUrlInput) }}
                 className="px-3 py-1 rounded-md text-[11px] font-medium bg-[hsl(var(--muted))] text-muted-foreground hover:text-foreground transition-colors">
                 {t('workflow.mediaUpload.pasteUrl', 'Paste URL')}
               </button>

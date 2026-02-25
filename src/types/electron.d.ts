@@ -120,6 +120,9 @@ export interface ElectronAPI {
   downloadFile: (url: string, defaultFilename: string) => Promise<DownloadResult>
   openExternal: (url: string) => Promise<void>
 
+  // Title bar theme
+  updateTitlebarTheme: (isDark: boolean) => Promise<void>
+
   // Auto-updater APIs
   getAppVersion: () => Promise<string>
   getLogFilePath: () => Promise<string>

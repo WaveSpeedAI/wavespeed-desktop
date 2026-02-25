@@ -16,15 +16,23 @@ function getStoredTheme(): Theme {
 function applyTheme(theme: Theme) {
   const root = document.documentElement
 
+  let isDark: boolean
   if (theme === 'auto') {
-    // Follow system preference
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    root.classList.toggle('dark', prefersDark)
+    isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    root.classList.toggle('dark', isDark)
   } else if (theme === 'dark') {
+    isDark = true
     root.classList.add('dark')
   } else {
+    isDark = false
     root.classList.remove('dark')
   }
+
+  // Update Electron title bar overlay colors to match theme
+  try {
+    (window as unknown as { electronAPI?: { updateTitlebarTheme?: (isDark: boolean) => Promise<void> } })
+      .electronAPI?.updateTitlebarTheme?.(isDark)
+  } catch { /* not in Electron */ }
 }
 
 interface ThemeState {

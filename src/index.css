@@ -85,6 +85,29 @@
   }
 }
 
+/* Electron custom title bar — make top toolbar draggable */
+.electron-drag {
+  -webkit-app-region: drag;
+}
+.electron-no-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* Reserve space for Windows title bar overlay controls (minimize/maximize/close).
+   In Electron with titleBarOverlay, the native controls sit in the top-right corner. */
+.is-electron .electron-safe-right {
+  margin-right: 140px;
+}
+
+/* Hide scrollbar but keep scroll functionality (for tab bars) */
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

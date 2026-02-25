@@ -5,6 +5,7 @@
  */
 import { useState, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { apiClient } from '@/api/client'
 import { useWorkflowStore } from '../../../stores/workflow.store'
 import { Paintbrush, Dices } from 'lucide-react'
 import { MaskEditor } from '@/components/playground/MaskEditor'
@@ -214,8 +215,7 @@ export function MediaRow({ nodeId, schema, value, connected, connectedSet, onCha
   const doUpload = async (file: File, cb: (url: string) => void) => {
     setUploadState('uploading'); setUploadError('')
     try {
-      const { uploadIpc } = await import('../../../ipc/ipc-client')
-      const url = await uploadIpc.uploadFile(file)
+      const url = await apiClient.uploadFile(file)
       cb(url)
       setUploadState('success')
       setTimeout(() => setUploadState('idle'), 2000)

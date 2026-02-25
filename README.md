@@ -30,9 +30,9 @@ The Android app shares the same React codebase as the desktop version, giving yo
   <img src="https://github.com/user-attachments/assets/d392a9d0-2a44-480b-9195-d23a850a1946" alt="WaveSpeed Android - Playground" width="300" />
 </p>
 
-## Creative Studio
+## [Creative Studio](https://wavespeed.ai/studio)
 
-12 free AI-powered creative tools that run locally in your browser. No API key required, no usage limits, completely free. Available on both desktop and Android.
+12 free AI-powered creative tools that run entirely in your browser. No API key required, no usage limits, completely free. Also available as a standalone web app at [wavespeed.ai/studio](https://wavespeed.ai/studio) — fully responsive, works on desktop, tablet, and mobile browsers.
 
 | Tool | Description |
 |------|-------------|

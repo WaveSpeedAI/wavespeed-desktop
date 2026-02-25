@@ -301,10 +301,15 @@ jobs:
             cp mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile-${VERSION}.apk \
                mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile.apk
           fi
-          # Also handle unsigned release APK
+          # Also handle unsigned release APK (same naming as signed)
           if [ -f mobile/android/app/build/outputs/apk/release/app-release-unsigned.apk ]; then
             mv mobile/android/app/build/outputs/apk/release/app-release-unsigned.apk \
-               mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile-${VERSION}-unsigned.apk
+               mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile-${VERSION}.apk
+            # Create fixed-name copy for README download link if signed version didn't already
+            if [ ! -f mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile.apk ]; then
+              cp mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile-${VERSION}.apk \
+                 mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile.apk
+            fi
           fi
 
       - name: Upload Debug APK

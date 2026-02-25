@@ -25,8 +25,8 @@ The Android app shares the same React codebase as the desktop version, giving yo
 - History, My Assets, templates, and auto-save
 - 18 languages, dark/light theme, Android 5.0+
 
-![WaveSpeed Android - Free Tools](https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1772060625732904320_WGOLKHQO.jpg)
-![WaveSpeed Android - Playground](https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1772060625694466529_TP7pwvDB.jpg)
+![WaveSpeed Android - Free Tools](https://github.com/user-attachments/assets/dafa6699-35ed-4da2-b6eb-4da818e2c846)
+![WaveSpeed Android - Playground](https://github.com/user-attachments/assets/d392a9d0-2a44-480b-9195-d23a850a1946)
 
 ## Creative Studio
 
@@ -47,13 +47,13 @@ The Android app shares the same React codebase as the desktop version, giving yo
 | **Media Trimmer** | Trim video and audio by selecting start and end times |
 | **Media Merger** | Merge multiple video or audio files into one |
 
-![WaveSpeed Creative Studio](https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1772060580553585671_Htrpnvur.png)
+![WaveSpeed Creative Studio](https://github.com/user-attachments/assets/67359fa7-8ff4-4001-a982-eb4802e5b841)
 
 ## Visual Workflow Editor
 
 Node-based pipeline builder for designing and executing complex AI workflows. Chain any combination of AI models, free tools, and media processing steps into automated pipelines.
 
-![WaveSpeed Visual Workflow Editor](https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1772060851772569555_7Bltrpnv.png)
+![WaveSpeed Visual Workflow Editor](https://github.com/user-attachments/assets/e1243d57-8d7b-4d42-bed3-94bf8adfa6f5)
 
 ## Features
 

@@ -89,6 +89,8 @@ const electronAPI = {
   clearAllData: (): Promise<boolean> => ipcRenderer.invoke('clear-all-data'),
   downloadFile: (url: string, defaultFilename: string): Promise<DownloadResult> =>
     ipcRenderer.invoke('download-file', url, defaultFilename),
+  saveFileSilent: (url: string, dir: string, fileName: string): Promise<DownloadResult> =>
+    ipcRenderer.invoke('save-file-silent', url, dir, fileName),
   openExternal: (url: string): Promise<void> => ipcRenderer.invoke('open-external', url),
 
   // Title bar theme

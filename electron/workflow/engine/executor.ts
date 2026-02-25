@@ -58,8 +58,12 @@ export class ExecutionEngine {
     }
 
     for (const level of levels) {
+      // Stop the entire workflow if any node has failed
+      if (failedNodes.size > 0) break
       const batch = level.slice(0, MAX_PARALLEL_EXECUTIONS)
       await Promise.all(batch.map(async nodeId => {
+        // If another node in this batch failed, skip remaining
+        if (failedNodes.size > 0) return
         // Skip if any upstream node failed
         const upstreams = upstreamMap.get(nodeId) ?? []
         if (upstreams.some(uid => failedNodes.has(uid))) {
@@ -104,10 +108,13 @@ export class ExecutionEngine {
     const nodeMap = new Map(nodes.map(n => [n.id, n]))
 
     const levels = topologicalLevels(nodeIds, simpleEdges)
+    let stopped = false
     for (const level of levels) {
+      if (stopped) break
       const toRun = level.filter(id => downstream.includes(id))
       if (toRun.length === 0) continue
-      await Promise.all(toRun.map(id => this.executeNode(workflowId, id, nodeMap, edges)))
+      const results = await Promise.all(toRun.map(id => this.executeNode(workflowId, id, nodeMap, edges)))
+      if (results.some(ok => !ok)) stopped = true
     }
   }
 

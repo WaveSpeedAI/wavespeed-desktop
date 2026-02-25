@@ -10,6 +10,9 @@ import './lib/electronAPI.web'
 // Mark document for Electron-specific CSS (e.g. titlebar overlay spacing)
 if (navigator.userAgent.toLowerCase().includes('electron')) {
   document.documentElement.classList.add('is-electron')
+  if (/mac/i.test(navigator.platform)) {
+    document.documentElement.classList.add('is-mac')
+  }
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

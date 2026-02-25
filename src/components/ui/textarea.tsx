@@ -5,7 +5,14 @@ export interface TextareaProps
   extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, ...props }, ref) => {
+  ({ className, value, onChange, ...props }, ref) => {
+    const composingRef = React.useRef(false)
+    const [localValue, setLocalValue] = React.useState(String(value ?? ''))
+
+    React.useEffect(() => {
+      if (!composingRef.current) setLocalValue(String(value ?? ''))
+    }, [value])
+
     return (
       <textarea
         className={cn(
@@ -13,6 +20,17 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           className
         )}
         ref={ref}
+        value={localValue}
+        onChange={e => {
+          setLocalValue(e.target.value)
+          if (!composingRef.current) onChange?.(e)
+        }}
+        onCompositionStart={() => { composingRef.current = true }}
+        onCompositionEnd={e => {
+          composingRef.current = false
+          setLocalValue((e.target as HTMLTextAreaElement).value)
+          onChange?.({ target: e.target, currentTarget: e.currentTarget } as React.ChangeEvent<HTMLTextAreaElement>)
+        }}
         {...props}
       />
     )

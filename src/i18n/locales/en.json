@@ -272,7 +272,7 @@
     "loadPreviews": "Load previews",
     "disablePreviews": "Disable previews",
     "generationDetails": "Generation Details",
-    "select": "Select",
+    "select": "Manage",
     "selectionDone": "Done",
     "deleteSelected": "Delete ({{count}})",
     "bulkDeleteConfirmTitle": "Delete History Items",
@@ -462,7 +462,7 @@
       "sizeLargest": "Largest first",
       "sizeSmallest": "Smallest first"
     },
-    "select": "Select",
+    "select": "Manage",
     "selectAll": "Select All",
     "deselectAll": "Deselect All",
     "deleteSelected": "Delete ({{count}})",

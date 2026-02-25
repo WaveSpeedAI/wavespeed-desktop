@@ -115,12 +115,15 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
           get().updateProgress(nodeId, progress, message)
         },
         onNodeComplete: (nodeId, { urls, cost }) => {
-          set(s => ({
-            lastResults: {
-              ...s.lastResults,
-              [nodeId]: [{ urls, time: new Date().toISOString(), cost }]
+          set(s => {
+            const existing = s.lastResults[nodeId] ?? []
+            return {
+              lastResults: {
+                ...s.lastResults,
+                [nodeId]: [{ urls, time: new Date().toISOString(), cost }, ...existing].slice(0, 50)
+              }
             }
-          }))
+          })
         }
       }, { signal: controller.signal })
     } catch (error) {
@@ -190,12 +193,15 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
         onNodeStatus: (nid, status, errorMessage) => { get().updateNodeStatus(nid, status, errorMessage) },
         onProgress: (nid, progress, message) => { get().updateProgress(nid, progress, message) },
         onNodeComplete: (nid, { urls, cost }) => {
-          set(s => ({
-            lastResults: {
-              ...s.lastResults,
-              [nid]: [{ urls, time: new Date().toISOString(), cost }]
+          set(s => {
+            const existing = s.lastResults[nid] ?? []
+            return {
+              lastResults: {
+                ...s.lastResults,
+                [nid]: [{ urls, time: new Date().toISOString(), cost }, ...existing].slice(0, 50)
+              }
             }
-          }))
+          })
         }
       }, { runOnlyNodeId: nodeId, signal: controller.signal })
     } catch (error) {
@@ -281,12 +287,15 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
         onNodeStatus: (nid, status, errorMessage) => { get().updateNodeStatus(nid, status, errorMessage) },
         onProgress: (nid, progress, message) => { get().updateProgress(nid, progress, message) },
         onNodeComplete: (nid, { urls, cost }) => {
-          set(s => ({
-            lastResults: {
-              ...s.lastResults,
-              [nid]: [{ urls, time: new Date().toISOString(), cost }]
+          set(s => {
+            const existing = s.lastResults[nid] ?? []
+            return {
+              lastResults: {
+                ...s.lastResults,
+                [nid]: [{ urls, time: new Date().toISOString(), cost }, ...existing].slice(0, 50)
+              }
             }
-          }))
+          })
         }
       }, { continueFromNodeId: nodeId, existingResults, signal: controller.signal })
     } catch (error) {

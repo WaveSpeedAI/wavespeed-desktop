@@ -398,7 +398,7 @@ export function PlaygroundPage() {
   return (
     <div className="flex h-full flex-col bg-gradient-to-b from-background via-background to-muted/20 md:pt-0">
       {/* Tab Bar */}
-      <div className="bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/55 electron-safe-right">
+      <div className="bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/55">
         <div className="flex items-center h-12 border-b border-border">
           <div ref={tabScrollRef} className="flex-1 min-w-0 overflow-x-auto hide-scrollbar">
             <div className="flex items-center px-2 w-max">

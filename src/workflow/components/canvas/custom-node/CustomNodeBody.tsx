@@ -583,6 +583,11 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
           >
             {resultsExpanded ? <ChevronDown className="w-3.5 h-3.5 shrink-0" /> : <ChevronRight className="w-3.5 h-3.5 shrink-0" />}
             <span>{t('workflow.results', 'Results')}</span>
+            {resultGroups.length > 0 && (
+              <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary tabular-nums">
+                {resultGroups.length}
+              </span>
+            )}
           </button>
           {resultsExpanded && (
             <div className="min-h-0 flex flex-col flex-1">

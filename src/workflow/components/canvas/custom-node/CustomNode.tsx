@@ -403,7 +403,14 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
       await optimizeOnRunIfEnabled()
     }
     const wfId = workflowId ?? ''
-    running ? cancelNode(wfId, id) : runNode(wfId, id)
+    if (running) {
+      cancelNode(wfId, id)
+    } else if (data.nodeType?.startsWith('output/')) {
+      // Output nodes (File Export, Preview) should reuse upstream results, not re-run them
+      continueFrom(wfId, id)
+    } else {
+      runNode(wfId, id)
+    }
   }
 
   const onRunFromHere = async (e: React.MouseEvent) => {

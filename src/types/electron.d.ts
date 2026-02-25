@@ -118,6 +118,7 @@ export interface ElectronAPI {
   setSettings: (settings: Record<string, unknown>) => Promise<boolean>
   clearAllData: () => Promise<boolean>
   downloadFile: (url: string, defaultFilename: string) => Promise<DownloadResult>
+  saveFileSilent: (url: string, dir: string, fileName: string) => Promise<DownloadResult>
   openExternal: (url: string) => Promise<void>
 
   // Title bar theme

@@ -225,11 +225,12 @@ function createWindow(): void {
     icon: join(__dirname, '../../build/icon.png'),
     backgroundColor: '#f5f6fa',
     titleBarStyle: isMac ? 'hiddenInset' : 'hidden',
+    ...(isMac ? { trafficLightPosition: { x: 10, y: 8 } } : {}),
     ...(process.platform !== 'darwin' ? {
       titleBarOverlay: {
         color: '#f5f6fa',
         symbolColor: '#6b7280',
-        height: 48
+        height: 28
       }
     } : {}),
     webPreferences: {
@@ -499,6 +500,57 @@ ipcMain.handle('download-file', async (_, url: string, defaultFilename: string) 
       resolve({ success: false, error: err.message })
     })
   })
+})
+
+// Silent file save handler — saves a remote URL to a local directory without dialog
+ipcMain.handle('save-file-silent', async (_, url: string, dir: string, fileName: string) => {
+  try {
+    if (!fileName) return { success: false, error: 'Missing filename' }
+    const targetDir = dir || app.getPath('downloads')
+    if (!existsSync(targetDir)) mkdirSync(targetDir, { recursive: true })
+    const filePath = join(targetDir, fileName)
+
+    // Handle local-asset:// URLs
+    if (url.startsWith('local-asset://')) {
+      const localPath = decodeURIComponent(url.replace('local-asset://', ''))
+      if (!existsSync(localPath)) return { success: false, error: 'Source file not found' }
+      copyFileSync(localPath, filePath)
+      return { success: true, filePath }
+    }
+
+    // Handle data: URLs
+    if (url.startsWith('data:')) {
+      const matches = url.match(/^data:[^;]+;base64,(.+)$/)
+      if (matches) {
+        writeFileSync(filePath, Buffer.from(matches[1], 'base64'))
+        return { success: true, filePath }
+      }
+      return { success: false, error: 'Invalid data URL' }
+    }
+
+    // Download from http/https
+    return new Promise((resolve) => {
+      const httpProtocol = url.startsWith('https') ? https : http
+      const file = createWriteStream(filePath)
+      httpProtocol.get(url, (response) => {
+        if (response.statusCode === 301 || response.statusCode === 302) {
+          const redirectUrl = response.headers.location
+          if (redirectUrl) {
+            const rp = redirectUrl.startsWith('https') ? https : http
+            rp.get(redirectUrl, (rr) => {
+              rr.pipe(file)
+              file.on('finish', () => { file.close(); resolve({ success: true, filePath }) })
+            }).on('error', (err) => resolve({ success: false, error: err.message }))
+            return
+          }
+        }
+        response.pipe(file)
+        file.on('finish', () => { file.close(); resolve({ success: true, filePath }) })
+      }).on('error', (err) => resolve({ success: false, error: err.message }))
+    })
+  } catch (err) {
+    return { success: false, error: (err as Error).message }
+  }
 })
 
 // Assets metadata helpers

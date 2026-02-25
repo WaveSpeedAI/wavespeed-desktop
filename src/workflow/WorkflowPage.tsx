@@ -20,7 +20,7 @@ import { useModelsStore } from '@/stores/modelsStore'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
 import { useTemplateStore } from '@/stores/templateStore'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
-import { PanelRight, X, Plus } from 'lucide-react'
+import { History, X, Plus } from 'lucide-react'
 import { TemplatePickerDialog } from '@/components/templates/TemplatePickerDialog'
 import { TemplateDialog } from '@/components/templates/TemplateDialog'
 import { WorkflowGuide, useWorkflowGuide } from './components/WorkflowGuide'
@@ -912,10 +912,10 @@ export function WorkflowPage() {
 
       {/* ── Toolbar — unified header ──────────────────────────── */}
       <div className="relative">
-        <div className={`flex items-center border-b border-border bg-background px-2 gap-1.5 h-12 electron-drag ${isElectron ? 'pr-[140px]' : ''}`}>
+        <div className="flex items-center border-b border-border bg-background px-2 gap-1.5 h-12">
 
           {/* Tabs — unified style with Playground */}
-        <div ref={wfTabScrollRef} className="flex-1 min-w-0 overflow-x-auto hide-scrollbar electron-no-drag">
+        <div ref={wfTabScrollRef} className="flex-1 min-w-0 overflow-x-auto hide-scrollbar">
           <div className="flex items-center w-max">
           {tabs.map(tab => {
             const isActive = tab.tabId === activeTabId
@@ -981,7 +981,7 @@ export function WorkflowPage() {
           {/* + button inside scroll area: visible when tabs don't overflow */}
           {!wfTabsOverflow && (
             <button onClick={addTab}
-              className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 mx-1 electron-no-drag"
+              className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 mx-1"
               title={t('workflow.newTab', 'New tab')}>
               <Plus className="h-4 w-4" />
             </button>
@@ -991,7 +991,7 @@ export function WorkflowPage() {
         {/* + button fixed outside: visible only when tabs overflow */}
         {wfTabsOverflow && (
           <button onClick={addTab}
-            className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 electron-no-drag"
+            className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
             title={t('workflow.newTab', 'New tab')}>
             <Plus className="h-4 w-4" />
           </button>
@@ -1001,19 +1001,19 @@ export function WorkflowPage() {
 
         {/* Last saved indicator */}
         {lastSavedAt && (
-          <span className="text-[10px] text-muted-foreground electron-no-drag">
+          <span className="text-[10px] text-muted-foreground">
             {t('workflow.savedAt', 'Saved')} {lastSavedAt.toLocaleTimeString()}
           </span>
         )}
         {isDirty && workflowId && (
-          <span className="text-[10px] text-orange-400 electron-no-drag">{t('workflow.unsaved', 'unsaved')}</span>
+          <span className="text-[10px] text-orange-400">{t('workflow.unsaved', 'unsaved')}</span>
         )}
 
         {/* Spacer — limited so tabs don't push into run controls */}
         <div className="w-4 shrink-0" />
 
         {/* Right: Run controls */}
-        <div className="flex items-center gap-1.5 electron-no-drag" data-guide="run-controls">
+        <div className="flex items-center gap-1.5" data-guide="run-controls">
           <div className="flex items-center rounded-lg overflow-hidden shadow-sm">
             {/* Run button — disabled in browser (no execution API) */}
             <Tooltip delayDuration={0}>
@@ -1063,7 +1063,7 @@ export function WorkflowPage() {
           )}
         </div>
         {/* Monitor side panel toggle */}
-        <span className="electron-no-drag flex items-center gap-1.5">
+        <span className="flex items-center gap-1.5">
         <MonitorToggleBtn />
         </span>
         </div>
@@ -1547,21 +1547,22 @@ function MonitorToggleBtn() {
       <TooltipTrigger asChild>
         <button
           onClick={togglePanel}
-          className={`relative h-7 w-7 rounded-md border transition-colors flex items-center justify-center ${
+          className={`relative h-7 px-2 rounded-md border transition-colors flex items-center gap-1.5 ${
             showPanel
               ? 'border-primary/50 bg-primary/10 text-primary'
               : 'border-[hsl(var(--border))] text-muted-foreground hover:text-foreground hover:bg-accent'
           }`}
         >
-          <PanelRight className="w-3.5 h-3.5" />
+          <History className="w-3.5 h-3.5" />
+          <span className="text-[11px] font-medium hidden sm:inline">History</span>
           {activeRuns > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-blue-500 text-white text-[8px] flex items-center justify-center font-bold animate-pulse">
+            <span className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full bg-blue-500 text-white text-[9px] flex items-center justify-center font-bold animate-pulse px-1">
               {activeRuns}
             </span>
           )}
         </button>
       </TooltipTrigger>
-      <TooltipContent side="bottom">{t('workflow.executionMonitor', 'Execution Monitor')}</TooltipContent>
+      <TooltipContent side="bottom">{t('workflow.executionMonitor', 'History')}</TooltipContent>
     </Tooltip>
   )
 }

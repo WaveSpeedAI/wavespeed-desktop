@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Sidebar } from './Sidebar'
+import { AppLogo } from './AppLogo'
 import { PageResetContext } from './PageResetContext'
 import { Toaster } from '@/components/ui/toaster'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -266,7 +267,18 @@ export function Layout() {
   return (
     <PageResetContext.Provider value={{ resetPage }}>
     <TooltipProvider>
-      <div className="flex h-screen overflow-hidden relative">
+      <div className="flex flex-col h-screen overflow-hidden relative">
+        {/* Fixed titlebar — draggable region for macOS & Windows */}
+        <div className="h-7 min-h-[28px] flex items-center justify-center bg-background border-b border-border electron-drag select-none shrink-0 relative z-50 electron-safe-right">
+          {/* Show logo on left for Windows/Linux (macOS has traffic lights there) */}
+          {!/mac/i.test(navigator.platform) && (
+            <div className="absolute left-2 top-0 bottom-0 flex items-center electron-no-drag">
+              <AppLogo className="h-4 w-4 shrink-0" />
+            </div>
+          )}
+          <span className="text-[10px] font-medium text-muted-foreground pointer-events-none">WaveSpeed Desktop</span>
+        </div>
+        <div className="flex flex-1 overflow-hidden">
         <Sidebar
           collapsed={sidebarCollapsed}
           onToggle={() => setSidebarCollapsed(prev => !prev)}
@@ -358,6 +370,7 @@ export function Layout() {
           )}
         </main>
         <Toaster />
+        </div>
       </div>
     </TooltipProvider>
     </PageResetContext.Provider>

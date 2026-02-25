@@ -94,8 +94,9 @@
 }
 
 /* Reserve space for Windows title bar overlay controls (minimize/maximize/close).
-   In Electron with titleBarOverlay, the native controls sit in the top-right corner. */
-.is-electron .electron-safe-right {
+   In Electron with titleBarOverlay, the native controls sit in the top-right corner.
+   macOS uses native traffic lights on the left, so no right margin needed. */
+.is-electron:not(.is-mac) .electron-safe-right {
   margin-right: 140px;
 }
 

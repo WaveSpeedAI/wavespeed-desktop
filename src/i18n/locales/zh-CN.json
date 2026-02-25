@@ -272,7 +272,7 @@
     "loadPreviews": "加载预览",
     "disablePreviews": "禁用预览",
     "generationDetails": "生成详情",
-    "select": "选择",
+    "select": "管理",
     "selectionDone": "完成",
     "deleteSelected": "删除 ({{count}})",
     "bulkDeleteConfirmTitle": "删除历史记录",
@@ -462,7 +462,7 @@
       "sizeLargest": "最大优先",
       "sizeSmallest": "最小优先"
     },
-    "select": "选择",
+    "select": "管理",
     "selectAll": "全选",
     "deselectAll": "取消全选",
     "deleteSelected": "删除 ({{count}})",

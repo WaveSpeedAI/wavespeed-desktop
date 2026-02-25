@@ -51,7 +51,8 @@ import {
   Eye,
   EyeOff,
   Trash2,
-  Sparkles
+  Sparkles,
+  CheckSquare
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AudioPlayer } from '@/components/shared/AudioPlayer'
@@ -457,34 +458,9 @@ export function HistoryPage() {
             </h1>
             <p className="text-muted-foreground text-xs md:text-sm">{t('history.description')}</p>
           </div>
-          <div className="flex items-center gap-2 flex-wrap electron-safe-right">
-            {isSelectionMode && selectedIds.size > 0 && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => setShowBulkDeleteConfirm(true)}
-                disabled={isDeleting}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                {t('history.deleteSelected', { count: selectedIds.size })}
-              </Button>
-            )}
-            <Button
-              variant={isSelectionMode ? "default" : "outline"}
-              size="sm"
-              onClick={handleToggleSelectionMode}
-              disabled={isDeleting}
-            >
-              {isSelectionMode ? t('history.selectionDone') : t('history.select')}
-            </Button>
-            <Button variant="outline" size="sm" onClick={fetchHistory} disabled={isLoading}>
-              <RefreshCw className={cn("mr-2 h-4 w-4", isLoading && "animate-spin")} />
-              {t('common.refresh')}
-            </Button>
-          </div>
         </div>
 
-        {/* Filters */}
+        {/* Filters & Actions */}
         <div className="flex flex-wrap items-center gap-2 md:gap-3">
           <Select
             value={statusFilter}
@@ -516,6 +492,30 @@ export function HistoryPage() {
             ) : (
               <EyeOff className="h-4 w-4" />
             )}
+          </Button>
+          {isSelectionMode && selectedIds.size > 0 && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setShowBulkDeleteConfirm(true)}
+              disabled={isDeleting}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              {t('history.deleteSelected', { count: selectedIds.size })}
+            </Button>
+          )}
+          <Button
+            variant={isSelectionMode ? "default" : "outline"}
+            size="sm"
+            onClick={handleToggleSelectionMode}
+            disabled={isDeleting}
+          >
+            <CheckSquare className="mr-2 h-4 w-4" />
+            {isSelectionMode ? t('history.selectionDone') : t('history.select')}
+          </Button>
+          <Button variant="outline" size="sm" onClick={fetchHistory} disabled={isLoading}>
+            <RefreshCw className={cn("mr-2 h-4 w-4", isLoading && "animate-spin")} />
+            {t('common.refresh')}
           </Button>
           {isSelectionMode && items.length > 0 && (
             <>

@@ -77,7 +77,7 @@ function buildApiParams(
 
 function resolveInputs(
   nodeId: string,
-  nodeMap: Map<string, BrowserNode>,
+  _nodeMap: Map<string, BrowserNode>,
   edges: { source: string; target: string; sourceHandle: string; targetHandle: string }[],
   results: Map<string, NodeResult>
 ): Record<string, unknown> {
@@ -181,11 +181,37 @@ function upstreamNodeIds(nodeId: string, simpleEdges: SimpleEdge[]): Set<string>
   return out
 }
 
+/** Collect a node and all its downstream (forward) dependents. */
+function downstreamNodeIds(nodeId: string, simpleEdges: SimpleEdge[]): Set<string> {
+  const out = new Set<string>([nodeId])
+  const forward = new Map<string, string[]>()
+  for (const e of simpleEdges) {
+    const list = forward.get(e.sourceNodeId) ?? []
+    list.push(e.targetNodeId)
+    forward.set(e.sourceNodeId, list)
+  }
+  let queue = [nodeId]
+  while (queue.length > 0) {
+    const next: string[] = []
+    for (const id of queue) {
+      for (const tgt of forward.get(id) ?? []) {
+        if (!out.has(tgt)) {
+          out.add(tgt)
+          next.push(tgt)
+        }
+      }
+    }
+    queue = next
+  }
+  return out
+}
+
+
 export async function executeWorkflowInBrowser(
   nodes: BrowserNode[],
   edges: BrowserEdge[],
   callbacks: RunInBrowserCallbacks,
-  options?: { runOnlyNodeId?: string; signal?: AbortSignal }
+  options?: { runOnlyNodeId?: string; continueFromNodeId?: string; existingResults?: Map<string, string>; signal?: AbortSignal }
 ): Promise<void> {
   const signal = options?.signal
   const throwIfAborted = (): void => {
@@ -199,7 +225,20 @@ export async function executeWorkflowInBrowser(
   let nodeIds: string[]
   let filteredNodes: BrowserNode[]
   let filteredEdges: BrowserEdge[]
-  if (options?.runOnlyNodeId && allNodeIds.includes(options.runOnlyNodeId)) {
+  /** Nodes whose results should be reused (not re-executed) in continueFrom mode */
+  let skipNodeIds: Set<string> | null = null
+  if (options?.continueFromNodeId && allNodeIds.includes(options.continueFromNodeId)) {
+    // Run the target node + all downstream; include upstream in the graph but skip executing them
+    const downstream = downstreamNodeIds(options.continueFromNodeId, simpleEdges)
+    const upstream = upstreamNodeIds(options.continueFromNodeId, simpleEdges)
+    // The subgraph is upstream ∪ downstream so edges resolve correctly
+    const subset = new Set([...upstream, ...downstream])
+    nodeIds = allNodeIds.filter(id => subset.has(id))
+    filteredNodes = nodes.filter(n => subset.has(n.id))
+    filteredEdges = edges.filter(e => subset.has(e.source) && subset.has(e.target))
+    // Skip upstream nodes (except the target node itself) — they keep their previous results
+    skipNodeIds = new Set([...upstream].filter(id => !downstream.has(id)))
+  } else if (options?.runOnlyNodeId && allNodeIds.includes(options.runOnlyNodeId)) {
     const subset = upstreamNodeIds(options.runOnlyNodeId, simpleEdges)
     nodeIds = allNodeIds.filter(id => subset.has(id))
     filteredNodes = nodes.filter(n => subset.has(n.id))
@@ -245,6 +284,17 @@ export async function executeWorkflowInBrowser(
       if (!node) return
       const nodeType = node.data.nodeType
       const params = node.data.params ?? {}
+
+      // continueFrom: skip upstream nodes — use existing results so downstream can resolve inputs
+      if (skipNodeIds?.has(nodeId)) {
+        const existingUrl = options?.existingResults?.get(nodeId)
+        const existingOutput = existingUrl || String(params.uploadedUrl ?? params.text ?? params.prompt ?? params.output ?? '')
+        if (existingOutput) {
+          results.set(nodeId, { outputUrl: existingOutput, resultMetadata: { output: existingOutput } })
+        }
+        return
+      }
+
       const inputs = resolveInputs(nodeId, nodeMap, edgesWithHandles, results)
 
       // Validate required fields before running

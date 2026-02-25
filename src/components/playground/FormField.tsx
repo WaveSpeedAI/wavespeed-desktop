@@ -366,16 +366,18 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
     <div className="space-y-2">
       {!hideLabel && (
         <div className="flex items-center gap-2">
-          {handleAnchor}
-          <Label
-            htmlFor={field.name}
-            className={cn(
-              field.required && "after:content-['*'] after:ml-0.5 after:text-destructive",
-              error && "text-destructive"
-            )}
-          >
-            {field.label}
-          </Label>
+          <span className="inline-flex items-center">
+            {handleAnchor}
+            <Label
+              htmlFor={field.name}
+              className={cn(
+                field.required && "after:content-['*'] after:ml-0.5 after:text-destructive",
+                error && "text-destructive"
+              )}
+            >
+              {field.label}
+            </Label>
+          </span>
           {isOptimizablePrompt && (
             <PromptOptimizer
               currentPrompt={(value as string) || ''}

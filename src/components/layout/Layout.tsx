@@ -33,20 +33,10 @@ import { useFreeToolListener } from '@/workflow/hooks/useFreeToolListener'
 let keyCounter = 0
 const nextKey = () => ++keyCounter
 
-const SIDEBAR_EXPAND_BREAKPOINT = 1024 // px: below = collapsed, >= = expanded; sync on resize
 
 export function Layout() {
   const { t } = useTranslation()
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(() =>
-    typeof window !== 'undefined' ? window.innerWidth < SIDEBAR_EXPAND_BREAKPOINT : false
-  )
-  // Sync sidebar collapsed state to window width on resize (and initial layout)
-  useEffect(() => {
-    const onResize = () => setSidebarCollapsed(window.innerWidth < SIDEBAR_EXPAND_BREAKPOINT)
-    window.addEventListener('resize', onResize)
-    onResize()
-    return () => window.removeEventListener('resize', onResize)
-  }, [])
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
   const navigate = useNavigate()
   const location = useLocation()
   const hasShownUpdateToast = useRef(false)

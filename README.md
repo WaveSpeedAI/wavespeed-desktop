@@ -25,8 +25,10 @@ The Android app shares the same React codebase as the desktop version, giving yo
 - History, My Assets, templates, and auto-save
 - 18 languages, dark/light theme, Android 5.0+
 
-![WaveSpeed Android - Free Tools](https://github.com/user-attachments/assets/dafa6699-35ed-4da2-b6eb-4da818e2c846)
-![WaveSpeed Android - Playground](https://github.com/user-attachments/assets/d392a9d0-2a44-480b-9195-d23a850a1946)
+<p>
+  <img src="https://github.com/user-attachments/assets/dafa6699-35ed-4da2-b6eb-4da818e2c846" alt="WaveSpeed Android - Free Tools" width="300" />
+  <img src="https://github.com/user-attachments/assets/d392a9d0-2a44-480b-9195-d23a850a1946" alt="WaveSpeed Android - Playground" width="300" />
+</p>
 
 ## Creative Studio
 

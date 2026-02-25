@@ -27,6 +27,7 @@ import {
 } from './CustomNodeTypes'
 import { handleRight } from './CustomNodeHandleAnchor'
 import { CustomNodeBody } from './CustomNodeBody'
+import { getNodeIcon } from './NodeIcons'
 
 /* ── main component ──────────────────────────────────────────────────── */
 
@@ -58,6 +59,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
   const [resizing, setResizing] = useState(false)
   const { getViewport, setNodes } = useReactFlow()
   const shortId = id.slice(0, 8)
+  const NodeIcon = getNodeIcon(data.nodeType)
   const nodeLabel = data.nodeType === 'ai-task/run'
     ? t('workflow.aiTaskNodeLabel', 'WaveSpeed API')
     : t(`workflow.nodeDefs.${data.nodeType}.label`, data.nodeType?.split('/').pop() ?? 'Node')
@@ -242,9 +244,33 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
   const [showOptional, setShowOptional] = useState(false)
 
   const formFields = useMemo<FormFieldConfig[]>(() => {
-    if (!isAITask || !currentModel) return []
-    return getFormFieldsFromModel(currentModel).filter(f => f.name !== 'modelId')
-  }, [isAITask, currentModel])
+    if (!isAITask) return []
+    // Prefer live model data; fall back to persisted modelInputSchema so the
+    // node renders with FormField immediately (avoids FOUC / style jump).
+    if (currentModel) {
+      return getFormFieldsFromModel(currentModel).filter(f => f.name !== 'modelId')
+    }
+    const schema = data.modelInputSchema ?? []
+    if (schema.length === 0) return []
+    return schema
+      .filter(s => s.name !== 'modelId')
+      .map((s): FormFieldConfig => ({
+        name: s.name,
+        type: (s.fieldType === 'json' ? 'text' : s.fieldType) ?? 'text',
+        label: s.label ?? s.name.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+        required: s.required ?? false,
+        default: s.default,
+        min: s.min,
+        max: s.max,
+        step: s.step,
+        options: s.enum,
+        description: s.description,
+        accept: s.accept,
+        maxFiles: s.maxItems,
+        placeholder: s.placeholder,
+        hidden: s.hidden,
+      }))
+  }, [isAITask, currentModel, data.modelInputSchema])
   const formValues = useMemo(() => {
     const p = data.params ?? {}
     return Object.fromEntries(Object.entries(p).filter(([k]) => !k.startsWith('__')))
@@ -473,6 +499,11 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
             status === 'error' ? 'bg-red-500' :
             status === 'unconfirmed' ? 'bg-orange-500' :
             'bg-[hsl(var(--muted-foreground))] opacity-30'}`} />
+        {NodeIcon && (
+          <div className="rounded-md bg-primary/10 p-1 flex-shrink-0">
+            <NodeIcon className="w-3.5 h-3.5 text-primary" />
+          </div>
+        )}
         <span className="font-semibold text-[13px] truncate">{nodeLabel}</span>
         <span className="text-[10px] text-[hsl(var(--muted-foreground))] opacity-50 font-mono flex-shrink-0">{shortId}</span>
       </div>

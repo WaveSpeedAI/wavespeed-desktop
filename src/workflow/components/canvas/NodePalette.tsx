@@ -10,6 +10,7 @@ import type { NodeTypeDefinition } from '@/workflow/types/node-defs'
 import { fuzzySearch } from '@/lib/fuzzySearch'
 import { Search, X, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { getNodeIcon } from './custom-node/NodeIcons'
 
 /* ── category colour dots ─────────────────────────────────── */
 const catDot: Record<string, string> = {
@@ -170,13 +171,21 @@ export function NodePalette({ definitions }: NodePaletteProps) {
                         onDragStart={e => onDragStart(e, def.type)}
                         onClick={() => handleClick(def)}
                         className={cn(
-                          'flex items-center h-8 px-3 ml-3.5 rounded-lg cursor-grab select-none',
+                          'flex items-center gap-2 h-8 px-3 ml-3.5 rounded-lg cursor-grab select-none',
                           'text-[12px] text-foreground/70 transition-colors duration-100',
                           'hover:bg-muted hover:text-foreground',
                           'active:cursor-grabbing active:bg-muted/80'
                         )}
                         title={t('workflow.dragOrClickToAdd', 'Drag to canvas or click to add')}
                       >
+                        {(() => {
+                          const Icon = getNodeIcon(def.type)
+                          return Icon ? (
+                            <div className="rounded-md bg-primary/10 p-1 flex-shrink-0">
+                              <Icon className="w-3 h-3 text-primary" />
+                            </div>
+                          ) : null
+                        })()}
                         <span className="truncate">{t(`workflow.nodeDefs.${def.type}.label`, def.label)}</span>
                         {isAiTask && (
                           <span className="ml-auto shrink-0 text-[9px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-500/10 px-1.5 py-0.5 rounded">AI</span>

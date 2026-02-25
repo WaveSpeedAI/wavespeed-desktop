@@ -23,6 +23,7 @@ import { AnnotationNode } from './AnnotationNode'
 import { ContextMenu, type ContextMenuItem } from './ContextMenu'
 import type { NodeTypeDefinition, NodeCategory } from '@/workflow/types/node-defs'
 import { fuzzySearch } from '@/lib/fuzzySearch'
+import { getNodeIcon } from './custom-node/NodeIcons'
 
 const CATEGORY_ORDER: NodeCategory[] = ['ai-task', 'input', 'output', 'processing', 'free-tool', 'ai-generation', 'control']
 const RECENT_NODE_TYPES_KEY = 'workflowRecentNodeTypes'
@@ -686,16 +687,24 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
                         <span>{t(`workflow.nodeCategory.${category}`, category)}</span>
                         <span className="ml-auto text-[10px] opacity-70">{defs.length}</span>
                       </button>
-                      {!isCollapsed && defs.map(def => (
+                      {!isCollapsed && defs.map(def => {
+                        const DefIcon = getNodeIcon(def.type)
+                        return (
                         <button
                           key={def.type}
                           onClick={() => addNodeAtMenuPosition(def)}
                           className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
                           title={t('workflow.dragOrClickToAdd', 'Drag to canvas or click to add')}
                         >
+                        {DefIcon && (
+                          <div className="rounded-md bg-primary/10 p-1 flex-shrink-0">
+                            <DefIcon className="w-3 h-3 text-primary" />
+                          </div>
+                        )}
                         <span>{t(`workflow.nodeDefs.${def.type}.label`, def.label)}</span>
                         </button>
-                      ))}
+                        )
+                      })}
                     </div>
                   )
                 })}

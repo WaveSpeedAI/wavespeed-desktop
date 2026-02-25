@@ -80,6 +80,42 @@ function sanitizeTabSnapshots(input: unknown): TabSnapshot[] {
 
 let tabIdCounter = 1
 
+/* ── Synchronous session hydration (avoids FOUC) ─────────────────────── */
+function hydrateSessionSync(): { tabs: TabSnapshot[]; activeTabId: string; restored: boolean } {
+  const parsed = persistentStorage.getSync<Partial<PersistedWorkflowSession>>(WORKFLOW_SESSION_STORAGE_KEY)
+  if (parsed) {
+    const restoredTabs = sanitizeTabSnapshots(parsed.tabs)
+    if (restoredTabs.length > 0) {
+      const restoredActiveTabId = typeof parsed.activeTabId === 'string' &&
+        restoredTabs.some(t => t.tabId === parsed.activeTabId)
+        ? parsed.activeTabId
+        : restoredTabs[0].tabId
+
+      const maxTabIndex = restoredTabs.reduce((max, t) => Math.max(max, parseTabIndex(t.tabId)), 1)
+      const persistedCounter = typeof parsed.tabIdCounter === 'number' ? parsed.tabIdCounter : 1
+      tabIdCounter = Math.max(tabIdCounter, maxTabIndex, persistedCounter)
+
+      const active = restoredTabs.find(t => t.tabId === restoredActiveTabId) ?? restoredTabs[0]
+      useWorkflowStore.setState({
+        workflowId: active.workflowId,
+        workflowName: active.workflowName,
+        nodes: active.nodes as ReturnType<typeof useWorkflowStore.getState>['nodes'],
+        edges: active.edges as ReturnType<typeof useWorkflowStore.getState>['edges'],
+        isDirty: active.isDirty
+      })
+
+      return { tabs: restoredTabs, activeTabId: restoredActiveTabId, restored: true }
+    }
+  }
+
+  const { nodes, edges } = getDefaultNewWorkflowContent()
+  const defaultTab: TabSnapshot = { tabId: `tab-${tabIdCounter}`, workflowId: null, workflowName: 'Untitled Workflow', nodes, edges, isDirty: false }
+  useWorkflowStore.setState({ workflowId: null, workflowName: 'Untitled Workflow', nodes, edges, isDirty: false })
+  return { tabs: [defaultTab], activeTabId: defaultTab.tabId, restored: false }
+}
+
+const _initialSession = hydrateSessionSync()
+
 export function WorkflowPage() {
   const { t } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -169,13 +205,10 @@ export function WorkflowPage() {
   }, [saveWorkflow])
 
   // ── Multi-tab state ────────────────────────────────────────────────
-  const [tabs, setTabs] = useState<TabSnapshot[]>(() => {
-    const { nodes, edges } = getDefaultNewWorkflowContent()
-    return [{ tabId: `tab-${tabIdCounter}`, workflowId: null, workflowName: 'Untitled Workflow', nodes, edges, isDirty: false }]
-  })
-  const [activeTabId, setActiveTabId] = useState(`tab-${tabIdCounter}`)
-  const [startupSessionReady, setStartupSessionReady] = useState(false)
-  const [restoredFromPersistedSession, setRestoredFromPersistedSession] = useState(false)
+  const [tabs, setTabs] = useState<TabSnapshot[]>(() => _initialSession.tabs)
+  const [activeTabId, setActiveTabId] = useState(() => _initialSession.activeTabId)
+  const [startupSessionReady, setStartupSessionReady] = useState(true)
+  const [restoredFromPersistedSession, setRestoredFromPersistedSession] = useState(_initialSession.restored)
   const [hasRestoredLastWorkflow, setHasRestoredLastWorkflow] = useState(false)
 
   // Save current store state into the active tab snapshot
@@ -443,61 +476,6 @@ export function WorkflowPage() {
       }
     }
   }, [tabContextMenu, tabs, doCloseTab, closeMultipleTabs, saveCurrentTabSnapshot])
-
-  // Restore previous editing session (tabs + active tab + canvas state) on startup.
-  useEffect(() => {
-    if (startupSessionReady) return
-
-    const applySession = (parsed: Partial<PersistedWorkflowSession> | null) => {
-      let restored = false
-      if (parsed) {
-        const restoredTabs = sanitizeTabSnapshots(parsed.tabs)
-        if (restoredTabs.length > 0) {
-          const restoredActiveTabId = typeof parsed.activeTabId === 'string' &&
-            restoredTabs.some(t => t.tabId === parsed.activeTabId)
-            ? parsed.activeTabId
-            : restoredTabs[0].tabId
-
-          setTabs(restoredTabs)
-          setActiveTabId(restoredActiveTabId)
-
-          const active = restoredTabs.find(t => t.tabId === restoredActiveTabId) ?? restoredTabs[0]
-          useWorkflowStore.setState({
-            workflowId: active.workflowId,
-            workflowName: active.workflowName,
-            nodes: active.nodes as ReturnType<typeof useWorkflowStore.getState>['nodes'],
-            edges: active.edges as ReturnType<typeof useWorkflowStore.getState>['edges'],
-            isDirty: active.isDirty
-          })
-
-          const maxTabIndex = restoredTabs.reduce((max, t) => Math.max(max, parseTabIndex(t.tabId)), 1)
-          const persistedCounter = typeof parsed.tabIdCounter === 'number' ? parsed.tabIdCounter : 1
-          tabIdCounter = Math.max(tabIdCounter, maxTabIndex, persistedCounter)
-          restored = true
-        }
-      }
-
-      if (!restored) {
-        const initial = tabs[0]
-        if (initial) {
-          useWorkflowStore.setState({
-            workflowId: initial.workflowId,
-            workflowName: initial.workflowName,
-            nodes: initial.nodes as ReturnType<typeof useWorkflowStore.getState>['nodes'],
-            edges: initial.edges as ReturnType<typeof useWorkflowStore.getState>['edges'],
-            isDirty: initial.isDirty
-          })
-        }
-      }
-
-      setRestoredFromPersistedSession(restored)
-      setStartupSessionReady(true)
-    }
-
-    persistentStorage.get<Partial<PersistedWorkflowSession>>(WORKFLOW_SESSION_STORAGE_KEY)
-      .then(stored => applySession(stored))
-      .catch(() => applySession(null))
-  }, [startupSessionReady])
 
   // Keep active tab snapshot in sync
   useEffect(() => {

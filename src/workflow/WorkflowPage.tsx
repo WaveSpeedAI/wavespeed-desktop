@@ -278,6 +278,59 @@ export function WorkflowPage() {
     setEditingTabId(null)
   }, [])
 
+  // ── Tab drag-to-reorder (browser-style) ──
+  const [dragTabId, setDragTabId] = useState<string | null>(null)
+  const [dropIndicator, setDropIndicator] = useState<{ tabId: string; side: 'left' | 'right' } | null>(null)
+
+  const handleTabDragStart = useCallback((e: React.DragEvent, tabId: string) => {
+    setDragTabId(tabId)
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', tabId)
+  }, [])
+
+  const handleTabDragOver = useCallback((e: React.DragEvent, tabId: string) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    if (!dragTabId || tabId === dragTabId) {
+      setDropIndicator(null)
+      return
+    }
+    // Determine left/right side based on mouse position within the tab
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+    const side = (e.clientX - rect.left) < rect.width / 2 ? 'left' : 'right'
+    setDropIndicator({ tabId, side })
+  }, [dragTabId])
+
+  const handleTabDrop = useCallback((e: React.DragEvent, targetTabId: string) => {
+    e.preventDefault()
+    if (!dragTabId || dragTabId === targetTabId) {
+      setDragTabId(null)
+      setDropIndicator(null)
+      return
+    }
+    const side = dropIndicator?.side ?? 'right'
+    setTabs(prev => {
+      const fromIdx = prev.findIndex(t => t.tabId === dragTabId)
+      const toIdx = prev.findIndex(t => t.tabId === targetTabId)
+      if (fromIdx === -1 || toIdx === -1) return prev
+      const next = [...prev]
+      const [moved] = next.splice(fromIdx, 1)
+      // Adjust insertion index after removal
+      const insertIdx = fromIdx < toIdx
+        ? (side === 'left' ? toIdx - 1 : toIdx)
+        : (side === 'left' ? toIdx : toIdx + 1)
+      next.splice(Math.max(0, insertIdx), 0, moved)
+      return next
+    })
+    setDragTabId(null)
+    setDropIndicator(null)
+  }, [dragTabId, dropIndicator])
+
+  const handleTabDragEnd = useCallback(() => {
+    setDragTabId(null)
+    setDropIndicator(null)
+  }, [])
+
   // Close tab — with unsaved changes confirmation
   const [confirmCloseTabId, setConfirmCloseTabId] = useState<string | null>(null)
 
@@ -904,17 +957,30 @@ export function WorkflowPage() {
             const isEditing = editingTabId === tab.tabId
             return (
               <div key={tab.tabId}
+                draggable={!isEditing}
+                onDragStart={e => handleTabDragStart(e, tab.tabId)}
+                onDragOver={e => handleTabDragOver(e, tab.tabId)}
+                onDrop={e => handleTabDrop(e, tab.tabId)}
+                onDragEnd={handleTabDragEnd}
                 onClick={() => switchTab(tab.tabId)}
                 onContextMenu={e => {
                   e.preventDefault()
                   e.stopPropagation()
                   setTabContextMenu({ tabId: tab.tabId, x: e.clientX, y: e.clientY })
                 }}
-                className={`group flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-md cursor-pointer text-xs select-none min-w-[72px] max-w-[160px] transition-colors
+                className={`group relative flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-md cursor-pointer text-xs select-none min-w-[72px] max-w-[160px] transition-colors
+                  ${dragTabId === tab.tabId ? 'opacity-40' : ''}
                   ${isActive
                     ? 'bg-accent text-foreground'
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
               >
+                {/* Drop indicator line */}
+                {dropIndicator?.tabId === tab.tabId && dropIndicator.side === 'left' && (
+                  <div className="absolute -left-px top-1 bottom-1 w-0.5 rounded-full bg-primary" />
+                )}
+                {dropIndicator?.tabId === tab.tabId && dropIndicator.side === 'right' && (
+                  <div className="absolute -right-px top-1 bottom-1 w-0.5 rounded-full bg-primary" />
+                )}
                 {isEditing ? (
                   <input
                     type="text"

@@ -20,6 +20,8 @@ export interface UIState {
   workflowResultsPanelWidth: number
   /** Shared left sidebar width for both Workflows and Nodes panels */
   sidebarWidth: number
+  /** Canvas grid background visibility */
+  showGrid: boolean
   previewSrc: string | null
   previewItems: string[]
   previewIndex: number
@@ -45,6 +47,7 @@ export interface UIState {
   toggleWorkflowResultsPanel: () => void
   setWorkflowResultsPanelWidth: (width: number) => void
   setSidebarWidth: (width: number) => void
+  toggleGrid: () => void
   openPreview: (src: string, items?: string[]) => void
   prevPreview: () => void
   nextPreview: () => void
@@ -60,11 +63,12 @@ export const useUIStore = create<UIState>((set, get) => ({
   showNodeConfig: true,
   showResults: false,
   showSettings: false,
-  showNodePalette: true,
+  showNodePalette: false,
   showWorkflowPanel: false,
   showWorkflowResultsPanel: true,
   workflowResultsPanelWidth: 240,
   sidebarWidth: 220,
+  showGrid: true,
   previewSrc: null,
   previewItems: [],
   previewIndex: -1,
@@ -97,6 +101,7 @@ export const useUIStore = create<UIState>((set, get) => ({
   toggleWorkflowResultsPanel: () => set(s => ({ showWorkflowResultsPanel: !s.showWorkflowResultsPanel })),
   setWorkflowResultsPanelWidth: (width) => set({ workflowResultsPanelWidth: Math.max(180, Math.min(500, width)) }),
   setSidebarWidth: (width) => set({ sidebarWidth: Math.max(180, Math.min(400, width)) }),
+  toggleGrid: () => set(s => ({ showGrid: !s.showGrid })),
   openPreview: (src, items) => set(() => {
     const list = Array.isArray(items) && items.length > 0 ? items : [src]
     const idx = Math.max(0, list.indexOf(src))

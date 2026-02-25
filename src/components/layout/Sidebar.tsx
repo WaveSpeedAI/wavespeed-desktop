@@ -146,7 +146,7 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
   return (
     <div
       className={cn(
-        "flex h-full flex-col border-r border-border/70 bg-background/95 backdrop-blur transition-all duration-300 shrink-0",
+        "flex h-full flex-col border-r border-border bg-background/95 backdrop-blur transition-all duration-300 shrink-0",
         collapsed ? "w-16" : "w-52",
         // Mobile overlay when hamburger opens
         isMobileOpen && "!fixed inset-y-0 left-0 z-50 w-72 shadow-2xl"
@@ -167,7 +167,7 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
       <div
         style={{ display: 'flex', alignItems: 'center', flexDirection: 'row' }}
         className={cn(
-          "h-12 border-b border-border/70 electron-drag",
+          "h-12 border-b border-border electron-drag",
           collapsed && !isMobileOpen ? "justify-center px-2" : "gap-2 px-3"
         )}
       >
@@ -264,7 +264,7 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
       </ScrollArea>
 
       {/* Bottom Navigation */}
-      <div className="mt-auto border-t border-border/70 p-2">
+      <div className="mt-auto border-t border-border p-2">
         <nav className="flex flex-col gap-0.5">
           {bottomNavItems.map((item) => {
             const active = location.pathname === item.href

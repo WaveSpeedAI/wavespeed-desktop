@@ -229,7 +229,7 @@ function createWindow(): void {
       titleBarOverlay: {
         color: '#f5f6fa',
         symbolColor: '#6b7280',
-        height: 60
+        height: 48
       }
     } : {}),
     webPreferences: {
@@ -365,7 +365,7 @@ ipcMain.handle('update-titlebar-theme', (_, isDark: boolean) => {
     mainWindow.setTitleBarOverlay({
       color: isDark ? '#0a0f1a' : '#f5f6fa',
       symbolColor: isDark ? '#9ca3af' : '#6b7280',
-      height: 60
+      height: 49
     })
   } catch {
     // setTitleBarOverlay may not be available on all platforms

@@ -5,6 +5,7 @@
  * Config and Results are shown inside the selected node card on the canvas (no right sidebar).
  */
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
+import ReactDOM from 'react-dom'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { WorkflowCanvas } from './components/canvas/WorkflowCanvas'
@@ -19,7 +20,7 @@ import { useModelsStore } from '@/stores/modelsStore'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
 import { useTemplateStore } from '@/stores/templateStore'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
-import { PanelRight, Workflow, X, Plus } from 'lucide-react'
+import { PanelRight, X, Plus } from 'lucide-react'
 import { TemplatePickerDialog } from '@/components/templates/TemplatePickerDialog'
 import { TemplateDialog } from '@/components/templates/TemplateDialog'
 import { WorkflowGuide, useWorkflowGuide } from './components/WorkflowGuide'
@@ -256,6 +257,12 @@ export function WorkflowPage() {
     setTabs(prev => [...prev, { tabId: newTabId, workflowId: null, workflowName: uniqueName, nodes, edges, isDirty: false }])
     useWorkflowStore.setState({ workflowId: null, workflowName: uniqueName, nodes, edges, isDirty: false })
     setActiveTabId(newTabId)
+    // Auto-scroll to show the newly created tab
+    requestAnimationFrame(() => {
+      if (wfTabScrollRef.current) {
+        wfTabScrollRef.current.scrollLeft = wfTabScrollRef.current.scrollWidth
+      }
+    })
   }, [saveCurrentTabSnapshot, tabs])
 
   // Tab rename — inline editing
@@ -310,6 +317,20 @@ export function WorkflowPage() {
   const cancelRenameTab = useCallback(() => {
     setEditingTabId(null)
   }, [])
+
+  // ── Tab overflow detection (Chrome-like + button behavior) ──
+  const wfTabScrollRef = useRef<HTMLDivElement>(null)
+  const [wfTabsOverflow, setWfTabsOverflow] = useState(false)
+
+  useEffect(() => {
+    const el = wfTabScrollRef.current
+    if (!el) return
+    const check = () => setWfTabsOverflow(el.scrollWidth > el.clientWidth)
+    const ro = new ResizeObserver(check)
+    ro.observe(el)
+    check()
+    return () => ro.disconnect()
+  }, [tabs.length])
 
   // ── Tab drag-to-reorder (browser-style) ──
   const [dragTabId, setDragTabId] = useState<string | null>(null)
@@ -890,46 +911,11 @@ export function WorkflowPage() {
       )}
 
       {/* ── Toolbar — unified header ──────────────────────────── */}
-      <div className={`flex items-center border-b border-border bg-card px-2 gap-1.5 h-12 electron-drag ${isElectron ? 'pr-[140px]' : ''}`}>
-        {/* Left: Panel toggles */}
-        <div className="flex items-center gap-3 electron-no-drag">
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <button onClick={toggleWorkflowPanel}
-                className={`h-7 w-7 rounded-md text-xs font-medium transition-colors flex items-center justify-center ${showWorkflowPanel ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`}>
-                <Workflow className="w-4 h-4" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">{t('workflow.workflows', 'Workflows')}</TooltipContent>
-          </Tooltip>
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <button onClick={toggleNodePalette}
-                data-guide="node-palette-btn"
-                className={`h-7 w-7 rounded-md text-xs font-medium transition-colors flex items-center justify-center ${showNodePalette ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M6 9v3a3 3 0 0 0 3 3h3"/><path d="M15 15l3 3"/>
-                </svg>
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">{t('workflow.nodes', 'Nodes')}</TooltipContent>
-          </Tooltip>
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <button onClick={() => setShowTemplateDialog(true)}
-                className={`h-7 w-7 rounded-md text-xs font-medium transition-colors flex items-center justify-center ${showTemplateDialog ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/><path d="M13 13h4"/><path d="M13 17h4"/>
-                </svg>
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">{t('templates.title', 'Templates')}</TooltipContent>
-          </Tooltip>
-        </div>
-        <div className="w-px h-5 bg-border mx-1" />
+      <div className="relative">
+        <div className={`flex items-center border-b border-border bg-background px-2 gap-1.5 h-12 electron-drag ${isElectron ? 'pr-[140px]' : ''}`}>
 
-        {/* Tabs — unified style with Playground */}
-        <div className="flex-1 min-w-0 overflow-x-auto hide-scrollbar electron-no-drag">
+          {/* Tabs — unified style with Playground */}
+        <div ref={wfTabScrollRef} className="flex-1 min-w-0 overflow-x-auto hide-scrollbar electron-no-drag">
           <div className="flex items-center w-max">
           {tabs.map(tab => {
             const isActive = tab.tabId === activeTabId
@@ -992,13 +978,24 @@ export function WorkflowPage() {
               </div>
             )
           })}
+          {/* + button inside scroll area: visible when tabs don't overflow */}
+          {!wfTabsOverflow && (
+            <button onClick={addTab}
+              className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 mx-1 electron-no-drag"
+              title={t('workflow.newTab', 'New tab')}>
+              <Plus className="h-4 w-4" />
+            </button>
+          )}
           </div>
         </div>
-        <button onClick={addTab}
-          className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 electron-no-drag"
-          title={t('workflow.newTab', 'New tab')}>
-          <Plus className="h-4 w-4" />
-        </button>
+        {/* + button fixed outside: visible only when tabs overflow */}
+        {wfTabsOverflow && (
+          <button onClick={addTab}
+            className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 electron-no-drag"
+            title={t('workflow.newTab', 'New tab')}>
+            <Plus className="h-4 w-4" />
+          </button>
+        )}
 
         <div className="w-px h-5 bg-border mx-1" />
 
@@ -1012,8 +1009,8 @@ export function WorkflowPage() {
           <span className="text-[10px] text-orange-400 electron-no-drag">{t('workflow.unsaved', 'unsaved')}</span>
         )}
 
-        {/* Spacer */}
-        <div className="flex-1" />
+        {/* Spacer — limited so tabs don't push into run controls */}
+        <div className="w-4 shrink-0" />
 
         {/* Right: Run controls */}
         <div className="flex items-center gap-1.5 electron-no-drag" data-guide="run-controls">
@@ -1068,77 +1065,131 @@ export function WorkflowPage() {
         {/* Monitor side panel toggle */}
         <span className="electron-no-drag flex items-center gap-1.5">
         <MonitorToggleBtn />
-
-        {/* Help / Guide button */}
-        <Tooltip delayDuration={0}>
-          <TooltipTrigger asChild>
-            <button
-              onClick={guide.show}
-              className="h-7 w-7 rounded-md border border-[hsl(var(--border))] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center justify-center"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-              </svg>
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">{t('workflow.guide.welcome.title', 'Guide')}</TooltipContent>
-        </Tooltip>
-
-        {/* ── More menu (Import / Export / Save) ─────────────── */}
-        <MoreMenu
-          workflowId={workflowId}
-          onImport={handleImport}
-          onExport={handleExport}
-          onSave={handleSave}
-          className="mr-1"
-          onSaveAsTemplate={handleSaveAsTemplate}
-          data-guide="toolbar-more"
-        />
         </span>
+        </div>
+        {/* Border line extending under titlebar overlay */}
+        {isElectron && <div className="absolute bottom-0 right-0 w-[140px] h-px bg-border" />}
       </div>
 
       {/* ── Main content ───────────────────────────────────────── */}
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
-        {/* Left panels as overlay so they don't shift the canvas layout */}
-        {showNodePalette && (
-          <div className="absolute top-0 left-0 bottom-0 z-30 h-full">
-            <NodePalette definitions={nodeDefs} />
+
+        {/* Canvas area */}
+        <div className="flex-1 min-w-0 relative">
+          {/* Left floating toolbar (like right-side zoom controls) */}
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 z-[15] flex flex-col rounded-lg border border-border bg-card shadow-lg">
+            {/* Add Node — distinct plus icon (square with plus) */}
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <button onClick={toggleNodePalette}
+                  data-guide="node-palette-btn"
+                  className={`flex items-center justify-center w-9 h-9 rounded-t-lg transition-colors ${showNodePalette ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" />
+                  </svg>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">{t('workflow.nodes', 'Add Node')}</TooltipContent>
+            </Tooltip>
+            <div className="h-px bg-border" />
+            {/* Workflow management — folder/list icon */}
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <button onClick={toggleWorkflowPanel}
+                  className={`flex items-center justify-center w-9 h-9 transition-colors ${showWorkflowPanel ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" />
+                  </svg>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">{t('workflow.workflows', 'Manage Workflows')}</TooltipContent>
+            </Tooltip>
+            <div className="h-px bg-border" />
+            {/* Templates — puzzle/layout icon */}
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <button onClick={() => setShowTemplateDialog(true)}
+                  className={`flex items-center justify-center w-9 h-9 transition-colors ${showTemplateDialog ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5z" /><path d="M14 5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V5z" /><path d="M4 15a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-4z" /><path d="M14 15a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-4z" />
+                  </svg>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">{t('templates.title', 'Templates')}</TooltipContent>
+            </Tooltip>
+            <div className="h-px bg-border" />
+            {/* Help / Guide */}
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={guide.show}
+                  className="flex items-center justify-center w-9 h-9 transition-colors text-muted-foreground hover:text-foreground hover:bg-accent"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">{t('workflow.guide.welcome.title', 'Guide')}</TooltipContent>
+            </Tooltip>
+            <div className="h-px bg-border" />
+            {/* More menu (Import / Export / Save) */}
+            <MoreMenu
+              workflowId={workflowId}
+              onImport={handleImport}
+              onExport={handleExport}
+              onSave={handleSave}
+              onSaveAsTemplate={handleSaveAsTemplate}
+              data-guide="toolbar-more"
+              position="left"
+            />
           </div>
-        )}
-        {showWorkflowPanel && (
-          <div className="absolute top-0 left-0 bottom-0 z-30 h-full">
-            <WorkflowList onOpen={async (id) => {
-              const existingTab = tabs.find(t => t.workflowId === id)
-              if (existingTab) {
-                switchTab(existingTab.tabId)
-              } else {
-                saveCurrentTabSnapshot()
-                tabIdCounter++
-                const newTabId = `tab-${tabIdCounter}`
-                setTabs(prev => [...prev, { tabId: newTabId, workflowId: null, workflowName: 'Loading...', nodes: [], edges: [], isDirty: false }])
-                setActiveTabId(newTabId)
-                await loadWorkflow(id)
-              }
-            }} onDelete={(deletedId) => {
-              // Close any tab that has this workflow open
-              const tabToClose = tabs.find(t => t.workflowId === deletedId)
-              if (tabToClose) {
-                if (tabs.length <= 1) {
-                  // Last tab — reset to blank with default seed node instead of closing
-                  const blankName = 'Untitled Workflow'
-                  const { nodes, edges } = getDefaultNewWorkflowContent()
-                  useWorkflowStore.setState({ workflowId: null, workflowName: blankName, nodes, edges, isDirty: false })
-                  setTabs([{ ...tabToClose, workflowId: null, workflowName: blankName, nodes, edges, isDirty: false }])
-                } else {
-                  doCloseTab(tabToClose.tabId)
-                }
-              }
-              invalidateWorkflowListCache()
-            }} />
+
+          {/* Left drawer panels as overlay with padding */}
+          {showNodePalette && (
+            <>
+              <div className="absolute inset-0 z-20" onClick={toggleNodePalette} />
+              <div className="absolute top-4 left-14 bottom-4 z-30 rounded-xl overflow-hidden shadow-xl border border-border">
+                <NodePalette definitions={nodeDefs} />
+              </div>
+            </>
+          )}
+          {showWorkflowPanel && (
+            <>
+              <div className="absolute inset-0 z-20" onClick={toggleWorkflowPanel} />
+              <div className="absolute top-4 left-14 bottom-4 z-30 rounded-xl overflow-hidden shadow-xl border border-border">
+                <WorkflowList onOpen={async (id) => {
+                  const existingTab = tabs.find(t => t.workflowId === id)
+                  if (existingTab) {
+                    switchTab(existingTab.tabId)
+                  } else {
+                    saveCurrentTabSnapshot()
+                    tabIdCounter++
+                    const newTabId = `tab-${tabIdCounter}`
+                    setTabs(prev => [...prev, { tabId: newTabId, workflowId: null, workflowName: 'Loading...', nodes: [], edges: [], isDirty: false }])
+                    setActiveTabId(newTabId)
+                    await loadWorkflow(id)
+                  }
+                }} onDelete={(deletedId) => {
+                  const tabToClose = tabs.find(t => t.workflowId === deletedId)
+                  if (tabToClose) {
+                    if (tabs.length <= 1) {
+                      const blankName = 'Untitled Workflow'
+                      const { nodes, edges } = getDefaultNewWorkflowContent()
+                      useWorkflowStore.setState({ workflowId: null, workflowName: blankName, nodes, edges, isDirty: false })
+                      setTabs([{ ...tabToClose, workflowId: null, workflowName: blankName, nodes, edges, isDirty: false }])
+                    } else {
+                      doCloseTab(tabToClose.tabId)
+                    }
+                  }
+                  invalidateWorkflowListCache()
+                }} />
+              </div>
+            </>
+          )}
+          <div data-guide="canvas" className="flex-1 h-full min-w-0">
+            <WorkflowCanvas nodeDefs={nodeDefs} />
           </div>
-        )}
-        <div data-guide="canvas" className="flex-1 h-full min-w-0">
-          <WorkflowCanvas nodeDefs={nodeDefs} />
         </div>
         {showWorkflowResultsPanel && <MonitorSidePanel workflowId={workflowId} />}
       </div>
@@ -1516,7 +1567,7 @@ function MonitorToggleBtn() {
 }
 
 /* ── More Menu — collapsed Import / Export / Save ──────────────────── */
-function MoreMenu({ workflowId, onImport, onExport, onSave, onSaveAsTemplate, className, 'data-guide': dataGuide }: {
+function MoreMenu({ workflowId, onImport, onExport, onSave, onSaveAsTemplate, className, 'data-guide': dataGuide, position = 'top' }: {
   workflowId: string | null
   onImport: () => void
   onExport: () => void
@@ -1524,15 +1575,19 @@ function MoreMenu({ workflowId, onImport, onExport, onSave, onSaveAsTemplate, cl
   onSaveAsTemplate: () => void
   className?: string
   'data-guide'?: string
+  position?: 'top' | 'left'
 }) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 })
 
   useEffect(() => {
     if (!open) return
     const handler = (e: PointerEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+      const target = e.target as Node
+      if (ref.current && !ref.current.contains(target) && dropdownRef.current && !dropdownRef.current.contains(target)) setOpen(false)
     }
     const keyHandler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
     window.addEventListener('pointerdown', handler, true)
@@ -1543,23 +1598,40 @@ function MoreMenu({ workflowId, onImport, onExport, onSave, onSaveAsTemplate, cl
     }
   }, [open])
 
+  const handleToggle = useCallback(() => {
+    if (!open && ref.current) {
+      const rect = ref.current.getBoundingClientRect()
+      if (position === 'left') {
+        setDropdownPos({ top: rect.top, left: rect.right + 8 })
+      } else {
+        setDropdownPos({ top: rect.bottom + 4, left: rect.right - 144 })
+      }
+    }
+    setOpen(v => !v)
+  }, [open, position])
+
   return (
     <div className={`relative ${className ?? ''}`} ref={ref} data-guide={dataGuide}>
       <Tooltip delayDuration={0}>
         <TooltipTrigger asChild>
           <button
-            onClick={() => setOpen(!open)}
-            className={`h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors ${open ? 'bg-accent text-foreground' : ''}`}
+            onClick={handleToggle}
+            className={`flex items-center justify-center transition-colors ${
+              position === 'left'
+                ? `w-9 h-9 rounded-b-lg ${open ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`
+                : `h-7 w-7 rounded-md ${open ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`
+            }`}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
               <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
             </svg>
           </button>
         </TooltipTrigger>
-        {!open && <TooltipContent side="bottom">{t('workflow.more', 'More')}</TooltipContent>}
+        {!open && <TooltipContent side={position === 'left' ? 'right' : 'left'}>{t('workflow.more', 'More')}</TooltipContent>}
       </Tooltip>
-      {open && (
-        <div className="absolute top-8 right-0 z-[100] w-36 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--popover))] text-[hsl(var(--popover-foreground))] shadow-xl py-1">
+      {open && ReactDOM.createPortal(
+        <div ref={dropdownRef} className="fixed z-[9999] w-36 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--popover))] text-[hsl(var(--popover-foreground))] shadow-xl py-1"
+          style={{ top: dropdownPos.top, left: dropdownPos.left }}>
           <button onClick={() => { onImport(); setOpen(false) }}
             className="w-full px-3 py-1.5 text-xs text-left hover:bg-[hsl(var(--accent))] transition-colors flex items-center gap-2">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1590,7 +1662,8 @@ function MoreMenu({ workflowId, onImport, onExport, onSave, onSaveAsTemplate, cl
             </svg>
             {t('workflow.save', 'Save')}
           </button>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )

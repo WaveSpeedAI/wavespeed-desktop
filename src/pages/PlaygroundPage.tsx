@@ -61,6 +61,20 @@ export function PlaygroundPage() {
   // Mobile view state: 'config' or 'output'
   const [mobileView, setMobileView] = useState<'config' | 'output'>('config')
 
+  // Tab overflow detection (Chrome-like + button behavior)
+  const tabScrollRef = useRef<HTMLDivElement>(null)
+  const [tabsOverflow, setTabsOverflow] = useState(false)
+
+  useEffect(() => {
+    const el = tabScrollRef.current
+    if (!el) return
+    const check = () => setTabsOverflow(el.scrollWidth > el.clientWidth)
+    const ro = new ResizeObserver(check)
+    ro.observe(el)
+    check()
+    return () => ro.disconnect()
+  }, [tabs.length])
+
   // Tab drag-and-drop state (desktop only)
   const [dragTabIndex, setDragTabIndex] = useState<number | null>(null)
   const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null)
@@ -300,6 +314,12 @@ export function PlaygroundPage() {
     } else {
       navigate('/playground')
     }
+    // Auto-scroll to show the newly created tab
+    requestAnimationFrame(() => {
+      if (tabScrollRef.current) {
+        tabScrollRef.current.scrollLeft = tabScrollRef.current.scrollWidth
+      }
+    })
   }
 
   const handleCloseTab = (e: React.MouseEvent, tabId: string) => {
@@ -378,9 +398,9 @@ export function PlaygroundPage() {
   return (
     <div className="flex h-full flex-col bg-gradient-to-b from-background via-background to-muted/20 md:pt-0">
       {/* Tab Bar */}
-      <div className="page-header bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/55 electron-safe-right">
-        <div className="flex items-center h-12">
-          <div className="flex-1 min-w-0 overflow-x-auto hide-scrollbar">
+      <div className="bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/55 electron-safe-right">
+        <div className="flex items-center h-12 border-b border-border">
+          <div ref={tabScrollRef} className="flex-1 min-w-0 overflow-x-auto hide-scrollbar">
             <div className="flex items-center px-2 w-max">
               {/* Templates button */}
               <Tooltip delayDuration={0}>
@@ -449,15 +469,28 @@ export function PlaygroundPage() {
                   </button>
                 </div>
               ))}
+              {/* + button inside scroll area: visible when tabs don't overflow */}
+              {!tabsOverflow && (
+                <button
+                  onClick={handleNewTab}
+                  className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 mx-1"
+                  title={t('playground.tabs.newTab', 'New tab')}
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              )}
             </div>
           </div>
-          <button
-            onClick={handleNewTab}
-            className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 mx-1"
-            title={t('playground.tabs.newTab', 'New tab')}
-          >
-            <Plus className="h-4 w-4" />
-          </button>
+          {/* + button fixed outside: visible only when tabs overflow */}
+          {tabsOverflow && (
+            <button
+              onClick={handleNewTab}
+              className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 mx-1"
+              title={t('playground.tabs.newTab', 'New tab')}
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
 

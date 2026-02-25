@@ -24,6 +24,7 @@ import { ContextMenu, type ContextMenuItem } from './ContextMenu'
 import type { NodeTypeDefinition, NodeCategory } from '@/workflow/types/node-defs'
 import { fuzzySearch } from '@/lib/fuzzySearch'
 import { getNodeIcon } from './custom-node/NodeIcons'
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 
 const CATEGORY_ORDER: NodeCategory[] = ['ai-task', 'input', 'output', 'processing', 'free-tool', 'ai-generation', 'control']
 const RECENT_NODE_TYPES_KEY = 'workflowRecentNodeTypes'
@@ -58,77 +59,92 @@ function CanvasZoomControls() {
   const { zoomIn, zoomOut, fitView } = useReactFlow()
   const interactionMode = useUIStore(s => s.interactionMode)
   const setInteractionMode = useUIStore(s => s.setInteractionMode)
+  const showGrid = useUIStore(s => s.showGrid)
+  const toggleGrid = useUIStore(s => s.toggleGrid)
   return (
     <div className="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex flex-col rounded-lg border border-border bg-card shadow-lg overflow-hidden"
       data-guide="canvas-tools">
+      {/* Grid toggle */}
+      <Tooltip delayDuration={0}>
+        <TooltipTrigger asChild>
+          <button type="button" onClick={toggleGrid}
+            className={`flex items-center justify-center w-9 h-9 transition-colors ${showGrid ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/>
+            </svg>
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="left">{t('workflow.toggleGrid', 'Toggle Grid')}</TooltipContent>
+      </Tooltip>
+      <div className="h-px bg-border" />
       {/* Select / Hand toggle */}
-      <button
-        type="button"
-        onClick={() => setInteractionMode(interactionMode === 'hand' ? 'select' : 'hand')}
-        className={`flex items-center justify-center w-9 h-9 transition-colors ${
-          interactionMode === 'select'
-            ? 'bg-primary/10 text-primary'
-            : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-        }`}
-        title={interactionMode === 'select'
-          ? t('workflow.selectMode', 'Select (V)')
-          : t('workflow.handMode', 'Hand (H)')}
-      >
-        {interactionMode === 'select' ? (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="M13 13l6 6"/>
-          </svg>
-        ) : (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
-          </svg>
-        )}
-      </button>
+      <Tooltip delayDuration={0}>
+        <TooltipTrigger asChild>
+          <button type="button" onClick={() => setInteractionMode(interactionMode === 'hand' ? 'select' : 'hand')}
+            className={`flex items-center justify-center w-9 h-9 transition-colors ${interactionMode === 'select' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`}>
+            {interactionMode === 'select' ? (
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="M13 13l6 6"/>
+              </svg>
+            ) : (
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
+              </svg>
+            )}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="left">{interactionMode === 'select' ? t('workflow.selectMode', 'Select (V)') : t('workflow.handMode', 'Hand (H)')}</TooltipContent>
+      </Tooltip>
       <div className="h-px bg-border" />
       {/* Zoom in */}
-      <button
-        type="button"
-        onClick={() => zoomIn({ duration: 200 })}
-        className="flex items-center justify-center w-9 h-9 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-        title={t('workflow.zoomIn', 'Zoom in')}
-      >
-        <span className="text-lg font-medium leading-none">+</span>
-      </button>
+      <Tooltip delayDuration={0}>
+        <TooltipTrigger asChild>
+          <button type="button" onClick={() => zoomIn({ duration: 200 })}
+            className="flex items-center justify-center w-9 h-9 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+            <span className="text-lg font-medium leading-none">+</span>
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="left">{t('workflow.zoomIn', 'Zoom in')}</TooltipContent>
+      </Tooltip>
       {/* Zoom out */}
-      <button
-        type="button"
-        onClick={() => zoomOut({ duration: 200 })}
-        className="flex items-center justify-center w-9 h-9 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors border-t border-border"
-        title={t('workflow.zoomOut', 'Zoom out')}
-      >
-        <span className="text-lg font-medium leading-none">−</span>
-      </button>
+      <Tooltip delayDuration={0}>
+        <TooltipTrigger asChild>
+          <button type="button" onClick={() => zoomOut({ duration: 200 })}
+            className="flex items-center justify-center w-9 h-9 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors border-t border-border">
+            <span className="text-lg font-medium leading-none">−</span>
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="left">{t('workflow.zoomOut', 'Zoom out')}</TooltipContent>
+      </Tooltip>
       <div className="h-px bg-border" />
       {/* Fit view */}
-      <button
-        type="button"
-        onClick={() => fitView({ padding: 0.2, duration: 300, minZoom: 0.05, maxZoom: 1.5 })}
-        className="flex items-center justify-center w-9 h-9 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-        title={t('workflow.fitView', 'Fit View')}
-      >
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
-        </svg>
-      </button>
+      <Tooltip delayDuration={0}>
+        <TooltipTrigger asChild>
+          <button type="button" onClick={() => fitView({ padding: 0.2, duration: 300, minZoom: 0.05, maxZoom: 1.5 })}
+            className="flex items-center justify-center w-9 h-9 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+            </svg>
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="left">{t('workflow.fitView', 'Fit View')}</TooltipContent>
+      </Tooltip>
       {/* Auto layout */}
-      <button
-        type="button"
-        onClick={() => window.dispatchEvent(new Event('workflow:auto-layout'))}
-        className="flex items-center justify-center w-9 h-9 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors border-t border-border"
-        title={t('workflow.autoLayout', 'Auto Layout')}
-      >
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="3" y="3" width="6" height="6" rx="1"/><rect x="15" y="3" width="6" height="6" rx="1"/><rect x="9" y="15" width="6" height="6" rx="1"/><path d="M9 6h6"/><path d="M12 9v6"/>
-        </svg>
-      </button>
+      <Tooltip delayDuration={0}>
+        <TooltipTrigger asChild>
+          <button type="button" onClick={() => window.dispatchEvent(new Event('workflow:auto-layout'))}
+            className="flex items-center justify-center w-9 h-9 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors border-t border-border">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="6" height="6" rx="1"/><rect x="15" y="3" width="6" height="6" rx="1"/><rect x="9" y="15" width="6" height="6" rx="1"/><path d="M9 6h6"/><path d="M12 9v6"/>
+            </svg>
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="left">{t('workflow.autoLayout', 'Auto Layout')}</TooltipContent>
+      </Tooltip>
     </div>
   )
 }
+
 
 interface WorkflowCanvasProps {
   nodeDefs?: NodeTypeDefinition[]
@@ -143,6 +159,7 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
   const selectNodes = useUIStore(s => s.selectNodes)
   const interactionMode = useUIStore(s => s.interactionMode)
   const setInteractionMode = useUIStore(s => s.setInteractionMode)
+  const showGrid = useUIStore(s => s.showGrid)
   const reactFlowWrapper = useRef<HTMLDivElement>(null)
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null)
   const [contextMenu, setContextMenu] = useState<{
@@ -648,7 +665,7 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
           fitView
           className="bg-background"
         >
-          <Background variant={BackgroundVariant.Lines} gap={20} lineWidth={1} color="hsl(var(--border))" />
+          {showGrid && <Background variant={BackgroundVariant.Lines} gap={20} lineWidth={1} color="hsl(var(--border))" />}
         </ReactFlow>
         <CanvasZoomControls />
         {contextMenu && contextMenu.type !== 'addNode' && (

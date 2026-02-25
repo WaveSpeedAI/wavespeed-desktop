@@ -63,7 +63,9 @@ export function NodePalette({ definitions }: NodePaletteProps) {
     const localizedLabel = t(`workflow.nodeDefs.${def.type}.label`, def.label)
     addNode(def.type, { x, y }, defaultParams, localizedLabel, def.params, def.inputs, def.outputs)
     recordRecentNodeType(def.type)
-  }, [addNode, t])
+    // Auto-close palette after adding a node
+    toggleNodePalette()
+  }, [addNode, t, toggleNodePalette])
 
   const categoryOrder = ['ai-task', 'input', 'output', 'processing', 'free-tool', 'control']
   const categoryLabel = useCallback((cat: string) => t(`workflow.nodeCategory.${cat}`, cat), [t])
@@ -171,7 +173,7 @@ export function NodePalette({ definitions }: NodePaletteProps) {
                         onDragStart={e => onDragStart(e, def.type)}
                         onClick={() => handleClick(def)}
                         className={cn(
-                          'flex items-center gap-2 h-8 px-3 ml-3.5 rounded-lg cursor-grab select-none',
+                          'flex items-center gap-2 h-8 px-2 rounded-lg cursor-grab select-none',
                           'text-[12px] text-foreground/70 transition-colors duration-100',
                           'hover:bg-muted hover:text-foreground',
                           'active:cursor-grabbing active:bg-muted/80'

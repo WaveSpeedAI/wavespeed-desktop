@@ -1,5 +1,5 @@
 /**
- * Node palette — flat list of available node types.
+ * Node palette — categorised list of available node types.
  * Drag to canvas or click to add. Resizable width via drag handle.
  */
 import { type DragEvent, useCallback, useMemo, useState } from 'react'
@@ -8,6 +8,18 @@ import { useUIStore } from '../../stores/ui.store'
 import { useWorkflowStore } from '../../stores/workflow.store'
 import type { NodeTypeDefinition } from '@/workflow/types/node-defs'
 import { fuzzySearch } from '@/lib/fuzzySearch'
+import { Search, X, ChevronDown } from 'lucide-react'
+import { cn } from '@/lib/utils'
+
+/* ── category colour dots ─────────────────────────────────── */
+const catDot: Record<string, string> = {
+  'ai-task':    'bg-violet-500',
+  'input':      'bg-blue-500',
+  'output':     'bg-emerald-500',
+  'processing': 'bg-amber-500',
+  'free-tool':  'bg-rose-500',
+  'control':    'bg-cyan-500',
+}
 
 const RECENT_NODE_TYPES_KEY = 'workflowRecentNodeTypes'
 const MAX_RECENT_NODE_TYPES = 8
@@ -19,9 +31,7 @@ function recordRecentNodeType(nodeType: string) {
     const list = Array.isArray(prev) ? prev.filter((v): v is string => typeof v === 'string') : []
     const next = [nodeType, ...list.filter(t => t !== nodeType)].slice(0, MAX_RECENT_NODE_TYPES)
     localStorage.setItem(RECENT_NODE_TYPES_KEY, JSON.stringify(next))
-  } catch {
-    // noop
-  }
+  } catch { /* noop */ }
 }
 
 interface NodePaletteProps {
@@ -55,18 +65,13 @@ export function NodePalette({ definitions }: NodePaletteProps) {
   }, [addNode, t])
 
   const categoryOrder = ['ai-task', 'input', 'output', 'processing', 'free-tool', 'control']
-  const categoryLabel = useCallback((cat: string) => {
-    return t(`workflow.nodeCategory.${cat}`, cat)
-  }, [t])
+  const categoryLabel = useCallback((cat: string) => t(`workflow.nodeCategory.${cat}`, cat), [t])
 
   const displayDefs = useMemo(() => {
     const q = query.trim()
     if (!q) return definitions
     return fuzzySearch(definitions, q, (def) => [
-      def.type,
-      def.label,
-      t(`workflow.nodeDefs.${def.type}.label`, def.label),
-      def.category
+      def.type, def.label, t(`workflow.nodeDefs.${def.type}.label`, def.label), def.category
     ]).map(r => r.item)
   }, [definitions, query, t])
 
@@ -89,9 +94,7 @@ export function NodePalette({ definitions }: NodePaletteProps) {
     setDragging(true)
     const startX = e.clientX
     const startWidth = width
-    const onMove = (ev: MouseEvent) => {
-      setSidebarWidth(startWidth + (ev.clientX - startX))
-    }
+    const onMove = (ev: MouseEvent) => setSidebarWidth(startWidth + (ev.clientX - startX))
     const onUp = () => {
       setDragging(false)
       document.removeEventListener('mousemove', onMove)
@@ -101,83 +104,111 @@ export function NodePalette({ definitions }: NodePaletteProps) {
     document.addEventListener('mouseup', onUp)
   }, [width, setSidebarWidth])
 
+  /* ── render ──────────────────────────────────────────────── */
   return (
-    <div className="border-r border-border bg-card text-card-foreground flex flex-col relative overflow-hidden h-full"
+    <div
+      className="border-r border-border/70 bg-background/95 backdrop-blur flex flex-col relative overflow-hidden h-full"
       data-guide="node-palette"
-      style={{ width, minWidth: 0 }}>
-      {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-border">
-        <span className="font-semibold text-xs">{t('workflow.nodes', 'Nodes')}</span>
-        <button onClick={toggleNodePalette} className="text-muted-foreground hover:text-foreground text-xs px-1" title={t('common.close', 'Close')}>
-          ✕
+      style={{ width, minWidth: 0 }}
+    >
+      {/* ── header ── */}
+      <div className="flex items-center justify-between px-4 h-12 border-b border-border/70 shrink-0">
+        <span className="font-semibold text-[13px] text-foreground">{t('workflow.nodes', 'Nodes')}</span>
+        <button
+          onClick={toggleNodePalette}
+          className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          title={t('common.close', 'Close')}
+        >
+          <X className="w-4 h-4" />
         </button>
       </div>
 
-      <div className="px-2.5 py-2 border-b border-border">
-        <input
-          type="text"
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          placeholder={t('workflow.searchNodesPlaceholder', 'Search nodes...')}
-          className="w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1.5 text-xs text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50"
-        />
+      {/* ── search ── */}
+      <div className="px-3 py-2 shrink-0">
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/60 pointer-events-none" />
+          <input
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder={t('workflow.searchNodesPlaceholder', 'Search nodes...')}
+            className="w-full h-8 rounded-lg border border-border/70 bg-muted/40 pl-8 pr-3 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all"
+          />
+        </div>
       </div>
 
-      {/* Node list */}
-      <div className="flex-1 overflow-y-auto py-1.5">
+      {/* ── node list ── */}
+      <div className="flex-1 overflow-y-auto px-2 py-1">
         {groupedDefs.map(([category, defs]) => {
           const isCollapsed = collapsed[category] ?? false
+          const dot = catDot[category] ?? 'bg-gray-400'
           return (
-            <div key={category} className="mb-1">
+            <div key={category} className="mb-0.5">
+              {/* category header */}
               <button
                 onClick={() => setCollapsed(prev => ({ ...prev, [category]: !isCollapsed }))}
-                className="w-full flex items-center gap-1.5 px-2.5 py-1 text-[10px] uppercase tracking-wide text-muted-foreground hover:text-foreground"
+                className="w-full flex items-center gap-2 px-2 h-7 rounded-lg text-muted-foreground/80 hover:text-foreground hover:bg-muted/60 transition-colors"
               >
-                <span className="text-[9px]">{isCollapsed ? '▶' : '▼'}</span>
-                <span>{categoryLabel(category)}</span>
-                <span className="ml-auto text-[10px] opacity-70">{defs.length}</span>
+                <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', dot)} />
+                <span className="text-[11px] font-semibold uppercase tracking-wide">{categoryLabel(category)}</span>
+                <span className="ml-auto text-[10px] text-muted-foreground/50 tabular-nums mr-0.5">{defs.length}</span>
+                <ChevronDown className={cn(
+                  'w-3 h-3 text-muted-foreground/40 transition-transform duration-200',
+                  isCollapsed && '-rotate-90'
+                )} />
               </button>
-              {!isCollapsed && defs.map(def => {
-                const isAiTask = def.category === 'ai-task'
-                return (
-                  <div
-                    key={def.type}
-                    draggable
-                    onDragStart={e => onDragStart(e, def.type)}
-                    onClick={() => handleClick(def)}
-                    className="flex items-center gap-2 px-3 py-2 mx-1.5 rounded-md cursor-grab
-                      text-xs text-muted-foreground select-none transition-colors
-                      hover:bg-accent hover:text-foreground
-                      active:cursor-grabbing active:bg-accent/80"
-                    title={t('workflow.dragOrClickToAdd', 'Drag to canvas or click to add')}
-                  >
-                    <span>{t(`workflow.nodeDefs.${def.type}.label`, def.label)}</span>
-                    {isAiTask && (
-                      <span className="ml-auto text-[9px] font-semibold text-primary bg-primary/25 px-1.5 py-0.5 rounded">AI</span>
-                    )}
-                  </div>
-                )
-              })}
+
+              {/* node items */}
+              {!isCollapsed && (
+                <div className="py-0.5">
+                  {defs.map(def => {
+                    const isAiTask = def.category === 'ai-task'
+                    return (
+                      <div
+                        key={def.type}
+                        draggable
+                        onDragStart={e => onDragStart(e, def.type)}
+                        onClick={() => handleClick(def)}
+                        className={cn(
+                          'flex items-center h-8 px-3 ml-3.5 rounded-lg cursor-grab select-none',
+                          'text-[12px] text-foreground/70 transition-colors duration-100',
+                          'hover:bg-muted hover:text-foreground',
+                          'active:cursor-grabbing active:bg-muted/80'
+                        )}
+                        title={t('workflow.dragOrClickToAdd', 'Drag to canvas or click to add')}
+                      >
+                        <span className="truncate">{t(`workflow.nodeDefs.${def.type}.label`, def.label)}</span>
+                        {isAiTask && (
+                          <span className="ml-auto shrink-0 text-[9px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-500/10 px-1.5 py-0.5 rounded">AI</span>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </div>
           )
         })}
 
         {displayDefs.length === 0 && (
-          <div className="px-3 py-4 text-xs text-muted-foreground text-center">
+          <div className="px-3 py-6 text-xs text-muted-foreground/60 text-center">
             {t('workflow.noNodesAvailable', 'No nodes available')}
           </div>
         )}
       </div>
 
-      {/* Hint */}
-      <div className="px-3 py-2 border-t border-border text-[10px] text-muted-foreground/60 leading-tight">
+      {/* ── footer hint ── */}
+      <div className="px-4 py-2 border-t border-border/70 text-[10px] text-muted-foreground/40">
         {t('workflow.dragOrClickToAdd', 'Drag to canvas or click to add')}
       </div>
 
-      {/* Resize handle on the right edge */}
+      {/* ── resize handle ── */}
       <div
         onMouseDown={onResizeStart}
-        className={`absolute right-0 top-0 bottom-0 w-1 cursor-col-resize z-10 transition-colors ${dragging ? 'bg-primary' : 'hover:bg-primary/50'}`}
+        className={cn(
+          'absolute right-0 top-0 bottom-0 w-1 cursor-col-resize z-10 transition-colors',
+          dragging ? 'bg-primary' : 'hover:bg-primary/50'
+        )}
       />
     </div>
   )

@@ -20,7 +20,7 @@ import { useModelsStore } from '@/stores/modelsStore'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
 import { useTemplateStore } from '@/stores/templateStore'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
-import { MousePointer2, Hand, PanelRight, PanelBottom, Workflow } from 'lucide-react'
+import { PanelRight, PanelBottom, Workflow } from 'lucide-react'
 import { TemplatePickerDialog } from '@/components/templates/TemplatePickerDialog'
 import { TemplateDialog } from '@/components/templates/TemplateDialog'
 import { WorkflowGuide, useWorkflowGuide } from './components/WorkflowGuide'
@@ -94,7 +94,7 @@ export function WorkflowPage() {
   const { loadTemplates, useTemplate, createTemplate } = useTemplateStore()
   const { showNodePalette, showWorkflowPanel, showWorkflowResultsPanel, toggleWorkflowResultsPanel,
     toggleNodePalette, toggleWorkflowPanel, selectedNodeId, previewSrc, previewItems, previewIndex, prevPreview, nextPreview, closePreview,
-    showNamingDialog, namingDialogDefault, resolveNamingDialog, interactionMode, setInteractionMode } = useUIStore()
+    showNamingDialog, namingDialogDefault, resolveNamingDialog } = useUIStore()
   const [showTemplateDialog, setShowTemplateDialog] = useState(false)
   const guide = useWorkflowGuide()
   const [guideStepKey, setGuideStepKey] = useState<string | null>(null)
@@ -747,13 +747,6 @@ export function WorkflowPage() {
     }
   }
 
-  const handleFitView = useCallback(() => {
-    window.dispatchEvent(new Event('workflow:fit-view'))
-  }, [])
-
-  const handleAutoLayout = useCallback(() => {
-    window.dispatchEvent(new Event('workflow:auto-layout'))
-  }, [])
 
   // Import / Export with toast feedback
   const [ioToast, setIoToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
@@ -1026,58 +1019,6 @@ export function WorkflowPage() {
             </button>
           )}
         </div>
-        {/* Canvas tools: Select/Hand, Fit View, Auto Layout */}
-        <div className="flex items-center gap-1.5" data-guide="canvas-tools">
-          {/* Interaction mode toggle (Select / Hand) */}
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => setInteractionMode(interactionMode === 'hand' ? 'select' : 'hand')}
-                className={`h-8 w-8 rounded-md border transition-colors flex items-center justify-center ${
-                  interactionMode === 'select'
-                    ? 'border-primary/50 bg-primary/10 text-primary'
-                    : 'border-[hsl(var(--border))] text-muted-foreground hover:text-foreground hover:bg-accent'
-                }`}
-              >
-                {interactionMode === 'select'
-                  ? <MousePointer2 className="w-3.5 h-3.5" />
-                  : <Hand className="w-3.5 h-3.5" />}
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              {interactionMode === 'select'
-                ? t('workflow.selectMode', 'Select (V)')
-                : t('workflow.handMode', 'Hand (H)')}
-            </TooltipContent>
-          </Tooltip>
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <button
-                onClick={handleFitView}
-                className="h-8 w-8 rounded-md border border-[hsl(var(--border))] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center justify-center"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M2 7V2h5"/><path d="M17 2h5v5"/><path d="M22 17v5h-5"/><path d="M7 22H2v-5"/><circle cx="12" cy="12" r="3"/>
-                </svg>
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">{t('workflow.fitView', 'Fit View')}</TooltipContent>
-          </Tooltip>
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <button
-                onClick={handleAutoLayout}
-                className="h-8 w-8 rounded-md border border-[hsl(var(--border))] text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center justify-center"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="6" height="6" rx="1"/><rect x="15" y="3" width="6" height="6" rx="1"/><rect x="9" y="15" width="6" height="6" rx="1"/><path d="M9 6h6"/><path d="M12 9v6"/>
-                </svg>
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">{t('workflow.autoLayout', 'Auto Layout')}</TooltipContent>
-          </Tooltip>
-        </div>
-
         {/* Monitor toggle */}
         <MonitorToggleBtn />
 

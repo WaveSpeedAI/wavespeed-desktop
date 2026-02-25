@@ -101,9 +101,7 @@ interface CustomNodeData {
 
 /* ── constants ───────────────────────────────────────────────────────── */
 
-const HANDLE_SIZE = 12
-const ACCENT = 'hsl(var(--primary))'
-const ACCENT_MEDIA = 'hsl(142 71% 45%)'
+const HANDLE_SIZE = 10
 
 const TEXTAREA_NAMES = new Set([
   'prompt', 'negative_prompt', 'text', 'description', 'content', 'system_prompt',
@@ -137,69 +135,105 @@ const NODE_INPUT_ACCEPT_RULES: Record<string, string | Record<string, string>> =
 
 /* ── handle styles ───────────────────────────────────────────────────── */
 
-/** Left-side input handle — absolute positioned to sit on the node border.
+/** Left-side input handle base styles.
  *  zIndex 40 keeps handles above the resize edge zones (z-20/z-30) so that
  *  dragging from a handle always starts a connection, never a resize. */
 const handleLeft = (_connected: boolean, media = false): React.CSSProperties => ({
-  width: HANDLE_SIZE, height: HANDLE_SIZE, borderRadius: '50%',
-  border: '2px solid hsl(var(--card))',
-  background: media ? ACCENT_MEDIA : ACCENT,
-  left: -HANDLE_SIZE / 2 - 1,
-  top: '50%', transform: 'translateY(-50%)',
+  width: HANDLE_SIZE, height: HANDLE_SIZE,
+  borderRadius: '50%',
+  border: `2px solid ${media ? 'hsl(142 71% 45%)' : 'hsl(var(--primary))'}`,
+  background: _connected
+    ? (media ? 'hsl(142 71% 45%)' : 'hsl(var(--primary))')
+    : 'hsl(var(--card))',
   position: 'absolute',
   zIndex: 40,
+  transition: 'background 150ms ease, box-shadow 150ms ease',
+  boxShadow: _connected
+    ? `0 0 0 2px ${media ? 'hsla(142,71%,45%,.2)' : 'hsla(var(--primary)/.2)'}`
+    : 'none',
 })
 
-/** Right-side output handle */
+/** Right-side output handle base styles */
 const handleRight = (): React.CSSProperties => ({
-  width: HANDLE_SIZE, height: HANDLE_SIZE, borderRadius: '50%',
-  border: '2px solid hsl(var(--card))',
-  background: ACCENT,
-  right: -HANDLE_SIZE / 2 - 1,
-  top: '50%', transform: 'translateY(-50%)',
+  width: HANDLE_SIZE, height: HANDLE_SIZE,
+  borderRadius: '50%',
+  border: '2px solid hsl(var(--primary))',
+  background: 'hsl(var(--primary))',
   position: 'absolute',
   zIndex: 40,
+  boxShadow: '0 0 0 2px hsla(var(--primary)/.2)',
 })
 
 /* ── HandleAnchor ─────────────────────────────────────────────────────
    Inline wrapper placed next to a parameter label.  It contains the
-   React-Flow Handle and shifts it horizontally onto the node border so
-   the dot is always vertically centred with the label text, regardless
-   of how much content sits below (textarea, description, etc.).       */
+   React-Flow Handle positioned flush on the node card border.
+
+   We measure the horizontal distance from this anchor to the visible
+   card edge (the rounded-xl div with the border), so every handle
+   sits at the exact same position on the border regardless of its
+   nesting depth inside the node body.                                 */
 
 function HandleAnchor({ id, type, connected, media, children }: {
   id: string; type: 'target' | 'source'; connected: boolean; media?: boolean
   children?: React.ReactNode
 }) {
   const ref = useRef<HTMLSpanElement>(null)
-  const [offsetLeft, setOffsetLeft] = useState<number | null>(null)
+  const [offset, setOffset] = useState<number | null>(null)
   const pos = type === 'target' ? Position.Left : Position.Right
   const base = type === 'target' ? handleLeft(connected, media) : handleRight()
+  const { getViewport } = useReactFlow()
 
   useEffect(() => {
     const el = ref.current
     if (!el) return
-    // Walk up to the .react-flow__node wrapper to measure the true offset
-    let node: HTMLElement | null = el
-    while (node && !node.classList.contains('react-flow__node')) node = node.parentElement
-    if (!node) return
-    const nodeRect = node.getBoundingClientRect()
-    const anchorRect = el.getBoundingClientRect()
-    if (type === 'target') {
-      setOffsetLeft(nodeRect.left - anchorRect.left - HANDLE_SIZE / 2 - 1)
-    } else {
-      setOffsetLeft(nodeRect.right - anchorRect.right + HANDLE_SIZE / 2 + 1)
+
+    const measure = () => {
+      // Find the visible card div (the one with rounded-xl border)
+      let card: HTMLElement | null = el
+      while (card && !card.classList.contains('rounded-xl')) card = card.parentElement
+      if (!card) return
+      const zoom = getViewport().zoom || 1
+      const cardRect = card.getBoundingClientRect()
+      const anchorRect = el.getBoundingClientRect()
+      // getBoundingClientRect returns screen pixels (after zoom transform).
+      // CSS left/right values are in the element's local coordinate system
+      // (before zoom), so we must divide by zoom to convert.
+      if (type === 'target') {
+        const screenDelta = cardRect.left - anchorRect.left
+        setOffset(screenDelta / zoom - HANDLE_SIZE / 2)
+      } else {
+        const screenDelta = cardRect.right - anchorRect.right
+        setOffset(screenDelta / zoom + HANDLE_SIZE / 2)
+      }
     }
-  }, [type])
+
+    // Measure after layout settles
+    const raf = requestAnimationFrame(measure)
+
+    // Re-measure when the card resizes
+    let ro: ResizeObserver | undefined
+    let card: HTMLElement | null = el
+    while (card && !card.classList.contains('rounded-xl')) card = card.parentElement
+    if (card) {
+      ro = new ResizeObserver(measure)
+      ro.observe(card)
+    }
+
+    return () => {
+      cancelAnimationFrame(raf)
+      ro?.disconnect()
+    }
+  }, [type, getViewport])
 
   const handleStyle: React.CSSProperties = {
     ...base,
     position: 'absolute',
     top: '50%',
     transform: 'translateY(-50%)',
-    ...(type === 'target'
-      ? { left: offsetLeft ?? -(HANDLE_SIZE / 2 + 1) }
-      : { right: offsetLeft ?? -(HANDLE_SIZE / 2 + 1) }),
+    ...(offset !== null
+      ? (type === 'target' ? { left: offset } : { right: offset })
+      : (type === 'target' ? { left: -(HANDLE_SIZE / 2 + 1) } : { right: -(HANDLE_SIZE / 2 + 1) })
+    ),
   }
 
   return (
@@ -1234,9 +1268,9 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
 
       {/* ── Output handle — top-right, aligned with title bar ───── */}
       <Handle type="source" position={Position.Right} id="output"
-        style={{ ...handleRight(), top: 22 }}
+        style={{ ...handleRight(), top: 22, right: -(HANDLE_SIZE / 2 + 1) }}
         title={t('workflow.output', 'Output')} />
-      <div className="absolute top-[14px] right-5 text-[11px] font-medium text-blue-400/80">{t('workflow.outputLowercase', 'output')}</div>
+      <div className="absolute top-[15px] right-5 text-[10px] font-medium text-primary/60 select-none">{t('workflow.outputLowercase', 'output')}</div>
 
       {/* ── Resize handles — 4 edges + 4 corners ────────────────── */}
       {/* Only shown when selected to avoid interfering with handle connections */}

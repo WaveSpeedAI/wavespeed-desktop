@@ -22,7 +22,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Loader2, Play, ChevronDown } from 'lucide-react'
+import { ArrowLeft, Loader2, Play, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/useToast'
 
@@ -455,6 +455,9 @@ export function SmartPlaygroundPage() {
       {/* Header */}
       <div className="shrink-0 border-b px-4 py-3">
         <div className="flex items-center gap-3">
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => navigate('/featured-models')}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-2.5 rounded-lg border border-border/60 bg-muted/40 px-3 py-1.5 hover:bg-muted hover:border-border transition-colors shadow-sm">

@@ -22,7 +22,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { ArrowLeft, Loader2, Play, ChevronDown } from 'lucide-react'
+import { Loader2, Play, ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/useToast'
 
@@ -455,16 +455,37 @@ export function SmartPlaygroundPage() {
       {/* Header */}
       <div className="shrink-0 border-b px-4 py-3">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => navigate('/featured-models')}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <img
-            src={family.poster}
-            alt={family.name}
-            className="h-8 w-8 rounded-md object-cover"
-          />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-2.5 rounded-lg border border-border/60 bg-muted/40 px-3 py-1.5 hover:bg-muted hover:border-border transition-colors shadow-sm">
+                <img
+                  src={family.poster}
+                  alt={family.name}
+                  className="h-8 w-8 rounded-md object-cover"
+                />
+                <span className="text-sm font-semibold">{family.name}</span>
+                <ChevronDown className="h-4 w-4 text-muted-foreground ml-1" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              {SMART_FORM_FAMILIES.map(sf => (
+                <button
+                  key={sf.id}
+                  onClick={() => navigate(`/featured-models/${sf.id}`)}
+                  className={cn(
+                    "flex items-center gap-2.5 w-full px-3 py-2 text-sm rounded-md transition-colors text-left",
+                    sf.id === family.id
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "hover:bg-muted text-foreground"
+                  )}
+                >
+                  <img src={sf.poster} alt={sf.name} className="h-6 w-6 rounded object-cover shrink-0" />
+                  <span className="truncate">{sf.name}</span>
+                </button>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <div className="min-w-0 flex-1">
-            <h1 className="text-sm font-semibold truncate">{family.name}</h1>
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono truncate max-w-[200px]">
                 {shortVariantId}

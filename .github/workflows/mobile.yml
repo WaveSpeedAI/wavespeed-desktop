@@ -275,10 +275,19 @@ jobs:
         working-directory: mobile/android
         run: ./gradlew assembleDebug
 
+      - name: Decode keystore
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > mobile/android/app/release.keystore
+
       - name: Build Release APK
         if: startsWith(github.ref, 'refs/tags/v')
         working-directory: mobile/android
         run: ./gradlew assembleRelease
+        env:
+          ANDROID_KEYSTORE_FILE: release.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
       - name: Rename APKs
         run: |
@@ -301,15 +310,10 @@ jobs:
             cp mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile-${VERSION}.apk \
                mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile.apk
           fi
-          # Also handle unsigned release APK (same naming as signed)
+          # Also handle unsigned release APK
           if [ -f mobile/android/app/build/outputs/apk/release/app-release-unsigned.apk ]; then
             mv mobile/android/app/build/outputs/apk/release/app-release-unsigned.apk \
-               mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile-${VERSION}.apk
-            # Create fixed-name copy for README download link if signed version didn't already
-            if [ ! -f mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile.apk ]; then
-              cp mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile-${VERSION}.apk \
-                 mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile.apk
-            fi
+               mobile/android/app/build/outputs/apk/release/WaveSpeed-Mobile-${VERSION}-unsigned.apk
           fi
 
       - name: Upload Debug APK

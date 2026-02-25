@@ -127,6 +127,7 @@ interface PlaygroundState {
   createTab: (model?: Model) => string
   closeTab: (tabId: string) => void
   setActiveTab: (tabId: string) => void
+  reorderTab: (fromIndex: number, toIndex: number) => void
 
   // Current tab accessors (for convenience)
   getActiveTab: () => PlaygroundTab | null
@@ -224,6 +225,16 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
 
   setActiveTab: (tabId: string) => {
     set({ activeTabId: tabId })
+  },
+
+  reorderTab: (fromIndex: number, toIndex: number) => {
+    set(state => {
+      if (fromIndex === toIndex) return state
+      const newTabs = [...state.tabs]
+      const [moved] = newTabs.splice(fromIndex, 1)
+      newTabs.splice(toIndex, 0, moved)
+      return { tabs: newTabs }
+    })
   },
 
   getActiveTab: () => {
@@ -342,7 +353,7 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
     const activeTab = get().getActiveTab()
     if (!activeTab) return
 
-    const { selectedModel, formValues } = activeTab
+    const { selectedModel, formValues, formFields } = activeTab
     if (!selectedModel) {
       set(state => ({
         tabs: state.tabs.map(tab =>

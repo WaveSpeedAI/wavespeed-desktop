@@ -39,6 +39,7 @@ export function PlaygroundPage() {
     createTab,
     closeTab,
     setActiveTab,
+    reorderTab,
     getActiveTab,
     setSelectedModel,
     setFormValue,
@@ -59,6 +60,38 @@ export function PlaygroundPage() {
 
   // Mobile view state: 'config' or 'output'
   const [mobileView, setMobileView] = useState<'config' | 'output'>('config')
+
+  // Tab drag-and-drop state (desktop only)
+  const [dragTabIndex, setDragTabIndex] = useState<number | null>(null)
+  const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null)
+
+  const handleDragStart = useCallback((e: React.DragEvent, index: number) => {
+    setDragTabIndex(index)
+    e.dataTransfer.effectAllowed = 'move'
+    if (e.currentTarget instanceof HTMLElement) {
+      e.dataTransfer.setDragImage(e.currentTarget, e.currentTarget.offsetWidth / 2, e.currentTarget.offsetHeight / 2)
+    }
+  }, [])
+
+  const handleDragOver = useCallback((e: React.DragEvent, index: number) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    if (dragTabIndex !== null && index !== dragTabIndex) {
+      setDropTargetIndex(index)
+    }
+  }, [dragTabIndex])
+
+  const handleDragEnd = useCallback(() => {
+    if (dragTabIndex !== null && dropTargetIndex !== null && dragTabIndex !== dropTargetIndex) {
+      reorderTab(dragTabIndex, dropTargetIndex)
+    }
+    setDragTabIndex(null)
+    setDropTargetIndex(null)
+  }, [dragTabIndex, dropTargetIndex, reorderTab])
+
+  const handleDragLeave = useCallback(() => {
+    setDropTargetIndex(null)
+  }, [])
 
   // Template dialog states
   const [showSaveTemplateDialog, setShowSaveTemplateDialog] = useState(false)
@@ -368,19 +401,26 @@ export function PlaygroundPage() {
               <TooltipContent side="bottom">{t('templates.title', 'Templates')}</TooltipContent>
             </Tooltip>
             <div className="w-px h-5 bg-border mr-1" />
-            {tabs.map((tab) => (
+            {tabs.map((tab, index) => (
               <div
                 key={tab.id}
+                draggable
+                onDragStart={(e) => handleDragStart(e, index)}
+                onDragOver={(e) => handleDragOver(e, index)}
+                onDragEnd={handleDragEnd}
+                onDragLeave={handleDragLeave}
                 onClick={() => handleTabClick(tab.id)}
                 role="tab"
                 tabIndex={0}
                 onKeyDown={(e) => e.key === 'Enter' && handleTabClick(tab.id)}
                 className={cn(
-                  'group relative mx-1 flex h-9 items-center gap-2 rounded-lg border px-3 text-sm transition-all cursor-pointer',
+                  'group relative mx-1 flex h-9 items-center gap-2 rounded-lg border px-3 text-sm transition-all cursor-pointer select-none',
                   'hover:border-border hover:bg-muted/60',
                   tab.id === activeTabId
                     ? 'border-primary/30 bg-primary/10 text-foreground shadow-sm'
-                    : 'border-transparent text-muted-foreground'
+                    : 'border-transparent text-muted-foreground',
+                  dragTabIndex === index && 'opacity-40',
+                  dropTargetIndex === index && 'border-primary ring-1 ring-primary/50'
                 )}
               >
                 {tab.isRunning && (

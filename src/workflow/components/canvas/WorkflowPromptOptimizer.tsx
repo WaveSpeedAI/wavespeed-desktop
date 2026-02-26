@@ -312,7 +312,7 @@ export function WorkflowPromptOptimizer({
                 : 'border-[hsl(var(--border))] bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]'
             }`}
           >
-            {t('workflow.promptOptimizer.autoOnRun', 'Optimize on Run')}
+            {t('workflow.promptOptimizer.autoOnRun', 'Optimize On Run')}
           </button>
         )}
       </div>

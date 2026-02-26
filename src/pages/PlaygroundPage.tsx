@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo, Fragment } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { usePlaygroundStore, persistPlaygroundSession, hydratePlaygroundSession } from '@/stores/playgroundStore'
@@ -60,6 +60,20 @@ export function PlaygroundPage() {
 
   // Mobile view state: 'config' or 'output'
   const [mobileView, setMobileView] = useState<'config' | 'output'>('config')
+
+  // Tab overflow detection (Chrome-like + button behavior)
+  const tabScrollRef = useRef<HTMLDivElement>(null)
+  const [tabsOverflow, setTabsOverflow] = useState(false)
+
+  useEffect(() => {
+    const el = tabScrollRef.current
+    if (!el) return
+    const check = () => setTabsOverflow(el.scrollWidth > el.clientWidth)
+    const ro = new ResizeObserver(check)
+    ro.observe(el)
+    check()
+    return () => ro.disconnect()
+  }, [tabs.length])
 
   // Tab drag-and-drop state (desktop only)
   const [dragTabIndex, setDragTabIndex] = useState<number | null>(null)
@@ -300,6 +314,12 @@ export function PlaygroundPage() {
     } else {
       navigate('/playground')
     }
+    // Auto-scroll to show the newly created tab
+    requestAnimationFrame(() => {
+      if (tabScrollRef.current) {
+        tabScrollRef.current.scrollLeft = tabScrollRef.current.scrollWidth
+      }
+    })
   }
 
   const handleCloseTab = (e: React.MouseEvent, tabId: string) => {
@@ -376,89 +396,105 @@ export function PlaygroundPage() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-gradient-to-b from-background via-background to-muted/20 md:pt-0">
+    <div className="flex h-full flex-col md:pt-0">
       {/* Tab Bar */}
-      <div className="page-header bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/55">
-        <ScrollArea className="w-full">
-          <div className="flex items-center px-2 py-1.5">
-            {/* Templates button */}
-            <Tooltip delayDuration={0}>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={handleLoadTemplate}
+      <div className="backdrop-blur supports-[backdrop-filter]:bg-transparent">
+        <div className="flex items-center h-12 border-b border-border">
+          <div ref={tabScrollRef} className="flex-1 min-w-0 overflow-x-auto hide-scrollbar">
+            <div className="flex items-center px-2 w-max">
+              {/* Templates button */}
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={handleLoadTemplate}
+                    className={cn(
+                      'h-7 w-7 rounded-md text-xs font-medium transition-colors flex items-center justify-center mr-1 shrink-0',
+                      showTemplateDialog
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                    )}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/><path d="M13 13h4"/><path d="M13 17h4"/>
+                    </svg>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">{t('templates.title', 'Templates')}</TooltipContent>
+              </Tooltip>
+              <div className="w-px h-5 bg-border mr-1 shrink-0" />
+              {tabs.map((tab, index) => (
+                <Fragment key={tab.id}>
+                  {index > 0 && <div className="w-px h-4 bg-border/70 shrink-0 mx-0.5" />}
+                <div
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, index)}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDragEnd={handleDragEnd}
+                  onDragLeave={handleDragLeave}
+                  onClick={() => handleTabClick(tab.id)}
+                  role="tab"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === 'Enter' && handleTabClick(tab.id)}
                   className={cn(
-                    'h-7 w-7 rounded-md text-xs font-medium transition-colors flex items-center justify-center mr-1',
-                    showTemplateDialog
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                    'group relative flex h-8 items-center gap-2 px-3 text-xs transition-all cursor-pointer select-none shrink-0',
+                    'first:rounded-l-md last:rounded-r-md',
+                    'hover:bg-primary/10 dark:hover:bg-muted/60',
+                    tab.id === activeTabId
+                      ? 'bg-primary/15 dark:bg-primary/10 text-foreground font-medium'
+                      : 'bg-primary/[0.06] dark:bg-muted/20 text-muted-foreground',
+                    dragTabIndex === index && 'opacity-40',
+                    dropTargetIndex === index && 'border-primary ring-1 ring-primary/50'
                   )}
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/><path d="M13 13h4"/><path d="M13 17h4"/>
-                  </svg>
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">{t('templates.title', 'Templates')}</TooltipContent>
-            </Tooltip>
-            <div className="w-px h-5 bg-border mr-1" />
-            {tabs.map((tab, index) => (
-              <div
-                key={tab.id}
-                draggable
-                onDragStart={(e) => handleDragStart(e, index)}
-                onDragOver={(e) => handleDragOver(e, index)}
-                onDragEnd={handleDragEnd}
-                onDragLeave={handleDragLeave}
-                onClick={() => handleTabClick(tab.id)}
-                role="tab"
-                tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && handleTabClick(tab.id)}
-                className={cn(
-                  'group relative mx-1 flex h-9 items-center gap-2 rounded-lg border px-3 text-sm transition-all cursor-pointer select-none',
-                  'hover:border-border hover:bg-muted/60',
-                  tab.id === activeTabId
-                    ? 'border-primary/30 bg-primary/10 text-foreground shadow-sm'
-                    : 'border-transparent text-muted-foreground',
-                  dragTabIndex === index && 'opacity-40',
-                  dropTargetIndex === index && 'border-primary ring-1 ring-primary/50'
-                )}
-              >
-                {tab.isRunning && (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                )}
-                <Tooltip delayDuration={300}>
-                  <TooltipTrigger asChild>
-                    <span className="max-w-[150px] truncate">
+                  {tab.isRunning && (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  )}
+                  <Tooltip delayDuration={300}>
+                    <TooltipTrigger asChild>
+                      <span className="max-w-[150px] truncate">
+                        {tab.selectedModel?.name || t('playground.tabs.newTab')}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
                       {tab.selectedModel?.name || t('playground.tabs.newTab')}
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    {tab.selectedModel?.name || t('playground.tabs.newTab')}
-                  </TooltipContent>
-                </Tooltip>
+                    </TooltipContent>
+                  </Tooltip>
+                  <button
+                    onClick={(e) => handleCloseTab(e, tab.id)}
+                    className={cn(
+                      'ml-1 rounded p-0.5 opacity-0 transition-opacity hover:bg-muted',
+                      'group-hover:opacity-100',
+                      tab.id === activeTabId && 'opacity-100'
+                    )}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+                </Fragment>
+              ))}
+              {/* + button inside scroll area: visible when tabs don't overflow */}
+              {!tabsOverflow && (
                 <button
-                  onClick={(e) => handleCloseTab(e, tab.id)}
-                  className={cn(
-                    'ml-1 rounded p-0.5 opacity-0 transition-opacity hover:bg-muted',
-                    'group-hover:opacity-100',
-                    tab.id === activeTabId && 'opacity-100'
-                  )}
+                  onClick={handleNewTab}
+                  className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 mx-1"
+                  title={t('playground.tabs.newTab', 'New tab')}
                 >
-                  <X className="h-3 w-3" />
+                  <Plus className="h-4 w-4" />
                 </button>
-              </div>
-            ))}
-            <Button
-              variant="outline"
-              size="sm"
+              )}
+            </div>
+          </div>
+          {/* + button fixed outside: visible only when tabs overflow */}
+          {tabsOverflow && (
+            <button
               onClick={handleNewTab}
-              className="ml-1 h-8 rounded-lg border-dashed px-3"
+              className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 mx-1"
+              title={t('playground.tabs.newTab', 'New tab')}
             >
               <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Playground Content */}

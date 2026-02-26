@@ -16,6 +16,7 @@ import {
 import { normalizePayloadArrays } from '@/lib/schemaToForm'
 import { BROWSER_NODE_DEFINITIONS } from './node-definitions'
 import type { ModelParamSchema } from '@/workflow/types/node-defs'
+import { useModelsStore } from '@/stores/modelsStore'
 
 const SKIP_KEYS = new Set(['modelId', '__meta', '__locks', '__nodeWidth', '__nodeHeight'])
 
@@ -77,7 +78,7 @@ function buildApiParams(
 
 function resolveInputs(
   nodeId: string,
-  nodeMap: Map<string, BrowserNode>,
+  _nodeMap: Map<string, BrowserNode>,
   edges: { source: string; target: string; sourceHandle: string; targetHandle: string }[],
   results: Map<string, NodeResult>
 ): Record<string, unknown> {
@@ -181,11 +182,37 @@ function upstreamNodeIds(nodeId: string, simpleEdges: SimpleEdge[]): Set<string>
   return out
 }
 
+/** Collect a node and all its downstream (forward) dependents. */
+function downstreamNodeIds(nodeId: string, simpleEdges: SimpleEdge[]): Set<string> {
+  const out = new Set<string>([nodeId])
+  const forward = new Map<string, string[]>()
+  for (const e of simpleEdges) {
+    const list = forward.get(e.sourceNodeId) ?? []
+    list.push(e.targetNodeId)
+    forward.set(e.sourceNodeId, list)
+  }
+  let queue = [nodeId]
+  while (queue.length > 0) {
+    const next: string[] = []
+    for (const id of queue) {
+      for (const tgt of forward.get(id) ?? []) {
+        if (!out.has(tgt)) {
+          out.add(tgt)
+          next.push(tgt)
+        }
+      }
+    }
+    queue = next
+  }
+  return out
+}
+
+
 export async function executeWorkflowInBrowser(
   nodes: BrowserNode[],
   edges: BrowserEdge[],
   callbacks: RunInBrowserCallbacks,
-  options?: { runOnlyNodeId?: string; signal?: AbortSignal }
+  options?: { runOnlyNodeId?: string; continueFromNodeId?: string; existingResults?: Map<string, string>; signal?: AbortSignal }
 ): Promise<void> {
   const signal = options?.signal
   const throwIfAborted = (): void => {
@@ -199,7 +226,20 @@ export async function executeWorkflowInBrowser(
   let nodeIds: string[]
   let filteredNodes: BrowserNode[]
   let filteredEdges: BrowserEdge[]
-  if (options?.runOnlyNodeId && allNodeIds.includes(options.runOnlyNodeId)) {
+  /** Nodes whose results should be reused (not re-executed) in continueFrom mode */
+  let skipNodeIds: Set<string> | null = null
+  if (options?.continueFromNodeId && allNodeIds.includes(options.continueFromNodeId)) {
+    // Run the target node + all downstream; include upstream in the graph but skip executing them
+    const downstream = downstreamNodeIds(options.continueFromNodeId, simpleEdges)
+    const upstream = upstreamNodeIds(options.continueFromNodeId, simpleEdges)
+    // The subgraph is upstream ∪ downstream so edges resolve correctly
+    const subset = new Set([...upstream, ...downstream])
+    nodeIds = allNodeIds.filter(id => subset.has(id))
+    filteredNodes = nodes.filter(n => subset.has(n.id))
+    filteredEdges = edges.filter(e => subset.has(e.source) && subset.has(e.target))
+    // Skip upstream nodes (except the target node itself) — they keep their previous results
+    skipNodeIds = new Set([...upstream].filter(id => !downstream.has(id)))
+  } else if (options?.runOnlyNodeId && allNodeIds.includes(options.runOnlyNodeId)) {
     const subset = upstreamNodeIds(options.runOnlyNodeId, simpleEdges)
     nodeIds = allNodeIds.filter(id => subset.has(id))
     filteredNodes = nodes.filter(n => subset.has(n.id))
@@ -232,8 +272,12 @@ export async function executeWorkflowInBrowser(
 
   for (const level of levels) {
     throwIfAborted()
+    // Stop the entire workflow if any node has failed
+    if (failedNodes.size > 0) break
     await Promise.all(level.map(async nodeId => {
       throwIfAborted()
+      // If another node in this batch failed, skip remaining
+      if (failedNodes.size > 0) return
       const upstreams = upstreamMap.get(nodeId) ?? []
       if (upstreams.some(uid => failedNodes.has(uid))) {
         failedNodes.add(nodeId)
@@ -245,6 +289,17 @@ export async function executeWorkflowInBrowser(
       if (!node) return
       const nodeType = node.data.nodeType
       const params = node.data.params ?? {}
+
+      // continueFrom: skip upstream nodes — use existing results so downstream can resolve inputs
+      if (skipNodeIds?.has(nodeId)) {
+        const existingUrl = options?.existingResults?.get(nodeId)
+        const existingOutput = existingUrl || String(params.uploadedUrl ?? params.text ?? params.prompt ?? params.output ?? '')
+        if (existingOutput) {
+          results.set(nodeId, { outputUrl: existingOutput, resultMetadata: { output: existingOutput } })
+        }
+        return
+      }
+
       const inputs = resolveInputs(nodeId, nodeMap, edgesWithHandles, results)
 
       // Validate required fields before running
@@ -272,6 +327,8 @@ export async function executeWorkflowInBrowser(
             ? String(result.outputs[0])
             : ''
           const durationMs = Date.now() - start
+          const model = useModelsStore.getState().getModelById(modelId)
+          const cost = model?.base_price ?? 0
           results.set(nodeId, {
             outputUrl,
             resultMetadata: {
@@ -285,15 +342,33 @@ export async function executeWorkflowInBrowser(
           callbacks.onNodeStatus(nodeId, 'confirmed')
           callbacks.onNodeComplete(nodeId, {
             urls: Array.isArray(result.outputs) ? result.outputs.map(String) : [outputUrl],
-            cost: 0,
+            cost,
             durationMs
           })
           return
         }
 
         if (nodeType === 'input/media-upload') {
-          const url = String(inputs.media ?? params.uploadedUrl ?? '')
+          let url = String(inputs.media ?? params.uploadedUrl ?? '')
           if (!url) throw new Error('No file uploaded or connected.')
+
+          // If the URL is still a blob: URL, the CDN upload hasn't completed yet.
+          // Fetch the blob and upload it to CDN before passing downstream.
+          if (url.startsWith('blob:')) {
+            callbacks.onProgress(nodeId, 10, 'Uploading file to CDN...')
+            try {
+              const resp = await fetch(url)
+              const blob = await resp.blob()
+              const fileName = String(params.fileName ?? 'upload')
+              const file = new File([blob], fileName, { type: blob.type })
+              const cdnUrl = await apiClient.uploadFile(file, signal)
+              URL.revokeObjectURL(url)
+              url = cdnUrl
+            } catch (uploadErr) {
+              throw new Error(`Failed to upload file to CDN: ${uploadErr instanceof Error ? uploadErr.message : String(uploadErr)}`)
+            }
+          }
+
           results.set(nodeId, { outputUrl: url, resultMetadata: { output: url, resultUrl: url } })
           callbacks.onNodeStatus(nodeId, 'confirmed')
           callbacks.onNodeComplete(nodeId, { urls: [url], cost: 0, durationMs: Date.now() - start })
@@ -312,6 +387,48 @@ export async function executeWorkflowInBrowser(
           const url = String(inputs.input ?? '')
           if (!url) throw new Error('No URL provided for preview.')
           results.set(nodeId, { outputUrl: url, resultMetadata: { previewUrl: url } })
+          callbacks.onNodeStatus(nodeId, 'confirmed')
+          callbacks.onNodeComplete(nodeId, { urls: [url], cost: 0, durationMs: Date.now() - start })
+          return
+        }
+
+        if (nodeType === 'output/file') {
+          const url = String(inputs.url ?? inputs.input ?? '')
+          if (!url) throw new Error('No URL provided for export.')
+          const filenamePrefix = String(params.filename ?? 'output').replace(/[<>:"/\\|?*]/g, '_') || 'output'
+          const format = String(params.format ?? 'auto')
+          const ext = format === 'auto' ? guessExtFromUrl(url) : format.replace(/^\./, '').toLowerCase()
+          const fileName = `${filenamePrefix}_${Date.now()}.${ext || 'png'}`
+
+          const isElectron = typeof window !== 'undefined' && !!window.electronAPI?.saveFileSilent
+          if (isElectron) {
+            // Electron: save silently to outputDir via IPC (no dialog)
+            const outputDir = String(params.outputDir || '')
+            const result = await window.electronAPI!.saveFileSilent(url, outputDir, fileName)
+            if (!result.success) throw new Error(result.error || 'Save failed')
+          } else {
+            // Browser: download via <a download> + blob
+            try {
+              const resp = await fetch(url)
+              if (!resp.ok) throw new Error(`Download failed: HTTP ${resp.status}`)
+              const blob = await resp.blob()
+              const blobUrl = URL.createObjectURL(blob)
+              const a = document.createElement('a')
+              a.href = blobUrl
+              a.download = fileName
+              a.style.display = 'none'
+              document.body.appendChild(a)
+              a.click()
+              setTimeout(() => {
+                document.body.removeChild(a)
+                URL.revokeObjectURL(blobUrl)
+              }, 100)
+            } catch {
+              window.open(url, '_blank')
+            }
+          }
+
+          results.set(nodeId, { outputUrl: url, resultMetadata: { output: url, exportedFileName: fileName } })
           callbacks.onNodeStatus(nodeId, 'confirmed')
           callbacks.onNodeComplete(nodeId, { urls: [url], cost: 0, durationMs: Date.now() - start })
           return
@@ -461,4 +578,13 @@ export async function executeWorkflowInBrowser(
       }
     }))
   }
+}
+
+function guessExtFromUrl(url: string): string {
+  const p = url.toLowerCase().split('?')[0]
+  const m = p.match(/\.(\w{2,4})$/)
+  if (m) return m[1]
+  if (p.includes('video') || p.includes('mp4')) return 'mp4'
+  if (p.includes('audio') || p.includes('mp3')) return 'mp3'
+  return 'png'
 }

@@ -115,12 +115,15 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
           get().updateProgress(nodeId, progress, message)
         },
         onNodeComplete: (nodeId, { urls, cost }) => {
-          set(s => ({
-            lastResults: {
-              ...s.lastResults,
-              [nodeId]: [{ urls, time: new Date().toISOString(), cost }]
+          set(s => {
+            const existing = s.lastResults[nodeId] ?? []
+            return {
+              lastResults: {
+                ...s.lastResults,
+                [nodeId]: [{ urls, time: new Date().toISOString(), cost }, ...existing].slice(0, 50)
+              }
             }
-          }))
+          })
         }
       }, { signal: controller.signal })
     } catch (error) {
@@ -190,12 +193,15 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
         onNodeStatus: (nid, status, errorMessage) => { get().updateNodeStatus(nid, status, errorMessage) },
         onProgress: (nid, progress, message) => { get().updateProgress(nid, progress, message) },
         onNodeComplete: (nid, { urls, cost }) => {
-          set(s => ({
-            lastResults: {
-              ...s.lastResults,
-              [nid]: [{ urls, time: new Date().toISOString(), cost }]
+          set(s => {
+            const existing = s.lastResults[nid] ?? []
+            return {
+              lastResults: {
+                ...s.lastResults,
+                [nid]: [{ urls, time: new Date().toISOString(), cost }, ...existing].slice(0, 50)
+              }
             }
-          }))
+          })
         }
       }, { runOnlyNodeId: nodeId, signal: controller.signal })
     } catch (error) {
@@ -230,7 +236,85 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
     const browserEdges = edges.map(e => ({ source: e.source, target: e.target, sourceHandle: e.sourceHandle ?? undefined, targetHandle: e.targetHandle ?? undefined }))
     get().runNodeInBrowser(browserNodes, browserEdges, nodeId)
   },
-  continueFrom: async () => { /* Only Run All is supported (browser execution) */ },
+  continueFrom: async (_workflowId, nodeId) => {
+    const { useWorkflowStore } = await import('./workflow.store')
+    const { nodes, edges } = useWorkflowStore.getState()
+    const browserNodes = nodes.map(n => ({
+      id: n.id,
+      data: {
+        nodeType: n.data?.nodeType ?? '',
+        params: { ...(n.data?.params ?? {}), __meta: { modelInputSchema: n.data?.modelInputSchema ?? [] } },
+        label: n.data?.label
+      }
+    }))
+    const browserEdges = edges.map(e => ({ source: e.source, target: e.target, sourceHandle: e.sourceHandle ?? undefined, targetHandle: e.targetHandle ?? undefined }))
+
+    // Collect existing result URLs so upstream nodes can feed downstream
+    const existingResults = new Map<string, string>()
+    const lastResults = get().lastResults
+    for (const [nid, groups] of Object.entries(lastResults)) {
+      if (groups && groups.length > 0 && groups[0].urls.length > 0) {
+        existingResults.set(nid, groups[0].urls[0])
+      }
+    }
+
+    const nodeLabels: Record<string, string> = {}
+    for (const n of nodes) {
+      nodeLabels[n.id] = (n.data?.label as string) || n.data?.nodeType || n.id.slice(0, 8)
+    }
+    const sessionId = uuid()
+    const nodeIds = nodes.map(n => n.id)
+    const nodeResults: Record<string, 'running' | 'done' | 'error'> = {}
+    for (const nid of nodeIds) nodeResults[nid] = 'running'
+    set(s => ({
+      runSessions: [{
+        id: sessionId,
+        workflowId: 'browser',
+        workflowName: 'Run from here',
+        startedAt: new Date().toISOString(),
+        nodeIds,
+        nodeLabels,
+        nodeResults,
+        nodeCosts: {},
+        status: 'running'
+      }, ...s.runSessions].slice(0, MAX_SESSIONS)
+    }))
+
+    const controller = new AbortController()
+    browserRunAbortController = controller
+    try {
+      await executeWorkflowInBrowser(browserNodes, browserEdges, {
+        onNodeStatus: (nid, status, errorMessage) => { get().updateNodeStatus(nid, status, errorMessage) },
+        onProgress: (nid, progress, message) => { get().updateProgress(nid, progress, message) },
+        onNodeComplete: (nid, { urls, cost }) => {
+          set(s => {
+            const existing = s.lastResults[nid] ?? []
+            return {
+              lastResults: {
+                ...s.lastResults,
+                [nid]: [{ urls, time: new Date().toISOString(), cost }, ...existing].slice(0, 50)
+              }
+            }
+          })
+        }
+      }, { continueFromNodeId: nodeId, existingResults, signal: controller.signal })
+    } catch (error) {
+      if (isAbortError(error)) {
+        set(s => ({
+          runSessions: s.runSessions.map(rs => rs.id === sessionId ? { ...rs, status: 'cancelled' as const } : rs)
+        }))
+        for (const nid of nodeIds) get().updateNodeStatus(nid, 'idle')
+      } else {
+        const msg = error instanceof Error ? error.message : String(error)
+        console.error('[ExecutionStore] continueFrom error:', msg)
+        set(s => ({
+          runSessions: s.runSessions.map(rs => rs.id === sessionId ? { ...rs, status: 'error' as const } : rs)
+        }))
+      }
+    } finally {
+      browserRunAbortController = null
+    }
+  },
   retryNode: async () => { /* Only Run All is supported (browser execution) */ },
   cancelNode: async () => {
     if (browserRunAbortController) {

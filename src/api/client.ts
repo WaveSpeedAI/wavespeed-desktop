@@ -213,6 +213,9 @@ class WaveSpeedClient {
       }
       return response.data.data
     } catch (error) {
+      // Re-throw AxiosError directly so the polling loop in run() can detect
+      // connection errors and retry instead of aborting the entire prediction.
+      if (error instanceof AxiosError) throw error
       throw createAPIError(error, 'Failed to get result')
     }
   }
@@ -277,6 +280,8 @@ class WaveSpeedClient {
 
     // Poll for result with retry on connection errors
     const startTime = Date.now()
+    let consecutiveErrors = 0
+    const MAX_CONSECUTIVE_ERRORS = 10
     while (true) {
       throwIfAborted()
       if (Date.now() - startTime > timeout) {
@@ -285,6 +290,7 @@ class WaveSpeedClient {
 
       try {
         const result = await this.getResult(requestId, { signal })
+        consecutiveErrors = 0 // reset on success
 
         if (result.status === 'completed') {
           return result
@@ -297,10 +303,15 @@ class WaveSpeedClient {
         }
       } catch (error) {
         if (signal?.aborted) throw new DOMException('Cancelled', 'AbortError')
-        // Retry after 1 second on connection errors
+        // Retry with exponential backoff on connection errors
         if (this.isConnectionError(error)) {
-          console.warn('Connection error during polling, retrying in 1 second...', error)
-          await new Promise(resolve => setTimeout(resolve, 1000))
+          consecutiveErrors++
+          if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+            throw new Error(`Polling failed after ${MAX_CONSECUTIVE_ERRORS} consecutive connection errors`)
+          }
+          const backoff = Math.min(1000 * Math.pow(2, consecutiveErrors - 1), 10000)
+          console.warn(`Connection error during polling (${consecutiveErrors}/${MAX_CONSECUTIVE_ERRORS}), retrying in ${backoff}ms...`, error)
+          await new Promise(resolve => setTimeout(resolve, backoff))
           continue
         }
         // Re-throw non-connection errors

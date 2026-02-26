@@ -35,12 +35,14 @@ interface FormFieldProps {
   onUploadingChange?: (isUploading: boolean) => void
   /** When provided (e.g. workflow), file uploads use this instead of API. */
   onUploadFile?: (file: File) => Promise<string>
+  /** Optional React node rendered inside the label row (e.g. a connection handle anchor). */
+  handleAnchor?: React.ReactNode
 }
 
 // Generate a random seed (0 to 65535)
 const generateRandomSeed = () => Math.floor(Math.random() * 65536)
 
-export function FormField({ field, value, onChange, disabled = false, error, modelType, imageValue, hideLabel = false, formValues, onUploadingChange, onUploadFile }: FormFieldProps) {
+export function FormField({ field, value, onChange, disabled = false, error, modelType, imageValue, hideLabel = false, formValues, onUploadingChange, onUploadFile, handleAnchor }: FormFieldProps) {
   const { t } = useTranslation()
   // Check if this is a seed field
   const isSeedField = field.name.toLowerCase() === 'seed'
@@ -119,6 +121,7 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
             placeholder={field.description || `Enter ${field.label.toLowerCase()}`}
             disabled={disabled}
             rows={4}
+            className="nodrag nowheel"
           />
         )
 
@@ -290,11 +293,6 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
               <SelectValue placeholder={`Select ${field.label.toLowerCase()}`} />
             </SelectTrigger>
             <SelectContent>
-              {!field.required && (
-                <SelectItem value="__empty__" className="text-muted-foreground">
-                  — None —
-                </SelectItem>
-              )}
               {field.options?.map((option) => (
                 <SelectItem key={String(option)} value={String(option)}>
                   {String(option)}
@@ -364,15 +362,18 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
     <div className="space-y-2">
       {!hideLabel && (
         <div className="flex items-center gap-2">
-          <Label
-            htmlFor={field.name}
-            className={cn(
-              field.required && "after:content-['*'] after:ml-0.5 after:text-destructive",
-              error && "text-destructive"
-            )}
-          >
-            {field.label}
-          </Label>
+          <span className="inline-flex items-center">
+            {handleAnchor}
+            <Label
+              htmlFor={field.name}
+              className={cn(
+                field.required && "after:content-['*'] after:ml-0.5 after:text-destructive",
+                error && "text-destructive"
+              )}
+            >
+              {field.label}
+            </Label>
+          </span>
           {isOptimizablePrompt && (
             <PromptOptimizer
               currentPrompt={(value as string) || ''}

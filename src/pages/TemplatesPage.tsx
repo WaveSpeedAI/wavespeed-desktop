@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { toast } from '@/hooks/useToast'
-import { Upload, GitBranch, PlayCircle, LayoutTemplate } from 'lucide-react'
+import { Upload, GitBranch, PlayCircle, LayoutTemplate, FolderOpen } from 'lucide-react'
 import type { Template } from '@/types/template'
 
 export function TemplatesPage() {
@@ -143,11 +143,11 @@ export function TemplatesPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-full flex flex-col">
       {/* Header + Top Bar */}
-      <div className="px-4 md:px-8 pt-14 md:pt-8 pb-4">
-        <h1 className="text-2xl font-bold mb-5 flex items-center gap-2">
-          <LayoutTemplate className="h-6 w-6" />
+      <div className="px-4 md:px-6 py-4 pt-14 md:pt-4">
+        <h1 className="text-xl md:text-2xl font-bold tracking-tight mb-5 flex items-center gap-2">
+          <FolderOpen className="h-5 w-5 text-primary" />
           {t('templates.title')}
         </h1>
 

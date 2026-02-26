@@ -4,7 +4,7 @@
  * Top bar: Workflow tabs (like browser tabs) + Run All + Save + Settings.
  * Config and Results are shown inside the selected node card on the canvas (no right sidebar).
  */
-import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
+import { useEffect, useState, useCallback, useRef, useMemo, Fragment } from 'react'
 import ReactDOM from 'react-dom'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -130,7 +130,7 @@ export function WorkflowPage() {
   const loadWorkflow = useWorkflowStore(s => s.loadWorkflow)
   const { loadTemplates, useTemplate, createTemplate } = useTemplateStore()
   const { showNodePalette, showWorkflowPanel, showWorkflowResultsPanel,
-    toggleNodePalette, toggleWorkflowPanel, selectedNodeId, previewSrc, previewItems, previewIndex, prevPreview, nextPreview, closePreview,
+    toggleNodePalette, toggleWorkflowPanel, toggleWorkflowResultsPanel, selectedNodeId, previewSrc, previewItems, previewIndex, prevPreview, nextPreview, closePreview,
     showNamingDialog, namingDialogDefault, resolveNamingDialog } = useUIStore()
   const [showTemplateDialog, setShowTemplateDialog] = useState(false)
   const guide = useWorkflowGuide()
@@ -912,16 +912,18 @@ export function WorkflowPage() {
 
       {/* ── Toolbar — unified header ──────────────────────────── */}
       <div className="relative">
-        <div className="flex items-center border-b border-border bg-background px-2 gap-1.5 h-12">
+        <div className="flex items-center border-b border-border px-2 gap-1.5 h-12">
 
           {/* Tabs — unified style with Playground */}
         <div ref={wfTabScrollRef} className="flex-1 min-w-0 overflow-x-auto hide-scrollbar">
           <div className="flex items-center w-max">
-          {tabs.map(tab => {
+          {tabs.map((tab, tabIdx) => {
             const isActive = tab.tabId === activeTabId
             const isEditing = editingTabId === tab.tabId
             return (
-              <div key={tab.tabId}
+              <Fragment key={tab.tabId}>
+                {tabIdx > 0 && <div className="w-px h-4 bg-border/70 shrink-0 mx-0.5" />}
+              <div
                 draggable={!isEditing}
                 onDragStart={e => handleTabDragStart(e, tab.tabId)}
                 onDragOver={e => handleTabDragOver(e, tab.tabId)}
@@ -933,11 +935,11 @@ export function WorkflowPage() {
                   e.stopPropagation()
                   setTabContextMenu({ tabId: tab.tabId, x: e.clientX, y: e.clientY })
                 }}
-                className={`group relative mx-0.5 flex h-8 items-center gap-1.5 rounded-md border px-3 text-xs transition-all cursor-pointer select-none shrink-0 max-w-[160px]
+                className={`group relative flex h-8 items-center gap-1.5 px-3 text-xs transition-all cursor-pointer select-none shrink-0 max-w-[160px] hover:bg-primary/10 dark:hover:bg-muted/60
                   ${dragTabId === tab.tabId ? 'opacity-40' : ''}
                   ${isActive
-                    ? 'border-primary/30 bg-primary/10 text-foreground shadow-sm'
-                    : 'border-transparent text-muted-foreground hover:border-border hover:bg-muted/60'}`}
+                    ? 'bg-primary/15 dark:bg-primary/10 text-foreground font-medium'
+                    : 'bg-primary/[0.06] dark:bg-muted/20 text-muted-foreground'}`}
               >
                 {/* Drop indicator line */}
                 {dropIndicator?.tabId === tab.tabId && dropIndicator.side === 'left' && (
@@ -976,6 +978,7 @@ export function WorkflowPage() {
                   </button>
                 )}
               </div>
+              </Fragment>
             )
           })}
           {/* + button inside scroll area: visible when tabs don't overflow */}
@@ -1063,7 +1066,7 @@ export function WorkflowPage() {
           )}
         </div>
         {/* Monitor side panel toggle */}
-        <span className="flex items-center gap-1.5">
+        <span className="flex items-center gap-1.5 mr-2">
         <MonitorToggleBtn />
         </span>
         </div>
@@ -1190,8 +1193,17 @@ export function WorkflowPage() {
           <div data-guide="canvas" className="flex-1 h-full min-w-0">
             <WorkflowCanvas nodeDefs={nodeDefs} />
           </div>
+
+          {/* Right drawer panel as overlay with padding (mirrors left drawers) */}
+          {showWorkflowResultsPanel && (
+            <>
+              <div className="absolute inset-0 z-20" onClick={toggleWorkflowResultsPanel} />
+              <div className="absolute top-1 right-4 bottom-4 z-30 rounded-xl overflow-hidden shadow-xl border border-border">
+                <MonitorSidePanel workflowId={workflowId} />
+              </div>
+            </>
+          )}
         </div>
-        {showWorkflowResultsPanel && <MonitorSidePanel workflowId={workflowId} />}
       </div>
 
       {/* Preview overlay — covers the canvas area only (absolute within the page) */}
@@ -1554,7 +1566,6 @@ function MonitorToggleBtn() {
           }`}
         >
           <History className="w-3.5 h-3.5" />
-          <span className="text-[11px] font-medium hidden sm:inline">History</span>
           {activeRuns > 0 && (
             <span className="absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full bg-blue-500 text-white text-[9px] flex items-center justify-center font-bold animate-pulse px-1">
               {activeRuns}

@@ -286,6 +286,11 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
 
   const resultGroups = useExecutionStore(s => s.lastResults[id]) ?? []
 
+  // Auto-expand results when new results arrive
+  useEffect(() => {
+    if (resultGroups.length > 0) setResultsExpanded(true)
+  }, [resultGroups.length])
+
   const saveWorkflow = useWorkflowStore(s => s.saveWorkflow)
   const removeNode = useWorkflowStore(s => s.removeNode)
   const { continueFrom } = useExecutionStore()

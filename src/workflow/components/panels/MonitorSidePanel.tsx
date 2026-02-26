@@ -3,7 +3,7 @@
  * Styled to match the NodePalette (left sidebar) for visual consistency.
  */
 import { useState, useEffect, useCallback } from 'react'
-import { ChevronDown, ChevronRight, X } from 'lucide-react'
+import { ChevronDown, ChevronRight, X, ChevronsUpDown } from 'lucide-react'
 import { useExecutionStore, type RunSession } from '../../stores/execution.store'
 import { useUIStore } from '../../stores/ui.store'
 import { historyIpc } from '../../ipc/ipc-client'
@@ -126,7 +126,7 @@ export function MonitorSidePanel({ workflowId }: { workflowId?: string | null })
 
   return (
     <div
-      className="border-l border-border/70 bg-background/95 backdrop-blur flex flex-col relative overflow-hidden h-full"
+      className="bg-background/95 backdrop-blur flex flex-col relative overflow-hidden h-full rounded-xl border border-border shadow-xl"
       style={{ width, minWidth: 0 }}
     >
       {/* ── header ── */}
@@ -181,6 +181,9 @@ function SessionCard({ session, nodeStatuses, progressMap, errorMessages, onCanc
   onCancel: () => void
 }) {
   const [collapsed, setCollapsed] = useState(session.status !== 'running')
+  /** Signal to expand/collapse all node rows within this session */
+  const [nodeExpandSignal, setNodeExpandSignal] = useState(0)
+  const nodesAllExpanded = nodeExpandSignal % 2 === 1
   const { nodeIds, nodeLabels, nodeResults, nodeCosts, status } = session
   const total = nodeIds.length
   const completed = Object.values(nodeResults).filter(v => v === 'done').length
@@ -216,6 +219,17 @@ function SessionCard({ session, nodeStatuses, progressMap, errorMessages, onCanc
             {totalCost > 0 && <span className="text-amber-400/70 ml-1">💰 ${totalCost.toFixed(4)}</span>}
           </div>
         </div>
+        <button
+          onClick={e => {
+            e.stopPropagation()
+            if (collapsed) setCollapsed(false)
+            setNodeExpandSignal(s => s + 1)
+          }}
+          className="rounded-md p-1 text-muted-foreground/60 hover:bg-muted hover:text-foreground transition-colors flex-shrink-0"
+          title={nodesAllExpanded ? 'Collapse all nodes' : 'Expand all nodes'}
+        >
+          <ChevronsUpDown className="w-3.5 h-3.5" />
+        </button>
       </div>
 
       {/* Status + controls */}
@@ -245,7 +259,7 @@ function SessionCard({ session, nodeStatuses, progressMap, errorMessages, onCanc
               <NodeRow key={nodeId} nodeId={nodeId} label={nodeLabels[nodeId] || nodeId.slice(0, 8)}
                 sessionResult={nodeResults[nodeId]} isSessionRunning={status === 'running'}
                 liveStatus={nodeStatuses[nodeId]} progress={progressMap[nodeId]}
-                errorMessage={errorMessages[nodeId]} />
+                errorMessage={errorMessages[nodeId]} expandSignal={nodeExpandSignal} />
             ))}
           </div>
         </>
@@ -256,12 +270,19 @@ function SessionCard({ session, nodeStatuses, progressMap, errorMessages, onCanc
 
 /* ── Node Row ─────────────────────────────────────────────────────── */
 
-function NodeRow({ nodeId, label, sessionResult, isSessionRunning, liveStatus, progress, errorMessage }: {
+function NodeRow({ nodeId, label, sessionResult, isSessionRunning, liveStatus, progress, errorMessage, expandSignal }: {
   nodeId: string; label: string; sessionResult: 'running' | 'done' | 'error'
   isSessionRunning: boolean; liveStatus?: NodeStatus
   progress?: { progress: number; message?: string }; errorMessage?: string
+  expandSignal: number
 }) {
   const [expanded, setExpanded] = useState(false)
+
+  // React to expand/collapse all signal from parent SessionCard
+  useEffect(() => {
+    if (expandSignal === 0) return
+    setExpanded(expandSignal % 2 === 1)
+  }, [expandSignal])
   const [record, setRecord] = useState<NodeExecutionRecord | null>(null)
   const [loading, setLoading] = useState(false)
   const lastResults = useExecutionStore(s => s.lastResults[nodeId] ?? [])

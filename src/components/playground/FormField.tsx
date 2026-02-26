@@ -121,6 +121,7 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
             placeholder={field.description || `Enter ${field.label.toLowerCase()}`}
             disabled={disabled}
             rows={4}
+            className="nodrag nowheel"
           />
         )
 

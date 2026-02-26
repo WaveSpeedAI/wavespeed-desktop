@@ -440,12 +440,14 @@ export function ZImagePage() {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex items-center gap-2 md:gap-4 border-b px-4 md:px-6 py-3 md:py-4">
-        <div className="flex items-center gap-2">
-          <Zap className="h-5 w-5" />
-          <h1 className="text-lg md:text-xl font-semibold">{t('zImage.title')}</h1>
+      <div className="px-4 md:px-6 py-4 border-b">
+        <div className="flex flex-col gap-1.5 md:flex-row md:items-baseline md:gap-3">
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight flex items-center gap-2">
+            <Zap className="h-5 w-5 text-primary" />
+            {t('zImage.title')}
+          </h1>
+          <span className="hidden md:inline text-xs md:text-sm text-muted-foreground">{t('zImage.subtitle')}</span>
         </div>
-        <span className="hidden md:inline text-sm text-muted-foreground">{t('zImage.subtitle')}</span>
       </div>
 
       {/* Mobile Tab Switcher */}

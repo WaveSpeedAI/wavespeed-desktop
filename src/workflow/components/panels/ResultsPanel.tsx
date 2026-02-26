@@ -7,7 +7,7 @@
  * view with left/right navigation. Clicking the preview opens the full
  * gallery overlay with arrow key support.
  */
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useUIStore } from '../../stores/ui.store'
@@ -37,6 +37,10 @@ export function ResultsPanel({ embeddedInNode, nodeId: nodeIdProp }: ResultsPane
   const [prevStatus, setPrevStatus] = useState<string>('idle')
   /** Index of the currently visible card in stacked (embedded) mode */
   const [stackIndex, setStackIndex] = useState(0)
+  /** Track slide direction for animation */
+  const prevIndexRef = useRef(0)
+  const slideDirection = stackIndex > prevIndexRef.current ? 'left' : stackIndex < prevIndexRef.current ? 'right' : 'none'
+  useEffect(() => { prevIndexRef.current = stackIndex }, [stackIndex])
 
   const loadRecords = useCallback(async () => {
     if (!nodeId) { setRecords([]); return }
@@ -159,23 +163,34 @@ export function ResultsPanel({ embeddedInNode, nodeId: nodeIdProp }: ResultsPane
     const currentRec = displayRecords[clampedIndex]
     const currentUrls = currentRec.status === 'success' ? getUrls(currentRec) : []
     const currentError = currentRec.status === 'error' && currentRec.resultMetadata?.error ? String(currentRec.resultMetadata.error) : null
-    const stackLayers = Math.min(total - 1, 2) // max 2 shadow layers behind
 
     return (
       <div className="flex flex-col min-h-0 flex-1">
-        {/* Header */}
-        <div className="flex justify-between items-center px-2 pt-1.5 pb-1">
-          <h3 className="font-semibold text-xs">{t('workflow.results', 'Results')} ({total})</h3>
-          <div className="flex items-center gap-2">
-            {records.length > 0 && (
-              <button onClick={handleDeleteAll}
-                className="text-[10px] text-red-400/70 hover:text-red-400 transition-colors"
-                title={t('workflow.clearAllResults', 'Clear all results and delete files')}>
-                {t('workflow.clearAll', 'Clear all')}
-              </button>
-            )}
+        {/* Header — only clear-all button */}
+        <div className="flex justify-end items-center px-2 pt-1.5 pb-1">
+          {records.length > 0 && (
+            <button onClick={handleDeleteAll}
+              className="text-[10px] text-red-400/70 hover:text-red-400 transition-colors"
+              title={t('workflow.clearAllResults', 'Clear all results and delete files')}>
+              {t('workflow.clearAll', 'Clear all')}
+            </button>
+          )}
+        </div>
+
+        {/* Result area */}
+        <div className="px-2 pb-1">
+          {/* Status bar */}
+          <div className={`flex items-center gap-2 px-2.5 py-1.5 rounded-t-lg
+            ${currentRec.status === 'success' ? 'bg-green-500/5' : currentRec.status === 'error' ? 'bg-red-500/5' : 'bg-[hsl(var(--muted))]'}`}>
+            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0
+              ${currentRec.status === 'success' ? 'bg-green-500' : currentRec.status === 'error' ? 'bg-red-500' : 'bg-muted-foreground'}`} />
+            <span className="text-[10px] text-muted-foreground flex-1 truncate leading-none">
+              {new Date(currentRec.createdAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+            </span>
+            {currentRec.durationMs != null && <span className="text-[9px] text-muted-foreground leading-none">⏱{(currentRec.durationMs / 1000).toFixed(1)}s</span>}
+            <span className="text-[9px] text-muted-foreground leading-none">💰${currentRec.cost.toFixed(4)}</span>
             {currentNodeStatus && (
-              <span className={`text-[10px] px-1.5 py-0.5 rounded
+              <span className={`text-[9px] px-1.5 py-0.5 rounded leading-none
                 ${currentNodeStatus === 'running' ? 'bg-blue-500/20 text-blue-400' :
                   currentNodeStatus === 'confirmed' ? 'bg-green-500/20 text-green-400' :
                   currentNodeStatus === 'error' ? 'bg-red-500/20 text-red-400' :
@@ -186,47 +201,50 @@ export function ResultsPanel({ embeddedInNode, nodeId: nodeIdProp }: ResultsPane
               </span>
             )}
           </div>
-        </div>
 
-        {/* Stacked card area */}
-        <div className="px-2 pb-2">
-          {/* Stack container with shadow layers */}
-          <div className="relative" style={{ marginBottom: stackLayers * 4 }}>
-            {/* Shadow layers behind (rendered bottom-up so z-order is correct) */}
-            {Array.from({ length: stackLayers }).map((_, i) => {
-              const layerIdx = stackLayers - i // 2, 1 (furthest first)
-              return (
-                <div
-                  key={`shadow-${layerIdx}`}
-                  className="absolute inset-0 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))]"
-                  style={{
-                    top: layerIdx * 4,
-                    left: layerIdx * 3,
-                    right: -(layerIdx * 3),
-                    opacity: 1 - layerIdx * 0.25,
-                    zIndex: 0,
-                  }}
-                />
-              )
-            })}
-
-            {/* Current card (front) */}
-            <div className="relative z-10 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--background))] overflow-hidden">
-              {/* Status bar */}
-              <div className={`flex items-center gap-2 px-2.5 py-1
-                ${currentRec.status === 'success' ? 'bg-green-500/5' : currentRec.status === 'error' ? 'bg-red-500/5' : 'bg-[hsl(var(--muted))]'}`}>
-                <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0
-                  ${currentRec.status === 'success' ? 'bg-green-500' : currentRec.status === 'error' ? 'bg-red-500' : 'bg-muted-foreground'}`} />
-                <span className="text-[10px] text-muted-foreground flex-1 truncate">
-                  {new Date(currentRec.createdAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                </span>
-                {currentRec.durationMs != null && <span className="text-[9px] text-muted-foreground">⏱{(currentRec.durationMs / 1000).toFixed(1)}s</span>}
-                <span className="text-[9px] text-muted-foreground">💰${currentRec.cost.toFixed(4)}</span>
+          {/* Result content — carousel with adjacent peeks for media, full-width for text */}
+          {currentUrls.length > 0 && (() => {
+            const isTextResult = currentUrls.every(u => getOutputItemType(u) === 'text')
+            return isTextResult ? (
+              <div className="px-1 py-1.5">
+                {currentUrls.map((url, ui) => (
+                  <StackedResultItem
+                    key={ui}
+                    url={url}
+                    allImageUrls={panelImageUrls}
+                    openPreview={openPreview}
+                    onDownload={handleDownload}
+                  />
+                ))}
               </div>
+            ) : (
+            <div className="relative overflow-hidden rounded-b-lg flex justify-center py-1.5">
+              <div className="relative w-fit">
+                {/* Previous result peek — anchored to left edge of center image */}
+                {total > 1 && clampedIndex > 0 && (() => {
+                  const prevRec = displayRecords[clampedIndex - 1]
+                  const prevUrls = prevRec.status === 'success' ? getUrls(prevRec) : []
+                  const prevImg = prevUrls.find(u => isImageUrl(u))
+                  return prevImg ? (
+                    <div
+                      className="absolute left-0 top-[15%] bottom-[15%] w-[26px] -translate-x-full cursor-pointer overflow-hidden rounded-l opacity-50 hover:opacity-80 transition-opacity z-0"
+                      onClick={() => setStackIndex(i => Math.max(0, i - 1))}
+                    >
+                      <img src={prevImg} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  ) : null
+                })()}
 
-              {/* Result content */}
-              {currentUrls.length > 0 && (
-                <div className="p-2 flex gap-2 flex-wrap">
+                {/* Center image(s) — animated slide */}
+                <div
+                  key={clampedIndex}
+                  className="relative z-10 flex gap-2 flex-wrap justify-center"
+                  style={{
+                    animation: slideDirection !== 'none'
+                      ? `carousel-slide-${slideDirection} 0.25s ease-out`
+                      : undefined,
+                  }}
+                >
                   {currentUrls.map((url, ui) => (
                     <StackedResultItem
                       key={ui}
@@ -234,26 +252,41 @@ export function ResultsPanel({ embeddedInNode, nodeId: nodeIdProp }: ResultsPane
                       allImageUrls={panelImageUrls}
                       openPreview={openPreview}
                       onDownload={handleDownload}
-                      t={t}
                     />
                   ))}
                 </div>
-              )}
 
-              {/* Error */}
-              {currentError && (
-                <div className="px-2 py-1.5">
-                  <div className="text-[10px] text-red-400 p-1.5 rounded bg-red-500/10 border border-red-500/20 leading-tight truncate">
-                    ⚠ {currentError}
-                  </div>
-                </div>
-              )}
+                {/* Next result peek — anchored to right edge of center image */}
+                {total > 1 && clampedIndex < total - 1 && (() => {
+                  const nextRec = displayRecords[clampedIndex + 1]
+                  const nextUrls = nextRec.status === 'success' ? getUrls(nextRec) : []
+                  const nextImg = nextUrls.find(u => isImageUrl(u))
+                  return nextImg ? (
+                    <div
+                      className="absolute right-0 top-[15%] bottom-[15%] w-[26px] translate-x-full cursor-pointer overflow-hidden rounded-r opacity-50 hover:opacity-80 transition-opacity z-0"
+                      onClick={() => setStackIndex(i => Math.min(total - 1, i + 1))}
+                    >
+                      <img src={nextImg} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  ) : null
+                })()}
+              </div>
             </div>
-          </div>
+            )
+          })()}
+
+          {/* Error */}
+          {currentError && (
+            <div className="py-1.5">
+              <div className="text-[10px] text-red-400 p-1.5 rounded bg-red-500/10 border border-red-500/20 leading-tight truncate">
+                ⚠ {currentError}
+              </div>
+            </div>
+          )}
 
           {/* Navigation — only show when multiple results */}
           {total > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-2">
+            <div className="flex items-center justify-center gap-2 mt-1">
               <button
                 onClick={() => setStackIndex(i => Math.max(0, i - 1))}
                 disabled={clampedIndex === 0}
@@ -367,7 +400,7 @@ export function ResultsPanel({ embeddedInNode, nodeId: nodeIdProp }: ResultsPane
                             <img src={url} alt="" onClick={() => openPreview(url, panelImageUrls)}
                               className="w-full max-h-[160px] rounded border border-[hsl(var(--border))] object-contain cursor-pointer hover:ring-2 hover:ring-blue-500/40 bg-black/10" />
                             <button onClick={() => handleDownload(url)}
-                              className="absolute top-1 right-1 h-7 px-2 rounded-md bg-blue-600 text-white text-[10px] font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-700 shadow-md">
+                              className="absolute top-1 right-1 h-7 px-2 rounded-md bg-blue-600 text-white text-[10px] font-medium flex items-center gap-1 hover:bg-blue-700 shadow-md transition-colors">
                               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/><line x1="4" y1="21" x2="20" y2="21"/>
                               </svg>
@@ -400,7 +433,7 @@ export function ResultsPanel({ embeddedInNode, nodeId: nodeIdProp }: ResultsPane
                               </div>
                             </div>
                             <button onClick={() => handleDownload(url)}
-                              className="absolute top-1 right-1 h-7 px-2 rounded-md bg-blue-600 text-white text-[10px] font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-700 shadow-md">
+                              className="absolute top-1 right-1 h-7 px-2 rounded-md bg-blue-600 text-white text-[10px] font-medium flex items-center gap-1 hover:bg-blue-700 shadow-md transition-colors">
                               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/><line x1="4" y1="21" x2="20" y2="21"/>
                               </svg>
@@ -447,35 +480,33 @@ export function ResultsPanel({ embeddedInNode, nodeId: nodeIdProp }: ResultsPane
 
 
 /* ── Compact result item used inside the stacked card view ──────── */
-function StackedResultItem({ url, allImageUrls, openPreview, onDownload, t }: {
+function StackedResultItem({ url, allImageUrls, openPreview, onDownload }: {
   url: string
   allImageUrls: string[]
   openPreview: (src: string, items?: string[]) => void
   onDownload: (url: string) => void
-  t: (key: string, fallback: string) => string
 }) {
   const type = getOutputItemType(url)
 
   if (type === 'text') {
     const displayText = url.startsWith('data:text/') ? decodeDataText(url) : url
     return (
-      <div className="w-full min-w-0 rounded border border-[hsl(var(--border))] bg-[hsl(var(--muted))]/50 p-2 max-h-[120px] overflow-y-auto">
-        <pre className="text-[10px] text-foreground/90 whitespace-pre-wrap break-words font-sans">{displayText}</pre>
+      <div className="w-full min-w-0 rounded-lg bg-[hsl(var(--muted))]/30 px-3 py-2 max-h-[120px] overflow-y-auto nodrag nowheel select-text cursor-text">
+        <p className="text-[11px] text-foreground/80 whitespace-pre-wrap break-words leading-relaxed text-left select-text">{displayText}</p>
       </div>
     )
   }
 
   if (type === 'image') {
     return (
-      <div className="relative group flex-1 min-w-[80px]">
+      <div className="relative group w-fit mx-auto">
         <img src={url} alt="" onClick={() => openPreview(url, allImageUrls)}
-          className="w-full max-h-[140px] rounded border border-[hsl(var(--border))] object-contain cursor-pointer hover:ring-2 hover:ring-blue-500/40 bg-black/10" />
+          className="max-w-full max-h-[160px] rounded object-contain cursor-pointer hover:ring-2 hover:ring-blue-500/40" />
         <button onClick={() => onDownload(url)}
-          className="absolute top-1 right-1 h-6 px-1.5 rounded bg-blue-600 text-white text-[9px] font-medium flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-700 shadow-md">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          className="absolute top-1.5 right-1.5 h-7 w-7 rounded-md bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 shadow-lg transition-colors">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/><line x1="4" y1="21" x2="20" y2="21"/>
           </svg>
-          {t('workflow.download', 'Download')}
         </button>
       </div>
     )
@@ -492,11 +523,10 @@ function StackedResultItem({ url, allImageUrls, openPreview, onDownload, t }: {
           </div>
         </div>
         <button onClick={() => onDownload(url)}
-          className="absolute top-1 right-1 h-6 px-1.5 rounded bg-blue-600 text-white text-[9px] font-medium flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-blue-700 shadow-md">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          className="absolute top-1.5 right-1.5 h-7 w-7 rounded-md bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 shadow-lg transition-colors">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/><line x1="4" y1="21" x2="20" y2="21"/>
           </svg>
-          {t('workflow.download', 'Download')}
         </button>
       </div>
     )

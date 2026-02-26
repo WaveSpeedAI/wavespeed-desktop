@@ -52,7 +52,8 @@ import {
   EyeOff,
   Trash2,
   Sparkles,
-  CheckSquare
+  CheckSquare,
+  History
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AudioPlayer } from '@/components/shared/AudioPlayer'
@@ -447,13 +448,13 @@ export function HistoryPage() {
 
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-gradient-to-b from-background via-background to-muted/20">
+    <div className="flex h-full flex-col overflow-hidden">
       {/* Header */}
-      <div className="page-header px-4 md:px-6 py-4 pt-14 md:pt-4 bg-background/70 backdrop-blur">
+      <div className="page-header px-4 md:px-6 py-4 pt-14 md:pt-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div className="flex flex-col gap-1.5 md:flex-row md:items-baseline md:gap-3">
             <h1 className="text-xl md:text-2xl font-bold tracking-tight flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
+              <History className="h-5 w-5 text-primary" />
               {t('history.title')}
             </h1>
             <p className="text-muted-foreground text-xs md:text-sm">{t('history.description')}</p>
@@ -573,46 +574,59 @@ export function HistoryPage() {
 
       {/* Pagination */}
       {maxSelectablePages > 1 && (
-        <div className="flex items-center justify-between border-t border-border/70 bg-background/70 p-4 backdrop-blur">
-          <p className="text-sm text-muted-foreground">
-            {displayStart} - {displayEnd}
-          </p>
-          <div className="flex gap-2 items-center">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage(p => p - 1)}
-              disabled={page === 1 || isLoading}
-            >
-              <ChevronLeft className="h-4 w-4" />
-              {t('common.previous')}
-            </Button>
-            <Select
-              value={String(page)}
-              onValueChange={(value) => setPage(Number(value))}
-              disabled={isLoading}
-            >
-              <SelectTrigger className="w-20 h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {pageOptions.map((pageNumber) => (
-                  <SelectItem key={pageNumber} value={String(pageNumber)}>
-                    {pageNumber}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage(p => p + 1)}
-              disabled={page >= maxSelectablePages || isLoading}
-            >
-              {t('common.next')}
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
+        <div className="flex items-center justify-center gap-1.5 py-3 px-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-lg"
+            onClick={() => setPage(p => p - 1)}
+            disabled={page === 1 || isLoading}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          {(() => {
+            const pages: (number | 'ellipsis')[] = []
+            const total = Math.min(maxSelectablePages, 99)
+            if (total <= 7) {
+              for (let i = 1; i <= total; i++) pages.push(i)
+            } else {
+              pages.push(1)
+              if (page > 3) pages.push('ellipsis')
+              const start = Math.max(2, page - 1)
+              const end = Math.min(total - 1, page + 1)
+              for (let i = start; i <= end; i++) pages.push(i)
+              if (page < total - 2) pages.push('ellipsis')
+              pages.push(total)
+            }
+            return pages.map((p, i) =>
+              p === 'ellipsis' ? (
+                <span key={`e${i}`} className="w-8 text-center text-xs text-muted-foreground">···</span>
+              ) : (
+                <Button
+                  key={p}
+                  variant={p === page ? 'default' : 'ghost'}
+                  size="icon"
+                  className={cn(
+                    'h-8 w-8 rounded-lg text-xs font-medium',
+                    p === page && 'pointer-events-none'
+                  )}
+                  onClick={() => setPage(p)}
+                  disabled={isLoading}
+                >
+                  {p}
+                </Button>
+              )
+            )
+          })()}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-lg"
+            onClick={() => setPage(p => p + 1)}
+            disabled={page >= maxSelectablePages || isLoading}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
       )}
 

@@ -26,7 +26,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { toast } from '@/hooks/useToast'
-import { Eye, EyeOff, Check, Loader2, Monitor, Moon, Sun, Download, RefreshCw, Rocket, AlertCircle, Shield, Github, Globe, FolderOpen, FileText, Trash2, Database, ChevronRight, X, Clock } from 'lucide-react'
+import { Eye, EyeOff, Check, Loader2, Monitor, Moon, Sun, Download, RefreshCw, Rocket, AlertCircle, Shield, Github, Globe, FolderOpen, FileText, Trash2, Database, ChevronRight, X, Clock, Settings } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 
 interface CacheItem {
@@ -628,9 +628,12 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="container max-w-2xl px-4 md:px-8 py-6 md:py-8 pt-14 md:pt-8">
+    <div className="container max-w-2xl px-4 md:px-6 py-6 md:py-8 pt-14 md:pt-4">
       <div className="mb-6 md:mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold">{t('settings.title')}</h1>
+        <h1 className="text-xl md:text-2xl font-bold tracking-tight flex items-center gap-2">
+          <Settings className="h-5 w-5 text-primary" />
+          {t('settings.title')}
+        </h1>
         <p className="text-muted-foreground text-sm md:text-base mt-2">
           {t('settings.description')}
         </p>

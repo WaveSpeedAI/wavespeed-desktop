@@ -223,14 +223,14 @@ function createWindow(): void {
     show: false,
     autoHideMenuBar: true,
     icon: join(__dirname, '../../build/icon.png'),
-    backgroundColor: '#f5f6fa',
+    backgroundColor: '#080c16',
     titleBarStyle: isMac ? 'hiddenInset' : 'hidden',
     ...(isMac ? { trafficLightPosition: { x: 10, y: 8 } } : {}),
     ...(process.platform !== 'darwin' ? {
       titleBarOverlay: {
-        color: '#f5f6fa',
+        color: '#080c16',
         symbolColor: '#6b7280',
-        height: 28
+        height: 32
       }
     } : {}),
     webPreferences: {
@@ -364,9 +364,9 @@ ipcMain.handle('update-titlebar-theme', (_, isDark: boolean) => {
   if (process.platform === 'darwin' || !mainWindow) return
   try {
     mainWindow.setTitleBarOverlay({
-      color: isDark ? '#0a0f1a' : '#f5f6fa',
+      color: isDark ? '#080c16' : '#f6f7f9',
       symbolColor: isDark ? '#9ca3af' : '#6b7280',
-      height: 49
+      height: 32
     })
   } catch {
     // setTitleBarOverlay may not be available on all platforms

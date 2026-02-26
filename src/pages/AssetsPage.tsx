@@ -67,6 +67,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  FolderHeart,
 } from 'lucide-react'
 import type { AssetMetadata, AssetType, AssetSortBy, AssetsFilter } from '@/types/asset'
 
@@ -582,12 +583,12 @@ export function AssetsPage() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-gradient-to-b from-background via-background to-muted/20 pt-12 md:pt-0">
+    <div className="flex h-full flex-col pt-12 md:pt-0">
       {/* Header */}
-      <div className="page-header border-b border-border/70 bg-background/70 p-4 backdrop-blur">
+      <div className="page-header px-4 md:px-6 py-4 border-b border-border/70">
         <div className="flex flex-col gap-1.5 md:flex-row md:items-baseline md:gap-3 mb-4">
-          <h1 className="flex items-center gap-2 text-xl font-bold md:text-2xl">
-            <Sparkles className="h-5 w-5 text-primary" />
+          <h1 className="flex items-center gap-2 text-xl md:text-2xl font-bold tracking-tight">
+            <FolderHeart className="h-5 w-5 text-primary" />
             {t('assets.title')}
           </h1>
           <p className="text-xs md:text-sm text-muted-foreground">

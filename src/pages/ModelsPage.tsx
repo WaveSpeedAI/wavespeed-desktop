@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Search, PlayCircle, Loader2, RefreshCw, ArrowUp, ArrowDown, ExternalLink, Star, X, Info } from 'lucide-react'
+import { Search, PlayCircle, Loader2, RefreshCw, ArrowUp, ArrowDown, ExternalLink, Star, X, Info, LayoutGrid } from 'lucide-react'
 import {
   HoverCard,
   HoverCardContent,
@@ -388,26 +388,18 @@ export function ModelsPage() {
 
   return (
     <div className="flex h-full flex-col relative overflow-hidden">
-      {/* Dynamic Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 via-transparent to-cyan-500/5" />
-      <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-primary/10 to-transparent rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-cyan-500/10 to-transparent rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-      
       {/* Header */}
-      <div className="page-header px-6 py-4 relative z-10">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-baseline gap-3">
-            <h1 className="text-2xl font-bold tracking-tight">{t('models.title')}</h1>
-            <p className="text-muted-foreground text-sm hidden md:block">{t('models.description')}</p>
-          </div>
-          <Button variant="outline" size="sm" onClick={() => fetchModels(true)} className="electron-safe-right">
-            <RefreshCw className="mr-2 h-4 w-4" />
-            {t('common.refresh')}
-          </Button>
+      <div className="page-header px-4 md:px-6 py-4 relative z-10">
+        <div className="flex flex-col gap-1.5 md:flex-row md:items-baseline md:gap-3 mb-4">
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight flex items-center gap-2">
+            <LayoutGrid className="h-5 w-5 text-primary" />
+            {t('models.title')}
+          </h1>
+          <p className="text-muted-foreground text-xs md:text-sm hidden md:block">{t('models.description')}</p>
         </div>
 
         {/* Search, Filters and Sort */}
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-3">
           <SearchInput
             value={searchQuery}
             onChange={setSearchQuery}
@@ -447,32 +439,38 @@ export function ModelsPage() {
             </Button>
           </div>
 
-          {/* Tag Filter Bar - inline */}
-          {allTypes.length > 0 && (
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
-              <span className="text-sm text-muted-foreground shrink-0">{t('models.type')}:</span>
-              <Button
-                variant={selectedType === null ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setSelectedType(null)}
-                className="shrink-0 h-8 px-3 text-sm"
-              >
-                {t('common.all')}
-              </Button>
-              {allTypes.map((type) => (
-                <Button
-                  key={type}
-                  variant={selectedType === type ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setSelectedType(selectedType === type ? null : type)}
-                  className="shrink-0 h-8 px-3 text-sm capitalize"
-                >
-                  {type}
-                </Button>
-              ))}
-            </div>
-          )}
+          {/* Refresh */}
+          <Button variant="outline" size="sm" className="shrink-0 ml-auto" onClick={() => fetchModels(true)}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            {t('common.refresh')}
+          </Button>
         </div>
+
+        {/* Tag Filter Bar */}
+        {allTypes.length > 0 && (
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin mt-3">
+            <span className="text-sm text-muted-foreground shrink-0">{t('models.type')}:</span>
+            <Button
+              variant={selectedType === null ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setSelectedType(null)}
+              className="shrink-0 h-8 px-3 text-sm"
+            >
+              {t('common.all')}
+            </Button>
+            {allTypes.map((type) => (
+              <Button
+                key={type}
+                variant={selectedType === type ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setSelectedType(selectedType === type ? null : type)}
+                className="shrink-0 h-8 px-3 text-sm capitalize"
+              >
+                {type}
+              </Button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Content - Virtualized Grid */}

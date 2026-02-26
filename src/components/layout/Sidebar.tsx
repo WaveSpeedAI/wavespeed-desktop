@@ -145,8 +145,8 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
   return (
     <div
       className={cn(
-        "flex h-full flex-col border-r border-border bg-background/95 backdrop-blur transition-all duration-300 shrink-0 electron-drag",
-        collapsed ? "w-16" : "w-52",
+        "flex h-full flex-col bg-background/95 backdrop-blur transition-all duration-300 shrink-0 electron-drag",
+        collapsed ? "w-12" : "w-48",
         // Mobile overlay when hamburger opens
         isMobileOpen && "!fixed inset-y-0 left-0 z-50 w-72 shadow-2xl"
       )}
@@ -163,12 +163,12 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
       )}
 
       {/* Navigation */}
-      <ScrollArea className="flex-1 px-2 py-3">
-        <nav className="flex flex-col gap-5 px-1 electron-no-drag">
+      <ScrollArea className="flex-1 px-1.5 py-2">
+        <nav className="flex flex-col gap-5 px-0.5 electron-no-drag">
           {navGroups.map((group) => (
-            <div key={group.key} className="space-y-2">
+            <div key={group.key} className={collapsed && !isMobileOpen ? 'contents' : 'space-y-5'}>
               {(!collapsed || isMobileOpen) && (
-                <div className="px-2 pb-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/80">
+                <div className="px-2 pb-0.5 pt-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/80">
                   {group.label}
                 </div>
               )}
@@ -193,8 +193,8 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
                         }}
                         className={cn(
                           buttonVariants({ variant: 'ghost', size: 'sm' }),
-                          'h-9 w-full rounded-lg text-xs transition-all relative overflow-visible',
-                          collapsed && !isMobileOpen ? 'justify-center px-2' : 'justify-start gap-2.5 px-2.5',
+                          'h-8 w-full rounded-lg text-xs transition-all relative overflow-visible',
+                          collapsed && !isMobileOpen ? 'justify-center px-0' : 'justify-start gap-2.5 px-2.5',
                           active
                             ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/95 hover:text-primary-foreground'
                             : 'text-muted-foreground hover:bg-muted hover:text-foreground',
@@ -206,7 +206,7 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
                           <span className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 animate-pulse" />
                         )}
                         
-                        <item.icon className="h-[22px] w-[22px] shrink-0 relative z-10" />
+                        <item.icon className="h-5 w-5 shrink-0 relative z-10" />
                         {(!collapsed || isMobileOpen) && (
                           <>
                             <span className="relative z-10">
@@ -247,7 +247,7 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
       </ScrollArea>
 
       {/* Bottom Navigation */}
-      <div className="mt-auto border-t border-border p-2 electron-no-drag">
+      <div className="mt-auto p-1.5 electron-no-drag">
         <nav className="flex flex-col gap-1">
           {bottomNavItems.map((item) => {
             const active = location.pathname === item.href
@@ -259,14 +259,14 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
                     onClick={() => navigate(item.href)}
                     className={cn(
                       buttonVariants({ variant: 'ghost', size: 'sm' }),
-                      'h-9 w-full rounded-lg transition-all',
-                      collapsed && !isMobileOpen ? 'justify-center px-2' : 'justify-start gap-2.5 px-2.5',
+                      'h-8 w-full rounded-lg transition-all',
+                      collapsed && !isMobileOpen ? 'justify-center px-0' : 'justify-start gap-2.5 px-2.5',
                       active
                         ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/95 hover:text-primary-foreground'
                         : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                     )}
                   >
-                    <item.icon className="h-[22px] w-[22px] shrink-0" />
+                    <item.icon className="h-5 w-5 shrink-0" />
                     {(!collapsed || isMobileOpen) && <span>{t(item.titleKey)}</span>}
                   </button>
                 </TooltipTrigger>
@@ -289,15 +289,15 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
                 size="sm"
                 onClick={onToggle}
                 className={cn(
-                  "mt-1 h-9 w-full rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground",
-                  collapsed ? "justify-center px-2" : "justify-start gap-2.5 px-2.5"
+                  "mt-3 h-8 w-full rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground",
+                  collapsed ? "justify-center px-0" : "justify-start gap-2.5 px-2.5"
                 )}
               >
                 {collapsed ? (
-                  <PanelLeft className="h-[22px] w-[22px]" />
+                  <PanelLeft className="h-5 w-5" />
                 ) : (
                   <>
-                    <PanelLeftClose className="h-[22px] w-[22px]" style={{ flexShrink: 0 }} />
+                    <PanelLeftClose className="h-5 w-5" style={{ flexShrink: 0 }} />
                     <span>{t('nav.collapse')}</span>
                   </>
                 )}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo, Fragment } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { usePlaygroundStore, persistPlaygroundSession, hydratePlaygroundSession } from '@/stores/playgroundStore'
@@ -396,9 +396,9 @@ export function PlaygroundPage() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-gradient-to-b from-background via-background to-muted/20 md:pt-0">
+    <div className="flex h-full flex-col md:pt-0">
       {/* Tab Bar */}
-      <div className="bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/55">
+      <div className="backdrop-blur supports-[backdrop-filter]:bg-transparent">
         <div className="flex items-center h-12 border-b border-border">
           <div ref={tabScrollRef} className="flex-1 min-w-0 overflow-x-auto hide-scrollbar">
             <div className="flex items-center px-2 w-max">
@@ -423,8 +423,9 @@ export function PlaygroundPage() {
               </Tooltip>
               <div className="w-px h-5 bg-border mr-1 shrink-0" />
               {tabs.map((tab, index) => (
+                <Fragment key={tab.id}>
+                  {index > 0 && <div className="w-px h-4 bg-border/70 shrink-0 mx-0.5" />}
                 <div
-                  key={tab.id}
                   draggable
                   onDragStart={(e) => handleDragStart(e, index)}
                   onDragOver={(e) => handleDragOver(e, index)}
@@ -435,11 +436,12 @@ export function PlaygroundPage() {
                   tabIndex={0}
                   onKeyDown={(e) => e.key === 'Enter' && handleTabClick(tab.id)}
                   className={cn(
-                    'group relative mx-0.5 flex h-8 items-center gap-2 rounded-md border px-3 text-xs transition-all cursor-pointer select-none shrink-0',
-                    'hover:border-border hover:bg-muted/60',
+                    'group relative flex h-8 items-center gap-2 px-3 text-xs transition-all cursor-pointer select-none shrink-0',
+                    'first:rounded-l-md last:rounded-r-md',
+                    'hover:bg-primary/10 dark:hover:bg-muted/60',
                     tab.id === activeTabId
-                      ? 'border-primary/30 bg-primary/10 text-foreground shadow-sm'
-                      : 'border-transparent text-muted-foreground',
+                      ? 'bg-primary/15 dark:bg-primary/10 text-foreground font-medium'
+                      : 'bg-primary/[0.06] dark:bg-muted/20 text-muted-foreground',
                     dragTabIndex === index && 'opacity-40',
                     dropTargetIndex === index && 'border-primary ring-1 ring-primary/50'
                   )}
@@ -468,6 +470,7 @@ export function PlaygroundPage() {
                     <X className="h-3 w-3" />
                   </button>
                 </div>
+                </Fragment>
               ))}
               {/* + button inside scroll area: visible when tabs don't overflow */}
               {!tabsOverflow && (

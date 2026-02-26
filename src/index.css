@@ -36,6 +36,7 @@
 
     /* Content area */
     --content-bg: 220 20% 97%;
+    --content-area: 220 16% 94%;
     --panel-bg: 0 0% 100%;
   }
 
@@ -71,6 +72,7 @@
 
     /* Content area */
     --content-bg: 222 47% 6%;
+    --content-area: 222 44% 8%;
     --panel-bg: 222 40% 10%;
   }
 }
@@ -97,7 +99,7 @@
    In Electron with titleBarOverlay, the native controls sit in the top-right corner.
    macOS uses native traffic lights on the left, so no right margin needed. */
 .is-electron:not(.is-mac) .electron-safe-right {
-  margin-right: 140px;
+  padding-right: 140px;
 }
 
 /* Hide scrollbar but keep scroll functionality (for tab bars) */
@@ -404,4 +406,27 @@
 }
 .animate-pulse-subtle {
   animation: pulse-subtle 1.8s ease-in-out infinite;
+}
+
+/* Carousel slide animations for results panel */
+@keyframes carousel-slide-left {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes carousel-slide-right {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }

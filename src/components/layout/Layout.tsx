@@ -269,14 +269,13 @@ export function Layout() {
     <TooltipProvider>
       <div className="flex flex-col h-screen overflow-hidden relative">
         {/* Fixed titlebar — draggable region for macOS & Windows */}
-        <div className="h-7 min-h-[28px] flex items-center justify-center bg-background border-b border-border electron-drag select-none shrink-0 relative z-50 electron-safe-right">
+        <div className="h-8 min-h-[32px] flex items-center justify-center bg-background electron-drag select-none shrink-0 relative z-50 electron-safe-right">
           {/* Show logo on left for Windows/Linux (macOS has traffic lights there) */}
           {!/mac/i.test(navigator.platform) && (
-            <div className="absolute left-2 top-0 bottom-0 flex items-center electron-no-drag">
-              <AppLogo className="h-4 w-4 shrink-0" />
+            <div className="absolute left-0 top-0 bottom-0 w-12 flex items-center justify-center electron-no-drag">
+              <AppLogo className="h-5 w-5 shrink-0" />
             </div>
           )}
-          <span className="text-[10px] font-medium text-muted-foreground pointer-events-none">WaveSpeed Desktop</span>
         </div>
         <div className="flex flex-1 overflow-hidden">
         <Sidebar
@@ -286,7 +285,7 @@ export function Layout() {
           isMobileOpen={false}
           onMobileClose={() => {}}
         />
-        <main className="relative flex-1 overflow-hidden md:pl-0">
+        <main className="relative flex-1 overflow-hidden md:pl-0" style={{ background: 'hsl(var(--content-area))' }}>
           {requiresLogin ? loginContent : (
             <>
               {/* Regular routes via Outlet */}

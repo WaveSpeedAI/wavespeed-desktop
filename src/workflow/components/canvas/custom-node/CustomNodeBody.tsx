@@ -575,7 +575,7 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
 
       {/* Results — at bottom of card, collapsed by default */}
       {data.nodeType !== 'annotation' && (
-        <div className="nodrag min-h-0 flex flex-col flex-1 mt-2 border-t border-border/50 pt-2">
+        <div className="nodrag nowheel min-h-0 flex flex-col flex-1 mt-2 border-t border-border/50 pt-2 select-text">
           <button
             type="button"
             onClick={() => setResultsExpanded(prev => !prev)}

@@ -18,6 +18,7 @@ import { useUIStore } from './stores/ui.store'
 import { registryIpc, modelsIpc, storageIpc, workflowIpc } from './ipc/ipc-client'
 import { useModelsStore } from '@/stores/modelsStore'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
+import { apiClient } from '@/api/client'
 import { useTemplateStore } from '@/stores/templateStore'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { History, X, Plus } from 'lucide-react'
@@ -772,8 +773,43 @@ export function WorkflowPage() {
   // Run All — browser execution only (in-process via runAllInBrowser)
   const handleRunAll = async (times = 1) => {
     if (nodes.length === 0) return
+
+    // Pre-run: optimize prompts for nodes with "Optimize On Run" enabled
+    const { updateNodeParams } = useWorkflowStore.getState()
+    for (const n of nodes) {
+      const settings = (n.data?.params?.__optimizerSettings as Record<string, unknown> | undefined) ?? {}
+      const enabled = Boolean(settings.optimizeOnRun ?? settings.autoOptimize)
+      if (!enabled) continue
+
+      const fieldToOptimize: 'text' | 'prompt' | null = (() => {
+        if (n.data?.nodeType === 'input/text-input') return 'text'
+        if (typeof n.data?.params?.prompt === 'string') return 'prompt'
+        if (typeof n.data?.params?.text === 'string') return 'text'
+        return null
+      })()
+      if (!fieldToOptimize) continue
+
+      const sourceText = String(n.data.params[fieldToOptimize] ?? '')
+      if (!sourceText.trim()) continue
+
+      const lastManual = typeof settings.lastManualOptimizedText === 'string' ? settings.lastManualOptimizedText : ''
+      if (lastManual && lastManual === sourceText) continue
+
+      const { optimizeOnRun: _o, autoOptimize: _l, lastManualOptimizedText: _m, ...settingsForApi } = settings
+      try {
+        const optimized = await apiClient.optimizePrompt({ ...settingsForApi, text: sourceText })
+        if (optimized && optimized !== sourceText) {
+          updateNodeParams(n.id, { ...n.data.params, [fieldToOptimize]: optimized })
+        }
+      } catch (err) {
+        console.warn('Optimize on run failed for node', n.id, err)
+      }
+    }
+
+    // Re-read nodes after optimization may have updated params
+    const latestNodes = useWorkflowStore.getState().nodes
     const runAllInBrowser = useExecutionStore.getState().runAllInBrowser
-    const browserNodes = nodes.map(n => ({
+    const browserNodes = latestNodes.map(n => ({
       id: n.id,
       data: {
         nodeType: n.data?.nodeType ?? '',

@@ -194,6 +194,9 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
         }
       }
       if (ctrlOrCmd && event.key === 'c' && selectedNodeId) {
+        // Don't intercept if user has selected text (e.g. in results panel)
+        const sel = window.getSelection()
+        if (sel && sel.toString().length > 0) return
         event.preventDefault()
         const node = nodes.find(n => n.id === selectedNodeId)
         if (node) localStorage.setItem('copiedNode', JSON.stringify(node))

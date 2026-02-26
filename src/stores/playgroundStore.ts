@@ -384,9 +384,13 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
     try {
       // Clean up form values - remove empty strings and undefined
       const cleanedInput: Record<string, unknown> = {}
+      const integerFields = new Set(formFields.filter(f => f.schemaType === 'integer').map(f => f.name))
       for (const [key, value] of Object.entries(formValues)) {
         if (value !== '' && value !== undefined && value !== null) {
-          cleanedInput[key] = value
+          // Ensure integer fields are sent as integers (API rejects non-integer values)
+          cleanedInput[key] = integerFields.has(key) && typeof value === 'number'
+            ? Math.round(value)
+            : value
         }
       }
       const normalizedInput = normalizePayloadArrays(cleanedInput, formFields)
@@ -455,9 +459,12 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
 
     // Clean input values
     const cleanedBase: Record<string, unknown> = {}
+    const integerFields = new Set(formFields.filter(f => f.schemaType === 'integer').map(f => f.name))
     for (const [key, value] of Object.entries(formValues)) {
       if (value !== '' && value !== undefined && value !== null) {
-        cleanedBase[key] = value
+        cleanedBase[key] = integerFields.has(key) && typeof value === 'number'
+          ? Math.round(value)
+          : value
       }
     }
 

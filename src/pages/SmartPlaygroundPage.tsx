@@ -359,15 +359,19 @@ export function SmartPlaygroundPage() {
       ? family.mapValues({ ...formValues }, resolvedVariantId)
       : formValues
     const variantFieldNames = getVariantFieldNames(resolvedModel)
+    const integerFields = new Set(visibleFields.filter(f => f.schemaType === 'integer').map(f => f.name))
     const cleanedValues: Record<string, unknown> = {}
     for (const [key, value] of Object.entries(mappedValues)) {
       if (!variantFieldNames.has(key)) continue
       if (value === undefined || value === null || value === '') continue
       if (Array.isArray(value) && value.length === 0) continue
-      cleanedValues[key] = value
+      // Ensure integer fields are sent as integers (API rejects non-integer values)
+      cleanedValues[key] = integerFields.has(key) && typeof value === 'number'
+        ? Math.round(value)
+        : value
     }
     return cleanedValues
-  }, [resolvedModel, formValues, family, resolvedVariantId])
+  }, [resolvedModel, formValues, family, resolvedVariantId, visibleFields])
 
   // Run prediction (single or batch)
   const handleRun = useCallback(async () => {

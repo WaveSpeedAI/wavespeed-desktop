@@ -107,7 +107,8 @@ export function MonitorSidePanel({ workflowId }: { workflowId?: string | null })
   const [dragging, setDragging] = useState(false)
 
   const byWorkflow = workflowId ? runSessions.filter(s => s.workflowId === workflowId) : runSessions
-  const filteredSessions = byWorkflow.length > 0 ? byWorkflow : runSessions
+  const fullRunsOnly = byWorkflow.filter(s => s.scope === 'full' || !s.scope)
+  const filteredSessions = fullRunsOnly.length > 0 ? fullRunsOnly : byWorkflow.filter(s => s.scope === 'full' || !s.scope)
 
   const onResizeStart = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
@@ -215,7 +216,8 @@ function SessionCard({ session, nodeStatuses, progressMap, errorMessages, onCanc
         <div className="flex-1 min-w-0">
           <div className="text-[11px] font-medium truncate text-foreground/90">{session.workflowName}</div>
           <div className="text-[9px] text-muted-foreground/70">
-            {new Date(session.startedAt).toLocaleTimeString()} · {elapsedStr}
+            {new Date(session.startedAt).toLocaleTimeString()}
+            <span className="text-muted-foreground/60 ml-2">{elapsedStr} ago</span>
             {totalCost > 0 && <span className="text-amber-400/70 ml-1">💰 ${totalCost.toFixed(4)}</span>}
           </div>
         </div>

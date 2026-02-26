@@ -21,6 +21,8 @@ export interface RunSession {
   /** Per-node cost within THIS session */
   nodeCosts: Record<string, number>
   status: 'running' | 'completed' | 'error' | 'cancelled'
+  /** Execution scope: 'full' = Run All, 'node' = single node Run, 'continue' = Run from here */
+  scope?: 'full' | 'node' | 'continue'
 }
 
 const MAX_SESSIONS = 20
@@ -100,7 +102,8 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
         nodeLabels,
         nodeResults,
         nodeCosts: {},
-        status: 'running'
+        status: 'running' as const,
+        scope: 'full' as const
       }, ...s.runSessions].slice(0, MAX_SESSIONS)
     }))
 
@@ -183,9 +186,19 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
         nodeLabels,
         nodeResults,
         nodeCosts: {},
-        status: 'running'
+        status: 'running' as const,
+        scope: 'node' as const
       }, ...s.runSessions].slice(0, MAX_SESSIONS)
     }))
+    // Collect existing result URLs so upstream nodes can feed the target node
+    const existingResults = new Map<string, string>()
+    const lastResults = get().lastResults
+    for (const [nid, groups] of Object.entries(lastResults)) {
+      if (groups && groups.length > 0 && groups[0].urls.length > 0) {
+        existingResults.set(nid, groups[0].urls[0])
+      }
+    }
+
     const controller = new AbortController()
     browserRunAbortController = controller
     try {
@@ -203,7 +216,7 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
             }
           })
         }
-      }, { runOnlyNodeId: nodeId, signal: controller.signal })
+      }, { runOnlyNodeId: nodeId, existingResults, signal: controller.signal })
     } catch (error) {
       if (isAbortError(error)) {
         set(s => ({
@@ -276,7 +289,8 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
         nodeLabels,
         nodeResults,
         nodeCosts: {},
-        status: 'running'
+        status: 'running' as const,
+        scope: 'continue' as const
       }, ...s.runSessions].slice(0, MAX_SESSIONS)
     }))
 

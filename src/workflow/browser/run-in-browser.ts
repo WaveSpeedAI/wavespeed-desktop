@@ -244,6 +244,8 @@ export async function executeWorkflowInBrowser(
     nodeIds = allNodeIds.filter(id => subset.has(id))
     filteredNodes = nodes.filter(n => subset.has(n.id))
     filteredEdges = edges.filter(e => subset.has(e.source) && subset.has(e.target))
+    // Only execute the target node itself; upstream nodes reuse existing results
+    skipNodeIds = new Set([...subset].filter(id => id !== options.runOnlyNodeId))
   } else {
     nodeIds = allNodeIds
     filteredNodes = nodes

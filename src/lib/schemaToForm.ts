@@ -15,6 +15,7 @@ export interface FormFieldConfig {
   maxFiles?: number
   placeholder?: string
   hidden?: boolean  // x-hidden fields are optional and hidden by default
+  schemaType?: string  // Original schema type (e.g. 'integer' vs 'number')
 }
 
 export function validateFormValues(fields: FormFieldConfig[], values: Record<string, unknown>): Record<string, string> {
@@ -256,6 +257,7 @@ function propertyToField(
       return {
         ...baseField,
         type: prop['x-ui-component'] === 'slider' ? 'slider' : 'number',
+        schemaType: prop.type,
         min: prop.minimum,
         max: prop.maximum,
         step: prop.step,

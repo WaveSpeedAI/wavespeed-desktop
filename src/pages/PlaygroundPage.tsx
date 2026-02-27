@@ -702,10 +702,10 @@ export function PlaygroundPage() {
                 )}
               </div>
               {/* History Panel - desktop: vertical sidebar, mobile: horizontal strip at bottom */}
-              {activeTab.generationHistory.length >= 2 && (
+              {activeTab.generationHistory.length >= 1 && (
                 <>
                   {/* Desktop vertical sidebar */}
-                  <div className="hidden md:block">
+                  <div className="hidden md:flex shrink-0">
                     <HistoryPanel
                       history={activeTab.generationHistory}
                       selectedIndex={activeTab.selectedHistoryIndex}

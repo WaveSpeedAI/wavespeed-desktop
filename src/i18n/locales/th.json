@@ -666,6 +666,7 @@
       "downloading": "กำลังดาวน์โหลดการอัปเดต... {{percent}}%",
       "downloaded": "ดาวน์โหลดการอัปเดตแล้ว! เวอร์ชัน {{version}} พร้อมติดตั้ง",
       "downloadUpdate": "ดาวน์โหลดการอัปเดต",
+      "goToRelease": "Go to Release Page",
       "restartInstall": "รีสตาร์ทและติดตั้ง",
       "error": "ข้อผิดพลาดการอัปเดต: {{message}}",
       "notAvailableInDev": "การอัปเดตอัตโนมัติไม่พร้อมใช้งานในโหมดพัฒนา",

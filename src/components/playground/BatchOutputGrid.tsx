@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -138,6 +138,7 @@ export function BatchOutputGrid({
   const [savedIndexes, setSavedIndexes] = useState<Set<number>>(new Set())
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
   const autoSavedIndexesRef = useRef<Set<number>>(new Set())
+  const prevRunningRef = useRef(false)
 
   const { saveAsset, settings, hasAssetForPrediction } = useAssetsStore()
 
@@ -147,26 +148,21 @@ export function BatchOutputGrid({
   const total = totalCount || results.length
   const progress = total > 0 ? ((completedCount + failedCount) / total) * 100 : 0
 
-  // Auto-save results as they complete
+  // Auto-save results silently as they complete (no toast during batch)
   useEffect(() => {
     if (!settings.autoSaveAssets || !modelId) return
 
     const saveNewResults = async () => {
-      let newSaveCount = 0
-
       for (const result of results) {
-        // Skip if already auto-saved, has error, or no outputs
         if (autoSavedIndexesRef.current.has(result.index)) continue
         if (result.error || result.outputs.length === 0) continue
 
-        // Check if already saved for this prediction
         if (result.prediction?.id && hasAssetForPrediction(result.prediction.id)) {
           autoSavedIndexesRef.current.add(result.index)
           setSavedIndexes(prev => new Set(prev).add(result.index))
           continue
         }
 
-        // Mark as being saved
         autoSavedIndexesRef.current.add(result.index)
 
         for (let outputIndex = 0; outputIndex < result.outputs.length; outputIndex++) {
@@ -177,7 +173,6 @@ export function BatchOutputGrid({
           if (!assetType) continue
 
           try {
-            // Each batch item has unique predictionId, so just use outputIndex
             const saveResult = await saveAsset(output, assetType, {
               modelId,
               predictionId: result.prediction?.id,
@@ -186,24 +181,31 @@ export function BatchOutputGrid({
             })
             if (saveResult) {
               setSavedIndexes(prev => new Set(prev).add(result.index))
-              newSaveCount++
             }
           } catch (err) {
             console.error('Failed to auto-save batch asset:', err)
           }
         }
       }
-
-      if (newSaveCount > 0 && !isRunning) {
-        toast({
-          description: t('playground.autoSaved'),
-          duration: 2000,
-        })
-      }
     }
 
     saveNewResults()
-  }, [results, modelId, settings.autoSaveAssets, saveAsset, hasAssetForPrediction, isRunning, t])
+  }, [results, modelId, settings.autoSaveAssets, saveAsset, hasAssetForPrediction])
+
+  // Show toast only when batch completes (isRunning: true → false)
+  useEffect(() => {
+    const wasRunning = prevRunningRef.current
+    prevRunningRef.current = !!isRunning
+
+    if (!wasRunning || isRunning) return
+    if (!settings.autoSaveAssets) return
+    if (savedIndexes.size === 0) return
+
+    toast({
+      description: t('playground.autoSaved'),
+      duration: 2000,
+    })
+  }, [isRunning, settings.autoSaveAssets, savedIndexes.size, t])
 
   // Reset auto-saved tracking when results are cleared
   useEffect(() => {
@@ -350,17 +352,47 @@ export function BatchOutputGrid({
     return () => window.removeEventListener('keydown', handler)
   }, [selectedResult, navigateResult])
 
-  // Get first media output for thumbnail
-  const getFirstMedia = (result: BatchResult) => {
-    for (const output of result.outputs) {
-      if (typeof output === 'string') {
-        if (isImageUrl(output)) return { url: output, type: 'image' as const }
-        if (isVideoUrl(output)) return { url: output, type: 'video' as const }
-        if (isAudioUrl(output)) return { url: output, type: 'audio' as const }
+  // Flatten results: each media output gets its own grid card
+  const gridItems = useMemo(() => {
+    const items: Array<{
+      key: string; batchIndex: number; outputIndex: number; result: BatchResult | null
+      mediaUrl: string | null; mediaType: 'image' | 'video' | 'audio' | null
+      isPending: boolean; hasError: boolean; seed?: unknown; timing?: number
+    }> = []
+
+    for (let index = 0; index < total; index++) {
+      const result = results.find(r => r.index === index)
+      const queueItem = queue?.find(q => q.index === index)
+      const seed = result?.input?.seed ?? queueItem?.input?.seed
+
+      if (!result) {
+        items.push({ key: `p-${index}`, batchIndex: index, outputIndex: 0, result: null, mediaUrl: null, mediaType: null, isPending: true, hasError: false, seed })
+      } else if (result.error) {
+        items.push({ key: `e-${index}`, batchIndex: index, outputIndex: 0, result, mediaUrl: null, mediaType: null, isPending: false, hasError: true, seed, timing: result.timing })
+      } else {
+        let mediaCount = 0
+        for (let oi = 0; oi < result.outputs.length; oi++) {
+          const output = result.outputs[oi]
+          if (typeof output === 'string') {
+            let mt: 'image' | 'video' | 'audio' | null = null
+            if (isImageUrl(output)) mt = 'image'
+            else if (isVideoUrl(output)) mt = 'video'
+            else if (isAudioUrl(output)) mt = 'audio'
+            if (mt) {
+              items.push({ key: `r-${index}-${oi}`, batchIndex: index, outputIndex: oi, result, mediaUrl: output, mediaType: mt, isPending: false, hasError: false, seed, timing: result.timing })
+              mediaCount++
+            }
+          }
+        }
+        if (mediaCount === 0) {
+          items.push({ key: `r-${index}-0`, batchIndex: index, outputIndex: 0, result, mediaUrl: null, mediaType: null, isPending: false, hasError: false, seed, timing: result.timing })
+        }
       }
     }
-    return null
-  }
+    return items
+  }, [results, queue, total])
+
+  const gridCount = gridItems.length || total
 
   return (
     <div className={cn('flex flex-col h-full', className)}>
@@ -412,110 +444,77 @@ export function BatchOutputGrid({
           </Button>
         </div>
       </div>
-      {/* Results Grid - dynamic columns based on item count with minimum cell size */}
+      {/* Results Grid - flattened: each media output gets its own card */}
       <ScrollArea className="flex-1">
         <div className={cn(
           'grid gap-4 p-1',
-          // For fewer items, use larger minimum cell sizes
-          total <= 2 && 'grid-cols-1 sm:grid-cols-2',
-          total === 3 && 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
-          total === 4 && 'grid-cols-2 lg:grid-cols-4',
-          total > 4 && 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
+          gridCount <= 2 && 'grid-cols-1 sm:grid-cols-2',
+          gridCount === 3 && 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
+          gridCount === 4 && 'grid-cols-2 lg:grid-cols-4',
+          gridCount > 4 && 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
         )}>
-          {Array.from({ length: total }, (_, index) => {
-            const result = results.find(r => r.index === index)
-            const queueItem = queue?.find(q => q.index === index)
-            const media = result ? getFirstMedia(result) : null
-            const hasError = result?.error
-            const isPending = !result
-            // Get seed from result or queue item
-            const seed = result?.input?.seed ?? queueItem?.input?.seed
-
-            return (
-              <div
-                key={index}
-                onClick={() => result && !hasError && setSelectedResult(result)}
-                className={cn(
-                  'relative overflow-hidden rounded-xl border border-border/70 bg-card/80 transition-all',
-                  isPending
-                    ? 'cursor-default'
-                    : hasError
-                      ? 'border-destructive/50 opacity-75 cursor-default'
-                      : 'cursor-pointer hover:border-primary/40 hover:shadow-md',
-                  result && savedIndexes.has(result.index) && 'ring-1 ring-green-500/50 shadow-sm'
-                )}
-              >
-                {/* Thumbnail */}
-                <div className="aspect-square bg-muted/70 flex items-center justify-center">
-                  {isPending && isRunning ? (
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                  ) : isPending ? (
-                    <div className="w-full h-full bg-muted/50" />
-                  ) : hasError ? (
-                    <div className="flex flex-col items-center gap-1 text-destructive p-2">
-                      <XCircle className="h-6 w-6" />
-                      <span className="text-xs text-center line-clamp-2">{result.error}</span>
-                    </div>
-                  ) : media?.type === 'image' ? (
-                    <img
-                      src={media.url}
-                      alt={`Result ${index + 1}`}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  ) : media?.type === 'video' ? (
-                    <video
-                      src={media.url}
-                      className="w-full h-full object-cover"
-                      muted
-                      playsInline
-                      preload="auto"
-                      onLoadedData={(e) => {
-                        // Seek to first frame to show preview
-                        const video = e.currentTarget
-                        video.currentTime = 0.1
-                      }}
-                    />
-                  ) : media?.type === 'audio' ? (
-                    <div className="text-muted-foreground text-xs">Audio</div>
-                  ) : (
-                    <div className="text-muted-foreground text-xs">Output</div>
-                  )}
-                </div>
-
-                {/* Footer */}
-                <div className="flex items-center justify-between border-t border-border/60 bg-background/70 p-2">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-medium">#{index + 1}</span>
-                    {seed !== undefined && (
-                      <span className="text-[10px] text-muted-foreground font-mono">
-                        {String(seed)}
-                      </span>
-                    )}
+          {gridItems.map((item, gridIndex) => (
+            <div
+              key={item.key}
+              onClick={() => item.result && !item.hasError && setSelectedResult(item.result)}
+              className={cn(
+                'relative overflow-hidden rounded-xl border border-border/70 bg-card/80 transition-all',
+                item.isPending
+                  ? 'cursor-default'
+                  : item.hasError
+                    ? 'border-destructive/50 opacity-75 cursor-default'
+                    : 'cursor-pointer hover:border-primary/40 hover:shadow-md',
+                item.result && savedIndexes.has(item.result.index) && 'ring-1 ring-green-500/50 shadow-sm'
+              )}
+            >
+              {/* Thumbnail */}
+              <div className="aspect-square bg-muted/70 flex items-center justify-center">
+                {item.isPending && isRunning ? (
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                ) : item.isPending ? (
+                  <div className="w-full h-full bg-muted/50" />
+                ) : item.hasError ? (
+                  <div className="flex flex-col items-center gap-1 text-destructive p-2">
+                    <XCircle className="h-6 w-6" />
+                    <span className="text-xs text-center line-clamp-2">{item.result?.error}</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    {result && !hasError && result.timing && (
-                      <Badge variant="secondary" className="text-[10px] px-1 py-0">
-                        {(result.timing / 1000).toFixed(1)}s
-                      </Badge>
-                    )}
-                    {result && !hasError && (
-                      <CheckCircle2 className="h-3 w-3 text-green-500" />
-                    )}
-                  </div>
-                </div>
-
-                {/* Saved indicator */}
-                {result && savedIndexes.has(result.index) && (
-                  <div className="absolute top-1 right-1">
-                    <Badge variant="secondary" className="text-[10px] px-1 py-0 bg-green-500/80 text-white">
-                      {t('playground.batch.saved')}
-                    </Badge>
-                  </div>
+                ) : item.mediaType === 'image' && item.mediaUrl ? (
+                  <img src={item.mediaUrl} alt={`Result ${gridIndex + 1}`} className="w-full h-full object-cover" loading="lazy" />
+                ) : item.mediaType === 'video' && item.mediaUrl ? (
+                  <video src={item.mediaUrl} className="w-full h-full object-cover" muted playsInline preload="auto" onLoadedData={(e) => { e.currentTarget.currentTime = 0.1 }} />
+                ) : item.mediaType === 'audio' ? (
+                  <div className="text-muted-foreground text-xs">Audio</div>
+                ) : (
+                  <div className="text-muted-foreground text-xs">Output</div>
                 )}
               </div>
-            )
-          })}
+
+              {/* Footer */}
+              <div className="flex items-center justify-between border-t border-border/60 bg-background/70 p-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-medium">#{gridIndex + 1}</span>
+                  {item.seed !== undefined && (
+                    <span className="text-[10px] text-muted-foreground font-mono">{String(item.seed)}</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1">
+                  {item.result && !item.hasError && item.timing && (
+                    <Badge variant="secondary" className="text-[10px] px-1 py-0">{(item.timing / 1000).toFixed(1)}s</Badge>
+                  )}
+                  {item.result && !item.hasError && (
+                    <CheckCircle2 className="h-3 w-3 text-green-500" />
+                  )}
+                </div>
+              </div>
+
+              {/* Saved indicator */}
+              {item.result && savedIndexes.has(item.result.index) && (
+                <div className="absolute top-1 right-1">
+                  <Badge variant="secondary" className="text-[10px] px-1 py-0 bg-green-500/80 text-white">{t('playground.batch.saved')}</Badge>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </ScrollArea>
 

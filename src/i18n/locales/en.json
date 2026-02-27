@@ -668,6 +668,7 @@
       "downloading": "Downloading update... {{percent}}%",
       "downloaded": "Update downloaded! Version {{version}} is ready to install.",
       "downloadUpdate": "Download Update",
+      "goToRelease": "Go to Release Page",
       "restartInstall": "Restart & Install",
       "error": "Update error: {{message}}",
       "notAvailableInDev": "Auto-update is not available in development mode.",

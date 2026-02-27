@@ -667,6 +667,7 @@
       "downloading": "Update wird heruntergeladen... {{percent}}%",
       "downloaded": "Update heruntergeladen! Version {{version}} ist bereit zur Installation.",
       "downloadUpdate": "Update herunterladen",
+      "goToRelease": "Go to Release Page",
       "restartInstall": "Neu starten & installieren",
       "error": "Update-Fehler: {{message}}",
       "notAvailableInDev": "Auto-Update ist im Entwicklungsmodus nicht verfügbar.",

@@ -390,6 +390,7 @@ export function MobilePlaygroundPage() {
                     onSetDefaults={handleSetDefaults}
                     onFieldsChange={setFormFields}
                     disabled={activeTab.isRunning}
+                    collapsible
                   />
                 ) : (
                   <div className="h-full flex items-center justify-center text-muted-foreground">
@@ -484,7 +485,7 @@ export function MobilePlaygroundPage() {
                   )}
                 </div>
                 {/* History Panel - horizontal strip at bottom */}
-                {activeTab.generationHistory.length >= 2 && (
+                {activeTab.generationHistory.length >= 1 && (
                   <HistoryPanel
                     history={activeTab.generationHistory}
                     selectedIndex={activeTab.selectedHistoryIndex}

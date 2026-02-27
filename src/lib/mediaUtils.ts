@@ -8,6 +8,13 @@ export function isUrl(str: string): boolean {
 
 export function getUrlExtension(url: string): string | null {
   try {
+    // For custom protocols like local-asset://, new URL() misparses the path as hostname.
+    // Decode and use regex fallback for these.
+    if (/^local-asset:\/\//i.test(url)) {
+      const decoded = decodeURIComponent(url)
+      const match = decoded.match(/\.([a-z0-9]+)(?:\?.*)?$/i)
+      return match ? match[1].toLowerCase() : null
+    }
     // Parse URL and get pathname (ignoring query params)
     const urlObj = new URL(url)
     const pathname = urlObj.pathname.toLowerCase()

@@ -465,7 +465,7 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
                 outputs,
                 isRunning: false,
                 generationHistory: [...historyItems, ...tab.generationHistory].slice(0, 50),
-                selectedHistoryIndex: 0
+                selectedHistoryIndex: null
               }
             : tab
         )
@@ -636,7 +636,27 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
           timing
         }
 
-        // Update state for this completed item
+        // Build history items for this single batch result
+        const itemHistoryEntries: GenerationHistoryItem[] = []
+        for (const output of (result.outputs || [])) {
+          if (typeof output === 'string') {
+            const mType = isImageUrl(output) ? 'image' as const
+              : isVideoUrl(output) ? 'video' as const
+              : null
+            if (mType) {
+              itemHistoryEntries.push({
+                id: `${result.id || queue[i].id}-${itemHistoryEntries.length}`,
+                prediction: result,
+                outputs: [output],
+                addedAt: Date.now() + itemHistoryEntries.length,
+                thumbnailUrl: output,
+                thumbnailType: mType
+              })
+            }
+          }
+        }
+
+        // Update state for this completed item + add to history immediately
         set(state => ({
           tabs: state.tabs.map(tab =>
             tab.id === tabId && tab.batchState
@@ -649,7 +669,8 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
                       idx === i ? { ...item, status: 'completed' as const, result } : item
                     )
                   },
-                  batchResults: results.filter(Boolean)
+                  batchResults: results.filter(Boolean),
+                  generationHistory: [...itemHistoryEntries, ...tab.generationHistory].slice(0, 200)
                 }
               : tab
           )
@@ -692,7 +713,7 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
     // Wait for all to complete
     await Promise.all(promises)
 
-    // Finalize batch
+    // Finalize batch (history already updated per-item above)
     set(state => ({
       tabs: state.tabs.map(tab =>
         tab.id === tabId
@@ -754,7 +775,7 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
     set(state => ({
       tabs: state.tabs.map(tab =>
         tab.id === state.activeTabId
-          ? { ...tab, selectedHistoryIndex: index }
+          ? { ...tab, selectedHistoryIndex: index, batchState: null, batchResults: [] }
           : tab
       )
     }))

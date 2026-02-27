@@ -667,6 +667,7 @@
       "downloading": "更新をダウンロード中... {{percent}}%",
       "downloaded": "更新をダウンロードしました！バージョン{{version}}をインストールする準備ができています。",
       "downloadUpdate": "更新をダウンロード",
+      "goToRelease": "Go to Release Page",
       "restartInstall": "再起動してインストール",
       "error": "更新エラー：{{message}}",
       "notAvailableInDev": "開発モードでは自動更新は利用できません。",

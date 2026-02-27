@@ -666,6 +666,7 @@
       "downloading": "Memuat turun kemaskini... {{percent}}%",
       "downloaded": "Kemaskini dimuat turun! Versi {{version}} sedia untuk dipasang.",
       "downloadUpdate": "Muat Turun Kemaskini",
+      "goToRelease": "Go to Release Page",
       "restartInstall": "Mulakan Semula & Pasang",
       "error": "Ralat kemaskini: {{message}}",
       "notAvailableInDev": "Kemaskini automatik tidak tersedia dalam mod pembangunan.",

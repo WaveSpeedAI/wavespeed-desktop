@@ -667,6 +667,7 @@
       "downloading": "업데이트 다운로드 중... {{percent}}%",
       "downloaded": "업데이트 다운로드 완료! 버전 {{version}}을 설치할 준비가 되었습니다.",
       "downloadUpdate": "업데이트 다운로드",
+      "goToRelease": "Go to Release Page",
       "restartInstall": "다시 시작하여 설치",
       "error": "업데이트 오류: {{message}}",
       "notAvailableInDev": "개발 모드에서는 자동 업데이트를 사용할 수 없습니다.",

@@ -666,6 +666,7 @@
       "downloading": "Đang tải cập nhật... {{percent}}%",
       "downloaded": "Đã tải cập nhật! Phiên bản {{version}} sẵn sàng cài đặt.",
       "downloadUpdate": "Tải cập nhật",
+      "goToRelease": "Go to Release Page",
       "restartInstall": "Khởi động lại & Cài đặt",
       "error": "Lỗi cập nhật: {{message}}",
       "notAvailableInDev": "Tự động cập nhật không khả dụng trong chế độ phát triển.",

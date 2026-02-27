@@ -667,6 +667,7 @@
       "downloading": "Download aggiornamento... {{percent}}%",
       "downloaded": "Aggiornamento scaricato! La versione {{version}} è pronta per l'installazione.",
       "downloadUpdate": "Scarica Aggiornamento",
+      "goToRelease": "Go to Release Page",
       "restartInstall": "Riavvia e Installa",
       "error": "Errore aggiornamento: {{message}}",
       "notAvailableInDev": "L'aggiornamento automatico non è disponibile in modalità sviluppo.",

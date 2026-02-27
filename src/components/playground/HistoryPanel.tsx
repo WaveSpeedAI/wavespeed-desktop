@@ -63,7 +63,7 @@ export function HistoryPanel({
 
   // Vertical layout (desktop)
   return (
-    <div className="w-[120px] shrink-0 border-l bg-muted/30 flex flex-col">
+    <div className="w-[120px] h-full shrink-0 border-l bg-muted/30 flex flex-col">
       <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground border-b truncate">
         {t('playground.history.title')}
       </div>

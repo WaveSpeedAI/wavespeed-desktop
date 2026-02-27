@@ -667,6 +667,7 @@
       "downloading": "Mengunduh pembaruan... {{percent}}%",
       "downloaded": "Pembaruan diunduh! Versi {{version}} siap diinstal.",
       "downloadUpdate": "Unduh Pembaruan",
+      "goToRelease": "Go to Release Page",
       "restartInstall": "Mulai Ulang & Instal",
       "error": "Error pembaruan: {{message}}",
       "notAvailableInDev": "Pembaruan otomatis tidak tersedia dalam mode pengembangan.",

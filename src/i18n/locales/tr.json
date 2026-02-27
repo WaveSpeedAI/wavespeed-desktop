@@ -667,6 +667,7 @@
       "downloading": "Güncelleme indiriliyor... %{{percent}}",
       "downloaded": "Güncelleme indirildi! Sürüm {{version}} yüklenmeye hazır.",
       "downloadUpdate": "Güncellemeyi İndir",
+      "goToRelease": "Go to Release Page",
       "restartInstall": "Yeniden Başlat ve Yükle",
       "error": "Güncelleme hatası: {{message}}",
       "notAvailableInDev": "Otomatik güncelleme geliştirme modunda kullanılamaz.",

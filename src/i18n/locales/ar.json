@@ -666,6 +666,7 @@
       "downloading": "جاري تنزيل التحديث... {{percent}}%",
       "downloaded": "تم تنزيل التحديث! الإصدار {{version}} جاهز للتثبيت.",
       "downloadUpdate": "تنزيل التحديث",
+      "goToRelease": "Go to Release Page",
       "restartInstall": "إعادة التشغيل والتثبيت",
       "error": "خطأ في التحديث: {{message}}",
       "notAvailableInDev": "التحديث التلقائي غير متاح في وضع التطوير.",

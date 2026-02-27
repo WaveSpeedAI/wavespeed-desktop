@@ -667,6 +667,7 @@
       "downloading": "Загрузка обновления... {{percent}}%",
       "downloaded": "Обновление загружено! Версия {{version}} готова к установке.",
       "downloadUpdate": "Скачать обновление",
+      "goToRelease": "Go to Release Page",
       "restartInstall": "Перезапустить и установить",
       "error": "Ошибка обновления: {{message}}",
       "notAvailableInDev": "Автообновление недоступно в режиме разработки.",

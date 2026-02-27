@@ -667,6 +667,7 @@
       "downloading": "अपडेट डाउनलोड हो रहा है... {{percent}}%",
       "downloaded": "अपडेट डाउनलोड हो गया! संस्करण {{version}} इंस्टॉल के लिए तैयार है।",
       "downloadUpdate": "अपडेट डाउनलोड करें",
+      "goToRelease": "Go to Release Page",
       "restartInstall": "पुनः आरंभ करें और इंस्टॉल करें",
       "error": "अपडेट त्रुटि: {{message}}",
       "notAvailableInDev": "डेवलपमेंट मोड में ऑटो-अपडेट उपलब्ध नहीं है।",

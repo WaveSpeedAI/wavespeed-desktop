@@ -166,7 +166,7 @@ export function DynamicForm({
                 disabled={disabled}
                 error={validationErrors[field.name]}
                 modelType={model.type}
-                imageValue={field.name === 'prompt' ? (values['image'] as string) : undefined}
+                imageValue={field.name === 'prompt' ? getSingleImageFromValues(values) : undefined}
                 hideLabel
                 formValues={values}
                 onUploadingChange={onUploadingChange}
@@ -189,7 +189,7 @@ export function DynamicForm({
             disabled={disabled}
             error={validationErrors[field.name]}
             modelType={model.type}
-            imageValue={field.name === 'prompt' ? (values['image'] as string) : undefined}
+            imageValue={field.name === 'prompt' ? getSingleImageFromValues(values) : undefined}
             formValues={values}
             onUploadingChange={onUploadingChange}
             tooltipDescription
@@ -207,10 +207,9 @@ export function DynamicForm({
         disabled={disabled}
         error={validationErrors[field.name]}
         modelType={model.type}
-        imageValue={field.name === 'prompt' ? (values['image'] as string) : undefined}
+        imageValue={field.name === 'prompt' ? getSingleImageFromValues(values) : undefined}
         formValues={values}
         onUploadingChange={onUploadingChange}
-        tooltipDescription
       />
     )
   }

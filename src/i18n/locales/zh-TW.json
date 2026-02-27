@@ -667,6 +667,7 @@
       "downloading": "正在下載更新... {{percent}}%",
       "downloaded": "更新已下載！版本 {{version}} 已準備好安裝。",
       "downloadUpdate": "下載更新",
+      "goToRelease": "前往下載頁面",
       "restartInstall": "重新啟動並安裝",
       "error": "更新錯誤：{{message}}",
       "notAvailableInDev": "開發模式下不支援自動更新。",

@@ -14,7 +14,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { Download, ExternalLink, Copy, Check, AlertTriangle, X, Save, FolderHeart, Gamepad2 } from 'lucide-react'
+import { Download, ExternalLink, Copy, Check, CheckCircle2, AlertTriangle, X, Save, FolderHeart, Gamepad2, Sparkles } from 'lucide-react'
+import { isUrl, getUrlExtension, isImageUrl, isVideoUrl, isAudioUrl } from '@/lib/mediaUtils'
 import { AudioPlayer } from '@/components/shared/AudioPlayer'
 import { FlappyBird } from './FlappyBird'
 import { toast } from '@/hooks/useToast'
@@ -90,6 +91,7 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
   const [savedIndexes, setSavedIndexes] = useState<Set<number>>(new Set())
   const [savingIndex, setSavingIndex] = useState<number | null>(null)
   const autoSavedUrlsRef = useRef<Set<string>>(new Set())
+  const prevLoadingRef = useRef(false)
 
   // Game state
   const [isGameStarted, setIsGameStarted] = useState(false)
@@ -166,13 +168,18 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
     setGameEndedWithResults(true)
   }, [])
 
-  // Auto-save outputs when prediction completes (URL-based dedup for split history items)
+  // Auto-save outputs only when generation completes (isLoading: true → false)
   useEffect(() => {
+    const wasLoading = prevLoadingRef.current
+    prevLoadingRef.current = isLoading
+
+    // Only trigger auto-save when loading transitions from true to false
+    if (!wasLoading || isLoading) return
     if (!settings.autoSaveAssets || !modelId || outputs.length === 0) return
     if (!prediction?.id) return
 
-    // Filter to only unsaved URLs
-    const newOutputs: { output: string; index: number }[] = []
+    // Find outputs not yet auto-saved
+    const unsaved: { output: string; index: number }[] = []
     for (let i = 0; i < outputs.length; i++) {
       const output = outputs[i]
       if (typeof output !== 'string') continue
@@ -180,23 +187,19 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
       if (autoSavedUrlsRef.current.has(output)) continue
       const assetType = detectAssetType(output)
       if (!assetType) continue
-      newOutputs.push({ output, index: i })
+      unsaved.push({ output, index: i })
     }
+    if (unsaved.length === 0) return
 
-    if (newOutputs.length === 0) return
-
-    // Mark URLs as saved immediately to prevent duplicate saves
-    for (const { output } of newOutputs) {
+    // Mark URLs immediately to prevent duplicate triggers
+    for (const { output } of unsaved) {
       autoSavedUrlsRef.current.add(output)
     }
 
     const saveOutputs = async () => {
-      for (const { output, index } of newOutputs) {
-        const assetType = detectAssetType(output)
-        if (!assetType) continue
-
+      for (const { output, index } of unsaved) {
         try {
-          const result = await saveAsset(output, assetType, {
+          const result = await saveAsset(output, detectAssetType(output)!, {
             modelId,
             predictionId: prediction.id,
             originalUrl: output,
@@ -209,7 +212,6 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
           console.error('Failed to auto-save asset:', err)
         }
       }
-
       toast({
         description: t('playground.autoSaved'),
         duration: 2000,
@@ -217,9 +219,9 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
     }
 
     saveOutputs()
-  }, [outputs, prediction?.id, modelId, settings.autoSaveAssets, saveAsset, t])
+  }, [isLoading, outputs, prediction?.id, modelId, settings.autoSaveAssets, saveAsset, t])
 
-  // Reset saved indexes when prediction changes
+  // Reset saved indexes when outputs change substantially
   useEffect(() => {
     setSavedIndexes(new Set())
   }, [prediction?.id])
@@ -389,190 +391,215 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
           onGameStart={handleGameStart}
           onGameEnd={handleGameEnd}
           isTaskRunning={isLoading}
-          taskStatus={prediction?.status || t('playground.generating')}
+          taskStatus={t('playground.generating')}
           idleMessage={outputs.length === 0 && !isLoading ? {
             title: t('playground.noOutputs'),
             subtitle: t('playground.configureAndRun')
           } : undefined}
           hasResults={outputs.length > 0 && !isLoading}
           onViewResults={() => setShowGame(false)}
+          modelId={modelId}
         />
       </div>
     )
   }
 
   return (
-    <div className="group h-full flex flex-col relative">
-      {!hideGameButton && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn(
-                "absolute left-3 top-3 z-10 h-8 w-8 rounded-lg border border-border/70 bg-background/80 backdrop-blur transition-opacity",
-                isCapacitorNative() ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-              )}
-              onClick={() => {
-                setShowGame(true)
-                setGameEndedWithResults(true)
-              }}
-            >
-              <Gamepad2 className="h-4 w-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            {t('playground.flappyBird.playWhileWaiting', 'Play while waiting')}
-          </TooltipContent>
-        </Tooltip>
-      )}
-
-      {/* Outputs - scrollable list so each output has good size */}
+    <div className="h-full flex flex-col relative">
+      {/* Outputs - fill remaining space */}
       <div className={cn(
-        "flex-1 min-h-0 overflow-auto",
-        outputs.length > 1 ? "flex flex-col gap-4" : "flex flex-col"
-      )}>
-        {outputs.map((output, index) => {
-          const isObject = typeof output === 'object' && output !== null
-          const outputStr = isObject ? JSON.stringify(output, null, 2) : String(output)
-          const isImage = !isObject && isImageUrl(outputStr)
-          const isVideo = !isObject && isVideoUrl(outputStr)
-          const isAudio = !isObject && isAudioUrl(outputStr)
-          const copyValue = isObject ? outputStr : outputStr
+          "flex-1 min-h-0",
+          outputs.length > 1
+            ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 auto-rows-min overflow-auto p-1"
+            : "flex flex-col gap-4"
+        )}>
+          {outputs.map((output, index) => {
+            const isObject = typeof output === 'object' && output !== null
+            const outputStr = isObject ? JSON.stringify(output, null, 2) : String(output)
+            const isImage = !isObject && isImageUrl(outputStr)
+            const isVideo = !isObject && isVideoUrl(outputStr)
+            const isAudio = !isObject && isAudioUrl(outputStr)
+            const copyValue = isObject ? outputStr : outputStr
 
-          return (
-            <div
-              key={index}
-              className={cn(
-                "relative group rounded-lg border overflow-hidden bg-muted/30 flex items-center justify-center flex-shrink-0",
-                outputs.length > 1 ? "min-h-[min(360px,50vh)]" : "flex-1 min-h-0"
-              )}
-            >
-              {isImage && (
-                <img
-                  src={outputStr}
-                  alt={`Output ${index + 1}`}
-                  className="max-w-full max-h-full object-contain cursor-pointer hover:opacity-90 transition-opacity"
-                  style={{ maxWidth: 'min(100%, var(--max-w, 100%))', maxHeight: 'min(100%, var(--max-h, 100%))' }}
-                  loading="lazy"
-                  onClick={() => setFullscreenIndex(index)}
-                  onLoad={(e) => {
-                    const img = e.currentTarget
-                    // Limit upscaling to 2x natural size
-                    img.style.setProperty('--max-w', `${img.naturalWidth * 2}px`)
-                    img.style.setProperty('--max-h', `${img.naturalHeight * 2}px`)
-                  }}
-                />
-              )}
-
-              {isVideo && (
-                <video
-                  src={outputStr}
-                  controls
-                  playsInline
-                  className="max-w-full max-h-full object-contain"
-                  style={{ maxWidth: 'min(100%, var(--max-w, 100%))', maxHeight: 'min(100%, var(--max-h, 100%))' }}
-                  preload="auto"
-                  onLoadedData={(e) => {
-                    const video = e.currentTarget
-                    // Seek to show first frame as preview
-                    video.currentTime = 0.1
-                    // Limit upscaling to 2x natural size
-                    video.style.setProperty('--max-w', `${video.videoWidth * 2}px`)
-                    video.style.setProperty('--max-h', `${video.videoHeight * 2}px`)
-                  }}
-                />
-              )}
-
-              {isAudio && (
-                <AudioPlayer src={outputStr} />
-              )}
-
-              {isObject && (
-                <div className="p-4 w-full h-full overflow-auto">
-                  <pre className="text-sm font-mono whitespace-pre-wrap break-all">
-                    {outputStr}
-                  </pre>
-                </div>
-              )}
-
-              {!isImage && !isVideo && !isAudio && !isObject && (
-                <div className="p-4">
-                  <p className="text-sm break-all">{outputStr}</p>
-                </div>
-              )}
-
-              {/* NSFW overlay */}
-              {prediction?.has_nsfw_contents?.some(Boolean) && (
-                <div className="absolute bottom-2 left-2 flex items-center gap-1">
-                  <Badge variant="destructive" className="text-xs">NSFW</Badge>
-                </div>
-              )}
-
-              {/* Actions overlay - always visible on touch devices */}
-              <div className={cn(
-                "absolute top-2 right-2 flex gap-1 transition-opacity",
-                isCapacitorNative() ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-              )}>
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className="h-8 w-8 rounded-lg bg-background/90 backdrop-blur"
-                  onClick={() => handleCopy(copyValue, index)}
-                >
-                  {copiedIndex === index ? (
-                    <Check className="h-4 w-4" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
+            // Multi-output: BatchOutputGrid-style card with thumbnail + footer
+            if (outputs.length > 1) {
+              return (
+                <div
+                  key={index}
+                  className={cn(
+                    "relative group overflow-hidden rounded-xl border border-border/70 bg-card/80 transition-all cursor-pointer hover:border-primary/40 hover:shadow-md",
+                    savedIndexes.has(index) && "ring-1 ring-green-500/50 shadow-sm"
                   )}
-                </Button>
-                {!isObject && (
+                  onClick={() => setFullscreenIndex(index)}
+                >
+                  {/* Thumbnail */}
+                  <div className="aspect-square bg-muted/70 flex items-center justify-center">
+                    {isImage && <img src={outputStr} alt={`Result ${index + 1}`} className="w-full h-full object-cover" loading="lazy" />}
+                    {isVideo && <video src={outputStr} className="w-full h-full object-cover" muted playsInline preload="auto" onLoadedData={(e) => { e.currentTarget.currentTime = 0.1 }} />}
+                    {isAudio && <div className="text-muted-foreground text-xs">Audio</div>}
+                    {!isImage && !isVideo && !isAudio && <div className="text-muted-foreground text-xs">Output</div>}
+                  </div>
+                  {/* Footer */}
+                  <div className="flex items-center justify-between border-t border-border/60 bg-background/70 p-2">
+                    <span className="text-xs font-medium">#{index + 1}</span>
+                    <div className="flex items-center gap-1">
+                      {prediction?.timings?.inference && (
+                        <Badge variant="secondary" className="text-[10px] px-1 py-0">
+                          {(prediction.timings.inference / 1000).toFixed(1)}s
+                        </Badge>
+                      )}
+                      <CheckCircle2 className="h-3 w-3 text-green-500" />
+                    </div>
+                  </div>
+                  {/* Saved indicator */}
+                  {savedIndexes.has(index) && (
+                    <div className="absolute top-1 right-1">
+                      <Badge variant="secondary" className="text-[10px] px-1 py-0 bg-green-500/80 text-white">Saved</Badge>
+                    </div>
+                  )}
+                </div>
+              )
+            }
+
+            // Single output: original full-size display
+            return (
+              <div
+                key={index}
+                className="relative group rounded-lg border overflow-hidden bg-muted/30 flex items-center justify-center flex-1 min-h-0"
+              >
+                <div className="absolute left-2 top-2 z-10">
+                  <Badge variant="secondary" className="rounded-md bg-background/80 px-2 py-0.5 text-[11px] backdrop-blur">
+                    <Sparkles className="mr-1 h-3 w-3" />
+                    #{index + 1}
+                  </Badge>
+                </div>
+                {isImage && (
+                  <img
+                    src={outputStr}
+                    alt={`Output ${index + 1}`}
+                    className="max-w-full max-h-full object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                    style={{ maxWidth: 'min(100%, var(--max-w, 100%))', maxHeight: 'min(100%, var(--max-h, 100%))' }}
+                    loading="lazy"
+                    onClick={() => setFullscreenIndex(index)}
+                    onLoad={(e) => {
+                      const img = e.currentTarget
+                      img.style.setProperty('--max-w', `${img.naturalWidth * 2}px`)
+                      img.style.setProperty('--max-h', `${img.naturalHeight * 2}px`)
+                    }}
+                  />
+                )}
+
+                {isVideo && (
+                  <video
+                    src={outputStr}
+                    controls
+                    playsInline
+                    className="max-w-full max-h-full object-contain"
+                    style={{ maxWidth: 'min(100%, var(--max-w, 100%))', maxHeight: 'min(100%, var(--max-h, 100%))' }}
+                    preload="auto"
+                    onLoadedData={(e) => {
+                      const video = e.currentTarget
+                      video.currentTime = 0.1
+                      video.style.setProperty('--max-w', `${video.videoWidth * 2}px`)
+                      video.style.setProperty('--max-h', `${video.videoHeight * 2}px`)
+                    }}
+                  />
+                )}
+
+                {isAudio && (
+                  <AudioPlayer src={outputStr} />
+                )}
+
+                {isObject && (
+                  <div className="p-4 w-full h-full overflow-auto">
+                    <pre className="text-sm font-mono whitespace-pre-wrap break-all">
+                      {outputStr}
+                    </pre>
+                  </div>
+                )}
+
+                {!isImage && !isVideo && !isAudio && !isObject && (
+                  <div className="p-4">
+                    <p className="text-sm break-all">{outputStr}</p>
+                  </div>
+                )}
+
+                {/* Timing overlay */}
+                {prediction?.timings?.inference && (
+                  <div className="absolute bottom-2 left-2 flex items-center gap-1">
+                    <Badge variant="secondary" className="border-0 bg-black/60 text-xs text-white">
+                      {(prediction.timings.inference / 1000).toFixed(2)}s
+                    </Badge>
+                    {prediction.has_nsfw_contents?.some(Boolean) && (
+                      <Badge variant="destructive" className="text-xs">NSFW</Badge>
+                    )}
+                  </div>
+                )}
+
+                {/* Actions overlay */}
+                <div className={cn(
+                  "absolute top-2 right-2 flex gap-1 transition-opacity",
+                  isCapacitorNative() ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                )}>
                   <Button
                     size="icon"
                     variant="secondary"
                     className="h-8 w-8 rounded-lg bg-background/90 backdrop-blur"
-                    onClick={() => handleOpenExternal(outputStr)}
+                    onClick={() => handleCopy(copyValue, index)}
                   >
-                    <ExternalLink className="h-4 w-4" />
+                    {copiedIndex === index ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
                   </Button>
-                )}
-                {(isImage || isVideo || isAudio) && (
-                  <>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          size="icon"
-                          variant="secondary"
-                          className="h-8 w-8 rounded-lg bg-background/90 backdrop-blur"
-                          onClick={() => handleSaveToAssets(outputStr, index)}
-                          disabled={savedIndexes.has(index) || savingIndex === index || !modelId}
-                        >
-                          {savedIndexes.has(index) ? (
-                            <FolderHeart className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <Save className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {savedIndexes.has(index) ? t('playground.alreadySaved') : t('playground.saveToAssets')}
-                      </TooltipContent>
-                    </Tooltip>
+                  {!isObject && (
                     <Button
                       size="icon"
                       variant="secondary"
                       className="h-8 w-8 rounded-lg bg-background/90 backdrop-blur"
-                      onClick={() => handleDownload(outputStr, index)}
+                      onClick={() => handleOpenExternal(outputStr)}
                     >
-                      <Download className="h-4 w-4" />
+                      <ExternalLink className="h-4 w-4" />
                     </Button>
-                  </>
-                )}
+                  )}
+                  {(isImage || isVideo || isAudio) && (
+                    <>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            size="icon"
+                            variant="secondary"
+                            className="h-8 w-8 rounded-lg bg-background/90 backdrop-blur"
+                            onClick={() => handleSaveToAssets(outputStr, index)}
+                            disabled={savedIndexes.has(index) || savingIndex === index || !modelId}
+                          >
+                            {savedIndexes.has(index) ? (
+                              <FolderHeart className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <Save className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {savedIndexes.has(index) ? t('playground.alreadySaved') : t('playground.saveToAssets')}
+                        </TooltipContent>
+                      </Tooltip>
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        className="h-8 w-8 rounded-lg bg-background/90 backdrop-blur"
+                        onClick={() => handleDownload(outputStr, index)}
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-          )
-        })}
-      </div>
+            )
+          })}
+        </div>
 
       {/* Fullscreen Preview Dialog */}
       <Dialog open={fullscreenIndex !== null} onOpenChange={() => setFullscreenIndex(null)}>
@@ -644,52 +671,4 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
   )
 }
 
-function isUrl(str: string): boolean {
-  return (
-    str.startsWith('http://') ||
-    str.startsWith('https://') ||
-    str.startsWith('local-asset://')
-  )
-}
-
-function getUrlExtension(url: string): string | null {
-  try {
-    // For custom protocols like local-asset://, new URL() misparses the path as hostname.
-    // Decode and use regex fallback for these.
-    if (/^local-asset:\/\//i.test(url)) {
-      const decoded = decodeURIComponent(url)
-      const match = decoded.match(/\.([a-z0-9]+)(?:\?.*)?$/i)
-      return match ? match[1].toLowerCase() : null
-    }
-    // Parse URL and get pathname (ignoring query params)
-    const urlObj = new URL(url)
-    const pathname = urlObj.pathname.toLowerCase()
-    // Get the last segment and extract extension
-    const lastSegment = pathname.split('/').pop() || ''
-    const match = lastSegment.match(/\.([a-z0-9]+)$/)
-    return match ? match[1] : null
-  } catch {
-    // Fallback for invalid URLs
-    const match = url.match(/\.([a-z0-9]+)(?:\?.*)?$/i)
-    return match ? match[1].toLowerCase() : null
-  }
-}
-
-function isImageUrl(url: string): boolean {
-  if (!isUrl(url)) return false
-  const ext = getUrlExtension(url)
-  return ext !== null && ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'avif'].includes(ext)
-}
-
-function isVideoUrl(url: string): boolean {
-  if (!isUrl(url)) return false
-  const ext = getUrlExtension(url)
-  return ext !== null && ['mp4', 'webm', 'mov', 'avi', 'mkv', 'ogv', 'm4v'].includes(ext)
-}
-
-function isAudioUrl(url: string): boolean {
-  if (!isUrl(url)) return false
-  const ext = getUrlExtension(url)
-  return ext !== null && ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a', 'wma', 'opus'].includes(ext)
-}
 

@@ -705,7 +705,7 @@ export function FlappyBird({ onGameStart, onGameEnd, onGameQuit, isTaskRunning, 
               <p className="text-muted-foreground text-sm">{taskStatus || t('playground.generating')}</p>
             </div>
           )}
-          {idleMessage && !isTaskRunning && (() => {
+          {!isTaskRunning && (() => {
             const outputType = inferOutputType(modelId)
             const typeConfig = {
               image: { icon: ImageIcon, color: 'text-sky-500', label: 'Image Generation' },
@@ -713,21 +713,45 @@ export function FlappyBird({ onGameStart, onGameEnd, onGameQuit, isTaskRunning, 
               audio: { icon: Music, color: 'text-emerald-500', label: 'Audio Generation' },
             }[outputType]
             const TypeIcon = typeConfig.icon
-            return (
-              <div className="bg-background/50 backdrop-blur-sm rounded-xl border border-border/40 px-6 py-5 shadow-sm text-center space-y-2.5">
-                <div className="flex justify-center">
-                  <div className="w-10 h-10 rounded-lg bg-muted/50 border border-border/40 flex items-center justify-center">
-                    <TypeIcon className={cn("h-5 w-5", typeConfig.color)} />
+
+            if (hasResults) {
+              return (
+                <div className="bg-background/60 backdrop-blur-sm rounded-xl border border-primary/20 px-6 py-5 shadow-md text-center space-y-3 pointer-events-auto">
+                  <div className="flex justify-center">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
+                      <TypeIcon className={cn("h-5 w-5", typeConfig.color)} />
+                    </div>
+                  </div>
+                  <p className="text-sm font-medium text-foreground/80">{t('playground.flappyBird.resultsReady', 'Results Ready')}</p>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onViewResults?.() }}
+                    className="text-xs px-4 py-1.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium"
+                  >
+                    {t('playground.flappyBird.viewResults')} &rarr;
+                  </button>
+                </div>
+              )
+            }
+
+            if (idleMessage) {
+              return (
+                <div className="bg-background/50 backdrop-blur-sm rounded-xl border border-border/40 px-6 py-5 shadow-sm text-center space-y-2.5">
+                  <div className="flex justify-center">
+                    <div className="w-10 h-10 rounded-lg bg-muted/50 border border-border/40 flex items-center justify-center">
+                      <TypeIcon className={cn("h-5 w-5", typeConfig.color)} />
+                    </div>
+                  </div>
+                  <p className="text-sm font-medium text-foreground/70">{idleMessage.title}</p>
+                  <div className="flex justify-center">
+                    <span className="text-[11px] px-2.5 py-0.5 rounded-full border border-border/40 bg-muted/30 text-muted-foreground/50">
+                      {typeConfig.label}
+                    </span>
                   </div>
                 </div>
-                <p className="text-sm font-medium text-foreground/70">{idleMessage.title}</p>
-                <div className="flex justify-center">
-                  <span className="text-[11px] px-2.5 py-0.5 rounded-full border border-border/40 bg-muted/30 text-muted-foreground/50">
-                    {typeConfig.label}
-                  </span>
-                </div>
-              </div>
-            )
+              )
+            }
+
+            return null
           })()}
           <p className="text-sm font-bold tracking-wide text-amber-500/70 mt-4 animate-pulse">
             {t('playground.flappyBird.clickToStart')}
@@ -749,16 +773,15 @@ export function FlappyBird({ onGameStart, onGameEnd, onGameQuit, isTaskRunning, 
         </div>
       )}
 
-      {/* Results available notification - show in all states */}
-      {hasResults && !isTaskRunning && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2">
-          <Badge
-            variant="default"
-            className="gap-2 px-4 py-2 cursor-pointer hover:opacity-90 transition-opacity shadow-lg"
-            onClick={onViewResults}
+      {/* Results notification during playing/gameover */}
+      {hasResults && !isTaskRunning && gameState !== 'idle' && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
+          <button
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground text-sm font-medium shadow-lg hover:bg-primary/90 transition-colors"
+            onClick={(e) => { e.stopPropagation(); onViewResults?.() }}
           >
-            {t('playground.flappyBird.viewResults')}
-          </Badge>
+            {t('playground.flappyBird.viewResults')} &rarr;
+          </button>
         </div>
       )}
 

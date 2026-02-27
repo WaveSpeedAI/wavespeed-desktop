@@ -256,7 +256,14 @@
     "copyImage": "Копировать изображение",
     "copyUrl": "Копировать URL",
     "copy": "Копировать",
-    "download": "Скачать"
+    "download": "Скачать",
+    "advancedSettings": {
+      "more": "Ещё",
+      "less": "Свернуть"
+    },
+    "history": {
+      "title": "История"
+    }
   },
   "history": {
     "title": "История",

@@ -256,7 +256,14 @@
     "copyImage": "画像をコピー",
     "copyUrl": "URLをコピー",
     "copy": "コピー",
-    "download": "ダウンロード"
+    "download": "ダウンロード",
+    "advancedSettings": {
+      "more": "もっと見る",
+      "less": "閉じる"
+    },
+    "history": {
+      "title": "履歴"
+    }
   },
   "history": {
     "title": "履歴",

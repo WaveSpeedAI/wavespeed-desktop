@@ -256,7 +256,14 @@
     "copyImage": "छवि कॉपी करें",
     "copyUrl": "URL कॉपी करें",
     "copy": "कॉपी करें",
-    "download": "डाउनलोड करें"
+    "download": "डाउनलोड करें",
+    "advancedSettings": {
+      "more": "और",
+      "less": "कम"
+    },
+    "history": {
+      "title": "इतिहास"
+    }
   },
   "history": {
     "title": "इतिहास",

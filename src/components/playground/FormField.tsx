@@ -19,7 +19,7 @@ import { LoraSelector, type LoraItem } from './LoraSelector'
 import { PromptOptimizer } from './PromptOptimizer'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { Dices } from 'lucide-react'
+import { Dices, Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface FormFieldProps {
@@ -33,6 +33,7 @@ interface FormFieldProps {
   hideLabel?: boolean
   formValues?: Record<string, unknown>
   onUploadingChange?: (isUploading: boolean) => void
+  tooltipDescription?: boolean
   /** When provided (e.g. workflow), file uploads use this instead of API. */
   onUploadFile?: (file: File) => Promise<string>
   /** Optional React node rendered inside the label row (e.g. a connection handle anchor). */
@@ -42,7 +43,7 @@ interface FormFieldProps {
 // Generate a random seed (0 to 65535)
 const generateRandomSeed = () => Math.floor(Math.random() * 65536)
 
-export function FormField({ field, value, onChange, disabled = false, error, modelType, imageValue, hideLabel = false, formValues, onUploadingChange, onUploadFile, handleAnchor }: FormFieldProps) {
+export function FormField({ field, value, onChange, disabled = false, error, modelType, imageValue, hideLabel = false, formValues, onUploadingChange, tooltipDescription = false, onUploadFile, handleAnchor }: FormFieldProps) {
   const { t } = useTranslation()
   // Check if this is a seed field
   const isSeedField = field.name.toLowerCase() === 'seed'
@@ -381,6 +382,16 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
               {field.label}
             </Label>
           </span>
+          {tooltipDescription && field.description && field.type !== 'text' && field.type !== 'textarea' && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help shrink-0" />
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-[280px]">
+                <p className="text-xs">{field.description}{field.min !== undefined && field.max !== undefined ? ` (${field.min} - ${field.max})` : ''}</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
           {isOptimizablePrompt && (
             <PromptOptimizer
               currentPrompt={(value as string) || ''}
@@ -390,20 +401,20 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
               imageValue={imageValue}
             />
           )}
-          {field.min !== undefined && field.max !== undefined && (
+          {field.min !== undefined && field.max !== undefined && (tooltipDescription ? !field.description : true) && (
             <span className="text-xs text-muted-foreground">
               ({field.min} - {field.max})
             </span>
           )}
         </div>
       )}
-      <div className={cn(field.type !== 'loras' && "overflow-hidden", error && "[&_input]:border-destructive [&_textarea]:border-destructive")}>
+      <div className={cn(field.type !== 'loras' && field.type !== 'file' && field.type !== 'file-array' && "overflow-hidden", error && "[&_input]:border-destructive [&_textarea]:border-destructive")}>
         {renderInput()}
       </div>
       {error && (
         <p className="text-xs text-destructive">{error}</p>
       )}
-      {!error && field.description && field.type !== 'text' && field.type !== 'textarea' && (
+      {!tooltipDescription && !error && field.description && field.type !== 'text' && field.type !== 'textarea' && (
         <p className="text-xs text-muted-foreground">{field.description}</p>
       )}
     </div>

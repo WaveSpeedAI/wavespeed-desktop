@@ -256,7 +256,14 @@
     "copyImage": "Copiar imagem",
     "copyUrl": "Copiar URL",
     "copy": "Copiar",
-    "download": "Descarregar"
+    "download": "Descarregar",
+    "advancedSettings": {
+      "more": "Mais",
+      "less": "Menos"
+    },
+    "history": {
+      "title": "Histórico"
+    }
   },
   "history": {
     "title": "Histórico",

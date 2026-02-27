@@ -256,7 +256,14 @@
     "copyImage": "Salin imej",
     "copyUrl": "Salin URL",
     "copy": "Salin",
-    "download": "Muat turun"
+    "download": "Muat turun",
+    "advancedSettings": {
+      "more": "Lagi",
+      "less": "Kurang"
+    },
+    "history": {
+      "title": "Sejarah"
+    }
   },
   "history": {
     "title": "Sejarah",

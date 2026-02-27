@@ -564,6 +564,7 @@ export function PlaygroundPage() {
                   validationErrors={activeTab.validationErrors}
                   onChange={setFormValue}
                   onSetDefaults={handleSetDefaults}
+                  collapsible
                   onFieldsChange={setFormFields}
                   onUploadingChange={setUploading}
                   scrollable={false}

@@ -256,7 +256,14 @@
       "seedsGenerated": "種子已自動產生",
       "settings": "批次設定"
     },
-    "input": "輸入"
+    "input": "輸入",
+    "advancedSettings": {
+      "more": "更多",
+      "less": "收起"
+    },
+    "history": {
+      "title": "歷史記錄"
+    }
   },
   "history": {
     "title": "歷史紀錄",

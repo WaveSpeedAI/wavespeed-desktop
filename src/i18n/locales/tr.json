@@ -256,7 +256,14 @@
     "copyImage": "Görseli kopyala",
     "copyUrl": "URL'yi kopyala",
     "copy": "Kopyala",
-    "download": "İndir"
+    "download": "İndir",
+    "advancedSettings": {
+      "more": "Daha fazla",
+      "less": "Daha az"
+    },
+    "history": {
+      "title": "Geçmiş"
+    }
   },
   "history": {
     "title": "Geçmiş",

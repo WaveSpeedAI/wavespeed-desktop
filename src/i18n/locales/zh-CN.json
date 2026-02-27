@@ -256,7 +256,14 @@
     "copyImage": "复制图片",
     "copyUrl": "复制链接",
     "copy": "复制",
-    "download": "下载"
+    "download": "下载",
+    "advancedSettings": {
+      "more": "更多",
+      "less": "收起"
+    },
+    "history": {
+      "title": "历史记录"
+    }
   },
   "history": {
     "title": "历史记录",

@@ -256,7 +256,14 @@
     "copyImage": "이미지 복사",
     "copyUrl": "URL 복사",
     "copy": "복사",
-    "download": "다운로드"
+    "download": "다운로드",
+    "advancedSettings": {
+      "more": "더보기",
+      "less": "접기"
+    },
+    "history": {
+      "title": "기록"
+    }
   },
   "history": {
     "title": "기록",

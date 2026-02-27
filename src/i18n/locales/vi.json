@@ -256,7 +256,14 @@
     "copyImage": "Sao chép hình ảnh",
     "copyUrl": "Sao chép URL",
     "copy": "Sao chép",
-    "download": "Tải xuống"
+    "download": "Tải xuống",
+    "advancedSettings": {
+      "more": "Thêm",
+      "less": "Ẩn"
+    },
+    "history": {
+      "title": "Lịch sử"
+    }
   },
   "history": {
     "title": "Lịch sử",

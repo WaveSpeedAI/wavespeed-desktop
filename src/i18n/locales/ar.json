@@ -256,7 +256,14 @@
     "copyImage": "نسخ الصورة",
     "copyUrl": "نسخ الرابط",
     "copy": "نسخ",
-    "download": "تنزيل"
+    "download": "تنزيل",
+    "advancedSettings": {
+      "more": "المزيد",
+      "less": "أقل"
+    },
+    "history": {
+      "title": "السجل"
+    }
   },
   "history": {
     "title": "السجل",

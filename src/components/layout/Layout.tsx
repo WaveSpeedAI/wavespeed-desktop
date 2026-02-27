@@ -40,6 +40,7 @@ const nextKey = () => ++keyCounter
 export function Layout() {
   const { t } = useTranslation()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
   const hasShownUpdateToast = useRef(false)

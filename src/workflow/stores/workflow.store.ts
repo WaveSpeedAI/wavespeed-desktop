@@ -108,6 +108,9 @@ function pushUndoDebounced(s: Snapshot) {
   }
 }
 
+/** Snapshot captured at the start of a node drag — pushed to undo when drag ends. */
+let _dragStartSnapshot: Snapshot | null = null
+
 /* ── Save concurrency guard ────────────────────────────────────────────── */
 let _saveInProgress = false
 
@@ -394,16 +397,35 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   },
 
   onNodesChange: (changes) => {
-    // Position-only moves don't push undo (too noisy); structural changes do
+    // Structural changes (add/remove) always push undo immediately
     const isStructural = changes.some(c => c.type === 'remove' || c.type === 'add')
     if (isStructural) {
       const { nodes, edges } = get()
       pushUndo({ nodes, edges })
     }
+
+    // Track node drag: capture snapshot at drag start, push undo at drag end
+    const posChanges = changes.filter((c): c is NodeChange & { type: 'position'; dragging?: boolean } => c.type === 'position')
+    if (posChanges.length > 0) {
+      const anyDragging = posChanges.some(c => c.dragging === true)
+      const anyDragEnd = posChanges.some(c => c.dragging === false)
+
+      if (anyDragging && !_dragStartSnapshot) {
+        // Drag just started — capture current state before positions change
+        const { nodes, edges } = get()
+        _dragStartSnapshot = { nodes, edges }
+      }
+      if (anyDragEnd && _dragStartSnapshot) {
+        // Drag ended — push the pre-drag snapshot to undo stack
+        pushUndo(_dragStartSnapshot)
+        _dragStartSnapshot = null
+      }
+    }
+
     set(state => ({
       nodes: applyNodeChanges(changes, state.nodes),
       isDirty: true,
-      ...(isStructural ? { canUndo: true, canRedo: false } : {})
+      ...(isStructural || posChanges.some(c => c.dragging === false) ? { canUndo: true, canRedo: false } : {})
     }))
   },
 

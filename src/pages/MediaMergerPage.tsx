@@ -386,6 +386,10 @@ export function MediaMergerPage() {
               )}
             </Button>
 
+            <p className="text-xs text-muted-foreground">
+              {t('freeTools.mediaMerger.sameFormatNote')}
+            </p>
+
             {mergedUrl && (
               <Button variant="outline" onClick={handleDownload}>
                 <Download className="h-4 w-4 mr-2" />
@@ -547,10 +551,7 @@ export function MediaMergerPage() {
             </CardContent>
           </Card>
 
-          {/* Note about same format */}
-          <p className="text-xs text-muted-foreground text-center">
-            {t('freeTools.mediaMerger.sameFormatNote')}
-          </p>
+
         </div>
       )}
 

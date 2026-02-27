@@ -15,6 +15,7 @@ import {
 } from '@/workflow/lib/free-tool-runner'
 import { normalizePayloadArrays } from '@/lib/schemaToForm'
 import { BROWSER_NODE_DEFINITIONS } from './node-definitions'
+import { ffmpegMerge, ffmpegTrim, ffmpegConvert } from './ffmpeg-helpers'
 import type { ModelParamSchema } from '@/workflow/types/node-defs'
 import { useModelsStore } from '@/stores/modelsStore'
 
@@ -217,6 +218,9 @@ function downstreamNodeIds(nodeId: string, simpleEdges: SimpleEdge[]): Set<strin
 }
 
 
+/** Cache blob→CDN URL mappings so the same blob is only uploaded once across runs */
+const blobToCdnCache = new Map<string, string>()
+
 export async function executeWorkflowInBrowser(
   nodes: BrowserNode[],
   edges: BrowserEdge[],
@@ -366,17 +370,23 @@ export async function executeWorkflowInBrowser(
           // If the URL is still a blob: URL, the CDN upload hasn't completed yet.
           // Fetch the blob and upload it to CDN before passing downstream.
           if (url.startsWith('blob:')) {
-            callbacks.onProgress(nodeId, 10, 'Uploading file to CDN...')
-            try {
-              const resp = await fetch(url)
-              const blob = await resp.blob()
-              const fileName = String(params.fileName ?? 'upload')
-              const file = new File([blob], fileName, { type: blob.type })
-              const cdnUrl = await apiClient.uploadFile(file, signal)
-              URL.revokeObjectURL(url)
-              url = cdnUrl
-            } catch (uploadErr) {
-              throw new Error(`Failed to upload file to CDN: ${uploadErr instanceof Error ? uploadErr.message : String(uploadErr)}`)
+            // Check cache first — avoid re-uploading the same blob
+            const cached = blobToCdnCache.get(url)
+            if (cached) {
+              url = cached
+            } else {
+              callbacks.onProgress(nodeId, 10, 'Uploading file to CDN...')
+              try {
+                const resp = await fetch(url)
+                const blob = await resp.blob()
+                const fileName = String(params.fileName ?? 'upload')
+                const file = new File([blob], fileName, { type: blob.type })
+                const cdnUrl = await apiClient.uploadFile(file, signal)
+                blobToCdnCache.set(url, cdnUrl)
+                url = cdnUrl
+              } catch (uploadErr) {
+                throw new Error(`Failed to upload file to CDN: ${uploadErr instanceof Error ? uploadErr.message : String(uploadErr)}`)
+              }
             }
           }
 
@@ -536,7 +546,7 @@ export async function executeWorkflowInBrowser(
           onProgress(10, 'Merging media...')
           const blobUrl = await ffmpegMerge(inputUrls, format)
           onProgress(100, 'Merge completed.')
-          results.set(nodeId, { outputUrl: blobUrl, resultMetadata: { output: blobUrl, resultUrl: blobUrl } })
+          results.set(nodeId, { outputUrl: blobUrl, resultMetadata: { output: blobUrl, resultUrl: blobUrl, resultUrls: [blobUrl] } })
           callbacks.onNodeStatus(nodeId, 'confirmed')
           callbacks.onNodeComplete(nodeId, { urls: [blobUrl], cost: 0, durationMs: Date.now() - start })
           return
@@ -553,7 +563,7 @@ export async function executeWorkflowInBrowser(
           onProgress(10, 'Trimming media...')
           const blobUrl = await ffmpegTrim(inputUrl, startTime, endTime, format)
           onProgress(100, 'Trim completed.')
-          results.set(nodeId, { outputUrl: blobUrl, resultMetadata: { output: blobUrl, resultUrl: blobUrl } })
+          results.set(nodeId, { outputUrl: blobUrl, resultMetadata: { output: blobUrl, resultUrl: blobUrl, resultUrls: [blobUrl] } })
           callbacks.onNodeStatus(nodeId, 'confirmed')
           callbacks.onNodeComplete(nodeId, { urls: [blobUrl], cost: 0, durationMs: Date.now() - start })
           return
@@ -588,7 +598,7 @@ export async function executeWorkflowInBrowser(
             resolution: resolution !== 'original' ? resolution : undefined,
           })
           onProgress(100, 'Video conversion completed.')
-          results.set(nodeId, { outputUrl: blobUrl, resultMetadata: { output: blobUrl, resultUrl: blobUrl } })
+          results.set(nodeId, { outputUrl: blobUrl, resultMetadata: { output: blobUrl, resultUrl: blobUrl, resultUrls: [blobUrl] } })
           callbacks.onNodeStatus(nodeId, 'confirmed')
           callbacks.onNodeComplete(nodeId, { urls: [blobUrl], cost: 0, durationMs: Date.now() - start })
           return
@@ -600,7 +610,7 @@ export async function executeWorkflowInBrowser(
           onProgress(10, 'Converting audio...')
           const blobUrl = await ffmpegConvert(inputUrl, format, format)
           onProgress(100, 'Audio conversion completed.')
-          results.set(nodeId, { outputUrl: blobUrl, resultMetadata: { output: blobUrl, resultUrl: blobUrl } })
+          results.set(nodeId, { outputUrl: blobUrl, resultMetadata: { output: blobUrl, resultUrl: blobUrl, resultUrls: [blobUrl] } })
           callbacks.onNodeStatus(nodeId, 'confirmed')
           callbacks.onNodeComplete(nodeId, { urls: [blobUrl], cost: 0, durationMs: Date.now() - start })
           return
@@ -612,7 +622,7 @@ export async function executeWorkflowInBrowser(
           onProgress(10, 'Converting image...')
           const blobUrl = await ffmpegConvert(inputUrl, format, format)
           onProgress(100, 'Image conversion completed.')
-          results.set(nodeId, { outputUrl: blobUrl, resultMetadata: { output: blobUrl, resultUrl: blobUrl } })
+          results.set(nodeId, { outputUrl: blobUrl, resultMetadata: { output: blobUrl, resultUrl: blobUrl, resultUrls: [blobUrl] } })
           callbacks.onNodeStatus(nodeId, 'confirmed')
           callbacks.onNodeComplete(nodeId, { urls: [blobUrl], cost: 0, durationMs: Date.now() - start })
           return

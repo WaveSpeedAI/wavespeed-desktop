@@ -131,12 +131,61 @@ export function ResultsPanel({ embeddedInNode, nodeId: nodeIdProp }: ResultsPane
     .flatMap(rec => getUrls(rec))
     .filter(isImageUrl)
 
-  const handleDownload = (url: string) => {
-    const filename = url.split('/').pop() || 'result'
-    if (window.electronAPI?.downloadFile) {
-      window.electronAPI.downloadFile(url, filename)
+  const handleDownload = async (url: string) => {
+    // Determine correct filename with extension for any URL type
+    const guessExt = (u: string): string => {
+      // Try to extract extension from URL path
+      const pathPart = u.split('?')[0].split('#')[0]
+      const lastSegment = pathPart.split('/').pop() || ''
+      const dotIdx = lastSegment.lastIndexOf('.')
+      if (dotIdx > 0) return lastSegment.substring(dotIdx + 1).toLowerCase()
+      return ''
+    }
+
+    let filename: string
+    const existingExt = guessExt(url)
+
+    if (url.startsWith('blob:') || !existingExt) {
+      // Fetch the resource to determine MIME type
+      const mimeExt: Record<string, string> = {
+        'video/mp4': 'mp4', 'video/webm': 'webm', 'video/quicktime': 'mov',
+        'video/x-msvideo': 'avi', 'video/x-matroska': 'mkv',
+        'audio/mpeg': 'mp3', 'audio/wav': 'wav', 'audio/ogg': 'ogg',
+        'audio/flac': 'flac', 'audio/aac': 'aac', 'audio/mp4': 'm4a',
+        'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp',
+        'image/gif': 'gif', 'application/octet-stream': 'bin',
+      }
+      try {
+        const resp = await fetch(url, { method: 'HEAD' })
+        const contentType = resp.headers.get('content-type')?.split(';')[0]?.trim() || ''
+        const ext = mimeExt[contentType] || 'mp4'
+        filename = `result-${Date.now()}.${ext}`
+      } catch {
+        filename = `result-${Date.now()}.mp4`
+      }
     } else {
-      const a = document.createElement('a'); a.href = url; a.download = filename; a.click()
+      filename = url.split('/').pop()?.split('?')[0] || `result.${existingExt}`
+    }
+
+    // Browser download: fetch blob and create object URL for reliable download
+    try {
+      const resp = await fetch(url)
+      const blob = await resp.blob()
+      const blobUrl = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = blobUrl
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      // Revoke after a short delay to ensure download starts
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 1000)
+    } catch {
+      // Fallback: direct link
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      a.click()
     }
   }
 
@@ -425,7 +474,7 @@ export function ResultsPanel({ embeddedInNode, nodeId: nodeIdProp }: ResultsPane
                       if (type === 'video') {
                         return (
                           <div key={ui} className="relative group flex-1 min-w-[100px]">
-                            <video src={url} className="w-full max-h-[160px] rounded border border-[hsl(var(--border))] object-contain cursor-pointer"
+                            <video src={url} preload="metadata" className="w-full max-h-[160px] rounded border border-[hsl(var(--border))] object-contain cursor-pointer"
                               onClick={() => openPreview(url)} />
                             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                               <div className="w-8 h-8 rounded-full bg-black/50 flex items-center justify-center">
@@ -515,7 +564,7 @@ function StackedResultItem({ url, allImageUrls, openPreview, onDownload }: {
   if (type === 'video') {
     return (
       <div className="relative group flex-1 min-w-[80px]">
-        <video src={url} className="w-full max-h-[140px] rounded border border-[hsl(var(--border))] object-contain cursor-pointer"
+        <video src={url} preload="metadata" className="w-full max-h-[140px] rounded border border-[hsl(var(--border))] object-contain cursor-pointer"
           onClick={() => openPreview(url)} />
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="w-7 h-7 rounded-full bg-black/50 flex items-center justify-center">

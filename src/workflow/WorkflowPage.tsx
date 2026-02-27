@@ -28,6 +28,7 @@ import { WorkflowGuide, useWorkflowGuide } from './components/WorkflowGuide'
 import { persistentStorage } from '@/lib/storage'
 import type { Template } from '@/types/template'
 import type { NodeTypeDefinition } from '@/workflow/types/node-defs'
+import { getOutputItemType } from './lib/outputDisplay'
 
 type ModelSyncStatus = 'idle' | 'loading' | 'synced' | 'error' | 'no-key' | 'unavailable'
 const WORKFLOW_API_UNAVAILABLE_MSG = 'Workflow API not available (run in Electron)'
@@ -159,7 +160,21 @@ export function WorkflowPage() {
     }
     return previewSrc
   }, [previewSrc])
-  const previewIsImage = Boolean(normalizedPreviewSrc && normalizedPreviewSrc.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg|avif)(\?.*)?$/i))
+  const previewTypeBase = normalizedPreviewSrc ? getOutputItemType(normalizedPreviewSrc) : null
+  // For blob: URLs, resolve the actual media type from the Blob's MIME
+  const [blobMediaType, setBlobMediaType] = useState<'video' | 'audio' | null>(null)
+  useEffect(() => {
+    if (!previewSrc || !previewSrc.startsWith('blob:')) { setBlobMediaType(null); return }
+    let cancelled = false
+    fetch(previewSrc).then(r => r.blob()).then(blob => {
+      if (cancelled) return
+      if (blob.type.startsWith('audio/')) setBlobMediaType('audio')
+      else setBlobMediaType('video')
+    }).catch(() => { if (!cancelled) setBlobMediaType('video') })
+    return () => { cancelled = true }
+  }, [previewSrc])
+  const previewType = (previewSrc?.startsWith('blob:') && blobMediaType) ? blobMediaType : previewTypeBase
+  const previewIsImage = previewType === 'image'
   const canNavigatePreview = previewIsImage && previewItems.length > 1
 
   useEffect(() => {
@@ -1247,12 +1262,12 @@ export function WorkflowPage() {
         <div className="absolute inset-0 z-[999] flex flex-col bg-black/85"
           onClick={closePreview} style={{ cursor: 'default' }}>
           <div className="flex-1 flex items-center justify-center p-6 min-h-0 overflow-hidden">
-            {normalizedPreviewSrc.match(/\.(glb|gltf)(\?.*)?$/i) ? (
+            {previewType === '3d' ? (
               <ModelViewerOverlay src={previewSrc} />
-            ) : normalizedPreviewSrc.match(/\.(mp4|webm|mov|avi|mkv)(\?.*)?$/i) ? (
+            ) : previewType === 'video' ? (
               <video src={previewSrc} controls autoPlay
                 className="max-w-[80%] max-h-full rounded-xl shadow-2xl" onClick={e => e.stopPropagation()} />
-            ) : normalizedPreviewSrc.match(/\.(mp3|wav|ogg|flac|aac|m4a)(\?.*)?$/i) ? (
+            ) : previewType === 'audio' ? (
               <div className="w-[80%] max-w-[700px] rounded-xl shadow-2xl bg-[hsl(var(--card))] p-6" onClick={e => e.stopPropagation()}>
                 <audio src={previewSrc} controls autoPlay className="w-full" />
               </div>

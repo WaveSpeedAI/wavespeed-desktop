@@ -30,6 +30,8 @@ import { FaceSwapperPage } from '@/pages/FaceSwapperPage'
 import { WorkflowPage } from '@/workflow/WorkflowPage'
 import { useFreeToolListener } from '@/workflow/hooks/useFreeToolListener'
 
+const isElectron = navigator.userAgent.toLowerCase().includes('electron')
+
 // Helper to generate next key
 let keyCounter = 0
 const nextKey = () => ++keyCounter
@@ -268,15 +270,16 @@ export function Layout() {
     <PageResetContext.Provider value={{ resetPage }}>
     <TooltipProvider>
       <div className="flex flex-col h-screen overflow-hidden relative">
-        {/* Fixed titlebar — draggable region for macOS & Windows */}
+        {/* Fixed titlebar — draggable region for macOS & Windows (Electron only) */}
+        {isElectron && (
         <div className="h-8 min-h-[32px] flex items-center justify-center bg-background electron-drag select-none shrink-0 relative z-50 electron-safe-right">
-          {/* Show logo on left for Windows/Linux (macOS has traffic lights there) */}
           {!/mac/i.test(navigator.platform) && (
             <div className="absolute left-0 top-0 bottom-0 w-12 flex items-center justify-center electron-no-drag">
               <AppLogo className="h-5 w-5 shrink-0" />
             </div>
           )}
         </div>
+        )}
         <div className="flex flex-1 overflow-hidden">
         <Sidebar
           collapsed={sidebarCollapsed}

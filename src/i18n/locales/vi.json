@@ -994,7 +994,8 @@
       "loading": "Đang tải...",
       "converting": "Đang chuyển đổi...",
       "merging": "Đang gộp...",
-      "trimming": "Đang cắt..."
+      "trimming": "Đang cắt...",
+      "transcoding": "Đang chuyển mã"
     },
     "downloadSuccess": "Đã lưu vào thư mục Tải xuống",
     "downloadStarted": "Đã bắt đầu tải xuống",

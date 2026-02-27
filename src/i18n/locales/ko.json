@@ -994,7 +994,8 @@
       "loading": "FFmpeg 로드 중",
       "converting": "변환 중",
       "merging": "병합 중",
-      "trimming": "자르는 중"
+      "trimming": "자르는 중",
+      "transcoding": "트랜스코딩 중"
     },
     "downloadSuccess": "다운로드 폴더에 저장됨",
     "downloadStarted": "다운로드 시작됨",

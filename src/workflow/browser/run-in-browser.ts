@@ -73,6 +73,15 @@ function buildApiParams(
     }
   }
   if (typeof out.seed === 'number' && (out.seed as number) < 0) delete out.seed
+
+  // Coerce integer schema fields to whole numbers before sending to API
+  for (const s of schema) {
+    if ((s as Record<string, unknown>).type === 'integer' && out[s.name] !== undefined && out[s.name] !== null) {
+      const n = Number(out[s.name])
+      if (!Number.isNaN(n)) out[s.name] = Math.round(n)
+    }
+  }
+
   return normalizePayloadArrays(out, [])
 }
 
@@ -438,7 +447,7 @@ export async function executeWorkflowInBrowser(
 
         // Free-tool nodes
         if (nodeType === 'free-tool/image-enhancer') {
-          const inputUrl = String(inputs.input ?? '')
+          const inputUrl = String(inputs.input ?? params.input ?? '')
           if (!inputUrl) throw new Error('Missing input')
           const base64 = await runImageEnhancer(inputUrl, params as { model?: string; scale?: string }, onProgress)
           const dataUrl = base64ToDataUrl(base64)
@@ -448,7 +457,7 @@ export async function executeWorkflowInBrowser(
           return
         }
         if (nodeType === 'free-tool/background-remover') {
-          const inputUrl = String(inputs.input ?? '')
+          const inputUrl = String(inputs.input ?? params.input ?? '')
           if (!inputUrl) throw new Error('Missing input')
           const base64 = await runBackgroundRemover(inputUrl, params as { model?: string }, onProgress)
           const dataUrl = base64ToDataUrl(base64)
@@ -458,7 +467,7 @@ export async function executeWorkflowInBrowser(
           return
         }
         if (nodeType === 'free-tool/face-enhancer') {
-          const inputUrl = String(inputs.input ?? '')
+          const inputUrl = String(inputs.input ?? params.input ?? '')
           if (!inputUrl) throw new Error('Missing input')
           const base64 = await runFaceEnhancer(inputUrl, params, onProgress)
           const dataUrl = base64ToDataUrl(base64)
@@ -468,7 +477,7 @@ export async function executeWorkflowInBrowser(
           return
         }
         if (nodeType === 'free-tool/video-enhancer') {
-          const inputUrl = String(inputs.input ?? '')
+          const inputUrl = String(inputs.input ?? params.input ?? '')
           if (!inputUrl) throw new Error('Missing input')
           const base64 = await runVideoEnhancer(inputUrl, params as { model?: string; scale?: string }, onProgress)
           const dataUrl = base64ToDataUrl(base64, 'video/webm')
@@ -478,8 +487,8 @@ export async function executeWorkflowInBrowser(
           return
         }
         if (nodeType === 'free-tool/face-swapper') {
-          const sourceUrl = String(inputs.source ?? '')
-          const targetUrl = String(inputs.target ?? '')
+          const sourceUrl = String(inputs.source ?? params.source ?? '')
+          const targetUrl = String(inputs.target ?? params.target ?? '')
           if (!sourceUrl || !targetUrl) throw new Error('Missing source or target image')
           const base64 = await runFaceSwapper(sourceUrl, targetUrl, params, onProgress)
           const dataUrl = base64ToDataUrl(base64)
@@ -489,8 +498,8 @@ export async function executeWorkflowInBrowser(
           return
         }
         if (nodeType === 'free-tool/image-eraser') {
-          const imageUrl = String(inputs.input ?? '')
-          const maskUrl = String(inputs.mask_image ?? '')
+          const imageUrl = String(inputs.input ?? params.input ?? '')
+          const maskUrl = String(inputs.mask_image ?? params.mask_image ?? '')
           if (!imageUrl || !maskUrl) throw new Error('Missing image or mask')
           const base64 = await runImageEraser(imageUrl, maskUrl, params, onProgress)
           const dataUrl = base64ToDataUrl(base64)
@@ -500,7 +509,7 @@ export async function executeWorkflowInBrowser(
           return
         }
         if (nodeType === 'free-tool/segment-anything') {
-          const inputUrl = String(inputs.input ?? '')
+          const inputUrl = String(inputs.input ?? params.input ?? '')
           if (!inputUrl) throw new Error('Missing input')
           const base64 = await runSegmentAnything(
             inputUrl,
@@ -511,6 +520,101 @@ export async function executeWorkflowInBrowser(
           results.set(nodeId, { outputUrl: dataUrl, resultMetadata: { output: dataUrl, resultUrl: dataUrl } })
           callbacks.onNodeStatus(nodeId, 'confirmed')
           callbacks.onNodeComplete(nodeId, { urls: [dataUrl], cost: 0, durationMs: Date.now() - start })
+          return
+        }
+
+        // FFmpeg-based free-tool nodes (converter / merger / trimmer)
+        if (nodeType === 'free-tool/media-merger') {
+          const inputKeys = ['input1', 'input2', 'input3', 'input4', 'input5']
+          const inputUrls: string[] = []
+          for (const key of inputKeys) {
+            const val = String(inputs[key] ?? params[key] ?? '')
+            if (val) inputUrls.push(val)
+          }
+          if (inputUrls.length < 2) throw new Error('Media merger requires at least two inputs.')
+          const format = String(params.format ?? 'mp4').toLowerCase()
+          onProgress(10, 'Merging media...')
+          const blobUrl = await ffmpegMerge(inputUrls, format)
+          onProgress(100, 'Merge completed.')
+          results.set(nodeId, { outputUrl: blobUrl, resultMetadata: { output: blobUrl, resultUrl: blobUrl } })
+          callbacks.onNodeStatus(nodeId, 'confirmed')
+          callbacks.onNodeComplete(nodeId, { urls: [blobUrl], cost: 0, durationMs: Date.now() - start })
+          return
+        }
+        if (nodeType === 'free-tool/media-trimmer') {
+          const inputUrl = String(inputs.input ?? params.input ?? '')
+          if (!inputUrl) throw new Error('Missing input')
+          const startTime = Number(params.startTime ?? 0)
+          const endTime = Number(params.endTime ?? 10)
+          if (!Number.isFinite(startTime) || !Number.isFinite(endTime) || endTime <= startTime) {
+            throw new Error('Invalid trim range: endTime must be greater than startTime.')
+          }
+          const format = String(params.format ?? 'mp4').toLowerCase()
+          onProgress(10, 'Trimming media...')
+          const blobUrl = await ffmpegTrim(inputUrl, startTime, endTime, format)
+          onProgress(100, 'Trim completed.')
+          results.set(nodeId, { outputUrl: blobUrl, resultMetadata: { output: blobUrl, resultUrl: blobUrl } })
+          callbacks.onNodeStatus(nodeId, 'confirmed')
+          callbacks.onNodeComplete(nodeId, { urls: [blobUrl], cost: 0, durationMs: Date.now() - start })
+          return
+        }
+        if (nodeType === 'free-tool/video-converter') {
+          const inputUrl = String(inputs.input ?? params.input ?? '')
+          if (!inputUrl) throw new Error('Missing input')
+          const formatId = String(params.format ?? 'mp4-h264')
+          const qualityId = String(params.quality ?? 'medium')
+          const resolution = String(params.resolution ?? 'original')
+          const FORMAT_MAP: Record<string, { ext: string; videoCodec: string; audioCodec: string }> = {
+            'mp4-h264': { ext: 'mp4', videoCodec: 'libx264', audioCodec: 'aac' },
+            'mp4-h265': { ext: 'mp4', videoCodec: 'libx265', audioCodec: 'aac' },
+            'webm-vp9': { ext: 'webm', videoCodec: 'libvpx-vp9', audioCodec: 'libopus' },
+            'webm-vp8': { ext: 'webm', videoCodec: 'libvpx', audioCodec: 'libvorbis' },
+            'mov': { ext: 'mov', videoCodec: 'libx264', audioCodec: 'aac' },
+            'avi': { ext: 'avi', videoCodec: 'libx264', audioCodec: 'aac' },
+            'mkv': { ext: 'mkv', videoCodec: 'libx264', audioCodec: 'aac' },
+            'mp4': { ext: 'mp4', videoCodec: 'libx264', audioCodec: 'aac' },
+            'webm': { ext: 'webm', videoCodec: 'libvpx-vp9', audioCodec: 'libopus' },
+          }
+          const BITRATE_MAP: Record<string, { video: string; audio: string }> = {
+            low: { video: '1M', audio: '96k' }, medium: { video: '5M', audio: '128k' },
+            high: { video: '10M', audio: '192k' }, ultra: { video: '20M', audio: '320k' },
+          }
+          const fmtCfg = FORMAT_MAP[formatId] ?? FORMAT_MAP['mp4-h264']
+          const bitrate = BITRATE_MAP[qualityId] ?? BITRATE_MAP.medium
+          onProgress(10, 'Converting video...')
+          const blobUrl = await ffmpegConvert(inputUrl, formatId, fmtCfg.ext, {
+            videoCodec: fmtCfg.videoCodec, videoBitrate: bitrate.video,
+            audioCodec: fmtCfg.audioCodec, audioBitrate: bitrate.audio,
+            resolution: resolution !== 'original' ? resolution : undefined,
+          })
+          onProgress(100, 'Video conversion completed.')
+          results.set(nodeId, { outputUrl: blobUrl, resultMetadata: { output: blobUrl, resultUrl: blobUrl } })
+          callbacks.onNodeStatus(nodeId, 'confirmed')
+          callbacks.onNodeComplete(nodeId, { urls: [blobUrl], cost: 0, durationMs: Date.now() - start })
+          return
+        }
+        if (nodeType === 'free-tool/audio-converter') {
+          const inputUrl = String(inputs.input ?? params.input ?? '')
+          if (!inputUrl) throw new Error('Missing input')
+          const format = String(params.format ?? 'mp3').toLowerCase()
+          onProgress(10, 'Converting audio...')
+          const blobUrl = await ffmpegConvert(inputUrl, format, format)
+          onProgress(100, 'Audio conversion completed.')
+          results.set(nodeId, { outputUrl: blobUrl, resultMetadata: { output: blobUrl, resultUrl: blobUrl } })
+          callbacks.onNodeStatus(nodeId, 'confirmed')
+          callbacks.onNodeComplete(nodeId, { urls: [blobUrl], cost: 0, durationMs: Date.now() - start })
+          return
+        }
+        if (nodeType === 'free-tool/image-converter') {
+          const inputUrl = String(inputs.input ?? params.input ?? '')
+          if (!inputUrl) throw new Error('Missing input')
+          const format = String(params.format ?? 'png').toLowerCase()
+          onProgress(10, 'Converting image...')
+          const blobUrl = await ffmpegConvert(inputUrl, format, format)
+          onProgress(100, 'Image conversion completed.')
+          results.set(nodeId, { outputUrl: blobUrl, resultMetadata: { output: blobUrl, resultUrl: blobUrl } })
+          callbacks.onNodeStatus(nodeId, 'confirmed')
+          callbacks.onNodeComplete(nodeId, { urls: [blobUrl], cost: 0, durationMs: Date.now() - start })
           return
         }
 

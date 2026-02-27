@@ -106,6 +106,7 @@ export function ImageConverterPage() {
       console.error('Worker error:', err)
       setError(err)
       setIsProcessing(false)
+      resetProgress()
     }
   })
 

@@ -994,7 +994,8 @@
       "loading": "加载 FFmpeg",
       "converting": "转换中",
       "merging": "合并中",
-      "trimming": "裁剪中"
+      "trimming": "裁剪中",
+      "transcoding": "转码中"
     },
     "downloadSuccess": "已保存到下载文件夹",
     "downloadStarted": "下载已开始",

@@ -994,7 +994,8 @@
       "loading": "Caricamento...",
       "converting": "Conversione...",
       "merging": "Fusione...",
-      "trimming": "Taglio..."
+      "trimming": "Taglio...",
+      "transcoding": "Transcodifica"
     },
     "downloadSuccess": "Salvato nella cartella Download",
     "downloadStarted": "Download avviato",

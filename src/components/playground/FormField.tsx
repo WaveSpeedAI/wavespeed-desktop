@@ -72,8 +72,10 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
     setNumericInput(String(next))
   }, [isNumericField, value, field.default, field.min, allowEmptyNumber])
 
+  const isIntegerField = field.schemaType === 'integer'
+
   const clampNumeric = (n: number) => {
-    let next = n
+    let next = isIntegerField ? Math.round(n) : n
     if (field.min !== undefined) next = Math.max(field.min, next)
     if (field.max !== undefined) next = Math.min(field.max, next)
     return next
@@ -136,8 +138,9 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
               <Slider
                 value={[currentValue]}
                 onValueChange={([v]) => {
-                  onChange(v)
-                  setNumericInput(String(v))
+                  const coerced = isIntegerField ? Math.round(v) : v
+                  onChange(coerced)
+                  setNumericInput(String(coerced))
                 }}
                 min={field.min}
                 max={field.max}
@@ -156,7 +159,8 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
                     if (allowEmptyNumber) onChange(undefined)
                     return
                   }
-                  onChange(Number(val))
+                  const n = Number(val)
+                  onChange(isIntegerField ? Math.round(n) : n)
                 }}
                 onBlur={() => commitNumeric(numericInput)}
                 min={field.min}
@@ -182,7 +186,8 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
                   if (allowEmptyNumber) onChange(undefined)
                   return
                 }
-                onChange(Number(val))
+                const n = Number(val)
+                onChange(isIntegerField ? Math.round(n) : n)
               }}
               onBlur={() => commitNumeric(numericInput)}
               min={field.min}
@@ -226,8 +231,9 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
               <Slider
                 value={[currentValue]}
                 onValueChange={([v]) => {
-                  onChange(v)
-                  setNumericInput(String(v))
+                  const coerced = isIntegerField ? Math.round(v) : v
+                  onChange(coerced)
+                  setNumericInput(String(coerced))
                 }}
                 min={field.min ?? 0}
                 max={field.max ?? 100}
@@ -242,7 +248,8 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
                   const val = e.target.value
                   setNumericInput(val)
                   if (val === '' || Number.isNaN(Number(val))) return
-                  onChange(Number(val))
+                  const n = Number(val)
+                  onChange(isIntegerField ? Math.round(n) : n)
                 }}
                 onBlur={() => commitNumeric(numericInput)}
                 min={field.min}

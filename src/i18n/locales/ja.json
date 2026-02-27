@@ -994,7 +994,8 @@
       "loading": "FFmpegを読み込み中",
       "converting": "変換中",
       "merging": "結合中",
-      "trimming": "トリミング中"
+      "trimming": "トリミング中",
+      "transcoding": "トランスコード中"
     },
     "downloadSuccess": "ダウンロードフォルダに保存しました",
     "downloadStarted": "ダウンロードを開始しました",

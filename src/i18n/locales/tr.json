@@ -994,7 +994,8 @@
       "loading": "Yükleniyor...",
       "converting": "Dönüştürülüyor...",
       "merging": "Birleştiriliyor...",
-      "trimming": "Kırpılıyor..."
+      "trimming": "Kırpılıyor...",
+      "transcoding": "Dönüştürülüyor"
     },
     "downloadSuccess": "İndirilenler klasörüne kaydedildi",
     "downloadStarted": "İndirme başladı",

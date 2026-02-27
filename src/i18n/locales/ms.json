@@ -994,7 +994,8 @@
       "loading": "Memuat...",
       "converting": "Menukar...",
       "merging": "Menggabungkan...",
-      "trimming": "Memangkas..."
+      "trimming": "Memangkas...",
+      "transcoding": "Transkod"
     },
     "downloadSuccess": "Disimpan ke folder Muat Turun",
     "downloadStarted": "Muat turun dimulakan",

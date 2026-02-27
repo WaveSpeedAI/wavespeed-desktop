@@ -994,7 +994,8 @@
       "loading": "جاري التحميل...",
       "converting": "جاري التحويل...",
       "merging": "جاري الدمج...",
-      "trimming": "جاري القص..."
+      "trimming": "جاري القص...",
+      "transcoding": "تحويل الترميز"
     },
     "downloadSuccess": "تم الحفظ في مجلد التنزيلات",
     "downloadStarted": "بدأ التنزيل",

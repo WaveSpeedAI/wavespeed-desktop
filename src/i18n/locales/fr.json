@@ -994,7 +994,8 @@
       "loading": "Chargement de FFmpeg",
       "converting": "Conversion",
       "merging": "Fusion",
-      "trimming": "Découpage"
+      "trimming": "Découpage",
+      "transcoding": "Transcodage"
     },
     "downloadSuccess": "Enregistré dans le dossier Téléchargements",
     "downloadStarted": "Téléchargement démarré",

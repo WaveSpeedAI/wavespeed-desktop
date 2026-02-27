@@ -994,7 +994,8 @@
       "loading": "Загрузка FFmpeg",
       "converting": "Конвертация",
       "merging": "Объединение",
-      "trimming": "Обрезка"
+      "trimming": "Обрезка",
+      "transcoding": "Перекодирование"
     },
     "downloadSuccess": "Сохранено в папку Загрузки",
     "downloadStarted": "Загрузка начата",

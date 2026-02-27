@@ -994,7 +994,8 @@
       "loading": "Loading FFmpeg",
       "converting": "Converting",
       "merging": "Merging",
-      "trimming": "Trimming"
+      "trimming": "Trimming",
+      "transcoding": "Transcoding"
     },
     "downloadSuccess": "Saved to Downloads folder",
     "downloadStarted": "Download started",

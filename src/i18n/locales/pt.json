@@ -994,7 +994,8 @@
       "loading": "A carregar...",
       "converting": "A converter...",
       "merging": "A fundir...",
-      "trimming": "A cortar..."
+      "trimming": "A cortar...",
+      "transcoding": "Transcodificando"
     },
     "downloadSuccess": "Guardado na pasta Transferências",
     "downloadStarted": "Transferência iniciada",

@@ -217,10 +217,13 @@ export function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange
 export function NumberInput({ value, min, max, step, onChange, placeholder }: {
   value: number | undefined; min?: number; max?: number; step: number; onChange: (v: unknown) => void; placeholder?: string
 }) {
-  // Clamp value to min/max on blur
+  const shouldRound = step >= 1 && Number.isInteger(step)
+
+  // Clamp (and round for integer steps) on blur
   const handleBlur = () => {
     if (value === undefined || value === null) return
     let clamped = Number(value)
+    if (shouldRound) clamped = Math.round(clamped)
     if (min !== undefined && clamped < min) clamped = min
     if (max !== undefined && clamped > max) clamped = max
     if (clamped !== Number(value)) onChange(clamped)
@@ -229,7 +232,11 @@ export function NumberInput({ value, min, max, step, onChange, placeholder }: {
   return (
     <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
       <input type="number" value={value !== undefined && value !== null ? value : ''} min={min} max={max} step={step}
-        onChange={e => onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+        onChange={e => {
+          if (e.target.value === '') { onChange(undefined); return }
+          const n = Number(e.target.value)
+          onChange(shouldRound ? Math.round(n) : n)
+        }}
         onBlur={handleBlur}
         placeholder={placeholder}
         className="w-full max-w-[120px] rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1.5 text-xs text-right text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50 placeholder:text-[hsl(var(--muted-foreground))] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />

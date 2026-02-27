@@ -40,7 +40,7 @@ export default defineConfig({
   // Ensure WASM files are properly served
   assetsInclude: ['**/*.wasm'],
   optimizeDeps: {
-    exclude: ['@huggingface/transformers', '@ffmpeg/ffmpeg', '@ffmpeg/util']
+    exclude: ['@huggingface/transformers']
   },
   build: {
     outDir: 'dist-web',

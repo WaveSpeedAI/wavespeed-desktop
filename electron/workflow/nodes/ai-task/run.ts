@@ -6,12 +6,12 @@ import { BaseNodeHandler, type NodeExecutionContext, type NodeExecutionResult } 
 import type { NodeTypeDefinition } from '../../../../src/workflow/types/node-defs'
 import { getWaveSpeedClient } from '../../services/service-locator'
 import { getModelById } from '../../services/model-list'
+import { normalizePayloadArrays } from '../../../../src/lib/schemaToForm'
 
 export const aiTaskDef: NodeTypeDefinition = {
   type: 'ai-task/run',
   category: 'ai-task',
   label: 'Generate',
-  icon: '🤖',
   inputs: [],
   outputs: [
     { key: 'output', label: 'Output', dataType: 'url', required: true }
@@ -37,12 +37,22 @@ export class AITaskHandler extends BaseNodeHandler {
 
     try {
       const client = getWaveSpeedClient()
-      // Use Desktop's apiClient.run() which handles submit + poll
-      const result = await client.run(modelId, apiParams)
+      // Use Desktop's apiClient.run() which handles submit + poll; pass abortSignal so Stop cancels in-flight request/polling
+      const result = await client.run(modelId, apiParams, { signal: ctx.abortSignal })
 
-      const outputUrl = Array.isArray(result.outputs) && result.outputs.length > 0
-        ? String(result.outputs[0])
-        : ''
+      // Normalize first output to URL string (API may return string or { url: "..." })
+      const firstOutput = Array.isArray(result.outputs) && result.outputs.length > 0 ? result.outputs[0] : null
+      const outputUrl = firstOutput == null ? '' : (typeof firstOutput === 'object' && firstOutput !== null && typeof (firstOutput as { url?: string }).url === 'string'
+        ? (firstOutput as { url: string }).url
+        : String(firstOutput))
+
+      // Build resultUrls array with same normalization for each item (e.g. z-image/turbo)
+      const rawOutputs = Array.isArray(result.outputs) ? result.outputs : []
+      const resultUrls = rawOutputs.map((o: unknown) =>
+        typeof o === 'object' && o !== null && typeof (o as { url?: string }).url === 'string'
+          ? (o as { url: string }).url
+          : String(o)
+      ).filter((u: string) => u && u !== '[object Object]')
 
       const model = getModelById(modelId)
       const cost = model?.costPerRun ?? 0
@@ -55,7 +65,7 @@ export class AITaskHandler extends BaseNodeHandler {
           // Store output by handle key so resolveInputs can find it
           output: outputUrl,
           resultUrl: outputUrl,
-          resultUrls: Array.isArray(result.outputs) ? result.outputs : [outputUrl],
+          resultUrls: resultUrls.length > 0 ? resultUrls : [outputUrl],
           modelId,
           raw: result
         },
@@ -81,6 +91,22 @@ export class AITaskHandler extends BaseNodeHandler {
     const params: Record<string, unknown> = {}
     // Internal keys to skip
     const skipKeys = new Set(['modelId', '__meta', '__locks', '__nodeWidth', '__nodeHeight'])
+
+    // First, fill in schema defaults so params that the user never touched
+    // (but are visible in the UI with their default value) are still sent.
+    const meta = ctx.params.__meta as Record<string, unknown> | undefined
+    const schema = (meta?.modelInputSchema ?? []) as Array<{ name: string; default?: unknown; enum?: string[] }>
+    for (const s of schema) {
+      if (skipKeys.has(s.name) || s.name.startsWith('__')) continue
+      if (s.default !== undefined && s.default !== null && s.default !== '') {
+        params[s.name] = s.default
+      } else if (s.enum && s.enum.length > 0) {
+        // Select/enum fields show the first option by default in the UI
+        params[s.name] = s.enum[0]
+      }
+    }
+
+    // Then overlay with actual user-set params (these take priority)
     for (const [key, value] of Object.entries(ctx.params)) {
       if (skipKeys.has(key) || key.startsWith('__')) continue
       if (value !== undefined && value !== null && value !== '') params[key] = value
@@ -102,6 +128,6 @@ export class AITaskHandler extends BaseNodeHandler {
       }
     }
     if (typeof params.seed === 'number' && params.seed < 0) delete params.seed
-    return params
+    return normalizePayloadArrays(params, [])
   }
 }

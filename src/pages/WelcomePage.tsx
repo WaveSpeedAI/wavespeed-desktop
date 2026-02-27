@@ -194,7 +194,7 @@ export function WelcomePage() {
   ]
 
   return (
-    <div className="min-h-full flex flex-col">
+    <div className="min-h-full flex flex-col bg-background">
       {/* Hero Section */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-4">
         <div className="text-center mb-5">

@@ -1,10 +1,108 @@
 import { create } from 'zustand'
 import { apiClient } from '@/api/client'
 import type { Model } from '@/types/model'
-import type { PredictionResult } from '@/types/prediction'
+import type { PredictionResult, GenerationHistoryItem } from '@/types/prediction'
 import type { FormFieldConfig } from '@/lib/schemaToForm'
+import { normalizePayloadArrays } from '@/lib/schemaToForm'
 import type { BatchConfig, BatchState, BatchResult } from '@/types/batch'
 import { DEFAULT_BATCH_CONFIG } from '@/types/batch'
+import { persistentStorage } from '@/lib/storage'
+import { isImageUrl, isVideoUrl } from '@/lib/mediaUtils'
+
+/* ── Playground session persistence ───────────────────────────────────── */
+
+const PLAYGROUND_SESSION_KEY = 'wavespeed_playground_session_v1'
+
+interface PersistedPlaygroundTab {
+  id: string
+  selectedModel: Model | null
+  formValues: Record<string, unknown>
+  formFields: FormFieldConfig[]
+  batchConfig: BatchConfig
+  batchResults: BatchResult[]
+}
+
+interface PersistedPlaygroundSession {
+  version: 1
+  activeTabId: string | null
+  tabCounter: number
+  tabs: PersistedPlaygroundTab[]
+}
+
+function parseTabCounter(tabId: string): number {
+  const m = /^tab-(\d+)$/.exec(tabId)
+  return m ? Number(m[1]) : 0
+}
+
+function parsePlaygroundSession(raw: unknown): { tabs: PlaygroundTab[]; activeTabId: string; tabCounter: number } | null {
+  try {
+    if (!raw) return null
+    const parsed = (typeof raw === 'string' ? JSON.parse(raw) : raw) as Partial<PersistedPlaygroundSession>
+    if (parsed.version !== 1 || !Array.isArray(parsed.tabs) || parsed.tabs.length === 0) return null
+    const tabs: PlaygroundTab[] = parsed.tabs.map((t: PersistedPlaygroundTab) => ({
+      id: t.id,
+      selectedModel: t.selectedModel ?? null,
+      formValues: t.formValues ?? {},
+      formFields: t.formFields ?? [],
+      validationErrors: {},
+      isRunning: false,
+      currentPrediction: null,
+      error: null,
+      outputs: [],
+      batchConfig: t.batchConfig ?? { ...DEFAULT_BATCH_CONFIG },
+      batchState: null,
+      batchResults: t.batchResults ?? [],
+      uploadingCount: 0,
+      generationHistory: [],
+      selectedHistoryIndex: null
+    }))
+    const activeTabId = typeof parsed.activeTabId === 'string' && tabs.some(tab => tab.id === parsed.activeTabId)
+      ? parsed.activeTabId
+      : tabs[0].id
+    const tabCounter = typeof parsed.tabCounter === 'number' ? parsed.tabCounter : Math.max(1, ...tabs.map(t => parseTabCounter(t.id)))
+    return { tabs, activeTabId, tabCounter }
+  } catch {
+    return null
+  }
+}
+
+export function persistPlaygroundSession(): void {
+  try {
+    const state = usePlaygroundStore.getState()
+    const payload: PersistedPlaygroundSession = {
+      version: 1,
+      activeTabId: state.activeTabId,
+      tabCounter,
+      tabs: state.tabs.map(tab => ({
+        id: tab.id,
+        selectedModel: tab.selectedModel,
+        formValues: tab.formValues,
+        formFields: tab.formFields,
+        batchConfig: tab.batchConfig,
+        batchResults: tab.batchResults
+      }))
+    }
+    persistentStorage.set(PLAYGROUND_SESSION_KEY, payload)
+  } catch {
+    // ignore
+  }
+}
+
+/** Hydrate playground session from persistent storage (async). */
+export async function hydratePlaygroundSession(): Promise<void> {
+  try {
+    const stored = await persistentStorage.get(PLAYGROUND_SESSION_KEY)
+    if (!stored) return
+    const session = parsePlaygroundSession(stored)
+    if (!session) return
+    const current = usePlaygroundStore.getState()
+    if (current.tabs.length > 0) return
+    tabCounter = session.tabCounter
+    usePlaygroundStore.setState({ tabs: session.tabs, activeTabId: session.activeTabId })
+  } catch {
+    // ignore
+  }
+}
 
 interface PlaygroundTab {
   id: string
@@ -22,6 +120,9 @@ interface PlaygroundTab {
   batchResults: BatchResult[]
   // File upload tracking
   uploadingCount: number
+  // Generation history (multi-output splitting)
+  generationHistory: GenerationHistoryItem[]
+  selectedHistoryIndex: number | null
 }
 
 interface PlaygroundState {
@@ -32,6 +133,7 @@ interface PlaygroundState {
   createTab: (model?: Model) => string
   closeTab: (tabId: string) => void
   setActiveTab: (tabId: string) => void
+  reorderTab: (fromIndex: number, toIndex: number) => void
 
   // Current tab accessors (for convenience)
   getActiveTab: () => PlaygroundTab | null
@@ -56,6 +158,9 @@ interface PlaygroundState {
 
   // File upload tracking
   setUploading: (isUploading: boolean) => void
+
+  // History selection
+  selectHistoryItem: (index: number | null) => void
 }
 
 // Check if a value is considered "empty"
@@ -81,15 +186,23 @@ function createEmptyTab(id: string, model?: Model): PlaygroundTab {
     batchState: null,
     batchResults: [],
     // File upload tracking
-    uploadingCount: 0
+    uploadingCount: 0,
+    // Generation history
+    generationHistory: [],
+    selectedHistoryIndex: null
   }
 }
 
 let tabCounter = 0
 
+const initialSession = parsePlaygroundSession(persistentStorage.getSync(PLAYGROUND_SESSION_KEY))
+if (initialSession) {
+  tabCounter = initialSession.tabCounter
+}
+
 export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
-  tabs: [],
-  activeTabId: null,
+  tabs: initialSession?.tabs ?? [],
+  activeTabId: initialSession?.activeTabId ?? null,
 
   createTab: (model?: Model) => {
     const id = `tab-${++tabCounter}`
@@ -126,6 +239,16 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
     set({ activeTabId: tabId })
   },
 
+  reorderTab: (fromIndex: number, toIndex: number) => {
+    set(state => {
+      if (fromIndex === toIndex) return state
+      const newTabs = [...state.tabs]
+      const [moved] = newTabs.splice(fromIndex, 1)
+      newTabs.splice(toIndex, 0, moved)
+      return { tabs: newTabs }
+    })
+  },
+
   getActiveTab: () => {
     const { tabs, activeTabId } = get()
     return tabs.find(t => t.id === activeTabId) || null
@@ -145,7 +268,9 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
                 validationErrors: {},
                 currentPrediction: null,
                 error: null,
-                outputs: []
+                outputs: [],
+                generationHistory: [],
+                selectedHistoryIndex: null
               }
           : tab
       )
@@ -231,7 +356,9 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
               validationErrors: {},
               currentPrediction: null,
               error: null,
-              outputs: []
+              outputs: [],
+              generationHistory: [],
+              selectedHistoryIndex: null
             }
           : tab
       )
@@ -242,7 +369,7 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
     const activeTab = get().getActiveTab()
     if (!activeTab) return
 
-    const { selectedModel, formValues } = activeTab
+    const { selectedModel, formValues, formFields } = activeTab
     if (!selectedModel) {
       set(state => ({
         tabs: state.tabs.map(tab =>
@@ -273,15 +400,60 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
     try {
       // Clean up form values - remove empty strings and undefined
       const cleanedInput: Record<string, unknown> = {}
+      const integerFields = new Set(formFields.filter(f => f.schemaType === 'integer').map(f => f.name))
       for (const [key, value] of Object.entries(formValues)) {
         if (value !== '' && value !== undefined && value !== null) {
-          cleanedInput[key] = value
+          // Ensure integer fields are sent as integers (API rejects non-integer values)
+          cleanedInput[key] = integerFields.has(key) && typeof value === 'number'
+            ? Math.round(value)
+            : value
+        }
+      }
+      const normalizedInput = normalizePayloadArrays(cleanedInput, formFields)
+
+      const result = await apiClient.run(selectedModel.model_id, normalizedInput, {
+        enableSyncMode: normalizedInput.enable_sync_mode as boolean
+      })
+
+      // Build history items — split multi-media outputs into individual entries
+      const outputs = result.outputs || []
+      const historyItems: GenerationHistoryItem[] = []
+
+      const mediaEntries: { output: string; type: 'image' | 'video' }[] = []
+      for (const output of outputs) {
+        if (typeof output === 'string') {
+          if (isImageUrl(output)) mediaEntries.push({ output, type: 'image' })
+          else if (isVideoUrl(output)) mediaEntries.push({ output, type: 'video' })
         }
       }
 
-      const result = await apiClient.run(selectedModel.model_id, cleanedInput, {
-        enableSyncMode: cleanedInput.enable_sync_mode as boolean
-      })
+      if (mediaEntries.length >= 2) {
+        // Split: one history item per media output (newest/first at index 0)
+        const baseId = result.id || `gen-${Date.now()}`
+        for (let i = 0; i < mediaEntries.length; i++) {
+          const { output, type } = mediaEntries[i]
+          historyItems.push({
+            id: `${baseId}-${i}`,
+            prediction: result,
+            outputs: [output],
+            addedAt: Date.now() + i,
+            thumbnailUrl: output,
+            thumbnailType: type
+          })
+        }
+      } else {
+        // Single or no media: keep as one history item
+        const thumbnailUrl = mediaEntries[0]?.output ?? null
+        const thumbnailType = mediaEntries[0]?.type ?? null
+        historyItems.push({
+          id: result.id || `gen-${Date.now()}`,
+          prediction: result,
+          outputs,
+          addedAt: Date.now(),
+          thumbnailUrl,
+          thumbnailType
+        })
+      }
 
       // Update the specific tab (it might not be active anymore)
       set(state => ({
@@ -290,8 +462,10 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
             ? {
                 ...tab,
                 currentPrediction: result,
-                outputs: result.outputs || [],
-                isRunning: false
+                outputs,
+                isRunning: false,
+                generationHistory: [...historyItems, ...tab.generationHistory].slice(0, 50),
+                selectedHistoryIndex: 0
               }
             : tab
         )
@@ -343,9 +517,12 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
 
     // Clean input values
     const cleanedBase: Record<string, unknown> = {}
+    const integerFields = new Set(formFields.filter(f => f.schemaType === 'integer').map(f => f.name))
     for (const [key, value] of Object.entries(formValues)) {
       if (value !== '' && value !== undefined && value !== null) {
-        cleanedBase[key] = value
+        cleanedBase[key] = integerFields.has(key) && typeof value === 'number'
+          ? Math.round(value)
+          : value
       }
     }
 
@@ -368,7 +545,7 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
     const activeTab = get().getActiveTab()
     if (!activeTab) return
 
-    const { selectedModel } = activeTab
+    const { selectedModel, formFields } = activeTab
     if (!selectedModel) {
       set(state => ({
         tabs: state.tabs.map(tab =>
@@ -442,9 +619,10 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
 
     const promises = inputs.map(async (input, i) => {
       const startTime = Date.now()
+      const normalizedInput = normalizePayloadArrays(input, formFields)
       try {
-        const result = await apiClient.run(selectedModel.model_id, input, {
-          enableSyncMode: input.enable_sync_mode as boolean
+        const result = await apiClient.run(selectedModel.model_id, normalizedInput, {
+          enableSyncMode: normalizedInput.enable_sync_mode as boolean
         })
         const timing = Date.now() - startTime
 
@@ -567,6 +745,16 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
               ...tab,
               uploadingCount: Math.max(0, tab.uploadingCount + (isUploading ? 1 : -1))
             }
+          : tab
+      )
+    }))
+  },
+
+  selectHistoryItem: (index: number | null) => {
+    set(state => ({
+      tabs: state.tabs.map(tab =>
+        tab.id === state.activeTabId
+          ? { ...tab, selectedHistoryIndex: index }
           : tab
       )
     }))

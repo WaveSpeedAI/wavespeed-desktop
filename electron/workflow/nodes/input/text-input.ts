@@ -5,7 +5,7 @@
  * - Large textarea for prompt / text editing
  * - Prompt Optimizer integration (AI-powered prompt enhancement)
  * - Prompt Library (save / load reusable text snippets)
- * - "Auto on Run": automatically optimizes the prompt via the
+ * - "Optimize on Run": automatically optimizes the prompt via the
  *   wavespeed-ai/prompt-optimizer model before passing it downstream.
  *
  * Output is a text string that can connect to AI Task nodes' prompt
@@ -21,7 +21,6 @@ export const textInputDef: NodeTypeDefinition = {
   type: 'input/text-input',
   category: 'input',
   label: 'Text',
-  icon: '✏️',
   inputs: [],
   outputs: [
     { key: 'output', label: 'Text', dataType: 'text', required: true }
@@ -48,7 +47,7 @@ export class TextInputHandler extends BaseNodeHandler {
       }
     }
 
-    // ── "Auto on Run" prompt optimization ──────────────────────────────
+    // ── "Optimize on Run" prompt optimization ──────────────────────────────
     const settings = (ctx.params.__optimizerSettings ?? {}) as Record<string, unknown>
     const optimizeOnRun = Boolean(settings.optimizeOnRun ?? settings.autoOptimize ?? false)
 
@@ -111,7 +110,7 @@ export class TextInputHandler extends BaseNodeHandler {
     if (signal.aborted) throw new Error('Aborted')
 
     const client = getWaveSpeedClient()
-    const result = await client.run(OPTIMIZER_MODEL, apiParams)
+    const result = await client.run(OPTIMIZER_MODEL, apiParams, { signal })
 
     if (result.outputs && result.outputs.length > 0) {
       const output = result.outputs[0]

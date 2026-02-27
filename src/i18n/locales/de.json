@@ -34,7 +34,9 @@
     "downloadFailed": "Download fehlgeschlagen. Bitte überprüfen Sie Ihre Netzwerkverbindung.",
     "openInBrowser": "Im Browser öffnen",
     "settings": "Einstellungen",
-    "clearAll": "Alles löschen"
+    "clearAll": "Alles löschen",
+    "add": "Add",
+    "saving": "Saving..."
   },
   "nav": {
     "home": "Startseite",
@@ -358,7 +360,71 @@
     "deleteTemplates": "Vorlagen löschen",
     "templatesDeleted": "Vorlagen gelöscht",
     "deletedCount": "{{count}} Vorlage(n) gelöscht",
-    "batchDeleteConfirm": "Sind Sie sicher, dass Sie {{count}} Vorlage(n) löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
+    "batchDeleteConfirm": "Sind Sie sicher, dass Sie {{count}} Vorlage(n) löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deletedSuccessfully": "\"{{name}}\" erfolgreich gelöscht",
+    "updatedSuccessfully": "\"{{name}}\" erfolgreich aktualisiert",
+    "exportedSuccessfully": "\"{{name}}\" erfolgreich exportiert",
+    "allExportedSuccessfully": "Alle Vorlagen erfolgreich exportiert",
+    "importedSuccessfully": "{{imported}} Vorlage(n) importiert, {{skipped}} übersprungen",
+    "filters": "Filter",
+    "templateType": "Vorlagentyp",
+    "allTypes": "Alle Typen",
+    "playground": "Playground",
+    "workflow": "Workflow",
+    "source": "Quelle",
+    "allSources": "Alle Quellen",
+    "public": "Öffentlich",
+    "myTemplates": "Meine Vorlagen",
+    "favorites": "Favoriten",
+    "favoritesOnly": "Nur Favoriten",
+    "sortBy": "Sortieren nach",
+    "newest": "Neueste",
+    "mostUsed": "Meistgenutzt",
+    "category": "Kategorie",
+    "allCategories": "Alle Kategorien",
+    "imageProcessing": "Bildverarbeitung",
+    "videoEditing": "Videobearbeitung",
+    "audioConversion": "Audiokonvertierung",
+    "aiGeneration": "KI-Generierung",
+    "workflowNotSupported": "Workflow nicht unterstützt",
+    "workflowNotSupportedDesc": "Workflow-Vorlagen werden noch nicht unterstützt",
+    "loadTemplate": "Vorlage laden",
+    "browseAll": "Alle Vorlagen durchsuchen",
+    "drawerDesc": "Vorlagen durchsuchen und anwenden",
+    "createTemplate": "Vorlage erstellen",
+    "createTemplateDesc": "Aktuelle Konfiguration als wiederverwendbare Vorlage speichern",
+    "editTemplate": "Vorlage bearbeiten",
+    "editTemplateDesc": "Vorlagendetails aktualisieren",
+    "descriptionLabel": "Beschreibung",
+    "tags": "Schlagwörter",
+    "tagsPlaceholder": "Tag eingeben...",
+    "descriptionPlaceholder": "Diese Vorlage beschreiben...",
+    "categoryPlaceholder": "z. B. Bildverarbeitung",
+    "nodes": "Knoten",
+    "favorite": "Zu Favoriten hinzufügen",
+    "unfavorite": "Aus Favoriten entfernen",
+    "uses": "Nutzungen",
+    "coverImage": "Titelbild",
+    "uploadCover": "Klicken, um ein Titelbild hochzuladen",
+    "importDesc": "Vorlagen aus einer zuvor exportierten Datei importieren"
+  },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "Bild zu Video",
+      "description": "Statische Bilder in dynamische Videos umwandeln mit HD-Hochskalierung"
+    },
+    "musicGenerate": {
+      "name": "Musikgenerierung",
+      "description": "Originalmusik aus Texten und Stil-Tags generieren, verschiedene Genres unterstützt"
+    },
+    "imageEdit": {
+      "name": "Bildbearbeitung",
+      "description": "Bilder mit KI-Modellen und benutzerdefinierten Prompts präzise bearbeiten"
+    },
+    "videoEdit": {
+      "name": "Videobearbeitung",
+      "description": "Videoinhalte mit KI-Modellen und Prompt-basierten Änderungen bearbeiten"
+    }
   },
   "assets": {
     "title": "Meine Assets",
@@ -930,52 +996,32 @@
       "loading": "FFmpeg wird geladen",
       "converting": "Konvertierung",
       "merging": "Zusammenführung",
-      "trimming": "Zuschneiden"
+      "trimming": "Zuschneiden",
+      "transcoding": "Transkodierung"
     },
     "downloadSuccess": "In Downloads-Ordner gespeichert",
     "downloadStarted": "Download gestartet",
     "downloadFailed": "Download fehlgeschlagen"
   },
-  "game": {
-    "waitingLong": "Lange Wartezeit? Spiel ein Mini-Spiel!",
-    "clickToPlay": "Klicken zum Starten"
-  },
   "smartPlayground": {
-    "autoDetected": "Auto-detected variant",
-    "willCall": "Will call",
-    "toggleSpeed": "Speed",
-    "toggleMode": "Mode",
-    "toggleQuality": "Quality",
+    "autoDetected": "Automatisch erkannte Variante",
+    "willCall": "Wird aufrufen",
+    "toggleSpeed": "Geschwindigkeit",
+    "toggleMode": "Modus",
+    "toggleQuality": "Qualität",
     "speedNormal": "Normal",
-    "speedFast": "Fast",
+    "speedFast": "Schnell",
     "modeNormal": "Normal",
-    "modeSequential": "Sequential",
+    "modeSequential": "Sequenziell",
     "qualityPro": "Pro",
     "qualityStd": "Standard",
     "qualityUltra": "Ultra",
     "qualityMulti": "Multi",
-    "run": "Run",
-    "running": "Running...",
-    "input": "Input",
-    "output": "Output",
-    "back": "Back"
-  },
-  "videoConverter": {
-    "title": "Video-Konverter",
-    "description": "Videos zwischen Formaten mit Ihrem Browser konvertieren",
-    "invalidFile": "Bitte wählen Sie eine gültige Videodatei",
-    "input": "Eingabevideo",
-    "inputDesc": "Wählen oder ziehen Sie eine Videodatei zum Konvertieren",
-    "dropzone": "Klicken oder Video hierher ziehen",
-    "supportedFormats": "Unterstützt MP4, WebM, MOV, AVI",
-    "settings": "Einstellungen",
-    "outputFormat": "Ausgabeformat",
-    "convert": "Video konvertieren",
-    "converting": "Konvertierung...",
-    "noCodecSupport": "Kein unterstützter Video-Codec gefunden",
-    "result": "Ergebnis",
-    "codecUsed": "Verwendeter Codec",
-    "download": "Herunterladen"
+    "run": "Ausführen",
+    "running": "Wird ausgeführt...",
+    "input": "Eingabe",
+    "output": "Ausgabe",
+    "back": "Zurück"
   },
   "workflow": {
     "workflows": "Workflows",
@@ -987,6 +1033,11 @@
     "saveFailed": "Speichern fehlgeschlagen",
     "savedAt": "Gespeichert",
     "unsaved": "Nicht gespeichert",
+    "selectNodeHint": "Wählen Sie einen Knoten aus, um seine Parameter zu konfigurieren",
+    "outputDirFallbackHint": "Nicht festgelegt: Export erfolgt in das Standard-Workflow-Verzeichnis",
+    "selectDirectory": "Verzeichnis auswählen",
+    "openFolder": "Ordner öffnen",
+    "openWorkflowFolder": "Workflow-Ordner öffnen",
     "nodes": "Knoten",
     "config": "Konfiguration",
     "results": "Ergebnisse",
@@ -994,6 +1045,12 @@
     "settings": "Einstellungen",
     "runAll": "Alle ausführen",
     "run": "Ausführen",
+    "runWorkflow": "Ausführen",
+    "runFromHere": "Von hier ausführen",
+    "nameYourWorkflow": "Workflow benennen",
+    "nameYourWorkflowDesc": "Geben Sie einen Namen ein, um auf der Festplatte zu speichern.",
+    "nameYourWorkflowPlaceholder": "Z.B.: Produktbild-Pipeline",
+    "nameDuplicate": "Ein Workflow mit diesem Namen existiert bereits",
     "runTarget": "Ziel ausführen",
     "runTargetAll": "Alle Knoten ausführen",
     "runTargetSelected": "Ausgewählten Knoten ausführen",
@@ -1009,6 +1066,9 @@
     "exportFailed": "Export fehlgeschlagen",
     "estimated": "Kosten",
     "fitView": "Ansicht anpassen",
+    "autoLayout": "Automatisches Layout",
+    "freeToolModelHint": "Beim ersten Ausführen wird das KI-Modell automatisch heruntergeladen, bitte warten",
+    "more": "Mehr",
     "previousImage": "Vorheriges Bild",
     "nextImage": "Nächstes Bild",
     "previewNavHint": "← / → zum Navigieren ({{current}}/{{total}})",
@@ -1046,7 +1106,10 @@
       "hint": "Linksklick = einbeziehen, Rechtsklick = ausschließen",
       "points": "Punkte",
       "clear": "Löschen",
-      "done": "Fertig"
+      "done": "Fertig",
+      "encoding": "Analyzing image...",
+      "waitingEncode": "Preparing...",
+      "decoding": "Updating mask..."
     },
     "pickPoints": "Punkte auswählen",
     "pickPointsNeedInput": "Bitte zuerst Eingabebild festlegen",
@@ -1085,7 +1148,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "Modell ausführen",
+        "label": "WaveSpeed API",
         "emptyHint": "Klicken Sie auf diesen Knoten, dann wählen Sie ein Modell →",
         "params": {
           "modelId": {
@@ -1095,6 +1158,11 @@
       },
       "input/media-upload": {
         "label": "Hochladen",
+        "inputs": {
+          "media": {
+            "label": "Medien"
+          }
+        },
         "outputs": {
           "output": {
             "label": "URL"
@@ -1141,7 +1209,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "Ausgabeverzeichnis"
+            "label": "Ausgabeverzeichnis",
+            "placeholder": "Leer lassen, um das Standard-Ausgabeverzeichnis des Workflows zu verwenden"
           },
           "filename": {
             "label": "Dateinamenspräfix"
@@ -1187,6 +1256,9 @@
           "pointY": {
             "label": "Punkt Y",
             "description": "Normalisierte Y-Koordinate (0-1) für Segmentierungspunkt"
+          },
+          "invertMask": {
+            "label": "Maske invertieren"
           }
         }
       },
@@ -1250,12 +1322,60 @@
       "optimizing": "Wird optimiert...",
       "optimizeNow": "Jetzt optimieren",
       "autoOnRunTitle": "Nur bei Klick auf Ausführen optimieren",
-      "autoOnRun": "Auto bei Ausführung",
+      "autoOnRun": "Optimieren bei Ausführung",
       "chars": "Zeichen",
       "optimizeOnRunEnabled": "Aktiviert: Optimieren bei Ausführung",
       "optimizeOffHint": "Standard: keine Optimierung (mit Originaltext ausführen)",
       "manualOptimizedHint": "Manuell optimiert. Auto-on-Run wird übersprungen, bis der Text sich ändert.",
       "enterTextOrPrompt": "Text oder Prompt eingeben..."
+    },
+    "guide": {
+      "skip": "Überspringen",
+      "prev": "Zurück",
+      "next": "Weiter",
+      "finish": "Loslegen",
+      "welcome": {
+        "title": "Willkommen bei Workflow",
+        "desc": "Workflow ist ein visueller AI-Pipeline-Editor. Ziehen Sie Knoten auf die Leinwand, verbinden Sie sie und führen Sie automatisierte AI-Verarbeitungsabläufe aus — von der Bilderzeugung bis zur Videoverbesserung und darüber hinaus."
+      },
+      "nodePaletteBtn": {
+        "title": "Knotenpalette",
+        "desc": "Klicken Sie auf diese Schaltfläche, um die Knotenpalette zu öffnen — Ihre Werkzeugkiste mit allen verfügbaren Knoten. Sie können auch suchen, ziehen oder klicken, um Knoten zur Leinwand hinzuzufügen."
+      },
+      "nodePalette": {
+        "title": "Knotenkategorien",
+        "desc": "Knoten sind nach Kategorien organisiert:\n• Eingabe — Dateien hochladen oder Text als Startdaten eingeben\n• AI-Aufgabe — Beliebiges WaveSpeed AI-Modell ausführen (siehe nächster Schritt)\n• Kostenlose Tools — 12 integrierte Tools wie Hintergrundentfernung, Gesichtsverbesserung, Formatkonvertierung\n• Ausgabe — Ergebnisse in der Vorschau anzeigen oder Dateien auf die Festplatte exportieren\n\nZiehen Sie einen Knoten auf die Leinwand oder klicken Sie, um ihn hinzuzufügen."
+      },
+      "aiTask": {
+        "title": "AI-Aufgabenknoten — Das Herzstück",
+        "desc": "Der AI-Aufgabenknoten ist der leistungsstärkste Knoten in Workflow. Er kann jedes WaveSpeed AI-Modell für Bilderzeugung, Videoerstellung, Stiltransfer und mehr ausführen.",
+        "features": {
+          "modelSwitch": "Wählen Sie aus Hunderten von AI-Modellen — das Parameterfeld aktualisiert sich dynamisch basierend auf dem ausgewählten Modell",
+          "dynamicParams": "Jedes Modell hat eigene Parameter (Prompt, Bildgröße, Seed usw.), die bei Auswahl automatisch angezeigt werden",
+          "costEstimate": "Echtzeit-Kostenschätzung pro Ausführung, damit Sie den Preis immer vor dem Start kennen",
+          "upstream": "Verbinden Sie Ausgaben vorgelagerter Knoten (Bilder, Text) als Eingaben — erstellen Sie mehrstufige AI-Pipelines"
+        }
+      },
+      "canvas": {
+        "title": "Leinwand-Interaktionen",
+        "desc": "Die zentrale Leinwand ist Ihr Arbeitsbereich:\n• Ziehen Sie Knoten aus der Palette, um sie zu positionieren\n• Ziehen Sie von Ausgangsports zu Eingangsports, um Verbindungen zu erstellen\n• Rechtsklick für Kontextmenü (Kopieren, Einfügen, Löschen)\n• Scrollen zum Zoomen, Hintergrund ziehen zum Schwenken\n• Tastenkürzel: Ctrl+Z Rückgängig, Ctrl+C/V Kopieren/Einfügen, Delete zum Entfernen"
+      },
+      "canvasTools": {
+        "title": "Leinwand-Werkzeuge",
+        "desc": "Drei praktische Werkzeuge zum Navigieren und Organisieren Ihrer Leinwand:\n• Auswahl- / Handmodus — zwischen Knotenauswahl (V) und Leinwandschwenken (H) wechseln\n• Ansicht anpassen — automatisch zoomen, damit alle Knoten im Sichtfeld sind\n• Auto-Layout — Knoten automatisch in einem übersichtlichen, lesbaren Layout anordnen"
+      },
+      "config": {
+        "title": "Konfigurieren und Ergebnisse anzeigen",
+        "desc": "Klicken Sie auf einen Knoten, um ihn auszuwählen. Das rechte Panel zeigt zwei Tabs:\n• Konfiguration — Modellparameter festlegen, Dateien hochladen, Prompts eingeben\n• Ergebnisse — Ausführungsergebnisse anzeigen (Bilder, Videos, 3D-Modelle)\n\nParameter aktualisieren sich dynamisch basierend auf dem Knotentyp und dem ausgewählten Modell. Ergebnisse unterstützen Vollbildvorschau und Download."
+      },
+      "run": {
+        "title": "Workflow ausführen",
+        "desc": "Klicken Sie auf „Workflow ausführen, um die gesamte Pipeline zu starten:\n• Legen Sie eine Ausführungsanzahl fest (×1 bis ×99) für Stapelverarbeitung\n• Jederzeit mit der Stopp-Schaltfläche abbrechen\n• Echtzeit-Fortschritt im Ausführungsmonitor überwachen\n• Jeder Knoten zeigt seinen Status: Warteschlange → Läuft → Fertig"
+      },
+      "templates": {
+        "title": "Vorlagen, Import & Export",
+        "desc": "Klicken Sie auf das ⋮-Menü für erweiterte Funktionen:\n• Speichern Sie Ihren Workflow als wiederverwendbare Vorlage\n• Importieren/Exportieren Sie Workflows als JSON zum Teilen\n• Öffnen Sie mehrere Workflows in Tabs (wie ein Browser)\n• Durchsuchen Sie vorgefertigte Vorlagen in der Symbolleiste"
+      }
     },
     "promptOptimizer": {
       "optimizationFailed": "Optimierung fehlgeschlagen",
@@ -1266,8 +1386,9 @@
       "text": "Text",
       "textPlaceholder": "Text zum Erweitern oder als Kontext...",
       "autoOnRunTitle": "Beim Klick auf Ausführen automatisch optimieren",
-      "autoOnRun": "Auto bei Ausführung",
+      "autoOnRun": "Optimieren bei Ausführung",
       "quickOptimizeTitle": "Schnell optimieren ({{mode}})",
+      "quickOptimizeLabel": "Optimieren",
       "params": "Parameter",
       "prompt": "Eingabeaufforderung",
       "emptyPrompt": "(leer)",
@@ -1285,6 +1406,27 @@
         "loadingOptimizer": "Optimierer wird geladen...",
         "loadConfigFailed": "Optimierer-Konfiguration konnte nicht geladen werden"
       }
-    }
+    },
+    "modelSyncDesktopOnly": "Model sync is available in the WaveSpeed Desktop app.",
+    "nameExists": "Ein Workflow mit diesem Namen existiert bereits. Speichern überschreibt ihn.",
+    "overwriteWorkflow": "Workflow überschreiben",
+    "overwriteConfirm": "Ein Workflow namens \"{{name}}\" existiert bereits. Möchten Sie überschreiben?",
+    "overwrite": "Überschreiben",
+    "rename": "Umbenennen",
+    "duplicate": "Duplizieren",
+    "deleteWorkflow": "Löschen",
+    "deleteConfirm": "Möchten Sie \"{{name}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "cleaning": "Bereinigen...",
+    "cleanOutputs": "Ausgaben bereinigen",
+    "tabClose": "Schließen",
+    "tabCloseOthers": "Andere schließen",
+    "tabCloseRight": "Rechte schließen",
+    "tabCloseSaved": "Gespeicherte schließen",
+    "tabCloseAll": "Alle schließen",
+    "deleteSelected": "Ausgewählte löschen ({{count}})",
+    "selectMode": "Select (V)",
+    "handMode": "Hand (H)",
+    "interactionSelect": "Select",
+    "interactionHand": "Hand"
   }
 }

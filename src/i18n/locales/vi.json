@@ -34,7 +34,9 @@
     "openInBrowser": "Mở trong trình duyệt",
     "settings": "Cài đặt",
     "clearAll": "Xóa tất cả",
-    "deselectAll": "Bỏ chọn tất cả"
+    "deselectAll": "Bỏ chọn tất cả",
+    "add": "Add",
+    "saving": "Saving..."
   },
   "nav": {
     "home": "Trang chủ",
@@ -358,7 +360,71 @@
     "deleteTemplates": "Xóa mẫu",
     "templatesDeleted": "Đã xóa mẫu",
     "deletedCount": "Đã xóa {{count}} mẫu",
-    "batchDeleteConfirm": "Bạn có chắc muốn xóa {{count}} mẫu? Hành động này không thể hoàn tác."
+    "batchDeleteConfirm": "Bạn có chắc muốn xóa {{count}} mẫu? Hành động này không thể hoàn tác.",
+    "deletedSuccessfully": "Đã xóa \"{{name}}\" thành công",
+    "updatedSuccessfully": "Đã cập nhật \"{{name}}\" thành công",
+    "exportedSuccessfully": "Đã xuất \"{{name}}\" thành công",
+    "allExportedSuccessfully": "Đã xuất tất cả mẫu thành công",
+    "importedSuccessfully": "Đã nhập {{imported}} mẫu, bỏ qua {{skipped}}",
+    "filters": "Bộ lọc",
+    "templateType": "Loại mẫu",
+    "allTypes": "Tất cả loại",
+    "playground": "Sân chơi",
+    "workflow": "Quy trình",
+    "source": "Nguồn",
+    "allSources": "Tất cả nguồn",
+    "public": "Công khai",
+    "myTemplates": "Mẫu của tôi",
+    "favorites": "Yêu thích",
+    "favoritesOnly": "Chỉ yêu thích",
+    "sortBy": "Sắp xếp",
+    "newest": "Mới nhất",
+    "mostUsed": "Dùng nhiều nhất",
+    "category": "Danh mục",
+    "allCategories": "Tất cả danh mục",
+    "imageProcessing": "Xử lý ảnh",
+    "videoEditing": "Chỉnh sửa video",
+    "audioConversion": "Chuyển đổi âm thanh",
+    "aiGeneration": "Tạo bằng AI",
+    "workflowNotSupported": "Chưa hỗ trợ quy trình",
+    "workflowNotSupportedDesc": "Mẫu quy trình chưa được hỗ trợ",
+    "loadTemplate": "Tải mẫu",
+    "browseAll": "Duyệt tất cả mẫu",
+    "drawerDesc": "Duyệt và áp dụng mẫu",
+    "createTemplate": "Tạo mẫu",
+    "createTemplateDesc": "Lưu cấu hình hiện tại thành mẫu có thể tái sử dụng",
+    "editTemplate": "Chỉnh sửa mẫu",
+    "editTemplateDesc": "Cập nhật chi tiết mẫu",
+    "descriptionLabel": "Mô tả",
+    "tags": "Thẻ",
+    "tagsPlaceholder": "Nhập thẻ...",
+    "descriptionPlaceholder": "Mô tả mẫu này...",
+    "categoryPlaceholder": "vd: Xử lý ảnh",
+    "nodes": "nút",
+    "favorite": "Thêm vào yêu thích",
+    "unfavorite": "Bỏ khỏi yêu thích",
+    "uses": "lượt dùng",
+    "coverImage": "Ảnh bìa",
+    "uploadCover": "Nhấp để tải ảnh bìa lên",
+    "importDesc": "Nhập mẫu từ tệp đã xuất trước đó"
+  },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "Ảnh sang Video",
+      "description": "Chuyển đổi ảnh tĩnh thành video động với nâng cấp HD"
+    },
+    "musicGenerate": {
+      "name": "Tạo Nhạc",
+      "description": "Tạo nhạc gốc từ lời bài hát và thẻ phong cách"
+    },
+    "imageEdit": {
+      "name": "Chỉnh sửa Ảnh",
+      "description": "Chỉnh sửa ảnh bằng mô hình AI với prompt tùy chỉnh"
+    },
+    "videoEdit": {
+      "name": "Chỉnh sửa Video",
+      "description": "Chỉnh sửa nội dung video bằng mô hình AI với các sửa đổi dựa trên prompt"
+    }
   },
   "assets": {
     "title": "Tài sản của tôi",
@@ -930,52 +996,32 @@
       "loading": "Đang tải...",
       "converting": "Đang chuyển đổi...",
       "merging": "Đang gộp...",
-      "trimming": "Đang cắt..."
+      "trimming": "Đang cắt...",
+      "transcoding": "Đang chuyển mã"
     },
     "downloadSuccess": "Đã lưu vào thư mục Tải xuống",
     "downloadStarted": "Đã bắt đầu tải xuống",
     "downloadFailed": "Tải xuống thất bại"
   },
   "smartPlayground": {
-    "autoDetected": "Auto-detected variant",
-    "willCall": "Will call",
-    "toggleSpeed": "Speed",
-    "toggleMode": "Mode",
-    "toggleQuality": "Quality",
-    "speedNormal": "Normal",
-    "speedFast": "Fast",
-    "modeNormal": "Normal",
-    "modeSequential": "Sequential",
+    "autoDetected": "Biến thể được phát hiện tự động",
+    "willCall": "Sẽ gọi",
+    "toggleSpeed": "Tốc độ",
+    "toggleMode": "Chế độ",
+    "toggleQuality": "Chất lượng",
+    "speedNormal": "Bình thường",
+    "speedFast": "Nhanh",
+    "modeNormal": "Bình thường",
+    "modeSequential": "Tuần tự",
     "qualityPro": "Pro",
-    "qualityStd": "Standard",
-    "qualityUltra": "Ultra",
-    "qualityMulti": "Multi",
-    "run": "Run",
-    "running": "Running...",
-    "input": "Input",
-    "output": "Output",
-    "back": "Back"
-  },
-  "videoConverter": {
-    "title": "Trình Chuyển Đổi Video",
-    "description": "Chuyển đổi video giữa các định dạng bằng trình duyệt của bạn",
-    "invalidFile": "Vui lòng chọn tệp video hợp lệ",
-    "input": "Video Đầu Vào",
-    "inputDesc": "Chọn hoặc kéo tệp video để chuyển đổi",
-    "dropzone": "Nhấp hoặc kéo video vào đây",
-    "supportedFormats": "Hỗ trợ MP4, WebM, MOV, AVI",
-    "settings": "Cài Đặt",
-    "outputFormat": "Định Dạng Đầu Ra",
-    "convert": "Chuyển Đổi Video",
-    "converting": "Đang chuyển đổi...",
-    "noCodecSupport": "Không tìm thấy codec video được hỗ trợ",
-    "result": "Kết Quả",
-    "codecUsed": "Codec đã sử dụng",
-    "download": "Tải Xuống"
-  },
-  "game": {
-    "waitingLong": "Chờ quá lâu",
-    "clickToPlay": "Nhấp để bắt đầu"
+    "qualityStd": "Tiêu chuẩn",
+    "qualityUltra": "Siêu cao",
+    "qualityMulti": "Đa dạng",
+    "run": "Chạy",
+    "running": "Đang chạy...",
+    "input": "Đầu vào",
+    "output": "Đầu ra",
+    "back": "Quay lại"
   },
   "workflow": {
     "workflows": "Quy trình",
@@ -987,6 +1033,10 @@
     "saveFailed": "Lưu thất bại",
     "savedAt": "Đã lưu",
     "unsaved": "Chưa lưu",
+    "outputDirFallbackHint": "Chưa đặt: sẽ xuất vào thư mục mặc định của quy trình làm việc",
+    "selectDirectory": "Chọn thư mục",
+    "openFolder": "Mở thư mục",
+    "openWorkflowFolder": "Mở thư mục quy trình làm việc",
     "nodes": "Nút",
     "config": "Cấu hình",
     "results": "Kết quả",
@@ -994,6 +1044,12 @@
     "settings": "Cài đặt",
     "runAll": "Chạy tất cả",
     "run": "Chạy",
+    "runWorkflow": "Chạy",
+    "runFromHere": "Chạy từ đây",
+    "nameYourWorkflow": "Đặt tên quy trình",
+    "nameYourWorkflowDesc": "Đặt tên để lưu vào đĩa.",
+    "nameYourWorkflowPlaceholder": "VD: Quy trình xử lý ảnh sản phẩm",
+    "nameDuplicate": "Đã tồn tại quy trình cùng tên",
     "runTarget": "Chạy mục tiêu",
     "runTargetAll": "Chạy tất cả nút",
     "runTargetSelected": "Chạy nút đã chọn",
@@ -1009,6 +1065,9 @@
     "exportFailed": "Xuất thất bại",
     "estimated": "Chi phí ước tính",
     "fitView": "Vừa khung xem",
+    "autoLayout": "Tự động sắp xếp",
+    "freeToolModelHint": "Lần chạy đầu tiên sẽ tự động tải mô hình AI, vui lòng chờ",
+    "more": "Thêm",
     "previousImage": "Hình trước",
     "nextImage": "Hình tiếp theo",
     "previewNavHint": "Dùng ← / → để điều hướng ({{current}}/{{total}})",
@@ -1046,7 +1105,10 @@
       "hint": "Nhấp trái = bao gồm, nhấp phải = loại trừ",
       "points": "điểm",
       "clear": "Xóa",
-      "done": "Xong"
+      "done": "Xong",
+      "encoding": "Analyzing image...",
+      "waitingEncode": "Preparing...",
+      "decoding": "Updating mask..."
     },
     "pickPoints": "Chọn điểm",
     "pickPointsNeedInput": "Vui lòng đặt hình ảnh đầu vào trước",
@@ -1085,7 +1147,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "Chạy mô hình",
+        "label": "WaveSpeed API",
         "emptyHint": "Nhấp vào nút này, sau đó chọn mô hình →",
         "params": {
           "modelId": {
@@ -1095,6 +1157,11 @@
       },
       "input/media-upload": {
         "label": "Tải lên",
+        "inputs": {
+          "media": {
+            "label": "Phương tiện"
+          }
+        },
         "outputs": {
           "output": {
             "label": "URL"
@@ -1141,7 +1208,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "Thư mục đầu ra"
+            "label": "Thư mục đầu ra",
+            "placeholder": "Để trống để sử dụng thư mục đầu ra mặc định của quy trình làm việc"
           },
           "filename": {
             "label": "Tiền tố tên tệp"
@@ -1187,6 +1255,9 @@
           "pointY": {
             "label": "Điểm Y",
             "description": "Tọa độ Y chuẩn hóa (0-1) cho điểm phân đoạn"
+          },
+          "invertMask": {
+            "label": "Đảo ngược mặt nạ"
           }
         }
       },
@@ -1250,7 +1321,7 @@
       "optimizing": "Đang tối ưu...",
       "optimizeNow": "Tối ưu ngay",
       "autoOnRunTitle": "Chỉ tối ưu khi nhấp Chạy",
-      "autoOnRun": "Tự động khi chạy",
+      "autoOnRun": "Tối ưu khi chạy",
       "chars": "ký tự",
       "optimizeOnRunEnabled": "Đã bật: tối ưu khi chạy",
       "optimizeOffHint": "Mặc định: không tối ưu (chạy với văn gốc)",
@@ -1266,8 +1337,9 @@
       "text": "Văn bản",
       "textPlaceholder": "Văn bản để mở rộng hoặc làm ngữ cảnh...",
       "autoOnRunTitle": "Tự động tối ưu khi nhấp Chạy",
-      "autoOnRun": "Tự động khi chạy",
+      "autoOnRun": "Tối ưu khi chạy",
       "quickOptimizeTitle": "Tối ưu nhanh ({{mode}})",
+      "quickOptimizeLabel": "Tối ưu",
       "params": "Tham số",
       "prompt": "Gợi ý",
       "emptyPrompt": "(trống)",
@@ -1285,6 +1357,76 @@
         "loadingOptimizer": "Đang tải trình tối ưu...",
         "loadConfigFailed": "Không thể tải cấu hình trình tối ưu"
       }
-    }
+    },
+    "guide": {
+      "skip": "Bo qua",
+      "prev": "Quay lai",
+      "next": "Tiep theo",
+      "finish": "Bat dau",
+      "welcome": {
+        "title": "Chao mung den voi Workflow",
+        "desc": "Workflow la trinh chinh sua pipeline AI truc quan. Keo node len canvas, ket noi chung, va chay cac luong xu ly AI tu dong — tu tao anh den nang cap video va hon the nua."
+      },
+      "nodePaletteBtn": {
+        "title": "Bang Node",
+        "desc": "Nhan nut nay de mo Bang Node — hop cong cu chua tat ca node co san. Ban cung co the tim kiem, keo tha, hoac nhan de them node vao canvas."
+      },
+      "nodePalette": {
+        "title": "Danh muc Node",
+        "desc": "Node duoc sap xep theo danh muc:\n• Dau vao — Tai tep len hoac nhap van ban lam du lieu bat dau\n• Tac vu AI — Chay bat ky mo hinh WaveSpeed AI nao (xem buoc tiep theo)\n• Cong cu mien phi — 12 cong cu tich hop nhu xoa nen, tang cuong khuon mat, chuyen doi dinh dang\n• Dau ra — Xem truoc ket qua hoac xuat tep ra dia\n\nKeo node vao canvas hoac nhan de them."
+      },
+      "aiTask": {
+        "title": "Node Tac vu AI — Cot loi",
+        "desc": "Node Tac vu AI la node manh nhat trong Workflow. Node nay co the chay bat ky mo hinh WaveSpeed AI nao cho tao anh, tao video, chuyen phong cach va nhieu hon nua.",
+        "features": {
+          "modelSwitch": "Chon trong hang tram mo hinh AI — bang tham so cap nhat dong theo mo hinh da chon",
+          "dynamicParams": "Moi mo hinh co tham so rieng (prompt, kich thuoc anh, seed, v.v.) va se tu dong hien khi duoc chon",
+          "costEstimate": "Uoc tinh chi phi theo thoi gian thuc moi lan chay de ban biet gia truoc khi thuc thi",
+          "upstream": "Ket noi dau ra tu node truoc (anh, van ban) lam dau vao — xay dung pipeline AI nhieu buoc"
+        }
+      },
+      "canvas": {
+        "title": "Tuong tac Canvas",
+        "desc": "Canvas trung tam la khong gian lam viec cua ban:\n• Keo node tu bang de dat vi tri\n• Keo tu cong dau ra sang cong dau vao de tao ket noi\n• Nhap chuot phai de mo menu ngu canh (sao chep, dan, xoa)\n• Cuon de zoom, keo nen de pan\n• Phim tat: Ctrl+Z hoan tac, Ctrl+C/V sao chep-dan, Delete de xoa"
+      },
+      "canvasTools": {
+        "title": "Cong cu Canvas",
+        "desc": "Ba cong cu huu ich de dieu huong va sap xep canvas:\n• Che do Chon / Ban tay — chuyen giua chon node (V) va pan canvas (H)\n• Vua khung nhin — tu dong zoom de vua tat ca node trong vung nhin\n• Tu dong bo cuc — tu dong sap xep node gon gang, de doc"
+      },
+      "config": {
+        "title": "Cau hinh & Xem ket qua",
+        "desc": "Nhan vao bat ky node nao de chon. Bang ben phai hien thi 2 tab:\n• Cau hinh — Dat tham so mo hinh, tai tep len, nhap prompt\n• Ket qua — Xem dau ra thuc thi (anh, video, mo hinh 3D)\n\nTham so cap nhat dong theo loai node va mo hinh da chon. Ket qua ho tro xem toan man hinh va tai xuong."
+      },
+      "run": {
+        "title": "Chay Workflow cua ban",
+        "desc": "Nhan \"Chay Workflow\" de thuc thi toan bo pipeline:\n• Dat so lan chay (×1 den ×99) cho xu ly hang loat\n• Huy bat cu luc nao bang nut dung\n• Theo doi tien do thoi gian thuc trong Execution Monitor\n• Moi node hien trang thai: queued → running → done"
+      },
+      "templates": {
+        "title": "Template, Nhap & Xuat",
+        "desc": "Nhan menu ⋮ de dung tinh nang nang cao:\n• Luu workflow thanh template co the tai su dung\n• Nhap/Xuat workflow dang JSON de chia se\n• Mo nhieu workflow theo tab (giong trinh duyet)\n• Duyet cac template co san tu thanh cong cu"
+      }
+    },
+    "selectNodeHint": "Select a node to configure its parameters",
+    "modelSyncDesktopOnly": "Model sync is available in the WaveSpeed Desktop app.",
+    "nameExists": "Đã tồn tại quy trình cùng tên. Lưu sẽ ghi đè.",
+    "overwriteWorkflow": "Ghi đè quy trình",
+    "overwriteConfirm": "Đã có quy trình tên \"{{name}}\". Bạn có muốn ghi đè không?",
+    "overwrite": "Ghi đè",
+    "rename": "Đổi tên",
+    "duplicate": "Nhân bản",
+    "deleteWorkflow": "Xóa",
+    "deleteConfirm": "Bạn có chắc muốn xóa \"{{name}}\"? Không thể hoàn tác.",
+    "cleaning": "Đang dọn...",
+    "cleanOutputs": "Dọn kết quả",
+    "tabClose": "Đóng",
+    "tabCloseOthers": "Đóng tab khác",
+    "tabCloseRight": "Đóng bên phải",
+    "tabCloseSaved": "Đóng tab đã lưu",
+    "tabCloseAll": "Đóng tất cả",
+    "deleteSelected": "Xóa đã chọn ({{count}})",
+    "selectMode": "Select (V)",
+    "handMode": "Hand (H)",
+    "interactionSelect": "Select",
+    "interactionHand": "Hand"
   }
 }

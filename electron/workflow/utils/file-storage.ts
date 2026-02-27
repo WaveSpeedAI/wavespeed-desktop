@@ -90,6 +90,43 @@ export class FileStorageService {
     return this.nameMap.get(workflowId) ?? workflowId
   }
 
+  /**
+   * Rename a workflow's data directory on disk.
+   * If the old directory exists, rename it to the new sanitized name.
+   * If the target directory already exists (name collision from another workflow),
+   * remove the target first so the rename can proceed.
+   * Returns true if rename succeeded, false if no old dir existed.
+   */
+  renameWorkflowDir(workflowId: string, oldName: string, newName: string): boolean {
+    const oldSanitized = sanitizeName(oldName)
+    const newSanitized = sanitizeName(newName)
+
+    // No-op if sanitized names are the same
+    if (oldSanitized === newSanitized) {
+      this.registerWorkflowName(workflowId, newName)
+      return true
+    }
+
+    const oldDir = path.join(this.rootPath, oldSanitized)
+    const newDir = path.join(this.rootPath, newSanitized)
+
+    if (!fs.existsSync(oldDir)) {
+      // Old dir doesn't exist — just update the name mapping
+      this.registerWorkflowName(workflowId, newName)
+      return false
+    }
+
+    // If target directory already exists (orphaned from a deleted/renamed workflow),
+    // remove it so we can rename cleanly
+    if (fs.existsSync(newDir)) {
+      fs.rmSync(newDir, { recursive: true, force: true })
+    }
+
+    fs.renameSync(oldDir, newDir)
+    this.registerWorkflowName(workflowId, newName)
+    return true
+  }
+
   /* ─── Path helpers ──────────────────────────────────────────── */
 
   getWorkflowDir(workflowId: string): string {

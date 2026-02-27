@@ -34,7 +34,9 @@
     "downloadFailed": "İndirme başarısız. Lütfen ağ bağlantınızı kontrol edin.",
     "openInBrowser": "Tarayıcıda aç",
     "settings": "Ayarlar",
-    "clearAll": "Tümünü temizle"
+    "clearAll": "Tümünü temizle",
+    "add": "Add",
+    "saving": "Saving..."
   },
   "nav": {
     "home": "Ana Sayfa",
@@ -358,7 +360,71 @@
     "deleteTemplates": "Şablonları Sil",
     "templatesDeleted": "Şablonlar silindi",
     "deletedCount": "{{count}} şablon silindi",
-    "batchDeleteConfirm": "{{count}} şablonu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+    "batchDeleteConfirm": "{{count}} şablonu silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+    "deletedSuccessfully": "\"{{name}}\" başarıyla silindi",
+    "updatedSuccessfully": "\"{{name}}\" başarıyla güncellendi",
+    "exportedSuccessfully": "\"{{name}}\" başarıyla dışa aktarıldı",
+    "allExportedSuccessfully": "Tüm şablonlar başarıyla dışa aktarıldı",
+    "importedSuccessfully": "{{imported}} şablon içe aktarıldı, {{skipped}} atlandı",
+    "filters": "Filtreler",
+    "templateType": "Şablon Türü",
+    "allTypes": "Tüm Türler",
+    "playground": "Oyun Alanı",
+    "workflow": "İş Akışı",
+    "source": "Kaynak",
+    "allSources": "Tüm Kaynaklar",
+    "public": "Herkese Açık",
+    "myTemplates": "Şablonlarım",
+    "favorites": "Favoriler",
+    "favoritesOnly": "Sadece Favoriler",
+    "sortBy": "Sırala",
+    "newest": "En Yeni",
+    "mostUsed": "En Çok Kullanılan",
+    "category": "Kategori",
+    "allCategories": "Tüm Kategoriler",
+    "imageProcessing": "Görüntü İşleme",
+    "videoEditing": "Video Düzenleme",
+    "audioConversion": "Ses Dönüştürme",
+    "aiGeneration": "Yapay Zeka Üretimi",
+    "workflowNotSupported": "İş Akışı Desteklenmiyor",
+    "workflowNotSupportedDesc": "İş akışı şablonları henüz desteklenmiyor",
+    "loadTemplate": "Şablon Yükle",
+    "browseAll": "Tüm şablonlara göz at",
+    "drawerDesc": "Şablonlara göz at ve uygula",
+    "createTemplate": "Şablon oluştur",
+    "createTemplateDesc": "Mevcut yapılandırmanı yeniden kullanılabilir bir şablon olarak kaydet",
+    "editTemplate": "Şablonu düzenle",
+    "editTemplateDesc": "Şablon ayrıntılarını güncelle",
+    "descriptionLabel": "Açıklama",
+    "tags": "Etiketler",
+    "tagsPlaceholder": "Bir etiket gir...",
+    "descriptionPlaceholder": "Bu şablonu açıklayın...",
+    "categoryPlaceholder": "örn. Görsel İşleme",
+    "nodes": "düğüm",
+    "favorite": "Favorilere ekle",
+    "unfavorite": "Favorilerden kaldır",
+    "uses": "kullanım",
+    "coverImage": "Kapak görseli",
+    "uploadCover": "Kapak görseli yüklemek için tıkla",
+    "importDesc": "Daha önce dışa aktarılan bir dosyadan şablonları içe aktar"
+  },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "Görüntüden Videoya",
+      "description": "Statik görüntüleri HD ölçekleme ile dinamik videolara dönüştürün"
+    },
+    "musicGenerate": {
+      "name": "Müzik Oluşturma",
+      "description": "Şarkı sözleri ve stil etiketlerinden orijinal müzik oluşturun"
+    },
+    "imageEdit": {
+      "name": "Görüntü Düzenleme",
+      "description": "AI modelleri ve özel istemlerle görüntüleri düzenleyin"
+    },
+    "videoEdit": {
+      "name": "Video Düzenleme",
+      "description": "AI modelleri ve istem tabanlı değişikliklerle video içeriğini düzenleyin"
+    }
   },
   "assets": {
     "title": "Varlıklarım",
@@ -930,52 +996,32 @@
       "loading": "Yükleniyor...",
       "converting": "Dönüştürülüyor...",
       "merging": "Birleştiriliyor...",
-      "trimming": "Kırpılıyor..."
+      "trimming": "Kırpılıyor...",
+      "transcoding": "Dönüştürülüyor"
     },
     "downloadSuccess": "İndirilenler klasörüne kaydedildi",
     "downloadStarted": "İndirme başladı",
     "downloadFailed": "İndirme başarısız"
   },
-  "game": {
-    "waitingLong": "Çok mu bekliyorsunuz? Mini oyun oynayın!",
-    "clickToPlay": "Başlamak için tıklayın"
-  },
   "smartPlayground": {
-    "autoDetected": "Auto-detected variant",
-    "willCall": "Will call",
-    "toggleSpeed": "Speed",
-    "toggleMode": "Mode",
-    "toggleQuality": "Quality",
+    "autoDetected": "Otomatik algılanan varyant",
+    "willCall": "Çağıracak",
+    "toggleSpeed": "Hız",
+    "toggleMode": "Mod",
+    "toggleQuality": "Kalite",
     "speedNormal": "Normal",
-    "speedFast": "Fast",
+    "speedFast": "Hızlı",
     "modeNormal": "Normal",
-    "modeSequential": "Sequential",
+    "modeSequential": "Sıralı",
     "qualityPro": "Pro",
-    "qualityStd": "Standard",
+    "qualityStd": "Standart",
     "qualityUltra": "Ultra",
-    "qualityMulti": "Multi",
-    "run": "Run",
-    "running": "Running...",
-    "input": "Input",
-    "output": "Output",
-    "back": "Back"
-  },
-  "videoConverter": {
-    "title": "Video Dönüştürücü",
-    "description": "Tarayıcınızı kullanarak videoları formatlar arasında dönüştürün",
-    "invalidFile": "Lütfen geçerli bir video dosyası seçin",
-    "input": "Giriş Videosu",
-    "inputDesc": "Dönüştürmek için bir video dosyası seçin veya sürükleyin",
-    "dropzone": "Videoyu buraya tıklayın veya sürükleyin",
-    "supportedFormats": "MP4, WebM, MOV, AVI desteklenir",
-    "settings": "Ayarlar",
-    "outputFormat": "Çıkış Formatı",
-    "convert": "Videoyu Dönüştür",
-    "converting": "Dönüştürülüyor...",
-    "noCodecSupport": "Desteklenen video codec bulunamadı",
-    "result": "Sonuç",
-    "codecUsed": "Kullanılan codec",
-    "download": "İndir"
+    "qualityMulti": "Çoklu",
+    "run": "Çalıştır",
+    "running": "Çalışıyor...",
+    "input": "Giriş",
+    "output": "Çıkış",
+    "back": "Geri"
   },
   "workflow": {
     "workflows": "İş akışları",
@@ -987,6 +1033,10 @@
     "saveFailed": "Kaydetme başarısız",
     "savedAt": "Kaydedildi",
     "unsaved": "Kaydedilmemiş",
+    "outputDirFallbackHint": "Ayarlanmadı: iş akışı varsayılan dizinine aktarılacak",
+    "selectDirectory": "Dizin seç",
+    "openFolder": "Klasörü aç",
+    "openWorkflowFolder": "İş akışı klasörünü aç",
     "nodes": "Düğümler",
     "config": "Yapılandırma",
     "results": "Sonuçlar",
@@ -994,6 +1044,12 @@
     "settings": "Ayarlar",
     "runAll": "Tümünü çalıştır",
     "run": "Çalıştır",
+    "runWorkflow": "Çalıştır",
+    "runFromHere": "Buradan çalıştır",
+    "nameYourWorkflow": "İş akışınızı adlandırın",
+    "nameYourWorkflowDesc": "Diske kaydetmek için bir ad verin.",
+    "nameYourWorkflowPlaceholder": "Örn: Ürün Görseli İşlem Hattı",
+    "nameDuplicate": "Bu isimde bir iş akışı zaten mevcut",
     "runTarget": "Hedefi çalıştır",
     "runTargetAll": "Tüm düğümleri çalıştır",
     "runTargetSelected": "Seçili düğümü çalıştır",
@@ -1009,6 +1065,9 @@
     "exportFailed": "Dışa aktarma başarısız",
     "estimated": "Tahmini maliyet",
     "fitView": "Görünüme sığdır",
+    "autoLayout": "Otomatik düzenle",
+    "freeToolModelHint": "İlk çalıştırmada AI modeli otomatik indirilecek, lütfen bekleyin",
+    "more": "Daha fazla",
     "previousImage": "Önceki görsel",
     "nextImage": "Sonraki görsel",
     "previewNavHint": "Gezinmek için ← / → kullanın ({{current}}/{{total}})",
@@ -1046,7 +1105,10 @@
       "hint": "Sol tıklama = dahil, sağ tıklama = hariç tut",
       "points": "nokta",
       "clear": "Temizle",
-      "done": "Tamam"
+      "done": "Tamam",
+      "encoding": "Analyzing image...",
+      "waitingEncode": "Preparing...",
+      "decoding": "Updating mask..."
     },
     "pickPoints": "Noktaları seç",
     "pickPointsNeedInput": "Önce giriş görselini ayarlayın",
@@ -1085,7 +1147,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "Modeli çalıştır",
+        "label": "WaveSpeed API",
         "emptyHint": "Bu düğüme tıklayın, sonra model seçin →",
         "params": {
           "modelId": {
@@ -1095,6 +1157,11 @@
       },
       "input/media-upload": {
         "label": "Yükle",
+        "inputs": {
+          "media": {
+            "label": "Medya"
+          }
+        },
         "outputs": {
           "output": {
             "label": "URL"
@@ -1141,7 +1208,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "Çıktı dizini"
+            "label": "Çıktı dizini",
+            "placeholder": "İş akışı varsayılan çıktı dizinini kullanmak için boş bırakın"
           },
           "filename": {
             "label": "Dosya adı öneki"
@@ -1187,6 +1255,9 @@
           "pointY": {
             "label": "Nokta Y",
             "description": "Segmentasyon noktası için normalize Y (0-1)"
+          },
+          "invertMask": {
+            "label": "Maskeyi ters çevir"
           }
         }
       },
@@ -1250,7 +1321,7 @@
       "optimizing": "Optimize ediliyor...",
       "optimizeNow": "Şimdi optimize et",
       "autoOnRunTitle": "Yalnızca Çalıştır tıklandığında optimize et",
-      "autoOnRun": "Çalıştırırken otomatik",
+      "autoOnRun": "Çalıştırmada optimize et",
       "chars": "karakter",
       "optimizeOnRunEnabled": "Etkin: çalıştırırken optimize et",
       "optimizeOffHint": "Varsayılan: optimizasyon yok (orijinal metinle çalıştır)",
@@ -1266,8 +1337,9 @@
       "text": "Metin",
       "textPlaceholder": "Genişletmek veya bağlam olarak kullanılacak metin...",
       "autoOnRunTitle": "Çalıştır tıklandığında otomatik optimize et",
-      "autoOnRun": "Çalıştırırken otomatik",
+      "autoOnRun": "Çalıştırmada optimize et",
       "quickOptimizeTitle": "Hızlı optimize ({{mode}})",
+      "quickOptimizeLabel": "Optimize",
       "params": "Parametreler",
       "prompt": "İstem",
       "emptyPrompt": "(boş)",
@@ -1285,6 +1357,76 @@
         "loadingOptimizer": "Optimize edici yükleniyor...",
         "loadConfigFailed": "Optimize edici yapılandırması yüklenemedi"
       }
-    }
+    },
+    "guide": {
+      "skip": "Atla",
+      "prev": "Geri",
+      "next": "Ileri",
+      "finish": "Baslayin",
+      "welcome": {
+        "title": "Workflow'a hos geldiniz",
+        "desc": "Workflow, gorsel bir yapay zeka is akisi duzenleyicisidir. Dugumleri tuvale surukleyin, baglayin ve goruntu uretiminden video iyilestirmeye kadar otomatik yapay zeka akislarini calistirin."
+      },
+      "nodePaletteBtn": {
+        "title": "Dugum Paleti",
+        "desc": "Bu dugmeye tiklayarak Dugum Paletini acin — tum mevcut dugumlerin oldugu arac kutunuz. Arama yapabilir, surukleyebilir veya tiklayarak dugum ekleyebilirsiniz."
+      },
+      "nodePalette": {
+        "title": "Dugum Kategorileri",
+        "desc": "Dugumler kategoriye gore duzenlenir:\n• Giris — Baslangic verisi olarak dosya yukleyin veya metin girin\n• AI Gorevi — Herhangi bir WaveSpeed AI modelini calistirin (sonraki adıma bakin)\n• Ucretsiz Araclar — Arka plan kaldirma, yuz iyilestirme, format donusumu gibi 12 dahili arac\n• Cikis — Sonuclari onizleyin veya dosyalari diske aktarin\n\nBir dugumu tuvale surukleyin veya tiklayarak ekleyin."
+      },
+      "aiTask": {
+        "title": "AI Gorev Dugumu — Cekirdek",
+        "desc": "AI Gorev dugumu, Workflow'daki en guclu dugumdur. Goruntu uretimi, video olusturma, stil transferi ve daha fazlasi icin herhangi bir WaveSpeed AI modelini calistirabilir.",
+        "features": {
+          "modelSwitch": "Yuzlerce AI modeli arasindan secin — parametre paneli secilen modele gore dinamik olarak guncellenir",
+          "dynamicParams": "Her modelin kendi parametreleri (istem, goruntu boyutu, seed vb.) vardir ve secildiginde otomatik gorunur",
+          "costEstimate": "Her calistirma icin gercek zamanli maliyet tahmini ile calistirmadan once fiyati gorun",
+          "upstream": "Yukari akistaki dugum ciktilarini (goruntu, metin) girdi olarak baglayin — cok adimli AI pipeline'lari kurun"
+        }
+      },
+      "canvas": {
+        "title": "Tuval Etkilesimleri",
+        "desc": "Merkezi tuval calisma alaninizdir:\n• Dugumleri paletten surukleyip konumlandirin\n• Baglanti olusturmak icin cikis portundan giris portuna surukleyin\n• Baglam menusu icin sag tiklayin (kopyala, yapistir, sil)\n• Zum icin kaydirin, kaydirmak icin arka plani surukleyin\n• Kisayollar: Ctrl+Z geri al, Ctrl+C/V kopyala-yapistir, Delete kaldir"
+      },
+      "canvasTools": {
+        "title": "Tuval Araclari",
+        "desc": "Tuvali gezmek ve duzenlemek icin 3 pratik arac:\n• Sec / El modu — dugum secme (V) ve tuvali kaydirma (H) arasinda gecis yapin\n• Gorunume Sigdir — tum dugumleri gorunur alana sigdiracak otomatik zum\n• Otomatik Duzen — dugumleri temiz ve okunabilir bir duzende otomatik yerlestirir"
+      },
+      "config": {
+        "title": "Yapilandir ve Sonuclari Gor",
+        "desc": "Secmek icin herhangi bir dugume tiklayin. Sag panelde iki sekme gorunur:\n• Yapilandirma — model parametrelerini ayarlayin, dosya yukleyin, istem girin\n• Sonuclar — calistirma ciktilarini goruntuleyin (gorsel, video, 3D modeller)\n\nParametreler, dugum tipine ve secilen modele gore dinamik guncellenir. Sonuclar tam ekran onizleme ve indirme destekler."
+      },
+      "run": {
+        "title": "Workflow'unuzu Calistirin",
+        "desc": "Tum pipeline'i calistirmak icin \"Workflow'u Calistir\"a tiklayin:\n• Toplu isleme icin calistirma sayisi ayarlayin (×1 - ×99)\n• Durdur dugmesiyle istediginiz an iptal edin\n• Gercek zamanli ilerlemeyi Execution Monitor'de izleyin\n• Her dugum su durumu gosterir: queued → running → done"
+      },
+      "templates": {
+        "title": "Sablonlar, Ice Aktarma ve Disa Aktarma",
+        "desc": "Gelismis ozellikler icin ⋮ menusune tiklayin:\n• Workflow'unuzu yeniden kullanilabilir sablon olarak kaydedin\n• Paylasmak icin workflow'lari JSON olarak ice/disa aktarin\n• Birden fazla workflow'u sekmelerde acin (tarayici gibi)\n• Arac cubugundan hazir sablonlara goz atin"
+      }
+    },
+    "selectNodeHint": "Select a node to configure its parameters",
+    "modelSyncDesktopOnly": "Model sync is available in the WaveSpeed Desktop app.",
+    "nameExists": "Bu isimde bir iş akışı zaten mevcut. Kaydetmek üzerine yazar.",
+    "overwriteWorkflow": "İş Akışının Üzerine Yaz",
+    "overwriteConfirm": "\"{{name}}\" adlı bir iş akışı zaten var. Üzerine yazmak istiyor musunuz?",
+    "overwrite": "Üzerine yaz",
+    "rename": "Yeniden adlandır",
+    "duplicate": "Çoğalt",
+    "deleteWorkflow": "Sil",
+    "deleteConfirm": "\"{{name}}\" silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+    "cleaning": "Temizleniyor...",
+    "cleanOutputs": "Çıktıları temizle",
+    "tabClose": "Kapat",
+    "tabCloseOthers": "Diğerlerini kapat",
+    "tabCloseRight": "Sağdakileri kapat",
+    "tabCloseSaved": "Kaydedilenleri kapat",
+    "tabCloseAll": "Tümünü kapat",
+    "deleteSelected": "Seçilenleri sil ({{count}})",
+    "selectMode": "Select (V)",
+    "handMode": "Hand (H)",
+    "interactionSelect": "Select",
+    "interactionHand": "Hand"
   }
 }

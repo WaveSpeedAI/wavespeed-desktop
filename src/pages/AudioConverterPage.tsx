@@ -94,6 +94,7 @@ export function AudioConverterPage() {
       console.error('Worker error:', err)
       setError(err)
       setIsProcessing(false)
+      resetProgress()
     }
   })
 

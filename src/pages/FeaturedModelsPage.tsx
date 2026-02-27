@@ -4,8 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useModelsStore } from '@/stores/modelsStore'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { ArrowLeft, PlayCircle } from 'lucide-react'
+import { PlayCircle, Star } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { SMART_FORM_FAMILIES } from '@/lib/smartFormConfig'
 
@@ -147,19 +146,14 @@ export function FeaturedModelsPage() {
 
   return (
     <div className="flex h-full flex-col relative overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-orange-500/5" />
-
       {/* Header */}
-      <div className="page-header px-6 py-4 relative z-10">
-        <div className="flex items-center gap-3 mb-1">
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => navigate('/')}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">{t('welcome.featuredModels.title')}</h1>
-            <p className="text-muted-foreground text-sm">{t('welcome.featuredModels.description')}</p>
-          </div>
+      <div className="page-header px-4 md:px-6 py-4 relative z-10">
+        <div className="flex flex-col gap-1.5 md:flex-row md:items-baseline md:gap-3">
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight flex items-center gap-2">
+            <Star className="h-5 w-5 text-primary" />
+            {t('welcome.featuredModels.title')}
+          </h1>
+          <p className="text-muted-foreground text-xs md:text-sm">{t('welcome.featuredModels.description')}</p>
         </div>
       </div>
 

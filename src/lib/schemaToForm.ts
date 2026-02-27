@@ -1,4 +1,4 @@
-import type { SchemaProperty } from '@/types/model'
+import type { Model, SchemaProperty } from '@/types/model'
 
 export interface FormFieldConfig {
   name: string
@@ -15,6 +15,7 @@ export interface FormFieldConfig {
   maxFiles?: number
   placeholder?: string
   hidden?: boolean  // x-hidden fields are optional and hidden by default
+  schemaType?: string  // Original schema type (e.g. 'integer' vs 'number')
 }
 
 export function validateFormValues(fields: FormFieldConfig[], values: Record<string, unknown>): Record<string, string> {
@@ -256,6 +257,7 @@ function propertyToField(
       return {
         ...baseField,
         type: prop['x-ui-component'] === 'slider' ? 'slider' : 'number',
+        schemaType: prop.type,
         min: prop.minimum,
         max: prop.maximum,
         step: prop.step,
@@ -302,4 +304,153 @@ export function getDefaultValues(fields: FormFieldConfig[]): Record<string, unkn
   }
 
   return defaults
+}
+
+export type MediaType = 'image' | 'video' | 'audio'
+
+const MEDIA_KEYS: Record<MediaType, { singular: string; plural: string; url: string; urls: string; suffixSingular: string; suffixPlural: string }> = {
+  image: { singular: 'image', plural: 'images', url: 'image_url', urls: 'image_urls', suffixSingular: '_image', suffixPlural: 'images' },
+  video: { singular: 'video', plural: 'videos', url: 'video_url', urls: 'video_urls', suffixSingular: '_video', suffixPlural: 'videos' },
+  audio: { singular: 'audio', plural: 'audios', url: 'audio_url', urls: 'audio_urls', suffixSingular: '_audio', suffixPlural: 'audios' },
+}
+
+/** Get a single media URL from form values. Treats plural (e.g. "images") as singular by taking the first. */
+export function getSingleMediaFromValues(
+  values: Record<string, unknown> | undefined,
+  mediaType: MediaType
+): string | undefined {
+  if (!values) return undefined
+  const keys = MEDIA_KEYS[mediaType]
+  const v = values[keys.singular]
+  if (typeof v === 'string' && v) return v
+  const arr = values[keys.plural]
+  if (Array.isArray(arr) && arr.length > 0 && typeof arr[0] === 'string') return arr[0]
+  if (mediaType === 'image') {
+    const input = values['input']
+    if (typeof input === 'string' && input) return input
+  }
+  for (const [key, val] of Object.entries(values)) {
+    const k = key.toLowerCase()
+    if (typeof val === 'string' && val && (k.endsWith(keys.suffixSingular) || k === keys.url)) return val
+    if (Array.isArray(val) && val.length > 0 && typeof val[0] === 'string' &&
+        (k.endsWith(keys.suffixPlural) || k.endsWith(keys.urls))) return val[0]
+  }
+  return undefined
+}
+
+/** Get media URL array from form values. Treats singular (e.g. "image") as array by wrapping. */
+export function getMediaArrayFromValues(
+  values: Record<string, unknown> | undefined,
+  mediaType: MediaType
+): string[] {
+  if (!values) return []
+  const keys = MEDIA_KEYS[mediaType]
+  const arr = values[keys.plural]
+  if (Array.isArray(arr)) return arr.filter((x): x is string => typeof x === 'string')
+  const single = values[keys.singular]
+  if (typeof single === 'string' && single) return [single]
+  const url = values[keys.url]
+  if (typeof url === 'string' && url) return [url]
+  const urls = values[keys.urls]
+  if (Array.isArray(urls)) return urls.filter((x): x is string => typeof x === 'string')
+  for (const [key, val] of Object.entries(values)) {
+    const k = key.toLowerCase()
+    if (k.endsWith(keys.suffixPlural) && Array.isArray(val)) return val.filter((x): x is string => typeof x === 'string')
+    if ((k.endsWith(keys.suffixSingular) || k === keys.url) && typeof val === 'string' && val) return [val]
+  }
+  return []
+}
+
+/** Field names that the API typically expects as arrays (plural / _urls). */
+const ARRAY_FIELD_PATTERNS = [
+  'images', 'image_urls', 'videos', 'video_urls', 'audios', 'audio_urls'
+]
+
+function isArrayFieldName(key: string): boolean {
+  const k = key.toLowerCase()
+  // Skip fields that are clearly numeric (e.g. num_images, num_videos)
+  if (k.startsWith('num_') || k.startsWith('number_') || k.startsWith('count_') || k.startsWith('total_') || k.startsWith('max_') || k.startsWith('min_')) return false
+  return ARRAY_FIELD_PATTERNS.some(p => k === p || k.endsWith('_images') || k.endsWith('_image_urls') || k.endsWith('_videos') || k.endsWith('_video_urls') || k.endsWith('_audios') || k.endsWith('_audio_urls'))
+}
+
+/**
+ * Ensure payload values for array-type fields are arrays. APIs often return
+ * "value must be an array" when a field like `images` is sent as a string.
+ * Use before calling the run/prediction API.
+ */
+export function normalizePayloadArrays(
+  payload: Record<string, unknown>,
+  formFields: FormFieldConfig[]
+): Record<string, unknown> {
+  const out = { ...payload }
+  const arrayFieldNames = new Set<string>(
+    formFields.filter(f => f.type === 'file-array').map(f => f.name)
+  )
+  for (const key of Object.keys(out)) {
+    if (!arrayFieldNames.has(key) && !isArrayFieldName(key)) continue
+    const v = out[key]
+    if (v === undefined || v === null) continue
+    if (Array.isArray(v)) continue
+    out[key] = [v]
+  }
+  // If API expects "images" but form only has "image", add images array (same for video/audio)
+  const singularToPlural: [string, string][] = [['image', 'images'], ['image_url', 'image_urls'], ['video', 'videos'], ['video_url', 'video_urls'], ['audio', 'audios'], ['audio_url', 'audio_urls']]
+  for (const [singular, plural] of singularToPlural) {
+    if (out[plural] !== undefined) continue
+    const single = out[singular]
+    if (single === undefined || single === null || single === '') continue
+    out[plural] = Array.isArray(single) ? single : [single]
+  }
+  return out
+}
+
+/** @deprecated Use getSingleMediaFromValues(values, 'image') */
+export function getSingleImageFromValues(values: Record<string, unknown> | undefined): string | undefined {
+  return getSingleMediaFromValues(values, 'image')
+}
+
+/** @deprecated Use getMediaArrayFromValues(values, 'image') */
+export function getImageArrayFromValues(values: Record<string, unknown> | undefined): string[] {
+  return getMediaArrayFromValues(values, 'image')
+}
+
+/** @deprecated Use getSingleMediaFromValues(values, 'video') */
+export function getSingleVideoFromValues(values: Record<string, unknown> | undefined): string | undefined {
+  return getSingleMediaFromValues(values, 'video')
+}
+
+/** @deprecated Use getMediaArrayFromValues(values, 'video') */
+export function getVideoArrayFromValues(values: Record<string, unknown> | undefined): string[] {
+  return getMediaArrayFromValues(values, 'video')
+}
+
+/** @deprecated Use getSingleMediaFromValues(values, 'audio') */
+export function getSingleAudioFromValues(values: Record<string, unknown> | undefined): string | undefined {
+  return getSingleMediaFromValues(values, 'audio')
+}
+
+/** @deprecated Use getMediaArrayFromValues(values, 'audio') */
+export function getAudioArrayFromValues(values: Record<string, unknown> | undefined): string[] {
+  return getMediaArrayFromValues(values, 'audio')
+}
+
+/** Extract form fields from a Desktop API Model using the same logic as the Playground (DynamicForm). */
+export function getFormFieldsFromModel(model: Model): FormFieldConfig[] {
+  const apiSchemas = (model.api_schema as Record<string, unknown> | undefined)?.api_schemas as Array<{
+    type: string
+    request_schema?: {
+      properties?: Record<string, SchemaProperty>
+      required?: string[]
+      'x-order-properties'?: string[]
+    }
+  }> | undefined
+  const requestSchema = apiSchemas?.find(s => s.type === 'model_run')?.request_schema
+  if (!requestSchema?.properties) {
+    return []
+  }
+  return schemaToFormFields(
+    requestSchema.properties,
+    requestSchema.required ?? [],
+    requestSchema['x-order-properties']
+  )
 }

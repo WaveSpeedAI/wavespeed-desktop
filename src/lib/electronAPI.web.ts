@@ -346,6 +346,31 @@ export const electronAPIWeb: ElectronAPI = {
   sdExtractBinary: async () => {
     return { success: false, error: 'Not available in web version' }
   },
+
+  // Persistent key-value state (localStorage in web — same keys as persistentStorage)
+  getState: async (key: string): Promise<unknown> => {
+    try {
+      const raw = localStorage.getItem(key)
+      return raw ? JSON.parse(raw) : null
+    } catch { return null }
+  },
+  setState: async (key: string, value: unknown): Promise<boolean> => {
+    try {
+      localStorage.setItem(key, JSON.stringify(value))
+      return true
+    } catch { return false }
+  },
+  removeState: async (key: string): Promise<boolean> => {
+    try {
+      localStorage.removeItem(key)
+      return true
+    } catch { return false }
+  },
+
+  // Assets event listener (no-op in web — browser-side saves directly to store)
+  onAssetsNewAsset: () => {
+    return () => { /* no-op */ }
+  },
 }
 
 // Inject electronAPI when running in a browser environment.

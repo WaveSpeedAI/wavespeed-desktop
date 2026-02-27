@@ -359,15 +359,19 @@ export function SmartPlaygroundPage() {
       ? family.mapValues({ ...formValues }, resolvedVariantId)
       : formValues
     const variantFieldNames = getVariantFieldNames(resolvedModel)
+    const integerFields = new Set(visibleFields.filter(f => f.schemaType === 'integer').map(f => f.name))
     const cleanedValues: Record<string, unknown> = {}
     for (const [key, value] of Object.entries(mappedValues)) {
       if (!variantFieldNames.has(key)) continue
       if (value === undefined || value === null || value === '') continue
       if (Array.isArray(value) && value.length === 0) continue
-      cleanedValues[key] = value
+      // Ensure integer fields are sent as integers (API rejects non-integer values)
+      cleanedValues[key] = integerFields.has(key) && typeof value === 'number'
+        ? Math.round(value)
+        : value
     }
     return cleanedValues
-  }, [resolvedModel, formValues, family, resolvedVariantId])
+  }, [resolvedModel, formValues, family, resolvedVariantId, visibleFields])
 
   // Run prediction (single or batch)
   const handleRun = useCallback(async () => {
@@ -458,13 +462,37 @@ export function SmartPlaygroundPage() {
           <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => navigate('/featured-models')}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <img
-            src={family.poster}
-            alt={family.name}
-            className="h-8 w-8 rounded-md object-cover"
-          />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-2.5 rounded-lg border border-border/60 bg-muted/40 px-3 py-1.5 hover:bg-muted hover:border-border transition-colors shadow-sm">
+                <img
+                  src={family.poster}
+                  alt={family.name}
+                  className="h-8 w-8 rounded-md object-cover"
+                />
+                <span className="text-sm font-semibold">{family.name}</span>
+                <ChevronDown className="h-4 w-4 text-muted-foreground ml-1" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              {SMART_FORM_FAMILIES.map(sf => (
+                <button
+                  key={sf.id}
+                  onClick={() => navigate(`/featured-models/${sf.id}`)}
+                  className={cn(
+                    "flex items-center gap-2.5 w-full px-3 py-2 text-sm rounded-md transition-colors text-left",
+                    sf.id === family.id
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "hover:bg-muted text-foreground"
+                  )}
+                >
+                  <img src={sf.poster} alt={sf.name} className="h-6 w-6 rounded object-cover shrink-0" />
+                  <span className="truncate">{sf.name}</span>
+                </button>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <div className="min-w-0 flex-1">
-            <h1 className="text-sm font-semibold truncate">{family.name}</h1>
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono truncate max-w-[200px]">
                 {shortVariantId}
@@ -558,7 +586,7 @@ export function SmartPlaygroundPage() {
                       field={field}
                       value={formValues[field.name]}
                       onChange={(value) => handleFieldChange(field.name, value)}
-                      disabled={isRunning}
+                      disabled={false}
                       formValues={formValues}
                       onUploadingChange={setIsUploading}
                     />
@@ -570,7 +598,6 @@ export function SmartPlaygroundPage() {
                     field={field}
                     value={formValues[field.name]}
                     onChange={(value) => handleFieldChange(field.name, value)}
-                    disabled={isRunning}
                     formValues={formValues}
                     onUploadingChange={setIsUploading}
                   />
@@ -614,7 +641,7 @@ export function SmartPlaygroundPage() {
                 <DropdownMenuTrigger asChild>
                   <Button
                     className="rounded-l-none px-2"
-                    disabled={isRunning || isUploading}
+                    disabled={isUploading}
                   >
                     <ChevronDown className="h-4 w-4" />
                   </Button>

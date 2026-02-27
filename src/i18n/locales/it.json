@@ -34,7 +34,9 @@
     "downloadFailed": "Download fallito. Verifica la tua connessione di rete.",
     "openInBrowser": "Apri nel browser",
     "settings": "Impostazioni",
-    "clearAll": "Cancella tutto"
+    "clearAll": "Cancella tutto",
+    "add": "Add",
+    "saving": "Saving..."
   },
   "nav": {
     "home": "Home",
@@ -358,7 +360,71 @@
     "deleteTemplates": "Elimina template",
     "templatesDeleted": "Template eliminati",
     "deletedCount": "{{count}} template eliminati",
-    "batchDeleteConfirm": "Sei sicuro di voler eliminare {{count}} template? Questa azione non può essere annullata."
+    "batchDeleteConfirm": "Sei sicuro di voler eliminare {{count}} template? Questa azione non può essere annullata.",
+    "deletedSuccessfully": "\"{{name}}\" eliminato con successo",
+    "updatedSuccessfully": "\"{{name}}\" aggiornato con successo",
+    "exportedSuccessfully": "\"{{name}}\" esportato con successo",
+    "allExportedSuccessfully": "Tutti i template esportati con successo",
+    "importedSuccessfully": "{{imported}} template importati, {{skipped}} saltati",
+    "filters": "Filtri",
+    "templateType": "Tipo di template",
+    "allTypes": "Tutti i tipi",
+    "playground": "Playground",
+    "workflow": "Workflow",
+    "source": "Fonte",
+    "allSources": "Tutte le fonti",
+    "public": "Pubblico",
+    "myTemplates": "I miei template",
+    "favorites": "Preferiti",
+    "favoritesOnly": "Solo preferiti",
+    "sortBy": "Ordina per",
+    "newest": "Più recente",
+    "mostUsed": "Più usato",
+    "category": "Categoria",
+    "allCategories": "Tutte le categorie",
+    "imageProcessing": "Elaborazione immagini",
+    "videoEditing": "Editing video",
+    "audioConversion": "Conversione audio",
+    "aiGeneration": "Generazione IA",
+    "workflowNotSupported": "Workflow non supportato",
+    "workflowNotSupportedDesc": "I template workflow non sono ancora supportati",
+    "loadTemplate": "Carica template",
+    "browseAll": "Sfoglia tutti i modelli",
+    "drawerDesc": "Sfoglia e applica i modelli",
+    "createTemplate": "Crea modello",
+    "createTemplateDesc": "Salva la configurazione corrente come modello riutilizzabile",
+    "editTemplate": "Modifica modello",
+    "editTemplateDesc": "Aggiorna i dettagli del modello",
+    "descriptionLabel": "Descrizione",
+    "tags": "Tag",
+    "tagsPlaceholder": "Inserisci un tag...",
+    "descriptionPlaceholder": "Descrivi questo modello...",
+    "categoryPlaceholder": "es. Elaborazione immagini",
+    "nodes": "nodi",
+    "favorite": "Aggiungi ai preferiti",
+    "unfavorite": "Rimuovi dai preferiti",
+    "uses": "utilizzi",
+    "coverImage": "Immagine di copertina",
+    "uploadCover": "Clicca per caricare un'immagine di copertina",
+    "importDesc": "Importa modelli da un file esportato in precedenza"
+  },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "Immagine a Video",
+      "description": "Converti immagini statiche in video dinamici con upscaling HD"
+    },
+    "musicGenerate": {
+      "name": "Generazione Musicale",
+      "description": "Genera musica originale da testi e tag di stile"
+    },
+    "imageEdit": {
+      "name": "Modifica Immagine",
+      "description": "Modifica immagini con modelli AI e prompt personalizzati"
+    },
+    "videoEdit": {
+      "name": "Modifica Video",
+      "description": "Modifica contenuti video con modelli AI e modifiche basate su prompt"
+    }
   },
   "assets": {
     "title": "I Miei Asset",
@@ -930,52 +996,32 @@
       "loading": "Caricamento...",
       "converting": "Conversione...",
       "merging": "Fusione...",
-      "trimming": "Taglio..."
+      "trimming": "Taglio...",
+      "transcoding": "Transcodifica"
     },
     "downloadSuccess": "Salvato nella cartella Download",
     "downloadStarted": "Download avviato",
     "downloadFailed": "Download fallito"
   },
-  "game": {
-    "waitingLong": "Attesa troppo lunga? Gioca a un mini gioco!",
-    "clickToPlay": "Clicca per iniziare"
-  },
   "smartPlayground": {
-    "autoDetected": "Auto-detected variant",
-    "willCall": "Will call",
-    "toggleSpeed": "Speed",
-    "toggleMode": "Mode",
-    "toggleQuality": "Quality",
-    "speedNormal": "Normal",
-    "speedFast": "Fast",
-    "modeNormal": "Normal",
-    "modeSequential": "Sequential",
+    "autoDetected": "Variante rilevata automaticamente",
+    "willCall": "Chiamerà",
+    "toggleSpeed": "Velocità",
+    "toggleMode": "Modalità",
+    "toggleQuality": "Qualità",
+    "speedNormal": "Normale",
+    "speedFast": "Veloce",
+    "modeNormal": "Normale",
+    "modeSequential": "Sequenziale",
     "qualityPro": "Pro",
     "qualityStd": "Standard",
     "qualityUltra": "Ultra",
     "qualityMulti": "Multi",
-    "run": "Run",
-    "running": "Running...",
+    "run": "Esegui",
+    "running": "In esecuzione...",
     "input": "Input",
     "output": "Output",
-    "back": "Back"
-  },
-  "videoConverter": {
-    "title": "Convertitore Video",
-    "description": "Converti video tra formati usando il tuo browser",
-    "invalidFile": "Seleziona un file video valido",
-    "input": "Video di Input",
-    "inputDesc": "Seleziona o trascina un file video da convertire",
-    "dropzone": "Clicca o trascina il video qui",
-    "supportedFormats": "Supporta MP4, WebM, MOV, AVI",
-    "settings": "Impostazioni",
-    "outputFormat": "Formato di Output",
-    "convert": "Converti Video",
-    "converting": "Conversione...",
-    "noCodecSupport": "Nessun codec video supportato trovato",
-    "result": "Risultato",
-    "codecUsed": "Codec utilizzato",
-    "download": "Scarica"
+    "back": "Indietro"
   },
   "workflow": {
     "workflows": "Flussi di lavoro",
@@ -987,6 +1033,10 @@
     "saveFailed": "Salvataggio fallito",
     "savedAt": "Salvato",
     "unsaved": "Non salvato",
+    "outputDirFallbackHint": "Non impostato: verrà esportato nella directory predefinita del flusso di lavoro",
+    "selectDirectory": "Seleziona directory",
+    "openFolder": "Apri cartella",
+    "openWorkflowFolder": "Apri cartella flusso di lavoro",
     "nodes": "Nodi",
     "config": "Configurazione",
     "results": "Risultati",
@@ -994,6 +1044,12 @@
     "settings": "Impostazioni",
     "runAll": "Esegui tutto",
     "run": "Esegui",
+    "runWorkflow": "Esegui",
+    "runFromHere": "Esegui da qui",
+    "nameYourWorkflow": "Dai un nome al flusso di lavoro",
+    "nameYourWorkflowDesc": "Assegna un nome per salvare su disco.",
+    "nameYourWorkflowPlaceholder": "Es: Pipeline Immagini Prodotto",
+    "nameDuplicate": "Esiste già un flusso di lavoro con questo nome",
     "runTarget": "Esegui destinazione",
     "runTargetAll": "Esegui tutti i nodi",
     "runTargetSelected": "Esegui nodo selezionato",
@@ -1009,6 +1065,9 @@
     "exportFailed": "Esportazione fallita",
     "estimated": "Costo stimato",
     "fitView": "Adatta vista",
+    "autoLayout": "Disposizione automatica",
+    "freeToolModelHint": "La prima esecuzione scaricherà automaticamente il modello AI, attendere prego",
+    "more": "Altro",
     "previousImage": "Immagine precedente",
     "nextImage": "Immagine successiva",
     "previewNavHint": "Usa ← / → per navigare ({{current}}/{{total}})",
@@ -1046,7 +1105,10 @@
       "hint": "Clic sinistro = includi, clic destro = escludi",
       "points": "punti",
       "clear": "Cancella",
-      "done": "Fatto"
+      "done": "Fatto",
+      "encoding": "Analyzing image...",
+      "waitingEncode": "Preparing...",
+      "decoding": "Updating mask..."
     },
     "pickPoints": "Seleziona punti",
     "pickPointsNeedInput": "Imposta prima l'immagine di input",
@@ -1085,7 +1147,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "Esegui modello",
+        "label": "WaveSpeed API",
         "emptyHint": "Clicca su questo nodo, poi seleziona un modello →",
         "params": {
           "modelId": {
@@ -1095,6 +1157,11 @@
       },
       "input/media-upload": {
         "label": "Carica",
+        "inputs": {
+          "media": {
+            "label": "Media"
+          }
+        },
         "outputs": {
           "output": {
             "label": "URL"
@@ -1141,7 +1208,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "Directory output"
+            "label": "Directory output",
+            "placeholder": "Lasciare vuoto per utilizzare la directory di output predefinita del flusso di lavoro"
           },
           "filename": {
             "label": "Prefisso nome file"
@@ -1187,6 +1255,9 @@
           "pointY": {
             "label": "Punto Y",
             "description": "Coordinata Y normalizzata (0-1) per punto di segmentazione"
+          },
+          "invertMask": {
+            "label": "Inverti maschera"
           }
         }
       },
@@ -1250,7 +1321,7 @@
       "optimizing": "Ottimizzazione...",
       "optimizeNow": "Ottimizza ora",
       "autoOnRunTitle": "Ottimizza solo al clic su Esegui",
-      "autoOnRun": "Auto all'esecuzione",
+      "autoOnRun": "Ottimizza all'esecuzione",
       "chars": "caratteri",
       "optimizeOnRunEnabled": "Abilitato: ottimizza all'esecuzione",
       "optimizeOffHint": "Predefinito: nessuna ottimizzazione (esegui con testo originale)",
@@ -1266,8 +1337,9 @@
       "text": "Testo",
       "textPlaceholder": "Testo da espandere o come contesto...",
       "autoOnRunTitle": "Ottimizza automaticamente al clic su Esegui",
-      "autoOnRun": "Auto all'esecuzione",
+      "autoOnRun": "Ottimizza all'esecuzione",
       "quickOptimizeTitle": "Ottimizzazione rapida ({{mode}})",
+      "quickOptimizeLabel": "Ottimizza",
       "params": "Parametri",
       "prompt": "Prompt",
       "emptyPrompt": "(vuoto)",
@@ -1285,6 +1357,76 @@
         "loadingOptimizer": "Caricamento ottimizzatore...",
         "loadConfigFailed": "Impossibile caricare la configurazione dell'ottimizzatore"
       }
-    }
+    },
+    "guide": {
+      "skip": "Salta",
+      "prev": "Indietro",
+      "next": "Avanti",
+      "finish": "Inizia",
+      "welcome": {
+        "title": "Benvenuto in Workflow",
+        "desc": "Workflow e un editor visivo di pipeline AI. Trascina i nodi sulla canvas, collegali ed esegui flussi di elaborazione AI automatizzati, dalla generazione di immagini al miglioramento video e oltre."
+      },
+      "nodePaletteBtn": {
+        "title": "Palette dei nodi",
+        "desc": "Fai clic su questo pulsante per aprire la Palette dei nodi, la tua cassetta degli attrezzi con tutti i nodi disponibili. Puoi anche cercare, trascinare o fare clic per aggiungere nodi alla canvas."
+      },
+      "nodePalette": {
+        "title": "Categorie di nodi",
+        "desc": "I nodi sono organizzati per categoria:\n• Input — Carica file o inserisci testo come dati iniziali\n• Attivita AI — Esegui qualsiasi modello WaveSpeed AI (vedi passaggio successivo)\n• Strumenti gratuiti — 12 strumenti integrati come rimozione sfondo, miglioramento volto, conversione formato\n• Output — Anteprima dei risultati o esportazione file su disco\n\nTrascina un nodo sulla canvas o fai clic per aggiungerlo."
+      },
+      "aiTask": {
+        "title": "Nodo Attivita AI - Il cuore",
+        "desc": "Il nodo Attivita AI e il nodo piu potente in Workflow. Puo eseguire qualsiasi modello WaveSpeed AI per generazione immagini, creazione video, trasferimento di stile e altro.",
+        "features": {
+          "modelSwitch": "Scegli tra centinaia di modelli AI: il pannello parametri si aggiorna dinamicamente in base al modello selezionato",
+          "dynamicParams": "Ogni modello ha i propri parametri (prompt, dimensione immagine, seed, ecc.) che appaiono automaticamente alla selezione",
+          "costEstimate": "Stima dei costi in tempo reale per ogni esecuzione, cosi conosci sempre il prezzo prima di avviare",
+          "upstream": "Collega gli output dei nodi a monte (immagini, testo) come input e crea pipeline AI multi-step"
+        }
+      },
+      "canvas": {
+        "title": "Interazioni della canvas",
+        "desc": "La canvas centrale e il tuo spazio di lavoro:\n• Trascina i nodi dalla palette per posizionarli\n• Trascina dalle porte di output alle porte di input per creare connessioni\n• Clic destro per menu contestuale (copia, incolla, elimina)\n• Scorri per zoom, trascina lo sfondo per pan\n• Scorciatoie: Ctrl+Z annulla, Ctrl+C/V copia-incolla, Delete per rimuovere"
+      },
+      "canvasTools": {
+        "title": "Strumenti della canvas",
+        "desc": "Tre strumenti utili per navigare e organizzare la canvas:\n• Modalita Seleziona / Mano — alterna tra selezione nodi (V) e spostamento canvas (H)\n• Adatta vista — zoom automatico per includere tutti i nodi nel viewport\n• Layout automatico — dispone automaticamente i nodi in modo ordinato e leggibile"
+      },
+      "config": {
+        "title": "Configura e visualizza risultati",
+        "desc": "Fai clic su qualsiasi nodo per selezionarlo. Il pannello destro mostra due tab:\n• Config — Imposta parametri modello, carica file, inserisci prompt\n• Risultati — Visualizza output di esecuzione (immagini, video, modelli 3D)\n\nI parametri si aggiornano dinamicamente in base al tipo di nodo e al modello selezionato. I risultati supportano anteprima a schermo intero e download."
+      },
+      "run": {
+        "title": "Esegui il tuo workflow",
+        "desc": "Fai clic su \"Esegui workflow\" per eseguire l'intera pipeline:\n• Imposta un numero di esecuzioni (×1 a ×99) per il batch\n• Annulla in qualsiasi momento con il pulsante stop\n• Monitora il progresso in tempo reale nel Monitor di esecuzione\n• Ogni nodo mostra il proprio stato: queued → running → done"
+      },
+      "templates": {
+        "title": "Template, importazione ed esportazione",
+        "desc": "Fai clic sul menu ⋮ per funzioni avanzate:\n• Salva il workflow come template riutilizzabile\n• Importa/Esporta workflow in JSON per condividerli\n• Apri piu workflow in tab (come un browser)\n• Sfoglia template predefiniti dalla toolbar"
+      }
+    },
+    "selectNodeHint": "Select a node to configure its parameters",
+    "modelSyncDesktopOnly": "Model sync is available in the WaveSpeed Desktop app.",
+    "nameExists": "Esiste già un flusso di lavoro con questo nome. Salvare lo sovrascriverà.",
+    "overwriteWorkflow": "Sovrascrivi flusso di lavoro",
+    "overwriteConfirm": "Esiste già un flusso di lavoro \"{{name}}\". Vuoi sovrascriverlo?",
+    "overwrite": "Sovrascrivi",
+    "rename": "Rinomina",
+    "duplicate": "Duplica",
+    "deleteWorkflow": "Elimina",
+    "deleteConfirm": "Sei sicuro di voler eliminare \"{{name}}\"? Questa azione non può essere annullata.",
+    "cleaning": "Pulizia in corso...",
+    "cleanOutputs": "Pulisci risultati",
+    "tabClose": "Chiudi",
+    "tabCloseOthers": "Chiudi altri",
+    "tabCloseRight": "Chiudi a destra",
+    "tabCloseSaved": "Chiudi salvati",
+    "tabCloseAll": "Chiudi tutti",
+    "deleteSelected": "Elimina selezionati ({{count}})",
+    "selectMode": "Select (V)",
+    "handMode": "Hand (H)",
+    "interactionSelect": "Select",
+    "interactionHand": "Hand"
   }
 }

@@ -55,6 +55,11 @@ export default defineConfig({
       }
     },
     optimizeDeps: {
+      include: [
+        'onnxruntime-web',
+        'upscaler',
+        '@huggingface/transformers'
+      ],
       exclude: ['@google/model-viewer']
     },
     server: {

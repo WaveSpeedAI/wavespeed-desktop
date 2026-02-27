@@ -1,0 +1,153 @@
+{
+  "name": "音乐生成",
+  "i18nKey": "musicGenerate",
+  "description": "通过歌词和风格标签生成原创音乐，支持多种音乐风格",
+  "tags": [
+    "音乐",
+    "生成",
+    "AI",
+    "歌词"
+  ],
+  "category": "audio-conversion",
+  "author": "WaveSpeed",
+  "thumbnail": "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1752486874849919611_uMhlqGOZ.png",
+  "workflowId": "cb752a55-c6f1-4ac4-9b42-a6a12fc8c89c",
+  "graphDefinition": {
+    "nodes": [
+      {
+        "id": "ed05c226-2b36-4b8d-83e4-fa70865008cf",
+        "workflowId": "cb752a55-c6f1-4ac4-9b42-a6a12fc8c89c",
+        "nodeType": "ai-task/run",
+        "position": {
+          "x": 446.2994011976049,
+          "y": -110.27844311377245
+        },
+        "params": {
+          "modelId": "wavespeed-ai/ace-step-1.5",
+          "lyrics": "",
+          "duration": 60,
+          "seed": -1,
+          "tags": "steampunk, electro swing, jazz, piano, ticking clock sounds, upbeat, male crooner, brass section, groovy, 110bpm",
+          "__meta": {
+            "label": "🤖 wavespeed-ai/ace-step-1.5",
+            "modelInputSchema": [
+              {
+                "name": "tags",
+                "type": "string",
+                "description": "Comma-separated list of genre tags to control the style of the generated audio.",
+                "fieldType": "text",
+                "required": true
+              },
+              {
+                "name": "lyrics",
+                "type": "string",
+                "description": "Vocal content for the track. Use [inst] or [instrumental] for no vocals.",
+                "default": "",
+                "fieldType": "text",
+                "required": true
+              },
+              {
+                "name": "duration",
+                "type": "number",
+                "description": "Audio length in seconds.",
+                "default": 60,
+                "min": 5,
+                "max": 240,
+                "fieldType": "slider"
+              },
+              {
+                "name": "seed",
+                "type": "integer",
+                "description": "The random seed for reproducibility.",
+                "default": -1,
+                "fieldType": "number"
+              }
+            ]
+          }
+        },
+        "currentOutputId": null
+      },
+      {
+        "id": "48cbf729-75ab-4632-84d4-e04ce8c87492",
+        "workflowId": "cb752a55-c6f1-4ac4-9b42-a6a12fc8c89c",
+        "nodeType": "input/text-input",
+        "position": {
+          "x": 0,
+          "y": -363
+        },
+        "params": {
+          "text": "[Verse] Ticking tocking goes the clock Turning keys and pick the lock Steam is rising, gears go round Listen to that brassy sound\n\n[Chorus] Round and round we go today In this smoky cabaret Fix the future, fix the past Make a moment that will last",
+          "__optimizerSettings": {},
+          "__meta": {
+            "label": "✏️ Text",
+            "modelInputSchema": []
+          }
+        },
+        "currentOutputId": null
+      },
+      {
+        "id": "3d18ac35-3f8d-4406-b67c-114961edb25e",
+        "workflowId": "cb752a55-c6f1-4ac4-9b42-a6a12fc8c89c",
+        "nodeType": "input/text-input",
+        "position": {
+          "x": -7.2215568862275745,
+          "y": 174.4311377245509
+        },
+        "params": {
+          "text": "steampunk, electro swing, jazz, piano, ticking clock sounds, upbeat, male crooner, brass section, groovy, 110bpm",
+          "__optimizerSettings": {},
+          "__meta": {
+            "label": "✏️ Text",
+            "modelInputSchema": []
+          }
+        },
+        "currentOutputId": null
+      },
+      {
+        "id": "163d9a83-e19a-4d17-b1eb-a2039d50cc5e",
+        "workflowId": "cb752a55-c6f1-4ac4-9b42-a6a12fc8c89c",
+        "nodeType": "output/preview",
+        "position": {
+          "x": 877.674251497006,
+          "y": -83.88922155688623
+        },
+        "params": {
+          "autoDetect": true,
+          "forceType": "auto",
+          "__meta": {
+            "label": "👀 Preview",
+            "modelInputSchema": []
+          }
+        },
+        "currentOutputId": null
+      }
+    ],
+    "edges": [
+      {
+        "id": "43a8e96f-4db9-4668-99e5-68bd02c79db5",
+        "workflowId": "cb752a55-c6f1-4ac4-9b42-a6a12fc8c89c",
+        "sourceNodeId": "48cbf729-75ab-4632-84d4-e04ce8c87492",
+        "sourceOutputKey": "output",
+        "targetNodeId": "ed05c226-2b36-4b8d-83e4-fa70865008cf",
+        "targetInputKey": "param-lyrics"
+      },
+      {
+        "id": "7c7f6640-5ec4-469b-b1d0-a8c3c56884d6",
+        "workflowId": "cb752a55-c6f1-4ac4-9b42-a6a12fc8c89c",
+        "sourceNodeId": "3d18ac35-3f8d-4406-b67c-114961edb25e",
+        "sourceOutputKey": "output",
+        "targetNodeId": "ed05c226-2b36-4b8d-83e4-fa70865008cf",
+        "targetInputKey": "param-tags"
+      },
+      {
+        "id": "62b4b7de-5a8b-4347-bda4-a421287ce151",
+        "workflowId": "cb752a55-c6f1-4ac4-9b42-a6a12fc8c89c",
+        "sourceNodeId": "ed05c226-2b36-4b8d-83e4-fa70865008cf",
+        "sourceOutputKey": "output",
+        "targetNodeId": "163d9a83-e19a-4d17-b1eb-a2039d50cc5e",
+        "targetInputKey": "input-input"
+      }
+    ]
+  },
+  "savedAt": "2026-02-14T19:03:02.055Z"
+}

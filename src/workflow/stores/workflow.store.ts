@@ -52,6 +52,32 @@ function resolveStoreExport<TState>(mod: unknown, name: string): StoreWithGetSta
   return null
 }
 
+/* ── Default content for new workflows ─────────────────────────────────── */
+
+const DEFAULT_NEW_WORKFLOW_MODEL = 'bytedance/seedream-v4.5'
+const DEFAULT_NEW_WORKFLOW_PROMPT = 'An ethereal female elf with long platinum-blonde hair and pointed ears, wearing an elegant dress made of leaves and vines. She stands barefoot in an ancient forest illuminated by magical light spots, one hand gently touching a glowing mushroom. Her expression is otherworldly and curious. Dreamy soft focus, Tyndall effect light beams filtering through the canopy, magical realism photography.'
+
+/** Returns one AI task node (and no edges) for a new workflow. */
+export function getDefaultNewWorkflowContent(): { nodes: ReactFlowNode[]; edges: ReactFlowEdge[] } {
+  const nodeId = uuid()
+  return {
+    nodes: [{
+      id: nodeId,
+      type: 'custom',
+      position: { x: 120, y: 120 },
+      data: {
+        nodeType: 'ai-task/run',
+        params: { modelId: DEFAULT_NEW_WORKFLOW_MODEL, prompt: DEFAULT_NEW_WORKFLOW_PROMPT },
+        label: '',
+        paramDefinitions: [],
+        inputDefinitions: [],
+        outputDefinitions: []
+      }
+    }],
+    edges: []
+  }
+}
+
 /* ── Undo / Redo history (snapshot-based) ──────────────────────────────── */
 
 const MAX_UNDO = 50
@@ -82,6 +108,109 @@ function pushUndoDebounced(s: Snapshot) {
   }
 }
 
+/** Snapshot captured at the start of a node drag — pushed to undo when drag ends. */
+let _dragStartSnapshot: Snapshot | null = null
+
+/* ── Save concurrency guard ────────────────────────────────────────────── */
+let _saveInProgress = false
+
+export interface SaveWorkflowOptions {
+  /** When true, untitled workflows are saved with an auto-generated name instead of prompting. */
+  forRun?: boolean
+}
+
+/** Internal save implementation — extracted so the concurrency guard stays clean. */
+async function _doSaveWorkflow(
+  get: () => WorkflowState,
+  set: (partial: Partial<WorkflowState>) => void,
+  options?: SaveWorkflowOptions
+) {
+  let { workflowId } = get()
+  const { workflowName, nodes, edges } = get()
+
+  // Don't save unnamed workflows — prompt user for a name via UI dialog (unless saving for run)
+  const isUntitled = !workflowName || /^Untitled Workflow(\s+\d+)?$/.test(workflowName)
+  if (isUntitled) {
+    if (options?.forRun) {
+      // Auto-generate a name so Run Workflow never requires naming
+      const autoName = `Workflow ${new Date().toISOString().slice(0, 19).replace('T', ' ')}`
+      set({ workflowName: autoName })
+    } else {
+      const uiStoreModule = await import('./ui.store')
+      const uiStore = resolveStoreExport<{ promptWorkflowName: (defaultName?: string) => Promise<{ name: string; overwriteId?: string } | null> }>(uiStoreModule, 'useUIStore')
+      const promptWorkflowName = uiStore?.getState().promptWorkflowName
+      if (typeof promptWorkflowName !== 'function') {
+        throw new Error('Workflow naming dialog is unavailable')
+      }
+      const result = await promptWorkflowName(workflowName || '')
+      if (!result || !result.name.trim() || /^Untitled Workflow(\s+\d+)?$/.test(result.name.trim())) return
+      set({ workflowName: result.name.trim() })
+      // If user chose to overwrite an existing workflow, use that workflow's ID
+      if (result.overwriteId) {
+        workflowId = result.overwriteId
+        set({ workflowId: result.overwriteId })
+      }
+    }
+  }
+
+  let finalName = get().workflowName
+
+  // Session restore may carry a stale workflowId (e.g. after reinstall or DB path migration).
+  // Validate it before save; if not found, create a new workflow on this save.
+  if (workflowId) {
+    try {
+      await workflowIpc.load(workflowId)
+    } catch {
+      workflowId = null
+      set({ workflowId: null })
+    }
+  }
+
+  // Auto-create workflow on first save (lazy creation)
+  if (!workflowId) {
+    if (nodes.length === 0) return
+    const wf = await workflowIpc.create({ name: finalName })
+    workflowId = wf.id
+    // Use the actual name returned by create (may have been deduplicated)
+    finalName = wf.name
+    set({ workflowId: wf.id, workflowName: wf.name })
+  }
+
+  const wfNodes: WorkflowNode[] = nodes.map(n => ({
+    id: n.id,
+    workflowId: workflowId!,
+    nodeType: n.data.nodeType,
+    position: n.position,
+    params: {
+      ...(n.data.params ?? {}),
+      __meta: {
+        label: n.data.label,
+        modelInputSchema: n.data.modelInputSchema ?? []
+      }
+    },
+    currentOutputId: null // placeholder — repo will preserve existing DB value
+  }))
+
+  const wfEdges: WorkflowEdge[] = edges.map(e => ({
+    id: e.id,
+    workflowId: workflowId!,
+    sourceNodeId: e.source,
+    sourceOutputKey: e.sourceHandle ?? 'output',
+    targetNodeId: e.target,
+    targetInputKey: e.targetHandle ?? 'input'
+  }))
+
+  await workflowIpc.save({ id: workflowId!, name: finalName, nodes: wfNodes, edges: wfEdges })
+  // Sync name back — backend may have deduplicated it
+  try {
+    const saved = await workflowIpc.load(workflowId!)
+    if (saved.name !== finalName) {
+      set({ workflowName: saved.name })
+    }
+  } catch { /* ignore */ }
+  set({ isDirty: false })
+}
+
 /* ── Store ─────────────────────────────────────────────────────────────── */
 
 export interface WorkflowState {
@@ -95,6 +224,7 @@ export interface WorkflowState {
 
   addNode: (type: string, position: XYPosition, defaultParams?: Record<string, unknown>, label?: string, paramDefs?: unknown[], inputDefs?: unknown[], outputDefs?: unknown[]) => string
   removeNode: (nodeId: string) => void
+  removeNodes: (nodeIds: string[]) => void
   duplicateNode: (nodeId: string) => string
   addEdge: (connection: Connection) => void
   removeEdge: (edgeId: string) => void
@@ -105,7 +235,7 @@ export interface WorkflowState {
   onEdgesChange: (changes: EdgeChange[]) => void
   undo: () => void
   redo: () => void
-  saveWorkflow: () => Promise<void>
+  saveWorkflow: (options?: SaveWorkflowOptions) => Promise<void>
   loadWorkflow: (id: string) => Promise<void>
   newWorkflow: (name: string) => Promise<void>
   setWorkflowName: (name: string) => void
@@ -159,6 +289,24 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     set(state => ({
       nodes: state.nodes.filter(n => n.id !== nodeId),
       edges: state.edges.filter(e => e.source !== nodeId && e.target !== nodeId),
+      isDirty: true, canUndo: true, canRedo: false
+    }))
+  },
+
+  removeNodes: (nodeIds) => {
+    if (nodeIds.length === 0) return
+    const activeExecs = getActiveExecutions()
+    const blocked = nodeIds.filter(id => activeExecs.has(id))
+    if (blocked.length > 0) {
+      alert('Cannot delete running nodes. Cancel execution first.')
+      return
+    }
+    const { nodes, edges } = get()
+    pushUndo({ nodes, edges })
+    const removeSet = new Set(nodeIds)
+    set(state => ({
+      nodes: state.nodes.filter(n => !removeSet.has(n.id)),
+      edges: state.edges.filter(e => !removeSet.has(e.source) && !removeSet.has(e.target)),
       isDirty: true, canUndo: true, canRedo: false
     }))
   },
@@ -219,11 +367,6 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   },
 
   removeEdge: (edgeId) => {
-    // Guard: don't remove edges while nodes are running
-    if (getActiveExecutions().size > 0) {
-      alert('Cannot modify connections while workflow is running.')
-      return
-    }
     const { nodes, edges } = get()
     pushUndo({ nodes, edges })
     set(state => ({ edges: state.edges.filter(e => e.id !== edgeId), isDirty: true, canUndo: true, canRedo: false }))
@@ -231,7 +374,6 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
 
   removeEdgesByIds: (edgeIds) => {
     if (edgeIds.length === 0) return
-    if (getActiveExecutions().size > 0) return
     const { nodes, edges } = get()
     pushUndo({ nodes, edges })
     const removeSet = new Set(edgeIds)
@@ -255,16 +397,35 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   },
 
   onNodesChange: (changes) => {
-    // Position-only moves don't push undo (too noisy); structural changes do
+    // Structural changes (add/remove) always push undo immediately
     const isStructural = changes.some(c => c.type === 'remove' || c.type === 'add')
     if (isStructural) {
       const { nodes, edges } = get()
       pushUndo({ nodes, edges })
     }
+
+    // Track node drag: capture snapshot at drag start, push undo at drag end
+    const posChanges = changes.filter((c): c is NodeChange & { type: 'position'; dragging?: boolean } => c.type === 'position')
+    if (posChanges.length > 0) {
+      const anyDragging = posChanges.some(c => c.dragging === true)
+      const anyDragEnd = posChanges.some(c => c.dragging === false)
+
+      if (anyDragging && !_dragStartSnapshot) {
+        // Drag just started — capture current state before positions change
+        const { nodes, edges } = get()
+        _dragStartSnapshot = { nodes, edges }
+      }
+      if (anyDragEnd && _dragStartSnapshot) {
+        // Drag ended — push the pre-drag snapshot to undo stack
+        pushUndo(_dragStartSnapshot)
+        _dragStartSnapshot = null
+      }
+    }
+
     set(state => ({
       nodes: applyNodeChanges(changes, state.nodes),
       isDirty: true,
-      ...(isStructural ? { canUndo: true, canRedo: false } : {})
+      ...(isStructural || posChanges.some(c => c.dragging === false) ? { canUndo: true, canRedo: false } : {})
     }))
   },
 
@@ -299,75 +460,21 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     set({ nodes: next.nodes, edges: next.edges, isDirty: true, canUndo: true, canRedo: redoStack.length > 0 })
   },
 
-  saveWorkflow: async () => {
-    let { workflowId } = get()
-    const { workflowName, nodes, edges } = get()
-
-    // Don't save unnamed workflows — prompt user for a name via UI dialog
-    if (!workflowName || workflowName === 'Untitled Workflow') {
-      const uiStoreModule = await import('./ui.store')
-      const uiStore = resolveStoreExport<{ promptWorkflowName: (defaultName?: string) => Promise<string | null> }>(uiStoreModule, 'useUIStore')
-      const promptWorkflowName = uiStore?.getState().promptWorkflowName
-      if (typeof promptWorkflowName !== 'function') {
-        throw new Error('Workflow naming dialog is unavailable')
-      }
-      const name = await promptWorkflowName(workflowName || '')
-      if (!name || !name.trim() || name.trim() === 'Untitled Workflow') return
-      set({ workflowName: name.trim() })
+  saveWorkflow: async (options) => {
+    // Prevent concurrent saves — two overlapping calls can both see workflowId=null
+    // and each create a separate workflow, resulting in duplicates.
+    if (_saveInProgress) return
+    _saveInProgress = true
+    try {
+      await _doSaveWorkflow(get, set, options)
+    } finally {
+      _saveInProgress = false
     }
-
-    const finalName = get().workflowName
-
-    // Session restore may carry a stale workflowId (e.g. after reinstall or DB path migration).
-    // Validate it before save; if not found, create a new workflow on this save.
-    if (workflowId) {
-      try {
-        await workflowIpc.load(workflowId)
-      } catch {
-        workflowId = null
-        set({ workflowId: null })
-      }
-    }
-
-    // Auto-create workflow on first save (lazy creation)
-    if (!workflowId) {
-      if (nodes.length === 0) return
-      const wf = await workflowIpc.create({ name: finalName })
-      workflowId = wf.id
-      set({ workflowId: wf.id, workflowName: wf.name })
-    }
-
-    const wfNodes: WorkflowNode[] = nodes.map(n => ({
-      id: n.id,
-      workflowId: workflowId!,
-      nodeType: n.data.nodeType,
-      position: n.position,
-      params: {
-        ...(n.data.params ?? {}),
-        __meta: {
-          label: n.data.label,
-          modelInputSchema: n.data.modelInputSchema ?? []
-        }
-      },
-      currentOutputId: null // placeholder — repo will preserve existing DB value
-    }))
-
-    const wfEdges: WorkflowEdge[] = edges.map(e => ({
-      id: e.id,
-      workflowId: workflowId!,
-      sourceNodeId: e.source,
-      sourceOutputKey: e.sourceHandle ?? 'output',
-      targetNodeId: e.target,
-      targetInputKey: e.targetHandle ?? 'input'
-    }))
-
-    await workflowIpc.save({ id: workflowId!, name: finalName, nodes: wfNodes, edges: wfEdges })
-    set({ isDirty: false })
   },
 
   loadWorkflow: async (id) => {
     const wf = await workflowIpc.load(id)
-    let defMap = new Map<string, { params: unknown[]; inputs: unknown[]; outputs: unknown[]; icon: string; label: string }>()
+    let defMap = new Map<string, { params: unknown[]; inputs: unknown[]; outputs: unknown[]; label: string }>()
     try {
       const defs = await registryIpc.getAll()
       defMap = new Map(
@@ -377,7 +484,6 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
             params: def.params ?? [],
             inputs: def.inputs ?? [],
             outputs: def.outputs ?? [],
-            icon: def.icon ?? '',
             label: def.label ?? def.type
           }
         ])
@@ -391,7 +497,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       const meta = (n.params as Record<string, unknown>).__meta as Record<string, unknown> | undefined
       const modelInputSchema = meta?.modelInputSchema as unknown[] | undefined
       const def = defMap.get(n.nodeType)
-      const label = (meta?.label as string) || (def ? `${def.icon} ${def.label}` : n.nodeType)
+      const label = (meta?.label as string) || (def ? def.label : n.nodeType)
       // Strip __meta from the params passed to the node
       const { __meta: _, ...cleanParams } = n.params as Record<string, unknown>
       return {
@@ -423,7 +529,8 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
 
   newWorkflow: async (name) => {
     const wf = await workflowIpc.create({ name })
-    set({ workflowId: wf.id, workflowName: wf.name, nodes: [], edges: [], isDirty: false })
+    const { nodes, edges } = getDefaultNewWorkflowContent()
+    set({ workflowId: wf.id, workflowName: wf.name, nodes, edges, isDirty: false })
   },
 
   setWorkflowName: (name) => set({ workflowName: name, isDirty: true }),
@@ -432,11 +539,16 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     const { workflowId } = get()
     set({ workflowName: newName })
     if (workflowId) {
-      await workflowIpc.rename(workflowId, newName)
+      const result = await workflowIpc.rename(workflowId, newName) as unknown as { finalName: string } | void
+      // If the backend deduplicated the name, sync it back
+      if (result && typeof result === 'object' && 'finalName' in result && result.finalName !== newName) {
+        set({ workflowName: result.finalName })
+      }
     }
   },
 
-  reset: () => set({
-    nodes: [], edges: [], workflowId: null, workflowName: 'Untitled Workflow', isDirty: false
-  })
+  reset: () => {
+    const { nodes, edges } = getDefaultNewWorkflowContent()
+    set({ nodes, edges, workflowId: null, workflowName: 'Untitled Workflow', isDirty: false })
+  }
 }))

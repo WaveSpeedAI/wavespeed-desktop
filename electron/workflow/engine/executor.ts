@@ -13,6 +13,8 @@ import { getNodesByWorkflowId, updateNodeCurrentOutputId } from '../db/node.repo
 import { getEdgesByWorkflowId } from '../db/edge.repo'
 import { getDatabase, persistDatabase } from '../db/connection'
 import { getFileStorageInstance } from '../utils/file-storage'
+import { saveWorkflowResultToAssets } from '../utils/save-to-assets'
+import { getWorkflowById } from '../db/workflow.repo'
 import type { NodeExecutionContext, NodeExecutionResult } from '../nodes/base'
 import type { NodeStatus } from '../../../src/workflow/types/execution'
 import type { WorkflowNode, WorkflowEdge } from '../../../src/workflow/types/workflow'
@@ -44,20 +46,7 @@ export class ExecutionEngine {
     const nodeIds = nodes.map(n => n.id)
     const simpleEdges = edges.map(e => ({ sourceNodeId: e.sourceNodeId, targetNodeId: e.targetNodeId }))
 
-    const nodeTypes = new Map(nodes.map(n => [n.id, n.nodeType]))
-    const costByNodeId = new Map<string, number>()
-    for (const n of nodes) {
-      const handler = this.registry.getHandler(n.nodeType)
-      if (handler) {
-        // Estimate by node ID so multiple ai-task/run nodes with different models are summed correctly.
-        costByNodeId.set(n.id, handler.estimateCost(n.params))
-      }
-    }
-    const estimate = this.costService.estimate(nodeIds, nodeTypes, costByNodeId)
-    if (!estimate.withinBudget) {
-      throw new Error(`Budget exceeded: ${estimate.reason}`)
-    }
-
+    // Cost estimate (for UI only) is done via cost:estimate IPC; we don't block runs on budget since actual API cost varies by inputs.
     const levels = topologicalLevels(nodeIds, simpleEdges)
     const nodeMap = new Map(nodes.map(n => [n.id, n]))
     const failedNodes = new Set<string>()
@@ -71,8 +60,12 @@ export class ExecutionEngine {
     }
 
     for (const level of levels) {
+      // Stop the entire workflow if any node has failed
+      if (failedNodes.size > 0) break
       const batch = level.slice(0, MAX_PARALLEL_EXECUTIONS)
       await Promise.all(batch.map(async nodeId => {
+        // If another node in this batch failed, skip remaining
+        if (failedNodes.size > 0) return
         // Skip if any upstream node failed
         const upstreams = upstreamMap.get(nodeId) ?? []
         if (upstreams.some(uid => failedNodes.has(uid))) {
@@ -117,10 +110,13 @@ export class ExecutionEngine {
     const nodeMap = new Map(nodes.map(n => [n.id, n]))
 
     const levels = topologicalLevels(nodeIds, simpleEdges)
+    let stopped = false
     for (const level of levels) {
+      if (stopped) break
       const toRun = level.filter(id => downstream.includes(id))
       if (toRun.length === 0) continue
-      await Promise.all(toRun.map(id => this.executeNode(workflowId, id, nodeMap, edges)))
+      const results = await Promise.all(toRun.map(id => this.executeNode(workflowId, id, nodeMap, edges)))
+      if (results.some(ok => !ok)) stopped = true
     }
   }
 
@@ -246,6 +242,7 @@ export class ExecutionEngine {
 
     const startTime = Date.now()
     let result: NodeExecutionResult
+    let cancelledByUser = false
 
     try {
       const context: NodeExecutionContext = {
@@ -262,6 +259,10 @@ export class ExecutionEngine {
 
       result = await handler.execute(context)
     } catch (error) {
+      const isAbort = (err: unknown) =>
+        err instanceof DOMException && err.name === 'AbortError' ||
+        (err instanceof Error && err.message?.toLowerCase().includes('abort'))
+      cancelledByUser = isAbort(error)
       result = {
         status: 'error',
         outputs: {},
@@ -274,10 +275,13 @@ export class ExecutionEngine {
     }
 
     const durationMs = result.durationMs || (Date.now() - startTime)
+    const resultMetadata =
+      result.resultMetadata ??
+      (result.status === 'error' && result.error ? { error: result.error } : null)
     const dbConn = getDatabase()
     dbConn.run(
       `UPDATE node_executions SET status = ?, result_path = ?, result_metadata = ?, duration_ms = ?, cost = ? WHERE id = ?`,
-      [result.status, result.resultPath ?? null, result.resultMetadata ? JSON.stringify(result.resultMetadata) : null,
+      [result.status, result.resultPath ?? null, resultMetadata ? JSON.stringify(resultMetadata) : null,
        durationMs, result.cost, executionId]
     )
     persistDatabase()
@@ -291,7 +295,7 @@ export class ExecutionEngine {
         durationMs,
         cost: result.cost,
         createdAt: new Date().toISOString(),
-        resultMetadata: result.resultMetadata || {}
+        resultMetadata: resultMetadata ?? result.resultMetadata ?? {}
       })
     } catch (error) {
       console.error('[Executor] Failed to save execution snapshot:', error)
@@ -322,6 +326,35 @@ export class ExecutionEngine {
         console.error('[Executor] Failed to download result:', dlErr)
       }
 
+      // Save to My Assets (only for nodes that produce meaningful media output)
+      const SAVEABLE_NODE_TYPES = ['ai-task/run']
+      const isSaveableNode = SAVEABLE_NODE_TYPES.includes(node.nodeType) || node.nodeType.startsWith('free-tool/')
+      if (isSaveableNode) {
+        try {
+          const workflow = getWorkflowById(workflowId)
+          const wfName = workflow?.name ?? 'Workflow'
+          const modelId = String(node.params?.modelId ?? node.nodeType)
+          const resultUrls = result.resultMetadata?.resultUrls as string[] | undefined
+          const urls = resultUrls ?? (result.resultPath ? [result.resultPath] : [])
+          for (let i = 0; i < urls.length; i++) {
+            const url = urls[i]
+            if (url) {
+              await saveWorkflowResultToAssets({
+                url,
+                modelId,
+                workflowId,
+                workflowName: wfName,
+                nodeId,
+                executionId,
+                resultIndex: i
+              })
+            }
+          }
+        } catch (assetErr) {
+          console.error('[Executor] Failed to save to My Assets:', assetErr)
+        }
+      }
+
       // Always set to confirmed after successful execution
       this.callbacks.onNodeStatus(workflowId, nodeId, 'confirmed')
 
@@ -332,8 +365,11 @@ export class ExecutionEngine {
       return true
     } else {
       const errorMsg = result.error || 'Unknown error'
-      console.error('[Executor] Node execution failed:', errorMsg)
-      this.callbacks.onNodeStatus(workflowId, nodeId, 'error', errorMsg)
+      if (!cancelledByUser) {
+        console.error('[Executor] Node execution failed:', errorMsg)
+        this.callbacks.onNodeStatus(workflowId, nodeId, 'error', errorMsg)
+      }
+      // cancelledByUser: cancel() already set node to idle; don't overwrite with error
 
       const outgoingEdges = edges.filter(e => e.sourceNodeId === nodeId)
       for (const edge of outgoingEdges) {
@@ -400,11 +436,11 @@ export class ExecutionEngine {
       } else if (targetKey.startsWith('param-')) {
         // Single param handle: "param-image" → set inputs.image = value
         const paramName = targetKey.slice(6) // remove "param-"
-        inputs[paramName] = String(outputValue)
+        inputs[paramName] = Array.isArray(outputValue) ? outputValue : String(outputValue)
       } else if (targetKey.startsWith('input-')) {
-        // Input port handle: "input-media" → set inputs.media = value
+        // Input port handle: "input-media" → set inputs.media = value (pass arrays through for e.g. Select node)
         const inputName = targetKey.slice(6) // remove "input-"
-        inputs[inputName] = String(outputValue)
+        inputs[inputName] = Array.isArray(outputValue) ? outputValue : String(outputValue)
       } else {
         // Unknown format, use as-is
         inputs[targetKey] = outputValue

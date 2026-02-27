@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Sidebar } from './Sidebar'
+import { AppLogo } from './AppLogo'
 import { PageResetContext } from './PageResetContext'
 import { Toaster } from '@/components/ui/toaster'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -12,7 +13,7 @@ import { apiClient } from '@/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { KeyRound, Eye, EyeOff, Loader2, Zap, ExternalLink, Menu } from 'lucide-react'
+import { KeyRound, Eye, EyeOff, Loader2, Zap, ExternalLink } from 'lucide-react'
 import { VideoEnhancerPage } from '@/pages/VideoEnhancerPage'
 import { ImageEnhancerPage } from '@/pages/ImageEnhancerPage'
 import { BackgroundRemoverPage } from '@/pages/BackgroundRemoverPage'
@@ -29,33 +30,22 @@ import { FaceSwapperPage } from '@/pages/FaceSwapperPage'
 import { WorkflowPage } from '@/workflow/WorkflowPage'
 import { useFreeToolListener } from '@/workflow/hooks/useFreeToolListener'
 
+const isElectron = navigator.userAgent.toLowerCase().includes('electron')
+
 // Helper to generate next key
 let keyCounter = 0
 const nextKey = () => ++keyCounter
 
+
 export function Layout() {
   const { t } = useTranslation()
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true)
   const navigate = useNavigate()
   const location = useLocation()
   const hasShownUpdateToast = useRef(false)
 
   // Register free-tool IPC listener globally (must be always mounted for workflow execution)
   useFreeToolListener()
-
-  // Close mobile menu when route changes; auto-collapse sidebar for workflow
-  const prevPathRef = useRef(location.pathname)
-  useEffect(() => {
-    setMobileMenuOpen(false)
-    // Auto-collapse when entering workflow, auto-expand when leaving
-    if (location.pathname === '/workflow' && prevPathRef.current !== '/workflow') {
-      setSidebarCollapsed(true)
-    } else if (location.pathname !== '/workflow' && prevPathRef.current === '/workflow') {
-      setSidebarCollapsed(false)
-    }
-    prevPathRef.current = location.pathname
-  }, [location.pathname])
 
   // Track which persistent pages have been visited (to delay initial mount)
   const [visitedPages, setVisitedPages] = useState<Set<string>>(new Set())
@@ -279,32 +269,26 @@ export function Layout() {
   return (
     <PageResetContext.Provider value={{ resetPage }}>
     <TooltipProvider>
-      <div className="flex h-screen overflow-hidden relative">
-        {/* Mobile menu button */}
-        <button
-          className="fixed left-3 top-3 z-50 rounded-lg border border-border/70 bg-background/85 p-2 shadow-lg backdrop-blur md:hidden"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle menu"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
-
-        {/* Mobile overlay */}
-        {mobileMenuOpen && (
-          <div
-            className="fixed inset-0 bg-black/50 z-40 md:hidden"
-            onClick={() => setMobileMenuOpen(false)}
-          />
+      <div className="flex flex-col h-screen overflow-hidden relative">
+        {/* Fixed titlebar — draggable region for macOS & Windows (Electron only) */}
+        {isElectron && (
+        <div className="h-8 min-h-[32px] flex items-center justify-center bg-background electron-drag select-none shrink-0 relative z-50 electron-safe-right">
+          {!/mac/i.test(navigator.platform) && (
+            <div className="absolute left-0 top-0 bottom-0 w-12 flex items-center justify-center electron-no-drag">
+              <AppLogo className="h-5 w-5 shrink-0" />
+            </div>
+          )}
+        </div>
         )}
-
+        <div className="flex flex-1 overflow-hidden">
         <Sidebar
           collapsed={sidebarCollapsed}
-          onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+          onToggle={() => setSidebarCollapsed(prev => !prev)}
           lastFreeToolsPage={lastFreeToolsPage}
-          isMobileOpen={mobileMenuOpen}
-          onMobileClose={() => setMobileMenuOpen(false)}
+          isMobileOpen={false}
+          onMobileClose={() => {}}
         />
-        <main className="relative flex-1 overflow-hidden md:pl-0">
+        <main className="relative flex-1 overflow-hidden md:pl-0" style={{ background: 'hsl(var(--content-area))' }}>
           {requiresLogin ? loginContent : (
             <>
               {/* Regular routes via Outlet */}
@@ -388,6 +372,7 @@ export function Layout() {
           )}
         </main>
         <Toaster />
+        </div>
       </div>
     </TooltipProvider>
     </PageResetContext.Provider>

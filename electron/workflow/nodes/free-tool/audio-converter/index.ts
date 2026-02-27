@@ -8,7 +8,6 @@ export const audioConverterDef: NodeTypeDefinition = {
   type: 'free-tool/audio-converter',
   category: 'free-tool',
   label: 'Audio Converter',
-  icon: '🎵',
   inputs: [{ key: 'input', label: 'Audio', dataType: 'audio', required: true }],
   outputs: [{ key: 'output', label: 'Output', dataType: 'audio', required: true }],
   params: [

@@ -3,10 +3,11 @@ import { useTranslation } from 'react-i18next'
 import { useDropzone } from 'react-dropzone'
 import { apiClient } from '@/api/client'
 import { cn } from '@/lib/utils'
+import { getSingleImageFromValues, getSingleVideoFromValues } from '@/lib/schemaToForm'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
-import { Upload, X, Loader2, FileVideo, FileAudio, Image, FileArchive, File as FileIcon, Camera, Video, Mic, Brush, Trash2 } from 'lucide-react'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Upload, X, Loader2, FileVideo, FileAudio, Image, FileArchive, File as FileIcon, Camera, Video, Mic, Brush } from 'lucide-react'
 import { CameraCapture } from './CameraCapture'
 import { VideoRecorder } from './VideoRecorder'
 import { AudioRecorder } from './AudioRecorder'
@@ -25,6 +26,8 @@ interface FileUploadProps {
   isMaskField?: boolean
   formValues?: Record<string, unknown>
   onUploadingChange?: (isUploading: boolean) => void
+  /** When provided (e.g. workflow), use this instead of API upload. Returned URL is stored as value. */
+  onUploadFile?: (file: File) => Promise<string>
 }
 
 export function FileUpload({
@@ -36,7 +39,8 @@ export function FileUpload({
   disabled = false,
   isMaskField = false,
   formValues,
-  onUploadingChange
+  onUploadingChange,
+  onUploadFile
 }: FileUploadProps) {
   const { t } = useTranslation()
   const [isUploading, setIsUploading] = useState(false)
@@ -46,7 +50,7 @@ export function FileUpload({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [previewType, setPreviewType] = useState<'image' | 'video' | 'audio' | null>(null)
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null)
-  const [deleteIndex, setDeleteIndex] = useState<number | null>(null)
+
   const abortControllerRef = useRef<AbortController | null>(null)
 
   // Convert value to array for consistent handling
@@ -59,41 +63,15 @@ export function FileUpload({
   const supportsMask = isMaskField && accept.includes('image')
   const hasCaptureOptions = supportsCamera || supportsVideo || supportsAudio || supportsMask
 
-  // Get reference image/video URL from formValues for mask editor
+  // Get reference image/video URL from formValues for mask editor (images → image)
   const referenceImageUrl = useMemo(() => {
     if (!formValues || !supportsMask) return undefined
-
-    // Check for 'image' field first (most common)
-    if (formValues['image'] && typeof formValues['image'] === 'string') {
-      return formValues['image']
-    }
-
-    // Check for any field ending with '_image' or 'image_url'
-    for (const [key, val] of Object.entries(formValues)) {
-      if (typeof val === 'string' && val && (key.endsWith('_image') || key.endsWith('image_url'))) {
-        return val
-      }
-    }
-
-    return undefined
+    return getSingleImageFromValues(formValues)
   }, [formValues, supportsMask])
 
   const referenceVideoUrl = useMemo(() => {
     if (!formValues || !supportsMask) return undefined
-
-    // Check for 'video' field
-    if (formValues['video'] && typeof formValues['video'] === 'string') {
-      return formValues['video']
-    }
-
-    // Check for any field ending with '_video' or 'video_url'
-    for (const [key, val] of Object.entries(formValues)) {
-      if (typeof val === 'string' && val && (key.endsWith('_video') || key.endsWith('video_url'))) {
-        return val
-      }
-    }
-
-    return undefined
+    return getSingleVideoFromValues(formValues)
   }, [formValues, supportsMask])
 
   const handleAddUrl = () => {
@@ -125,7 +103,9 @@ export function FileUpload({
       const filename = `capture_${Date.now()}.${extension}`
       const file = new File([blob], filename, { type: blob.type })
 
-      const url = await apiClient.uploadFile(file, abortControllerRef.current.signal)
+      const url = onUploadFile
+        ? await onUploadFile(file)
+        : await apiClient.uploadFile(file, abortControllerRef.current.signal)
 
       if (multiple) {
         onChange([...urls, url])
@@ -144,7 +124,7 @@ export function FileUpload({
       setIsUploading(false)
       onUploadingChange?.(false)
     }
-  }, [multiple, urls, onChange, onUploadingChange])
+  }, [multiple, urls, onChange, onUploadingChange, onUploadFile])
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (disabled) return
@@ -159,7 +139,9 @@ export function FileUpload({
     try {
       const uploadPromises = acceptedFiles.slice(0, maxFiles - urls.length).map(async (file) => {
         try {
-          const url = await apiClient.uploadFile(file, abortControllerRef.current?.signal)
+          const url = onUploadFile
+            ? await onUploadFile(file)
+            : await apiClient.uploadFile(file, abortControllerRef.current?.signal)
           return { url, name: file.name, type: file.type }
         } catch (err) {
           // Re-throw cancellation errors to stop all uploads
@@ -190,7 +172,7 @@ export function FileUpload({
       setIsUploading(false)
       onUploadingChange?.(false)
     }
-  }, [disabled, maxFiles, urls, multiple, onChange, onUploadingChange])
+  }, [disabled, maxFiles, urls, multiple, onChange, onUploadingChange, onUploadFile])
 
   // Parse accept string into react-dropzone format
   // Maps MIME types to extensions for better browser compatibility
@@ -257,12 +239,9 @@ export function FileUpload({
     } else {
       onChange('')
     }
-    setDeleteIndex(null)
   }
 
-  const confirmDelete = (index: number) => {
-    setDeleteIndex(index)
-  }
+
 
   const getFileIcon = () => {
     if (accept.includes('video')) return FileVideo
@@ -373,7 +352,7 @@ export function FileUpload({
                   className="absolute top-0.5 right-0.5 h-5 w-5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                   onClick={(e) => {
                     e.stopPropagation()
-                    confirmDelete(index)
+                    removeFile(index)
                   }}
                   disabled={disabled}
                 >
@@ -590,34 +569,7 @@ export function FileUpload({
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteIndex !== null} onOpenChange={(open) => !open && setDeleteIndex(null)}>
-        <DialogContent className="max-w-[90vw] sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>{t('playground.capture.removeFile', 'Remove File')}</DialogTitle>
-            <DialogDescription>
-              {t('playground.capture.removeFileConfirm', 'Are you sure you want to remove this file?')}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex-row gap-2">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={() => setDeleteIndex(null)}
-            >
-              {t('common.cancel', 'Cancel')}
-            </Button>
-            <Button
-              variant="destructive"
-              className="flex-1"
-              onClick={() => deleteIndex !== null && removeFile(deleteIndex)}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              {t('common.delete', 'Delete')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
     </div>
   )
 }

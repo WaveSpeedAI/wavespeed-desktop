@@ -66,22 +66,50 @@ jobs:
           # ─── Check 2: New routes in desktop App.tsx ───
           echo ""
           echo "▶ Check 2: Route sync"
+          # Desktop-only routes that don't need mobile equivalents
+          DESKTOP_ONLY_ROUTES="workflow z-image"
+
           if echo "$CHANGED_FILES" | grep -q "^src/App.tsx$"; then
             PREV_ROUTES=$(git show "$PREV_TAG":src/App.tsx 2>/dev/null | grep -oP 'path="[^"]*"' | sort)
             CURR_ROUTES=$(git show "$CURRENT_TAG":src/App.tsx 2>/dev/null | grep -oP 'path="[^"]*"' | sort)
             NEW_ROUTES=$(comm -13 <(echo "$PREV_ROUTES") <(echo "$CURR_ROUTES"))
+            MOBILE_ROUTES=$(git show "$CURRENT_TAG":mobile/src/App.tsx 2>/dev/null | grep -oP 'path="[^"]*"' | sort)
 
             if [ -n "$NEW_ROUTES" ]; then
-              WARNINGS=$((WARNINGS + 1))
-              MSG="**Route Sync**: New routes added to desktop \`src/App.tsx\` but missing from \`mobile/src/App.tsx\`: \`${NEW_ROUTES}\`"
-              ISSUES="${ISSUES}\n- ${MSG}"
-              echo "::warning file=src/App.tsx::⚠️ ${MSG}"
+              MISSING_ROUTES=""
+              while IFS= read -r route; do
+                route_name=$(echo "$route" | sed 's/path="//;s/"//')
+                [ -z "$route_name" ] && continue
+                # Skip desktop-only routes
+                skip=false
+                for ignore in $DESKTOP_ONLY_ROUTES; do
+                  if [[ "$route_name" == "$ignore" || "$route_name" == "$ignore/"* ]]; then
+                    skip=true
+                    break
+                  fi
+                done
+                $skip && continue
+                # Check if route exists in mobile App.tsx
+                if ! echo "$MOBILE_ROUTES" | grep -qF "$route"; then
+                  MISSING_ROUTES="$MISSING_ROUTES $route"
+                fi
+              done <<< "$NEW_ROUTES"
+
+              if [ -n "$MISSING_ROUTES" ]; then
+                WARNINGS=$((WARNINGS + 1))
+                MSG="**Route Sync**: New routes added to desktop \`src/App.tsx\` but missing from \`mobile/src/App.tsx\`:${MISSING_ROUTES}"
+                ISSUES="${ISSUES}\n- ${MSG}"
+                echo "::warning file=src/App.tsx::⚠️ ${MSG}"
+              fi
             fi
           fi
 
           # ─── Check 3: New dependencies in root package.json ───
           echo ""
           echo "▶ Check 3: Dependency sync"
+          # Desktop-only dependencies that mobile doesn't need (e.g. workflow/electron-only)
+          DESKTOP_ONLY_DEPS="sql.js json-stable-stringify uuid @google/model-viewer better-sqlite3"
+
           if echo "$CHANGED_FILES" | grep -q "^package.json$"; then
             PREV_DEPS=$(git show "$PREV_TAG":package.json 2>/dev/null | node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.log(Object.keys(d.dependencies||{}).sort().join('\n'))")
             CURR_DEPS=$(git show "$CURRENT_TAG":package.json 2>/dev/null | node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.log(Object.keys(d.dependencies||{}).sort().join('\n'))")
@@ -91,7 +119,17 @@ jobs:
               MOBILE_DEPS=$(cat mobile/package.json | node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); console.log(Object.keys(d.dependencies||{}).sort().join('\n'))")
               MISSING=""
               while IFS= read -r dep; do
-                if [ -n "$dep" ] && ! echo "$MOBILE_DEPS" | grep -q "^${dep}$"; then
+                [ -z "$dep" ] && continue
+                # Skip desktop-only deps
+                skip=false
+                for ignore in $DESKTOP_ONLY_DEPS; do
+                  if [ "$dep" == "$ignore" ]; then
+                    skip=true
+                    break
+                  fi
+                done
+                $skip && continue
+                if ! echo "$MOBILE_DEPS" | grep -q "^${dep}$"; then
                   MISSING="$MISSING \`$dep\`"
                 fi
               done <<< "$NEW_DEPS"
@@ -237,10 +275,19 @@ jobs:
         working-directory: mobile/android
         run: ./gradlew assembleDebug
 
+      - name: Decode keystore
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > mobile/android/app/release.keystore
+
       - name: Build Release APK
         if: startsWith(github.ref, 'refs/tags/v')
         working-directory: mobile/android
         run: ./gradlew assembleRelease
+        env:
+          ANDROID_KEYSTORE_FILE: release.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
       - name: Rename APKs
         run: |

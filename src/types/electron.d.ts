@@ -46,6 +46,11 @@ export interface AssetMetadataElectron {
   favorite: boolean
   predictionId?: string
   originalUrl?: string
+  source?: 'playground' | 'workflow' | 'free-tool'
+  workflowId?: string
+  workflowName?: string
+  nodeId?: string
+  executionId?: string
 }
 
 export interface UpdateStatus {
@@ -118,7 +123,11 @@ export interface ElectronAPI {
   setSettings: (settings: Record<string, unknown>) => Promise<boolean>
   clearAllData: () => Promise<boolean>
   downloadFile: (url: string, defaultFilename: string) => Promise<DownloadResult>
+  saveFileSilent: (url: string, dir: string, fileName: string) => Promise<DownloadResult>
   openExternal: (url: string) => Promise<void>
+
+  // Title bar theme
+  updateTitlebarTheme: (isDark: boolean) => Promise<void>
 
   // Auto-updater APIs
   getAppVersion: () => Promise<string>
@@ -185,6 +194,14 @@ export interface ElectronAPI {
   sdGetAuxiliaryModelDownloadPath: (type: 'llm' | 'vae') => Promise<{ success: boolean; path?: string; error?: string }>
   sdGetModelsDir: () => Promise<{ success: boolean; path?: string; error?: string }>
   sdExtractBinary: (zipPath: string, destPath: string) => Promise<{ success: boolean; path?: string; error?: string }>
+
+  // Persistent key-value state (survives app restarts)
+  getState: (key: string) => Promise<unknown>
+  setState: (key: string, value: unknown) => Promise<boolean>
+  removeState: (key: string) => Promise<boolean>
+
+  // Assets event listener (workflow executor pushes new assets)
+  onAssetsNewAsset: (callback: (asset: unknown) => void) => () => void
 }
 
 export interface WorkflowAPI {

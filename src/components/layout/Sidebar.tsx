@@ -25,7 +25,6 @@ import {
   Star,
   X
 } from 'lucide-react'
-import { AppLogo } from './AppLogo'
 
 interface NavItem {
   titleKey: string
@@ -131,8 +130,8 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
 
   const navGroups = [
     { key: 'create', label: 'Create', items: createItems },
-    { key: 'tools', label: 'Tools', items: toolsItems },
     { key: 'manage', label: 'Manage', items: manageItems },
+    { key: 'tools', label: 'Tools', items: toolsItems },
   ]
 
   const bottomNavItems = [
@@ -146,12 +145,10 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
   return (
     <div
       className={cn(
-        "flex h-full flex-col border-r border-border/70 bg-background/95 backdrop-blur transition-all duration-300",
-        // Desktop styles
-        "hidden md:flex",
-        collapsed ? "w-20" : "w-52",
-        // Mobile styles - fixed positioned drawer
-        isMobileOpen && "!flex fixed inset-y-0 left-0 z-50 w-72 shadow-2xl"
+        "flex h-full flex-col bg-background/95 backdrop-blur transition-all duration-300 shrink-0 electron-drag",
+        collapsed ? "w-12" : "w-48",
+        // Mobile overlay when hamburger opens
+        isMobileOpen && "!fixed inset-y-0 left-0 z-50 w-72 shadow-2xl"
       )}
     >
       {/* Mobile close button */}
@@ -165,29 +162,13 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
         </button>
       )}
 
-      {/* Logo */}
-      <div
-        style={{ display: 'flex', alignItems: 'center', flexDirection: 'row' }}
-        className={cn(
-          "h-16 border-b border-border/70",
-          collapsed && !isMobileOpen ? "justify-center px-2" : "gap-3 px-5"
-        )}
-      >
-        <AppLogo className="h-10 w-10 shrink-0" />
-        {(!collapsed || isMobileOpen) && (
-          <div className="min-w-0">
-            <span className="block whitespace-nowrap text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#1a2654] to-[#1a6b7c] dark:from-[#38bdf8] dark:to-[#34d399]">WaveSpeed</span>
-          </div>
-        )}
-      </div>
-
       {/* Navigation */}
-      <ScrollArea className="flex-1 px-3 py-4">
-        <nav className="flex flex-col gap-4">
+      <ScrollArea className="flex-1 px-1.5 py-2">
+        <nav className="flex flex-col gap-5 px-0.5 electron-no-drag">
           {navGroups.map((group) => (
-            <div key={group.key} className="space-y-1">
+            <div key={group.key} className={collapsed && !isMobileOpen ? 'contents' : 'space-y-5'}>
               {(!collapsed || isMobileOpen) && (
-                <div className="px-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/80">
+                <div className="px-2 pb-0.5 pt-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/80">
                   {group.label}
                 </div>
               )}
@@ -212,8 +193,8 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
                         }}
                         className={cn(
                           buttonVariants({ variant: 'ghost', size: 'sm' }),
-                          'h-10 w-full rounded-xl text-sm transition-all relative overflow-visible',
-                          collapsed && !isMobileOpen ? 'justify-center px-2' : 'justify-start gap-3 px-3',
+                          'h-8 w-full rounded-lg text-xs transition-all relative overflow-visible',
+                          collapsed && !isMobileOpen ? 'justify-center px-0' : 'justify-start gap-2.5 px-2.5',
                           active
                             ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/95 hover:text-primary-foreground'
                             : 'text-muted-foreground hover:bg-muted hover:text-foreground',
@@ -222,10 +203,10 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
                       >
                         {/* Glow effect for new feature */}
                         {isNewFeature && !active && (
-                          <span className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 animate-pulse" />
+                          <span className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 animate-pulse" />
                         )}
                         
-                        <item.icon className="h-4 w-4 shrink-0 relative z-10" />
+                        <item.icon className="h-5 w-5 shrink-0 relative z-10" />
                         {(!collapsed || isMobileOpen) && (
                           <>
                             <span className="relative z-10">
@@ -238,8 +219,8 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
                             )}
                           </>
                         )}
-                        {/* Red dot for collapsed state */}
-                        {isNewFeature && (collapsed && !isMobileOpen) && (
+                        {/* Blue dot for collapsed state — only when not active */}
+                        {isNewFeature && !active && (collapsed && !isMobileOpen) && (
                           <span className="absolute top-1 right-1 flex h-2 w-2 z-10">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
@@ -266,7 +247,7 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
       </ScrollArea>
 
       {/* Bottom Navigation */}
-      <div className="mt-auto border-t border-border/70 p-3">
+      <div className="mt-auto p-1.5 electron-no-drag">
         <nav className="flex flex-col gap-1">
           {bottomNavItems.map((item) => {
             const active = location.pathname === item.href
@@ -278,14 +259,14 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
                     onClick={() => navigate(item.href)}
                     className={cn(
                       buttonVariants({ variant: 'ghost', size: 'sm' }),
-                      'h-10 w-full rounded-xl transition-all',
-                      collapsed && !isMobileOpen ? 'justify-center px-2' : 'justify-start gap-3 px-3',
+                      'h-8 w-full rounded-lg transition-all',
+                      collapsed && !isMobileOpen ? 'justify-center px-0' : 'justify-start gap-2.5 px-2.5',
                       active
                         ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/95 hover:text-primary-foreground'
                         : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                     )}
                   >
-                    <item.icon className="h-4 w-4 shrink-0" />
+                    <item.icon className="h-5 w-5 shrink-0" />
                     {(!collapsed || isMobileOpen) && <span>{t(item.titleKey)}</span>}
                   </button>
                 </TooltipTrigger>
@@ -299,7 +280,7 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
           })}
         </nav>
 
-        {/* Toggle Button - hidden on mobile */}
+        {/* Collapse/expand: bottom button toggles; state also syncs to window width on resize */}
         {!isMobileOpen && (
           <Tooltip delayDuration={0} open={collapsed && tooltipReady ? undefined : false}>
             <TooltipTrigger asChild>
@@ -308,15 +289,15 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
                 size="sm"
                 onClick={onToggle}
                 className={cn(
-                  "mt-2 hidden h-10 w-full rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground md:flex",
-                  collapsed ? "justify-center px-2" : "justify-start gap-3 px-3"
+                  "mt-3 h-8 w-full rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground",
+                  collapsed ? "justify-center px-0" : "justify-start gap-2.5 px-2.5"
                 )}
               >
                 {collapsed ? (
-                  <PanelLeft className="h-4 w-4" />
+                  <PanelLeft className="h-5 w-5" />
                 ) : (
                   <>
-                    <PanelLeftClose className="h-4 w-4" style={{ flexShrink: 0 }} />
+                    <PanelLeftClose className="h-5 w-5" style={{ flexShrink: 0 }} />
                     <span>{t('nav.collapse')}</span>
                   </>
                 )}

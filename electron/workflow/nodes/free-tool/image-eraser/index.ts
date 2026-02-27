@@ -6,10 +6,9 @@ export const imageEraserDef: NodeTypeDefinition = {
   type: 'free-tool/image-eraser',
   category: 'free-tool',
   label: 'Image Eraser',
-  icon: '🪄',
   inputs: [
     { key: 'input', label: 'Image', dataType: 'image', required: true },
-    { key: 'mask', label: 'Mask', dataType: 'image', required: true }
+    { key: 'mask_image', label: 'Mask', dataType: 'image', required: true }
   ],
   outputs: [{ key: 'output', label: 'Output', dataType: 'image', required: true }],
   params: []
@@ -23,7 +22,7 @@ export class ImageEraserHandler extends BaseNodeHandler {
   async execute(ctx: NodeExecutionContext): Promise<NodeExecutionResult> {
     const start = Date.now()
     const input = String(ctx.inputs.input ?? ctx.params.input ?? '')
-    const mask = String(ctx.inputs.mask ?? ctx.params.mask ?? '')
+    const mask_image = String(ctx.inputs.mask_image ?? ctx.params.mask_image ?? '')
 
     if (!input) {
       return {
@@ -34,7 +33,7 @@ export class ImageEraserHandler extends BaseNodeHandler {
         error: 'No input image provided.'
       }
     }
-    if (!mask) {
+    if (!mask_image) {
       return {
         status: 'error',
         outputs: {},
@@ -50,7 +49,7 @@ export class ImageEraserHandler extends BaseNodeHandler {
         nodeType: 'free-tool/image-eraser',
         workflowId: ctx.workflowId,
         nodeId: ctx.nodeId,
-        inputs: { input, mask },
+        inputs: { input, mask_image },
         params: {}
       })
       ctx.onProgress(100, 'Image eraser completed.')

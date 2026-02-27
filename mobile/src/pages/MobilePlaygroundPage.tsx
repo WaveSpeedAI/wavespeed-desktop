@@ -11,6 +11,7 @@ import { DynamicForm } from '@/components/playground/DynamicForm'
 import { OutputDisplay } from '@/components/playground/OutputDisplay'
 import { BatchControls } from '@/components/playground/BatchControls'
 import { BatchOutputGrid } from '@/components/playground/BatchOutputGrid'
+import { HistoryPanel } from '@/components/playground/HistoryPanel'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -50,11 +51,19 @@ export function MobilePlaygroundPage() {
     runPrediction,
     runBatch,
     clearBatchResults,
+    selectHistoryItem,
   } = usePlaygroundStore()
   const { templates, loadTemplates, saveTemplate, isLoaded: templatesLoaded } = useTemplateStore()
   const { save: savePredictionInputs, load: loadPredictionInputs, isLoaded: inputsLoaded } = usePredictionInputsStore()
 
   const activeTab = getActiveTab()
+
+  // History-aware output display
+  const historyIndex = activeTab?.selectedHistoryIndex ?? null
+  const historyItem = historyIndex !== null ? activeTab?.generationHistory[historyIndex] : null
+  const displayedPrediction = historyItem ? historyItem.prediction : (activeTab?.currentPrediction ?? null)
+  const displayedOutputs = historyItem ? historyItem.outputs : (activeTab?.outputs ?? [])
+
   const templateLoadedRef = useRef<string | null>(null)
   const pendingTemplateRef = useRef<{ values: Record<string, unknown>, name: string } | null>(null)
   const prevOutputsLengthRef = useRef(0)
@@ -450,28 +459,37 @@ export function MobilePlaygroundPage() {
                   )}
                 </div>
               </div>
-              <div className="flex-1 p-4 overflow-auto">
-                {/* Show BatchOutputGrid for batch results, OutputDisplay for single results */}
-                {activeTab.batchResults && activeTab.batchResults.length > 0 ? (
-                  <BatchOutputGrid
-                    results={activeTab.batchResults}
-                    modelId={activeTab.selectedModel?.model_id}
-                    modelName={activeTab.selectedModel?.name}
-                    onClear={clearBatchResults}
-                    isRunning={activeTab.isRunning}
-                    totalCount={activeTab.batchConfig?.repeatCount}
-                    queue={activeTab.batchState?.queue}
-                  />
-                ) : (
-                  <OutputDisplay
-                    prediction={activeTab.currentPrediction}
-                    outputs={activeTab.outputs}
-                    error={activeTab.error}
-                    isLoading={activeTab.isRunning}
-                    modelId={activeTab.selectedModel?.model_id}
-                    modelName={activeTab.selectedModel?.name}
-                    onSaveTemplate={activeTab.selectedModel ? () => setShowSaveTemplateDialog(true) : undefined}
-                    hideGameButton
+              <div className="flex-1 flex flex-col overflow-hidden">
+                <div className="flex-1 p-4 overflow-auto">
+                  {/* Show BatchOutputGrid for batch results, OutputDisplay for single results */}
+                  {activeTab.batchResults && activeTab.batchResults.length > 0 ? (
+                    <BatchOutputGrid
+                      results={activeTab.batchResults}
+                      modelId={activeTab.selectedModel?.model_id}
+                      modelName={activeTab.selectedModel?.name}
+                      onClear={clearBatchResults}
+                      isRunning={activeTab.isRunning}
+                      totalCount={activeTab.batchConfig?.repeatCount}
+                      queue={activeTab.batchState?.queue}
+                    />
+                  ) : (
+                    <OutputDisplay
+                      prediction={displayedPrediction}
+                      outputs={displayedOutputs}
+                      error={activeTab.error}
+                      isLoading={activeTab.isRunning}
+                      modelId={activeTab.selectedModel?.model_id}
+                      hideGameButton
+                    />
+                  )}
+                </div>
+                {/* History Panel - horizontal strip at bottom */}
+                {activeTab.generationHistory.length >= 2 && (
+                  <HistoryPanel
+                    history={activeTab.generationHistory}
+                    selectedIndex={activeTab.selectedHistoryIndex}
+                    onSelect={selectHistoryItem}
+                    direction="horizontal"
                   />
                 )}
               </div>

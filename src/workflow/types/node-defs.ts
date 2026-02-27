@@ -31,7 +31,6 @@ export interface NodeTypeDefinition {
   type: string
   category: NodeCategory
   label: string
-  icon: string
   inputs: PortDefinition[]
   outputs: PortDefinition[]
   params: ParamDefinition[]

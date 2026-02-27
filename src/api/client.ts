@@ -120,6 +120,7 @@ export interface RunOptions {
   timeout?: number
   pollInterval?: number
   enableSyncMode?: boolean
+  signal?: AbortSignal
 }
 
 export interface HistoryFilters {
@@ -181,10 +182,11 @@ class WaveSpeedClient {
     }
   }
 
-  async runPrediction(model: string, input: Record<string, unknown>, options?: { timeout?: number }): Promise<PredictionResult> {
+  async runPrediction(model: string, input: Record<string, unknown>, options?: { timeout?: number; signal?: AbortSignal }): Promise<PredictionResult> {
     try {
       const response = await this.client.post<PredictionResponse>(`/api/v3/${model}`, input, {
-        timeout: options?.timeout
+        timeout: options?.timeout,
+        ...(options?.signal && { signal: options.signal })
       })
       if (response.data.code !== 200) {
         throw new APIError(response.data.message || 'Failed to run prediction', {
@@ -198,9 +200,11 @@ class WaveSpeedClient {
     }
   }
 
-  async getResult(requestId: string): Promise<PredictionResult> {
+  async getResult(requestId: string, options?: { signal?: AbortSignal }): Promise<PredictionResult> {
     try {
-      const response = await this.client.get<PredictionResponse>(`/api/v3/predictions/${requestId}/result`)
+      const response = await this.client.get<PredictionResponse>(`/api/v3/predictions/${requestId}/result`, {
+        ...(options?.signal && { signal: options.signal })
+      })
       if (response.data.code !== 200) {
         throw new APIError(response.data.message || 'Failed to get result', {
           code: response.data.code,
@@ -209,6 +213,9 @@ class WaveSpeedClient {
       }
       return response.data.data
     } catch (error) {
+      // Re-throw AxiosError directly so the polling loop in run() can detect
+      // connection errors and retry instead of aborting the entire prediction.
+      if (error instanceof AxiosError) throw error
       throw createAPIError(error, 'Failed to get result')
     }
   }
@@ -250,16 +257,21 @@ class WaveSpeedClient {
     input: Record<string, unknown>,
     options: RunOptions = {}
   ): Promise<PredictionResult> {
-    const { timeout = 36000000, pollInterval = 1000, enableSyncMode = false } = options
+    const { timeout = 36000000, pollInterval = 1000, enableSyncMode = false, signal } = options
+
+    const throwIfAborted = (): void => {
+      if (signal?.aborted) throw new DOMException('Cancelled', 'AbortError')
+    }
 
     // If sync mode is enabled, add it to input and wait for response (use longer timeout)
     if (enableSyncMode) {
-      const result = await this.runPrediction(model, { ...input, enable_sync_mode: true }, { timeout: 120000 })
+      const result = await this.runPrediction(model, { ...input, enable_sync_mode: true }, { timeout: 120000, signal })
       return result
     }
 
+    throwIfAborted()
     // Submit prediction
-    const prediction = await this.runPrediction(model, input)
+    const prediction = await this.runPrediction(model, input, { signal })
     const requestId = prediction.id
 
     if (!requestId) {
@@ -268,13 +280,17 @@ class WaveSpeedClient {
 
     // Poll for result with retry on connection errors
     const startTime = Date.now()
+    let consecutiveErrors = 0
+    const MAX_CONSECUTIVE_ERRORS = 10
     while (true) {
+      throwIfAborted()
       if (Date.now() - startTime > timeout) {
         throw new Error('Prediction timed out')
       }
 
       try {
-        const result = await this.getResult(requestId)
+        const result = await this.getResult(requestId, { signal })
+        consecutiveErrors = 0 // reset on success
 
         if (result.status === 'completed') {
           return result
@@ -286,18 +302,35 @@ class WaveSpeedClient {
           })
         }
       } catch (error) {
-        // Retry after 1 second on connection errors
+        if (signal?.aborted) throw new DOMException('Cancelled', 'AbortError')
+        // Retry with exponential backoff on connection errors
         if (this.isConnectionError(error)) {
-          console.warn('Connection error during polling, retrying in 1 second...', error)
-          await new Promise(resolve => setTimeout(resolve, 1000))
+          consecutiveErrors++
+          if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+            throw new Error(`Polling failed after ${MAX_CONSECUTIVE_ERRORS} consecutive connection errors`)
+          }
+          const backoff = Math.min(1000 * Math.pow(2, consecutiveErrors - 1), 10000)
+          console.warn(`Connection error during polling (${consecutiveErrors}/${MAX_CONSECUTIVE_ERRORS}), retrying in ${backoff}ms...`, error)
+          await new Promise(resolve => setTimeout(resolve, backoff))
           continue
         }
         // Re-throw non-connection errors
         throw error
       }
 
-      // Wait before next poll
-      await new Promise(resolve => setTimeout(resolve, pollInterval))
+      // Wait before next poll (abort-aware when signal provided)
+      throwIfAborted()
+      if (signal) {
+        await new Promise<void>((resolve, reject) => {
+          const t = setTimeout(resolve, pollInterval)
+          signal.addEventListener('abort', () => {
+            clearTimeout(t)
+            reject(new DOMException('Cancelled', 'AbortError'))
+          }, { once: true })
+        })
+      } else {
+        await new Promise(resolve => setTimeout(resolve, pollInterval))
+      }
     }
   }
 

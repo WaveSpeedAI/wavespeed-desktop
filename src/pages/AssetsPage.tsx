@@ -67,6 +67,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  FolderHeart,
+  GitBranch,
 } from 'lucide-react'
 import type { AssetMetadata, AssetType, AssetSortBy, AssetsFilter } from '@/types/asset'
 
@@ -493,6 +495,8 @@ export function AssetsPage() {
             <AssetTypeIcon type={asset.type} className="h-3 w-3 mr-1" />
             {t(`assets.types.${asset.type}`)}
           </Badge>
+
+
         </div>
 
         {/* Info */}
@@ -502,9 +506,16 @@ export function AssetsPage() {
               <p className="text-sm font-medium truncate" title={asset.fileName}>
                 {asset.fileName}
               </p>
-              <p className="text-xs text-muted-foreground truncate" title={asset.modelId}>
-                {asset.modelId}
-              </p>
+              {asset.source === 'workflow' && asset.workflowName ? (
+                <p className="text-xs text-blue-400 truncate flex items-center gap-1" title={`Workflow: ${asset.workflowName}`}>
+                  <GitBranch className="h-3 w-3 shrink-0" />
+                  {asset.workflowName}
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground truncate" title={asset.modelId}>
+                  {asset.modelId}
+                </p>
+              )}
               <p className="text-xs text-muted-foreground">
                 {formatDate(asset.createdAt)} · {formatBytes(asset.fileSize)}
               </p>
@@ -582,111 +593,35 @@ export function AssetsPage() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-gradient-to-b from-background via-background to-muted/20 pt-12 md:pt-0">
+    <div className="flex h-full flex-col pt-12 md:pt-0">
       {/* Header */}
-      <div className="page-header border-b border-border/70 bg-background/70 p-4 backdrop-blur">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-          <div>
-            <h1 className="flex items-center gap-2 text-xl font-bold md:text-2xl">
-              <Sparkles className="h-5 w-5 text-primary" />
-              {t('assets.title')}
-            </h1>
-            <p className="text-xs md:text-sm text-muted-foreground">
-              {t('assets.subtitle', { count: assets.length })}
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {isSelectionMode ? (
-              <>
-                <Button variant="outline" size="sm" onClick={handleSelectAll}>
-                  {selectedIds.size === filteredAssets.length ? (
-                    <>
-                      <Square className="mr-2 h-4 w-4" />
-                      {t('assets.deselectAll')}
-                    </>
-                  ) : (
-                    <>
-                      <CheckSquare className="mr-2 h-4 w-4" />
-                      {t('assets.selectAll')}
-                    </>
-                  )}
-                </Button>
-                {selectedIds.size > 0 && (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleBulkFavorite(true)}
-                    >
-                      <Star className="mr-2 h-4 w-4" />
-                      {t('assets.addToFavorites')}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleBulkFavorite(false)}
-                    >
-                      <Star className="mr-2 h-4 w-4" />
-                      {t('assets.removeFromFavorites')}
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => setShowBulkDeleteConfirm(true)}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      {t('assets.deleteSelected', { count: selectedIds.size })}
-                    </Button>
-                  </>
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setIsSelectionMode(false)
-                    setSelectedIds(new Set())
-                  }}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsSelectionMode(true)}
-                >
-                  <CheckSquare className="mr-2 h-4 w-4" />
-                  {t('assets.select')}
-                </Button>
-                {isDesktopMode && (
-                  <Button variant="outline" size="sm" onClick={handleOpenAssetsFolder}>
-                    <FolderOpen className="mr-2 h-4 w-4" />
-                    {t('assets.openFolder')}
-                  </Button>
-                )}
-              </>
-            )}
-          </div>
+      <div className="page-header px-4 md:px-6 py-4 border-b border-border/70">
+        <div className="flex flex-col gap-1.5 md:flex-row md:items-baseline md:gap-3 mb-4">
+          <h1 className="flex items-center gap-2 text-xl md:text-2xl font-bold tracking-tight">
+            <FolderHeart className="h-5 w-5 text-primary" />
+            {t('assets.title')}
+          </h1>
+          <p className="text-xs md:text-sm text-muted-foreground">
+            {t('assets.subtitle', { count: assets.length })}
+          </p>
         </div>
 
-        {/* Search and Filters */}
+        {/* Search, Filters & Actions */}
         <div className="flex flex-wrap items-center gap-2">
-          <div className="relative min-w-[220px] flex-1">
+          <div className="relative w-56">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder={t('assets.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-10 rounded-lg border-border/80 bg-background pl-9"
+              className="h-9 rounded-lg border-border/80 bg-background pl-9"
             />
           </div>
           <Select
             value={filter.sortBy || 'date-desc'}
             onValueChange={(value) => setFilter(f => ({ ...f, sortBy: value as AssetSortBy }))}
           >
-            <SelectTrigger className="h-10 w-full rounded-lg border-border/80 bg-background sm:w-[170px]">
+            <SelectTrigger className="h-9 w-full rounded-lg border-border/80 bg-background sm:w-[170px]">
               <ArrowUpDown className="mr-2 h-4 w-4" />
               <SelectValue />
             </SelectTrigger>
@@ -704,7 +639,7 @@ export function AssetsPage() {
             size="icon"
             onClick={() => setLoadPreviews(!loadPreviews)}
             title={loadPreviews ? t('assets.disablePreviews') : t('assets.loadPreviews')}
-            className="h-10 w-10 rounded-lg"
+            className="h-9 w-9 rounded-lg"
           >
             {loadPreviews ? (
               <Eye className="h-4 w-4" />
@@ -716,10 +651,83 @@ export function AssetsPage() {
             variant={showFilters ? 'default' : 'outline'}
             size="icon"
             onClick={() => setShowFilters(!showFilters)}
-            className="h-10 w-10 rounded-lg"
+            className="h-9 w-9 rounded-lg"
           >
             <Filter className="h-4 w-4" />
           </Button>
+          <div className="flex-1" />
+          {isSelectionMode ? (
+            <>
+              <Button variant="outline" size="sm" onClick={handleSelectAll}>
+                {selectedIds.size === filteredAssets.length ? (
+                  <>
+                    <Square className="mr-2 h-4 w-4" />
+                    {t('assets.deselectAll')}
+                  </>
+                ) : (
+                  <>
+                    <CheckSquare className="mr-2 h-4 w-4" />
+                    {t('assets.selectAll')}
+                  </>
+                )}
+              </Button>
+              {selectedIds.size > 0 && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleBulkFavorite(true)}
+                  >
+                    <Star className="mr-2 h-4 w-4" />
+                    {t('assets.addToFavorites')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleBulkFavorite(false)}
+                  >
+                    <Star className="mr-2 h-4 w-4" />
+                    {t('assets.removeFromFavorites')}
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setShowBulkDeleteConfirm(true)}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    {t('assets.deleteSelected', { count: selectedIds.size })}
+                  </Button>
+                </>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setIsSelectionMode(false)
+                  setSelectedIds(new Set())
+                }}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsSelectionMode(true)}
+              >
+                <CheckSquare className="mr-2 h-4 w-4" />
+                {t('assets.select')}
+              </Button>
+              {isDesktopMode && (
+                <Button variant="outline" size="sm" onClick={handleOpenAssetsFolder}>
+                  <FolderOpen className="mr-2 h-4 w-4" />
+                  {t('assets.openFolder')}
+                </Button>
+              )}
+            </>
+          )}
         </div>
 
         {/* Filter Panel */}
@@ -786,6 +794,32 @@ export function AssetsPage() {
                   <Label htmlFor="favorites-only" className="text-sm">
                     {t('assets.showFavoritesOnly')}
                   </Label>
+                </div>
+              </div>
+
+              {/* Source filter */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">{t('assets.filterBySource', 'Source')}</Label>
+                <div className="space-y-1">
+                  {([
+                    { value: 'playground' as const, label: 'Playground' },
+                    { value: 'workflow' as const, label: 'Workflow' },
+                    { value: 'free-tool' as const, label: 'Free Tool' },
+                  ]).map(({ value, label }) => (
+                    <div key={value} className="flex items-center gap-2">
+                      <Checkbox
+                        id={`source-${value}`}
+                        checked={(filter.sources || []).includes(value)}
+                        onCheckedChange={(checked) => {
+                          setFilter(f => {
+                            const current = f.sources || []
+                            return { ...f, sources: checked ? [...current, value] : current.filter(s => s !== value) }
+                          })
+                        }}
+                      />
+                      <Label htmlFor={`source-${value}`} className="text-sm">{label}</Label>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -858,6 +892,9 @@ export function AssetsPage() {
             </DialogTitle>
             <DialogDescription>
               {previewAsset?.modelId} · {previewAsset && formatDate(previewAsset.createdAt)}
+              {previewAsset?.source === 'workflow' && previewAsset?.workflowName && (
+                <> · <GitBranch className="inline h-3 w-3" /> {previewAsset.workflowName}</>
+              )}
             </DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-auto relative">

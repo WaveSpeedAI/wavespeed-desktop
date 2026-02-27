@@ -17,7 +17,6 @@ export const videoEnhancerDef: NodeTypeDefinition = {
   type: 'free-tool/video-enhancer',
   category: 'free-tool',
   label: 'Video Enhancer',
-  icon: '🎬',
   inputs: [{ key: 'input', label: 'Video', dataType: 'video', required: true }],
   outputs: [{ key: 'output', label: 'Output', dataType: 'video', required: true }],
   params: [

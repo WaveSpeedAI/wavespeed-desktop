@@ -14,7 +14,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { Download, ExternalLink, Copy, Check, AlertTriangle, X, Save, FolderHeart, Gamepad2, Sparkles } from 'lucide-react'
+import { Download, ExternalLink, Copy, Check, AlertTriangle, X, Save, FolderHeart, Gamepad2 } from 'lucide-react'
 import { AudioPlayer } from '@/components/shared/AudioPlayer'
 import { FlappyBird } from './FlappyBird'
 import { toast } from '@/hooks/useToast'
@@ -89,7 +89,7 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
   const [fullscreenIndex, setFullscreenIndex] = useState<number | null>(null)
   const [savedIndexes, setSavedIndexes] = useState<Set<number>>(new Set())
   const [savingIndex, setSavingIndex] = useState<number | null>(null)
-  const autoSavedRef = useRef<string | null>(null)
+  const autoSavedUrlsRef = useRef<Set<string>>(new Set())
 
   // Game state
   const [isGameStarted, setIsGameStarted] = useState(false)
@@ -152,6 +152,7 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
   useEffect(() => {
     if (outputs.length === 0 && !isLoading && !error) {
       setShowGame(true)
+      setIsGameStarted(false)
       setGameEndedWithResults(false)
     }
   }, [outputs.length, isLoading, error])
@@ -165,29 +166,32 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
     setGameEndedWithResults(true)
   }, [])
 
-  // Auto-save outputs when prediction completes
+  // Auto-save outputs when prediction completes (URL-based dedup for split history items)
   useEffect(() => {
     if (!settings.autoSaveAssets || !modelId || outputs.length === 0) return
-    if (!prediction?.id || autoSavedRef.current === prediction.id) return
+    if (!prediction?.id) return
 
-    // Check if assets already exist for this prediction (prevents duplicate saves on remount)
-    if (hasAssetForPrediction(prediction.id)) {
-      autoSavedRef.current = prediction.id
-      return
+    // Filter to only unsaved URLs
+    const newOutputs: { output: string; index: number }[] = []
+    for (let i = 0; i < outputs.length; i++) {
+      const output = outputs[i]
+      if (typeof output !== 'string') continue
+      if (output.startsWith('local-asset://')) continue
+      if (autoSavedUrlsRef.current.has(output)) continue
+      const assetType = detectAssetType(output)
+      if (!assetType) continue
+      newOutputs.push({ output, index: i })
     }
 
-    // Mark as auto-saved to prevent duplicate saves
-    autoSavedRef.current = prediction.id
+    if (newOutputs.length === 0) return
 
-    // Auto-save all media outputs
+    // Mark URLs as saved immediately to prevent duplicate saves
+    for (const { output } of newOutputs) {
+      autoSavedUrlsRef.current.add(output)
+    }
+
     const saveOutputs = async () => {
-      for (let i = 0; i < outputs.length; i++) {
-        const output = outputs[i]
-        if (typeof output !== 'string') continue
-
-        // Skip local assets - they're already saved (e.g., Z-Image outputs)
-        if (output.startsWith('local-asset://')) continue
-
+      for (const { output, index } of newOutputs) {
         const assetType = detectAssetType(output)
         if (!assetType) continue
 
@@ -196,17 +200,16 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
             modelId,
             predictionId: prediction.id,
             originalUrl: output,
-            resultIndex: i
+            resultIndex: index
           })
           if (result) {
-            setSavedIndexes(prev => new Set(prev).add(i))
+            setSavedIndexes(prev => new Set(prev).add(index))
           }
         } catch (err) {
           console.error('Failed to auto-save asset:', err)
         }
       }
 
-      // Show a brief, unobtrusive notification
       toast({
         description: t('playground.autoSaved'),
         duration: 2000,
@@ -214,13 +217,11 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
     }
 
     saveOutputs()
-  }, [outputs, prediction?.id, modelId, settings.autoSaveAssets, saveAsset, hasAssetForPrediction, t])
+  }, [outputs, prediction?.id, modelId, settings.autoSaveAssets, saveAsset, t])
 
-  // Reset saved indexes when outputs change (new prediction)
+  // Reset saved indexes when prediction changes
   useEffect(() => {
-    if (prediction?.id && autoSavedRef.current !== prediction.id) {
-      setSavedIndexes(new Set())
-    }
+    setSavedIndexes(new Set())
   }, [prediction?.id])
 
   const handleSaveToAssets = useCallback(async (url: string, index: number) => {
@@ -401,33 +402,17 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
   }
 
   return (
-    <div className="h-full flex flex-col relative">
-      {/* Play game button - top left */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute left-3 top-3 z-10 h-8 w-8 rounded-lg border border-border/70 bg-background/80 opacity-70 backdrop-blur hover:opacity-100"
-            onClick={() => {
-              setShowGame(true)
-              setGameEndedWithResults(true)
-            }}
-          >
-            <Gamepad2 className="h-4 w-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          {t('playground.flappyBird.playWhileWaiting', 'Play while waiting')}
-        </TooltipContent>
-      </Tooltip>
+    <div className="group h-full flex flex-col relative">
       {!hideGameButton && (
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
-              className="absolute top-2 left-2 z-10 h-8 w-8 opacity-50 hover:opacity-100"
+              className={cn(
+                "absolute left-3 top-3 z-10 h-8 w-8 rounded-lg border border-border/70 bg-background/80 backdrop-blur transition-opacity",
+                isCapacitorNative() ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+              )}
               onClick={() => {
                 setShowGame(true)
                 setGameEndedWithResults(true)
@@ -442,12 +427,10 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
         </Tooltip>
       )}
 
-      {/* Outputs - fill remaining space */}
+      {/* Outputs - scrollable list so each output has good size */}
       <div className={cn(
-        "flex-1 min-h-0",
-        gridLayout && outputs.length > 1
-          ? "grid grid-cols-2 md:grid-cols-3 gap-3 auto-rows-min overflow-auto"
-          : "flex flex-col gap-4"
+        "flex-1 min-h-0 overflow-auto",
+        outputs.length > 1 ? "flex flex-col gap-4" : "flex flex-col"
       )}>
         {outputs.map((output, index) => {
           const isObject = typeof output === 'object' && output !== null
@@ -461,18 +444,10 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
             <div
               key={index}
               className={cn(
-                "relative group rounded-lg border overflow-hidden bg-muted/30 flex items-center justify-center",
-                gridLayout && outputs.length > 1
-                  ? "aspect-square"
-                  : "flex-1 min-h-0"
+                "relative group rounded-lg border overflow-hidden bg-muted/30 flex items-center justify-center flex-shrink-0",
+                outputs.length > 1 ? "min-h-[min(360px,50vh)]" : "flex-1 min-h-0"
               )}
             >
-              <div className="absolute left-2 top-2 z-10">
-                <Badge variant="secondary" className="rounded-md bg-background/80 px-2 py-0.5 text-[11px] backdrop-blur">
-                  <Sparkles className="mr-1 h-3 w-3" />
-                  #{index + 1}
-                </Badge>
-              </div>
               {isImage && (
                 <img
                   src={outputStr}
@@ -527,15 +502,10 @@ export function OutputDisplay({ prediction, outputs, error, isLoading, modelId, 
                 </div>
               )}
 
-              {/* Timing overlay */}
-              {prediction?.timings?.inference && (
+              {/* NSFW overlay */}
+              {prediction?.has_nsfw_contents?.some(Boolean) && (
                 <div className="absolute bottom-2 left-2 flex items-center gap-1">
-                  <Badge variant="secondary" className="border-0 bg-black/60 text-xs text-white">
-                    {(prediction.timings.inference / 1000).toFixed(2)}s
-                  </Badge>
-                  {prediction.has_nsfw_contents?.some(Boolean) && (
-                    <Badge variant="destructive" className="text-xs">NSFW</Badge>
-                  )}
+                  <Badge variant="destructive" className="text-xs">NSFW</Badge>
                 </div>
               )}
 
@@ -684,6 +654,13 @@ function isUrl(str: string): boolean {
 
 function getUrlExtension(url: string): string | null {
   try {
+    // For custom protocols like local-asset://, new URL() misparses the path as hostname.
+    // Decode and use regex fallback for these.
+    if (/^local-asset:\/\//i.test(url)) {
+      const decoded = decodeURIComponent(url)
+      const match = decoded.match(/\.([a-z0-9]+)(?:\?.*)?$/i)
+      return match ? match[1].toLowerCase() : null
+    }
     // Parse URL and get pathname (ignoring query params)
     const urlObj = new URL(url)
     const pathname = urlObj.pathname.toLowerCase()

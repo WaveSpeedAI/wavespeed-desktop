@@ -1,6 +1,10 @@
 # WaveSpeed
 
-Cross-platform applications for running AI models from [WaveSpeedAI](https://wavespeed.ai). Available for Desktop (Windows, macOS, Linux) and Mobile (Android).
+Open-source, cross-platform application for running 100+ AI models — image generation, video generation, face swap, digital human, motion control, and more. Includes a visual workflow editor for building AI pipelines and 12 free creative tools. Available for **Windows**, **macOS**, **Linux**, and **Android**.
+
+[![GitHub Release](https://img.shields.io/github/v/release/WaveSpeedAI/wavespeed-desktop?style=flat-square&label=Latest)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest)
+[![License](https://img.shields.io/github/license/WaveSpeedAI/wavespeed-desktop?style=flat-square)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/WaveSpeedAI/wavespeed-desktop?style=flat-square)](https://github.com/WaveSpeedAI/wavespeed-desktop/stargazers)
 
 [![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Desktop-win-x64.exe)
 [![macOS Intel](https://img.shields.io/badge/macOS_Intel-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Desktop-mac-x64.dmg)
@@ -8,10 +12,50 @@ Cross-platform applications for running AI models from [WaveSpeedAI](https://wav
 [![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Desktop-linux-x86_64.AppImage)
 [![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Mobile.apk)
 
-![Playground Screenshot](https://github.com/user-attachments/assets/904a3ff8-c302-4b84-851b-34a76486c891)
-![Workflow Screenshot](https://github.com/user-attachments/assets/f54bea9d-7d63-42c2-80ce-ea76e5dc5de4)
-![Face Swapper Screenshot](https://github.com/user-attachments/assets/f9eb0022-4bf7-4efd-a9a6-43138ab5cfcb)
-![Z-Image Screenshot](https://github.com/user-attachments/assets/f2eabfb1-a613-4b01-9f84-a5ae5fd07638)
+![Playground Screenshot](https://github.com/user-attachments/assets/7bd45689-5b24-40ab-9495-2296533e3b5a)
+
+## Android App
+
+The Android app shares the same React codebase as the desktop version, giving you access to the AI Playground, Featured Models, Creative Studio, and all 100+ models from your phone.
+
+- Full AI Playground with multi-tab support and all input types including camera capture
+- Featured Models with smart variant switching
+- Model browser with search, filter, and sort
+- Creative Studio tools (face enhancement, background removal, image eraser, segment anything, media conversion)
+- History, My Assets, templates, and auto-save
+- 18 languages, dark/light theme, Android 5.0+
+
+<p>
+  <img src="https://github.com/user-attachments/assets/dafa6699-35ed-4da2-b6eb-4da818e2c846" alt="WaveSpeed Android - Free Tools" width="300" />
+  <img src="https://github.com/user-attachments/assets/d392a9d0-2a44-480b-9195-d23a850a1946" alt="WaveSpeed Android - Playground" width="300" />
+</p>
+
+## [Creative Studio](https://wavespeed.ai/studio)
+
+12 free AI-powered creative tools that run entirely in your browser. No API key required, no usage limits, completely free. Also available as a standalone web app at [wavespeed.ai/studio](https://wavespeed.ai/studio) — fully responsive, works on desktop, tablet, and mobile browsers.
+
+| Tool | Description |
+|------|-------------|
+| **Image Enhancer** | Upscale images 2x–4x using ESRGAN with slim, medium, and thick quality options |
+| **Video Enhancer** | Frame-by-frame video upscaling with real-time progress and ETA |
+| **Face Enhancer** | Detect faces with YOLO v8 and enhance with GFPGAN v1.4 (WebGPU accelerated) |
+| **Face Swapper** | Swap faces using InsightFace (SCRFD + ArcFace + Inswapper) with optional GFPGAN post-processing |
+| **Background Remover** | Remove backgrounds instantly — outputs foreground, background, and mask with individual downloads |
+| **Image Eraser** | Remove unwanted objects with LaMa inpainting, smart crop and blend (WebGPU accelerated) |
+| **Segment Anything** | Interactive object segmentation with point prompts using SlimSAM |
+| **Video Converter** | Convert between MP4, WebM, AVI, MOV, MKV with codec and quality options |
+| **Audio Converter** | Convert between MP3, WAV, AAC, FLAC, OGG with bitrate control |
+| **Image Converter** | Batch convert between JPG, PNG, WebP, GIF, BMP with quality settings |
+| **Media Trimmer** | Trim video and audio by selecting start and end times |
+| **Media Merger** | Merge multiple video or audio files into one |
+
+![WaveSpeed Creative Studio](https://github.com/user-attachments/assets/67359fa7-8ff4-4001-a982-eb4802e5b841)
+
+## Visual Workflow Editor
+
+Node-based pipeline builder for designing and executing complex AI workflows. Chain any combination of AI models, free tools, and media processing steps into automated pipelines.
+
+![WaveSpeed Visual Workflow Editor](https://github.com/user-attachments/assets/e1243d57-8d7b-4d42-bed3-94bf8adfa6f5)
 
 ## Features
 
@@ -58,7 +102,7 @@ Cross-platform applications for running AI models from [WaveSpeedAI](https://wav
 - **Theme Support**: Auto (system), dark, and light theme options
 - **Multi-Language**: Support for 18 languages including English, Chinese, Japanese, Korean, and more
 - **Auto Updates**: Automatic update checking with stable and nightly channels
-- **Cross-Platform**: Available for Windows, macOS, and Linux
+- **Cross-Platform**: Available for Windows, macOS, Linux, and Android
 
 ## Installation
 
@@ -208,13 +252,12 @@ wavespeed-desktop/
 │       ├── hooks/         # Workflow-specific hooks
 │       ├── ipc/           # Type-safe IPC client
 │       └── types/         # Workflow type definitions
-├── .github/workflows/     # GitHub Actions
-├── mobile/             # Mobile app (Android)
-│   ├── src/            # Mobile-specific overrides
-│   ├── android/        # Android native project
+├── mobile/                # Mobile app (Android)
+│   ├── src/               # Mobile-specific overrides
+│   ├── android/           # Android native project
 │   └── capacitor.config.ts
-├── .github/workflows/  # GitHub Actions (desktop + mobile)
-└── build/              # Build resources
+├── .github/workflows/     # GitHub Actions (desktop + mobile)
+└── build/                 # Build resources
 ```
 
 ## Tech Stack

@@ -33,12 +33,16 @@ interface FormFieldProps {
   hideLabel?: boolean
   formValues?: Record<string, unknown>
   onUploadingChange?: (isUploading: boolean) => void
+  /** When provided (e.g. workflow), file uploads use this instead of API. */
+  onUploadFile?: (file: File) => Promise<string>
+  /** Optional React node rendered inside the label row (e.g. a connection handle anchor). */
+  handleAnchor?: React.ReactNode
 }
 
 // Generate a random seed (0 to 65535)
 const generateRandomSeed = () => Math.floor(Math.random() * 65536)
 
-export function FormField({ field, value, onChange, disabled = false, error, modelType, imageValue, hideLabel = false, formValues, onUploadingChange }: FormFieldProps) {
+export function FormField({ field, value, onChange, disabled = false, error, modelType, imageValue, hideLabel = false, formValues, onUploadingChange, onUploadFile, handleAnchor }: FormFieldProps) {
   const { t } = useTranslation()
   // Check if this is a seed field
   const isSeedField = field.name.toLowerCase() === 'seed'
@@ -68,8 +72,10 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
     setNumericInput(String(next))
   }, [isNumericField, value, field.default, field.min, allowEmptyNumber])
 
+  const isIntegerField = field.schemaType === 'integer'
+
   const clampNumeric = (n: number) => {
-    let next = n
+    let next = isIntegerField ? Math.round(n) : n
     if (field.min !== undefined) next = Math.max(field.min, next)
     if (field.max !== undefined) next = Math.min(field.max, next)
     return next
@@ -117,6 +123,7 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
             placeholder={field.description || `Enter ${field.label.toLowerCase()}`}
             disabled={disabled}
             rows={4}
+            className="nodrag nowheel"
           />
         )
 
@@ -131,8 +138,9 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
               <Slider
                 value={[currentValue]}
                 onValueChange={([v]) => {
-                  onChange(v)
-                  setNumericInput(String(v))
+                  const coerced = isIntegerField ? Math.round(v) : v
+                  onChange(coerced)
+                  setNumericInput(String(coerced))
                 }}
                 min={field.min}
                 max={field.max}
@@ -151,7 +159,8 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
                     if (allowEmptyNumber) onChange(undefined)
                     return
                   }
-                  onChange(Number(val))
+                  const n = Number(val)
+                  onChange(isIntegerField ? Math.round(n) : n)
                 }}
                 onBlur={() => commitNumeric(numericInput)}
                 min={field.min}
@@ -177,7 +186,8 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
                   if (allowEmptyNumber) onChange(undefined)
                   return
                 }
-                onChange(Number(val))
+                const n = Number(val)
+                onChange(isIntegerField ? Math.round(n) : n)
               }}
               onBlur={() => commitNumeric(numericInput)}
               min={field.min}
@@ -221,8 +231,9 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
               <Slider
                 value={[currentValue]}
                 onValueChange={([v]) => {
-                  onChange(v)
-                  setNumericInput(String(v))
+                  const coerced = isIntegerField ? Math.round(v) : v
+                  onChange(coerced)
+                  setNumericInput(String(coerced))
                 }}
                 min={field.min ?? 0}
                 max={field.max ?? 100}
@@ -237,7 +248,8 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
                   const val = e.target.value
                   setNumericInput(val)
                   if (val === '' || Number.isNaN(Number(val))) return
-                  onChange(Number(val))
+                  const n = Number(val)
+                  onChange(isIntegerField ? Math.round(n) : n)
                 }}
                 onBlur={() => commitNumeric(numericInput)}
                 min={field.min}
@@ -288,11 +300,6 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
               <SelectValue placeholder={`Select ${field.label.toLowerCase()}`} />
             </SelectTrigger>
             <SelectContent>
-              {!field.required && (
-                <SelectItem value="__empty__" className="text-muted-foreground">
-                  — None —
-                </SelectItem>
-              )}
               {field.options?.map((option) => (
                 <SelectItem key={String(option)} value={String(option)}>
                   {String(option)}
@@ -328,6 +335,7 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
             isMaskField={['mask_image', 'mask_image_url', 'mask_images', 'mask_image_urls'].includes(field.name)}
             formValues={formValues}
             onUploadingChange={onUploadingChange}
+            onUploadFile={onUploadFile}
           />
         )
 
@@ -361,15 +369,18 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
     <div className="space-y-2">
       {!hideLabel && (
         <div className="flex items-center gap-2">
-          <Label
-            htmlFor={field.name}
-            className={cn(
-              field.required && "after:content-['*'] after:ml-0.5 after:text-destructive",
-              error && "text-destructive"
-            )}
-          >
-            {field.label}
-          </Label>
+          <span className="inline-flex items-center">
+            {handleAnchor}
+            <Label
+              htmlFor={field.name}
+              className={cn(
+                field.required && "after:content-['*'] after:ml-0.5 after:text-destructive",
+                error && "text-destructive"
+              )}
+            >
+              {field.label}
+            </Label>
+          </span>
           {isOptimizablePrompt && (
             <PromptOptimizer
               currentPrompt={(value as string) || ''}

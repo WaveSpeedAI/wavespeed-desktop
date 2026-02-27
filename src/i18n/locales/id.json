@@ -34,7 +34,9 @@
     "downloadFailed": "Unduhan gagal. Silakan periksa koneksi jaringan Anda.",
     "openInBrowser": "Buka di browser",
     "settings": "Pengaturan",
-    "clearAll": "Hapus semua"
+    "clearAll": "Hapus semua",
+    "add": "Add",
+    "saving": "Saving..."
   },
   "nav": {
     "home": "Beranda",
@@ -358,7 +360,71 @@
     "deleteTemplates": "Hapus template",
     "templatesDeleted": "Template dihapus",
     "deletedCount": "{{count}} template dihapus",
-    "batchDeleteConfirm": "Apakah Anda yakin ingin menghapus {{count}} template? Tindakan ini tidak dapat dibatalkan."
+    "batchDeleteConfirm": "Apakah Anda yakin ingin menghapus {{count}} template? Tindakan ini tidak dapat dibatalkan.",
+    "deletedSuccessfully": "\"{{name}}\" berhasil dihapus",
+    "updatedSuccessfully": "\"{{name}}\" berhasil diperbarui",
+    "exportedSuccessfully": "\"{{name}}\" berhasil diekspor",
+    "allExportedSuccessfully": "Semua template berhasil diekspor",
+    "importedSuccessfully": "{{imported}} template diimpor, {{skipped}} dilewati",
+    "filters": "Filter",
+    "templateType": "Jenis Template",
+    "allTypes": "Semua Jenis",
+    "playground": "Playground",
+    "workflow": "Alur Kerja",
+    "source": "Sumber",
+    "allSources": "Semua Sumber",
+    "public": "Publik",
+    "myTemplates": "Template Saya",
+    "favorites": "Favorit",
+    "favoritesOnly": "Hanya Favorit",
+    "sortBy": "Urutkan",
+    "newest": "Terbaru",
+    "mostUsed": "Paling Sering Digunakan",
+    "category": "Kategori",
+    "allCategories": "Semua Kategori",
+    "imageProcessing": "Pemrosesan Gambar",
+    "videoEditing": "Pengeditan Video",
+    "audioConversion": "Konversi Audio",
+    "aiGeneration": "Generasi AI",
+    "workflowNotSupported": "Alur Kerja Tidak Didukung",
+    "workflowNotSupportedDesc": "Template alur kerja belum didukung",
+    "loadTemplate": "Muat Template",
+    "browseAll": "Jelajahi Semua Template",
+    "drawerDesc": "Jelajahi dan terapkan template",
+    "createTemplate": "Buat Template",
+    "createTemplateDesc": "Simpan konfigurasi saat ini sebagai template yang dapat digunakan kembali",
+    "editTemplate": "Edit Templat",
+    "editTemplateDesc": "Perbarui detail template",
+    "descriptionLabel": "Deskripsi",
+    "tags": "Tag",
+    "tagsPlaceholder": "Masukkan tag...",
+    "descriptionPlaceholder": "Jelaskan template ini...",
+    "categoryPlaceholder": "mis. Pemrosesan Gambar",
+    "nodes": "node",
+    "favorite": "Tambahkan ke favorit",
+    "unfavorite": "Hapus dari favorit",
+    "uses": "penggunaan",
+    "coverImage": "Gambar sampul",
+    "uploadCover": "Klik untuk mengunggah gambar sampul",
+    "importDesc": "Impor template dari file yang sebelumnya diekspor"
+  },
+  "presetTemplates": {
+    "imageToVideo": {
+      "name": "Gambar ke Video",
+      "description": "Ubah gambar statis menjadi video dinamis dengan peningkatan resolusi HD"
+    },
+    "musicGenerate": {
+      "name": "Pembuatan Musik",
+      "description": "Buat musik orisinal dari lirik dan tag gaya"
+    },
+    "imageEdit": {
+      "name": "Pengeditan Gambar",
+      "description": "Edit gambar menggunakan model AI dengan prompt kustom"
+    },
+    "videoEdit": {
+      "name": "Pengeditan Video",
+      "description": "Edit konten video menggunakan model AI dengan modifikasi berbasis prompt"
+    }
   },
   "assets": {
     "title": "Aset Saya",
@@ -837,11 +903,8 @@
       "supportedFormats": "Konversi MP3 ↔ WAV",
       "converting": "Mengkonversi...",
       "convert": "Konversi",
-      "download": "Unduh",
-      "complete": "Selesai",
       "outputFormat": "Format output",
       "bitrate": "Bitrate",
-      "noFileSelected": "Tidak ada file dipilih",
       "inputAudio": "Audio masukan",
       "orDragDrop": "atau seret dan lepas",
       "dropToReplace": "Jatuhkan untuk mengganti audio",
@@ -859,11 +922,8 @@
       "supportedFormats": "Gambar apa saja → JPG/PNG/WebP",
       "converting": "Mengkonversi...",
       "convert": "Konversi",
-      "download": "Unduh",
-      "complete": "Selesai",
       "outputFormat": "Format output",
       "quality": "Kualitas",
-      "noFileSelected": "Tidak ada file dipilih",
       "inputImage": "Gambar masukan",
       "selectImages": "Klik atau seret gambar ke sini",
       "orDragDrop": "atau seret dan lepas",
@@ -879,21 +939,16 @@
       "selectMedia": "Seret file media ke sini",
       "supportedFormats": "Mendukung file video dan audio",
       "inputMedia": "Media input",
-      "selectMediaFile": "Pilih file untuk dipotong",
       "trimSettings": "Pengaturan potong",
       "selectRange": "Pilih waktu mulai dan selesai",
       "startTime": "Waktu mulai",
       "endTime": "Waktu selesai",
       "timeFormat": "Format: m:ss.d atau detik",
       "outputDuration": "Durasi output",
-      "duration": "Durasi",
       "trim": "Potong",
       "trimming": "Memotong...",
-      "download": "Unduh",
-      "newMedia": "File baru",
       "result": "Hasil pemotongan",
       "invalidFile": "Pilih file video atau audio yang valid",
-      "invalidRange": "Waktu selesai harus lebih besar dari waktu mulai",
       "orDragDrop": "atau seret dan lepas",
       "dropToReplace": "Jatuhkan untuk mengganti file",
       "originalDuration": "Durasi asli",
@@ -905,21 +960,10 @@
     "mediaMerger": {
       "title": "Penggabung Media",
       "description": "Gabungkan beberapa video atau audio menjadi satu",
-      "selectMedia": "Seret file ke sini",
       "supportedFormats": "Mendukung file video dan audio",
-      "addFiles": "Tambah file",
-      "inputFiles": "File input",
-      "dragToReorder": "Seret untuk mengurutkan",
-      "noFiles": "Tidak ada file",
-      "addFilesDesc": "Tambahkan video atau audio untuk digabung",
-      "outputFormat": "Format output",
       "merge": "Gabung",
       "merging": "Menggabung...",
-      "download": "Unduh",
-      "clear": "Hapus",
       "result": "Hasil",
-      "invalidFile": "Pilih file video atau audio yang valid",
-      "minFiles": "Tambahkan minimal 2 file untuk digabung",
       "inputMedia": "File masukan",
       "selectFiles": "Pilih file",
       "orDragDrop": "atau seret dan lepas",
@@ -935,7 +979,8 @@
       "loading": "Memuat...",
       "converting": "Mengonversi...",
       "merging": "Menggabungkan...",
-      "trimming": "Memangkas..."
+      "trimming": "Memangkas...",
+      "transcoding": "Transkode"
     },
     "segmentAnything": {
       "title": "Segmentasi Apa Saja",
@@ -958,46 +1003,25 @@
     "downloadStarted": "Unduhan dimulai",
     "downloadFailed": "Unduhan gagal"
   },
-  "game": {
-    "waitingLong": "Menunggu lama? Main mini game!",
-    "clickToPlay": "Klik untuk mulai"
-  },
   "smartPlayground": {
-    "autoDetected": "Auto-detected variant",
-    "willCall": "Will call",
-    "toggleSpeed": "Speed",
+    "autoDetected": "Varian terdeteksi otomatis",
+    "willCall": "Akan memanggil",
+    "toggleSpeed": "Kecepatan",
     "toggleMode": "Mode",
-    "toggleQuality": "Quality",
+    "toggleQuality": "Kualitas",
     "speedNormal": "Normal",
-    "speedFast": "Fast",
+    "speedFast": "Cepat",
     "modeNormal": "Normal",
-    "modeSequential": "Sequential",
+    "modeSequential": "Berurutan",
     "qualityPro": "Pro",
-    "qualityStd": "Standard",
+    "qualityStd": "Standar",
     "qualityUltra": "Ultra",
     "qualityMulti": "Multi",
-    "run": "Run",
-    "running": "Running...",
+    "run": "Jalankan",
+    "running": "Berjalan...",
     "input": "Input",
     "output": "Output",
-    "back": "Back"
-  },
-  "videoConverter": {
-    "title": "Konverter Video",
-    "description": "Konversi video antar format menggunakan browser Anda",
-    "invalidFile": "Silakan pilih file video yang valid",
-    "input": "Video Input",
-    "inputDesc": "Pilih atau seret file video untuk dikonversi",
-    "dropzone": "Klik atau seret video ke sini",
-    "supportedFormats": "Mendukung MP4, WebM, MOV, AVI",
-    "settings": "Pengaturan",
-    "outputFormat": "Format Output",
-    "convert": "Konversi Video",
-    "converting": "Mengkonversi...",
-    "noCodecSupport": "Tidak ditemukan codec video yang didukung",
-    "result": "Hasil",
-    "codecUsed": "Codec yang digunakan",
-    "download": "Unduh"
+    "back": "Kembali"
   },
   "workflow": {
     "workflows": "Alur kerja",
@@ -1009,6 +1033,10 @@
     "saveFailed": "Gagal menyimpan",
     "savedAt": "Disimpan",
     "unsaved": "Belum disimpan",
+    "outputDirFallbackHint": "Tidak diatur: akan diekspor ke direktori default alur kerja",
+    "selectDirectory": "Pilih direktori",
+    "openFolder": "Buka folder",
+    "openWorkflowFolder": "Buka folder alur kerja",
     "nodes": "Node",
     "config": "Konfigurasi",
     "results": "Hasil",
@@ -1016,6 +1044,12 @@
     "settings": "Pengaturan",
     "runAll": "Jalankan semua",
     "run": "Jalankan",
+    "runWorkflow": "Jalankan",
+    "runFromHere": "Jalankan dari sini",
+    "nameYourWorkflow": "Beri nama alur kerja",
+    "nameYourWorkflowDesc": "Beri nama untuk menyimpan ke disk.",
+    "nameYourWorkflowPlaceholder": "Cth: Pipeline Gambar Produk",
+    "nameDuplicate": "Alur kerja dengan nama ini sudah ada",
     "runTarget": "Jalankan target",
     "runTargetAll": "Jalankan semua node",
     "runTargetSelected": "Jalankan node terpilih",
@@ -1031,6 +1065,9 @@
     "exportFailed": "Gagal mengekspor",
     "estimated": "Perkiraan biaya",
     "fitView": "Sesuaikan tampilan",
+    "autoLayout": "Tata letak otomatis",
+    "freeToolModelHint": "Eksekusi pertama akan mengunduh model AI secara otomatis, harap tunggu",
+    "more": "Lainnya",
     "previousImage": "Gambar sebelumnya",
     "nextImage": "Gambar berikutnya",
     "previewNavHint": "Gunakan ← / → untuk menavigasi ({{current}}/{{total}})",
@@ -1068,7 +1105,10 @@
       "hint": "Klik kiri = sertakan, klik kanan = kecualikan",
       "points": "titik",
       "clear": "Bersihkan",
-      "done": "Selesai"
+      "done": "Selesai",
+      "encoding": "Analyzing image...",
+      "waitingEncode": "Preparing...",
+      "decoding": "Updating mask..."
     },
     "pickPoints": "Pilih titik",
     "pickPointsNeedInput": "Setel gambar input terlebih dahulu",
@@ -1107,7 +1147,7 @@
     },
     "nodeDefs": {
       "ai-task/run": {
-        "label": "Jalankan model",
+        "label": "WaveSpeed API",
         "emptyHint": "Klik node ini, lalu pilih model →",
         "params": {
           "modelId": {
@@ -1117,6 +1157,11 @@
       },
       "input/media-upload": {
         "label": "Unggah",
+        "inputs": {
+          "media": {
+            "label": "Media"
+          }
+        },
         "outputs": {
           "output": {
             "label": "URL"
@@ -1163,7 +1208,8 @@
         },
         "params": {
           "outputDir": {
-            "label": "Direktori keluaran"
+            "label": "Direktori keluaran",
+            "placeholder": "Biarkan kosong untuk menggunakan direktori keluaran default alur kerja"
           },
           "filename": {
             "label": "Awalan nama file"
@@ -1209,6 +1255,9 @@
           "pointY": {
             "label": "Titik Y",
             "description": "Koordinat Y ternormalisasi (0-1) untuk titik segmentasi"
+          },
+          "invertMask": {
+            "label": "Balikkan topeng"
           }
         }
       },
@@ -1272,7 +1321,7 @@
       "optimizing": "Mengoptimalkan...",
       "optimizeNow": "Optimalkan sekarang",
       "autoOnRunTitle": "Optimalkan hanya saat mengklik Jalankan",
-      "autoOnRun": "Otomatis saat jalankan",
+      "autoOnRun": "Optimalkan saat Jalankan",
       "chars": "karakter",
       "optimizeOnRunEnabled": "Diaktifkan: optimalkan saat jalankan",
       "optimizeOffHint": "Default: tidak ada optimisasi (jalankan dengan teks asli)",
@@ -1288,8 +1337,9 @@
       "text": "Teks",
       "textPlaceholder": "Teks untuk diperluas atau sebagai konteks...",
       "autoOnRunTitle": "Optimalkan otomatis saat mengklik Jalankan",
-      "autoOnRun": "Otomatis saat jalankan",
+      "autoOnRun": "Optimalkan saat Jalankan",
       "quickOptimizeTitle": "Optimalkan cepat ({{mode}})",
+      "quickOptimizeLabel": "Optimalkan",
       "params": "Parameter",
       "prompt": "Prompt",
       "emptyPrompt": "(kosong)",
@@ -1307,6 +1357,76 @@
         "loadingOptimizer": "Memuat pengoptimal...",
         "loadConfigFailed": "Tidak dapat memuat konfigurasi pengoptimal"
       }
-    }
+    },
+    "guide": {
+      "skip": "Lewati",
+      "prev": "Kembali",
+      "next": "Berikutnya",
+      "finish": "Mulai",
+      "welcome": {
+        "title": "Selamat datang di Workflow",
+        "desc": "Workflow adalah editor pipeline AI visual. Seret node ke kanvas, hubungkan, lalu jalankan alur pemrosesan AI otomatis — dari pembuatan gambar hingga peningkatan video dan lainnya."
+      },
+      "nodePaletteBtn": {
+        "title": "Palet Node",
+        "desc": "Klik tombol ini untuk membuka Palet Node — kotak alat berisi semua node yang tersedia. Anda juga dapat mencari, menyeret, atau klik untuk menambahkan node ke kanvas."
+      },
+      "nodePalette": {
+        "title": "Kategori Node",
+        "desc": "Node diatur berdasarkan kategori:\n• Input — Unggah file atau masukkan teks sebagai data awal\n• Tugas AI — Jalankan model WaveSpeed AI apa pun (lihat langkah berikutnya)\n• Alat Gratis — 12 alat bawaan seperti penghapus latar, peningkatan wajah, konversi format\n• Output — Pratinjau hasil atau ekspor file ke disk\n\nSeret node ke kanvas atau klik untuk menambahkannya."
+      },
+      "aiTask": {
+        "title": "Node Tugas AI — Inti Utama",
+        "desc": "Node Tugas AI adalah node paling kuat di Workflow. Node ini dapat menjalankan model WaveSpeed AI apa pun untuk pembuatan gambar, pembuatan video, transfer gaya, dan lainnya.",
+        "features": {
+          "modelSwitch": "Pilih dari ratusan model AI — panel parameter diperbarui dinamis sesuai model yang dipilih",
+          "dynamicParams": "Setiap model memiliki parameternya sendiri (prompt, ukuran gambar, seed, dll.) yang muncul otomatis saat dipilih",
+          "costEstimate": "Estimasi biaya real-time per eksekusi agar Anda selalu tahu harga sebelum menjalankan",
+          "upstream": "Hubungkan output node hulu (gambar, teks) sebagai input — bangun pipeline AI multi-langkah"
+        }
+      },
+      "canvas": {
+        "title": "Interaksi Kanvas",
+        "desc": "Kanvas utama adalah ruang kerja Anda:\n• Seret node dari palet untuk memposisikannya\n• Seret dari port output ke port input untuk membuat koneksi\n• Klik kanan untuk menu konteks (salin, tempel, hapus)\n• Gulir untuk zoom, seret latar untuk pan\n• Pintasan: Ctrl+Z undo, Ctrl+C/V copy-paste, Delete untuk menghapus"
+      },
+      "canvasTools": {
+        "title": "Alat Kanvas",
+        "desc": "Tiga alat praktis untuk menavigasi dan mengatur kanvas:\n• Mode Pilih / Tangan — alihkan antara memilih node (V) dan menggeser kanvas (H)\n• Fit View — zoom otomatis agar semua node muat di viewport\n• Tata Letak Otomatis — susun node secara otomatis agar rapi dan mudah dibaca"
+      },
+      "config": {
+        "title": "Konfigurasi & Lihat Hasil",
+        "desc": "Klik node mana pun untuk memilihnya. Panel kanan menampilkan dua tab:\n• Konfigurasi — Atur parameter model, unggah file, masukkan prompt\n• Hasil — Lihat output eksekusi (gambar, video, model 3D)\n\nParameter diperbarui secara dinamis berdasarkan jenis node dan model yang dipilih. Hasil mendukung pratinjau layar penuh dan unduhan."
+      },
+      "run": {
+        "title": "Jalankan Workflow Anda",
+        "desc": "Klik \"Jalankan\" untuk mengeksekusi seluruh pipeline:\n• Atur jumlah run (×1 hingga ×99) untuk pemrosesan batch\n• Batalkan kapan saja dengan tombol stop\n• Pantau progres real-time di Execution Monitor\n• Setiap node menampilkan status: queued → running → done"
+      },
+      "templates": {
+        "title": "Template, Impor & Ekspor",
+        "desc": "Klik menu ⋮ untuk fitur lanjutan:\n• Simpan workflow Anda sebagai template yang dapat digunakan ulang\n• Impor/Ekspor workflow sebagai JSON untuk dibagikan\n• Buka beberapa workflow dalam tab (seperti browser)\n• Jelajahi template siap pakai dari toolbar"
+      }
+    },
+    "selectNodeHint": "Select a node to configure its parameters",
+    "modelSyncDesktopOnly": "Model sync is available in the WaveSpeed Desktop app.",
+    "nameExists": "Alur kerja dengan nama ini sudah ada. Menyimpan akan menimpa.",
+    "overwriteWorkflow": "Timpa Alur Kerja",
+    "overwriteConfirm": "Alur kerja bernama \"{{name}}\" sudah ada. Apakah Anda ingin menimpa?",
+    "overwrite": "Timpa",
+    "rename": "Ganti nama",
+    "duplicate": "Duplikat",
+    "deleteWorkflow": "Hapus",
+    "deleteConfirm": "Apakah Anda yakin ingin menghapus \"{{name}}\"? Tindakan ini tidak dapat dibatalkan.",
+    "cleaning": "Membersihkan...",
+    "cleanOutputs": "Bersihkan output",
+    "tabClose": "Tutup",
+    "tabCloseOthers": "Tutup Lainnya",
+    "tabCloseRight": "Tutup ke Kanan",
+    "tabCloseSaved": "Tutup Tersimpan",
+    "tabCloseAll": "Tutup Semua",
+    "deleteSelected": "Hapus Terpilih ({{count}})",
+    "selectMode": "Select (V)",
+    "handMode": "Hand (H)",
+    "interactionSelect": "Select",
+    "interactionHand": "Hand"
   }
 }

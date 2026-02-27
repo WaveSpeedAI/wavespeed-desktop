@@ -7,7 +7,7 @@ import type { NodeTypeDefinition } from '../../../../src/workflow/types/node-def
 export type PreviewContentType = 'image' | 'video' | 'audio' | '3d' | 'unknown'
 
 export const previewDisplayDef: NodeTypeDefinition = {
-  type: 'output/preview', category: 'output', label: 'Preview', icon: '👀',
+  type: 'output/preview', category: 'output', label: 'Preview',
   inputs: [{ key: 'input', label: 'URL', dataType: 'url', required: true }],
   outputs: [],
   params: [

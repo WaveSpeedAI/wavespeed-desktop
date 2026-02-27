@@ -150,6 +150,32 @@ interface AssetMetadata {
   favorite: boolean
   predictionId?: string
   originalUrl?: string
+  source?: 'playground' | 'workflow' | 'free-tool'
+  workflowId?: string
+  workflowName?: string
+  nodeId?: string
+  executionId?: string
+}
+
+// ─── Persistent key-value state (survives app restarts, unlike renderer localStorage) ────
+const statePath = join(userDataPath, 'renderer-state.json')
+
+function loadState(): Record<string, unknown> {
+  try {
+    if (existsSync(statePath)) {
+      return JSON.parse(readFileSync(statePath, 'utf-8'))
+    }
+  } catch { /* corrupted file — start fresh */ }
+  return {}
+}
+
+function saveState(state: Record<string, unknown>): void {
+  try {
+    if (!existsSync(userDataPath)) mkdirSync(userDataPath, { recursive: true })
+    writeFileSync(statePath, JSON.stringify(state, null, 2))
+  } catch (error) {
+    console.error('Failed to save renderer state:', error)
+  }
 }
 
 const defaultAssetsDirectory = join(app.getPath('documents'), 'WaveSpeed')
@@ -193,6 +219,7 @@ function saveSettings(settings: Partial<Settings>): void {
 }
 
 function createWindow(): void {
+  const isMac = process.platform === 'darwin'
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
@@ -200,6 +227,17 @@ function createWindow(): void {
     minHeight: 700,
     show: false,
     autoHideMenuBar: true,
+    icon: join(__dirname, '../../build/icon.png'),
+    backgroundColor: '#080c16',
+    titleBarStyle: isMac ? 'hiddenInset' : 'hidden',
+    ...(isMac ? { trafficLightPosition: { x: 10, y: 8 } } : {}),
+    ...(process.platform !== 'darwin' ? {
+      titleBarOverlay: {
+        color: '#080c16',
+        symbolColor: '#6b7280',
+        height: 32
+      }
+    } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
@@ -325,6 +363,21 @@ function createWindow(): void {
 }
 
 // IPC Handlers
+
+// Update title bar overlay colors when theme changes (Windows only)
+ipcMain.handle('update-titlebar-theme', (_, isDark: boolean) => {
+  if (process.platform === 'darwin' || !mainWindow) return
+  try {
+    mainWindow.setTitleBarOverlay({
+      color: isDark ? '#080c16' : '#f6f7f9',
+      symbolColor: isDark ? '#9ca3af' : '#6b7280',
+      height: 32
+    })
+  } catch {
+    // setTitleBarOverlay may not be available on all platforms
+  }
+})
+
 ipcMain.handle('get-api-key', () => {
   const settings = loadSettings()
   return settings.apiKey
@@ -354,6 +407,30 @@ ipcMain.handle('set-settings', (_, newSettings: Partial<Settings>) => {
 
 ipcMain.handle('clear-all-data', () => {
   saveSettings(defaultSettings)
+  return true
+})
+
+// Persistent renderer state (key-value, survives restarts)
+ipcMain.handle('get-state', (_, key: string) => {
+  const state = loadState()
+  return state[key] ?? null
+})
+
+ipcMain.handle('set-state', (_, key: string, value: unknown) => {
+  const state = loadState()
+  if (value === null || value === undefined) {
+    delete state[key]
+  } else {
+    state[key] = value
+  }
+  saveState(state)
+  return true
+})
+
+ipcMain.handle('remove-state', (_, key: string) => {
+  const state = loadState()
+  delete state[key]
+  saveState(state)
   return true
 })
 
@@ -428,6 +505,57 @@ ipcMain.handle('download-file', async (_, url: string, defaultFilename: string) 
       resolve({ success: false, error: err.message })
     })
   })
+})
+
+// Silent file save handler — saves a remote URL to a local directory without dialog
+ipcMain.handle('save-file-silent', async (_, url: string, dir: string, fileName: string) => {
+  try {
+    if (!fileName) return { success: false, error: 'Missing filename' }
+    const targetDir = dir || app.getPath('downloads')
+    if (!existsSync(targetDir)) mkdirSync(targetDir, { recursive: true })
+    const filePath = join(targetDir, fileName)
+
+    // Handle local-asset:// URLs
+    if (url.startsWith('local-asset://')) {
+      const localPath = decodeURIComponent(url.replace('local-asset://', ''))
+      if (!existsSync(localPath)) return { success: false, error: 'Source file not found' }
+      copyFileSync(localPath, filePath)
+      return { success: true, filePath }
+    }
+
+    // Handle data: URLs
+    if (url.startsWith('data:')) {
+      const matches = url.match(/^data:[^;]+;base64,(.+)$/)
+      if (matches) {
+        writeFileSync(filePath, Buffer.from(matches[1], 'base64'))
+        return { success: true, filePath }
+      }
+      return { success: false, error: 'Invalid data URL' }
+    }
+
+    // Download from http/https
+    return new Promise((resolve) => {
+      const httpProtocol = url.startsWith('https') ? https : http
+      const file = createWriteStream(filePath)
+      httpProtocol.get(url, (response) => {
+        if (response.statusCode === 301 || response.statusCode === 302) {
+          const redirectUrl = response.headers.location
+          if (redirectUrl) {
+            const rp = redirectUrl.startsWith('https') ? https : http
+            rp.get(redirectUrl, (rr) => {
+              rr.pipe(file)
+              file.on('finish', () => { file.close(); resolve({ success: true, filePath }) })
+            }).on('error', (err) => resolve({ success: false, error: err.message }))
+            return
+          }
+        }
+        response.pipe(file)
+        file.on('finish', () => { file.close(); resolve({ success: true, filePath }) })
+      }).on('error', (err) => resolve({ success: false, error: err.message }))
+    })
+  } catch (err) {
+    return { success: false, error: (err as Error).message }
+  }
 })
 
 // Assets metadata helpers

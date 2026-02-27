@@ -40,6 +40,15 @@ export interface HistoryResponse {
   }
 }
 
+export interface GenerationHistoryItem {
+  id: string
+  prediction: PredictionResult
+  outputs: (string | Record<string, unknown>)[]
+  addedAt: number
+  thumbnailUrl: string | null
+  thumbnailType: 'image' | 'video' | null
+}
+
 export interface UploadResponse {
   code: number
   message: string

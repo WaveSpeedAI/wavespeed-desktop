@@ -89,7 +89,12 @@ const electronAPI = {
   clearAllData: (): Promise<boolean> => ipcRenderer.invoke('clear-all-data'),
   downloadFile: (url: string, defaultFilename: string): Promise<DownloadResult> =>
     ipcRenderer.invoke('download-file', url, defaultFilename),
+  saveFileSilent: (url: string, dir: string, fileName: string): Promise<DownloadResult> =>
+    ipcRenderer.invoke('save-file-silent', url, dir, fileName),
   openExternal: (url: string): Promise<void> => ipcRenderer.invoke('open-external', url),
+
+  // Title bar theme
+  updateTitlebarTheme: (isDark: boolean): Promise<void> => ipcRenderer.invoke('update-titlebar-theme', isDark),
 
   // Auto-updater APIs
   getAppVersion: (): Promise<string> => ipcRenderer.invoke('get-app-version'),
@@ -230,7 +235,19 @@ const electronAPI = {
   sdGetModelsDir: (): Promise<{ success: boolean; path?: string; error?: string }> =>
     ipcRenderer.invoke('sd-get-models-dir'),
   sdExtractBinary: (zipPath: string, destPath: string): Promise<{ success: boolean; path?: string; error?: string }> =>
-    ipcRenderer.invoke('sd-extract-binary', zipPath, destPath)
+    ipcRenderer.invoke('sd-extract-binary', zipPath, destPath),
+
+  // Persistent key-value state (survives app restarts, unlike renderer localStorage)
+  getState: (key: string): Promise<unknown> => ipcRenderer.invoke('get-state', key),
+  setState: (key: string, value: unknown): Promise<boolean> => ipcRenderer.invoke('set-state', key, value),
+  removeState: (key: string): Promise<boolean> => ipcRenderer.invoke('remove-state', key),
+
+  // Assets event listener (workflow executor pushes new assets)
+  onAssetsNewAsset: (callback: (asset: unknown) => void): (() => void) => {
+    const handler = (_: unknown, asset: unknown) => callback(asset)
+    ipcRenderer.on('assets:new-asset', handler)
+    return () => ipcRenderer.removeListener('assets:new-asset', handler)
+  }
 }
 
 // ─── Workflow API (isolated namespace to avoid collision with electronAPI) ────

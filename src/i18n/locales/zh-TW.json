@@ -49,7 +49,8 @@
     "settings": "設定",
     "collapse": "收合",
     "workflow": "工作流",
-    "expand": "展開"
+    "expand": "展開",
+    "more": "更多"
   },
   "welcome": {
     "tagline": "觸手可及的 AI 創意工具",
@@ -428,7 +429,8 @@
     "manageTagsDesc": "為「{{name}}」新增或移除標籤",
     "textPreviewUnavailable": "文字預覽不可用。請開啟檔案位置以檢視。",
     "loadPreviews": "載入預覽",
-    "disablePreviews": "停用預覽"
+    "disablePreviews": "停用預覽",
+    "empty": "尚無圖片"
   },
   "zImage": {
     "title": "Z-Image",

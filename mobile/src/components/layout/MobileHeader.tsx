@@ -77,9 +77,6 @@ export function MobileHeader() {
     }
   }
 
-  // Show free tools button on main pages (not on free tools pages)
-  const showFreeToolsIcon = !location.pathname.startsWith('/free-tools')
-
   return (
     <header className="mobile-header">
       <div className="flex items-center justify-between h-12 px-4">
@@ -120,7 +117,7 @@ export function MobileHeader() {
           )}
         </h1>
 
-        {/* Right side - Action buttons */}
+        {/* Right side - Theme toggle */}
         <div className="flex items-center gap-1.5 justify-end">
           <Button
             variant="ghost"
@@ -130,16 +127,6 @@ export function MobileHeader() {
           >
             {isDark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
           </Button>
-          {showFreeToolsIcon && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 px-2 border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
-              onClick={() => navigate('/free-tools')}
-            >
-              <span className="text-xs font-medium">{t('nav.freeTools')}</span>
-            </Button>
-          )}
         </div>
       </div>
     </header>

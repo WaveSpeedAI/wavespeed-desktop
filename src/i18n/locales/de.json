@@ -49,7 +49,8 @@
     "settings": "Einstellungen",
     "collapse": "Einklappen",
     "workflow": "Workflow",
-    "expand": "Erweitern"
+    "expand": "Erweitern",
+    "more": "Mehr"
   },
   "welcome": {
     "tagline": "KI-Kreativwerkzeuge direkt zur Hand",
@@ -428,7 +429,8 @@
     "manageTagsDesc": "Tags für \"{{name}}\" hinzufügen oder entfernen",
     "textPreviewUnavailable": "Textvorschau nicht verfügbar. Öffnen Sie den Dateispeicherort zum Anzeigen.",
     "loadPreviews": "Vorschauen laden",
-    "disablePreviews": "Vorschauen deaktivieren"
+    "disablePreviews": "Vorschauen deaktivieren",
+    "empty": "Noch keine Bilder"
   },
   "zImage": {
     "title": "Z-Image",

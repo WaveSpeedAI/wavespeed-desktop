@@ -23,7 +23,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { RotateCcw, Loader2, Save, Globe, Settings2, Image } from 'lucide-react'
-import { GameDialog } from '@mobile/components/games/GameDialog'
+import { ModelSelector } from '@/components/playground/ModelSelector'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/useToast'
 
@@ -66,9 +66,6 @@ export function MobilePlaygroundPage() {
   // Template dialog states
   const [showSaveTemplateDialog, setShowSaveTemplateDialog] = useState(false)
   const [newTemplateName, setNewTemplateName] = useState('')
-
-  // Game dialog state
-  const [showGame, setShowGame] = useState(false)
 
   // Dynamic pricing state
   const [calculatedPrice, setCalculatedPrice] = useState<number | null>(null)
@@ -351,10 +348,17 @@ export function MobilePlaygroundPage() {
           {activeView === 'input' ? (
             /* Input View */
             <div className="flex-1 flex flex-col overflow-hidden">
-              {/* Model Info */}
-              {activeTab.selectedModel && (
-                <div className="px-4 pt-3 pb-2 flex items-center justify-between">
-                  <h2 className="text-lg font-semibold truncate">{activeTab.selectedModel.name}</h2>
+              {/* Model Selector */}
+              <div className="px-4 pt-3 pb-2 flex items-center gap-2">
+                <div className="flex-1 min-w-0">
+                  <ModelSelector
+                    models={models}
+                    value={activeTab?.selectedModel?.model_id}
+                    onChange={(newModelId) => navigate(`/playground/${encodeURIComponent(newModelId)}`, { replace: true })}
+                    disabled={activeTab?.isRunning}
+                  />
+                </div>
+                {activeTab?.selectedModel && (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -363,8 +367,8 @@ export function MobilePlaygroundPage() {
                   >
                     <Globe className="h-4 w-4" />
                   </Button>
-                </div>
-              )}
+                )}
+              </div>
 
               {/* Parameters Form */}
               <div className="flex-1 overflow-auto px-4 py-3">
@@ -467,6 +471,7 @@ export function MobilePlaygroundPage() {
                     modelId={activeTab.selectedModel?.model_id}
                     modelName={activeTab.selectedModel?.name}
                     onSaveTemplate={activeTab.selectedModel ? () => setShowSaveTemplateDialog(true) : undefined}
+                    hideGameButton
                   />
                 )}
               </div>
@@ -527,8 +532,6 @@ export function MobilePlaygroundPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Game Dialog */}
-      <GameDialog open={showGame} onOpenChange={setShowGame} />
     </div>
   )
 }

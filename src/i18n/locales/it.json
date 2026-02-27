@@ -49,7 +49,8 @@
     "settings": "Impostazioni",
     "collapse": "Comprimi",
     "workflow": "Flusso di lavoro",
-    "expand": "Espandi"
+    "expand": "Espandi",
+    "more": "Altro"
   },
   "welcome": {
     "tagline": "Strumenti Creativi IA a Portata di Mano",
@@ -428,7 +429,8 @@
     "manageTagsDesc": "Aggiungi o rimuovi tag per \"{{name}}\"",
     "textPreviewUnavailable": "Anteprima testo non disponibile. Apri la posizione del file per visualizzare.",
     "loadPreviews": "Carica anteprime",
-    "disablePreviews": "Disabilita anteprime"
+    "disablePreviews": "Disabilita anteprime",
+    "empty": "Nessuna immagine"
   },
   "zImage": {
     "title": "Z-Image",

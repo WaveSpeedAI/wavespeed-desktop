@@ -10,7 +10,7 @@ import { OutputDisplay } from '@/components/playground/OutputDisplay'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
+// ScrollArea removed – native div scroll for reliable infinite-scroll
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -202,8 +202,13 @@ export function MobileHistoryPage() {
   const [items, setItems] = useState<ExtendedHistoryItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
+  const contentRef = useRef<HTMLDivElement>(null)
+  const touchStartX = useRef(0)
+  const touchStartY = useRef(0)
+  const dialogTouchStartX = useRef(0)
+  const dialogTouchStartY = useRef(0)
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [selectedItem, setSelectedItem] = useState<ExtendedHistoryItem | null>(null)
   const [copiedId, setCopiedId] = useState(false)
@@ -243,8 +248,6 @@ export function MobileHistoryPage() {
     setNameError('')
     return false
   }, [templates, t])
-
-  const pageSize = 20
 
   // Load templates and prediction inputs on mount
   useEffect(() => {
@@ -436,9 +439,11 @@ export function MobileHistoryPage() {
     setSelectedItem(items[newIdx])
   }, [selectedItem, items])
 
+  const pageSize = 20
+  const totalPages = Math.ceil(total / pageSize) || 1
+
   const fetchHistory = useCallback(async () => {
     if (!isValidated) return
-
     setIsLoading(true)
     setError(null)
 
@@ -446,7 +451,6 @@ export function MobileHistoryPage() {
       // Handle archived filter - show from local storage
       if (statusFilter === 'archived') {
         const archivedEntries = getArchived()
-        // Convert to ExtendedHistoryItem format
         const archivedItems: ExtendedHistoryItem[] = archivedEntries.map(entry => ({
           id: entry.predictionId,
           model: entry.modelId,
@@ -457,7 +461,6 @@ export function MobileHistoryPage() {
         }))
         setItems(archivedItems)
         setTotal(archivedItems.length)
-        setIsLoading(false)
         return
       }
 
@@ -474,13 +477,54 @@ export function MobileHistoryPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [isValidated, page, pageSize, statusFilter, getArchived])
+  }, [isValidated, page, statusFilter, getArchived])
 
+  // Load when page or filter changes
   useEffect(() => {
     fetchHistory()
   }, [fetchHistory])
 
-  const totalPages = Math.ceil(total / pageSize)
+  // Reset page when filter changes
+  useEffect(() => {
+    setPage(1)
+  }, [statusFilter])
+
+  // Swipe to change page
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+    touchStartY.current = e.touches[0].clientY
+  }, [])
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    const dx = e.changedTouches[0].clientX - touchStartX.current
+    const dy = e.changedTouches[0].clientY - touchStartY.current
+    // Only trigger if horizontal swipe is dominant and > 80px
+    if (Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      if (dx < 0 && page < totalPages) {
+        setPage(p => p + 1)
+      } else if (dx > 0 && page > 1) {
+        setPage(p => p - 1)
+      }
+    }
+  }, [page, totalPages])
+
+  // Swipe in detail dialog to navigate between items
+  const handleDialogTouchStart = useCallback((e: React.TouchEvent) => {
+    dialogTouchStartX.current = e.touches[0].clientX
+    dialogTouchStartY.current = e.touches[0].clientY
+  }, [])
+
+  const handleDialogTouchEnd = useCallback((e: React.TouchEvent) => {
+    const dx = e.changedTouches[0].clientX - dialogTouchStartX.current
+    const dy = e.changedTouches[0].clientY - dialogTouchStartY.current
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      if (dx < 0) {
+        navigateHistory('next')
+      } else {
+        navigateHistory('prev')
+      }
+    }
+  }, [navigateHistory])
 
   const getStatusBadge = (status: string, isArchived?: boolean) => {
     // Show archived badge if item is from archived filter
@@ -724,7 +768,7 @@ export function MobileHistoryPage() {
                 </Button>
               </>
             ) : (
-              <Button variant="outline" size="sm" onClick={fetchHistory} disabled={isLoading}>
+              <Button variant="outline" size="sm" onClick={() => fetchHistory()} disabled={isLoading}>
                 <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
               </Button>
             )}
@@ -737,7 +781,6 @@ export function MobileHistoryPage() {
             value={statusFilter}
             onValueChange={(value) => {
               setStatusFilter(value)
-              setPage(1)
             }}
           >
             <SelectTrigger className="flex-1 h-9">
@@ -766,7 +809,12 @@ export function MobileHistoryPage() {
       </div>
 
       {/* Content */}
-      <ScrollArea className="flex-1 relative z-10">
+      <div
+        className="flex-1 overflow-auto relative z-10"
+        ref={contentRef}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         <div className="px-4 py-4">
           {isLoading && items.length === 0 ? (
             <div className="flex items-center justify-center py-8">
@@ -797,6 +845,7 @@ export function MobileHistoryPage() {
               <p className="text-muted-foreground text-sm">{t('history.noHistory')}</p>
             </div>
           ) : (
+            <>
             <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {items.map((item) => {
                 const PreviewIcon = getPreviewIcon(item)
@@ -892,36 +941,34 @@ export function MobileHistoryPage() {
                 )
               })}
             </div>
+              {/* Pagination */}
+              <div className="flex items-center justify-center gap-3 pt-4 pb-6">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 w-9 p-0"
+                  disabled={page <= 1 || isLoading}
+                  onClick={() => setPage(p => p - 1)}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm text-muted-foreground min-w-[80px] text-center">
+                  {page} / {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 w-9 p-0"
+                  disabled={page >= totalPages || isLoading}
+                  onClick={() => setPage(p => p + 1)}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </>
           )}
         </div>
-      </ScrollArea>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="border-t p-3 flex items-center justify-between relative z-10">
-          <p className="text-xs text-muted-foreground">
-            {(page - 1) * pageSize + 1} - {Math.min(page * pageSize, total)} / {total}
-          </p>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage(p => p - 1)}
-              disabled={page === 1 || isLoading}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage(p => p + 1)}
-              disabled={page >= totalPages || isLoading}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
+      </div>
 
       {/* Detail Dialog */}
       <Dialog open={!!selectedItem && !showSaveDialog} onOpenChange={(open) => !open && setSelectedItem(null)}>
@@ -952,23 +999,34 @@ export function MobileHistoryPage() {
             )}
           </DialogHeader>
           {selectedItem && (
-            <div className="flex-1 overflow-y-auto space-y-4 relative">
-              {/* Navigation buttons overlaid on preview */}
+            <div
+              className="flex-1 overflow-y-auto space-y-4"
+              onTouchStart={handleDialogTouchStart}
+              onTouchEnd={handleDialogTouchEnd}
+            >
+              {/* Navigation buttons for switching between items */}
               {items.length > 1 && (
-                <>
-                  <button
+                <div className="flex items-center justify-center gap-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 w-8 p-0"
                     onClick={() => navigateHistory('prev')}
-                    className="absolute left-2 top-[125px] z-10 h-10 w-10 rounded-full bg-black/30 text-white flex items-center justify-center active:bg-black/60 transition-colors"
                   >
-                    <span className="text-lg">◀</span>
-                  </button>
-                  <button
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="text-xs text-muted-foreground">
+                    {items.findIndex(item => item.id === selectedItem?.id) + 1} / {items.length}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 w-8 p-0"
                     onClick={() => navigateHistory('next')}
-                    className="absolute right-2 top-[125px] z-10 h-10 w-10 rounded-full bg-black/30 text-white flex items-center justify-center active:bg-black/60 transition-colors"
                   >
-                    <span className="text-lg">▶</span>
-                  </button>
-                </>
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
               )}
               {/* Preview using OutputDisplay */}
               {selectedItem.outputs && selectedItem.outputs.length > 0 && (

@@ -49,7 +49,8 @@
     "settings": "Configurações",
     "collapse": "Recolher",
     "workflow": "Fluxo de trabalho",
-    "expand": "Expandir"
+    "expand": "Expandir",
+    "more": "Mais"
   },
   "welcome": {
     "tagline": "Ferramentas Criativas de IA ao Seu Alcance",
@@ -428,7 +429,8 @@
     "manageTagsDesc": "Adicionar ou remover tags para \"{{name}}\"",
     "textPreviewUnavailable": "Pré-visualização de texto não disponível. Abra o local do arquivo para visualizar.",
     "loadPreviews": "Carregar visualizações",
-    "disablePreviews": "Desativar visualizações"
+    "disablePreviews": "Desativar visualizações",
+    "empty": "Sem imagens ainda"
   },
   "zImage": {
     "title": "Z-Image",

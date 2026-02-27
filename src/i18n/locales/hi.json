@@ -49,7 +49,8 @@
     "settings": "सेटिंग्स",
     "collapse": "संक्षिप्त करें",
     "workflow": "वर्कफ़्लो",
-    "expand": "विस्तार करें"
+    "expand": "विस्तार करें",
+    "more": "अधिक"
   },
   "welcome": {
     "tagline": "आपकी उंगलियों पर AI-संचालित रचनात्मक उपकरण",
@@ -428,7 +429,8 @@
     "manageTagsDesc": "\"{{name}}\" के लिए टैग जोड़ें या हटाएं",
     "textPreviewUnavailable": "पाठ प्रीव्यू उपलब्ध नहीं। देखने के लिए फ़ाइल स्थान खोलें।",
     "loadPreviews": "प्रीव्यू लोड करें",
-    "disablePreviews": "प्रीव्यू अक्षम करें"
+    "disablePreviews": "प्रीव्यू अक्षम करें",
+    "empty": "अभी तक कोई चित्र नहीं"
   },
   "zImage": {
     "title": "Z-Image",

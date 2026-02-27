@@ -49,7 +49,8 @@
     "settings": "Ayarlar",
     "collapse": "Daralt",
     "workflow": "İş Akışı",
-    "expand": "Genişlet"
+    "expand": "Genişlet",
+    "more": "Daha fazla"
   },
   "welcome": {
     "tagline": "Parmaklarınızın Ucunda AI Destekli Yaratıcı Araçlar",
@@ -428,7 +429,8 @@
     "manageTagsDesc": "\"{{name}}\" için etiket ekle veya kaldır",
     "textPreviewUnavailable": "Metin önizlemesi mevcut değil. Görüntülemek için dosya konumunu açın.",
     "loadPreviews": "Önizlemeleri yükle",
-    "disablePreviews": "Önizlemeleri devre dışı bırak"
+    "disablePreviews": "Önizlemeleri devre dışı bırak",
+    "empty": "Henüz resim yok"
   },
   "zImage": {
     "title": "Z-Image",

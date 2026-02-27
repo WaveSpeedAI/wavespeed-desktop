@@ -49,7 +49,8 @@
     "settings": "Tetapan",
     "collapse": "Kuncupkan",
     "workflow": "Aliran kerja",
-    "expand": "Kembang"
+    "expand": "Kembang",
+    "more": "Lagi"
   },
   "welcome": {
     "tagline": "Alat Kreatif AI di Hujung Jari Anda",
@@ -428,7 +429,8 @@
     "manageTagsDesc": "Tambah atau buang tag untuk \"{{name}}\"",
     "textPreviewUnavailable": "Pratonton teks tidak tersedia. Buka lokasi fail untuk melihat.",
     "loadPreviews": "Muat pratonton",
-    "disablePreviews": "Lumpuhkan pratonton"
+    "disablePreviews": "Lumpuhkan pratonton",
+    "empty": "Tiada gambar lagi"
   },
   "zImage": {
     "title": "Z-Image",

@@ -49,7 +49,8 @@
     "settings": "Cài đặt",
     "collapse": "Thu gọn",
     "workflow": "Quy trình",
-    "expand": "Mở rộng"
+    "expand": "Mở rộng",
+    "more": "Thêm"
   },
   "welcome": {
     "tagline": "Công cụ Sáng tạo AI Trong Tầm Tay",
@@ -428,7 +429,8 @@
     "manageTagsDesc": "Thêm hoặc xóa thẻ cho \"{{name}}\"",
     "textPreviewUnavailable": "Không có xem trước văn bản. Mở vị trí tệp để xem.",
     "loadPreviews": "Tải xem trước",
-    "disablePreviews": "Tắt xem trước"
+    "disablePreviews": "Tắt xem trước",
+    "empty": "Chưa có hình ảnh"
   },
   "zImage": {
     "title": "Z-Image",

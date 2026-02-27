@@ -49,7 +49,8 @@
     "settings": "الإعدادات",
     "collapse": "طي",
     "workflow": "سير العمل",
-    "expand": "توسيع"
+    "expand": "توسيع",
+    "more": "المزيد"
   },
   "welcome": {
     "tagline": "أدوات إبداعية مدعومة بالذكاء الاصطناعي في متناول يدك",
@@ -428,7 +429,8 @@
     "manageTagsDesc": "إضافة أو إزالة علامات لـ \"{{name}}\"",
     "textPreviewUnavailable": "معاينة النص غير متاحة. افتح موقع الملف للعرض.",
     "loadPreviews": "تحميل المعاينات",
-    "disablePreviews": "تعطيل المعاينات"
+    "disablePreviews": "تعطيل المعاينات",
+    "empty": "لا توجد صور بعد"
   },
   "zImage": {
     "title": "Z-Image",

@@ -49,7 +49,8 @@
     "workflow": "工作流",
     "settings": "设置",
     "collapse": "收起",
-    "expand": "展开"
+    "expand": "展开",
+    "more": "更多"
   },
   "welcome": {
     "tagline": "触手可及的 AI 创意工具",
@@ -428,7 +429,8 @@
     "manageTagsDesc": "为「{{name}}」添加或删除标签",
     "textPreviewUnavailable": "文本预览不可用。请打开文件位置查看。",
     "loadPreviews": "加载预览",
-    "disablePreviews": "禁用预览"
+    "disablePreviews": "禁用预览",
+    "empty": "暂无图片"
   },
   "zImage": {
     "title": "Z-Image",

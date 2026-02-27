@@ -49,7 +49,8 @@
     "settings": "Pengaturan",
     "collapse": "Ciutkan",
     "workflow": "Alur kerja",
-    "expand": "Perluas"
+    "expand": "Perluas",
+    "more": "Lainnya"
   },
   "welcome": {
     "tagline": "Alat Kreatif AI di Ujung Jari Anda",
@@ -428,7 +429,8 @@
     "manageTagsDesc": "Tambah atau hapus tag untuk \"{{name}}\"",
     "textPreviewUnavailable": "Pratinjau teks tidak tersedia. Buka lokasi file untuk melihat.",
     "loadPreviews": "Muat pratinjau",
-    "disablePreviews": "Nonaktifkan pratinjau"
+    "disablePreviews": "Nonaktifkan pratinjau",
+    "empty": "Belum ada gambar"
   },
   "zImage": {
     "title": "Z-Image",

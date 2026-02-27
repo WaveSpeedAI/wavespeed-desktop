@@ -49,7 +49,8 @@
     "settings": "Paramètres",
     "collapse": "Réduire",
     "workflow": "Workflow",
-    "expand": "Développer"
+    "expand": "Développer",
+    "more": "Plus"
   },
   "welcome": {
     "tagline": "Outils Créatifs IA à Portée de Main",
@@ -428,7 +429,8 @@
     "manageTagsDesc": "Ajouter ou retirer des étiquettes pour \"{{name}}\"",
     "textPreviewUnavailable": "Aperçu du texte non disponible. Ouvrez l'emplacement du fichier pour le voir.",
     "loadPreviews": "Charger les aperçus",
-    "disablePreviews": "Désactiver les aperçus"
+    "disablePreviews": "Désactiver les aperçus",
+    "empty": "Pas encore d'images"
   },
   "zImage": {
     "title": "Z-Image",

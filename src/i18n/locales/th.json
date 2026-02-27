@@ -49,7 +49,8 @@
     "settings": "การตั้งค่า",
     "collapse": "ยุบ",
     "workflow": "เวิร์กโฟลว์",
-    "expand": "ขยาย"
+    "expand": "ขยาย",
+    "more": "เพิ่มเติม"
   },
   "welcome": {
     "tagline": "เครื่องมือสร้างสรรค์ AI ที่ปลายนิ้วของคุณ",
@@ -428,7 +429,8 @@
     "manageTagsDesc": "เพิ่มหรือลบแท็กสำหรับ \"{{name}}\"",
     "textPreviewUnavailable": "ไม่มีการแสดงตัวอย่างข้อความ เปิดตำแหน่งไฟล์เพื่อดู",
     "loadPreviews": "โหลดตัวอย่าง",
-    "disablePreviews": "ปิดใช้งานตัวอย่าง"
+    "disablePreviews": "ปิดใช้งานตัวอย่าง",
+    "empty": "ยังไม่มีรูปภาพ"
   },
   "zImage": {
     "title": "Z-Image",

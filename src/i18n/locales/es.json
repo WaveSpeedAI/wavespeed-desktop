@@ -49,7 +49,8 @@
     "settings": "Configuración",
     "collapse": "Contraer",
     "workflow": "Flujo de trabajo",
-    "expand": "Expandir"
+    "expand": "Expandir",
+    "more": "Más"
   },
   "welcome": {
     "tagline": "Herramientas Creativas de IA al Alcance de tu Mano",
@@ -428,7 +429,8 @@
     "manageTagsDesc": "Agregar o quitar etiquetas para \"{{name}}\"",
     "textPreviewUnavailable": "Vista previa de texto no disponible. Abre la ubicación del archivo para verlo.",
     "loadPreviews": "Cargar vistas previas",
-    "disablePreviews": "Deshabilitar vistas previas"
+    "disablePreviews": "Deshabilitar vistas previas",
+    "empty": "Aún no hay imágenes"
   },
   "zImage": {
     "title": "Z-Image",

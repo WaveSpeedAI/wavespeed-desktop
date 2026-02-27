@@ -366,6 +366,11 @@ export const electronAPIWeb: ElectronAPI = {
       return true
     } catch { return false }
   },
+
+  // Assets event listener (no-op in web — browser-side saves directly to store)
+  onAssetsNewAsset: () => {
+    return () => { /* no-op */ }
+  },
 }
 
 // Inject electronAPI when running in a browser environment.

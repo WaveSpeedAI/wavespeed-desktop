@@ -438,6 +438,7 @@
     "clearFilters": "Clear Filters",
     "filterByType": "Type",
     "filterByModel": "Model",
+    "filterBySource": "Source",
     "allModels": "All Models",
     "favorites": "Favorites",
     "showFavoritesOnly": "Show favorites only",

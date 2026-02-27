@@ -150,6 +150,11 @@ interface AssetMetadata {
   favorite: boolean
   predictionId?: string
   originalUrl?: string
+  source?: 'playground' | 'workflow' | 'free-tool'
+  workflowId?: string
+  workflowName?: string
+  nodeId?: string
+  executionId?: string
 }
 
 // ─── Persistent key-value state (survives app restarts, unlike renderer localStorage) ────

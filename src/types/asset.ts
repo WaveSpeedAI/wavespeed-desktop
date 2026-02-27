@@ -2,6 +2,8 @@ export type AssetType = 'image' | 'video' | 'audio' | 'text' | 'json'
 
 export type AssetSortBy = 'date-desc' | 'date-asc' | 'name-asc' | 'name-desc' | 'size-desc' | 'size-asc'
 
+export type AssetSource = 'playground' | 'workflow' | 'free-tool'
+
 export interface AssetMetadata {
   id: string
   filePath: string
@@ -14,6 +16,11 @@ export interface AssetMetadata {
   favorite: boolean
   predictionId?: string
   originalUrl?: string
+  source?: AssetSource
+  workflowId?: string
+  workflowName?: string
+  nodeId?: string
+  executionId?: string
 }
 
 export interface AssetsFilter {
@@ -25,6 +32,7 @@ export interface AssetsFilter {
   favoritesOnly?: boolean
   search?: string
   sortBy?: AssetSortBy
+  sources?: AssetSource[]
 }
 
 export interface AssetsSaveOptions {
@@ -32,6 +40,11 @@ export interface AssetsSaveOptions {
   predictionId?: string
   originalUrl?: string
   resultIndex?: number
+  source?: AssetSource
+  workflowId?: string
+  workflowName?: string
+  nodeId?: string
+  executionId?: string
 }
 
 export interface AssetsSettings {

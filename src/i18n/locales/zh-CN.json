@@ -438,6 +438,7 @@
     "clearFilters": "清除筛选",
     "filterByType": "类型",
     "filterByModel": "模型",
+    "filterBySource": "来源",
     "allModels": "所有模型",
     "favorites": "收藏",
     "showFavoritesOnly": "仅显示收藏",

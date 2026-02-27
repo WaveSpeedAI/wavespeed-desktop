@@ -46,6 +46,11 @@ export interface AssetMetadataElectron {
   favorite: boolean
   predictionId?: string
   originalUrl?: string
+  source?: 'playground' | 'workflow' | 'free-tool'
+  workflowId?: string
+  workflowName?: string
+  nodeId?: string
+  executionId?: string
 }
 
 export interface UpdateStatus {
@@ -194,6 +199,9 @@ export interface ElectronAPI {
   getState: (key: string) => Promise<unknown>
   setState: (key: string, value: unknown) => Promise<boolean>
   removeState: (key: string) => Promise<boolean>
+
+  // Assets event listener (workflow executor pushes new assets)
+  onAssetsNewAsset: (callback: (asset: unknown) => void) => () => void
 }
 
 export interface WorkflowAPI {

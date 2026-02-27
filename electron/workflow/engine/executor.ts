@@ -13,6 +13,8 @@ import { getNodesByWorkflowId, updateNodeCurrentOutputId } from '../db/node.repo
 import { getEdgesByWorkflowId } from '../db/edge.repo'
 import { getDatabase, persistDatabase } from '../db/connection'
 import { getFileStorageInstance } from '../utils/file-storage'
+import { saveWorkflowResultToAssets } from '../utils/save-to-assets'
+import { getWorkflowById } from '../db/workflow.repo'
 import type { NodeExecutionContext, NodeExecutionResult } from '../nodes/base'
 import type { NodeStatus } from '../../../src/workflow/types/execution'
 import type { WorkflowNode, WorkflowEdge } from '../../../src/workflow/types/workflow'
@@ -322,6 +324,35 @@ export class ExecutionEngine {
         }
       } catch (dlErr) {
         console.error('[Executor] Failed to download result:', dlErr)
+      }
+
+      // Save to My Assets (only for nodes that produce meaningful media output)
+      const SAVEABLE_NODE_TYPES = ['ai-task/run']
+      const isSaveableNode = SAVEABLE_NODE_TYPES.includes(node.nodeType) || node.nodeType.startsWith('free-tool/')
+      if (isSaveableNode) {
+        try {
+          const workflow = getWorkflowById(workflowId)
+          const wfName = workflow?.name ?? 'Workflow'
+          const modelId = String(node.params?.modelId ?? node.nodeType)
+          const resultUrls = result.resultMetadata?.resultUrls as string[] | undefined
+          const urls = resultUrls ?? (result.resultPath ? [result.resultPath] : [])
+          for (let i = 0; i < urls.length; i++) {
+            const url = urls[i]
+            if (url) {
+              await saveWorkflowResultToAssets({
+                url,
+                modelId,
+                workflowId,
+                workflowName: wfName,
+                nodeId,
+                executionId,
+                resultIndex: i
+              })
+            }
+          }
+        } catch (assetErr) {
+          console.error('[Executor] Failed to save to My Assets:', assetErr)
+        }
       }
 
       // Always set to confirmed after successful execution

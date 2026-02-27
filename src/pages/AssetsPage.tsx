@@ -68,6 +68,7 @@ import {
   ChevronRight,
   Sparkles,
   FolderHeart,
+  GitBranch,
 } from 'lucide-react'
 import type { AssetMetadata, AssetType, AssetSortBy, AssetsFilter } from '@/types/asset'
 
@@ -494,6 +495,8 @@ export function AssetsPage() {
             <AssetTypeIcon type={asset.type} className="h-3 w-3 mr-1" />
             {t(`assets.types.${asset.type}`)}
           </Badge>
+
+
         </div>
 
         {/* Info */}
@@ -503,9 +506,16 @@ export function AssetsPage() {
               <p className="text-sm font-medium truncate" title={asset.fileName}>
                 {asset.fileName}
               </p>
-              <p className="text-xs text-muted-foreground truncate" title={asset.modelId}>
-                {asset.modelId}
-              </p>
+              {asset.source === 'workflow' && asset.workflowName ? (
+                <p className="text-xs text-blue-400 truncate flex items-center gap-1" title={`Workflow: ${asset.workflowName}`}>
+                  <GitBranch className="h-3 w-3 shrink-0" />
+                  {asset.workflowName}
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground truncate" title={asset.modelId}>
+                  {asset.modelId}
+                </p>
+              )}
               <p className="text-xs text-muted-foreground">
                 {formatDate(asset.createdAt)} · {formatBytes(asset.fileSize)}
               </p>
@@ -786,6 +796,32 @@ export function AssetsPage() {
                   </Label>
                 </div>
               </div>
+
+              {/* Source filter */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">{t('assets.filterBySource', 'Source')}</Label>
+                <div className="space-y-1">
+                  {([
+                    { value: 'playground' as const, label: 'Playground' },
+                    { value: 'workflow' as const, label: 'Workflow' },
+                    { value: 'free-tool' as const, label: 'Free Tool' },
+                  ]).map(({ value, label }) => (
+                    <div key={value} className="flex items-center gap-2">
+                      <Checkbox
+                        id={`source-${value}`}
+                        checked={(filter.sources || []).includes(value)}
+                        onCheckedChange={(checked) => {
+                          setFilter(f => {
+                            const current = f.sources || []
+                            return { ...f, sources: checked ? [...current, value] : current.filter(s => s !== value) }
+                          })
+                        }}
+                      />
+                      <Label htmlFor={`source-${value}`} className="text-sm">{label}</Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -856,6 +892,9 @@ export function AssetsPage() {
             </DialogTitle>
             <DialogDescription>
               {previewAsset?.modelId} · {previewAsset && formatDate(previewAsset.createdAt)}
+              {previewAsset?.source === 'workflow' && previewAsset?.workflowName && (
+                <> · <GitBranch className="inline h-3 w-3" /> {previewAsset.workflowName}</>
+              )}
             </DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-auto relative">

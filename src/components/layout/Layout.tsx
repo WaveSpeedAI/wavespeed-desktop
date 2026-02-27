@@ -5,6 +5,7 @@ import { Sidebar } from './Sidebar'
 import { AppLogo } from './AppLogo'
 import { PageResetContext } from './PageResetContext'
 import { Toaster } from '@/components/ui/toaster'
+import { UpdateBanner } from './UpdateBanner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { ToastAction } from '@/components/ui/toast'
 import { toast } from '@/hooks/useToast'
@@ -373,6 +374,7 @@ export function Layout() {
           )}
         </main>
         <Toaster />
+        <UpdateBanner />
         </div>
       </div>
     </TooltipProvider>

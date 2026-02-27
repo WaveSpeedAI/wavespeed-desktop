@@ -1152,7 +1152,7 @@ ipcMain.handle('sd-extract-binary', (_, zipPath: string, destPath: string) => {
 let mainWindow: BrowserWindow | null = null
 
 // Configure auto-updater
-autoUpdater.autoDownload = false
+autoUpdater.autoDownload = true
 autoUpdater.autoInstallOnAppQuit = true
 
 function sendUpdateStatus(status: string, data?: Record<string, unknown>) {

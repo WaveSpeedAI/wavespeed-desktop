@@ -390,7 +390,7 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
     set(state => ({
       tabs: state.tabs.map(tab =>
         tab.id === state.activeTabId
-          ? { ...tab, isRunning: true, error: null, currentPrediction: null, outputs: [], batchState: null, batchResults: [] }
+          ? { ...tab, isRunning: true, error: null, currentPrediction: null, outputs: [], selectedHistoryIndex: null, batchState: null, batchResults: [] }
           : tab
       )
     }))
@@ -593,6 +593,7 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
               ...tab,
               isRunning: true,
               error: null,
+              selectedHistoryIndex: null,
               batchState: {
                 isRunning: true,
                 queue,

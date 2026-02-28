@@ -664,8 +664,8 @@ export function PlaygroundPage() {
             </div>
             <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
               <div className="flex-1 min-w-0 overflow-hidden p-5 md:p-6">
-                {/* Batch Results - shown while running or when completed */}
-                {(activeTab.batchState?.isRunning || activeTab.batchResults.length > 0) ? (
+                {/* Batch Results - shown while running or when completed (not when viewing history) */}
+                {(activeTab.batchState?.isRunning || activeTab.batchResults.length > 0) && historyIndex === null ? (
                   <BatchOutputGrid
                     results={activeTab.batchResults}
                     modelId={activeTab.selectedModel?.model_id}
@@ -674,8 +674,8 @@ export function PlaygroundPage() {
                     totalCount={activeTab.batchState?.queue.length}
                     queue={activeTab.batchState?.queue}
                   />
-                ) : /* Batch Preview - shown when batch mode is active but not yet run */
-                batchPreviewInputs.length > 0 ? (
+                ) : /* Batch Preview - shown when batch mode is active but not yet run (not when viewing history) */
+                batchPreviewInputs.length > 0 && historyIndex === null ? (
                   <BatchOutputGrid
                     results={[]}
                     modelId={activeTab.selectedModel?.model_id}

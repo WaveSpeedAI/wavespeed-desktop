@@ -427,6 +427,9 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
         }
       }
 
+      // Snapshot form values for history recall
+      const snapshotValues = { ...formValues }
+
       if (mediaEntries.length >= 2) {
         // Split: one history item per media output (newest/first at index 0)
         const baseId = result.id || `gen-${Date.now()}`
@@ -436,6 +439,7 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
             id: `${baseId}-${i}`,
             prediction: result,
             outputs: [output],
+            formValues: snapshotValues,
             addedAt: Date.now() + i,
             thumbnailUrl: output,
             thumbnailType: type
@@ -449,6 +453,7 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
           id: result.id || `gen-${Date.now()}`,
           prediction: result,
           outputs,
+          formValues: snapshotValues,
           addedAt: Date.now(),
           thumbnailUrl,
           thumbnailType
@@ -545,7 +550,7 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
     const activeTab = get().getActiveTab()
     if (!activeTab) return
 
-    const { selectedModel, formFields } = activeTab
+    const { selectedModel, formFields, formValues } = activeTab
     if (!selectedModel) {
       set(state => ({
         tabs: state.tabs.map(tab =>
@@ -561,6 +566,9 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
     if (!get().validateForm()) {
       return
     }
+
+    // Snapshot form values for history recall
+    const batchSnapshotValues = { ...formValues }
 
     // Generate batch inputs
     const inputs = get().generateBatchInputs()
@@ -648,6 +656,7 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
                 id: `${result.id || queue[i].id}-${itemHistoryEntries.length}`,
                 prediction: result,
                 outputs: [output],
+                formValues: batchSnapshotValues,
                 addedAt: Date.now() + itemHistoryEntries.length,
                 thumbnailUrl: output,
                 thumbnailType: mType
@@ -772,12 +781,25 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
   },
 
   selectHistoryItem: (index: number | null) => {
-    set(state => ({
-      tabs: state.tabs.map(tab =>
-        tab.id === state.activeTabId
-          ? { ...tab, selectedHistoryIndex: index, batchState: null, batchResults: [] }
-          : tab
-      )
-    }))
+    set(state => {
+      const activeTab = state.tabs.find(t => t.id === state.activeTabId)
+      const historyItem = activeTab && index !== null ? activeTab.generationHistory[index] : null
+      // Restore form values from history if available
+      const restoredValues = historyItem?.formValues
+
+      return {
+        tabs: state.tabs.map(tab =>
+          tab.id === state.activeTabId
+            ? {
+                ...tab,
+                selectedHistoryIndex: index,
+                batchState: null,
+                batchResults: [],
+                ...(restoredValues ? { formValues: restoredValues } : {})
+              }
+            : tab
+        )
+      }
+    })
   }
 }))

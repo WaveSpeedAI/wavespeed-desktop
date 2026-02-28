@@ -462,8 +462,8 @@ export function MobilePlaygroundPage() {
               </div>
               <div className="flex-1 flex flex-col overflow-hidden">
                 <div className="flex-1 p-4 overflow-auto">
-                  {/* Show BatchOutputGrid for batch results, OutputDisplay for single results */}
-                  {activeTab.batchResults && activeTab.batchResults.length > 0 ? (
+                  {/* Show BatchOutputGrid for batch results (not when viewing history), OutputDisplay otherwise */}
+                  {activeTab.batchResults && activeTab.batchResults.length > 0 && historyIndex === null ? (
                     <BatchOutputGrid
                       results={activeTab.batchResults}
                       modelId={activeTab.selectedModel?.model_id}

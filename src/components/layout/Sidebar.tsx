@@ -139,6 +139,46 @@ export function Sidebar({
     },
   ];
 
+  // Sliding active-indicator for main nav
+  const navRef = useRef<HTMLElement>(null);
+  const [indicatorStyle, setIndicatorStyle] = useState<React.CSSProperties>({
+    opacity: 0,
+  });
+  const hasPositioned = useRef(false);
+
+  useEffect(() => {
+    const measure = () => {
+      const nav = navRef.current;
+      if (!nav) return;
+      const activeBtn = nav.querySelector(
+        "[data-nav-active]",
+      ) as HTMLElement | null;
+      if (!activeBtn) {
+        setIndicatorStyle((s) => ({ ...s, opacity: 0 }));
+        return;
+      }
+      const nr = nav.getBoundingClientRect();
+      const br = activeBtn.getBoundingClientRect();
+      setIndicatorStyle({
+        top: br.top - nr.top,
+        left: br.left - nr.left,
+        width: br.width,
+        height: br.height,
+        opacity: 1,
+      });
+      hasPositioned.current = true;
+    };
+
+    requestAnimationFrame(measure);
+    // Re-measure after sidebar collapse/expand transition completes
+    const timer = setTimeout(measure, 350);
+    window.addEventListener("resize", measure);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", measure);
+    };
+  }, [location.pathname, collapsed, isMobileOpen]);
+
   return (
     <div
       className={cn(
@@ -161,7 +201,19 @@ export function Sidebar({
 
       {/* Navigation */}
       <ScrollArea className="flex-1 px-1.5 py-2">
-        <nav className="flex flex-col gap-5 px-0.5 electron-no-drag">
+        <nav
+          ref={navRef}
+          className="relative flex flex-col gap-5 px-0.5 electron-no-drag"
+        >
+          {/* Sliding active indicator */}
+          <div
+            className={cn(
+              "absolute rounded-lg bg-primary shadow-sm pointer-events-none",
+              hasPositioned.current &&
+                "transition-[top,left,width,height,opacity] duration-300 ease-out",
+            )}
+            style={indicatorStyle}
+          />
           {navGroups.map((group) => (
             <div
               key={group.key}
@@ -185,6 +237,7 @@ export function Sidebar({
                   >
                     <TooltipTrigger asChild>
                       <button
+                        data-nav-active={active || undefined}
                         onClick={() => {
                           if (
                             item.matchPrefix &&
@@ -203,12 +256,12 @@ export function Sidebar({
                         }}
                         className={cn(
                           buttonVariants({ variant: "ghost", size: "sm" }),
-                          "h-8 w-full rounded-lg text-xs transition-all relative overflow-visible",
+                          "h-8 w-full rounded-lg text-xs transition-colors duration-200 relative overflow-visible",
                           collapsed && !isMobileOpen
                             ? "justify-center px-0"
                             : "justify-start gap-2.5 px-2.5",
                           active
-                            ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/95 hover:text-primary-foreground"
+                            ? "!bg-transparent text-primary-foreground hover:!bg-transparent hover:text-primary-foreground"
                             : "text-muted-foreground hover:bg-muted hover:text-foreground",
                           isNewFeature &&
                             !active &&

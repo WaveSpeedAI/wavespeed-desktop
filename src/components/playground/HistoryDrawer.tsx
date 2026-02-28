@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { GenerationHistoryItem } from "@/types/prediction";
 import { cn } from "@/lib/utils";
-import { ChevronUp, ChevronDown, History } from "lucide-react";
+import { ChevronUp, ChevronDown } from "lucide-react";
 
 interface HistoryDrawerProps {
   history: GenerationHistoryItem[];
@@ -85,40 +85,37 @@ export function HistoryDrawer({
         </span>
       </div>
 
-      {/* Thumbnails strip */}
-      {isExpanded && (
-        <div className="flex gap-2 px-4 pb-3 overflow-x-auto scrollbar-thin">
-          {history.map((item, index) => (
-            <button
-              key={item.id}
-              onClick={() => onSelect(selectedIndex === index ? null : index)}
-              className={cn(
-                "relative shrink-0 w-[72px] h-[72px] rounded-lg overflow-hidden bg-muted border-2 transition-all hover:scale-105",
-                selectedIndex === index
-                  ? "border-primary shadow-md shadow-primary/20"
-                  : index === 0 && selectedIndex === null
-                    ? "border-primary/40"
-                    : "border-transparent hover:border-muted-foreground/30",
-              )}
-            >
-              <ThumbnailContent item={item} />
-              <span className="absolute bottom-0 right-0 bg-black/60 text-white text-[9px] px-1 rounded-tl font-medium">
-                {history.length - index}
-              </span>
-            </button>
-          ))}
-          {/* View All button */}
-          <button
-            onClick={() => onSelect(null)}
-            className="shrink-0 w-[72px] h-[72px] rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground hover:border-muted-foreground/50 transition-colors"
-          >
-            <History className="h-4 w-4" />
-            <span className="text-[10px] font-medium">
-              {t("playground.viewAll", "View All")}
-            </span>
-          </button>
+      {/* Thumbnails strip — animated expand/collapse */}
+      <div
+        className={cn(
+          "grid transition-[grid-template-rows] duration-300 ease-in-out",
+          isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+        )}
+      >
+        <div className="overflow-hidden">
+          <div className="flex gap-2 px-4 pb-3 overflow-x-auto scrollbar-thin">
+            {history.map((item, index) => (
+              <button
+                key={item.id}
+                onClick={() => onSelect(selectedIndex === index ? null : index)}
+                className={cn(
+                  "relative shrink-0 w-[72px] h-[72px] rounded-lg overflow-hidden bg-muted border-2 transition-all hover:scale-105",
+                  selectedIndex === index
+                    ? "border-primary shadow-md shadow-primary/20"
+                    : index === 0 && selectedIndex === null
+                      ? "border-primary/40"
+                      : "border-transparent hover:border-muted-foreground/30",
+                )}
+              >
+                <ThumbnailContent item={item} />
+                <span className="absolute bottom-0 right-0 bg-black/60 text-white text-[9px] px-1 rounded-tl font-medium">
+                  {history.length - index}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

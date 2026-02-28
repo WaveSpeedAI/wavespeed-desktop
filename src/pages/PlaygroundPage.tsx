@@ -48,6 +48,14 @@ import {
 
 type RightPanelTab = "result" | "models" | "featured" | "templates";
 
+const isCapacitorNative = () => {
+  try {
+    return !!(window as any).Capacitor?.isNativePlatform?.();
+  } catch {
+    return false;
+  }
+};
+
 export function PlaygroundPage() {
   const { t } = useTranslation();
   const params = useParams();
@@ -105,18 +113,19 @@ export function PlaygroundPage() {
   const [mobileView, setMobileView] = useState<"config" | "output">("config");
 
   // Right panel tab state
-  const [rightPanelTab, setRightPanelTab] = useState<RightPanelTab>("featured");
+  const isMobile = isCapacitorNative();
+  const [rightPanelTab, setRightPanelTab] = useState<RightPanelTab>("models");
   const [, startTransition] = useTransition();
   const switchTab = useCallback((tab: RightPanelTab) => {
     startTransition(() => setRightPanelTab(tab));
   }, []);
 
-  // When all tabs are closed and we're on the Result tab, switch to Featured Models
+  // When all tabs are closed and we're on the Result tab, switch to Featured/Models
   useEffect(() => {
     if (!activeTab && rightPanelTab === "result") {
-      setRightPanelTab("featured");
+      setRightPanelTab("models");
     }
-  }, [activeTab, rightPanelTab]);
+  }, [activeTab, rightPanelTab, isMobile]);
 
   // Top search bar state — removed: search is now inline per tab
 
@@ -610,8 +619,9 @@ export function PlaygroundPage() {
             )}
           >
             {/* Content Tabs - always visible at top */}
-            <div className="flex items-center pl-4 pr-4 pt-2 border-b border-border shrink-0">
-              <div className="flex items-center gap-4 flex-1">
+            <div className="flex items-center justify-between pl-4 pr-4 pt-2 border-b border-border shrink-0">
+              {/* Left group: Workspace + Result */}
+              <div className="flex items-center gap-4">
                 {/* Workspace / Active Session dropdown */}
                 <div ref={workspaceRef} className="relative">
                   <button
@@ -711,20 +721,42 @@ export function PlaygroundPage() {
                   )}
                 </div>
 
-                {/* Separator */}
-                <span className="text-border/80 select-none pb-1">/</span>
+                <button
+                  onClick={() => {
+                    switchTab("result");
+                    setWorkspaceOpen(false);
+                  }}
+                  className={cn(
+                    "relative flex items-center gap-2 pb-2.5 pt-2 text-sm font-medium transition-colors",
+                    rightPanelTab === "result"
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                  {t("playground.rightPanel.result", "Results")}
+                  {rightPanelTab === "result" && (
+                    <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-full" />
+                  )}
+                </button>
+              </div>
 
-                {/* Content tabs */}
+              {/* Right group: Featured Models / Models / Templates */}
+              <div className="flex items-center gap-4">
                 {(
                   [
-                    {
-                      key: "featured" as const,
-                      icon: <Star className="h-4 w-4" />,
-                      label: t(
-                        "playground.rightPanel.featuredModels",
-                        "Featured Models",
-                      ),
-                    },
+                    ...(!isMobile
+                      ? [
+                          {
+                            key: "featured" as const,
+                            icon: <Star className="h-4 w-4" />,
+                            label: t(
+                              "playground.rightPanel.featuredModels",
+                              "Featured Models",
+                            ),
+                          },
+                        ]
+                      : []),
                     {
                       key: "models" as const,
                       icon: <Layers className="h-4 w-4" />,
@@ -734,11 +766,6 @@ export function PlaygroundPage() {
                       key: "templates" as const,
                       icon: <FolderOpen className="h-4 w-4" />,
                       label: t("playground.rightPanel.templates", "Templates"),
-                    },
-                    {
-                      key: "result" as const,
-                      icon: <LayoutGrid className="h-4 w-4" />,
-                      label: t("playground.rightPanel.result", "Results"),
                     },
                   ] as const
                 ).map((tab) => (
@@ -775,17 +802,19 @@ export function PlaygroundPage() {
               >
                 <ExplorePanel onSelectModel={handleExploreSelectModel} />
               </div>
-              <div
-                className={cn(
-                  "flex-1 overflow-hidden flex flex-col",
-                  rightPanelTab !== "featured" && "hidden",
-                )}
-              >
-                <FeaturedModelsPanel
-                  onSelectFeatured={handleExploreSelectFeatured}
-                  models={models}
-                />
-              </div>
+              {!isMobile && (
+                <div
+                  className={cn(
+                    "flex-1 overflow-hidden flex flex-col",
+                    rightPanelTab !== "featured" && "hidden",
+                  )}
+                >
+                  <FeaturedModelsPanel
+                    onSelectFeatured={handleExploreSelectFeatured}
+                    models={models}
+                  />
+                </div>
+              )}
               <div
                 className={cn(
                   "flex-1 overflow-hidden flex flex-col",

@@ -11,18 +11,41 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { PlayCircle, ExternalLink, Star, Info, Search, X } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  PlayCircle,
+  ExternalLink,
+  Star,
+  Info,
+  Search,
+  X,
+  ArrowDownNarrowWide,
+  ArrowUpNarrowWide,
+  ChevronDown,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+
+type SortKey = "popularity" | "name" | "price";
 
 /** Color mapping for model type tags */
 function getTypeColor(type: string): string {
   const t = type.toLowerCase();
-  if (t.includes("video")) return "bg-purple-500/15 text-purple-400";
-  if (t.includes("image")) return "bg-blue-500/15 text-blue-400";
-  if (t.includes("audio")) return "bg-amber-500/15 text-amber-400";
-  if (t.includes("portrait")) return "bg-pink-500/15 text-pink-400";
-  if (t.includes("text")) return "bg-cyan-500/15 text-cyan-400";
-  return "bg-emerald-500/15 text-emerald-400";
+  if (t.includes("video"))
+    return "bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-400";
+  if (t.includes("image"))
+    return "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400";
+  if (t.includes("audio"))
+    return "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400";
+  if (t.includes("portrait"))
+    return "bg-pink-100 text-pink-700 dark:bg-pink-500/15 dark:text-pink-400";
+  if (t.includes("text"))
+    return "bg-cyan-100 text-cyan-700 dark:bg-cyan-500/15 dark:text-cyan-400";
+  return "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400";
 }
 
 interface ExplorePanelProps {
@@ -54,7 +77,7 @@ const ModelCard = memo(function ModelCard({
   return (
     <div
       onClick={() => onSelect(model.model_id)}
-      className="cursor-pointer rounded-lg border border-border/50 bg-card/50 hover:bg-accent/50 hover:border-primary/30 transition-all group overflow-hidden"
+      className="cursor-pointer rounded-lg border border-border bg-card shadow-sm hover:bg-accent/50 hover:border-primary/30 hover:shadow-md transition-all group overflow-hidden dark:bg-white/[0.06] dark:border-white/[0.08] dark:hover:bg-white/[0.10]"
     >
       <div className={cn("h-[2px]", getTypeColor(model.type || ""))} />
       <div className="p-2.5">
@@ -173,6 +196,9 @@ export function ExplorePanel({
   const { models, toggleFavorite, isFavorite } = useModelsStore();
   const { createTab } = usePlaygroundStore();
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [sortKey, setSortKey] = useState<SortKey>("popularity");
+  const [sortAsc, setSortAsc] = useState(true);
 
   // Local search state with debounce
   const [searchInput, setSearchInput] = useState("");
@@ -201,7 +227,16 @@ export function ExplorePanel({
 
   const filteredModels = useMemo(() => {
     let result = models;
+
+    // Favorites filter
+    if (showFavoritesOnly) {
+      result = result.filter((m) => isFavorite(m.model_id));
+    }
+
+    // Type filter
     if (typeFilter) result = result.filter((m) => m.type === typeFilter);
+
+    // Search
     if (search.trim()) {
       return fuzzySearch(result, search, (m) => [
         m.name,
@@ -209,8 +244,18 @@ export function ExplorePanel({
         m.description || "",
       ]).map((r) => r.item);
     }
-    return result.sort((a, b) => a.name.localeCompare(b.name));
-  }, [models, search, typeFilter]);
+
+    // Sort
+    const sorted = [...result].sort((a, b) => {
+      if (sortKey === "name") return a.name.localeCompare(b.name);
+      if (sortKey === "price")
+        return (a.base_price ?? 0) - (b.base_price ?? 0);
+      // popularity: use sort_order (lower = more popular)
+      return (a.sort_order ?? 9999) - (b.sort_order ?? 9999);
+    });
+
+    return sortAsc ? sorted : sorted.reverse();
+  }, [models, search, typeFilter, showFavoritesOnly, isFavorite, sortKey, sortAsc]);
 
   const handleToggleFavorite = useCallback(
     (e: React.MouseEvent, modelId: string) => {
@@ -230,31 +275,101 @@ export function ExplorePanel({
     [models, createTab, navigate],
   );
 
+  const sortLabels: Record<SortKey, string> = {
+    popularity: "Popularity",
+    name: "Name",
+    price: "Price",
+  };
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Inline search */}
+      {/* Search bar with controls */}
       {externalSearch == null && (
         <div className="px-4 pt-3 pb-2 shrink-0">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60 pointer-events-none" />
-            <input
-              type="text"
-              value={searchInput}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder={t(
-                "playground.explore.searchPlaceholder",
-                "Search models, LoRAs, and styles...",
+          <div className="flex items-center gap-2">
+            {/* Search input */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60 pointer-events-none" />
+              <input
+                type="text"
+                value={searchInput}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                placeholder={t(
+                  "playground.explore.searchPlaceholder",
+                  "Search models...",
+                )}
+                className="w-full h-[34px] pl-9 pr-8 rounded-lg border border-border bg-muted/40 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all"
+              />
+              {searchInput && (
+                <button
+                  onClick={handleSearchClear}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
               )}
-              className="w-full h-[34px] pl-9 pr-8 rounded-lg border border-border bg-muted/40 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all"
-            />
-            {searchInput && (
-              <button
-                onClick={handleSearchClear}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            )}
+            </div>
+
+            {/* Favorites toggle */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "h-[34px] w-[34px] p-0 shrink-0 border border-border",
+                showFavoritesOnly &&
+                  "bg-yellow-500/10 border-yellow-500/30 text-yellow-500",
+              )}
+              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+            >
+              <Star
+                className={cn(
+                  "h-4 w-4",
+                  showFavoritesOnly && "fill-yellow-400 text-yellow-400",
+                )}
+              />
+            </Button>
+
+            {/* Sort dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-[34px] px-2.5 shrink-0 border border-border text-xs font-medium gap-1"
+                >
+                  {sortLabels[sortKey]}
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[120px]">
+                {(Object.keys(sortLabels) as SortKey[]).map((key) => (
+                  <DropdownMenuItem
+                    key={key}
+                    onClick={() => setSortKey(key)}
+                    className={cn(
+                      "text-xs",
+                      sortKey === key && "font-semibold text-primary",
+                    )}
+                  >
+                    {sortLabels[key]}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Sort direction */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-[34px] w-[34px] p-0 shrink-0 border border-border"
+              onClick={() => setSortAsc(!sortAsc)}
+            >
+              {sortAsc ? (
+                <ArrowDownNarrowWide className="h-4 w-4" />
+              ) : (
+                <ArrowUpNarrowWide className="h-4 w-4" />
+              )}
+            </Button>
           </div>
         </div>
       )}
@@ -262,11 +377,13 @@ export function ExplorePanel({
         <div className="px-4 pb-6 pt-3">
           {/* All Models heading */}
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-            {search
-              ? t("playground.explore.searchResults", "{{count}} results", {
-                  count: filteredModels.length,
-                })
-              : t("playground.explore.allModels", "All Models")}
+            {showFavoritesOnly
+              ? t("playground.explore.favorites", "Favorites")
+              : search
+                ? t("playground.explore.searchResults", "{{count}} results", {
+                    count: filteredModels.length,
+                  })
+                : t("playground.explore.allModels", "All Models")}
           </h3>
 
           {/* Category tags — wrap to show all */}
@@ -298,7 +415,7 @@ export function ExplorePanel({
             ))}
           </div>
 
-          {/* Models grid — 2 columns fixed to prevent horizontal overflow */}
+          {/* Models grid — 2 columns */}
           <div className="grid grid-cols-2 gap-2">
             {filteredModels.map((model) => (
               <ModelCard
@@ -313,7 +430,9 @@ export function ExplorePanel({
           </div>
           {filteredModels.length === 0 && (
             <div className="py-12 text-center text-sm text-muted-foreground">
-              {t("models.noResults", "No models found")}
+              {showFavoritesOnly
+                ? t("playground.explore.noFavorites", "No favorites yet — star a model to save it here")
+                : t("models.noResults", "No models found")}
             </div>
           )}
         </div>

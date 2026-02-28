@@ -35,10 +35,13 @@ export function ResultPanel({
   batchPreviewInputs,
   historyIndex,
 }: ResultPanelProps) {
+  // Only show batch grid when there are actual results
+  const showBatchGrid =
+    batchResults.length > 0 && historyIndex === null;
+
   return (
     <div className="flex-1 min-w-0 overflow-auto p-5 md:p-6">
-      {/* Batch Results */}
-      {(batchIsRunning || batchResults.length > 0) && historyIndex === null ? (
+      {showBatchGrid ? (
         <BatchOutputGrid
           results={batchResults}
           modelId={modelId}
@@ -46,21 +49,6 @@ export function ResultPanel({
           isRunning={batchIsRunning}
           totalCount={batchTotalCount}
           queue={batchQueue}
-        />
-      ) : /* Batch Preview */
-      batchPreviewInputs.length > 0 && historyIndex === null ? (
-        <BatchOutputGrid
-          results={[]}
-          modelId={modelId}
-          onClear={() => {}}
-          isRunning={false}
-          totalCount={batchPreviewInputs.length}
-          queue={batchPreviewInputs.map((input, index) => ({
-            id: `preview-${index}`,
-            index,
-            input,
-            status: "pending" as const,
-          }))}
         />
       ) : (
         <OutputDisplay

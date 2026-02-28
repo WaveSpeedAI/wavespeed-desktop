@@ -120,42 +120,50 @@ export function BatchControls({
               {t("playground.batch.settings")}
             </div>
 
-            {enabled && (
-              <>
-                {/* Repeat Count */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm">
-                      {t("playground.batch.repeatCount")}
-                    </Label>
-                    <span className="text-sm font-medium">{repeatCount}</span>
+            {/* Animated batch settings */}
+            <div
+              className={cn(
+                "grid transition-[grid-template-rows] duration-200 ease-out",
+                enabled ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+              )}
+            >
+              <div className="overflow-hidden">
+                <div className="space-y-4 pt-1">
+                  {/* Repeat Count */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm">
+                        {t("playground.batch.repeatCount")}
+                      </Label>
+                      <span className="text-sm font-medium">{repeatCount}</span>
+                    </div>
+                    <Slider
+                      value={[repeatCount]}
+                      onValueChange={handleCountChange}
+                      min={2}
+                      max={16}
+                      step={1}
+                      className="w-full"
+                    />
                   </div>
-                  <Slider
-                    value={[repeatCount]}
-                    onValueChange={handleCountChange}
-                    min={2}
-                    max={16}
-                    step={1}
-                    className="w-full"
-                  />
-                </div>
 
-                {/* Randomize Seed */}
-                <div className="flex items-center justify-between">
-                  <Label
-                    htmlFor="randomize-seed"
-                    className="text-sm cursor-pointer"
-                  >
-                    {t("playground.batch.randomizeSeed")}
-                  </Label>
-                  <Switch
-                    id="randomize-seed"
-                    checked={randomizeSeed}
-                    onCheckedChange={handleRandomizeSeedChange}
-                  />
+                  {/* Randomize Seed */}
+                  <div className="flex items-center justify-between">
+                    <Label
+                      htmlFor="randomize-seed"
+                      className="text-sm cursor-pointer"
+                    >
+                      {t("playground.batch.randomizeSeed")}
+                    </Label>
+                    <Switch
+                      id="randomize-seed"
+                      checked={randomizeSeed}
+                      onCheckedChange={handleRandomizeSeedChange}
+                    />
+                  </div>
                 </div>
-              </>
-            )}
+              </div>
+            </div>
 
             {/* Enable Batch - at bottom so position stays fixed */}
             <div className="flex items-center justify-between pt-2 border-t">

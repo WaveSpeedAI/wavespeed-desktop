@@ -138,6 +138,20 @@ export function Layout() {
     }
   }, [location.pathname, visitedPages]);
 
+  // Page-enter animation: restart CSS animation on route change
+  const mainRef = useRef<HTMLElement>(null);
+  const prevPathRef = useRef(location.pathname);
+  useEffect(() => {
+    if (location.pathname !== prevPathRef.current) {
+      prevPathRef.current = location.pathname;
+      const el = mainRef.current;
+      if (!el) return;
+      el.classList.remove("animate-page-enter");
+      void el.offsetHeight; // force reflow to restart animation
+      el.classList.add("animate-page-enter");
+    }
+  }, [location.pathname]);
+
   // Pages that don't require API key
   const publicPaths = [
     "/",
@@ -391,7 +405,8 @@ export function Layout() {
               onMobileClose={() => {}}
             />
             <main
-              className="relative flex-1 overflow-hidden md:pl-0"
+              ref={mainRef}
+              className="relative flex-1 overflow-hidden md:pl-0 animate-page-enter"
               style={{ background: "hsl(var(--content-area))" }}
             >
               {requiresLogin ? (

@@ -124,6 +124,8 @@
     "title": "Playground",
     "selectModel": "Select a model",
     "searchModels": "Search models...",
+    "modelSelector": "Model Selector",
+    "specificFunction": "Specific Model Function",
     "noModelSelected": "No model selected",
     "selectModelPrompt": "Select a model to configure parameters",
     "run": "Run",
@@ -146,6 +148,8 @@
     "webPage": "WebPage",
     "docs": "Docs",
     "noTabs": "No playground tabs open",
+    "openSessions": "Open Sessions",
+    "workspace": "Workspace",
     "tabs": {
       "newTab": "New Tab",
       "closeTab": "Close tab",

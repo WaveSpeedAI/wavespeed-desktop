@@ -8,10 +8,9 @@ import type { Template } from '@/types/template'
 
 interface TemplatesPanelProps {
   onUseTemplate: (template: Template) => void
-  externalSearch?: string
 }
 
-export function TemplatesPanel({ onUseTemplate, externalSearch }: TemplatesPanelProps) {
+export function TemplatesPanel({ onUseTemplate }: TemplatesPanelProps) {
   const { t } = useTranslation()
   const { updateTemplate, deleteTemplate, exportTemplates } = useTemplateStore()
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null)
@@ -61,7 +60,6 @@ export function TemplatesPanel({ onUseTemplate, externalSearch }: TemplatesPanel
         onEditTemplate={setEditingTemplate}
         onDeleteTemplate={setDeletingTemplate}
         onExportTemplate={handleExport}
-        externalSearch={externalSearch}
       />
 
       {/* Edit Dialog */}

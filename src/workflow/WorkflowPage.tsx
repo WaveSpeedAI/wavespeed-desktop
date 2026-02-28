@@ -966,7 +966,16 @@ export function WorkflowPage() {
         <div className="flex items-center border-b border-border px-2 gap-1.5 h-12">
 
           {/* Tabs — unified style with Playground */}
-        <div ref={wfTabScrollRef} className="flex-1 min-w-0 overflow-x-auto hide-scrollbar">
+        <div
+          ref={wfTabScrollRef}
+          className="flex-1 min-w-0 overflow-x-auto hide-scrollbar"
+          onWheel={(e) => {
+            if (wfTabScrollRef.current && e.deltaY !== 0) {
+              e.preventDefault()
+              wfTabScrollRef.current.scrollLeft += e.deltaY
+            }
+          }}
+        >
           <div className="flex items-center w-max">
           {tabs.map((tab, tabIdx) => {
             const isActive = tab.tabId === activeTabId

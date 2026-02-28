@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, memo } from 'react'
+import { useState, useMemo, useCallback, useRef, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useModelsStore } from '@/stores/modelsStore'
@@ -11,7 +11,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
-import { PlayCircle, ExternalLink, Star, Info } from 'lucide-react'
+import { PlayCircle, ExternalLink, Star, Info, Search, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 /** Color mapping for model type tags */
@@ -114,8 +114,24 @@ export function ExplorePanel({ onSelectModel, externalSearch }: ExplorePanelProp
   const navigate = useNavigate()
   const { models, toggleFavorite, isFavorite } = useModelsStore()
   const { createTab } = usePlaygroundStore()
-  const search = externalSearch ?? ''
   const [typeFilter, setTypeFilter] = useState<string | null>(null)
+
+  // Local search state with debounce
+  const [searchInput, setSearchInput] = useState('')
+  const [searchDebounced, setSearchDebounced] = useState('')
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchInput(value)
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current)
+    searchTimerRef.current = setTimeout(() => setSearchDebounced(value), 250)
+  }, [])
+  const handleSearchClear = useCallback(() => {
+    setSearchInput('')
+    setSearchDebounced('')
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current)
+  }, [])
+
+  const search = externalSearch ?? searchDebounced
 
   const allTypes = useMemo(() => {
     const typeSet = new Set<string>()
@@ -146,6 +162,26 @@ export function ExplorePanel({ onSelectModel, externalSearch }: ExplorePanelProp
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
+      {/* Inline search */}
+      {externalSearch == null && (
+        <div className="px-4 pt-3 pb-2 shrink-0">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/60 pointer-events-none" />
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              placeholder={t('playground.explore.searchPlaceholder', 'Search models, LoRAs, and styles...')}
+              className="w-full h-[34px] pl-9 pr-8 rounded-lg border border-border bg-muted/40 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all"
+            />
+            {searchInput && (
+              <button onClick={handleSearchClear} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
       <div className="flex-1 overflow-y-auto overflow-x-hidden">
         <div className="px-4 pb-6 pt-3">
           {/* All Models heading */}

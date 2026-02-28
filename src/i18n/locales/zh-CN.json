@@ -124,6 +124,8 @@
     "title": "演练场",
     "selectModel": "选择模型",
     "searchModels": "搜索模型...",
+    "modelSelector": "模型选择器",
+    "specificFunction": "模型功能",
     "noModelSelected": "未选择模型",
     "selectModelPrompt": "选择一个模型以配置参数",
     "run": "运行",
@@ -146,6 +148,8 @@
     "webPage": "网页",
     "docs": "文档",
     "noTabs": "没有打开的演练场标签页",
+    "openSessions": "打开的会话",
+    "workspace": "工作区",
     "tabs": {
       "newTab": "新标签页",
       "closeTab": "关闭标签页",

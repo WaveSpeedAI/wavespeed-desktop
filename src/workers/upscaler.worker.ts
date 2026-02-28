@@ -16,14 +16,14 @@ let upscaler: InstanceType<typeof Upscaler> | null = null
 
 const CDN_MODELS: Record<string, Record<ScaleType, { path: string; modelType: string; scale: number }>> = {
   medium: {
-    '2x': { path: 'https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-medium@1.0.0-beta.13/models/2x/model.json', modelType: 'layers', scale: 2 },
-    '3x': { path: 'https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-medium@1.0.0-beta.13/models/3x/model.json', modelType: 'layers', scale: 3 },
-    '4x': { path: 'https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-medium@1.0.0-beta.13/models/4x/model.json', modelType: 'layers', scale: 4 }
+    '2x': { path: 'https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-medium@1.0.0-beta.10/models/2x/model.json', modelType: 'layers', scale: 2 },
+    '3x': { path: 'https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-medium@1.0.0-beta.10/models/3x/model.json', modelType: 'layers', scale: 3 },
+    '4x': { path: 'https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-medium@1.0.0-beta.10/models/4x/model.json', modelType: 'layers', scale: 4 }
   },
   thick: {
-    '2x': { path: 'https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-thick@1.0.0-beta.16/models/2x/model.json', modelType: 'layers', scale: 2 },
-    '3x': { path: 'https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-thick@1.0.0-beta.16/models/3x/model.json', modelType: 'layers', scale: 3 },
-    '4x': { path: 'https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-thick@1.0.0-beta.16/models/4x/model.json', modelType: 'layers', scale: 4 }
+    '2x': { path: 'https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-thick@1.0.0-beta.12/models/2x/model.json', modelType: 'layers', scale: 2 },
+    '3x': { path: 'https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-thick@1.0.0-beta.12/models/3x/model.json', modelType: 'layers', scale: 3 },
+    '4x': { path: 'https://cdn.jsdelivr.net/npm/@upscalerjs/esrgan-thick@1.0.0-beta.12/models/4x/model.json', modelType: 'layers', scale: 4 }
   }
 }
 

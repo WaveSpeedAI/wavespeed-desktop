@@ -48,7 +48,8 @@ interface MediaItem {
 // Phase configuration for media merger
 const PHASES = [
   { id: 'download', labelKey: 'freeTools.ffmpeg.loading', weight: 0.1 },
-  { id: 'process', labelKey: 'freeTools.ffmpeg.merging', weight: 0.9 }
+  { id: 'transcode', labelKey: 'freeTools.ffmpeg.transcoding', weight: 0.7 },
+  { id: 'merge', labelKey: 'freeTools.ffmpeg.merging', weight: 0.2 }
 ]
 
 export function MediaMergerPage() {
@@ -79,20 +80,20 @@ export function MediaMergerPage() {
 
   const { merge, hasFailed, retryWorker } = useFFmpegWorker({
     onPhase: (phase) => {
-      if (phase === 'download') {
-        startPhase('download')
-      } else if (phase === 'process') {
-        startPhase('process')
+      if (phase === 'download' || phase === 'transcode' || phase === 'merge') {
+        startPhase(phase)
       }
     },
     onProgress: (phase, progressValue, detail) => {
-      const phaseId = phase === 'download' ? 'download' : 'process'
-      updatePhase(phaseId, progressValue, detail)
+      if (phase === 'download' || phase === 'transcode' || phase === 'merge') {
+        updatePhase(phase, progressValue, detail)
+      }
     },
     onError: (err) => {
       console.error('Worker error:', err)
       setError(err)
       setIsProcessing(false)
+      resetProgress()
     }
   })
 
@@ -385,6 +386,10 @@ export function MediaMergerPage() {
               )}
             </Button>
 
+            <p className="text-xs text-muted-foreground">
+              {t('freeTools.mediaMerger.sameFormatNote')}
+            </p>
+
             {mergedUrl && (
               <Button variant="outline" onClick={handleDownload}>
                 <Download className="h-4 w-4 mr-2" />
@@ -546,10 +551,7 @@ export function MediaMergerPage() {
             </CardContent>
           </Card>
 
-          {/* Note about same format */}
-          <p className="text-xs text-muted-foreground text-center">
-            {t('freeTools.mediaMerger.sameFormatNote')}
-          </p>
+
         </div>
       )}
 

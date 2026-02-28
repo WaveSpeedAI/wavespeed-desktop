@@ -11,6 +11,7 @@ import { DynamicForm } from '@/components/playground/DynamicForm'
 import { OutputDisplay } from '@/components/playground/OutputDisplay'
 import { BatchControls } from '@/components/playground/BatchControls'
 import { BatchOutputGrid } from '@/components/playground/BatchOutputGrid'
+import { HistoryPanel } from '@/components/playground/HistoryPanel'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -23,7 +24,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { RotateCcw, Loader2, Save, Globe, Settings2, Image } from 'lucide-react'
-import { GameDialog } from '@mobile/components/games/GameDialog'
+import { ModelSelector } from '@/components/playground/ModelSelector'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/useToast'
 
@@ -50,11 +51,19 @@ export function MobilePlaygroundPage() {
     runPrediction,
     runBatch,
     clearBatchResults,
+    selectHistoryItem,
   } = usePlaygroundStore()
   const { templates, loadTemplates, saveTemplate, isLoaded: templatesLoaded } = useTemplateStore()
   const { save: savePredictionInputs, load: loadPredictionInputs, isLoaded: inputsLoaded } = usePredictionInputsStore()
 
   const activeTab = getActiveTab()
+
+  // History-aware output display
+  const historyIndex = activeTab?.selectedHistoryIndex ?? null
+  const historyItem = historyIndex !== null ? activeTab?.generationHistory[historyIndex] : null
+  const displayedPrediction = historyItem ? historyItem.prediction : (activeTab?.currentPrediction ?? null)
+  const displayedOutputs = historyItem ? historyItem.outputs : (activeTab?.outputs ?? [])
+
   const templateLoadedRef = useRef<string | null>(null)
   const pendingTemplateRef = useRef<{ values: Record<string, unknown>, name: string } | null>(null)
   const prevOutputsLengthRef = useRef(0)
@@ -66,9 +75,6 @@ export function MobilePlaygroundPage() {
   // Template dialog states
   const [showSaveTemplateDialog, setShowSaveTemplateDialog] = useState(false)
   const [newTemplateName, setNewTemplateName] = useState('')
-
-  // Game dialog state
-  const [showGame, setShowGame] = useState(false)
 
   // Dynamic pricing state
   const [calculatedPrice, setCalculatedPrice] = useState<number | null>(null)
@@ -351,10 +357,17 @@ export function MobilePlaygroundPage() {
           {activeView === 'input' ? (
             /* Input View */
             <div className="flex-1 flex flex-col overflow-hidden">
-              {/* Model Info */}
-              {activeTab.selectedModel && (
-                <div className="px-4 pt-3 pb-2 flex items-center justify-between">
-                  <h2 className="text-lg font-semibold truncate">{activeTab.selectedModel.name}</h2>
+              {/* Model Selector */}
+              <div className="px-4 pt-3 pb-2 flex items-center gap-2">
+                <div className="flex-1 min-w-0">
+                  <ModelSelector
+                    models={models}
+                    value={activeTab?.selectedModel?.model_id}
+                    onChange={(newModelId) => navigate(`/playground/${encodeURIComponent(newModelId)}`, { replace: true })}
+                    disabled={activeTab?.isRunning}
+                  />
+                </div>
+                {activeTab?.selectedModel && (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -363,8 +376,8 @@ export function MobilePlaygroundPage() {
                   >
                     <Globe className="h-4 w-4" />
                   </Button>
-                </div>
-              )}
+                )}
+              </div>
 
               {/* Parameters Form */}
               <div className="flex-1 overflow-auto px-4 py-3">
@@ -377,6 +390,7 @@ export function MobilePlaygroundPage() {
                     onSetDefaults={handleSetDefaults}
                     onFieldsChange={setFormFields}
                     disabled={activeTab.isRunning}
+                    collapsible
                   />
                 ) : (
                   <div className="h-full flex items-center justify-center text-muted-foreground">
@@ -446,27 +460,37 @@ export function MobilePlaygroundPage() {
                   )}
                 </div>
               </div>
-              <div className="flex-1 p-4 overflow-auto">
-                {/* Show BatchOutputGrid for batch results, OutputDisplay for single results */}
-                {activeTab.batchResults && activeTab.batchResults.length > 0 ? (
-                  <BatchOutputGrid
-                    results={activeTab.batchResults}
-                    modelId={activeTab.selectedModel?.model_id}
-                    modelName={activeTab.selectedModel?.name}
-                    onClear={clearBatchResults}
-                    isRunning={activeTab.isRunning}
-                    totalCount={activeTab.batchConfig?.repeatCount}
-                    queue={activeTab.batchState?.queue}
-                  />
-                ) : (
-                  <OutputDisplay
-                    prediction={activeTab.currentPrediction}
-                    outputs={activeTab.outputs}
-                    error={activeTab.error}
-                    isLoading={activeTab.isRunning}
-                    modelId={activeTab.selectedModel?.model_id}
-                    modelName={activeTab.selectedModel?.name}
-                    onSaveTemplate={activeTab.selectedModel ? () => setShowSaveTemplateDialog(true) : undefined}
+              <div className="flex-1 flex flex-col overflow-hidden">
+                <div className="flex-1 p-4 overflow-auto">
+                  {/* Show BatchOutputGrid for batch results, OutputDisplay for single results */}
+                  {activeTab.batchResults && activeTab.batchResults.length > 0 ? (
+                    <BatchOutputGrid
+                      results={activeTab.batchResults}
+                      modelId={activeTab.selectedModel?.model_id}
+                      modelName={activeTab.selectedModel?.name}
+                      onClear={clearBatchResults}
+                      isRunning={activeTab.isRunning}
+                      totalCount={activeTab.batchConfig?.repeatCount}
+                      queue={activeTab.batchState?.queue}
+                    />
+                  ) : (
+                    <OutputDisplay
+                      prediction={displayedPrediction}
+                      outputs={displayedOutputs}
+                      error={activeTab.error}
+                      isLoading={activeTab.isRunning}
+                      modelId={activeTab.selectedModel?.model_id}
+                      hideGameButton
+                    />
+                  )}
+                </div>
+                {/* History Panel - horizontal strip at bottom */}
+                {activeTab.generationHistory.length >= 1 && (
+                  <HistoryPanel
+                    history={activeTab.generationHistory}
+                    selectedIndex={activeTab.selectedHistoryIndex}
+                    onSelect={selectHistoryItem}
+                    direction="horizontal"
                   />
                 )}
               </div>
@@ -527,8 +551,6 @@ export function MobilePlaygroundPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Game Dialog */}
-      <GameDialog open={showGame} onOpenChange={setShowGame} />
     </div>
   )
 }

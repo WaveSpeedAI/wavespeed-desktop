@@ -51,7 +51,8 @@
     "workflow": "工作流",
     "settings": "设置",
     "collapse": "收起",
-    "expand": "展开"
+    "expand": "展开",
+    "more": "更多"
   },
   "welcome": {
     "tagline": "触手可及的 AI 创意工具",
@@ -255,7 +256,14 @@
     "copyImage": "复制图片",
     "copyUrl": "复制链接",
     "copy": "复制",
-    "download": "下载"
+    "download": "下载",
+    "advancedSettings": {
+      "more": "高级设置",
+      "less": "收起"
+    },
+    "history": {
+      "title": "历史记录"
+    }
   },
   "history": {
     "title": "历史记录",
@@ -438,7 +446,10 @@
     "clearFilters": "清除筛选",
     "filterByType": "类型",
     "filterByModel": "模型",
+    "filterBySource": "来源",
     "allModels": "所有模型",
+    "all": "全部",
+    "allSources": "全部",
     "favorites": "收藏",
     "showFavoritesOnly": "仅显示收藏",
     "types": {
@@ -494,7 +505,8 @@
     "manageTagsDesc": "为「{{name}}」添加或删除标签",
     "textPreviewUnavailable": "文本预览不可用。请打开文件位置查看。",
     "loadPreviews": "加载预览",
-    "disablePreviews": "禁用预览"
+    "disablePreviews": "禁用预览",
+    "empty": "暂无图片"
   },
   "zImage": {
     "title": "Z-Image",
@@ -658,6 +670,7 @@
       "downloading": "正在下载更新... {{percent}}%",
       "downloaded": "更新已下载！版本 {{version}} 已准备好安装。",
       "downloadUpdate": "下载更新",
+      "goToRelease": "前往下载页面",
       "restartInstall": "重启并安装",
       "error": "更新错误：{{message}}",
       "notAvailableInDev": "开发模式下不支持自动更新。",
@@ -994,7 +1007,8 @@
       "loading": "加载 FFmpeg",
       "converting": "转换中",
       "merging": "合并中",
-      "trimming": "裁剪中"
+      "trimming": "裁剪中",
+      "transcoding": "转码中"
     },
     "downloadSuccess": "已保存到下载文件夹",
     "downloadStarted": "下载已开始",

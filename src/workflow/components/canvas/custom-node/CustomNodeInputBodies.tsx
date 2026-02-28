@@ -85,33 +85,61 @@ export function MediaUploadBody({ params, onBatchChange, onPreview }: {
   }
 
   if (uploadedUrl) {
+    const isImage = mediaType === 'image' || /\.(jpg|jpeg|png|gif|webp)$/i.test(uploadedUrl)
+    const isVideo = mediaType === 'video' || /\.(mp4|webm|mov)$/i.test(uploadedUrl)
+    const isAudio = mediaType === 'audio' || /\.(mp3|wav|ogg)$/i.test(uploadedUrl)
+
+    const clearBtn = (
+      <button
+        onClick={e => { e.stopPropagation(); handleClear() }}
+        className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500/90 hover:bg-red-500 text-white flex items-center justify-center shadow-md transition-colors z-10"
+        title={t('workflow.mediaUpload.clear', 'Clear')}
+      >
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+          <line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>
+        </svg>
+      </button>
+    )
+
     return (
       <div className="px-3 py-2">
-        <div className="mb-2 relative group">
-          {(mediaType === 'image' || uploadedUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i)) ? (
-            <img src={uploadedUrl} alt={fileName} onClick={e => { e.stopPropagation(); onPreview(uploadedUrl) }}
-              className="w-full max-h-[120px] rounded-lg border border-[hsl(var(--border))] object-contain cursor-pointer hover:ring-2 hover:ring-blue-500/40 bg-black/20" />
-          ) : (mediaType === 'video' || uploadedUrl.match(/\.(mp4|webm|mov)$/i)) ? (
-            <video src={uploadedUrl} controls className="w-full max-h-[120px] rounded-lg border border-[hsl(var(--border))]" onClick={e => e.stopPropagation()} />
-          ) : (mediaType === 'audio' || uploadedUrl.match(/\.(mp3|wav|ogg)$/i)) ? (
-            <audio src={uploadedUrl} controls className="w-full" onClick={e => e.stopPropagation()} />
+        {/* Media preview — button is on the media element itself */}
+        <div className="flex justify-center">
+          {isImage ? (
+            <div className="relative inline-block">
+              <img src={uploadedUrl} alt={fileName} onClick={e => { e.stopPropagation(); onPreview(uploadedUrl) }}
+                className="max-w-full max-h-[120px] rounded-lg border border-[hsl(var(--border))] object-contain cursor-pointer hover:ring-2 hover:ring-blue-500/40 bg-black/20" />
+              {clearBtn}
+            </div>
+          ) : isVideo ? (
+            <div className="relative inline-block">
+              <video src={uploadedUrl} controls className="max-w-full max-h-[120px] rounded-lg border border-[hsl(var(--border))]" onClick={e => e.stopPropagation()} />
+              {clearBtn}
+            </div>
+          ) : isAudio ? (
+            <div className="relative w-full">
+              <audio src={uploadedUrl} controls className="w-full" onClick={e => e.stopPropagation()} />
+              {clearBtn}
+            </div>
           ) : (
-            <div className="p-3 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted))] text-xs text-center">
-              {fileName || t('workflow.mediaUpload.fileUploaded', 'File uploaded')}
+            <div className="relative w-full">
+              <div className="p-3 rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--muted))] text-xs text-center">
+                {fileName || t('workflow.mediaUpload.fileUploaded', 'File uploaded')}
+              </div>
+              {clearBtn}
             </div>
           )}
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] text-muted-foreground truncate flex-1" title={fileName}>{fileName}</span>
-          {uploadState === 'success' && <span className="text-[10px] text-green-400">{t('workflow.mediaUpload.uploaded', 'Uploaded')}</span>}
-          <button onClick={e => { e.stopPropagation(); handleClear() }}
-            className="text-[10px] text-red-400 hover:text-red-300 transition-colors">
-            {t('workflow.mediaUpload.clear', 'Clear')}
-          </button>
+        {/* File info — selectable & copyable */}
+        <div className="mt-1.5 flex items-center gap-1.5 nodrag nowheel">
+          <span className="text-[11px] text-foreground/80 font-medium truncate select-text cursor-text" title={fileName}>{fileName}</span>
+          {uploadState === 'success' && <span className="text-[10px] text-green-400 flex-shrink-0">✓</span>}
         </div>
-        <div className="mt-1 text-[9px] text-muted-foreground/60 truncate" title={uploadedUrl}>
-          {uploadedUrl.slice(0, 60)}...
-        </div>
+        {uploadedUrl && !uploadedUrl.startsWith('blob:') && (
+          <div className="text-[9px] text-muted-foreground/50 truncate mt-0.5 select-text cursor-text nodrag nowheel" title={uploadedUrl}>
+            {uploadedUrl}
+          </div>
+        )}
       </div>
     )
   }

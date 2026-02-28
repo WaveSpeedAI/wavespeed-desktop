@@ -4,10 +4,11 @@ import { MobileLayout } from '@mobile/components/layout/MobileLayout'
 import { WelcomePage } from '@/pages/WelcomePage'
 import { FeaturedModelsPage } from '@/pages/FeaturedModelsPage'
 import { SmartPlaygroundPage } from '@/pages/SmartPlaygroundPage'
-import { ModelsPage } from '@/pages/ModelsPage'
+import { MobileModelsPage } from '@mobile/pages/MobileModelsPage'
 import { MobilePlaygroundPage } from '@mobile/pages/MobilePlaygroundPage'
 import { MobileTemplatesPage } from '@mobile/pages/MobileTemplatesPage'
 import { MobileHistoryPage } from '@mobile/pages/MobileHistoryPage'
+import { MobileAssetsPage } from '@mobile/pages/MobileAssetsPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { MobileFreeToolsPage } from '@mobile/pages/MobileFreeToolsPage'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
@@ -39,11 +40,12 @@ function App() {
         <Route index element={<WelcomePage />} />
         <Route path="featured-models" element={<FeaturedModelsPage />} />
         <Route path="featured-models/:familyId" element={<SmartPlaygroundPage />} />
-        <Route path="models" element={<ModelsPage />} />
+        <Route path="models" element={<MobileModelsPage />} />
         <Route path="playground" element={<MobilePlaygroundPage />} />
         <Route path="playground/*" element={<MobilePlaygroundPage />} />
         <Route path="templates" element={<MobileTemplatesPage />} />
         <Route path="history" element={<MobileHistoryPage />} />
+        <Route path="assets" element={<MobileAssetsPage />} />
         <Route path="free-tools" element={<MobileFreeToolsPage />} />
         {/* Free tools pages are rendered persistently in MobileLayout */}
         <Route path="free-tools/video" element={<PersistentPagePlaceholder />} />

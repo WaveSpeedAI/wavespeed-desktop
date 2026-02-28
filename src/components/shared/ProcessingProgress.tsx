@@ -67,6 +67,10 @@ function formatDetail(detail: ProcessingPhase['detail']): string | null {
     return `${detail.current}s / ${detail.total}s`
   }
 
+  if (detail.unit === 'items') {
+    return `${detail.current} / ${detail.total}`
+  }
+
   return null
 }
 

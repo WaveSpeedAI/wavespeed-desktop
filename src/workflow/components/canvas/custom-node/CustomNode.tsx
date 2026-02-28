@@ -269,6 +269,7 @@ function CustomNodeComponent({ id, data, selected }: NodeProps<CustomNodeData>) 
         maxFiles: s.maxItems,
         placeholder: s.placeholder,
         hidden: s.hidden,
+        schemaType: s.type === 'integer' ? 'integer' : s.type === 'number' ? 'number' : undefined,
       }))
   }, [isAITask, currentModel, data.modelInputSchema])
   const formValues = useMemo(() => {

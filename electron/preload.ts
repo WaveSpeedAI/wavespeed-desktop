@@ -240,7 +240,14 @@ const electronAPI = {
   // Persistent key-value state (survives app restarts, unlike renderer localStorage)
   getState: (key: string): Promise<unknown> => ipcRenderer.invoke('get-state', key),
   setState: (key: string, value: unknown): Promise<boolean> => ipcRenderer.invoke('set-state', key, value),
-  removeState: (key: string): Promise<boolean> => ipcRenderer.invoke('remove-state', key)
+  removeState: (key: string): Promise<boolean> => ipcRenderer.invoke('remove-state', key),
+
+  // Assets event listener (workflow executor pushes new assets)
+  onAssetsNewAsset: (callback: (asset: unknown) => void): (() => void) => {
+    const handler = (_: unknown, asset: unknown) => callback(asset)
+    ipcRenderer.on('assets:new-asset', handler)
+    return () => ipcRenderer.removeListener('assets:new-asset', handler)
+  }
 }
 
 // ─── Workflow API (isolated namespace to avoid collision with electronAPI) ────

@@ -11,6 +11,7 @@ import { OutputDisplay } from '@/components/playground/OutputDisplay'
 import { ModelSelector } from '@/components/playground/ModelSelector'
 import { BatchControls } from '@/components/playground/BatchControls'
 import { BatchOutputGrid } from '@/components/playground/BatchOutputGrid'
+import { HistoryPanel } from '@/components/playground/HistoryPanel'
 import { Button } from '@/components/ui/button'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import {
@@ -51,10 +52,18 @@ export function PlaygroundPage() {
     clearBatchResults,
     generateBatchInputs,
     setUploading,
+    selectHistoryItem,
   } = usePlaygroundStore()
   const { templates, loadTemplates, createTemplate, migrateFromLocalStorage } = useTemplateStore()
 
   const activeTab = getActiveTab()
+
+  // History-aware output display
+  const historyIndex = activeTab?.selectedHistoryIndex ?? null
+  const historyItem = historyIndex !== null ? activeTab?.generationHistory[historyIndex] : null
+  const displayedPrediction = historyItem ? historyItem.prediction : (activeTab?.currentPrediction ?? null)
+  const displayedOutputs = historyItem ? historyItem.outputs : (activeTab?.outputs ?? [])
+
   const templateLoadedRef = useRef<string | null>(null)
   const initialTabCreatedRef = useRef(false)
 
@@ -555,6 +564,7 @@ export function PlaygroundPage() {
                   validationErrors={activeTab.validationErrors}
                   onChange={setFormValue}
                   onSetDefaults={handleSetDefaults}
+                  collapsible
                   onFieldsChange={setFormFields}
                   onUploadingChange={setUploading}
                   scrollable={false}
@@ -652,42 +662,67 @@ export function PlaygroundPage() {
                 </div>
               )}
             </div>
-            <div className="flex-1 overflow-hidden p-5 md:p-6">
-              {/* Batch Results - shown while running or when completed */}
-              {(activeTab.batchState?.isRunning || activeTab.batchResults.length > 0) ? (
-                <BatchOutputGrid
-                  results={activeTab.batchResults}
-                  modelId={activeTab.selectedModel?.model_id}
-                  onClear={clearBatchResults}
-                  isRunning={activeTab.batchState?.isRunning}
-                  totalCount={activeTab.batchState?.queue.length}
-                  queue={activeTab.batchState?.queue}
-                />
-              ) : /* Batch Preview - shown when batch mode is active but not yet run */
-              batchPreviewInputs.length > 0 ? (
-                <BatchOutputGrid
-                  results={[]}
-                  modelId={activeTab.selectedModel?.model_id}
-                  onClear={() => {}}
-                  isRunning={false}
-                  totalCount={batchPreviewInputs.length}
-                  queue={batchPreviewInputs.map((input, index) => ({
-                    id: `preview-${index}`,
-                    index,
-                    input,
-                    status: 'pending' as const
-                  }))}
-                />
-              ) : (
-                /* Single output display - default */
-                <OutputDisplay
-                  key={activeTabId}
-                  prediction={activeTab.currentPrediction}
-                  outputs={activeTab.outputs}
-                  error={activeTab.error}
-                  isLoading={activeTab.isRunning}
-                  modelId={activeTab.selectedModel?.model_id}
-                />
+            <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
+              <div className="flex-1 min-w-0 overflow-hidden p-5 md:p-6">
+                {/* Batch Results - shown while running or when completed */}
+                {(activeTab.batchState?.isRunning || activeTab.batchResults.length > 0) ? (
+                  <BatchOutputGrid
+                    results={activeTab.batchResults}
+                    modelId={activeTab.selectedModel?.model_id}
+                    onClear={clearBatchResults}
+                    isRunning={activeTab.batchState?.isRunning}
+                    totalCount={activeTab.batchState?.queue.length}
+                    queue={activeTab.batchState?.queue}
+                  />
+                ) : /* Batch Preview - shown when batch mode is active but not yet run */
+                batchPreviewInputs.length > 0 ? (
+                  <BatchOutputGrid
+                    results={[]}
+                    modelId={activeTab.selectedModel?.model_id}
+                    onClear={() => {}}
+                    isRunning={false}
+                    totalCount={batchPreviewInputs.length}
+                    queue={batchPreviewInputs.map((input, index) => ({
+                      id: `preview-${index}`,
+                      index,
+                      input,
+                      status: 'pending' as const
+                    }))}
+                  />
+                ) : (
+                  /* Single output display - default */
+                  <OutputDisplay
+                    key={activeTabId}
+                    prediction={displayedPrediction}
+                    outputs={displayedOutputs}
+                    error={activeTab.error}
+                    isLoading={activeTab.isRunning}
+                    modelId={activeTab.selectedModel?.model_id}
+                  />
+                )}
+              </div>
+              {/* History Panel - desktop: vertical sidebar, mobile: horizontal strip at bottom */}
+              {activeTab.generationHistory.length >= 1 && (
+                <>
+                  {/* Desktop vertical sidebar */}
+                  <div className="hidden md:flex shrink-0">
+                    <HistoryPanel
+                      history={activeTab.generationHistory}
+                      selectedIndex={activeTab.selectedHistoryIndex}
+                      onSelect={selectHistoryItem}
+                      direction="vertical"
+                    />
+                  </div>
+                  {/* Mobile horizontal strip */}
+                  <div className="md:hidden">
+                    <HistoryPanel
+                      history={activeTab.generationHistory}
+                      selectedIndex={activeTab.selectedHistoryIndex}
+                      onSelect={selectHistoryItem}
+                      direction="horizontal"
+                    />
+                  </div>
+                </>
               )}
             </div>
           </div>

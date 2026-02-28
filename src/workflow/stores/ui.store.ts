@@ -65,7 +65,7 @@ export const useUIStore = create<UIState>((set, get) => ({
   showSettings: false,
   showNodePalette: false,
   showWorkflowPanel: false,
-  showWorkflowResultsPanel: true,
+  showWorkflowResultsPanel: false,
   workflowResultsPanelWidth: 240,
   sidebarWidth: 220,
   showGrid: true,

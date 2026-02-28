@@ -51,7 +51,8 @@
     "settings": "Einstellungen",
     "collapse": "Einklappen",
     "workflow": "Workflow",
-    "expand": "Erweitern"
+    "expand": "Erweitern",
+    "more": "Mehr"
   },
   "welcome": {
     "tagline": "KI-Kreativwerkzeuge direkt zur Hand",
@@ -255,7 +256,14 @@
     "copyImage": "Bild kopieren",
     "copyUrl": "URL kopieren",
     "copy": "Kopieren",
-    "download": "Herunterladen"
+    "download": "Herunterladen",
+    "advancedSettings": {
+      "more": "Mehr",
+      "less": "Weniger"
+    },
+    "history": {
+      "title": "Verlauf"
+    }
   },
   "history": {
     "title": "Verlauf",
@@ -494,7 +502,8 @@
     "manageTagsDesc": "Tags für \"{{name}}\" hinzufügen oder entfernen",
     "textPreviewUnavailable": "Textvorschau nicht verfügbar. Öffnen Sie den Dateispeicherort zum Anzeigen.",
     "loadPreviews": "Vorschauen laden",
-    "disablePreviews": "Vorschauen deaktivieren"
+    "disablePreviews": "Vorschauen deaktivieren",
+    "empty": "Noch keine Bilder"
   },
   "zImage": {
     "title": "Z-Image",
@@ -658,6 +667,7 @@
       "downloading": "Update wird heruntergeladen... {{percent}}%",
       "downloaded": "Update heruntergeladen! Version {{version}} ist bereit zur Installation.",
       "downloadUpdate": "Update herunterladen",
+      "goToRelease": "Go to Release Page",
       "restartInstall": "Neu starten & installieren",
       "error": "Update-Fehler: {{message}}",
       "notAvailableInDev": "Auto-Update ist im Entwicklungsmodus nicht verfügbar.",
@@ -994,7 +1004,8 @@
       "loading": "FFmpeg wird geladen",
       "converting": "Konvertierung",
       "merging": "Zusammenführung",
-      "trimming": "Zuschneiden"
+      "trimming": "Zuschneiden",
+      "transcoding": "Transkodierung"
     },
     "downloadSuccess": "In Downloads-Ordner gespeichert",
     "downloadStarted": "Download gestartet",

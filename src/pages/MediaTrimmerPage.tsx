@@ -87,6 +87,7 @@ export function MediaTrimmerPage() {
       console.error('Worker error:', err)
       setError(err)
       setIsProcessing(false)
+      resetProgress()
     }
   })
 

@@ -1,6 +1,6 @@
 {
   "name": "wavespeed-desktop",
-  "version": "2.0.11",
+  "version": "2.0.12",
   "description": "WaveSpeedAI Desktop Application - A playground for AI models",
   "main": "./out/main/index.js",
   "author": {
@@ -43,8 +43,6 @@
   "devDependencies": {
     "@electron-toolkit/utils": "^3.0.0",
     "@ffmpeg/core": "^0.12.6",
-    "@ffmpeg/ffmpeg": "^0.12.15",
-    "@ffmpeg/util": "^0.12.2",
     "@google/model-viewer": "^4.1.0",
     "@huggingface/transformers": "^3.8.1",
     "@imgly/background-removal": "^1.7.0",

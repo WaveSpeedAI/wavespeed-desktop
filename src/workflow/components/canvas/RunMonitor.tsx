@@ -57,7 +57,7 @@ function OutputPreview({ urls, durationMs, cost, label = 'Output' }: {
           if (type === 'video') {
             return (
               <div key={i} className="relative flex-1 min-w-[80px] max-w-[140px] rounded border border-border overflow-hidden bg-black/10">
-                <video src={item} className="w-full h-20 object-cover" onClick={() => openPreview(item)} />
+                <video src={item} preload="metadata" className="w-full h-20 object-cover" onClick={() => openPreview(item)} />
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="w-6 h-6 rounded-full bg-black/50 flex items-center justify-center">
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>

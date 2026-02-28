@@ -4,6 +4,9 @@ import type { AssetMetadata, AssetType, AssetsFilter, AssetsSaveOptions, AssetsS
 const METADATA_STORAGE_KEY = 'wavespeed_assets_metadata'
 const SETTINGS_STORAGE_KEY = 'wavespeed_assets_settings'
 
+// Track whether we've subscribed to the IPC event for new assets from workflow executor
+let assetsIpcListenerRegistered = false
+
 // Helper to generate unique ID
 function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substring(2, 8)
@@ -143,6 +146,7 @@ interface AssetsState {
   openAssetLocation: (id: string) => Promise<void>
   getAssetById: (id: string) => AssetMetadata | undefined
   hasAssetForPrediction: (predictionId: string) => boolean
+  hasAssetForExecution: (executionId: string) => boolean
   validateAssets: () => Promise<void>
 }
 
@@ -160,6 +164,19 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
     if (get().isLoading) return
 
     set({ isLoading: true })
+
+    // Subscribe to new assets pushed from the workflow executor (Electron only, once)
+    if (!assetsIpcListenerRegistered && window.electronAPI?.onAssetsNewAsset) {
+      assetsIpcListenerRegistered = true
+      window.electronAPI.onAssetsNewAsset((raw) => {
+        const asset = raw as AssetMetadata
+        if (!asset?.id) return
+        // Avoid duplicates
+        const { assets } = useAssetsStore.getState()
+        if (assets.some(a => a.id === asset.id)) return
+        useAssetsStore.setState({ assets: [asset, ...assets] })
+      })
+    }
 
     try {
       if (window.electronAPI?.scanAssetsDirectory) {
@@ -235,6 +252,14 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
   saveAsset: async (url, type, options) => {
     const fileName = generateFileName(options.modelId, type, url, options.predictionId, options.resultIndex ?? 0)
 
+    // Build optional workflow/source fields
+    const extraFields: Partial<AssetMetadata> = {}
+    if (options.source) extraFields.source = options.source
+    if (options.workflowId) extraFields.workflowId = options.workflowId
+    if (options.workflowName) extraFields.workflowName = options.workflowName
+    if (options.nodeId) extraFields.nodeId = options.nodeId
+    if (options.executionId) extraFields.executionId = options.executionId
+
     // Desktop mode: save file to disk
     if (window.electronAPI?.saveAsset) {
       const subDir = getSubDir(type)
@@ -252,7 +277,8 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
           tags: [],
           favorite: false,
           predictionId: options.predictionId,
-          originalUrl: url
+          originalUrl: url,
+          ...extraFields
         }
 
         set(state => {
@@ -280,7 +306,8 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
       tags: [],
       favorite: false,
       predictionId: options.predictionId,
-      originalUrl: url
+      originalUrl: url,
+      ...extraFields
     }
 
     set(state => {
@@ -317,7 +344,8 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
       tags: [],
       favorite: false,
       predictionId: options.predictionId,
-      originalUrl: options.originalUrl
+      originalUrl: options.originalUrl,
+      source: options.source
     }
 
     set(state => {
@@ -406,6 +434,14 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
     // Filter by models
     if (filter.models && filter.models.length > 0) {
       filtered = filtered.filter(a => filter.models!.includes(a.modelId))
+    }
+
+    // Filter by source
+    if (filter.sources && filter.sources.length > 0) {
+      filtered = filtered.filter(a => {
+        const source = a.source ?? (a.modelId === 'local/z-image' ? 'z-image' : 'playground')
+        return filter.sources!.includes(source)
+      })
     }
 
     // Filter by date range
@@ -512,6 +548,10 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
 
   hasAssetForPrediction: (predictionId: string) => {
     return get().assets.some(a => a.predictionId === predictionId)
+  },
+
+  hasAssetForExecution: (executionId: string) => {
+    return get().assets.some(a => a.executionId === executionId)
   },
 
   validateAssets: async () => {

@@ -51,7 +51,8 @@
     "settings": "सेटिंग्स",
     "collapse": "संक्षिप्त करें",
     "workflow": "वर्कफ़्लो",
-    "expand": "विस्तार करें"
+    "expand": "विस्तार करें",
+    "more": "अधिक"
   },
   "welcome": {
     "tagline": "आपकी उंगलियों पर AI-संचालित रचनात्मक उपकरण",
@@ -255,7 +256,14 @@
     "copyImage": "छवि कॉपी करें",
     "copyUrl": "URL कॉपी करें",
     "copy": "कॉपी करें",
-    "download": "डाउनलोड करें"
+    "download": "डाउनलोड करें",
+    "advancedSettings": {
+      "more": "और",
+      "less": "कम"
+    },
+    "history": {
+      "title": "इतिहास"
+    }
   },
   "history": {
     "title": "इतिहास",
@@ -494,7 +502,8 @@
     "manageTagsDesc": "\"{{name}}\" के लिए टैग जोड़ें या हटाएं",
     "textPreviewUnavailable": "पाठ प्रीव्यू उपलब्ध नहीं। देखने के लिए फ़ाइल स्थान खोलें।",
     "loadPreviews": "प्रीव्यू लोड करें",
-    "disablePreviews": "प्रीव्यू अक्षम करें"
+    "disablePreviews": "प्रीव्यू अक्षम करें",
+    "empty": "अभी तक कोई चित्र नहीं"
   },
   "zImage": {
     "title": "Z-Image",
@@ -658,6 +667,7 @@
       "downloading": "अपडेट डाउनलोड हो रहा है... {{percent}}%",
       "downloaded": "अपडेट डाउनलोड हो गया! संस्करण {{version}} इंस्टॉल के लिए तैयार है।",
       "downloadUpdate": "अपडेट डाउनलोड करें",
+      "goToRelease": "Go to Release Page",
       "restartInstall": "पुनः आरंभ करें और इंस्टॉल करें",
       "error": "अपडेट त्रुटि: {{message}}",
       "notAvailableInDev": "डेवलपमेंट मोड में ऑटो-अपडेट उपलब्ध नहीं है।",
@@ -994,7 +1004,8 @@
       "loading": "लोड हो रहा है...",
       "converting": "कन्वर्ट हो रहा है...",
       "merging": "मर्ज हो रहा है...",
-      "trimming": "ट्रिम हो रहा है..."
+      "trimming": "ट्रिम हो रहा है...",
+      "transcoding": "ट्रांसकोडिंग"
     },
     "downloadSuccess": "डाउनलोड फोल्डर में सहेजा गया",
     "downloadStarted": "डाउनलोड शुरू हो गया",

@@ -51,7 +51,8 @@
     "settings": "Cài đặt",
     "collapse": "Thu gọn",
     "workflow": "Quy trình",
-    "expand": "Mở rộng"
+    "expand": "Mở rộng",
+    "more": "Thêm"
   },
   "welcome": {
     "tagline": "Công cụ Sáng tạo AI Trong Tầm Tay",
@@ -255,7 +256,14 @@
     "copyImage": "Sao chép hình ảnh",
     "copyUrl": "Sao chép URL",
     "copy": "Sao chép",
-    "download": "Tải xuống"
+    "download": "Tải xuống",
+    "advancedSettings": {
+      "more": "Thêm",
+      "less": "Ẩn"
+    },
+    "history": {
+      "title": "Lịch sử"
+    }
   },
   "history": {
     "title": "Lịch sử",
@@ -494,7 +502,8 @@
     "manageTagsDesc": "Thêm hoặc xóa thẻ cho \"{{name}}\"",
     "textPreviewUnavailable": "Không có xem trước văn bản. Mở vị trí tệp để xem.",
     "loadPreviews": "Tải xem trước",
-    "disablePreviews": "Tắt xem trước"
+    "disablePreviews": "Tắt xem trước",
+    "empty": "Chưa có hình ảnh"
   },
   "zImage": {
     "title": "Z-Image",
@@ -657,6 +666,7 @@
       "downloading": "Đang tải cập nhật... {{percent}}%",
       "downloaded": "Đã tải cập nhật! Phiên bản {{version}} sẵn sàng cài đặt.",
       "downloadUpdate": "Tải cập nhật",
+      "goToRelease": "Go to Release Page",
       "restartInstall": "Khởi động lại & Cài đặt",
       "error": "Lỗi cập nhật: {{message}}",
       "notAvailableInDev": "Tự động cập nhật không khả dụng trong chế độ phát triển.",
@@ -994,7 +1004,8 @@
       "loading": "Đang tải...",
       "converting": "Đang chuyển đổi...",
       "merging": "Đang gộp...",
-      "trimming": "Đang cắt..."
+      "trimming": "Đang cắt...",
+      "transcoding": "Đang chuyển mã"
     },
     "downloadSuccess": "Đã lưu vào thư mục Tải xuống",
     "downloadStarted": "Đã bắt đầu tải xuống",

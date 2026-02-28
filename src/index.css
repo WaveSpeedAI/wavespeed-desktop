@@ -430,3 +430,74 @@
     transform: translateX(0);
   }
 }
+
+/* ── Playground form field animations ── */
+
+/* Smooth grid collapse/expand */
+.grid-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.grid-collapse.open {
+  grid-template-rows: 1fr;
+}
+.grid-collapse > div {
+  overflow: hidden;
+}
+
+/* Field stagger fade-in */
+@keyframes field-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.field-animate {
+  animation: field-enter 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* Shimmer sweep on hover */
+@keyframes shimmer-sweep {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(var(--primary) / 0.08) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.btn-shimmer:hover::after {
+  opacity: 1;
+  animation: shimmer-sweep 1.2s ease-in-out;
+}
+
+/* Form field hover lift */
+.field-hover {
+  transition: background-color 0.2s, box-shadow 0.2s;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  margin: -0.5rem;
+}
+.field-hover:hover {
+  background-color: hsl(var(--muted) / 0.3);
+  box-shadow: 0 1px 3px hsl(var(--foreground) / 0.04);
+}

@@ -171,6 +171,13 @@ body.keyboard-visible .pb-safe {
   font-size: 16px !important;
 }
 
+/* Larger textarea on mobile for better visibility */
+textarea {
+  min-height: 120px !important;
+  font-size: 16px !important;
+  line-height: 1.5;
+}
+
 /* Mobile button */
 .mobile-button {
   @apply h-12 px-6 text-base font-medium;
@@ -255,4 +262,72 @@ html, body {
   width: 200%;
   height: 200%;
   opacity: 0;
+}
+
+/* Prevent iOS zoom on input focus - global mobile rule */
+input:not([type="number"]):not([type="range"]) {
+  font-size: 16px !important;
+}
+
+/* ====================================
+   Mobile Models page: collapsible search
+   ==================================== */
+
+/* Collapsed state: show only the magnifying glass icon */
+.mobile-models-page .page-header > div:nth-child(2) > .relative.flex-1.max-w-md {
+  flex: 0 0 36px !important;
+  width: 36px !important;
+  max-width: 36px !important;
+  height: 36px !important;
+  overflow: hidden !important;
+  border-radius: calc(var(--radius) - 2px);
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--background));
+  transition: all 0.2s ease;
+}
+
+/* SVG icon pass-through so tapping focuses the input */
+.mobile-models-page .page-header > div:nth-child(2) > .relative.flex-1.max-w-md > svg {
+  pointer-events: none;
+}
+
+/* Hide input text when collapsed */
+.mobile-models-page .page-header > div:nth-child(2) > .relative.flex-1.max-w-md > input {
+  caret-color: transparent;
+  color: transparent;
+}
+
+/* Expanded state: full-width search bar */
+.mobile-models-page .page-header > div:nth-child(2) > .relative.flex-1.max-w-md:focus-within {
+  flex: 1 1 0% !important;
+  width: auto !important;
+  max-width: none !important;
+  height: auto !important;
+  overflow: visible !important;
+  border: none;
+  background: transparent;
+}
+
+.mobile-models-page .page-header > div:nth-child(2) > .relative.flex-1.max-w-md:focus-within > input {
+  caret-color: auto;
+  color: inherit;
+  height: 44px;
+}
+
+/* Hide sibling controls when search is expanded */
+.mobile-models-page .page-header > div:nth-child(2) > .relative.flex-1.max-w-md:focus-within ~ * {
+  display: none !important;
+}
+
+/* Refresh button: icon only on mobile */
+.mobile-models-page .ml-auto.shrink-0 {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  font-size: 0;
+  gap: 0;
+}
+
+.mobile-models-page .ml-auto.shrink-0 > svg {
+  margin-right: 0 !important;
+  font-size: 1rem;
 }

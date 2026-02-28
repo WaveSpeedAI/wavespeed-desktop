@@ -51,7 +51,8 @@
     "settings": "Configuración",
     "collapse": "Contraer",
     "workflow": "Flujo de trabajo",
-    "expand": "Expandir"
+    "expand": "Expandir",
+    "more": "Más"
   },
   "welcome": {
     "tagline": "Herramientas Creativas de IA al Alcance de tu Mano",
@@ -255,7 +256,14 @@
     "copyImage": "Copiar imagen",
     "copyUrl": "Copiar URL",
     "copy": "Copiar",
-    "download": "Descargar"
+    "download": "Descargar",
+    "advancedSettings": {
+      "more": "Más",
+      "less": "Menos"
+    },
+    "history": {
+      "title": "Historial"
+    }
   },
   "history": {
     "title": "Historial",
@@ -494,7 +502,8 @@
     "manageTagsDesc": "Agregar o quitar etiquetas para \"{{name}}\"",
     "textPreviewUnavailable": "Vista previa de texto no disponible. Abre la ubicación del archivo para verlo.",
     "loadPreviews": "Cargar vistas previas",
-    "disablePreviews": "Deshabilitar vistas previas"
+    "disablePreviews": "Deshabilitar vistas previas",
+    "empty": "Aún no hay imágenes"
   },
   "zImage": {
     "title": "Z-Image",
@@ -658,6 +667,7 @@
       "downloading": "Descargando actualización... {{percent}}%",
       "downloaded": "¡Actualización descargada! La versión {{version}} está lista para instalar.",
       "downloadUpdate": "Descargar actualización",
+      "goToRelease": "Go to Release Page",
       "restartInstall": "Reiniciar e instalar",
       "error": "Error de actualización: {{message}}",
       "notAvailableInDev": "La actualización automática no está disponible en modo desarrollo.",
@@ -994,7 +1004,8 @@
       "loading": "Cargando FFmpeg",
       "converting": "Convirtiendo",
       "merging": "Fusionando",
-      "trimming": "Recortando"
+      "trimming": "Recortando",
+      "transcoding": "Transcodificando"
     },
     "downloadSuccess": "Guardado en carpeta Descargas",
     "downloadStarted": "Descarga iniciada",

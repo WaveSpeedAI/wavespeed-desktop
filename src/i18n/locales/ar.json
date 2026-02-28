@@ -51,7 +51,8 @@
     "settings": "الإعدادات",
     "collapse": "طي",
     "workflow": "سير العمل",
-    "expand": "توسيع"
+    "expand": "توسيع",
+    "more": "المزيد"
   },
   "welcome": {
     "tagline": "أدوات إبداعية مدعومة بالذكاء الاصطناعي في متناول يدك",
@@ -255,7 +256,14 @@
     "copyImage": "نسخ الصورة",
     "copyUrl": "نسخ الرابط",
     "copy": "نسخ",
-    "download": "تنزيل"
+    "download": "تنزيل",
+    "advancedSettings": {
+      "more": "المزيد",
+      "less": "أقل"
+    },
+    "history": {
+      "title": "السجل"
+    }
   },
   "history": {
     "title": "السجل",
@@ -494,7 +502,8 @@
     "manageTagsDesc": "إضافة أو إزالة علامات لـ \"{{name}}\"",
     "textPreviewUnavailable": "معاينة النص غير متاحة. افتح موقع الملف للعرض.",
     "loadPreviews": "تحميل المعاينات",
-    "disablePreviews": "تعطيل المعاينات"
+    "disablePreviews": "تعطيل المعاينات",
+    "empty": "لا توجد صور بعد"
   },
   "zImage": {
     "title": "Z-Image",
@@ -657,6 +666,7 @@
       "downloading": "جاري تنزيل التحديث... {{percent}}%",
       "downloaded": "تم تنزيل التحديث! الإصدار {{version}} جاهز للتثبيت.",
       "downloadUpdate": "تنزيل التحديث",
+      "goToRelease": "Go to Release Page",
       "restartInstall": "إعادة التشغيل والتثبيت",
       "error": "خطأ في التحديث: {{message}}",
       "notAvailableInDev": "التحديث التلقائي غير متاح في وضع التطوير.",
@@ -994,7 +1004,8 @@
       "loading": "جاري التحميل...",
       "converting": "جاري التحويل...",
       "merging": "جاري الدمج...",
-      "trimming": "جاري القص..."
+      "trimming": "جاري القص...",
+      "transcoding": "تحويل الترميز"
     },
     "downloadSuccess": "تم الحفظ في مجلد التنزيلات",
     "downloadStarted": "بدأ التنزيل",

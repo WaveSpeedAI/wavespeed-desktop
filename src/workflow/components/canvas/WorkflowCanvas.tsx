@@ -181,9 +181,23 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') return
+      const isInputFocused = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable
       if (event.isComposing || event.key === 'Process') return
       const ctrlOrCmd = navigator.platform.toUpperCase().indexOf('MAC') >= 0 ? event.metaKey : event.ctrlKey
+
+      // Ctrl+A: select all nodes — works even when input is focused
+      if (ctrlOrCmd && event.key === 'a') {
+        event.preventDefault()
+        // Update our store
+        selectNodes(nodes.map(n => n.id))
+        // Also update React Flow's internal selection state
+        const changes: NodeChange[] = nodes.map(n => ({ type: 'select' as const, id: n.id, selected: true }))
+        onNodesChange(changes)
+        return
+      }
+
+      // Other shortcuts only work when not in an input field
+      if (isInputFocused) return
 
       if ((event.key === 'Delete' || event.key === 'Backspace') && selectedNodeIds.size > 0) {
         event.preventDefault()
@@ -200,10 +214,6 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
         event.preventDefault()
         const node = nodes.find(n => n.id === selectedNodeId)
         if (node) localStorage.setItem('copiedNode', JSON.stringify(node))
-      }
-      if (ctrlOrCmd && event.key === 'a') {
-        event.preventDefault()
-        selectNodes(nodes.map(n => n.id))
       }
       if (ctrlOrCmd && event.key === 's') {
         event.preventDefault(); saveWorkflow().catch(console.error)
@@ -238,9 +248,9 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
         }
       }
     }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [selectedNodeId, selectedNodeIds, removeNode, removeNodes, selectNode, selectNodes, nodes, addNode, undo, redo, saveWorkflow, recordRecentNodeType])
+    document.addEventListener('keydown', handleKeyDown, true)
+    return () => document.removeEventListener('keydown', handleKeyDown, true)
+  }, [selectedNodeId, selectedNodeIds, removeNode, removeNodes, selectNode, selectNodes, nodes, addNode, undo, redo, saveWorkflow, recordRecentNodeType, onNodesChange])
 
   const onConnect = useCallback((connection: Connection) => addEdge(connection), [addEdge])
   const onNodeClick = useCallback((_: React.MouseEvent, node: { id: string }) => selectNode(node.id), [selectNode])
@@ -502,15 +512,24 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
       if (currentNodes.length === 0) return
 
       // ── Measure actual node sizes from DOM ──
+      // Also check which nodes have execution results (expanded results make nodes taller)
+      const executionResults = useExecutionStore.getState().lastResults
       const nodeSize = new Map<string, { w: number; h: number }>()
+      // Extra height to reserve for nodes whose results panel may not yet be
+      // reflected in the DOM (e.g. results exist but panel is collapsed).
+      const RESULTS_RESERVE = 260
       for (const n of currentNodes) {
         const el = document.querySelector(`[data-id="${n.id}"]`) as HTMLElement | null
+        const hasResults = (executionResults[n.id] ?? []).length > 0
         if (el) {
-          nodeSize.set(n.id, { w: el.offsetWidth, h: el.offsetHeight })
+          const measuredH = el.offsetHeight
+          // If the node has results but measured height is small, the results
+          // panel is likely collapsed — reserve space for when it expands.
+          const h = hasResults && measuredH < 300 ? measuredH + RESULTS_RESERVE : measuredH
+          nodeSize.set(n.id, { w: el.offsetWidth, h })
         } else {
-          // Fallback: use saved width or default
           const w = (n.data?.params?.__nodeWidth as number) ?? 380
-          nodeSize.set(n.id, { w, h: 200 })
+          nodeSize.set(n.id, { w, h: hasResults ? 500 : 250 })
         }
       }
 
@@ -606,7 +625,7 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
       for (const l of sortedLayerKeys) {
         const ids = layers.get(l)!
         // Calculate total height of this column
-        const heights = ids.map(id => nodeSize.get(id)?.h ?? 200)
+        const heights = ids.map(id => nodeSize.get(id)?.h ?? 250)
         const totalHeight = heights.reduce((sum, h) => sum + h, 0) + (ids.length - 1) * V_GAP
         let y = -totalHeight / 2
 

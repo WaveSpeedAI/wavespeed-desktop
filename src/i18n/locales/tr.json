@@ -51,7 +51,8 @@
     "settings": "Ayarlar",
     "collapse": "Daralt",
     "workflow": "İş Akışı",
-    "expand": "Genişlet"
+    "expand": "Genişlet",
+    "more": "Daha fazla"
   },
   "welcome": {
     "tagline": "Parmaklarınızın Ucunda AI Destekli Yaratıcı Araçlar",
@@ -255,7 +256,14 @@
     "copyImage": "Görseli kopyala",
     "copyUrl": "URL'yi kopyala",
     "copy": "Kopyala",
-    "download": "İndir"
+    "download": "İndir",
+    "advancedSettings": {
+      "more": "Daha fazla",
+      "less": "Daha az"
+    },
+    "history": {
+      "title": "Geçmiş"
+    }
   },
   "history": {
     "title": "Geçmiş",
@@ -494,7 +502,8 @@
     "manageTagsDesc": "\"{{name}}\" için etiket ekle veya kaldır",
     "textPreviewUnavailable": "Metin önizlemesi mevcut değil. Görüntülemek için dosya konumunu açın.",
     "loadPreviews": "Önizlemeleri yükle",
-    "disablePreviews": "Önizlemeleri devre dışı bırak"
+    "disablePreviews": "Önizlemeleri devre dışı bırak",
+    "empty": "Henüz resim yok"
   },
   "zImage": {
     "title": "Z-Image",
@@ -658,6 +667,7 @@
       "downloading": "Güncelleme indiriliyor... %{{percent}}",
       "downloaded": "Güncelleme indirildi! Sürüm {{version}} yüklenmeye hazır.",
       "downloadUpdate": "Güncellemeyi İndir",
+      "goToRelease": "Go to Release Page",
       "restartInstall": "Yeniden Başlat ve Yükle",
       "error": "Güncelleme hatası: {{message}}",
       "notAvailableInDev": "Otomatik güncelleme geliştirme modunda kullanılamaz.",
@@ -994,7 +1004,8 @@
       "loading": "Yükleniyor...",
       "converting": "Dönüştürülüyor...",
       "merging": "Birleştiriliyor...",
-      "trimming": "Kırpılıyor..."
+      "trimming": "Kırpılıyor...",
+      "transcoding": "Dönüştürülüyor"
     },
     "downloadSuccess": "İndirilenler klasörüne kaydedildi",
     "downloadStarted": "İndirme başladı",

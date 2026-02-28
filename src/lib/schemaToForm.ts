@@ -368,6 +368,8 @@ const ARRAY_FIELD_PATTERNS = [
 
 function isArrayFieldName(key: string): boolean {
   const k = key.toLowerCase()
+  // Skip fields that are clearly numeric (e.g. num_images, num_videos)
+  if (k.startsWith('num_') || k.startsWith('number_') || k.startsWith('count_') || k.startsWith('total_') || k.startsWith('max_') || k.startsWith('min_')) return false
   return ARRAY_FIELD_PATTERNS.some(p => k === p || k.endsWith('_images') || k.endsWith('_image_urls') || k.endsWith('_videos') || k.endsWith('_video_urls') || k.endsWith('_audios') || k.endsWith('_audio_urls'))
 }
 

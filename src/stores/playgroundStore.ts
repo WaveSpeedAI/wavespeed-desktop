@@ -1,12 +1,13 @@
 import { create } from 'zustand'
 import { apiClient } from '@/api/client'
 import type { Model } from '@/types/model'
-import type { PredictionResult } from '@/types/prediction'
+import type { PredictionResult, GenerationHistoryItem } from '@/types/prediction'
 import type { FormFieldConfig } from '@/lib/schemaToForm'
 import { normalizePayloadArrays } from '@/lib/schemaToForm'
 import type { BatchConfig, BatchState, BatchResult } from '@/types/batch'
 import { DEFAULT_BATCH_CONFIG } from '@/types/batch'
 import { persistentStorage } from '@/lib/storage'
+import { isImageUrl, isVideoUrl } from '@/lib/mediaUtils'
 
 /* ── Playground session persistence ───────────────────────────────────── */
 
@@ -51,7 +52,9 @@ function parsePlaygroundSession(raw: unknown): { tabs: PlaygroundTab[]; activeTa
       batchConfig: t.batchConfig ?? { ...DEFAULT_BATCH_CONFIG },
       batchState: null,
       batchResults: t.batchResults ?? [],
-      uploadingCount: 0
+      uploadingCount: 0,
+      generationHistory: [],
+      selectedHistoryIndex: null
     }))
     const activeTabId = typeof parsed.activeTabId === 'string' && tabs.some(tab => tab.id === parsed.activeTabId)
       ? parsed.activeTabId
@@ -117,6 +120,9 @@ interface PlaygroundTab {
   batchResults: BatchResult[]
   // File upload tracking
   uploadingCount: number
+  // Generation history (multi-output splitting)
+  generationHistory: GenerationHistoryItem[]
+  selectedHistoryIndex: number | null
 }
 
 interface PlaygroundState {
@@ -152,6 +158,9 @@ interface PlaygroundState {
 
   // File upload tracking
   setUploading: (isUploading: boolean) => void
+
+  // History selection
+  selectHistoryItem: (index: number | null) => void
 }
 
 // Check if a value is considered "empty"
@@ -177,7 +186,10 @@ function createEmptyTab(id: string, model?: Model): PlaygroundTab {
     batchState: null,
     batchResults: [],
     // File upload tracking
-    uploadingCount: 0
+    uploadingCount: 0,
+    // Generation history
+    generationHistory: [],
+    selectedHistoryIndex: null
   }
 }
 
@@ -256,7 +268,9 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
                 validationErrors: {},
                 currentPrediction: null,
                 error: null,
-                outputs: []
+                outputs: [],
+                generationHistory: [],
+                selectedHistoryIndex: null
               }
           : tab
       )
@@ -342,7 +356,9 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
               validationErrors: {},
               currentPrediction: null,
               error: null,
-              outputs: []
+              outputs: [],
+              generationHistory: [],
+              selectedHistoryIndex: null
             }
           : tab
       )
@@ -399,6 +415,46 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
         enableSyncMode: normalizedInput.enable_sync_mode as boolean
       })
 
+      // Build history items — split multi-media outputs into individual entries
+      const outputs = result.outputs || []
+      const historyItems: GenerationHistoryItem[] = []
+
+      const mediaEntries: { output: string; type: 'image' | 'video' }[] = []
+      for (const output of outputs) {
+        if (typeof output === 'string') {
+          if (isImageUrl(output)) mediaEntries.push({ output, type: 'image' })
+          else if (isVideoUrl(output)) mediaEntries.push({ output, type: 'video' })
+        }
+      }
+
+      if (mediaEntries.length >= 2) {
+        // Split: one history item per media output (newest/first at index 0)
+        const baseId = result.id || `gen-${Date.now()}`
+        for (let i = 0; i < mediaEntries.length; i++) {
+          const { output, type } = mediaEntries[i]
+          historyItems.push({
+            id: `${baseId}-${i}`,
+            prediction: result,
+            outputs: [output],
+            addedAt: Date.now() + i,
+            thumbnailUrl: output,
+            thumbnailType: type
+          })
+        }
+      } else {
+        // Single or no media: keep as one history item
+        const thumbnailUrl = mediaEntries[0]?.output ?? null
+        const thumbnailType = mediaEntries[0]?.type ?? null
+        historyItems.push({
+          id: result.id || `gen-${Date.now()}`,
+          prediction: result,
+          outputs,
+          addedAt: Date.now(),
+          thumbnailUrl,
+          thumbnailType
+        })
+      }
+
       // Update the specific tab (it might not be active anymore)
       set(state => ({
         tabs: state.tabs.map(tab =>
@@ -406,8 +462,10 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
             ? {
                 ...tab,
                 currentPrediction: result,
-                outputs: result.outputs || [],
-                isRunning: false
+                outputs,
+                isRunning: false,
+                generationHistory: [...historyItems, ...tab.generationHistory].slice(0, 50),
+                selectedHistoryIndex: null
               }
             : tab
         )
@@ -578,7 +636,27 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
           timing
         }
 
-        // Update state for this completed item
+        // Build history items for this single batch result
+        const itemHistoryEntries: GenerationHistoryItem[] = []
+        for (const output of (result.outputs || [])) {
+          if (typeof output === 'string') {
+            const mType = isImageUrl(output) ? 'image' as const
+              : isVideoUrl(output) ? 'video' as const
+              : null
+            if (mType) {
+              itemHistoryEntries.push({
+                id: `${result.id || queue[i].id}-${itemHistoryEntries.length}`,
+                prediction: result,
+                outputs: [output],
+                addedAt: Date.now() + itemHistoryEntries.length,
+                thumbnailUrl: output,
+                thumbnailType: mType
+              })
+            }
+          }
+        }
+
+        // Update state for this completed item + add to history immediately
         set(state => ({
           tabs: state.tabs.map(tab =>
             tab.id === tabId && tab.batchState
@@ -591,7 +669,8 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
                       idx === i ? { ...item, status: 'completed' as const, result } : item
                     )
                   },
-                  batchResults: results.filter(Boolean)
+                  batchResults: results.filter(Boolean),
+                  generationHistory: [...itemHistoryEntries, ...tab.generationHistory].slice(0, 200)
                 }
               : tab
           )
@@ -634,7 +713,7 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
     // Wait for all to complete
     await Promise.all(promises)
 
-    // Finalize batch
+    // Finalize batch (history already updated per-item above)
     set(state => ({
       tabs: state.tabs.map(tab =>
         tab.id === tabId
@@ -687,6 +766,16 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
               ...tab,
               uploadingCount: Math.max(0, tab.uploadingCount + (isUploading ? 1 : -1))
             }
+          : tab
+      )
+    }))
+  },
+
+  selectHistoryItem: (index: number | null) => {
+    set(state => ({
+      tabs: state.tabs.map(tab =>
+        tab.id === state.activeTabId
+          ? { ...tab, selectedHistoryIndex: index, batchState: null, batchResults: [] }
           : tab
       )
     }))

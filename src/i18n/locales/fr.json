@@ -51,7 +51,8 @@
     "settings": "Paramètres",
     "collapse": "Réduire",
     "workflow": "Workflow",
-    "expand": "Développer"
+    "expand": "Développer",
+    "more": "Plus"
   },
   "welcome": {
     "tagline": "Outils Créatifs IA à Portée de Main",
@@ -255,7 +256,14 @@
     "copyImage": "Copier l'image",
     "copyUrl": "Copier l'URL",
     "copy": "Copier",
-    "download": "Télécharger"
+    "download": "Télécharger",
+    "advancedSettings": {
+      "more": "Plus",
+      "less": "Moins"
+    },
+    "history": {
+      "title": "Historique"
+    }
   },
   "history": {
     "title": "Historique",
@@ -494,7 +502,8 @@
     "manageTagsDesc": "Ajouter ou retirer des étiquettes pour \"{{name}}\"",
     "textPreviewUnavailable": "Aperçu du texte non disponible. Ouvrez l'emplacement du fichier pour le voir.",
     "loadPreviews": "Charger les aperçus",
-    "disablePreviews": "Désactiver les aperçus"
+    "disablePreviews": "Désactiver les aperçus",
+    "empty": "Pas encore d'images"
   },
   "zImage": {
     "title": "Z-Image",
@@ -658,6 +667,7 @@
       "downloading": "Téléchargement de la mise à jour... {{percent}}%",
       "downloaded": "Mise à jour téléchargée ! La version {{version}} est prête à être installée.",
       "downloadUpdate": "Télécharger la mise à jour",
+      "goToRelease": "Go to Release Page",
       "restartInstall": "Redémarrer et installer",
       "error": "Erreur de mise à jour : {{message}}",
       "notAvailableInDev": "La mise à jour automatique n'est pas disponible en mode développement.",
@@ -994,7 +1004,8 @@
       "loading": "Chargement de FFmpeg",
       "converting": "Conversion",
       "merging": "Fusion",
-      "trimming": "Découpage"
+      "trimming": "Découpage",
+      "transcoding": "Transcodage"
     },
     "downloadSuccess": "Enregistré dans le dossier Téléchargements",
     "downloadStarted": "Téléchargement démarré",

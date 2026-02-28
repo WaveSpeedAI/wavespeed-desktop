@@ -7,6 +7,7 @@ import { create } from 'zustand'
 import { v4 as uuid } from 'uuid'
 import { historyIpc } from '../ipc/ipc-client'
 import { executeWorkflowInBrowser } from '../browser/run-in-browser'
+import { useAssetsStore, detectAssetType } from '@/stores/assetsStore'
 import type { NodeStatus, EdgeStatus } from '@/workflow/types/execution'
 
 export interface RunSession {
@@ -33,6 +34,50 @@ let browserRunAbortController: AbortController | null = null
 function isAbortError(e: unknown): boolean {
   return e instanceof DOMException && e.name === 'AbortError' ||
     (e instanceof Error && e.message?.toLowerCase().includes('abort'))
+}
+
+/** Node types whose results should be auto-saved to My Assets */
+const SAVEABLE_NODE_TYPES = ['ai-task/run']
+function isSaveableNodeType(nodeType: string): boolean {
+  return SAVEABLE_NODE_TYPES.includes(nodeType) || nodeType.startsWith('free-tool/')
+}
+
+/** Lazy-loaded workflow store reference (avoids circular import) */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let importedWorkflowStore: { getState: () => { workflowName: string } } | null = null
+import('./workflow.store').then(m => { importedWorkflowStore = m.useWorkflowStore }).catch(() => {})
+
+/** Auto-save workflow node results to My Assets (browser mode). Fire-and-forget. */
+function autoSaveWorkflowResults(
+  nodeId: string,
+  nodeType: string,
+  urls: string[],
+  params: Record<string, unknown> | undefined,
+  workflowName?: string
+): void {
+  if (!isSaveableNodeType(nodeType)) return
+  const { settings, saveAsset, hasAssetForExecution } = useAssetsStore.getState()
+  if (!settings.autoSaveAssets) return
+
+  const modelId = String(params?.modelId ?? nodeType)
+  const executionId = `browser-${nodeId}-${Date.now().toString(36)}`
+
+  // Skip if already saved (unlikely in browser but safe)
+  if (hasAssetForExecution(executionId)) return
+
+  for (let i = 0; i < urls.length; i++) {
+    const url = urls[i]
+    if (!url) continue
+    const assetType = detectAssetType(url)
+    if (!assetType) continue
+    saveAsset(url, assetType, {
+      modelId,
+      resultIndex: i,
+      source: 'workflow',
+      executionId,
+      workflowName: workflowName || undefined
+    }).catch(err => console.error('[ExecutionStore] Failed to auto-save to assets:', err))
+  }
 }
 
 export interface ExecutionState {
@@ -92,11 +137,18 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
     const nodeIds = nodes.map(n => n.id)
     const nodeResults: Record<string, 'running' | 'done' | 'error'> = {}
     for (const nid of nodeIds) nodeResults[nid] = 'running'
+
+    // Get actual workflow identity for session tracking
+    const { useWorkflowStore } = await import('./workflow.store')
+    const wfState = useWorkflowStore.getState()
+    const actualWorkflowId = wfState.workflowId || 'browser'
+    const actualWorkflowName = wfState.workflowName || 'Workflow'
+
     set(s => ({
       runSessions: [{
         id: sessionId,
-        workflowId: 'browser',
-        workflowName: 'Workflow',
+        workflowId: actualWorkflowId,
+        workflowName: actualWorkflowName,
         startedAt: new Date().toISOString(),
         nodeIds,
         nodeLabels,
@@ -127,6 +179,12 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
               }
             }
           })
+          // Auto-save to My Assets
+          const node = nodes.find(n => n.id === nodeId)
+          if (node) {
+            const wfName = importedWorkflowStore?.getState().workflowName
+            autoSaveWorkflowResults(nodeId, node.data.nodeType, urls, node.data.params, wfName)
+          }
         }
       }, { signal: controller.signal })
     } catch (error) {
@@ -176,10 +234,16 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
     const sessionId = uuid()
     const nodeResults: Record<string, 'running' | 'done' | 'error'> = {}
     for (const nid of nodeIds) nodeResults[nid] = 'running'
+
+    // Get actual workflow identity for session tracking
+    const { useWorkflowStore: wfStore } = await import('./workflow.store')
+    const wfState = wfStore.getState()
+    const actualWorkflowId = wfState.workflowId || 'browser'
+
     set(s => ({
       runSessions: [{
         id: sessionId,
-        workflowId: 'browser',
+        workflowId: actualWorkflowId,
         workflowName: 'Run node',
         startedAt: new Date().toISOString(),
         nodeIds,
@@ -215,6 +279,12 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
               }
             }
           })
+          // Auto-save to My Assets
+          const node = nodes.find(n => n.id === nid)
+          if (node) {
+            const wfName = importedWorkflowStore?.getState().workflowName
+            autoSaveWorkflowResults(nid, node.data.nodeType, urls, node.data.params, wfName)
+          }
         }
       }, { runOnlyNodeId: nodeId, existingResults, signal: controller.signal })
     } catch (error) {
@@ -279,10 +349,11 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
     const nodeIds = nodes.map(n => n.id)
     const nodeResults: Record<string, 'running' | 'done' | 'error'> = {}
     for (const nid of nodeIds) nodeResults[nid] = 'running'
+    const actualWorkflowId = useWorkflowStore.getState().workflowId || 'browser'
     set(s => ({
       runSessions: [{
         id: sessionId,
-        workflowId: 'browser',
+        workflowId: actualWorkflowId,
         workflowName: 'Run from here',
         startedAt: new Date().toISOString(),
         nodeIds,

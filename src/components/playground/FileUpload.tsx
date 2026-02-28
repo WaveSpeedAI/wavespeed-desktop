@@ -293,8 +293,8 @@ export function FileUpload({
               <div
                 key={index}
                 className={cn(
-                  'relative group rounded-md border bg-muted/50 overflow-hidden h-16 w-16 flex-shrink-0 cursor-pointer',
-                  draggingIndex === index && 'opacity-60'
+                  'relative group rounded-lg border bg-muted/50 overflow-hidden h-28 w-28 flex-shrink-0 cursor-pointer transition-all duration-200 hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30 hover:scale-[1.03]',
+                  draggingIndex === index && 'opacity-60 scale-95'
                 )}
                 draggable={multiple && !disabled}
                 onDragStart={(e) => {
@@ -412,10 +412,10 @@ export function FileUpload({
               <div
                 {...getRootProps()}
                 className={cn(
-                  'flex-1 border-2 border-dashed rounded-md px-3 py-2 cursor-pointer transition-colors min-h-[38px] flex items-center',
-                  isDragActive && 'border-primary bg-primary/5',
+                  'flex-1 border-2 border-dashed rounded-lg px-3 py-2 cursor-pointer transition-all duration-200 min-h-[38px] flex items-center',
+                  isDragActive && 'border-primary bg-primary/5 shadow-inner shadow-primary/10 scale-[1.01]',
                   disabled && 'opacity-50 cursor-not-allowed',
-                  !disabled && !isDragActive && 'hover:border-primary/50'
+                  !disabled && !isDragActive && 'hover:border-primary/50 hover:bg-muted/30 hover:shadow-sm'
                 )}
               >
                 <input {...getInputProps()} />

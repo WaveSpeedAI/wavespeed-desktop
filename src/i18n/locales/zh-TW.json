@@ -51,7 +51,8 @@
     "settings": "設定",
     "collapse": "收合",
     "workflow": "工作流",
-    "expand": "展開"
+    "expand": "展開",
+    "more": "更多"
   },
   "welcome": {
     "tagline": "觸手可及的 AI 創意工具",
@@ -255,7 +256,14 @@
       "seedsGenerated": "種子已自動產生",
       "settings": "批次設定"
     },
-    "input": "輸入"
+    "input": "輸入",
+    "advancedSettings": {
+      "more": "高級設置",
+      "less": "收起"
+    },
+    "history": {
+      "title": "歷史記錄"
+    }
   },
   "history": {
     "title": "歷史紀錄",
@@ -439,6 +447,8 @@
     "filterByType": "類型",
     "filterByModel": "模型",
     "allModels": "所有模型",
+    "all": "全部",
+    "allSources": "全部",
     "favorites": "收藏",
     "showFavoritesOnly": "僅顯示收藏",
     "types": {
@@ -494,7 +504,8 @@
     "manageTagsDesc": "為「{{name}}」新增或移除標籤",
     "textPreviewUnavailable": "文字預覽不可用。請開啟檔案位置以檢視。",
     "loadPreviews": "載入預覽",
-    "disablePreviews": "停用預覽"
+    "disablePreviews": "停用預覽",
+    "empty": "尚無圖片"
   },
   "zImage": {
     "title": "Z-Image",
@@ -658,6 +669,7 @@
       "downloading": "正在下載更新... {{percent}}%",
       "downloaded": "更新已下載！版本 {{version}} 已準備好安裝。",
       "downloadUpdate": "下載更新",
+      "goToRelease": "前往下載頁面",
       "restartInstall": "重新啟動並安裝",
       "error": "更新錯誤：{{message}}",
       "notAvailableInDev": "開發模式下不支援自動更新。",
@@ -994,7 +1006,8 @@
       "loading": "載入 FFmpeg",
       "converting": "轉換中",
       "merging": "合併中",
-      "trimming": "裁剪中"
+      "trimming": "裁剪中",
+      "transcoding": "轉碼中"
     },
     "downloadSuccess": "已保存到下載資料夾",
     "downloadStarted": "下載已開始",

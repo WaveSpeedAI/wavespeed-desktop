@@ -19,6 +19,13 @@ export function getOutputItemType(item: string): OutputItemType {
     return 'file'
   }
 
+  // blob: URLs — produced by FFmpeg worker (merge / trim / convert).
+  // They don't carry an extension, so default to 'video' which covers
+  // both video and audio playback via <video> element.
+  if (s.startsWith('blob:')) {
+    return 'video'
+  }
+
   // Remote or local-asset URLs — use extension
   if (s.startsWith('http://') || s.startsWith('https://') || s.startsWith('local-asset://')) {
     const normalized = s.toLowerCase().split('?')[0]

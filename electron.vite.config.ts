@@ -58,9 +58,7 @@ export default defineConfig({
       include: [
         'onnxruntime-web',
         'upscaler',
-        '@huggingface/transformers',
-        '@ffmpeg/ffmpeg',
-        '@ffmpeg/util'
+        '@huggingface/transformers'
       ],
       exclude: ['@google/model-viewer']
     },

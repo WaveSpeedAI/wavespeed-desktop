@@ -51,7 +51,8 @@
     "settings": "Configurações",
     "collapse": "Recolher",
     "workflow": "Fluxo de trabalho",
-    "expand": "Expandir"
+    "expand": "Expandir",
+    "more": "Mais"
   },
   "welcome": {
     "tagline": "Ferramentas Criativas de IA ao Seu Alcance",
@@ -255,7 +256,14 @@
     "copyImage": "Copiar imagem",
     "copyUrl": "Copiar URL",
     "copy": "Copiar",
-    "download": "Descarregar"
+    "download": "Descarregar",
+    "advancedSettings": {
+      "more": "Mais",
+      "less": "Menos"
+    },
+    "history": {
+      "title": "Histórico"
+    }
   },
   "history": {
     "title": "Histórico",
@@ -494,7 +502,8 @@
     "manageTagsDesc": "Adicionar ou remover tags para \"{{name}}\"",
     "textPreviewUnavailable": "Pré-visualização de texto não disponível. Abra o local do arquivo para visualizar.",
     "loadPreviews": "Carregar visualizações",
-    "disablePreviews": "Desativar visualizações"
+    "disablePreviews": "Desativar visualizações",
+    "empty": "Sem imagens ainda"
   },
   "zImage": {
     "title": "Z-Image",
@@ -658,6 +667,7 @@
       "downloading": "Baixando atualização... {{percent}}%",
       "downloaded": "Atualização baixada! Versão {{version}} pronta para instalar.",
       "downloadUpdate": "Baixar Atualização",
+      "goToRelease": "Go to Release Page",
       "restartInstall": "Reiniciar e Instalar",
       "error": "Erro de atualização: {{message}}",
       "notAvailableInDev": "Atualização automática não disponível no modo de desenvolvimento.",
@@ -994,7 +1004,8 @@
       "loading": "A carregar...",
       "converting": "A converter...",
       "merging": "A fundir...",
-      "trimming": "A cortar..."
+      "trimming": "A cortar...",
+      "transcoding": "Transcodificando"
     },
     "downloadSuccess": "Guardado na pasta Transferências",
     "downloadStarted": "Transferência iniciada",

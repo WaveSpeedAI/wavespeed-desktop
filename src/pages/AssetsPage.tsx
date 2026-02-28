@@ -59,7 +59,7 @@ import {
   EyeOff,
   Tag,
   X,
-  Filter,
+  SlidersHorizontal,
   CheckSquare,
   Square,
   Plus,
@@ -68,6 +68,9 @@ import {
   ChevronRight,
   Sparkles,
   FolderHeart,
+  GitBranch,
+  Wrench,
+  Cpu,
 } from 'lucide-react'
 import type { AssetMetadata, AssetType, AssetSortBy, AssetsFilter } from '@/types/asset'
 
@@ -494,6 +497,8 @@ export function AssetsPage() {
             <AssetTypeIcon type={asset.type} className="h-3 w-3 mr-1" />
             {t(`assets.types.${asset.type}`)}
           </Badge>
+
+
         </div>
 
         {/* Info */}
@@ -503,9 +508,16 @@ export function AssetsPage() {
               <p className="text-sm font-medium truncate" title={asset.fileName}>
                 {asset.fileName}
               </p>
-              <p className="text-xs text-muted-foreground truncate" title={asset.modelId}>
-                {asset.modelId}
-              </p>
+              {asset.source === 'workflow' && asset.workflowName ? (
+                <p className="text-xs text-blue-400 truncate flex items-center gap-1" title={`Workflow: ${asset.workflowName}`}>
+                  <GitBranch className="h-3 w-3 shrink-0" />
+                  {asset.workflowName}
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground truncate" title={asset.modelId}>
+                  {asset.modelId}
+                </p>
+              )}
               <p className="text-xs text-muted-foreground">
                 {formatDate(asset.createdAt)} · {formatBytes(asset.fileSize)}
               </p>
@@ -596,7 +608,7 @@ export function AssetsPage() {
           </p>
         </div>
 
-        {/* Search, Filters & Actions */}
+        {/* Toolbar */}
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative w-56">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -624,6 +636,22 @@ export function AssetsPage() {
               <SelectItem value="size-asc">{t('assets.sort.sizeSmallest')}</SelectItem>
             </SelectContent>
           </Select>
+          <Select
+            value={(filter.models && filter.models[0]) || 'all'}
+            onValueChange={handleModelFilterChange}
+          >
+            <SelectTrigger className="h-9 w-full rounded-lg border-border/80 bg-background sm:w-[170px]">
+              <SelectValue placeholder={t('assets.allModels')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t('assets.allModels')}</SelectItem>
+              {allModels.map((modelId) => (
+                <SelectItem key={modelId} value={modelId}>
+                  {modelId}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button
             variant={loadPreviews ? 'default' : 'outline'}
             size="icon"
@@ -638,12 +666,21 @@ export function AssetsPage() {
             )}
           </Button>
           <Button
+            variant={filter.favoritesOnly ? 'default' : 'outline'}
+            size="icon"
+            onClick={() => handleFavoritesFilterChange(!filter.favoritesOnly)}
+            title={t('assets.showFavoritesOnly')}
+            className="h-9 w-9 rounded-lg"
+          >
+            <Star className={cn('h-4 w-4', filter.favoritesOnly && 'fill-current')} />
+          </Button>
+          <Button
             variant={showFilters ? 'default' : 'outline'}
             size="icon"
             onClick={() => setShowFilters(!showFilters)}
             className="h-9 w-9 rounded-lg"
           >
-            <Filter className="h-4 w-4" />
+            <SlidersHorizontal className="h-4 w-4" />
           </Button>
           <div className="flex-1" />
           {isSelectionMode ? (
@@ -722,70 +759,65 @@ export function AssetsPage() {
 
         {/* Filter Panel */}
         {showFilters && (
-          <div className="mt-4 space-y-4 rounded-xl border border-border/70 bg-card/70 p-4 shadow-sm">
-            <div className="flex items-center justify-between">
-              <h3 className="font-medium">{t('assets.filters')}</h3>
-              <Button variant="ghost" size="sm" onClick={handleClearFilters}>
-                {t('assets.clearFilters')}
-              </Button>
-            </div>
+          <div className="mt-3 space-y-2">
+        {/* Source tabs */}
+        <div className="flex items-end gap-0.5">
+          {([
+            { value: 'playground' as const, label: 'Playground', icon: Sparkles },
+            { value: 'workflow' as const, label: 'Workflow', icon: GitBranch },
+            { value: 'free-tool' as const, label: 'Free Tool', icon: Wrench },
+            { value: 'z-image' as const, label: 'Z-Image', icon: Cpu },
+          ]).map(({ value, label, icon: Icon }) => {
+            const isActive = (filter.sources || []).includes(value)
+            return (
+              <button
+                key={value}
+                onClick={() => {
+                  setFilter(f => {
+                    const current = f.sources || []
+                    return { ...f, sources: isActive ? current.filter(s => s !== value) : [...current, value] }
+                  })
+                }}
+                className={cn(
+                  'relative inline-flex items-center gap-1.5 px-3 pb-2 text-[13px] font-medium transition-colors',
+                  'cursor-pointer select-none',
+                  isActive
+                    ? 'text-primary'
+                    : 'text-muted-foreground/60 hover:text-muted-foreground'
+                )}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {label}
+                <span className={cn(
+                  'absolute bottom-0 left-[6%] right-[6%] h-[2.5px] rounded-full transition-colors',
+                  isActive ? 'bg-primary' : 'bg-muted-foreground/25'
+                )} />
+              </button>
+            )
+          })}
+        </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
-              {/* Type filters */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">{t('assets.filterByType')}</Label>
-                <div className="space-y-1">
-                  {(['image', 'video', 'audio', 'text'] as AssetType[]).map((type) => (
-                    <div key={type} className="flex items-center gap-2">
-                      <Checkbox
-                        id={`type-${type}`}
-                        checked={(filter.types || []).includes(type)}
-                        onCheckedChange={(checked) => handleTypeFilterChange(type, !!checked)}
-                      />
-                      <Label htmlFor={`type-${type}`} className="text-sm flex items-center gap-1">
-                        <AssetTypeIcon type={type} className="h-3 w-3" />
-                        {t(`assets.typesPlural.${type}`)}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Model filter */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">{t('assets.filterByModel')}</Label>
-                <Select
-                  value={(filter.models && filter.models[0]) || 'all'}
-                  onValueChange={handleModelFilterChange}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('assets.allModels')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t('assets.allModels')}</SelectItem>
-                    {allModels.map((modelId) => (
-                      <SelectItem key={modelId} value={modelId}>
-                        {modelId}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Favorites filter */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">{t('assets.favorites')}</Label>
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="favorites-only"
-                    checked={filter.favoritesOnly || false}
-                    onCheckedChange={(checked) => handleFavoritesFilterChange(!!checked)}
-                  />
-                  <Label htmlFor="favorites-only" className="text-sm">
-                    {t('assets.showFavoritesOnly')}
-                  </Label>
-                </div>
-              </div>
+            {/* Type pills */}
+            <div className="flex flex-wrap items-center gap-1.5 pl-3">
+              {(['image', 'video', 'audio', 'text'] as AssetType[]).map((type) => {
+                const isActive = (filter.types || []).includes(type)
+                return (
+                  <button
+                    key={type}
+                    onClick={() => handleTypeFilterChange(type, !isActive)}
+                    className={cn(
+                      'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-all',
+                      'cursor-pointer select-none',
+                      isActive
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground'
+                    )}
+                  >
+                    <AssetTypeIcon type={type} className="h-3.5 w-3.5" />
+                    {t(`assets.typesPlural.${type}`)}
+                  </button>
+                )
+              })}
             </div>
           </div>
         )}
@@ -856,6 +888,9 @@ export function AssetsPage() {
             </DialogTitle>
             <DialogDescription>
               {previewAsset?.modelId} · {previewAsset && formatDate(previewAsset.createdAt)}
+              {previewAsset?.source === 'workflow' && previewAsset?.workflowName && (
+                <> · <GitBranch className="inline h-3 w-3" /> {previewAsset.workflowName}</>
+              )}
             </DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-auto relative">

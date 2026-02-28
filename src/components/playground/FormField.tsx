@@ -19,7 +19,7 @@ import { LoraSelector, type LoraItem } from './LoraSelector'
 import { PromptOptimizer } from './PromptOptimizer'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { Dices } from 'lucide-react'
+import { Dices, Info } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface FormFieldProps {
@@ -33,6 +33,7 @@ interface FormFieldProps {
   hideLabel?: boolean
   formValues?: Record<string, unknown>
   onUploadingChange?: (isUploading: boolean) => void
+  tooltipDescription?: boolean
   /** When provided (e.g. workflow), file uploads use this instead of API. */
   onUploadFile?: (file: File) => Promise<string>
   /** Optional React node rendered inside the label row (e.g. a connection handle anchor). */
@@ -42,7 +43,7 @@ interface FormFieldProps {
 // Generate a random seed (0 to 65535)
 const generateRandomSeed = () => Math.floor(Math.random() * 65536)
 
-export function FormField({ field, value, onChange, disabled = false, error, modelType, imageValue, hideLabel = false, formValues, onUploadingChange, onUploadFile, handleAnchor }: FormFieldProps) {
+export function FormField({ field, value, onChange, disabled = false, error, modelType, imageValue, hideLabel = false, formValues, onUploadingChange, tooltipDescription = false, onUploadFile, handleAnchor }: FormFieldProps) {
   const { t } = useTranslation()
   // Check if this is a seed field
   const isSeedField = field.name.toLowerCase() === 'seed'
@@ -72,8 +73,10 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
     setNumericInput(String(next))
   }, [isNumericField, value, field.default, field.min, allowEmptyNumber])
 
+  const isIntegerField = field.schemaType === 'integer'
+
   const clampNumeric = (n: number) => {
-    let next = n
+    let next = isIntegerField ? Math.round(n) : n
     if (field.min !== undefined) next = Math.max(field.min, next)
     if (field.max !== undefined) next = Math.min(field.max, next)
     return next
@@ -136,8 +139,9 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
               <Slider
                 value={[currentValue]}
                 onValueChange={([v]) => {
-                  onChange(v)
-                  setNumericInput(String(v))
+                  const coerced = isIntegerField ? Math.round(v) : v
+                  onChange(coerced)
+                  setNumericInput(String(coerced))
                 }}
                 min={field.min}
                 max={field.max}
@@ -156,7 +160,8 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
                     if (allowEmptyNumber) onChange(undefined)
                     return
                   }
-                  onChange(Number(val))
+                  const n = Number(val)
+                  onChange(isIntegerField ? Math.round(n) : n)
                 }}
                 onBlur={() => commitNumeric(numericInput)}
                 min={field.min}
@@ -182,7 +187,8 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
                   if (allowEmptyNumber) onChange(undefined)
                   return
                 }
-                onChange(Number(val))
+                const n = Number(val)
+                onChange(isIntegerField ? Math.round(n) : n)
               }}
               onBlur={() => commitNumeric(numericInput)}
               min={field.min}
@@ -226,8 +232,9 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
               <Slider
                 value={[currentValue]}
                 onValueChange={([v]) => {
-                  onChange(v)
-                  setNumericInput(String(v))
+                  const coerced = isIntegerField ? Math.round(v) : v
+                  onChange(coerced)
+                  setNumericInput(String(coerced))
                 }}
                 min={field.min ?? 0}
                 max={field.max ?? 100}
@@ -242,7 +249,8 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
                   const val = e.target.value
                   setNumericInput(val)
                   if (val === '' || Number.isNaN(Number(val))) return
-                  onChange(Number(val))
+                  const n = Number(val)
+                  onChange(isIntegerField ? Math.round(n) : n)
                 }}
                 onBlur={() => commitNumeric(numericInput)}
                 min={field.min}
@@ -374,6 +382,16 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
               {field.label}
             </Label>
           </span>
+          {tooltipDescription && field.description && field.type !== 'text' && field.type !== 'textarea' && (
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <Info className="h-3.5 w-3.5 text-muted-foreground shrink-0 translate-y-px" />
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-[280px]">
+                <p className="text-xs">{field.description}{field.min !== undefined && field.max !== undefined ? ` (${field.min} - ${field.max})` : ''}</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
           {isOptimizablePrompt && (
             <PromptOptimizer
               currentPrompt={(value as string) || ''}
@@ -383,20 +401,20 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
               imageValue={imageValue}
             />
           )}
-          {field.min !== undefined && field.max !== undefined && (
+          {field.min !== undefined && field.max !== undefined && (tooltipDescription ? !field.description : true) && (
             <span className="text-xs text-muted-foreground">
               ({field.min} - {field.max})
             </span>
           )}
         </div>
       )}
-      <div className={cn(field.type !== 'loras' && "overflow-hidden", error && "[&_input]:border-destructive [&_textarea]:border-destructive")}>
+      <div className={cn(field.type !== 'loras' && field.type !== 'file' && field.type !== 'file-array' && "overflow-hidden", error && "[&_input]:border-destructive [&_textarea]:border-destructive")}>
         {renderInput()}
       </div>
       {error && (
         <p className="text-xs text-destructive">{error}</p>
       )}
-      {!error && field.description && field.type !== 'text' && field.type !== 'textarea' && (
+      {!tooltipDescription && !error && field.description && field.type !== 'text' && field.type !== 'textarea' && (
         <p className="text-xs text-muted-foreground">{field.description}</p>
       )}
     </div>

@@ -51,7 +51,8 @@
     "settings": "การตั้งค่า",
     "collapse": "ยุบ",
     "workflow": "เวิร์กโฟลว์",
-    "expand": "ขยาย"
+    "expand": "ขยาย",
+    "more": "เพิ่มเติม"
   },
   "welcome": {
     "tagline": "เครื่องมือสร้างสรรค์ AI ที่ปลายนิ้วของคุณ",
@@ -255,7 +256,14 @@
     "copyImage": "คัดลอกภาพ",
     "copyUrl": "คัดลอก URL",
     "copy": "คัดลอก",
-    "download": "ดาวน์โหลด"
+    "download": "ดาวน์โหลด",
+    "advancedSettings": {
+      "more": "เพิ่มเติม",
+      "less": "น้อยลง"
+    },
+    "history": {
+      "title": "ประวัติ"
+    }
   },
   "history": {
     "title": "ประวัติ",
@@ -494,7 +502,8 @@
     "manageTagsDesc": "เพิ่มหรือลบแท็กสำหรับ \"{{name}}\"",
     "textPreviewUnavailable": "ไม่มีการแสดงตัวอย่างข้อความ เปิดตำแหน่งไฟล์เพื่อดู",
     "loadPreviews": "โหลดตัวอย่าง",
-    "disablePreviews": "ปิดใช้งานตัวอย่าง"
+    "disablePreviews": "ปิดใช้งานตัวอย่าง",
+    "empty": "ยังไม่มีรูปภาพ"
   },
   "zImage": {
     "title": "Z-Image",
@@ -657,6 +666,7 @@
       "downloading": "กำลังดาวน์โหลดการอัปเดต... {{percent}}%",
       "downloaded": "ดาวน์โหลดการอัปเดตแล้ว! เวอร์ชัน {{version}} พร้อมติดตั้ง",
       "downloadUpdate": "ดาวน์โหลดการอัปเดต",
+      "goToRelease": "Go to Release Page",
       "restartInstall": "รีสตาร์ทและติดตั้ง",
       "error": "ข้อผิดพลาดการอัปเดต: {{message}}",
       "notAvailableInDev": "การอัปเดตอัตโนมัติไม่พร้อมใช้งานในโหมดพัฒนา",
@@ -994,7 +1004,8 @@
       "loading": "กำลังโหลด...",
       "converting": "กำลังแปลง...",
       "merging": "กำลังรวม...",
-      "trimming": "กำลังตัด..."
+      "trimming": "กำลังตัด...",
+      "transcoding": "กำลังแปลงรหัส"
     },
     "downloadSuccess": "บันทึกไปยังโฟลเดอร์ดาวน์โหลด",
     "downloadStarted": "เริ่มดาวน์โหลดแล้ว",

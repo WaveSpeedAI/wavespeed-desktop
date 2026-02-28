@@ -51,7 +51,8 @@
     "settings": "Pengaturan",
     "collapse": "Ciutkan",
     "workflow": "Alur kerja",
-    "expand": "Perluas"
+    "expand": "Perluas",
+    "more": "Lainnya"
   },
   "welcome": {
     "tagline": "Alat Kreatif AI di Ujung Jari Anda",
@@ -255,7 +256,14 @@
     "copyImage": "Salin gambar",
     "copyUrl": "Salin URL",
     "copy": "Salin",
-    "download": "Unduh"
+    "download": "Unduh",
+    "advancedSettings": {
+      "more": "Selengkapnya",
+      "less": "Lebih sedikit"
+    },
+    "history": {
+      "title": "Riwayat"
+    }
   },
   "history": {
     "title": "Riwayat",
@@ -494,7 +502,8 @@
     "manageTagsDesc": "Tambah atau hapus tag untuk \"{{name}}\"",
     "textPreviewUnavailable": "Pratinjau teks tidak tersedia. Buka lokasi file untuk melihat.",
     "loadPreviews": "Muat pratinjau",
-    "disablePreviews": "Nonaktifkan pratinjau"
+    "disablePreviews": "Nonaktifkan pratinjau",
+    "empty": "Belum ada gambar"
   },
   "zImage": {
     "title": "Z-Image",
@@ -658,6 +667,7 @@
       "downloading": "Mengunduh pembaruan... {{percent}}%",
       "downloaded": "Pembaruan diunduh! Versi {{version}} siap diinstal.",
       "downloadUpdate": "Unduh Pembaruan",
+      "goToRelease": "Go to Release Page",
       "restartInstall": "Mulai Ulang & Instal",
       "error": "Error pembaruan: {{message}}",
       "notAvailableInDev": "Pembaruan otomatis tidak tersedia dalam mode pengembangan.",
@@ -977,7 +987,8 @@
       "loading": "Memuat...",
       "converting": "Mengonversi...",
       "merging": "Menggabungkan...",
-      "trimming": "Memangkas..."
+      "trimming": "Memangkas...",
+      "transcoding": "Transkode"
     },
     "segmentAnything": {
       "title": "Segmentasi Apa Saja",

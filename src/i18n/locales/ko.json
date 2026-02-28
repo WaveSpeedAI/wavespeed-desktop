@@ -51,7 +51,8 @@
     "settings": "설정",
     "collapse": "접기",
     "workflow": "워크플로우",
-    "expand": "펼치기"
+    "expand": "펼치기",
+    "more": "더보기"
   },
   "welcome": {
     "tagline": "손끝에서 펼쳐지는 AI 크리에이티브 도구",
@@ -255,7 +256,14 @@
     "copyImage": "이미지 복사",
     "copyUrl": "URL 복사",
     "copy": "복사",
-    "download": "다운로드"
+    "download": "다운로드",
+    "advancedSettings": {
+      "more": "더보기",
+      "less": "접기"
+    },
+    "history": {
+      "title": "기록"
+    }
   },
   "history": {
     "title": "기록",
@@ -494,7 +502,8 @@
     "manageTagsDesc": "\"{{name}}\"의 태그 추가 또는 제거",
     "textPreviewUnavailable": "텍스트 미리보기를 사용할 수 없습니다. 보려면 파일 위치를 여세요.",
     "loadPreviews": "미리보기 로드",
-    "disablePreviews": "미리보기 비활성화"
+    "disablePreviews": "미리보기 비활성화",
+    "empty": "이미지가 없습니다"
   },
   "zImage": {
     "title": "Z-Image",
@@ -658,6 +667,7 @@
       "downloading": "업데이트 다운로드 중... {{percent}}%",
       "downloaded": "업데이트 다운로드 완료! 버전 {{version}}을 설치할 준비가 되었습니다.",
       "downloadUpdate": "업데이트 다운로드",
+      "goToRelease": "Go to Release Page",
       "restartInstall": "다시 시작하여 설치",
       "error": "업데이트 오류: {{message}}",
       "notAvailableInDev": "개발 모드에서는 자동 업데이트를 사용할 수 없습니다.",
@@ -994,7 +1004,8 @@
       "loading": "FFmpeg 로드 중",
       "converting": "변환 중",
       "merging": "병합 중",
-      "trimming": "자르는 중"
+      "trimming": "자르는 중",
+      "transcoding": "트랜스코딩 중"
     },
     "downloadSuccess": "다운로드 폴더에 저장됨",
     "downloadStarted": "다운로드 시작됨",

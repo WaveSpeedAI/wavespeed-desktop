@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, useMemo, Fragment } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo, Fragment, useTransition } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { usePlaygroundStore, persistPlaygroundSession, hydratePlaygroundSession } from '@/stores/playgroundStore'
@@ -7,23 +7,21 @@ import { useApiKeyStore } from '@/stores/apiKeyStore'
 import { useTemplateStore } from '@/stores/templateStore'
 import { apiClient } from '@/api/client'
 import { DynamicForm } from '@/components/playground/DynamicForm'
-import { OutputDisplay } from '@/components/playground/OutputDisplay'
 import { ModelSelector } from '@/components/playground/ModelSelector'
 import { BatchControls } from '@/components/playground/BatchControls'
-import { BatchOutputGrid } from '@/components/playground/BatchOutputGrid'
-import { HistoryPanel } from '@/components/playground/HistoryPanel'
+import { HistoryDrawer } from '@/components/playground/HistoryDrawer'
+import { ExplorePanel } from '@/components/playground/ExplorePanel'
+import { ResultPanel } from '@/components/playground/ResultPanel'
+import { TemplatesPanel } from '@/components/playground/TemplatesPanel'
+import { FeaturedModelsPanel } from '@/components/playground/FeaturedModelsPanel'
 import { Button } from '@/components/ui/button'
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
-import { RotateCcw, Loader2, Plus, X, BookOpen, Save, Globe, Sparkles } from 'lucide-react'
+import { RotateCcw, Loader2, Plus, X, Save, Sparkles, Search, LayoutGrid, FolderOpen, Star, Globe, FileText, ChevronDown, Layers } from 'lucide-react'
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/useToast'
 import { TemplateDialog, type TemplateFormData } from '@/components/templates/TemplateDialog'
-import { TemplatePickerDialog } from '@/components/templates/TemplatePickerDialog'
+
+type RightPanelTab = 'result' | 'models' | 'featured' | 'templates'
 
 export function PlaygroundPage() {
   const { t } = useTranslation()
@@ -70,19 +68,41 @@ export function PlaygroundPage() {
   // Mobile view state: 'config' or 'output'
   const [mobileView, setMobileView] = useState<'config' | 'output'>('config')
 
-  // Tab overflow detection (Chrome-like + button behavior)
-  const tabScrollRef = useRef<HTMLDivElement>(null)
-  const [tabsOverflow, setTabsOverflow] = useState(false)
+  // Right panel tab state
+  const [rightPanelTab, setRightPanelTab] = useState<RightPanelTab>('result')
+  const [, startTransition] = useTransition()
+  const switchTab = useCallback((tab: RightPanelTab) => {
+    startTransition(() => setRightPanelTab(tab))
+  }, [])
 
-  useEffect(() => {
-    const el = tabScrollRef.current
-    if (!el) return
-    const check = () => setTabsOverflow(el.scrollWidth > el.clientWidth)
-    const ro = new ResizeObserver(check)
-    ro.observe(el)
-    check()
-    return () => ro.disconnect()
-  }, [tabs.length])
+  // Top search bar state — local for instant input, debounced for filtering
+  const [topSearchInput, setTopSearchInput] = useState('')
+  const [topSearch, setTopSearch] = useState('')
+  const topSearchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const handleTopSearchChange = useCallback((value: string) => {
+    setTopSearchInput(value)
+    if (topSearchTimerRef.current) clearTimeout(topSearchTimerRef.current)
+    topSearchTimerRef.current = setTimeout(() => setTopSearch(value), 250)
+  }, [])
+  const handleTopSearchClear = useCallback(() => {
+    setTopSearchInput('')
+    setTopSearch('')
+    if (topSearchTimerRef.current) clearTimeout(topSearchTimerRef.current)
+  }, [])
+
+  // Search scope dropdown state — independent from tab selection
+  const [searchScope, setSearchScope] = useState<'models' | 'templates'>('models')
+  const [searchScopeOpen, setSearchScopeOpen] = useState(false)
+  const handleSearchScopeChange = (scope: 'models' | 'templates') => {
+    setSearchScopeOpen(false)
+    setSearchScope(scope)
+    // Also switch to the corresponding tab
+    if (scope === 'models') switchTab('models')
+    else switchTab('templates')
+  }
+
+  // Tab scroll ref
+  const tabScrollRef = useRef<HTMLDivElement>(null)
 
   // Tab drag-and-drop state (desktop only)
   const [dragTabIndex, setDragTabIndex] = useState<number | null>(null)
@@ -331,6 +351,50 @@ export function PlaygroundPage() {
     })
   }
 
+  // Explore: select a model from the all-models list → load in current tab
+  const handleExploreSelectModel = useCallback((modelId: string) => {
+    const model = models.find(m => m.model_id === modelId)
+    if (model) {
+      setSelectedModel(model)
+      navigate(`/playground/${modelId}`)
+      switchTab('result')
+    }
+  }, [models, setSelectedModel, navigate, switchTab])
+
+  // Explore: select a featured model → open in new tab
+  const handleExploreSelectFeatured = useCallback((primaryVariant: string) => {
+    const model = models.find(m => m.model_id === primaryVariant)
+    if (model) {
+      createTab(model)
+      navigate(`/playground/${primaryVariant}`)
+      switchTab('result')
+      requestAnimationFrame(() => {
+        if (tabScrollRef.current) {
+          tabScrollRef.current.scrollLeft = tabScrollRef.current.scrollWidth
+        }
+      })
+    }
+  }, [models, createTab, navigate, switchTab])
+
+  // Templates panel: use a template
+  const handleUseTemplateFromPanel = useCallback((template: import('@/types/template').Template) => {
+    if (template.playgroundData) {
+      if (template.playgroundData.modelId && activeTab?.selectedModel?.model_id !== template.playgroundData.modelId) {
+        const model = models.find(m => m.model_id === template.playgroundData!.modelId)
+        if (model) {
+          setSelectedModel(model)
+          navigate(`/playground/${template.playgroundData.modelId}`)
+        }
+      }
+      setFormValues(template.playgroundData.values)
+      toast({
+        title: t('playground.templateLoaded'),
+        description: t('playground.loadedTemplate', { name: template.name }),
+      })
+      switchTab('result')
+    }
+  }, [activeTab, models, setSelectedModel, setFormValues, navigate, t, switchTab])
+
   const handleCloseTab = (e: React.MouseEvent, tabId: string) => {
     e.stopPropagation()
     closeTab(tabId)
@@ -346,54 +410,6 @@ export function PlaygroundPage() {
     }
   }
 
-  const handleViewDocs = () => {
-    if (activeTab?.selectedModel) {
-      // Transform model_id to docs URL format
-      // wavespeed-ai models: "wavespeed-ai/z-image/turbo" -> "wavespeed-ai/z-image-turbo"
-      // other models: "kwaivgi/kling-v2.6-pro/image-to-video" -> "kwaivgi/kwaivgi-kling-v2.6-pro-image-to-video"
-      const modelId = activeTab.selectedModel.model_id
-      const parts = modelId.split('/')
-      let formattedId: string
-      if (parts.length > 1) {
-        const org = parts[0]
-        const rest = parts.slice(1).join('-')
-        if (org === 'wavespeed-ai') {
-          formattedId = `${org}/${rest}`
-        } else {
-          // Non-wavespeed-ai models: prefix rest with org name
-          formattedId = `${org}/${org}-${rest}`
-        }
-      } else {
-        formattedId = modelId
-      }
-      const docsUrl = `https://wavespeed.ai/docs/docs-api/${formattedId}`
-      if (window.electronAPI?.openExternal) {
-        window.electronAPI.openExternal(docsUrl)
-      } else {
-        window.open(docsUrl, '_blank')
-      }
-    }
-  }
-
-  const handleViewWebPage = () => {
-    if (activeTab?.selectedModel) {
-      // Model webpage URL uses the model_id directly
-      const webUrl = `https://wavespeed.ai/models/${activeTab.selectedModel.model_id}`
-      if (window.electronAPI?.openExternal) {
-        window.electronAPI.openExternal(webUrl)
-      } else {
-        window.open(webUrl, '_blank')
-      }
-    }
-  }
-
-  const handleLoadTemplate = () => {
-    setShowTemplateDialog(true)
-  }
-
-  // Template dialog state
-  const [showTemplateDialog, setShowTemplateDialog] = useState(false)
-
   // Show loading state while API key is being loaded from storage
   // Also show loading when models are loading (needed for model selector)
   if (isLoadingApiKey || !hasAttemptedLoad || (isValidated && models.length === 0)) {
@@ -404,37 +420,59 @@ export function PlaygroundPage() {
     )
   }
 
+  const isMac = /mac/i.test(navigator.platform)
+
   return (
     <div className="flex h-full flex-col md:pt-0">
+      {/* Titlebar WebPage & Docs buttons — fixed in titlebar area */}
+      {activeTab?.selectedModel && (
+        <div className={cn(
+          'fixed top-0 z-[100] flex items-center h-8 electron-no-drag',
+          isMac ? 'right-3 gap-1' : 'right-[140px]'
+        )}>
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <a
+                href={`https://wavespeed.ai/models/${activeTab.selectedModel.model_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(
+                  'flex items-center justify-center h-8 text-muted-foreground hover:text-foreground transition-colors',
+                  isMac ? 'w-8 rounded-md hover:bg-muted/50' : 'w-[46px] hover:bg-[rgba(255,255,255,0.1)]'
+                )}
+              >
+                <Globe className="h-4 w-4" />
+              </a>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">{t('playground.webPage', 'WebPage')}</TooltipContent>
+          </Tooltip>
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <a
+                href={`https://docs.wavespeed.ai/models/${activeTab.selectedModel.model_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={cn(
+                  'flex items-center justify-center h-8 text-muted-foreground hover:text-foreground transition-colors',
+                  isMac ? 'w-8 rounded-md hover:bg-muted/50' : 'w-[46px] hover:bg-[rgba(255,255,255,0.1)]'
+                )}
+              >
+                <FileText className="h-4 w-4" />
+              </a>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">{t('playground.docs', 'Docs')}</TooltipContent>
+          </Tooltip>
+        </div>
+      )}
+
       {/* Tab Bar */}
-      <div className="backdrop-blur supports-[backdrop-filter]:bg-transparent">
-        <div className="flex items-center h-12 border-b border-border">
+      <div className="bg-background/80 border-b border-border">
+        <div className="flex items-center h-11 px-2">
           <div ref={tabScrollRef} className="flex-1 min-w-0 overflow-x-auto hide-scrollbar">
-            <div className="flex items-center px-2 w-max">
-              {/* Templates button */}
-              <Tooltip delayDuration={0}>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={handleLoadTemplate}
-                    className={cn(
-                      'h-7 w-7 rounded-md text-xs font-medium transition-colors flex items-center justify-center mr-1 shrink-0',
-                      showTemplateDialog
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
-                    )}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/><path d="M13 13h4"/><path d="M13 17h4"/>
-                    </svg>
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">{t('templates.title', 'Templates')}</TooltipContent>
-              </Tooltip>
-              <div className="w-px h-5 bg-border mr-1 shrink-0" />
+            <div className="flex items-center gap-1 h-full py-1.5 w-max">
               {tabs.map((tab, index) => (
                 <Fragment key={tab.id}>
-                  {index > 0 && <div className="w-px h-4 bg-border/70 shrink-0 mx-0.5" />}
-                <div
+                <button
                   draggable
                   onDragStart={(e) => handleDragStart(e, index)}
                   onDragOver={(e) => handleDragOver(e, index)}
@@ -445,64 +483,44 @@ export function PlaygroundPage() {
                   tabIndex={0}
                   onKeyDown={(e) => e.key === 'Enter' && handleTabClick(tab.id)}
                   className={cn(
-                    'group relative flex h-8 items-center gap-2 px-3 text-xs transition-all cursor-pointer select-none shrink-0',
-                    'first:rounded-l-md last:rounded-r-md',
-                    'hover:bg-primary/10 dark:hover:bg-muted/60',
+                    'group flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer select-none shrink-0',
                     tab.id === activeTabId
-                      ? 'bg-primary/15 dark:bg-primary/10 text-foreground font-medium'
-                      : 'bg-primary/[0.06] dark:bg-muted/20 text-muted-foreground',
+                      ? 'bg-primary/15 text-primary font-semibold border border-primary/30'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
                     dragTabIndex === index && 'opacity-40',
-                    dropTargetIndex === index && 'border-primary ring-1 ring-primary/50'
+                    dropTargetIndex === index && 'ring-1 ring-primary/50'
                   )}
                 >
-                  {tab.isRunning && (
-                    <Loader2 className="h-3 w-3 animate-spin" />
+                  {tab.isRunning ? (
+                    <Loader2 className="h-3 w-3 animate-spin shrink-0" />
+                  ) : (
+                    <Sparkles className="h-3 w-3 shrink-0" />
                   )}
-                  <Tooltip delayDuration={300}>
-                    <TooltipTrigger asChild>
-                      <span className="max-w-[150px] truncate">
-                        {tab.selectedModel?.name || t('playground.tabs.newTab')}
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">
-                      {tab.selectedModel?.name || t('playground.tabs.newTab')}
-                    </TooltipContent>
-                  </Tooltip>
-                  <button
+                  <span className="max-w-[140px] truncate">
+                    {tab.selectedModel?.name || t('playground.tabs.newTab')}
+                  </span>
+                  <span
                     onClick={(e) => handleCloseTab(e, tab.id)}
                     className={cn(
-                      'ml-1 rounded p-0.5 opacity-0 transition-opacity hover:bg-muted',
+                      'ml-0.5 rounded p-0.5 opacity-0 transition-opacity hover:bg-muted',
                       'group-hover:opacity-100',
-                      tab.id === activeTabId && 'opacity-100'
+                      tab.id === activeTabId && 'opacity-60'
                     )}
                   >
-                    <X className="h-3 w-3" />
-                  </button>
-                </div>
+                    <X className="h-2.5 w-2.5" />
+                  </span>
+                </button>
                 </Fragment>
               ))}
-              {/* + button inside scroll area: visible when tabs don't overflow */}
-              {!tabsOverflow && (
-                <button
-                  onClick={handleNewTab}
-                  className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 mx-1"
-                  title={t('playground.tabs.newTab', 'New tab')}
-                >
-                  <Plus className="h-4 w-4" />
-                </button>
-              )}
+              <button
+                onClick={handleNewTab}
+                className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors shrink-0"
+                title={t('playground.tabs.newTab', 'New tab')}
+              >
+                <Plus className="h-3.5 w-3.5" />
+              </button>
             </div>
           </div>
-          {/* + button fixed outside: visible only when tabs overflow */}
-          {tabsOverflow && (
-            <button
-              onClick={handleNewTab}
-              className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 mx-1"
-              title={t('playground.tabs.newTab', 'New tab')}
-            >
-              <Plus className="h-4 w-4" />
-            </button>
-          )}
         </div>
       </div>
 
@@ -535,27 +553,50 @@ export function PlaygroundPage() {
             </button>
           </div>
 
-          <div className="flex flex-1 flex-col overflow-hidden md:flex-row md:gap-3 md:p-3">
+          <div className="flex flex-1 flex-col overflow-hidden md:flex-row">
             {/* Left Panel - Configuration */}
             <div className={cn(
-              "w-full md:w-[430px] md:max-w-[430px] md:flex-none flex flex-col min-h-0 border-b bg-card/70 md:overflow-hidden md:rounded-xl md:border md:shadow-sm",
+              "w-full md:w-[430px] md:max-w-[430px] md:flex-none flex flex-col min-h-0 border-b bg-card/70 md:overflow-hidden md:border-r md:border-b-0",
               // Mobile: show/hide based on mobileView, full height on mobile
               mobileView === 'config' ? "flex flex-1" : "hidden md:flex"
             )}>
-            {/* Model Selector */}
-            <div className="border-b bg-background/60 p-4">
-              <div className="mb-2 flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <label className="block text-sm font-semibold text-foreground">{t('history.model')}</label>
-              </div>
-              <ModelSelector
-                models={models}
-                value={activeTab.selectedModel?.model_id}
-                onChange={handleModelChange}
-              />
+            {/* Model Header */}
+            <div className="border-b bg-background/60 px-4 py-3">
+              {activeTab.selectedModel ? (
+                <div className="space-y-2.5">
+                  {/* Model name */}
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-primary shrink-0" />
+                      <h2 className="text-base font-bold text-foreground truncate">{activeTab.selectedModel.name}</h2>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5 pl-6">
+                      {activeTab.selectedModel.type || activeTab.selectedModel.model_id}
+                    </p>
+                  </div>
+                  {/* Model selector — full width */}
+                  <ModelSelector
+                    models={models}
+                    value={activeTab.selectedModel?.model_id}
+                    onChange={handleModelChange}
+                  />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-muted-foreground" />
+                    <label className="block text-sm font-semibold text-foreground">{t('history.model')}</label>
+                  </div>
+                  <ModelSelector
+                    models={models}
+                    value={undefined}
+                    onChange={handleModelChange}
+                  />
+                </div>
+              )}
             </div>
 
-            {/* Parameters — min-h-0 + overflow-y-auto so this panel scrolls on mobile/short viewports */}
+            {/* Parameters */}
             <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3">
               {activeTab.selectedModel ? (
                 <DynamicForm
@@ -576,9 +617,9 @@ export function PlaygroundPage() {
               )}
             </div>
 
-            {/* Actions */}
-            <div className="border-t bg-background/80 p-4">
-              <div className="flex gap-2">
+            {/* Bottom: Run + actions on same row */}
+            <div className="border-t bg-background/80 px-4 py-3">
+              <div className="flex items-center gap-2">
                 <div className="flex-1">
                   <BatchControls
                     disabled={!activeTab.selectedModel}
@@ -596,134 +637,159 @@ export function PlaygroundPage() {
                         ? isPricingLoading
                           ? '...'
                           : calculatedPrice != null
-                            ? `$${calculatedPrice.toFixed(4)}`
+                            ? calculatedPrice.toFixed(4)
                             : activeTab.selectedModel.base_price != null
-                              ? `$${activeTab.selectedModel.base_price.toFixed(4)}`
+                              ? activeTab.selectedModel.base_price.toFixed(4)
                               : undefined
                         : undefined
                     }
                   />
                 </div>
-                <Button
-                  variant="outline"
+                <button
                   onClick={handleReset}
                   disabled={activeTab.isRunning}
+                  className="flex items-center justify-center w-8 h-8 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors disabled:opacity-40"
                   title={t('playground.resetForm')}
                 >
-                  <RotateCcw className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
+                  <RotateCcw className="h-3.5 w-3.5" />
+                </button>
+                <button
                   onClick={() => setShowSaveTemplateDialog(true)}
                   disabled={!activeTab.selectedModel}
+                  className="flex items-center justify-center w-8 h-8 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors disabled:opacity-40"
                   title={t('playground.saveAsTemplate')}
                 >
-                  <Save className="h-4 w-4" />
-                </Button>
+                  <Save className="h-3.5 w-3.5" />
+                </button>
               </div>
             </div>
           </div>
 
-          {/* Right Panel - Output */}
+                    {/* Right Panel */}
           <div className={cn(
-            "flex-1 flex flex-col min-w-0 overflow-hidden md:rounded-xl md:border md:bg-card/75 md:shadow-sm",
-            // Mobile: show/hide based on mobileView
+            "flex-1 flex flex-col min-w-0 overflow-hidden",
             mobileView === 'output' ? "flex" : "hidden md:flex"
           )}>
-            <div className="flex items-center justify-between border-b bg-background/60 px-4 py-3">
-              <div className="flex items-center gap-2">
-                <h2 className="font-semibold text-lg">{t('playground.output')}</h2>
-                {activeTab.currentPrediction?.timings?.inference != null && (
-                  <span className="text-sm text-muted-foreground">
-                    ({(activeTab.currentPrediction.timings.inference / 1000).toFixed(2)}s)
-                  </span>
-                )}
-              </div>
-              {activeTab.selectedModel && (
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleViewWebPage}
-                    className="bg-background/80"
+            {/* Top bar: Scope dropdown + Search */}
+            <div className="px-4 pt-6 pb-4">
+              <div className="flex items-center gap-0">
+                <div className="relative">
+                  <button
+                    onClick={() => setSearchScopeOpen(!searchScopeOpen)}
+                    className="flex items-center gap-1.5 h-[38px] px-3 min-w-[150px] rounded-l-full border border-r-0 border-border bg-accent/60 text-sm font-medium text-foreground hover:bg-accent transition-colors"
                   >
-                    <Globe className="mr-2 h-4 w-4" />
-                    {t('playground.webPage')}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleViewDocs}
-                    className="bg-background/80"
-                  >
-                    <BookOpen className="mr-2 h-4 w-4" />
-                    {t('playground.docs')}
-                  </Button>
+                    <Search className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="flex-1">{searchScope === 'models' ? t('playground.rightPanel.models', 'Models') : t('playground.rightPanel.templates', 'Templates')}</span>
+                    <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                  </button>
+                  {searchScopeOpen && (
+                    <div className="absolute top-full left-0 mt-1 w-40 rounded-lg border border-border bg-popover shadow-lg z-50 py-1">
+                      <button
+                        onClick={() => handleSearchScopeChange('models')}
+                        className={cn(
+                          'w-full text-left px-3 py-2 text-sm transition-colors',
+                          searchScope === 'models' ? 'text-primary bg-primary/10' : 'text-foreground hover:bg-muted'
+                        )}
+                      >
+                        {t('playground.rightPanel.models', 'Models')}
+                      </button>
+                      <button
+                        onClick={() => handleSearchScopeChange('templates')}
+                        className={cn(
+                          'w-full text-left px-3 py-2 text-sm transition-colors',
+                          searchScope === 'templates' ? 'text-primary bg-primary/10' : 'text-foreground hover:bg-muted'
+                        )}
+                      >
+                        {t('playground.rightPanel.templates', 'Templates')}
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-            <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
-              <div className="flex-1 min-w-0 overflow-hidden p-5 md:p-6">
-                {/* Batch Results - shown while running or when completed (not when viewing history) */}
-                {(activeTab.batchState?.isRunning || activeTab.batchResults.length > 0) && historyIndex === null ? (
-                  <BatchOutputGrid
-                    results={activeTab.batchResults}
-                    modelId={activeTab.selectedModel?.model_id}
-                    onClear={clearBatchResults}
-                    isRunning={activeTab.batchState?.isRunning}
-                    totalCount={activeTab.batchState?.queue.length}
-                    queue={activeTab.batchState?.queue}
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={topSearchInput}
+                    onChange={(e) => handleTopSearchChange(e.target.value)}
+                    placeholder={t('playground.explore.searchPlaceholder', 'Search models, LoRAs, and styles...')}
+                    className="w-full h-[38px] pl-4 pr-9 rounded-r-full border border-border bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50"
                   />
-                ) : /* Batch Preview - shown when batch mode is active but not yet run (not when viewing history) */
-                batchPreviewInputs.length > 0 && historyIndex === null ? (
-                  <BatchOutputGrid
-                    results={[]}
-                    modelId={activeTab.selectedModel?.model_id}
-                    onClear={() => {}}
-                    isRunning={false}
-                    totalCount={batchPreviewInputs.length}
-                    queue={batchPreviewInputs.map((input, index) => ({
-                      id: `preview-${index}`,
-                      index,
-                      input,
-                      status: 'pending' as const
-                    }))}
-                  />
-                ) : (
-                  /* Single output display - default */
-                  <OutputDisplay
-                    key={activeTabId}
-                    prediction={displayedPrediction}
-                    outputs={displayedOutputs}
-                    error={activeTab.error}
-                    isLoading={activeTab.isRunning}
-                    modelId={activeTab.selectedModel?.model_id}
-                  />
-                )}
+                  {topSearchInput && (
+                    <button onClick={handleTopSearchClear} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
               </div>
-              {/* History Panel - desktop: vertical sidebar, mobile: horizontal strip at bottom */}
-              {activeTab.generationHistory.length >= 1 && (
-                <>
-                  {/* Desktop vertical sidebar */}
-                  <div className="hidden md:flex shrink-0">
-                    <HistoryPanel
-                      history={activeTab.generationHistory}
-                      selectedIndex={activeTab.selectedHistoryIndex}
-                      onSelect={selectHistoryItem}
-                      direction="vertical"
-                    />
-                  </div>
-                  {/* Mobile horizontal strip */}
-                  <div className="md:hidden">
-                    <HistoryPanel
-                      history={activeTab.generationHistory}
-                      selectedIndex={activeTab.selectedHistoryIndex}
-                      onSelect={selectHistoryItem}
-                      direction="horizontal"
-                    />
-                  </div>
-                </>
-              )}
+            </div>
+
+            {/* Sub-tabs + Web/Docs links */}
+            <div className="flex items-center pl-8 pr-4 border-b border-border">
+              <div className="flex items-center gap-6 flex-1">
+                {([
+                  { key: 'result' as const, icon: <LayoutGrid className="h-4 w-4" />, label: t('playground.rightPanel.result', 'Result') },
+                  { key: 'models' as const, icon: <Layers className="h-4 w-4" />, label: t('playground.rightPanel.models', 'Models') },
+                  { key: 'featured' as const, icon: <Star className="h-4 w-4" />, label: t('playground.rightPanel.featuredModels', 'Featured Models') },
+                  { key: 'templates' as const, icon: <FolderOpen className="h-4 w-4" />, label: t('playground.rightPanel.templates', 'Templates') },
+                ] as const).map(tab => (
+                  <button
+                    key={tab.key}
+                    onClick={() => { switchTab(tab.key) }}
+                    className={cn(
+                      'relative flex items-center gap-2 pb-2.5 pt-1 text-sm font-medium transition-colors',
+                      rightPanelTab === tab.key
+                        ? 'text-primary'
+                        : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    {tab.icon}
+                    {tab.label}
+                    {rightPanelTab === tab.key && (
+                      <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-full" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Panel Content */}
+            <div className="flex-1 overflow-hidden flex flex-col">
+              {/* Keep panels mounted but hidden to avoid expensive remounts */}
+              <div className={cn('flex-1 overflow-hidden flex flex-col', rightPanelTab !== 'models' && 'hidden')}>
+                <ExplorePanel
+                  onSelectModel={handleExploreSelectModel}
+                  externalSearch={topSearch}
+                />
+              </div>
+              <div className={cn('flex-1 overflow-hidden flex flex-col', rightPanelTab !== 'featured' && 'hidden')}>
+                <FeaturedModelsPanel
+                  onSelectFeatured={handleExploreSelectFeatured}
+                  models={models}
+                />
+              </div>
+              <div className={cn('flex-1 overflow-hidden flex flex-col', rightPanelTab !== 'result' && 'hidden')}>
+                <ResultPanel
+                  prediction={displayedPrediction}
+                  outputs={displayedOutputs}
+                  error={activeTab.error}
+                  isLoading={activeTab.isRunning}
+                  modelId={activeTab.selectedModel?.model_id}
+                  batchResults={activeTab.batchResults}
+                  batchIsRunning={activeTab.batchState?.isRunning}
+                  batchTotalCount={activeTab.batchState?.queue.length}
+                  batchQueue={activeTab.batchState?.queue}
+                  onClearBatch={clearBatchResults}
+                  batchPreviewInputs={batchPreviewInputs}
+                  historyIndex={historyIndex}
+                />
+                <HistoryDrawer
+                  history={activeTab.generationHistory}
+                  selectedIndex={activeTab.selectedHistoryIndex}
+                  onSelect={selectHistoryItem}
+                />
+              </div>
+              <div className={cn('flex-1 overflow-hidden flex flex-col', rightPanelTab !== 'templates' && 'hidden')}>
+                <TemplatesPanel onUseTemplate={handleUseTemplateFromPanel} externalSearch={topSearch} />
+              </div>
             </div>
           </div>
         </div>
@@ -746,31 +812,6 @@ export function PlaygroundPage() {
         onOpenChange={setShowSaveTemplateDialog}
         mode="create"
         onSave={handleSaveTemplate}
-      />
-
-      {/* Template Picker Dialog */}
-      <TemplatePickerDialog
-        open={showTemplateDialog}
-        onOpenChange={setShowTemplateDialog}
-        templateType="playground"
-        onUseTemplate={(template) => {
-          if (template.playgroundData) {
-            // Switch model if needed
-            if (template.playgroundData.modelId && activeTab?.selectedModel?.model_id !== template.playgroundData.modelId) {
-              const model = models.find(m => m.model_id === template.playgroundData!.modelId)
-              if (model) {
-                setSelectedModel(model)
-                navigate(`/playground/${template.playgroundData.modelId}`)
-              }
-            }
-            // Apply form values
-            setFormValues(template.playgroundData.values)
-            toast({
-              title: t('playground.templateLoaded'),
-              description: t('playground.loadedTemplate', { name: template.name }),
-            })
-          }
-        }}
       />
 
     </div>

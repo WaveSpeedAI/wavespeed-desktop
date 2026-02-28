@@ -16,6 +16,7 @@ interface TemplateGalleryProps {
   onExportTemplate?: (template: Template) => void
   initialFilter?: TemplateFilter
   showFilters?: boolean
+  externalSearch?: string
 }
 
 export function TemplateGallery({
@@ -24,36 +25,40 @@ export function TemplateGallery({
   onDeleteTemplate,
   onExportTemplate,
   initialFilter = {},
-  showFilters = true
+  showFilters = true,
+  externalSearch,
 }: TemplateGalleryProps) {
   const { t } = useTranslation()
   const { templates, isLoading, error, loadTemplates, toggleFavorite, setFilter, currentFilter } = useTemplateStore()
   const [searchQuery, setSearchQuery] = useState('')
   const prevSearchRef = useRef(searchQuery)
 
+  // Use external search when provided, otherwise use internal
+  const effectiveSearch = externalSearch !== undefined ? externalSearch : searchQuery
+
   // Sync filter whenever initialFilter props change
   useEffect(() => {
-    const filter = { ...initialFilter, search: searchQuery }
+    const filter = { ...initialFilter, search: effectiveSearch }
     setFilter(filter)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialFilter?.templateType, initialFilter?.type, initialFilter?.category, initialFilter?.isFavorite])
 
   // Update filter when search query changes (skip initial mount)
   useEffect(() => {
-    if (prevSearchRef.current === searchQuery) return
-    prevSearchRef.current = searchQuery
+    if (prevSearchRef.current === effectiveSearch) return
+    prevSearchRef.current = effectiveSearch
     // Use store's current filter to avoid stale closure
     const storeFilter = useTemplateStore.getState().currentFilter
-    setFilter({ ...storeFilter, search: searchQuery })
+    setFilter({ ...storeFilter, search: effectiveSearch })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery])
+  }, [effectiveSearch])
 
   const handleFilterChange = (newFilter: TemplateFilter) => {
-    setFilter({ ...newFilter, search: searchQuery })
+    setFilter({ ...newFilter, search: effectiveSearch })
   }
 
   const handleClearFilters = () => {
-    setFilter({ search: searchQuery })
+    setFilter({ search: effectiveSearch })
   }
 
   const handleToggleFavorite = async (template: Template) => {
@@ -94,17 +99,19 @@ export function TemplateGallery({
       )}
 
       {/* Main Content */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 flex flex-col">
         {/* Search and Filters Bar */}
         <div className="mb-6">
           <div className="flex items-center gap-3">
-            {/* Search Bar */}
-            <div className="w-64">
-              <TemplateSearch
-                value={searchQuery}
-                onChange={setSearchQuery}
-              />
-            </div>
+            {/* Search Bar — hidden when external search is provided */}
+            {externalSearch === undefined && (
+              <div className="w-64">
+                <TemplateSearch
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                />
+              </div>
+            )}
 
             {/* Sort By Dropdown */}
             <div className="relative">
@@ -135,7 +142,7 @@ export function TemplateGallery({
               <FolderOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
               <h3 className="text-lg font-medium mb-2">{t('templates.noTemplates')}</h3>
               <p className="text-sm text-muted-foreground">
-                {searchQuery || currentFilter.templateType || currentFilter.type || currentFilter.isFavorite
+                {effectiveSearch || currentFilter.templateType || currentFilter.type || currentFilter.isFavorite
                   ? t('templates.noResultsDesc')
                   : t('templates.noTemplatesDesc')}
               </p>
@@ -145,8 +152,8 @@ export function TemplateGallery({
 
         {/* Templates Grid */}
         {!isLoading && templates.length > 0 && (
-          <ScrollArea className="h-[calc(100vh-12rem)]">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-4">
+          <ScrollArea className="flex-1">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4 pb-4">
               {templates.map((template) => (
                 <TemplateCard
                   key={template.id}

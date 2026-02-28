@@ -70,12 +70,12 @@ export function BatchControls({
   })()
 
   return (
-    <div className="flex rounded-xl border border-transparent shadow-sm">
+    <div className="flex rounded-lg border border-transparent shadow-sm">
       {/* Main Run Button */}
       <Button
         className={cn(
-          'flex-1 gradient-bg hover:opacity-90 transition-opacity',
-          'rounded-r-none border-r border-r-white/20 shadow-none'
+          'flex-1 h-9 text-sm bg-primary hover:bg-primary/90 text-primary-foreground transition-colors',
+          'rounded-r-none border-r border-r-primary-foreground/20 shadow-none'
         )}
         onClick={onRun}
         disabled={disabled || isRunning || isUploading}
@@ -90,7 +90,7 @@ export function BatchControls({
             <Play className="mr-2 h-4 w-4" />
             {displayLabel}
             {displayPrice && (
-              <span className="ml-2 rounded-full bg-white/20 px-2 py-0.5 text-[11px] font-medium">{displayPrice}</span>
+              <span className="ml-2 rounded-full bg-primary-foreground/15 px-2 py-0.5 text-[11px] font-semibold tracking-wide">${displayPrice}</span>
             )}
           </>
         )}
@@ -101,8 +101,8 @@ export function BatchControls({
         <DropdownMenuTrigger asChild>
           <Button
             className={cn(
-              'gradient-bg hover:opacity-90 transition-opacity',
-              'rounded-l-none px-2 shadow-none'
+              'bg-primary hover:bg-primary/90 text-primary-foreground transition-colors',
+              'rounded-l-none px-1.5 h-9 shadow-none'
             )}
             disabled={disabled || isRunning || isUploading}
           >

@@ -263,7 +263,25 @@
     },
     "history": {
       "title": "History"
-    }
+    },
+    "rightPanel": {
+      "explore": "Explore",
+      "allModels": "All Models",
+      "models": "Models",
+      "featuredModels": "Featured Models",
+      "resultsHub": "Results Hub",
+      "result": "Result",
+      "templates": "Templates",
+      "assets": "My Assets"
+    },
+    "explore": {
+      "searchPlaceholder": "Search models, LoRAs, and styles...",
+      "all": "All",
+      "allModels": "All Models",
+      "searchResults": "{{count}} results"
+    },
+    "recentGenerations": "Recent Generations",
+    "viewAll": "View All"
   },
   "history": {
     "title": "History",

@@ -14,6 +14,7 @@ interface TemplateBrowserProps {
   onEditTemplate?: (template: Template) => void
   onDeleteTemplate?: (template: Template) => void
   onExportTemplate?: (template: Template) => void
+  externalSearch?: string // search from top bar
 }
 
 export function TemplateBrowser({
@@ -22,6 +23,7 @@ export function TemplateBrowser({
   onEditTemplate,
   onDeleteTemplate,
   onExportTemplate,
+  externalSearch,
 }: TemplateBrowserProps) {
   const { t } = useTranslation()
   const [sourceFilter, setSourceFilter] = useState<'public' | 'custom' | 'favorites' | undefined>(undefined)
@@ -104,6 +106,7 @@ export function TemplateBrowser({
             onDeleteTemplate={onDeleteTemplate}
             onExportTemplate={onExportTemplate}
             showFilters={false}
+            externalSearch={externalSearch}
           />
         </div>
       </div>

@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/tooltip'
 import {
   Home,
-  LayoutGrid,
   PlayCircle,
   FolderOpen,
   History,
@@ -22,7 +21,6 @@ import {
   FolderHeart,
   Sparkles,
   GitBranch,
-  Star,
   X
 } from 'lucide-react'
 
@@ -63,16 +61,6 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
       titleKey: 'nav.home',
       href: '/',
       icon: Home
-    },
-    {
-      titleKey: 'nav.featuredModels',
-      href: '/featured-models',
-      icon: Star
-    },
-    {
-      titleKey: 'nav.models',
-      href: '/models',
-      icon: LayoutGrid
     },
     {
       titleKey: 'nav.playground',

@@ -2,7 +2,6 @@ import { useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { Layout } from '@/components/layout/Layout'
 import { WelcomePage } from '@/pages/WelcomePage'
-import { ModelsPage } from '@/pages/ModelsPage'
 import { PlaygroundPage } from '@/pages/PlaygroundPage'
 import { TemplatesPage } from '@/pages/TemplatesPage'
 import { HistoryPage } from '@/pages/HistoryPage'
@@ -65,7 +64,6 @@ function App() {
         <Route index element={<WelcomePage />} />
         <Route path="featured-models" element={<FeaturedModelsPage />} />
         <Route path="featured-models/:familyId" element={<SmartPlaygroundPage />} />
-        <Route path="models" element={<ModelsPage />} />
         <Route path="playground" element={<PlaygroundPage />} />
         <Route path="playground/*" element={<PlaygroundPage />} />
         <Route path="templates" element={<TemplatesPage />} />

@@ -406,7 +406,8 @@ export function ZImagePage() {
         modelId: 'local/z-image',
         predictionId,
         originalUrl: imageUrl,
-        resultIndex: 0
+        resultIndex: 0,
+        source: 'z-image'
       })
 
     } catch (err) {

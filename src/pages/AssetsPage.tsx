@@ -59,7 +59,7 @@ import {
   EyeOff,
   Tag,
   X,
-  Filter,
+  SlidersHorizontal,
   CheckSquare,
   Square,
   Plus,
@@ -69,6 +69,8 @@ import {
   Sparkles,
   FolderHeart,
   GitBranch,
+  Wrench,
+  Cpu,
 } from 'lucide-react'
 import type { AssetMetadata, AssetType, AssetSortBy, AssetsFilter } from '@/types/asset'
 
@@ -653,7 +655,7 @@ export function AssetsPage() {
             onClick={() => setShowFilters(!showFilters)}
             className="h-9 w-9 rounded-lg"
           >
-            <Filter className="h-4 w-4" />
+            <SlidersHorizontal className="h-4 w-4" />
           </Button>
           <div className="flex-1" />
           {isSelectionMode ? (
@@ -732,43 +734,82 @@ export function AssetsPage() {
 
         {/* Filter Panel */}
         {showFilters && (
-          <div className="mt-4 space-y-4 rounded-xl border border-border/70 bg-card/70 p-4 shadow-sm">
-            <div className="flex items-center justify-between">
-              <h3 className="font-medium">{t('assets.filters')}</h3>
-              <Button variant="ghost" size="sm" onClick={handleClearFilters}>
-                {t('assets.clearFilters')}
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
-              {/* Type filters */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">{t('assets.filterByType')}</Label>
-                <div className="space-y-1">
-                  {(['image', 'video', 'audio', 'text'] as AssetType[]).map((type) => (
-                    <div key={type} className="flex items-center gap-2">
-                      <Checkbox
-                        id={`type-${type}`}
-                        checked={(filter.types || []).includes(type)}
-                        onCheckedChange={(checked) => handleTypeFilterChange(type, !!checked)}
-                      />
-                      <Label htmlFor={`type-${type}`} className="text-sm flex items-center gap-1">
-                        <AssetTypeIcon type={type} className="h-3 w-3" />
+          <div className="mt-3 space-y-2.5">
+            {/* Row 1: Type & Source pills */}
+            <div className="flex flex-wrap items-start gap-6 rounded-lg border border-border/50 bg-card/40 px-4 py-3">
+              {/* Type */}
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-wider">{t('assets.filterByType')}</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {(['image', 'video', 'audio', 'text'] as AssetType[]).map((type) => {
+                    const isActive = (filter.types || []).includes(type)
+                    return (
+                      <button
+                        key={type}
+                        onClick={() => handleTypeFilterChange(type, !isActive)}
+                        className={cn(
+                          'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs transition-colors',
+                          'cursor-pointer select-none border',
+                          isActive
+                            ? 'border-primary/40 bg-primary/10 text-primary'
+                            : 'border-transparent text-muted-foreground hover:bg-accent/50 hover:text-foreground'
+                        )}
+                      >
+                        <AssetTypeIcon type={type} className="h-3.5 w-3.5" />
                         {t(`assets.typesPlural.${type}`)}
-                      </Label>
-                    </div>
-                  ))}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 
-              {/* Model filter */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">{t('assets.filterByModel')}</Label>
+              {/* Source */}
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-wider">{t('assets.filterBySource', 'Source')}</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {([
+                    { value: 'playground' as const, label: 'Playground', icon: Sparkles },
+                    { value: 'workflow' as const, label: 'Workflow', icon: GitBranch },
+                    { value: 'free-tool' as const, label: 'Free Tool', icon: Wrench },
+                    { value: 'z-image' as const, label: 'Z-Image', icon: Cpu },
+                  ]).map(({ value, label, icon: Icon }) => {
+                    const isActive = (filter.sources || []).includes(value)
+                    return (
+                      <button
+                        key={value}
+                        onClick={() => {
+                          setFilter(f => {
+                            const current = f.sources || []
+                            return { ...f, sources: isActive ? current.filter(s => s !== value) : [...current, value] }
+                          })
+                        }}
+                        className={cn(
+                          'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs transition-colors',
+                          'cursor-pointer select-none border',
+                          isActive
+                            ? 'border-primary/40 bg-primary/10 text-primary'
+                            : 'border-transparent text-muted-foreground hover:bg-accent/50 hover:text-foreground'
+                        )}
+                      >
+                        <Icon className="h-3.5 w-3.5" />
+                        {label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Row 2: Model, Favorites, Clear */}
+            <div className="flex flex-wrap items-center gap-4 px-1">
+              {/* Model dropdown */}
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-wider">{t('assets.filterByModel')}</span>
                 <Select
                   value={(filter.models && filter.models[0]) || 'all'}
                   onValueChange={handleModelFilterChange}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-7 w-[160px] text-xs border-border/40 bg-card/40 rounded-md">
                     <SelectValue placeholder={t('assets.allModels')} />
                   </SelectTrigger>
                   <SelectContent>
@@ -782,46 +823,31 @@ export function AssetsPage() {
                 </Select>
               </div>
 
-              {/* Favorites filter */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">{t('assets.favorites')}</Label>
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="favorites-only"
-                    checked={filter.favoritesOnly || false}
-                    onCheckedChange={(checked) => handleFavoritesFilterChange(!!checked)}
-                  />
-                  <Label htmlFor="favorites-only" className="text-sm">
-                    {t('assets.showFavoritesOnly')}
-                  </Label>
-                </div>
-              </div>
+              <div className="h-4 w-px bg-border/30" />
 
-              {/* Source filter */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">{t('assets.filterBySource', 'Source')}</Label>
-                <div className="space-y-1">
-                  {([
-                    { value: 'playground' as const, label: 'Playground' },
-                    { value: 'workflow' as const, label: 'Workflow' },
-                    { value: 'free-tool' as const, label: 'Free Tool' },
-                  ]).map(({ value, label }) => (
-                    <div key={value} className="flex items-center gap-2">
-                      <Checkbox
-                        id={`source-${value}`}
-                        checked={(filter.sources || []).includes(value)}
-                        onCheckedChange={(checked) => {
-                          setFilter(f => {
-                            const current = f.sources || []
-                            return { ...f, sources: checked ? [...current, value] : current.filter(s => s !== value) }
-                          })
-                        }}
-                      />
-                      <Label htmlFor={`source-${value}`} className="text-sm">{label}</Label>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              {/* Favorites toggle */}
+              <button
+                onClick={() => handleFavoritesFilterChange(!filter.favoritesOnly)}
+                className={cn(
+                  'inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs transition-colors',
+                  'cursor-pointer select-none',
+                  filter.favoritesOnly
+                    ? 'text-yellow-400'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <Star className={cn('h-3.5 w-3.5', filter.favoritesOnly && 'fill-current')} />
+                {t('assets.showFavoritesOnly')}
+              </button>
+
+              {/* Clear filters */}
+              <button
+                onClick={handleClearFilters}
+                className="ml-auto inline-flex items-center gap-1 text-[11px] text-muted-foreground/40 hover:text-muted-foreground transition-colors cursor-pointer select-none"
+              >
+                <X className="h-3 w-3" />
+                {t('assets.clearFilters')}
+              </button>
             </div>
           </div>
         )}

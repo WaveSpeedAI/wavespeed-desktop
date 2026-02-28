@@ -28,7 +28,7 @@ interface AssetMetadata {
   tags: string[]
   favorite: boolean
   originalUrl?: string
-  source?: 'workflow' | 'playground' | 'free-tool'
+  source?: 'workflow' | 'playground' | 'free-tool' | 'z-image'
   workflowId?: string
   workflowName?: string
   nodeId?: string

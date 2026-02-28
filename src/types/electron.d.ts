@@ -46,7 +46,7 @@ export interface AssetMetadataElectron {
   favorite: boolean
   predictionId?: string
   originalUrl?: string
-  source?: 'playground' | 'workflow' | 'free-tool'
+  source?: 'playground' | 'workflow' | 'free-tool' | 'z-image'
   workflowId?: string
   workflowName?: string
   nodeId?: string

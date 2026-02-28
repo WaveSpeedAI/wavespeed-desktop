@@ -344,7 +344,8 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
       tags: [],
       favorite: false,
       predictionId: options.predictionId,
-      originalUrl: options.originalUrl
+      originalUrl: options.originalUrl,
+      source: options.source
     }
 
     set(state => {
@@ -437,7 +438,10 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
 
     // Filter by source
     if (filter.sources && filter.sources.length > 0) {
-      filtered = filtered.filter(a => filter.sources!.includes(a.source ?? 'playground'))
+      filtered = filtered.filter(a => {
+        const source = a.source ?? (a.modelId === 'local/z-image' ? 'z-image' : 'playground')
+        return filter.sources!.includes(source)
+      })
     }
 
     // Filter by date range

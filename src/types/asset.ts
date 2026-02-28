@@ -2,7 +2,7 @@ export type AssetType = 'image' | 'video' | 'audio' | 'text' | 'json'
 
 export type AssetSortBy = 'date-desc' | 'date-asc' | 'name-asc' | 'name-desc' | 'size-desc' | 'size-asc'
 
-export type AssetSource = 'playground' | 'workflow' | 'free-tool'
+export type AssetSource = 'playground' | 'workflow' | 'free-tool' | 'z-image'
 
 export interface AssetMetadata {
   id: string

@@ -383,9 +383,9 @@ export function FormField({ field, value, onChange, disabled = false, error, mod
             </Label>
           </span>
           {tooltipDescription && field.description && field.type !== 'text' && field.type !== 'textarea' && (
-            <Tooltip>
+            <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
-                <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help shrink-0" />
+                <Info className="h-3.5 w-3.5 text-muted-foreground shrink-0 translate-y-px" />
               </TooltipTrigger>
               <TooltipContent side="top" className="max-w-[280px]">
                 <p className="text-xs">{field.description}{field.min !== undefined && field.max !== undefined ? ` (${field.min} - ${field.max})` : ''}</p>

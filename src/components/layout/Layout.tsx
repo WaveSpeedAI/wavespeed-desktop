@@ -6,7 +6,7 @@ import { AppLogo } from './AppLogo'
 import { PageResetContext } from './PageResetContext'
 import { Toaster } from '@/components/ui/toaster'
 import { UpdateBanner } from './UpdateBanner'
-import { TooltipProvider } from '@/components/ui/tooltip'
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { ToastAction } from '@/components/ui/toast'
 import { toast } from '@/hooks/useToast'
 import { useApiKeyStore } from '@/stores/apiKeyStore'
@@ -14,7 +14,7 @@ import { apiClient } from '@/api/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { KeyRound, Eye, EyeOff, Loader2, Zap, ExternalLink } from 'lucide-react'
+import { KeyRound, Eye, EyeOff, Loader2, Zap, ExternalLink, Globe, FileText } from 'lucide-react'
 import { VideoEnhancerPage } from '@/pages/VideoEnhancerPage'
 import { ImageEnhancerPage } from '@/pages/ImageEnhancerPage'
 import { BackgroundRemoverPage } from '@/pages/BackgroundRemoverPage'
@@ -280,6 +280,47 @@ export function Layout() {
               <AppLogo className="h-5 w-5 shrink-0" />
             </div>
           )}
+          {/* Global WebPage & Docs buttons */}
+          <div className={
+            /mac/i.test(navigator.platform)
+              ? 'absolute right-3 top-0 bottom-0 flex items-center gap-1 electron-no-drag'
+              : 'absolute right-[140px] top-0 bottom-0 flex items-center electron-no-drag'
+          }>
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <a
+                  href="https://wavespeed.ai/dashboard"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={
+                    /mac/i.test(navigator.platform)
+                      ? 'flex items-center justify-center h-8 w-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors'
+                      : 'flex items-center justify-center h-8 w-[46px] text-muted-foreground hover:text-foreground hover:bg-[rgba(255,255,255,0.1)] transition-colors'
+                  }
+                >
+                  <Globe className="h-4 w-4" />
+                </a>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">{t('playground.webPage', 'WebPage')}</TooltipContent>
+            </Tooltip>
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <a
+                  href="https://wavespeed.ai/docs"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={
+                    /mac/i.test(navigator.platform)
+                      ? 'flex items-center justify-center h-8 w-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors'
+                      : 'flex items-center justify-center h-8 w-[46px] text-muted-foreground hover:text-foreground hover:bg-[rgba(255,255,255,0.1)] transition-colors'
+                  }
+                >
+                  <FileText className="h-4 w-4" />
+                </a>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">{t('playground.docs', 'Docs')}</TooltipContent>
+            </Tooltip>
+          </div>
         </div>
         )}
         <div className="flex flex-1 overflow-hidden">

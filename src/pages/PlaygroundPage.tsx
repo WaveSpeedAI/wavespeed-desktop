@@ -15,7 +15,7 @@ import { ResultPanel } from '@/components/playground/ResultPanel'
 import { TemplatesPanel } from '@/components/playground/TemplatesPanel'
 import { FeaturedModelsPanel } from '@/components/playground/FeaturedModelsPanel'
 import { Button } from '@/components/ui/button'
-import { RotateCcw, Loader2, Plus, X, Save, Sparkles, Search, LayoutGrid, FolderOpen, Star, Globe, FileText, ChevronDown, Layers } from 'lucide-react'
+import { RotateCcw, Loader2, Plus, X, Save, Sparkles, Search, LayoutGrid, FolderOpen, Star, ChevronDown, Layers } from 'lucide-react'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/useToast'
@@ -420,51 +420,8 @@ export function PlaygroundPage() {
     )
   }
 
-  const isMac = /mac/i.test(navigator.platform)
-
   return (
     <div className="flex h-full flex-col md:pt-0">
-      {/* Titlebar WebPage & Docs buttons — fixed in titlebar area */}
-      {activeTab?.selectedModel && (
-        <div className={cn(
-          'fixed top-0 z-[100] flex items-center h-8 electron-no-drag',
-          isMac ? 'right-3 gap-1' : 'right-[140px]'
-        )}>
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <a
-                href={`https://wavespeed.ai/models/${activeTab.selectedModel.model_id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={cn(
-                  'flex items-center justify-center h-8 text-muted-foreground hover:text-foreground transition-colors',
-                  isMac ? 'w-8 rounded-md hover:bg-muted/50' : 'w-[46px] hover:bg-[rgba(255,255,255,0.1)]'
-                )}
-              >
-                <Globe className="h-4 w-4" />
-              </a>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">{t('playground.webPage', 'WebPage')}</TooltipContent>
-          </Tooltip>
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <a
-                href={`https://docs.wavespeed.ai/models/${activeTab.selectedModel.model_id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={cn(
-                  'flex items-center justify-center h-8 text-muted-foreground hover:text-foreground transition-colors',
-                  isMac ? 'w-8 rounded-md hover:bg-muted/50' : 'w-[46px] hover:bg-[rgba(255,255,255,0.1)]'
-                )}
-              >
-                <FileText className="h-4 w-4" />
-              </a>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">{t('playground.docs', 'Docs')}</TooltipContent>
-          </Tooltip>
-        </div>
-      )}
-
       {/* Tab Bar */}
       <div className="bg-background/80 border-b border-border">
         <div className="flex items-center h-11 px-2">

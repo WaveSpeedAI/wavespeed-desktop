@@ -1,18 +1,18 @@
-import { useState, useEffect, useRef } from 'react'
-import { useTranslation } from 'react-i18next'
-import type { GenerationHistoryItem } from '@/types/prediction'
-import { cn } from '@/lib/utils'
-import { ChevronUp, ChevronDown, History } from 'lucide-react'
+import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
+import type { GenerationHistoryItem } from "@/types/prediction";
+import { cn } from "@/lib/utils";
+import { ChevronUp, ChevronDown, History } from "lucide-react";
 
 interface HistoryDrawerProps {
-  history: GenerationHistoryItem[]
-  selectedIndex: number | null
-  onSelect: (index: number | null) => void
+  history: GenerationHistoryItem[];
+  selectedIndex: number | null;
+  onSelect: (index: number | null) => void;
 }
 
 function ThumbnailContent({ item }: { item: GenerationHistoryItem }) {
   if (item.thumbnailUrl) {
-    if (item.thumbnailType === 'video') {
+    if (item.thumbnailType === "video") {
       return (
         <video
           src={item.thumbnailUrl}
@@ -21,7 +21,7 @@ function ThumbnailContent({ item }: { item: GenerationHistoryItem }) {
           playsInline
           preload="metadata"
         />
-      )
+      );
     }
     return (
       <img
@@ -30,30 +30,34 @@ function ThumbnailContent({ item }: { item: GenerationHistoryItem }) {
         className="w-full h-full object-cover"
         loading="lazy"
       />
-    )
+    );
   }
   return (
     <div className="w-full h-full flex items-center justify-center text-muted-foreground text-[10px]">
       No preview
     </div>
-  )
+  );
 }
 
-export function HistoryDrawer({ history, selectedIndex, onSelect }: HistoryDrawerProps) {
-  const { t } = useTranslation()
-  const [isExpanded, setIsExpanded] = useState(false)
-  const prevLenRef = useRef(history.length)
+export function HistoryDrawer({
+  history,
+  selectedIndex,
+  onSelect,
+}: HistoryDrawerProps) {
+  const { t } = useTranslation();
+  const [isExpanded, setIsExpanded] = useState(false);
+  const prevLenRef = useRef(history.length);
 
   // Auto-expand when new items arrive
   useEffect(() => {
     if (history.length > prevLenRef.current) {
-      setIsExpanded(true)
+      setIsExpanded(true);
     }
-    prevLenRef.current = history.length
-  }, [history.length])
+    prevLenRef.current = history.length;
+  }, [history.length]);
 
   // Hide entirely when no history
-  if (history.length === 0) return null
+  if (history.length === 0) return null;
 
   return (
     <div className="border-t bg-card/80 backdrop-blur shrink-0">
@@ -74,10 +78,10 @@ export function HistoryDrawer({ history, selectedIndex, onSelect }: HistoryDrawe
       {/* Header row */}
       <div className="flex items-center justify-between px-4 pb-1.5">
         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {t('playground.recentGenerations', 'Recent Generations')}
+          {t("playground.recentGenerations", "Recent Generations")}
         </span>
         <span className="text-[10px] text-muted-foreground/70">
-          {history.length} {history.length === 1 ? 'item' : 'items'}
+          {history.length} {history.length === 1 ? "item" : "items"}
         </span>
       </div>
 
@@ -89,12 +93,12 @@ export function HistoryDrawer({ history, selectedIndex, onSelect }: HistoryDrawe
               key={item.id}
               onClick={() => onSelect(selectedIndex === index ? null : index)}
               className={cn(
-                'relative shrink-0 w-[72px] h-[72px] rounded-lg overflow-hidden bg-muted border-2 transition-all hover:scale-105',
+                "relative shrink-0 w-[72px] h-[72px] rounded-lg overflow-hidden bg-muted border-2 transition-all hover:scale-105",
                 selectedIndex === index
-                  ? 'border-primary shadow-md shadow-primary/20'
+                  ? "border-primary shadow-md shadow-primary/20"
                   : index === 0 && selectedIndex === null
-                    ? 'border-primary/40'
-                    : 'border-transparent hover:border-muted-foreground/30'
+                    ? "border-primary/40"
+                    : "border-transparent hover:border-muted-foreground/30",
               )}
             >
               <ThumbnailContent item={item} />
@@ -109,10 +113,12 @@ export function HistoryDrawer({ history, selectedIndex, onSelect }: HistoryDrawe
             className="shrink-0 w-[72px] h-[72px] rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground hover:border-muted-foreground/50 transition-colors"
           >
             <History className="h-4 w-4" />
-            <span className="text-[10px] font-medium">{t('playground.viewAll', 'View All')}</span>
+            <span className="text-[10px] font-medium">
+              {t("playground.viewAll", "View All")}
+            </span>
           </button>
         </div>
       )}
     </div>
-  )
+  );
 }

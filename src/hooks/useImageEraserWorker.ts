@@ -1,256 +1,270 @@
-import { useRef, useCallback, useEffect } from 'react'
-import type { ProgressDetail } from '@/types/progress'
-import { getDownloadTimeoutMs } from '@/stores/settingsStore'
+import { useRef, useCallback, useEffect } from "react";
+import type { ProgressDetail } from "@/types/progress";
+import { getDownloadTimeoutMs } from "@/stores/settingsStore";
 
 interface WorkerMessage {
-  type: 'phase' | 'progress' | 'ready' | 'result' | 'error' | 'disposed'
-  payload?: unknown
+  type: "phase" | "progress" | "ready" | "result" | "error" | "disposed";
+  payload?: unknown;
 }
 
 interface PhasePayload {
-  phase: string
-  id: number
+  phase: string;
+  id: number;
 }
 
 interface ProgressPayload {
-  phase: string
-  progress: number
-  detail?: ProgressDetail
-  id: number
+  phase: string;
+  progress: number;
+  detail?: ProgressDetail;
+  id: number;
 }
 
 interface ReadyPayload {
-  id: number
+  id: number;
 }
 
 interface ResultPayload {
-  data: Float32Array
-  width: number
-  height: number
-  id: number
+  data: Float32Array;
+  width: number;
+  height: number;
+  id: number;
 }
 
 export interface EraserResult {
-  data: Float32Array
-  width: number
-  height: number
+  data: Float32Array;
+  width: number;
+  height: number;
 }
 
 interface UseImageEraserWorkerOptions {
-  onPhase?: (phase: string) => void
-  onProgress?: (phase: string, progress: number, detail?: ProgressDetail) => void
-  onReady?: () => void
-  onError?: (error: string) => void
+  onPhase?: (phase: string) => void;
+  onProgress?: (
+    phase: string,
+    progress: number,
+    detail?: ProgressDetail,
+  ) => void;
+  onReady?: () => void;
+  onError?: (error: string) => void;
 }
 
-export function useImageEraserWorker(options: UseImageEraserWorkerOptions = {}) {
-  const workerRef = useRef<Worker | null>(null)
+export function useImageEraserWorker(
+  options: UseImageEraserWorkerOptions = {},
+) {
+  const workerRef = useRef<Worker | null>(null);
   const callbacksRef = useRef<Map<number, (result: EraserResult) => void>>(
-    new Map()
-  )
-  const readyCallbacksRef = useRef<Map<number, () => void>>(new Map())
-  const idCounterRef = useRef(0)
-  const optionsRef = useRef(options)
-  const isInitializedRef = useRef(false)
-  const hasFailedRef = useRef(false)
+    new Map(),
+  );
+  const readyCallbacksRef = useRef<Map<number, () => void>>(new Map());
+  const idCounterRef = useRef(0);
+  const optionsRef = useRef(options);
+  const isInitializedRef = useRef(false);
+  const hasFailedRef = useRef(false);
 
   // Keep options ref up to date
-  optionsRef.current = options
+  optionsRef.current = options;
 
   const createWorker = useCallback(() => {
     if (workerRef.current) {
-      workerRef.current.terminate()
+      workerRef.current.terminate();
     }
-    isInitializedRef.current = false
-    hasFailedRef.current = false
+    isInitializedRef.current = false;
+    hasFailedRef.current = false;
 
     workerRef.current = new Worker(
-      new URL('../workers/imageEraser.worker.ts', import.meta.url),
-      { type: 'module' }
-    )
+      new URL("../workers/imageEraser.worker.ts", import.meta.url),
+      { type: "module" },
+    );
 
     workerRef.current.onmessage = (e: MessageEvent<WorkerMessage>) => {
-      const { type, payload } = e.data
+      const { type, payload } = e.data;
 
       switch (type) {
-        case 'phase': {
-          const { phase } = payload as PhasePayload
-          optionsRef.current.onPhase?.(phase)
-          break
+        case "phase": {
+          const { phase } = payload as PhasePayload;
+          optionsRef.current.onPhase?.(phase);
+          break;
         }
-        case 'progress': {
-          const { phase, progress, detail } = payload as ProgressPayload
-          optionsRef.current.onProgress?.(phase, progress, detail)
-          break
+        case "progress": {
+          const { phase, progress, detail } = payload as ProgressPayload;
+          optionsRef.current.onProgress?.(phase, progress, detail);
+          break;
         }
-        case 'ready': {
-          const { id } = payload as ReadyPayload
-          isInitializedRef.current = true
-          optionsRef.current.onReady?.()
-          const callback = readyCallbacksRef.current.get(id)
+        case "ready": {
+          const { id } = payload as ReadyPayload;
+          isInitializedRef.current = true;
+          optionsRef.current.onReady?.();
+          const callback = readyCallbacksRef.current.get(id);
           if (callback) {
-            callback()
-            readyCallbacksRef.current.delete(id)
+            callback();
+            readyCallbacksRef.current.delete(id);
           }
-          break
+          break;
         }
-        case 'result': {
-          const { data, width, height, id } = payload as ResultPayload
-          const callback = callbacksRef.current.get(id)
+        case "result": {
+          const { data, width, height, id } = payload as ResultPayload;
+          const callback = callbacksRef.current.get(id);
           if (callback) {
-            callback({ data, width, height })
-            callbacksRef.current.delete(id)
+            callback({ data, width, height });
+            callbacksRef.current.delete(id);
           }
-          break
+          break;
         }
-        case 'error':
-          hasFailedRef.current = true
-          optionsRef.current.onError?.(payload as string)
+        case "error":
+          hasFailedRef.current = true;
+          optionsRef.current.onError?.(payload as string);
           // Reject all pending callbacks
           for (const [id] of callbacksRef.current) {
-            callbacksRef.current.delete(id)
+            callbacksRef.current.delete(id);
           }
           for (const [id] of readyCallbacksRef.current) {
-            readyCallbacksRef.current.delete(id)
+            readyCallbacksRef.current.delete(id);
           }
-          break
+          break;
       }
-    }
-  }, [])
+    };
+  }, []);
 
   const ensureWorker = useCallback(() => {
     if (!workerRef.current) {
-      createWorker()
+      createWorker();
     }
-  }, [createWorker])
+  }, [createWorker]);
 
   // Initialize worker
   useEffect(() => {
-    createWorker()
+    createWorker();
 
     return () => {
-      workerRef.current?.postMessage({ type: 'dispose' })
-      workerRef.current?.terminate()
-      workerRef.current = null
-      isInitializedRef.current = false
-    }
-  }, [createWorker])
+      workerRef.current?.postMessage({ type: "dispose" });
+      workerRef.current?.terminate();
+      workerRef.current = null;
+      isInitializedRef.current = false;
+    };
+  }, [createWorker]);
 
   const initModel = useCallback((): Promise<void> => {
     return new Promise((resolve, reject) => {
-      ensureWorker()
+      ensureWorker();
 
       if (!workerRef.current) {
-        reject(new Error('Worker not initialized'))
-        return
+        reject(new Error("Worker not initialized"));
+        return;
       }
 
       // If already initialized, resolve immediately
       if (isInitializedRef.current) {
-        resolve()
-        return
+        resolve();
+        return;
       }
 
-      const id = idCounterRef.current++
-      readyCallbacksRef.current.set(id, resolve)
+      const id = idCounterRef.current++;
+      readyCallbacksRef.current.set(id, resolve);
 
       // Set up error handler for this specific call
       const handleError = (e: MessageEvent<WorkerMessage>) => {
-        if (e.data.type === 'error') {
-          readyCallbacksRef.current.delete(id)
-          workerRef.current?.removeEventListener('message', handleError)
-          reject(new Error(e.data.payload as string))
+        if (e.data.type === "error") {
+          readyCallbacksRef.current.delete(id);
+          workerRef.current?.removeEventListener("message", handleError);
+          reject(new Error(e.data.payload as string));
         }
-      }
-      workerRef.current.addEventListener('message', handleError)
+      };
+      workerRef.current.addEventListener("message", handleError);
 
       workerRef.current.postMessage({
-        type: 'init',
+        type: "init",
         payload: {
           id,
-          timeout: getDownloadTimeoutMs()
-        }
-      })
-    })
-  }, [ensureWorker])
+          timeout: getDownloadTimeoutMs(),
+        },
+      });
+    });
+  }, [ensureWorker]);
 
   const removeObjects = useCallback(
     (
       imageData: Float32Array,
       maskData: Float32Array,
       width: number,
-      height: number
+      height: number,
     ): Promise<EraserResult> => {
       return new Promise((resolve, reject) => {
-        ensureWorker()
+        ensureWorker();
 
         if (!workerRef.current) {
-          reject(new Error('Worker not initialized'))
-          return
+          reject(new Error("Worker not initialized"));
+          return;
         }
 
-        const id = idCounterRef.current++
-        callbacksRef.current.set(id, resolve)
+        const id = idCounterRef.current++;
+        callbacksRef.current.set(id, resolve);
 
         // Set up error handler for this specific call
         const handleError = (e: MessageEvent<WorkerMessage>) => {
-          if (e.data.type === 'error') {
-            callbacksRef.current.delete(id)
-            workerRef.current?.removeEventListener('message', handleError)
-            reject(new Error(e.data.payload as string))
+          if (e.data.type === "error") {
+            callbacksRef.current.delete(id);
+            workerRef.current?.removeEventListener("message", handleError);
+            reject(new Error(e.data.payload as string));
           }
-        }
-        workerRef.current.addEventListener('message', handleError)
+        };
+        workerRef.current.addEventListener("message", handleError);
 
         // Clone data to transfer
-        const imageDataCopy = new Float32Array(imageData)
-        const maskDataCopy = new Float32Array(maskData)
+        const imageDataCopy = new Float32Array(imageData);
+        const maskDataCopy = new Float32Array(maskData);
 
         workerRef.current.postMessage(
           {
-            type: 'process',
+            type: "process",
             payload: {
               imageData: imageDataCopy,
               maskData: maskDataCopy,
               width,
               height,
-              id
-            }
+              id,
+            },
           },
-          { transfer: [imageDataCopy.buffer, maskDataCopy.buffer] }
-        )
-      })
+          { transfer: [imageDataCopy.buffer, maskDataCopy.buffer] },
+        );
+      });
     },
-    [ensureWorker]
-  )
+    [ensureWorker],
+  );
 
   const dispose = useCallback(() => {
-    workerRef.current?.postMessage({ type: 'dispose' })
-    workerRef.current?.terminate()
-    workerRef.current = null
-    isInitializedRef.current = false
-  }, [])
+    workerRef.current?.postMessage({ type: "dispose" });
+    workerRef.current?.terminate();
+    workerRef.current = null;
+    isInitializedRef.current = false;
+  }, []);
 
-  const isInitialized = useCallback(() => isInitializedRef.current, [])
-  const hasFailed = useCallback(() => hasFailedRef.current, [])
+  const isInitialized = useCallback(() => isInitializedRef.current, []);
+  const hasFailed = useCallback(() => hasFailedRef.current, []);
 
   const retryWorker = useCallback(() => {
-    createWorker()
-  }, [createWorker])
+    createWorker();
+  }, [createWorker]);
 
   // Cancel ongoing processing by terminating and recreating the worker
   const cancel = useCallback(() => {
     // Clear all pending callbacks
-    callbacksRef.current.clear()
-    readyCallbacksRef.current.clear()
+    callbacksRef.current.clear();
+    readyCallbacksRef.current.clear();
     // Terminate and recreate worker
     if (workerRef.current) {
-      workerRef.current.terminate()
-      workerRef.current = null
+      workerRef.current.terminate();
+      workerRef.current = null;
     }
-    isInitializedRef.current = false
-    createWorker()
-  }, [createWorker])
+    isInitializedRef.current = false;
+    createWorker();
+  }, [createWorker]);
 
-  return { initModel, removeObjects, dispose, isInitialized, hasFailed, retryWorker, cancel }
+  return {
+    initModel,
+    removeObjects,
+    dispose,
+    isInitialized,
+    hasFailed,
+    retryWorker,
+    cancel,
+  };
 }

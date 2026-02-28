@@ -1,51 +1,64 @@
-import { useState, useEffect, useRef, useMemo, memo, useCallback } from 'react'
-import { useVirtualizer } from '@tanstack/react-virtual'
-import { useNavigate } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { useModelsStore, type SortBy } from '@/stores/modelsStore'
-import { useApiKeyStore } from '@/stores/apiKeyStore'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { useState, useEffect, useRef, useMemo, memo, useCallback } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useModelsStore, type SortBy } from "@/stores/modelsStore";
+import { useApiKeyStore } from "@/stores/apiKeyStore";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Search, PlayCircle, Loader2, RefreshCw, ArrowUp, ArrowDown, ExternalLink, Star, X, Info, LayoutGrid } from 'lucide-react'
+} from "@/components/ui/select";
+import {
+  Search,
+  PlayCircle,
+  Loader2,
+  RefreshCw,
+  ArrowUp,
+  ArrowDown,
+  ExternalLink,
+  Star,
+  X,
+  Info,
+  LayoutGrid,
+} from "lucide-react";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from '@/components/ui/hover-card'
-import { cn } from '@/lib/utils'
-import { fuzzySearch } from '@/lib/fuzzySearch'
-import { usePlaygroundStore } from '@/stores/playgroundStore'
-import type { Model } from '@/types/model'
+} from "@/components/ui/hover-card";
+import { cn } from "@/lib/utils";
+import { fuzzySearch } from "@/lib/fuzzySearch";
+import { usePlaygroundStore } from "@/stores/playgroundStore";
+import type { Model } from "@/types/model";
 
 // Get accent color class based on model type (3 categories: image, video, other)
 function getTypeAccentClass(type?: string): string {
-  const baseClasses = 'bg-[length:200%_100%] animate-gradient'
+  const baseClasses = "bg-[length:200%_100%] animate-gradient";
 
-  if (!type) return `${baseClasses} bg-gradient-to-r from-emerald-400 via-teal-500 to-emerald-400`
+  if (!type)
+    return `${baseClasses} bg-gradient-to-r from-emerald-400 via-teal-500 to-emerald-400`;
 
-  const normalizedType = type.toLowerCase()
+  const normalizedType = type.toLowerCase();
 
   // Video related types
-  if (normalizedType.includes('video')) {
-    return `${baseClasses} bg-gradient-to-r from-purple-500 via-violet-500 to-purple-500`
+  if (normalizedType.includes("video")) {
+    return `${baseClasses} bg-gradient-to-r from-purple-500 via-violet-500 to-purple-500`;
   }
 
   // Image related types
-  if (normalizedType.includes('image')) {
-    return `${baseClasses} bg-gradient-to-r from-sky-400 via-blue-400 to-sky-400`
+  if (normalizedType.includes("image")) {
+    return `${baseClasses} bg-gradient-to-r from-sky-400 via-blue-400 to-sky-400`;
   }
 
   // Other types
-  return `${baseClasses} bg-gradient-to-r from-emerald-400 via-teal-500 to-emerald-400`
+  return `${baseClasses} bg-gradient-to-r from-emerald-400 via-teal-500 to-emerald-400`;
 }
 
 // Memoized model card component
@@ -55,14 +68,14 @@ const ModelCard = memo(function ModelCard({
   onOpenPlayground,
   onOpenInNewTab,
   onToggleFavorite,
-  t
+  t,
 }: {
-  model: Model
-  isFavorite: boolean
-  onOpenPlayground: (modelId: string) => void
-  onOpenInNewTab: (e: React.MouseEvent, modelId: string) => void
-  onToggleFavorite: (e: React.MouseEvent, modelId: string) => void
-  t: (key: string) => string
+  model: Model;
+  isFavorite: boolean;
+  onOpenPlayground: (modelId: string) => void;
+  onOpenInNewTab: (e: React.MouseEvent, modelId: string) => void;
+  onToggleFavorite: (e: React.MouseEvent, modelId: string) => void;
+  t: (key: string) => string;
 }) {
   return (
     <Card
@@ -76,7 +89,10 @@ const ModelCard = memo(function ModelCard({
             {model.name}
           </CardTitle>
           {model.type && (
-            <Badge variant="secondary" className="shrink-0 text-[10px] px-1.5 py-0 font-medium">
+            <Badge
+              variant="secondary"
+              className="shrink-0 text-[10px] px-1.5 py-0 font-medium"
+            >
               {model.type}
             </Badge>
           )}
@@ -115,14 +131,22 @@ const ModelCard = memo(function ModelCard({
                   )}
                   {model.type && (
                     <div className="flex items-center gap-2 text-xs">
-                      <span className="text-muted-foreground">{t('models.type')}:</span>
-                      <Badge variant="secondary" className="text-xs">{model.type}</Badge>
+                      <span className="text-muted-foreground">
+                        {t("models.type")}:
+                      </span>
+                      <Badge variant="secondary" className="text-xs">
+                        {model.type}
+                      </Badge>
                     </div>
                   )}
                   {model.base_price !== undefined && (
                     <div className="flex items-center gap-2 text-xs">
-                      <span className="text-muted-foreground">{t('models.basePrice')}:</span>
-                      <span className="font-medium text-primary">${model.base_price.toFixed(4)}</span>
+                      <span className="text-muted-foreground">
+                        {t("models.basePrice")}:
+                      </span>
+                      <span className="font-medium text-primary">
+                        ${model.base_price.toFixed(4)}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -133,21 +157,27 @@ const ModelCard = memo(function ModelCard({
               variant="ghost"
               className="h-7 w-7 p-0"
               onClick={(e) => onToggleFavorite(e, model.model_id)}
-              title={isFavorite ? t('models.removeFromFavorites') : t('models.addToFavorites')}
+              title={
+                isFavorite
+                  ? t("models.removeFromFavorites")
+                  : t("models.addToFavorites")
+              }
             >
-              <Star className={cn(
-                "h-3.5 w-3.5",
-                isFavorite && "fill-yellow-400 text-yellow-400"
-              )} />
+              <Star
+                className={cn(
+                  "h-3.5 w-3.5",
+                  isFavorite && "fill-yellow-400 text-yellow-400",
+                )}
+              />
             </Button>
             <Button
               size="sm"
               variant="ghost"
               className="h-7 w-7 p-0"
-              title={t('common.open')}
+              title={t("common.open")}
               onClick={(e) => {
-                e.stopPropagation()
-                onOpenPlayground(model.model_id)
+                e.stopPropagation();
+                onOpenPlayground(model.model_id);
               }}
             >
               <PlayCircle className="h-3.5 w-3.5" />
@@ -157,7 +187,7 @@ const ModelCard = memo(function ModelCard({
               variant="ghost"
               className="h-7 w-7 p-0"
               onClick={(e) => onOpenInNewTab(e, model.model_id)}
-              title={t('models.openInNewTab')}
+              title={t("models.openInNewTab")}
             >
               <ExternalLink className="h-3.5 w-3.5" />
             </Button>
@@ -165,38 +195,38 @@ const ModelCard = memo(function ModelCard({
         </div>
       </CardContent>
     </Card>
-  )
-})
+  );
+});
 
 // Separate component to prevent parent re-renders during typing
 const SearchInput = memo(function SearchInput({
   value,
   onChange,
   onClear,
-  placeholder
+  placeholder,
 }: {
-  value: string
-  onChange: (value: string) => void
-  onClear: () => void
-  placeholder: string
+  value: string;
+  onChange: (value: string) => void;
+  onClear: () => void;
+  placeholder: string;
 }) {
-  const [localValue, setLocalValue] = useState(value)
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [localValue, setLocalValue] = useState(value);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      onChange(localValue)
-    }, 300)
+      onChange(localValue);
+    }, 300);
     return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current)
-    }
-  }, [localValue, onChange])
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [localValue, onChange]);
 
   // Sync when external value changes (e.g., clear button from parent)
   useEffect(() => {
-    setLocalValue(value)
-  }, [value])
+    setLocalValue(value);
+  }, [value]);
 
   return (
     <div className="relative flex-1 max-w-md">
@@ -210,8 +240,8 @@ const SearchInput = memo(function SearchInput({
       {localValue && (
         <button
           onClick={() => {
-            setLocalValue('')
-            onClear()
+            setLocalValue("");
+            onClear();
           }}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
         >
@@ -219,12 +249,12 @@ const SearchInput = memo(function SearchInput({
         </button>
       )}
     </div>
-  )
-})
+  );
+});
 
 export function ModelsPage() {
-  const { t } = useTranslation()
-  const navigate = useNavigate()
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const {
     isLoading,
     error,
@@ -242,32 +272,38 @@ export function ModelsPage() {
     showFavoritesOnly,
     setShowFavoritesOnly,
     selectedType,
-    setSelectedType
-  } = useModelsStore()
-  const { isLoading: isLoadingApiKey, isValidated, loadApiKey, hasAttemptedLoad } = useApiKeyStore()
-  const { createTab, tabs, setActiveTab, setSelectedModel } = usePlaygroundStore()
+    setSelectedType,
+  } = useModelsStore();
+  const {
+    isLoading: isLoadingApiKey,
+    isValidated,
+    loadApiKey,
+    hasAttemptedLoad,
+  } = useApiKeyStore();
+  const { createTab, tabs, setActiveTab, setSelectedModel } =
+    usePlaygroundStore();
 
   // Load API key and fetch models on mount
   useEffect(() => {
-    loadApiKey()
-  }, [loadApiKey])
+    loadApiKey();
+  }, [loadApiKey]);
 
   useEffect(() => {
     if (isValidated) {
-      fetchModels()
+      fetchModels();
     }
-  }, [isValidated, fetchModels])
+  }, [isValidated, fetchModels]);
 
   // Memoize filtered models with proper dependencies
   const filteredModels = useMemo(() => {
     // First filter by favorites if enabled
     let filtered = showFavoritesOnly
-      ? models.filter(m => favorites.has(m.model_id))
-      : [...models]
+      ? models.filter((m) => favorites.has(m.model_id))
+      : [...models];
 
     // Then filter by type if selected
     if (selectedType) {
-      filtered = filtered.filter(m => m.type === selectedType)
+      filtered = filtered.filter((m) => m.type === selectedType);
     }
 
     // Then apply fuzzy search
@@ -275,107 +311,124 @@ export function ModelsPage() {
       const results = fuzzySearch(filtered, searchQuery, (model) => [
         model.name,
         model.model_id,
-        model.description || '',
-        model.type || ''
-      ])
-      return results.map(r => r.item)
+        model.description || "",
+        model.type || "",
+      ]);
+      return results.map((r) => r.item);
     }
 
     // Apply sorting only when not searching
     return [...filtered].sort((a, b) => {
-      let comparison = 0
+      let comparison = 0;
       switch (sortBy) {
-        case 'name':
-          comparison = a.name.localeCompare(b.name)
-          break
-        case 'price':
-          comparison = (a.base_price ?? 0) - (b.base_price ?? 0)
-          break
-        case 'type':
-          comparison = (a.type || '').localeCompare(b.type || '')
-          break
-        case 'sort_order':
-          comparison = (a.sort_order ?? 0) - (b.sort_order ?? 0)
-          break
+        case "name":
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case "price":
+          comparison = (a.base_price ?? 0) - (b.base_price ?? 0);
+          break;
+        case "type":
+          comparison = (a.type || "").localeCompare(b.type || "");
+          break;
+        case "sort_order":
+          comparison = (a.sort_order ?? 0) - (b.sort_order ?? 0);
+          break;
       }
-      return sortOrder === 'asc' ? comparison : -comparison
-    })
-  }, [models, searchQuery, sortBy, sortOrder, showFavoritesOnly, selectedType, favorites])
+      return sortOrder === "asc" ? comparison : -comparison;
+    });
+  }, [
+    models,
+    searchQuery,
+    sortBy,
+    sortOrder,
+    showFavoritesOnly,
+    selectedType,
+    favorites,
+  ]);
 
   // Extract unique types from all models for the tag filter
   const allTypes = useMemo(() => {
-    const types = new Set<string>()
-    models.forEach(model => {
+    const types = new Set<string>();
+    models.forEach((model) => {
       if (model.type) {
-        types.add(model.type)
+        types.add(model.type);
       }
-    })
-    return Array.from(types).sort()
-  }, [models])
+    });
+    return Array.from(types).sort();
+  }, [models]);
 
   // Grid virtualization
-  const parentRef = useRef<HTMLDivElement>(null)
-  const [columns, setColumns] = useState(4)
+  const parentRef = useRef<HTMLDivElement>(null);
+  const [columns, setColumns] = useState(4);
 
   // Calculate columns based on container width (mobile-first breakpoints)
   useEffect(() => {
     const updateColumns = () => {
       if (parentRef.current) {
-        const width = parentRef.current.offsetWidth
-        if (width >= 1024) setColumns(4)
-        else if (width >= 768) setColumns(3)
-        else if (width >= 480) setColumns(2)
-        else setColumns(1)
+        const width = parentRef.current.offsetWidth;
+        if (width >= 1024) setColumns(4);
+        else if (width >= 768) setColumns(3);
+        else if (width >= 480) setColumns(2);
+        else setColumns(1);
       }
-    }
+    };
 
-    updateColumns()
-    const resizeObserver = new ResizeObserver(updateColumns)
+    updateColumns();
+    const resizeObserver = new ResizeObserver(updateColumns);
     if (parentRef.current) {
-      resizeObserver.observe(parentRef.current)
+      resizeObserver.observe(parentRef.current);
     }
-    return () => resizeObserver.disconnect()
-  }, [])
+    return () => resizeObserver.disconnect();
+  }, []);
 
   // Group models into rows
   const rows = useMemo(() => {
-    const result: Model[][] = []
+    const result: Model[][] = [];
     for (let i = 0; i < filteredModels.length; i += columns) {
-      result.push(filteredModels.slice(i, i + columns))
+      result.push(filteredModels.slice(i, i + columns));
     }
-    return result
-  }, [filteredModels, columns])
+    return result;
+  }, [filteredModels, columns]);
 
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 110, // Estimated row height
     overscan: 3,
-  })
+  });
 
   // Memoized handlers
-  const handleOpenPlayground = useCallback((modelId: string) => {
-    const model = models.find(m => m.model_id === modelId)
-    if (tabs.length === 1 && tabs[0].selectedModel == null) {
-      setActiveTab(tabs[0].id)
-      setSelectedModel(model || null)
-    } else {
-      createTab(model)
-    }
-    navigate(`/playground/${encodeURIComponent(modelId)}`)
-  }, [models, tabs, setActiveTab, setSelectedModel, createTab, navigate])
+  const handleOpenPlayground = useCallback(
+    (modelId: string) => {
+      const model = models.find((m) => m.model_id === modelId);
+      if (tabs.length === 1 && tabs[0].selectedModel == null) {
+        setActiveTab(tabs[0].id);
+        setSelectedModel(model || null);
+      } else {
+        createTab(model);
+      }
+      navigate(`/playground/${encodeURIComponent(modelId)}`);
+    },
+    [models, tabs, setActiveTab, setSelectedModel, createTab, navigate],
+  );
 
-  const handleOpenInNewTab = useCallback((e: React.MouseEvent, modelId: string) => {
-    e.stopPropagation()
-    const model = models.find(m => m.model_id === modelId)
-    createTab(model)
-    navigate(`/playground/${encodeURIComponent(modelId)}`)
-  }, [models, createTab, navigate])
+  const handleOpenInNewTab = useCallback(
+    (e: React.MouseEvent, modelId: string) => {
+      e.stopPropagation();
+      const model = models.find((m) => m.model_id === modelId);
+      createTab(model);
+      navigate(`/playground/${encodeURIComponent(modelId)}`);
+    },
+    [models, createTab, navigate],
+  );
 
-  const handleToggleFavorite = useCallback((e: React.MouseEvent, modelId: string) => {
-    e.stopPropagation()
-    toggleFavorite(modelId)
-  }, [toggleFavorite])
+  const handleToggleFavorite = useCallback(
+    (e: React.MouseEvent, modelId: string) => {
+      e.stopPropagation();
+      toggleFavorite(modelId);
+    },
+    [toggleFavorite],
+  );
 
   // Show loading state while API key is being loaded from storage
   if (isLoadingApiKey || !hasAttemptedLoad) {
@@ -383,7 +436,7 @@ export function ModelsPage() {
       <div className="flex h-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
-    )
+    );
   }
 
   return (
@@ -393,9 +446,11 @@ export function ModelsPage() {
         <div className="flex flex-col gap-1.5 md:flex-row md:items-baseline md:gap-3 mb-4">
           <h1 className="text-xl md:text-2xl font-bold tracking-tight flex items-center gap-2">
             <LayoutGrid className="h-5 w-5 text-primary" />
-            {t('models.title')}
+            {t("models.title")}
           </h1>
-          <p className="text-muted-foreground text-xs md:text-sm hidden md:block">{t('models.description')}</p>
+          <p className="text-muted-foreground text-xs md:text-sm hidden md:block">
+            {t("models.description")}
+          </p>
         </div>
 
         {/* Search, Filters and Sort */}
@@ -403,8 +458,8 @@ export function ModelsPage() {
           <SearchInput
             value={searchQuery}
             onChange={setSearchQuery}
-            onClear={() => setSearchQuery('')}
-            placeholder={t('models.searchPlaceholder')}
+            onClear={() => setSearchQuery("")}
+            placeholder={t("models.searchPlaceholder")}
           />
 
           {/* Favorites Filter */}
@@ -412,26 +467,42 @@ export function ModelsPage() {
             variant={showFavoritesOnly ? "default" : "outline"}
             size="sm"
             onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-            title={showFavoritesOnly ? t('models.showAll') : t('models.showFavoritesOnly')}
+            title={
+              showFavoritesOnly
+                ? t("models.showAll")
+                : t("models.showFavoritesOnly")
+            }
           >
-            <Star className={cn("h-4 w-4", showFavoritesOnly && "fill-current")} />
+            <Star
+              className={cn("h-4 w-4", showFavoritesOnly && "fill-current")}
+            />
           </Button>
 
           {/* Sort Controls */}
           <div className="flex items-center gap-1">
-            <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortBy)}>
+            <Select
+              value={sortBy}
+              onValueChange={(value) => setSortBy(value as SortBy)}
+            >
               <SelectTrigger className="w-[110px] h-9">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="sort_order">{t('models.popularity')}</SelectItem>
-                <SelectItem value="name">{t('models.name')}</SelectItem>
-                <SelectItem value="price">{t('models.price')}</SelectItem>
-                <SelectItem value="type">{t('models.type')}</SelectItem>
+                <SelectItem value="sort_order">
+                  {t("models.popularity")}
+                </SelectItem>
+                <SelectItem value="name">{t("models.name")}</SelectItem>
+                <SelectItem value="price">{t("models.price")}</SelectItem>
+                <SelectItem value="type">{t("models.type")}</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" size="sm" className="h-9 w-9 p-0" onClick={toggleSortOrder}>
-              {sortOrder === 'asc' ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 w-9 p-0"
+              onClick={toggleSortOrder}
+            >
+              {sortOrder === "asc" ? (
                 <ArrowUp className="h-4 w-4" />
               ) : (
                 <ArrowDown className="h-4 w-4" />
@@ -440,30 +511,39 @@ export function ModelsPage() {
           </div>
 
           {/* Refresh */}
-          <Button variant="outline" size="sm" className="shrink-0 ml-auto" onClick={() => fetchModels(true)}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="shrink-0 ml-auto"
+            onClick={() => fetchModels(true)}
+          >
             <RefreshCw className="mr-2 h-4 w-4" />
-            {t('common.refresh')}
+            {t("common.refresh")}
           </Button>
         </div>
 
         {/* Tag Filter Bar */}
         {allTypes.length > 0 && (
           <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin mt-3">
-            <span className="text-sm text-muted-foreground shrink-0">{t('models.type')}:</span>
+            <span className="text-sm text-muted-foreground shrink-0">
+              {t("models.type")}:
+            </span>
             <Button
               variant={selectedType === null ? "default" : "ghost"}
               size="sm"
               onClick={() => setSelectedType(null)}
               className="shrink-0 h-8 px-3 text-sm"
             >
-              {t('common.all')}
+              {t("common.all")}
             </Button>
             {allTypes.map((type) => (
               <Button
                 key={type}
                 variant={selectedType === type ? "default" : "ghost"}
                 size="sm"
-                onClick={() => setSelectedType(selectedType === type ? null : type)}
+                onClick={() =>
+                  setSelectedType(selectedType === type ? null : type)
+                }
                 className="shrink-0 h-8 px-3 text-sm capitalize"
               >
                 {type}
@@ -474,7 +554,10 @@ export function ModelsPage() {
       </div>
 
       {/* Content - Virtualized Grid */}
-      <div ref={parentRef} className="flex-1 overflow-auto px-6 py-5 relative z-10">
+      <div
+        ref={parentRef}
+        className="flex-1 overflow-auto px-6 py-5 relative z-10"
+      >
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -482,37 +565,49 @@ export function ModelsPage() {
         ) : error ? (
           <div className="text-center py-8">
             <p className="text-destructive text-sm">{error}</p>
-            <Button variant="outline" size="sm" className="mt-3" onClick={() => fetchModels(true)}>
-              {t('errors.tryAgain')}
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-3"
+              onClick={() => fetchModels(true)}
+            >
+              {t("errors.tryAgain")}
             </Button>
           </div>
         ) : filteredModels.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-muted-foreground text-sm">{t('models.noResults')}</p>
+            <p className="text-muted-foreground text-sm">
+              {t("models.noResults")}
+            </p>
           </div>
         ) : (
           <div
             style={{
               height: `${rowVirtualizer.getTotalSize()}px`,
-              width: '100%',
-              position: 'relative',
+              width: "100%",
+              position: "relative",
             }}
           >
             {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-              const rowModels = rows[virtualRow.index]
+              const rowModels = rows[virtualRow.index];
               return (
                 <div
                   key={virtualRow.key}
                   style={{
-                    position: 'absolute',
+                    position: "absolute",
                     top: 0,
                     left: 0,
-                    width: '100%',
+                    width: "100%",
                     height: `${virtualRow.size}px`,
                     transform: `translateY(${virtualRow.start}px)`,
                   }}
                 >
-                  <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
+                  <div
+                    className="grid gap-3"
+                    style={{
+                      gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+                    }}
+                  >
                     {rowModels.map((model) => (
                       <ModelCard
                         key={model.model_id}
@@ -526,11 +621,11 @@ export function ModelsPage() {
                     ))}
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }

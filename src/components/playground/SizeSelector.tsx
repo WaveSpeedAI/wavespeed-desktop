@@ -1,139 +1,163 @@
-import { useState, useEffect, useMemo } from 'react'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
+import { useState, useEffect, useMemo } from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 // Compact aspect ratio icon
 function AspectIcon({ ratio }: { ratio: string }) {
   const getDimensions = () => {
     switch (ratio) {
-      case '1:1': return { w: 10, h: 10 }
-      case '16:9': return { w: 12, h: 7 }
-      case '9:16': return { w: 7, h: 12 }
-      case '4:3': return { w: 12, h: 9 }
-      case '3:4': return { w: 9, h: 12 }
-      case '3:2': return { w: 12, h: 8 }
-      case '2:3': return { w: 8, h: 12 }
-      default: return { w: 10, h: 10 }
+      case "1:1":
+        return { w: 10, h: 10 };
+      case "16:9":
+        return { w: 12, h: 7 };
+      case "9:16":
+        return { w: 7, h: 12 };
+      case "4:3":
+        return { w: 12, h: 9 };
+      case "3:4":
+        return { w: 9, h: 12 };
+      case "3:2":
+        return { w: 12, h: 8 };
+      case "2:3":
+        return { w: 8, h: 12 };
+      default:
+        return { w: 10, h: 10 };
     }
-  }
-  const { w, h } = getDimensions()
+  };
+  const { w, h } = getDimensions();
   return (
     <div
       className="border border-current rounded-[1px]"
       style={{ width: w, height: h }}
     />
-  )
+  );
 }
 
 interface SizeSelectorProps {
-  value: string
-  onChange: (value: string) => void
-  disabled?: boolean
-  min?: number  // minimum dimension value from schema
-  max?: number  // maximum dimension value from schema
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+  min?: number; // minimum dimension value from schema
+  max?: number; // maximum dimension value from schema
 }
 
 // 1K presets (~1 megapixel total, similar to 1024×1024)
 const PRESETS_1K = [
-  { label: '1:1', width: 1024, height: 1024 },   // 1,048,576 px
-  { label: '16:9', width: 1280, height: 720 },   // 921,600 px (HD)
-  { label: '9:16', width: 720, height: 1280 },   // 921,600 px
-  { label: '4:3', width: 1152, height: 864 },    // 995,328 px
-  { label: '3:4', width: 864, height: 1152 },    // 995,328 px
-  { label: '3:2', width: 1216, height: 832 },    // 1,011,712 px
-  { label: '2:3', width: 832, height: 1216 },    // 1,011,712 px
-]
+  { label: "1:1", width: 1024, height: 1024 }, // 1,048,576 px
+  { label: "16:9", width: 1280, height: 720 }, // 921,600 px (HD)
+  { label: "9:16", width: 720, height: 1280 }, // 921,600 px
+  { label: "4:3", width: 1152, height: 864 }, // 995,328 px
+  { label: "3:4", width: 864, height: 1152 }, // 995,328 px
+  { label: "3:2", width: 1216, height: 832 }, // 1,011,712 px
+  { label: "2:3", width: 832, height: 1216 }, // 1,011,712 px
+];
 
 // 2K presets (~4 megapixels total, similar to 2048×2048)
 const PRESETS_2K = [
-  { label: '1:1', width: 2048, height: 2048 },   // 4,194,304 px
-  { label: '16:9', width: 2560, height: 1440 },  // 3,686,400 px (QHD/2K)
-  { label: '9:16', width: 1440, height: 2560 },  // 3,686,400 px
-  { label: '4:3', width: 2304, height: 1728 },   // 3,981,312 px
-  { label: '3:4', width: 1728, height: 2304 },   // 3,981,312 px
-  { label: '3:2', width: 2432, height: 1664 },   // 4,046,848 px
-  { label: '2:3', width: 1664, height: 2432 },   // 4,046,848 px
-]
+  { label: "1:1", width: 2048, height: 2048 }, // 4,194,304 px
+  { label: "16:9", width: 2560, height: 1440 }, // 3,686,400 px (QHD/2K)
+  { label: "9:16", width: 1440, height: 2560 }, // 3,686,400 px
+  { label: "4:3", width: 2304, height: 1728 }, // 3,981,312 px
+  { label: "3:4", width: 1728, height: 2304 }, // 3,981,312 px
+  { label: "3:2", width: 2432, height: 1664 }, // 4,046,848 px
+  { label: "2:3", width: 1664, height: 2432 }, // 4,046,848 px
+];
 
 // Generate presets based on min/max range
 // For each aspect ratio, prefer 2K if it fits, otherwise use 1K
 function generatePresets(min: number, max: number) {
-  const presets: { label: string; width: number; height: number }[] = []
+  const presets: { label: string; width: number; height: number }[] = [];
 
   for (let i = 0; i < PRESETS_1K.length; i++) {
-    const preset1k = PRESETS_1K[i]
-    const preset2k = PRESETS_2K[i]
+    const preset1k = PRESETS_1K[i];
+    const preset2k = PRESETS_2K[i];
 
     // Try 2K first
-    if (preset2k.width >= min && preset2k.width <= max && preset2k.height >= min && preset2k.height <= max) {
-      presets.push(preset2k)
-    } else if (preset1k.width >= min && preset1k.width <= max && preset1k.height >= min && preset1k.height <= max) {
+    if (
+      preset2k.width >= min &&
+      preset2k.width <= max &&
+      preset2k.height >= min &&
+      preset2k.height <= max
+    ) {
+      presets.push(preset2k);
+    } else if (
+      preset1k.width >= min &&
+      preset1k.width <= max &&
+      preset1k.height >= min &&
+      preset1k.height <= max
+    ) {
       // Fall back to 1K
-      presets.push(preset1k)
+      presets.push(preset1k);
     }
   }
 
-  return presets
+  return presets;
 }
 
-export function SizeSelector({ value, onChange, disabled, min = 256, max = 1536 }: SizeSelectorProps) {
-  const [width, setWidth] = useState(1024)
-  const [height, setHeight] = useState(1024)
-  const [widthInput, setWidthInput] = useState('1024')
-  const [heightInput, setHeightInput] = useState('1024')
+export function SizeSelector({
+  value,
+  onChange,
+  disabled,
+  min = 256,
+  max = 1536,
+}: SizeSelectorProps) {
+  const [width, setWidth] = useState(1024);
+  const [height, setHeight] = useState(1024);
+  const [widthInput, setWidthInput] = useState("1024");
+  const [heightInput, setHeightInput] = useState("1024");
 
   // Parse value into width/height
   useEffect(() => {
     if (value) {
-      const parts = value.split('*')
+      const parts = value.split("*");
       if (parts.length === 2) {
-        const w = parseInt(parts[0], 10)
-        const h = parseInt(parts[1], 10)
+        const w = parseInt(parts[0], 10);
+        const h = parseInt(parts[1], 10);
         if (!isNaN(w) && !isNaN(h)) {
-          setWidth(w)
-          setHeight(h)
-          setWidthInput(String(w))
-          setHeightInput(String(h))
+          setWidth(w);
+          setHeight(h);
+          setWidthInput(String(w));
+          setHeightInput(String(h));
         }
       }
     }
-  }, [value])
+  }, [value]);
 
-  const clamp = (n: number) => Math.min(max, Math.max(min, n))
+  const clamp = (n: number) => Math.min(max, Math.max(min, n));
 
   const handleWidthChange = (w: number) => {
-    setWidth(w)
-    setWidthInput(String(w))
-    onChange(`${w}*${height}`)
-  }
+    setWidth(w);
+    setWidthInput(String(w));
+    onChange(`${w}*${height}`);
+  };
 
   const handleHeightChange = (h: number) => {
-    setHeight(h)
-    setHeightInput(String(h))
-    onChange(`${width}*${h}`)
-  }
+    setHeight(h);
+    setHeightInput(String(h));
+    onChange(`${width}*${h}`);
+  };
 
   const handlePreset = (w: number, h: number) => {
-    setWidth(w)
-    setHeight(h)
-    setWidthInput(String(w))
-    setHeightInput(String(h))
-    onChange(`${w}*${h}`)
-  }
+    setWidth(w);
+    setHeight(h);
+    setWidthInput(String(w));
+    setHeightInput(String(h));
+    onChange(`${w}*${h}`);
+  };
 
   const handleSwap = () => {
-    setWidth(height)
-    setHeight(width)
-    setWidthInput(String(height))
-    setHeightInput(String(width))
-    onChange(`${height}*${width}`)
-  }
+    setWidth(height);
+    setHeight(width);
+    setWidthInput(String(height));
+    setHeightInput(String(width));
+    onChange(`${height}*${width}`);
+  };
 
   // Generate presets based on min/max range
-  const availablePresets = useMemo(() => generatePresets(min, max), [min, max])
+  const availablePresets = useMemo(() => generatePresets(min, max), [min, max]);
 
-  const isCurrentPreset = (w: number, h: number) => width === w && height === h
+  const isCurrentPreset = (w: number, h: number) => width === w && height === h;
 
   return (
     <div className="space-y-3">
@@ -143,7 +167,11 @@ export function SizeSelector({ value, onChange, disabled, min = 256, max = 1536 
           <Button
             key={`${preset.width}x${preset.height}`}
             type="button"
-            variant={isCurrentPreset(preset.width, preset.height) ? 'default' : 'outline'}
+            variant={
+              isCurrentPreset(preset.width, preset.height)
+                ? "default"
+                : "outline"
+            }
             size="sm"
             onClick={() => handlePreset(preset.width, preset.height)}
             disabled={disabled}
@@ -164,21 +192,21 @@ export function SizeSelector({ value, onChange, disabled, min = 256, max = 1536 
             type="number"
             value={widthInput}
             onChange={(e) => {
-              const next = e.target.value
-              setWidthInput(next)
-              if (next === '') return
-              const parsed = parseInt(next, 10)
-              if (Number.isNaN(parsed)) return
-              handleWidthChange(parsed)
+              const next = e.target.value;
+              setWidthInput(next);
+              if (next === "") return;
+              const parsed = parseInt(next, 10);
+              if (Number.isNaN(parsed)) return;
+              handleWidthChange(parsed);
             }}
             onBlur={() => {
-              if (widthInput === '') {
-                handleWidthChange(min)
-                return
+              if (widthInput === "") {
+                handleWidthChange(min);
+                return;
               }
-              const parsed = parseInt(widthInput, 10)
+              const parsed = parseInt(widthInput, 10);
               if (!Number.isNaN(parsed)) {
-                handleWidthChange(clamp(parsed))
+                handleWidthChange(clamp(parsed));
               }
             }}
             min={min}
@@ -222,21 +250,21 @@ export function SizeSelector({ value, onChange, disabled, min = 256, max = 1536 
             type="number"
             value={heightInput}
             onChange={(e) => {
-              const next = e.target.value
-              setHeightInput(next)
-              if (next === '') return
-              const parsed = parseInt(next, 10)
-              if (Number.isNaN(parsed)) return
-              handleHeightChange(parsed)
+              const next = e.target.value;
+              setHeightInput(next);
+              if (next === "") return;
+              const parsed = parseInt(next, 10);
+              if (Number.isNaN(parsed)) return;
+              handleHeightChange(parsed);
             }}
             onBlur={() => {
-              if (heightInput === '') {
-                handleHeightChange(min)
-                return
+              if (heightInput === "") {
+                handleHeightChange(min);
+                return;
               }
-              const parsed = parseInt(heightInput, 10)
+              const parsed = parseInt(heightInput, 10);
               if (!Number.isNaN(parsed)) {
-                handleHeightChange(clamp(parsed))
+                handleHeightChange(clamp(parsed));
               }
             }}
             min={min}
@@ -250,9 +278,13 @@ export function SizeSelector({ value, onChange, disabled, min = 256, max = 1536 
 
       {/* Current size and range display */}
       <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span>{width} × {height} px</span>
-        <span>Range: {min} - {max}</span>
+        <span>
+          {width} × {height} px
+        </span>
+        <span>
+          Range: {min} - {max}
+        </span>
       </div>
     </div>
-  )
+  );
 }

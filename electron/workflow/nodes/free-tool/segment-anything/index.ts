@@ -1,41 +1,52 @@
-import type { NodeTypeDefinition } from '../../../../../src/workflow/types/node-defs'
-import { BaseNodeHandler, type NodeExecutionContext, type NodeExecutionResult } from '../../base'
-import { executeFreeToolInRenderer } from '../../../ipc/free-tool.ipc'
+import type { NodeTypeDefinition } from "../../../../../src/workflow/types/node-defs";
+import {
+  BaseNodeHandler,
+  type NodeExecutionContext,
+  type NodeExecutionResult,
+} from "../../base";
+import { executeFreeToolInRenderer } from "../../../ipc/free-tool.ipc";
 
 export const segmentAnythingDef: NodeTypeDefinition = {
-  type: 'free-tool/segment-anything',
-  category: 'free-tool',
-  label: 'Segment Anything',
-  inputs: [{ key: 'input', label: 'Image', dataType: 'image', required: true }],
-  outputs: [{ key: 'output', label: 'Mask', dataType: 'image', required: true }],
+  type: "free-tool/segment-anything",
+  category: "free-tool",
+  label: "Segment Anything",
+  inputs: [{ key: "input", label: "Image", dataType: "image", required: true }],
+  outputs: [
+    { key: "output", label: "Mask", dataType: "image", required: true },
+  ],
   params: [
-    { key: 'invertMask', label: 'Invert Mask', type: 'boolean', default: false }
-  ]
-}
+    {
+      key: "invertMask",
+      label: "Invert Mask",
+      type: "boolean",
+      default: false,
+    },
+  ],
+};
 
 export class SegmentAnythingHandler extends BaseNodeHandler {
   constructor() {
-    super(segmentAnythingDef)
+    super(segmentAnythingDef);
   }
 
   async execute(ctx: NodeExecutionContext): Promise<NodeExecutionResult> {
-    const start = Date.now()
-    const input = String(ctx.inputs.input ?? ctx.params.input ?? '')
+    const start = Date.now();
+    const input = String(ctx.inputs.input ?? ctx.params.input ?? "");
 
     if (!input) {
       return {
-        status: 'error',
+        status: "error",
         outputs: {},
         durationMs: Date.now() - start,
         cost: 0,
-        error: 'No input image provided.'
-      }
+        error: "No input image provided.",
+      };
     }
 
     try {
-      ctx.onProgress(0, 'Running segment anything in renderer...')
+      ctx.onProgress(0, "Running segment anything in renderer...");
       const result = await executeFreeToolInRenderer({
-        nodeType: 'free-tool/segment-anything',
+        nodeType: "free-tool/segment-anything",
         workflowId: ctx.workflowId,
         nodeId: ctx.nodeId,
         inputs: { input },
@@ -44,19 +55,19 @@ export class SegmentAnythingHandler extends BaseNodeHandler {
           pointY: ctx.params.pointY ?? 0.5,
           __segmentPoints: ctx.params.__segmentPoints,
           __previewMask: ctx.params.__previewMask,
-          invertMask: ctx.params.invertMask ?? false
-        }
-      })
-      ctx.onProgress(100, 'Segmentation completed.')
-      return result
+          invertMask: ctx.params.invertMask ?? false,
+        },
+      });
+      ctx.onProgress(100, "Segmentation completed.");
+      return result;
     } catch (error) {
       return {
-        status: 'error',
+        status: "error",
         outputs: {},
         durationMs: Date.now() - start,
         cost: 0,
-        error: error instanceof Error ? error.message : String(error)
-      }
+        error: error instanceof Error ? error.message : String(error),
+      };
     }
   }
 }

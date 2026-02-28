@@ -1,238 +1,300 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useApiKeyStore } from '@/stores/apiKeyStore'
-import { apiClient } from '@/api/client'
-import { useThemeStore, type Theme } from '@/stores/themeStore'
-import { languages } from '@/i18n'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useTranslation } from "react-i18next";
+import { useApiKeyStore } from "@/stores/apiKeyStore";
+import { apiClient } from "@/api/client";
+import { useThemeStore, type Theme } from "@/stores/themeStore";
+import { languages } from "@/i18n";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { toast } from '@/hooks/useToast'
-import { Eye, EyeOff, Check, Loader2, Monitor, Moon, Sun, Download, RefreshCw, Github, Globe, Database, ChevronRight, X, Trash2, CheckCircle2, Circle, AlertCircle, Settings, ExternalLink } from 'lucide-react'
+} from "@/components/ui/dialog";
+import { toast } from "@/hooks/useToast";
+import {
+  Eye,
+  EyeOff,
+  Check,
+  Loader2,
+  Monitor,
+  Moon,
+  Sun,
+  Download,
+  RefreshCw,
+  Github,
+  Globe,
+  Database,
+  ChevronRight,
+  X,
+  Trash2,
+  CheckCircle2,
+  Circle,
+  AlertCircle,
+  Settings,
+  ExternalLink,
+} from "lucide-react";
 
 interface CacheItem {
-  cacheName: string
-  url: string
-  size: number
+  cacheName: string;
+  url: string;
+  size: number;
 }
 
 interface ModelDownloadState {
-  name: string
-  status: 'pending' | 'downloading' | 'completed' | 'error' | 'cached'
-  progress: number
-  error?: string
-  type?: 'direct' | 'worker' | 'sam-worker'  // direct = fetch URL, worker = bg remover, sam-worker = segment anything
+  name: string;
+  status: "pending" | "downloading" | "completed" | "error" | "cached";
+  progress: number;
+  error?: string;
+  type?: "direct" | "worker" | "sam-worker"; // direct = fetch URL, worker = bg remover, sam-worker = segment anything
 }
 
 export function SettingsPage() {
-  const { t, i18n } = useTranslation()
-  const { apiKey, setApiKey, isValidated, isValidating: storeIsValidating, validateApiKey } = useApiKeyStore()
-  const { theme, setTheme } = useThemeStore()
-  const [inputKey, setInputKey] = useState(apiKey)
-  const [showKey, setShowKey] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
+  const { t, i18n } = useTranslation();
+  const {
+    apiKey,
+    setApiKey,
+    isValidated,
+    isValidating: storeIsValidating,
+    validateApiKey,
+  } = useApiKeyStore();
+  const { theme, setTheme } = useThemeStore();
+  const [inputKey, setInputKey] = useState(apiKey);
+  const [showKey, setShowKey] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Balance state
-  const [balance, setBalance] = useState<number | null>(null)
-  const [isLoadingBalance, setIsLoadingBalance] = useState(false)
+  const [balance, setBalance] = useState<number | null>(null);
+  const [isLoadingBalance, setIsLoadingBalance] = useState(false);
 
   // Cache state
-  const [cacheSize, setCacheSize] = useState<number | null>(null)
-  const [isClearingCache, setIsClearingCache] = useState(false)
-  const [cacheItems, setCacheItems] = useState<CacheItem[]>([])
-  const [showCacheDialog, setShowCacheDialog] = useState(false)
-  const [isDeletingItem, setIsDeletingItem] = useState<string | null>(null)
+  const [cacheSize, setCacheSize] = useState<number | null>(null);
+  const [isClearingCache, setIsClearingCache] = useState(false);
+  const [cacheItems, setCacheItems] = useState<CacheItem[]>([]);
+  const [showCacheDialog, setShowCacheDialog] = useState(false);
+  const [isDeletingItem, setIsDeletingItem] = useState<string | null>(null);
 
   // Model download state
-  const [isDownloadingModels, setIsDownloadingModels] = useState(false)
-  const [modelDownloadStates, setModelDownloadStates] = useState<ModelDownloadState[]>([])
-  const [overallProgress, setOverallProgress] = useState(0)
-  const abortControllerRef = useRef<AbortController | null>(null)
+  const [isDownloadingModels, setIsDownloadingModels] = useState(false);
+  const [modelDownloadStates, setModelDownloadStates] = useState<
+    ModelDownloadState[]
+  >([]);
+  const [overallProgress, setOverallProgress] = useState(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Update state
-  const [isCheckingUpdate, setIsCheckingUpdate] = useState(false)
+  const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
   const [updateInfo, setUpdateInfo] = useState<{
-    hasUpdate: boolean
-    currentVersion: string
-    latestVersion: string
-    downloadUrl: string
-    releaseUrl: string
-    releaseNotes?: string
-  } | null>(null)
+    hasUpdate: boolean;
+    currentVersion: string;
+    latestVersion: string;
+    downloadUrl: string;
+    releaseUrl: string;
+    releaseNotes?: string;
+  } | null>(null);
 
   // Current app version - keep in sync with package.json and build.gradle
-  const currentVersion = '0.8.2'
+  const currentVersion = "0.8.2";
 
   // (APK download progress state removed - now opens browser directly)
 
   // Get the saved language preference (including 'auto')
   const [languagePreference, setLanguagePreference] = useState(() => {
-    return localStorage.getItem('wavespeed_language') || 'auto'
-  })
+    return localStorage.getItem("wavespeed_language") || "auto";
+  });
 
-  const handleLanguageChange = useCallback((langCode: string) => {
-    setLanguagePreference(langCode)
-    localStorage.setItem('wavespeed_language', langCode)
+  const handleLanguageChange = useCallback(
+    (langCode: string) => {
+      setLanguagePreference(langCode);
+      localStorage.setItem("wavespeed_language", langCode);
 
-    if (langCode === 'auto') {
-      const browserLang = navigator.language || 'en'
-      const supportedLangs = ['en', 'zh-CN', 'zh-TW', 'ja', 'ko', 'es', 'fr', 'de', 'it', 'ru', 'pt', 'hi', 'id', 'ms', 'th', 'vi', 'tr', 'ar']
-      const matchedLang = supportedLangs.find(l => browserLang.startsWith(l.split('-')[0])) || 'en'
-      i18n.changeLanguage(matchedLang)
-    } else {
-      i18n.changeLanguage(langCode)
-    }
+      if (langCode === "auto") {
+        const browserLang = navigator.language || "en";
+        const supportedLangs = [
+          "en",
+          "zh-CN",
+          "zh-TW",
+          "ja",
+          "ko",
+          "es",
+          "fr",
+          "de",
+          "it",
+          "ru",
+          "pt",
+          "hi",
+          "id",
+          "ms",
+          "th",
+          "vi",
+          "tr",
+          "ar",
+        ];
+        const matchedLang =
+          supportedLangs.find((l) => browserLang.startsWith(l.split("-")[0])) ||
+          "en";
+        i18n.changeLanguage(matchedLang);
+      } else {
+        i18n.changeLanguage(langCode);
+      }
 
-    toast({
-      title: t('settings.language.changed'),
-      description: t('settings.language.changedDesc'),
-    })
-  }, [i18n, t])
+      toast({
+        title: t("settings.language.changed"),
+        description: t("settings.language.changedDesc"),
+      });
+    },
+    [i18n, t],
+  );
 
   // Load cache details
   const loadCacheDetails = useCallback(async () => {
     try {
-      const cacheNames = await caches.keys()
-      const items: CacheItem[] = []
-      let totalSize = 0
+      const cacheNames = await caches.keys();
+      const items: CacheItem[] = [];
+      let totalSize = 0;
 
       for (const name of cacheNames) {
-        const cache = await caches.open(name)
-        const keys = await cache.keys()
+        const cache = await caches.open(name);
+        const keys = await cache.keys();
         for (const request of keys) {
-          const response = await cache.match(request)
+          const response = await cache.match(request);
           if (response) {
-            const blob = await response.blob()
+            const blob = await response.blob();
             items.push({
               cacheName: name,
               url: request.url,
-              size: blob.size
-            })
-            totalSize += blob.size
+              size: blob.size,
+            });
+            totalSize += blob.size;
           }
         }
       }
 
-      setCacheItems(items)
-      setCacheSize(totalSize)
+      setCacheItems(items);
+      setCacheSize(totalSize);
     } catch {
-      setCacheItems([])
-      setCacheSize(0)
+      setCacheItems([]);
+      setCacheSize(0);
     }
-  }, [])
+  }, []);
 
   // Fetch account balance
   const fetchBalance = useCallback(async () => {
-    if (!isValidated) return
-    setIsLoadingBalance(true)
+    if (!isValidated) return;
+    setIsLoadingBalance(true);
     try {
-      const bal = await apiClient.getBalance()
-      setBalance(bal)
+      const bal = await apiClient.getBalance();
+      setBalance(bal);
     } catch {
       toast({
-        title: t('common.error'),
-        description: t('settings.balance.refreshFailed'),
-        variant: 'destructive',
-      })
+        title: t("common.error"),
+        description: t("settings.balance.refreshFailed"),
+        variant: "destructive",
+      });
     } finally {
-      setIsLoadingBalance(false)
+      setIsLoadingBalance(false);
     }
-  }, [isValidated, t])
+  }, [isValidated, t]);
 
   // Delete a single cache item
-  const handleDeleteCacheItem = useCallback(async (cacheName: string, url: string) => {
-    setIsDeletingItem(url)
-    try {
-      const cache = await caches.open(cacheName)
-      await cache.delete(url)
-      await loadCacheDetails()
-    } catch {
-      toast({
-        title: t('common.error'),
-        description: t('settings.cache.clearFailed'),
-        variant: 'destructive',
-      })
-    } finally {
-      setIsDeletingItem(null)
-    }
-  }, [loadCacheDetails, t])
+  const handleDeleteCacheItem = useCallback(
+    async (cacheName: string, url: string) => {
+      setIsDeletingItem(url);
+      try {
+        const cache = await caches.open(cacheName);
+        await cache.delete(url);
+        await loadCacheDetails();
+      } catch {
+        toast({
+          title: t("common.error"),
+          description: t("settings.cache.clearFailed"),
+          variant: "destructive",
+        });
+      } finally {
+        setIsDeletingItem(null);
+      }
+    },
+    [loadCacheDetails, t],
+  );
 
   // Clear all caches
   const handleClearCache = useCallback(async () => {
-    setIsClearingCache(true)
+    setIsClearingCache(true);
     try {
-      const cacheNames = await caches.keys()
-      await Promise.all(cacheNames.map((name) => caches.delete(name)))
-      setCacheSize(0)
-      setCacheItems([])
-      setShowCacheDialog(false)
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map((name) => caches.delete(name)));
+      setCacheSize(0);
+      setCacheItems([]);
+      setShowCacheDialog(false);
       toast({
-        title: t('settings.cache.cleared'),
-        description: t('settings.cache.clearedDesc'),
-      })
+        title: t("settings.cache.cleared"),
+        description: t("settings.cache.clearedDesc"),
+      });
     } catch {
       toast({
-        title: t('common.error'),
-        description: t('settings.cache.clearFailed'),
-        variant: 'destructive',
-      })
+        title: t("common.error"),
+        description: t("settings.cache.clearFailed"),
+        variant: "destructive",
+      });
     } finally {
-      setIsClearingCache(false)
+      setIsClearingCache(false);
     }
-  }, [t])
+  }, [t]);
 
   // Check for updates via GitHub API
   const handleCheckForUpdates = useCallback(async () => {
-    setIsCheckingUpdate(true)
-    setUpdateInfo(null)
+    setIsCheckingUpdate(true);
+    setUpdateInfo(null);
 
     try {
       // Check GitHub releases for mobile APK
       const response = await fetch(
-        'https://api.github.com/repos/WaveSpeedAI/wavespeed-desktop/releases',
-        { headers: { 'Accept': 'application/vnd.github.v3+json' } }
-      )
+        "https://api.github.com/repos/WaveSpeedAI/wavespeed-desktop/releases",
+        { headers: { Accept: "application/vnd.github.v3+json" } },
+      );
 
       if (!response.ok) {
-        throw new Error('Failed to fetch releases')
+        throw new Error("Failed to fetch releases");
       }
 
-      const releases = await response.json()
+      const releases = await response.json();
 
       // Find the latest release that has an APK asset
-      let latestMobileRelease = null
-      let apkAsset = null
+      let latestMobileRelease = null;
+      let apkAsset = null;
 
       for (const release of releases) {
         // Skip drafts and prereleases
-        if (release.draft || release.prerelease) continue
+        if (release.draft || release.prerelease) continue;
 
         // Look for APK asset
         const apk = release.assets?.find((asset: { name: string }) =>
-          asset.name.endsWith('.apk')
-        )
+          asset.name.endsWith(".apk"),
+        );
 
         if (apk) {
-          latestMobileRelease = release
-          apkAsset = apk
-          break
+          latestMobileRelease = release;
+          apkAsset = apk;
+          break;
         }
       }
 
@@ -242,32 +304,37 @@ export function SettingsPage() {
           hasUpdate: false,
           currentVersion,
           latestVersion: currentVersion,
-          downloadUrl: '',
-          releaseUrl: '',
-        })
+          downloadUrl: "",
+          releaseUrl: "",
+        });
         toast({
-          title: t('settings.updates.notAvailable', { version: currentVersion }),
-        })
-        return
+          title: t("settings.updates.notAvailable", {
+            version: currentVersion,
+          }),
+        });
+        return;
       }
 
       // Extract version from tag (e.g., "mobile-v0.8.2" -> "0.8.2" or "v0.8.2" -> "0.8.2")
-      const latestVersion = latestMobileRelease.tag_name.replace(/^(mobile-)?v/, '')
+      const latestVersion = latestMobileRelease.tag_name.replace(
+        /^(mobile-)?v/,
+        "",
+      );
 
       // Compare versions
       const compareVersions = (v1: string, v2: string): number => {
-        const parts1 = v1.split('.').map(Number)
-        const parts2 = v2.split('.').map(Number)
+        const parts1 = v1.split(".").map(Number);
+        const parts2 = v2.split(".").map(Number);
         for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
-          const p1 = parts1[i] || 0
-          const p2 = parts2[i] || 0
-          if (p1 < p2) return -1
-          if (p1 > p2) return 1
+          const p1 = parts1[i] || 0;
+          const p2 = parts2[i] || 0;
+          if (p1 < p2) return -1;
+          if (p1 > p2) return 1;
         }
-        return 0
-      }
+        return 0;
+      };
 
-      const hasUpdate = compareVersions(currentVersion, latestVersion) < 0
+      const hasUpdate = compareVersions(currentVersion, latestVersion) < 0;
 
       setUpdateInfo({
         hasUpdate,
@@ -276,577 +343,607 @@ export function SettingsPage() {
         downloadUrl: apkAsset.browser_download_url,
         releaseUrl: latestMobileRelease.html_url,
         releaseNotes: latestMobileRelease.body,
-      })
+      });
 
       if (hasUpdate) {
         toast({
-          title: t('settings.updates.available', { version: latestVersion }),
-        })
+          title: t("settings.updates.available", { version: latestVersion }),
+        });
       } else {
         toast({
-          title: t('settings.updates.notAvailable', { version: currentVersion }),
-        })
+          title: t("settings.updates.notAvailable", {
+            version: currentVersion,
+          }),
+        });
       }
     } catch (error) {
-      console.error('Failed to check for updates:', error)
+      console.error("Failed to check for updates:", error);
       toast({
-        title: t('settings.updates.checkFailed'),
-        variant: 'destructive',
-      })
+        title: t("settings.updates.checkFailed"),
+        variant: "destructive",
+      });
     } finally {
-      setIsCheckingUpdate(false)
+      setIsCheckingUpdate(false);
     }
-  }, [currentVersion, t])
+  }, [currentVersion, t]);
 
   // Open release page in browser so user can download APK directly
   const handleDownloadUpdate = useCallback(async () => {
-    if (!updateInfo) return
+    if (!updateInfo) return;
 
-    const url = updateInfo.releaseUrl || updateInfo.downloadUrl
-    if (!url) return
+    const url = updateInfo.releaseUrl || updateInfo.downloadUrl;
+    if (!url) return;
 
     try {
-      const { Browser } = await import(/* @vite-ignore */ '@capacitor/browser')
-      await Browser.open({ url })
+      const { Browser } = await import(/* @vite-ignore */ "@capacitor/browser");
+      await Browser.open({ url });
     } catch {
-      window.open(url, '_blank')
+      window.open(url, "_blank");
     }
-  }, [updateInfo])
+  }, [updateInfo]);
 
   // Check if a model is already cached
-  const checkModelCached = async (url: string, cacheName: string): Promise<boolean> => {
+  const checkModelCached = async (
+    url: string,
+    cacheName: string,
+  ): Promise<boolean> => {
     try {
-      const cache = await caches.open(cacheName)
-      const response = await cache.match(url)
-      return !!response
+      const cache = await caches.open(cacheName);
+      const response = await cache.match(url);
+      return !!response;
     } catch {
-      return false
+      return false;
     }
-  }
+  };
 
   // Download a single model with progress
   const downloadModel = async (
     url: string,
     cacheName: string,
     onProgress: (progress: number) => void,
-    signal: AbortSignal
+    signal: AbortSignal,
   ): Promise<void> => {
-    const response = await fetch(url, { mode: 'cors', signal })
-    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    const response = await fetch(url, { mode: "cors", signal });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-    const contentLength = response.headers.get('content-length')
-    const total = contentLength ? parseInt(contentLength, 10) : 0
-    const reader = response.body?.getReader()
+    const contentLength = response.headers.get("content-length");
+    const total = contentLength ? parseInt(contentLength, 10) : 0;
+    const reader = response.body?.getReader();
 
-    if (!reader) throw new Error('Failed to get response reader')
+    if (!reader) throw new Error("Failed to get response reader");
 
-    const chunks: Uint8Array[] = []
-    let received = 0
+    const chunks: Uint8Array[] = [];
+    let received = 0;
 
     while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
+      const { done, value } = await reader.read();
+      if (done) break;
 
-      chunks.push(value)
-      received += value.length
+      chunks.push(value);
+      received += value.length;
 
       if (total > 0) {
-        onProgress((received / total) * 100)
+        onProgress((received / total) * 100);
       }
     }
 
     // Combine chunks and cache
-    const buffer = new Uint8Array(received)
-    let position = 0
+    const buffer = new Uint8Array(received);
+    let position = 0;
     for (const chunk of chunks) {
-      buffer.set(chunk, position)
-      position += chunk.length
+      buffer.set(chunk, position);
+      position += chunk.length;
     }
 
-    const cache = await caches.open(cacheName)
+    const cache = await caches.open(cacheName);
     const cacheResponse = new Response(buffer.buffer, {
       headers: {
-        'Content-Type': 'application/octet-stream',
-        'Content-Length': buffer.byteLength.toString()
-      }
-    })
-    await cache.put(url, cacheResponse)
-  }
+        "Content-Type": "application/octet-stream",
+        "Content-Length": buffer.byteLength.toString(),
+      },
+    });
+    await cache.put(url, cacheResponse);
+  };
 
   // Background remover worker ref for pre-download
-  const bgRemoverWorkerRef = useRef<Worker | null>(null)
+  const bgRemoverWorkerRef = useRef<Worker | null>(null);
   // SAM worker ref for pre-download
-  const samWorkerRef = useRef<Worker | null>(null)
+  const samWorkerRef = useRef<Worker | null>(null);
 
   // Download all Free Tools models
   const handleDownloadModels = useCallback(async () => {
     // Use UMD build of FFmpeg - more stable
-    const ffmpegBase = 'https://unpkg.com/@ffmpeg/core@0.12.4/dist/umd'
+    const ffmpegBase = "https://unpkg.com/@ffmpeg/core@0.12.4/dist/umd";
 
     // Define all models to download
     // Note: Upscaler models are bundled with npm packages, no download needed
     const models: Array<{
-      name: string
-      url: string
-      cacheName: string
-      size: string
-      type: 'direct' | 'worker'
+      name: string;
+      url: string;
+      cacheName: string;
+      size: string;
+      type: "direct" | "worker";
     }> = [
       {
-        name: t('settings.cache.models.ffmpegJs'),
+        name: t("settings.cache.models.ffmpegJs"),
         url: `${ffmpegBase}/ffmpeg-core.js`,
-        cacheName: 'ffmpeg-wasm-cache',
-        size: '~150KB',
-        type: 'direct'
+        cacheName: "ffmpeg-wasm-cache",
+        size: "~150KB",
+        type: "direct",
       },
       {
-        name: t('settings.cache.models.ffmpegWasm'),
+        name: t("settings.cache.models.ffmpegWasm"),
         url: `${ffmpegBase}/ffmpeg-core.wasm`,
-        cacheName: 'ffmpeg-wasm-cache',
-        size: '~24MB',
-        type: 'direct'
+        cacheName: "ffmpeg-wasm-cache",
+        size: "~24MB",
+        type: "direct",
       },
       {
-        name: t('settings.cache.models.backgroundRemover'),
-        url: '', // Uses worker-based warm-up
-        cacheName: 'background-removal-assets', // Library's internal cache name
-        size: '~44MB',
-        type: 'worker'
+        name: t("settings.cache.models.backgroundRemover"),
+        url: "", // Uses worker-based warm-up
+        cacheName: "background-removal-assets", // Library's internal cache name
+        size: "~44MB",
+        type: "worker",
       },
       {
-        name: t('settings.cache.models.imageEraser'),
-        url: 'https://huggingface.co/opencv/inpainting_lama/resolve/main/inpainting_lama_2025jan.onnx',
-        cacheName: 'lama-model-cache',
-        size: '~200MB',
-        type: 'direct'
+        name: t("settings.cache.models.imageEraser"),
+        url: "https://huggingface.co/opencv/inpainting_lama/resolve/main/inpainting_lama_2025jan.onnx",
+        cacheName: "lama-model-cache",
+        size: "~200MB",
+        type: "direct",
       },
       {
-        name: `${t('settings.cache.models.samEncoder')} + ${t('settings.cache.models.samDecoder')}`,
-        url: '',
-        cacheName: '',
-        size: '~14MB',
-        type: 'sam-worker'
-      }
-    ]
+        name: `${t("settings.cache.models.samEncoder")} + ${t("settings.cache.models.samDecoder")}`,
+        url: "",
+        cacheName: "",
+        size: "~14MB",
+        type: "sam-worker",
+      },
+    ];
 
     // Initialize states
-    const initialStates: ModelDownloadState[] = models.map(m => ({
+    const initialStates: ModelDownloadState[] = models.map((m) => ({
       name: m.name,
-      status: 'pending',
+      status: "pending",
       progress: 0,
-      type: m.type
-    }))
-    setModelDownloadStates(initialStates)
-    setIsDownloadingModels(true)
-    setOverallProgress(0)
+      type: m.type,
+    }));
+    setModelDownloadStates(initialStates);
+    setIsDownloadingModels(true);
+    setOverallProgress(0);
 
     // Create abort controller
-    abortControllerRef.current = new AbortController()
-    const signal = abortControllerRef.current.signal
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
 
     // Helper to check if Background Remover model is cached
     const checkBgRemoverCached = async (): Promise<boolean> => {
       try {
         // Check if the library's cache has any model data
-        const cacheNames = await caches.keys()
+        const cacheNames = await caches.keys();
         // The @imgly/background-removal library uses 'background-removal-assets' cache
-        const bgCache = cacheNames.find(name => name.includes('background-removal') || name.includes('imgly'))
+        const bgCache = cacheNames.find(
+          (name) =>
+            name.includes("background-removal") || name.includes("imgly"),
+        );
         if (bgCache) {
-          const cache = await caches.open(bgCache)
-          const keys = await cache.keys()
+          const cache = await caches.open(bgCache);
+          const keys = await cache.keys();
           // If there are multiple entries (model chunks), consider it cached
-          return keys.length > 5
+          return keys.length > 5;
         }
-        return false
+        return false;
       } catch {
-        return false
+        return false;
       }
-    }
+    };
 
     // Helper to check if SAM model is cached (by @huggingface/transformers)
     const checkSamCached = async (): Promise<boolean> => {
       try {
-        const cacheNames = await caches.keys()
+        const cacheNames = await caches.keys();
         for (const name of cacheNames) {
-          const cache = await caches.open(name)
-          const keys = await cache.keys()
-          if (keys.some(req => req.url.includes('slimsam-77-uniform'))) return true
+          const cache = await caches.open(name);
+          const keys = await cache.keys();
+          if (keys.some((req) => req.url.includes("slimsam-77-uniform")))
+            return true;
         }
-        return false
+        return false;
       } catch {
-        return false
+        return false;
       }
-    }
+    };
 
     // Helper to download Background Remover via worker warm-up
     const downloadBgRemover = (
-      onProgress: (progress: number) => void
+      onProgress: (progress: number) => void,
     ): Promise<void> => {
       return new Promise((resolve, reject) => {
         // Create worker
         const worker = new Worker(
-          new URL('../workers/backgroundRemover.worker.ts', import.meta.url),
-          { type: 'module' }
-        )
-        bgRemoverWorkerRef.current = worker
+          new URL("../workers/backgroundRemover.worker.ts", import.meta.url),
+          { type: "module" },
+        );
+        bgRemoverWorkerRef.current = worker;
 
         // Create a tiny 1x1 pixel test image as blob
-        const canvas = document.createElement('canvas')
-        canvas.width = 1
-        canvas.height = 1
-        const ctx = canvas.getContext('2d')!
-        ctx.fillStyle = '#000000'
-        ctx.fillRect(0, 0, 1, 1)
+        const canvas = document.createElement("canvas");
+        canvas.width = 1;
+        canvas.height = 1;
+        const ctx = canvas.getContext("2d")!;
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0, 0, 1, 1);
 
         canvas.toBlob((blob) => {
           if (!blob) {
-            reject(new Error('Failed to create test image'))
-            return
+            reject(new Error("Failed to create test image"));
+            return;
           }
 
           worker.onmessage = (e) => {
-            const { type, payload } = e.data
+            const { type, payload } = e.data;
 
-            if (type === 'progress') {
-              const { phase, progress } = payload as { phase: string; progress: number }
+            if (type === "progress") {
+              const { phase, progress } = payload as {
+                phase: string;
+                progress: number;
+              };
               // Only report download phase progress
-              if (phase === 'download') {
-                onProgress(progress)
+              if (phase === "download") {
+                onProgress(progress);
               }
-            } else if (type === 'result' || type === 'resultAll') {
+            } else if (type === "result" || type === "resultAll") {
               // Model downloaded and cached
-              worker.terminate()
-              bgRemoverWorkerRef.current = null
-              resolve()
-            } else if (type === 'error') {
-              worker.terminate()
-              bgRemoverWorkerRef.current = null
-              reject(new Error(payload as string))
+              worker.terminate();
+              bgRemoverWorkerRef.current = null;
+              resolve();
+            } else if (type === "error") {
+              worker.terminate();
+              bgRemoverWorkerRef.current = null;
+              reject(new Error(payload as string));
             }
-          }
+          };
 
           worker.onerror = (e) => {
-            worker.terminate()
-            bgRemoverWorkerRef.current = null
-            reject(new Error(e.message))
-          }
+            worker.terminate();
+            bgRemoverWorkerRef.current = null;
+            reject(new Error(e.message));
+          };
 
           // Process the tiny image to trigger model download
           worker.postMessage({
-            type: 'process',
+            type: "process",
             payload: {
               imageBlob: blob,
-              model: 'isnet_quint8',
-              outputType: 'foreground',
-              id: 0
-            }
-          })
-        }, 'image/png')
-      })
-    }
+              model: "isnet_quint8",
+              outputType: "foreground",
+              id: 0,
+            },
+          });
+        }, "image/png");
+      });
+    };
 
     // Helper to download SAM model via worker warm-up
     const downloadSam = (
-      onProgress: (progress: number) => void
+      onProgress: (progress: number) => void,
     ): Promise<void> => {
       return new Promise((resolve, reject) => {
         const worker = new Worker(
-          new URL('../workers/segmentAnything.worker.ts', import.meta.url),
-          { type: 'module' }
-        )
-        samWorkerRef.current = worker
+          new URL("../workers/segmentAnything.worker.ts", import.meta.url),
+          { type: "module" },
+        );
+        samWorkerRef.current = worker;
 
         worker.onmessage = (e) => {
-          const { type, payload } = e.data
+          const { type, payload } = e.data;
 
-          if (type === 'progress') {
-            const { phase, progress } = payload as { phase: string; progress: number }
-            if (phase === 'download') {
-              onProgress(progress)
+          if (type === "progress") {
+            const { phase, progress } = payload as {
+              phase: string;
+              progress: number;
+            };
+            if (phase === "download") {
+              onProgress(progress);
             }
-          } else if (type === 'ready') {
-            worker.terminate()
-            samWorkerRef.current = null
-            resolve()
-          } else if (type === 'error') {
-            worker.terminate()
-            samWorkerRef.current = null
-            reject(new Error((payload as { message: string }).message))
+          } else if (type === "ready") {
+            worker.terminate();
+            samWorkerRef.current = null;
+            resolve();
+          } else if (type === "error") {
+            worker.terminate();
+            samWorkerRef.current = null;
+            reject(new Error((payload as { message: string }).message));
           }
-        }
+        };
 
         worker.onerror = (e) => {
-          worker.terminate()
-          samWorkerRef.current = null
-          reject(new Error(e.message))
-        }
+          worker.terminate();
+          samWorkerRef.current = null;
+          reject(new Error(e.message));
+        };
 
         // Send init to trigger model download and caching
-        worker.postMessage({ type: 'init', payload: { id: 0 } })
-      })
-    }
+        worker.postMessage({ type: "init", payload: { id: 0 } });
+      });
+    };
 
     try {
       // Check which models are already cached
       for (let i = 0; i < models.length; i++) {
-        const model = models[i]
-        let isCached: boolean
-        if (model.type === 'worker') {
-          isCached = await checkBgRemoverCached()
-        } else if (model.type === 'sam-worker') {
-          isCached = await checkSamCached()
+        const model = models[i];
+        let isCached: boolean;
+        if (model.type === "worker") {
+          isCached = await checkBgRemoverCached();
+        } else if (model.type === "sam-worker") {
+          isCached = await checkSamCached();
         } else {
-          isCached = await checkModelCached(model.url, model.cacheName)
+          isCached = await checkModelCached(model.url, model.cacheName);
         }
         if (isCached) {
-          setModelDownloadStates(prev => {
-            const newStates = [...prev]
-            newStates[i] = { ...newStates[i], status: 'cached', progress: 100 }
-            return newStates
-          })
+          setModelDownloadStates((prev) => {
+            const newStates = [...prev];
+            newStates[i] = { ...newStates[i], status: "cached", progress: 100 };
+            return newStates;
+          });
         }
       }
 
       // Download each model
       for (let i = 0; i < models.length; i++) {
-        if (signal.aborted) break
+        if (signal.aborted) break;
 
-        const model = models[i]
+        const model = models[i];
 
         // Check if already cached
-        let isCached: boolean
-        if (model.type === 'worker') {
-          isCached = await checkBgRemoverCached()
-        } else if (model.type === 'sam-worker') {
-          isCached = await checkSamCached()
+        let isCached: boolean;
+        if (model.type === "worker") {
+          isCached = await checkBgRemoverCached();
+        } else if (model.type === "sam-worker") {
+          isCached = await checkSamCached();
         } else {
-          isCached = await checkModelCached(model.url, model.cacheName)
+          isCached = await checkModelCached(model.url, model.cacheName);
         }
         if (isCached) {
-          setModelDownloadStates(prev => {
-            const newStates = [...prev]
-            newStates[i] = { ...newStates[i], status: 'cached', progress: 100 }
-            return newStates
-          })
-          continue
+          setModelDownloadStates((prev) => {
+            const newStates = [...prev];
+            newStates[i] = { ...newStates[i], status: "cached", progress: 100 };
+            return newStates;
+          });
+          continue;
         }
 
         // Update to downloading state
-        setModelDownloadStates(prev => {
-          const newStates = [...prev]
-          newStates[i] = { ...newStates[i], status: 'downloading', progress: 0 }
-          return newStates
-        })
+        setModelDownloadStates((prev) => {
+          const newStates = [...prev];
+          newStates[i] = {
+            ...newStates[i],
+            status: "downloading",
+            progress: 0,
+          };
+          return newStates;
+        });
 
         try {
           const updateProgress = (progress: number) => {
-            setModelDownloadStates(prev => {
-              const newStates = [...prev]
-              newStates[i] = { ...newStates[i], progress }
-              return newStates
-            })
+            setModelDownloadStates((prev) => {
+              const newStates = [...prev];
+              newStates[i] = { ...newStates[i], progress };
+              return newStates;
+            });
             // Update overall progress
             const completedCount = models.slice(0, i).filter((_, idx) => {
-              const state = initialStates[idx]
-              return state.status === 'completed' || state.status === 'cached'
-            }).length
-            const currentProgress = progress / 100
-            setOverallProgress(((completedCount + currentProgress) / models.length) * 100)
-          }
+              const state = initialStates[idx];
+              return state.status === "completed" || state.status === "cached";
+            }).length;
+            const currentProgress = progress / 100;
+            setOverallProgress(
+              ((completedCount + currentProgress) / models.length) * 100,
+            );
+          };
 
-          if (model.type === 'worker') {
+          if (model.type === "worker") {
             // Download via worker warm-up (Background Remover)
-            await downloadBgRemover(updateProgress)
-          } else if (model.type === 'sam-worker') {
+            await downloadBgRemover(updateProgress);
+          } else if (model.type === "sam-worker") {
             // Download via worker warm-up (Segment Anything)
-            await downloadSam(updateProgress)
+            await downloadSam(updateProgress);
           } else {
             // Download directly
-            await downloadModel(model.url, model.cacheName, updateProgress, signal)
+            await downloadModel(
+              model.url,
+              model.cacheName,
+              updateProgress,
+              signal,
+            );
           }
 
           // Mark as completed
-          setModelDownloadStates(prev => {
-            const newStates = [...prev]
-            newStates[i] = { ...newStates[i], status: 'completed', progress: 100 }
-            return newStates
-          })
-        } catch (error) {
-          if (signal.aborted) break
-          setModelDownloadStates(prev => {
-            const newStates = [...prev]
+          setModelDownloadStates((prev) => {
+            const newStates = [...prev];
             newStates[i] = {
               ...newStates[i],
-              status: 'error',
-              error: (error as Error).message
-            }
-            return newStates
-          })
+              status: "completed",
+              progress: 100,
+            };
+            return newStates;
+          });
+        } catch (error) {
+          if (signal.aborted) break;
+          setModelDownloadStates((prev) => {
+            const newStates = [...prev];
+            newStates[i] = {
+              ...newStates[i],
+              status: "error",
+              error: (error as Error).message,
+            };
+            return newStates;
+          });
         }
       }
 
       // Refresh cache details
-      await loadCacheDetails()
+      await loadCacheDetails();
 
       if (!signal.aborted) {
-        const hasErrors = modelDownloadStates.some(s => s.status === 'error')
+        const hasErrors = modelDownloadStates.some((s) => s.status === "error");
         if (hasErrors) {
           toast({
-            title: t('settings.cache.downloadPartial'),
-            description: t('settings.cache.downloadPartialDesc'),
-            variant: 'destructive',
-          })
+            title: t("settings.cache.downloadPartial"),
+            description: t("settings.cache.downloadPartialDesc"),
+            variant: "destructive",
+          });
         } else {
           toast({
-            title: t('settings.cache.downloadComplete'),
-            description: t('settings.cache.downloadCompleteDesc'),
-          })
+            title: t("settings.cache.downloadComplete"),
+            description: t("settings.cache.downloadCompleteDesc"),
+          });
         }
       }
     } catch (error) {
       if (!signal.aborted) {
         toast({
-          title: t('common.error'),
+          title: t("common.error"),
           description: (error as Error).message,
-          variant: 'destructive',
-        })
+          variant: "destructive",
+        });
       }
     } finally {
-      setIsDownloadingModels(false)
-      setOverallProgress(100)
-      abortControllerRef.current = null
+      setIsDownloadingModels(false);
+      setOverallProgress(100);
+      abortControllerRef.current = null;
     }
-  }, [t, loadCacheDetails])
+  }, [t, loadCacheDetails]);
 
   // Cancel download
   const handleCancelDownload = useCallback(() => {
     if (abortControllerRef.current) {
-      abortControllerRef.current.abort()
+      abortControllerRef.current.abort();
     }
     // Also terminate workers if running
     if (bgRemoverWorkerRef.current) {
-      bgRemoverWorkerRef.current.terminate()
-      bgRemoverWorkerRef.current = null
+      bgRemoverWorkerRef.current.terminate();
+      bgRemoverWorkerRef.current = null;
     }
     if (samWorkerRef.current) {
-      samWorkerRef.current.terminate()
-      samWorkerRef.current = null
+      samWorkerRef.current.terminate();
+      samWorkerRef.current = null;
     }
-    setIsDownloadingModels(false)
+    setIsDownloadingModels(false);
     toast({
-      title: t('settings.cache.downloadCancelled'),
-      description: t('settings.cache.downloadCancelledDesc'),
-    })
-  }, [t])
+      title: t("settings.cache.downloadCancelled"),
+      description: t("settings.cache.downloadCancelledDesc"),
+    });
+  }, [t]);
 
   // Format file size
   const formatSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-    return `${(bytes / 1024 / 1024).toFixed(1)} MB`
-  }
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  };
 
   // Get display name from URL
   const getDisplayName = (url: string) => {
     try {
-      const urlObj = new URL(url)
-      const path = urlObj.pathname
-      const filename = path.split('/').pop() || path
-      return filename.length > 40 ? filename.slice(0, 37) + '...' : filename
+      const urlObj = new URL(url);
+      const path = urlObj.pathname;
+      const filename = path.split("/").pop() || path;
+      return filename.length > 40 ? filename.slice(0, 37) + "..." : filename;
     } catch {
-      return url.slice(0, 40)
+      return url.slice(0, 40);
     }
-  }
+  };
 
   // Load settings on mount
   useEffect(() => {
-    loadCacheDetails()
-  }, [loadCacheDetails])
+    loadCacheDetails();
+  }, [loadCacheDetails]);
 
   // Fetch balance when authenticated
   useEffect(() => {
     if (isValidated) {
-      fetchBalance()
+      fetchBalance();
     } else {
-      setBalance(null)
+      setBalance(null);
     }
-  }, [isValidated, fetchBalance])
+  }, [isValidated, fetchBalance]);
 
   // Check for updates on mount (only once per session)
   useEffect(() => {
-    const hasCheckedUpdate = sessionStorage.getItem('wavespeed_update_checked')
+    const hasCheckedUpdate = sessionStorage.getItem("wavespeed_update_checked");
     if (!hasCheckedUpdate) {
       // Delay check slightly to not block initial render
       const timer = setTimeout(() => {
-        handleCheckForUpdates()
-        sessionStorage.setItem('wavespeed_update_checked', 'true')
-      }, 2000)
-      return () => clearTimeout(timer)
+        handleCheckForUpdates();
+        sessionStorage.setItem("wavespeed_update_checked", "true");
+      }, 2000);
+      return () => clearTimeout(timer);
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSave = async () => {
-    setIsSaving(true)
+    setIsSaving(true);
     try {
-      await setApiKey(inputKey)
-      const isValid = await validateApiKey()
+      await setApiKey(inputKey);
+      const isValid = await validateApiKey();
       if (isValid) {
         toast({
-          title: t('settings.apiKey.saved'),
-          description: t('settings.apiKey.savedDesc'),
-        })
+          title: t("settings.apiKey.saved"),
+          description: t("settings.apiKey.savedDesc"),
+        });
       } else {
         toast({
-          title: t('settings.apiKey.invalid'),
-          description: t('settings.apiKey.invalidDesc'),
-          variant: 'destructive',
-        })
+          title: t("settings.apiKey.invalid"),
+          description: t("settings.apiKey.invalidDesc"),
+          variant: "destructive",
+        });
       }
     } catch {
       toast({
-        title: t('settings.apiKey.error'),
-        description: t('settings.apiKey.errorDesc'),
-        variant: 'destructive',
-      })
+        title: t("settings.apiKey.error"),
+        description: t("settings.apiKey.errorDesc"),
+        variant: "destructive",
+      });
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   const handleClear = async () => {
-    setInputKey('')
-    await setApiKey('')
+    setInputKey("");
+    await setApiKey("");
     toast({
-      title: t('settings.apiKey.cleared'),
-      description: t('settings.apiKey.clearedDesc'),
-    })
-  }
+      title: t("settings.apiKey.cleared"),
+      description: t("settings.apiKey.clearedDesc"),
+    });
+  };
 
   // Render model download status icon
-  const renderStatusIcon = (status: ModelDownloadState['status']) => {
+  const renderStatusIcon = (status: ModelDownloadState["status"]) => {
     switch (status) {
-      case 'pending':
-        return <Circle className="h-4 w-4 text-muted-foreground" />
-      case 'downloading':
-        return <Loader2 className="h-4 w-4 animate-spin text-primary" />
-      case 'completed':
-        return <CheckCircle2 className="h-4 w-4 text-green-500" />
-      case 'cached':
-        return <CheckCircle2 className="h-4 w-4 text-blue-500" />
-      case 'error':
-        return <AlertCircle className="h-4 w-4 text-destructive" />
+      case "pending":
+        return <Circle className="h-4 w-4 text-muted-foreground" />;
+      case "downloading":
+        return <Loader2 className="h-4 w-4 animate-spin text-primary" />;
+      case "completed":
+        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+      case "cached":
+        return <CheckCircle2 className="h-4 w-4 text-blue-500" />;
+      case "error":
+        return <AlertCircle className="h-4 w-4 text-destructive" />;
     }
-  }
+  };
 
   return (
     <div className="container max-w-2xl py-6 px-4 pt-14 md:pt-4">
       <div className="mb-6">
         <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
           <Settings className="h-5 w-5 text-primary" />
-          {t('settings.title')}
+          {t("settings.title")}
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          {t('settings.mobileDescription')}
+          {t("settings.mobileDescription")}
         </p>
       </div>
 
@@ -854,14 +951,15 @@ export function SettingsPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>{t('settings.apiKey.title')}</CardTitle>
+              <CardTitle>{t("settings.apiKey.title")}</CardTitle>
               <CardDescription>
-                {t('settings.apiKey.description')}
+                {t("settings.apiKey.description")}
               </CardDescription>
             </div>
             {apiKey && storeIsValidating && (
               <Badge variant="secondary">
-                <Loader2 className="mr-1 h-3 w-3 animate-spin" /> {t('settings.apiKey.validating')}
+                <Loader2 className="mr-1 h-3 w-3 animate-spin" />{" "}
+                {t("settings.apiKey.validating")}
               </Badge>
             )}
             {apiKey && !storeIsValidating && isValidated && (
@@ -873,15 +971,15 @@ export function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="apiKey">{t('settings.apiKey.label')}</Label>
+            <Label htmlFor="apiKey">{t("settings.apiKey.label")}</Label>
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <Input
                   id="apiKey"
-                  type={showKey ? 'text' : 'password'}
+                  type={showKey ? "text" : "password"}
                   value={inputKey}
                   onChange={(e) => setInputKey(e.target.value)}
-                  placeholder={t('settings.apiKey.placeholder')}
+                  placeholder={t("settings.apiKey.placeholder")}
                   className="pr-10"
                 />
                 <Button
@@ -900,7 +998,7 @@ export function SettingsPage() {
               </div>
             </div>
             <p className="text-xs text-muted-foreground">
-              {t('settings.apiKey.getKey')}{' '}
+              {t("settings.apiKey.getKey")}{" "}
               <a
                 href="https://wavespeed.ai/accesskey"
                 target="_blank"
@@ -917,14 +1015,14 @@ export function SettingsPage() {
               {isSaving ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {t('settings.apiKey.validating')}
+                  {t("settings.apiKey.validating")}
                 </>
               ) : (
-                t('settings.apiKey.save')
+                t("settings.apiKey.save")
               )}
             </Button>
             <Button variant="outline" onClick={handleClear} disabled={!apiKey}>
-              {t('common.clear')}
+              {t("common.clear")}
             </Button>
           </div>
         </CardContent>
@@ -935,9 +1033,9 @@ export function SettingsPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>{t('settings.balance.title')}</CardTitle>
+                <CardTitle>{t("settings.balance.title")}</CardTitle>
                 <CardDescription>
-                  {t('settings.balance.description')}
+                  {t("settings.balance.description")}
                 </CardDescription>
               </div>
               <Button
@@ -946,7 +1044,9 @@ export function SettingsPage() {
                 onClick={fetchBalance}
                 disabled={isLoadingBalance}
               >
-                <RefreshCw className={`h-4 w-4 ${isLoadingBalance ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`h-4 w-4 ${isLoadingBalance ? "animate-spin" : ""}`}
+                />
               </Button>
             </div>
           </CardHeader>
@@ -958,7 +1058,7 @@ export function SettingsPage() {
                 ) : balance !== null ? (
                   `$${balance.toFixed(2)}`
                 ) : (
-                  '—'
+                  "—"
                 )}
               </span>
             </div>
@@ -968,41 +1068,44 @@ export function SettingsPage() {
 
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>{t('settings.appearance.title')}</CardTitle>
+          <CardTitle>{t("settings.appearance.title")}</CardTitle>
           <CardDescription>
-            {t('settings.appearance.description')}
+            {t("settings.appearance.description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="theme">{t('settings.appearance.theme')}</Label>
-            <Select value={theme} onValueChange={(value) => setTheme(value as Theme)}>
+            <Label htmlFor="theme">{t("settings.appearance.theme")}</Label>
+            <Select
+              value={theme}
+              onValueChange={(value) => setTheme(value as Theme)}
+            >
               <SelectTrigger id="theme" className="w-full sm:w-[200px]">
-                <SelectValue placeholder={t('settings.appearance.theme')} />
+                <SelectValue placeholder={t("settings.appearance.theme")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="auto">
                   <div className="flex items-center gap-2">
                     <Monitor className="h-4 w-4" />
-                    <span>{t('settings.appearance.themeAuto')}</span>
+                    <span>{t("settings.appearance.themeAuto")}</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="light">
                   <div className="flex items-center gap-2">
                     <Sun className="h-4 w-4" />
-                    <span>{t('settings.appearance.themeLight')}</span>
+                    <span>{t("settings.appearance.themeLight")}</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="dark">
                   <div className="flex items-center gap-2">
                     <Moon className="h-4 w-4" />
-                    <span>{t('settings.appearance.themeDark')}</span>
+                    <span>{t("settings.appearance.themeDark")}</span>
                   </div>
                 </SelectItem>
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              {t('settings.appearance.themeDesc')}
+              {t("settings.appearance.themeDesc")}
             </p>
           </div>
         </CardContent>
@@ -1010,24 +1113,31 @@ export function SettingsPage() {
 
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>{t('settings.language.title')}</CardTitle>
+          <CardTitle>{t("settings.language.title")}</CardTitle>
           <CardDescription>
-            {t('settings.language.description')}
+            {t("settings.language.description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="language">{t('settings.language.label')}</Label>
-            <Select value={languagePreference} onValueChange={handleLanguageChange}>
+            <Label htmlFor="language">{t("settings.language.label")}</Label>
+            <Select
+              value={languagePreference}
+              onValueChange={handleLanguageChange}
+            >
               <SelectTrigger id="language" className="w-full sm:w-[200px]">
-                <SelectValue placeholder={t('settings.language.label')} />
+                <SelectValue placeholder={t("settings.language.label")} />
               </SelectTrigger>
               <SelectContent>
                 {languages.map((lang) => (
                   <SelectItem key={lang.code} value={lang.code}>
                     <div className="flex items-center gap-2">
                       <Globe className="h-4 w-4" />
-                      <span>{lang.code === 'auto' ? t('settings.language.auto') : lang.nativeName}</span>
+                      <span>
+                        {lang.code === "auto"
+                          ? t("settings.language.auto")
+                          : lang.nativeName}
+                      </span>
                     </div>
                   </SelectItem>
                 ))}
@@ -1039,10 +1149,8 @@ export function SettingsPage() {
 
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>{t('settings.cache.title')}</CardTitle>
-          <CardDescription>
-            {t('settings.cache.description')}
-          </CardDescription>
+          <CardTitle>{t("settings.cache.title")}</CardTitle>
+          <CardDescription>{t("settings.cache.description")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between gap-2">
@@ -1053,13 +1161,15 @@ export function SettingsPage() {
             >
               <Database className="h-4 w-4 text-muted-foreground shrink-0" />
               <div className="min-w-0">
-                <Label className="cursor-pointer text-sm">{t('settings.cache.aiModels')}</Label>
+                <Label className="cursor-pointer text-sm">
+                  {t("settings.cache.aiModels")}
+                </Label>
                 <p className="text-xs text-muted-foreground truncate">
                   {cacheSize !== null
                     ? cacheSize > 0
                       ? formatSize(cacheSize)
-                      : t('settings.cache.empty')
-                    : t('settings.cache.calculating')}
+                      : t("settings.cache.empty")
+                    : t("settings.cache.calculating")}
                 </p>
               </div>
               {cacheSize !== null && cacheSize > 0 && (
@@ -1087,10 +1197,12 @@ export function SettingsPage() {
               <div className="space-y-0.5 min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <Download className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <Label className="text-sm">{t('settings.cache.predownload')}</Label>
+                  <Label className="text-sm">
+                    {t("settings.cache.predownload")}
+                  </Label>
                 </div>
                 <p className="text-xs text-muted-foreground truncate">
-                  {t('settings.cache.predownloadDesc')}
+                  {t("settings.cache.predownloadDesc")}
                 </p>
               </div>
               {isDownloadingModels ? (
@@ -1122,18 +1234,25 @@ export function SettingsPage() {
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
                         {renderStatusIcon(model.status)}
-                        <span className={model.status === 'error' ? 'text-destructive' : ''}>
+                        <span
+                          className={
+                            model.status === "error" ? "text-destructive" : ""
+                          }
+                        >
                           {model.name}
                         </span>
                       </div>
                       <span className="text-muted-foreground text-xs">
-                        {model.status === 'cached' && t('settings.cache.alreadyCached')}
-                        {model.status === 'completed' && t('settings.cache.downloaded')}
-                        {model.status === 'downloading' && `${Math.round(model.progress)}%`}
-                        {model.status === 'error' && model.error}
+                        {model.status === "cached" &&
+                          t("settings.cache.alreadyCached")}
+                        {model.status === "completed" &&
+                          t("settings.cache.downloaded")}
+                        {model.status === "downloading" &&
+                          `${Math.round(model.progress)}%`}
+                        {model.status === "error" && model.error}
                       </span>
                     </div>
-                    {model.status === 'downloading' && (
+                    {model.status === "downloading" && (
                       <Progress value={model.progress} className="h-1" />
                     )}
                   </div>
@@ -1143,8 +1262,12 @@ export function SettingsPage() {
                 {isDownloadingModels && (
                   <div className="pt-2 border-t">
                     <div className="flex items-center justify-between text-sm mb-1">
-                      <span className="text-muted-foreground">{t('settings.cache.overallProgress')}</span>
-                      <span className="text-muted-foreground">{Math.round(overallProgress)}%</span>
+                      <span className="text-muted-foreground">
+                        {t("settings.cache.overallProgress")}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {Math.round(overallProgress)}%
+                      </span>
                     </div>
                     <Progress value={overallProgress} />
                   </div>
@@ -1160,19 +1283,19 @@ export function SettingsPage() {
         <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
-              <span>{t('settings.cache.title')}</span>
+              <span>{t("settings.cache.title")}</span>
               <span className="text-sm font-normal text-muted-foreground">
                 {formatSize(cacheSize || 0)}
               </span>
             </DialogTitle>
             <DialogDescription className="sr-only">
-              {t('settings.cache.description')}
+              {t("settings.cache.description")}
             </DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-auto -mx-6 px-6">
             {cacheItems.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8">
-                {t('settings.cache.empty')}
+                {t("settings.cache.empty")}
               </p>
             ) : (
               <div className="space-y-2">
@@ -1182,10 +1305,16 @@ export function SettingsPage() {
                     className="flex items-center justify-between gap-3 p-2 rounded-md bg-muted/50 group"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate" title={item.url}>
+                      <p
+                        className="text-sm font-medium truncate"
+                        title={item.url}
+                      >
                         {getDisplayName(item.url)}
                       </p>
-                      <p className="text-xs text-muted-foreground truncate" title={item.cacheName}>
+                      <p
+                        className="text-xs text-muted-foreground truncate"
+                        title={item.cacheName}
+                      >
                         {item.cacheName}
                       </p>
                     </div>
@@ -1197,7 +1326,9 @@ export function SettingsPage() {
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => handleDeleteCacheItem(item.cacheName, item.url)}
+                        onClick={() =>
+                          handleDeleteCacheItem(item.cacheName, item.url)
+                        }
                         disabled={isDeletingItem === item.url}
                       >
                         {isDeletingItem === item.url ? (
@@ -1225,7 +1356,7 @@ export function SettingsPage() {
                 ) : (
                   <Trash2 className="h-4 w-4 mr-2" />
                 )}
-                {t('settings.cache.clear')}
+                {t("settings.cache.clear")}
               </Button>
             </div>
           )}
@@ -1235,22 +1366,24 @@ export function SettingsPage() {
       {/* Updates Card */}
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>{t('settings.updates.title')}</CardTitle>
-          <CardDescription>
-            {t('settings.updates.description')}
-          </CardDescription>
+          <CardTitle>{t("settings.updates.title")}</CardTitle>
+          <CardDescription>{t("settings.updates.description")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between gap-3">
             <div className="space-y-1 min-w-0">
               <p className="text-sm font-medium">
-                {t('settings.about.version')}: {currentVersion}
+                {t("settings.about.version")}: {currentVersion}
               </p>
               {updateInfo && (
                 <p className="text-xs text-muted-foreground truncate">
                   {updateInfo.hasUpdate
-                    ? t('settings.updates.available', { version: updateInfo.latestVersion })
-                    : t('settings.updates.notAvailable', { version: currentVersion })}
+                    ? t("settings.updates.available", {
+                        version: updateInfo.latestVersion,
+                      })
+                    : t("settings.updates.notAvailable", {
+                        version: currentVersion,
+                      })}
                 </p>
               )}
             </div>
@@ -1275,12 +1408,14 @@ export function SettingsPage() {
               <div className="flex items-center gap-2">
                 <Download className="h-4 w-4 text-primary" />
                 <span className="text-sm font-medium">
-                  {t('settings.updates.available', { version: updateInfo.latestVersion })}
+                  {t("settings.updates.available", {
+                    version: updateInfo.latestVersion,
+                  })}
                 </span>
               </div>
               <Button onClick={handleDownloadUpdate}>
                 <ExternalLink className="mr-2 h-4 w-4" />
-                {t('settings.updates.goToRelease')}
+                {t("settings.updates.goToRelease")}
               </Button>
             </div>
           )}
@@ -1289,24 +1424,29 @@ export function SettingsPage() {
 
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>{t('settings.about.title')}</CardTitle>
+          <CardTitle>{t("settings.about.title")}</CardTitle>
           <CardDescription>
-            {t('settings.about.mobileDescription')}
+            {t("settings.about.mobileDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            {t('settings.about.mobileAboutText')}
+            {t("settings.about.mobileAboutText")}
           </p>
           <Button
             variant="outline"
-            onClick={() => window.open('https://github.com/WaveSpeedAI/wavespeed-desktop', '_blank')}
+            onClick={() =>
+              window.open(
+                "https://github.com/WaveSpeedAI/wavespeed-desktop",
+                "_blank",
+              )
+            }
           >
             <Github className="mr-2 h-4 w-4" />
-            {t('settings.about.viewOnGitHub')}
+            {t("settings.about.viewOnGitHub")}
           </Button>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

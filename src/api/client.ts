@@ -1,138 +1,161 @@
-import axios, { AxiosInstance, AxiosError } from 'axios'
-import type { Model, ModelsResponse } from '@/types/model'
-import type { PredictionResult, PredictionResponse, HistoryResponse, UploadResponse } from '@/types/prediction'
-import packageJson from '../../package.json'
+import axios, { AxiosInstance, AxiosError } from "axios";
+import type { Model, ModelsResponse } from "@/types/model";
+import type {
+  PredictionResult,
+  PredictionResponse,
+  HistoryResponse,
+  UploadResponse,
+} from "@/types/prediction";
+import packageJson from "../../package.json";
 
-const BASE_URL = 'https://api.wavespeed.ai'
+const BASE_URL = "https://api.wavespeed.ai";
 
 // Get app version from package.json
-const version = packageJson.version
+const version = packageJson.version;
 
 // Detect operating system - works in Electron, browser, and Node.js
 function getOperatingSystem(): string {
   // Try Node.js/Electron process.platform first (most reliable)
-  if (typeof process !== 'undefined' && process.platform) {
-    return process.platform // 'darwin', 'win32', 'linux', etc.
+  if (typeof process !== "undefined" && process.platform) {
+    return process.platform; // 'darwin', 'win32', 'linux', etc.
   }
 
   // Fall back to user agent parsing (browser environment)
-  if (typeof navigator !== 'undefined' && navigator.userAgent) {
-    const userAgent = navigator.userAgent.toLowerCase()
+  if (typeof navigator !== "undefined" && navigator.userAgent) {
+    const userAgent = navigator.userAgent.toLowerCase();
 
-    if (userAgent.includes('mac os x') || userAgent.includes('macintosh')) {
-      return 'darwin'
-    } else if (userAgent.includes('windows') || userAgent.includes('win64') || userAgent.includes('win32')) {
-      return 'win32'
-    } else if (userAgent.includes('android')) {
-      return 'android'
-    } else if (userAgent.includes('iphone') || userAgent.includes('ipad') || userAgent.includes('ipod')) {
-      return 'ios'
-    } else if (userAgent.includes('cros')) {
-      return 'chromeos'
-    } else if (userAgent.includes('linux')) {
-      return 'linux'
-    } else if (userAgent.includes('freebsd')) {
-      return 'freebsd'
+    if (userAgent.includes("mac os x") || userAgent.includes("macintosh")) {
+      return "darwin";
+    } else if (
+      userAgent.includes("windows") ||
+      userAgent.includes("win64") ||
+      userAgent.includes("win32")
+    ) {
+      return "win32";
+    } else if (userAgent.includes("android")) {
+      return "android";
+    } else if (
+      userAgent.includes("iphone") ||
+      userAgent.includes("ipad") ||
+      userAgent.includes("ipod")
+    ) {
+      return "ios";
+    } else if (userAgent.includes("cros")) {
+      return "chromeos";
+    } else if (userAgent.includes("linux")) {
+      return "linux";
+    } else if (userAgent.includes("freebsd")) {
+      return "freebsd";
     }
   }
 
-  return 'unknown'
+  return "unknown";
 }
 
 // Custom error class with detailed information
 export class APIError extends Error {
-  code?: number
-  status?: number
-  details?: unknown
+  code?: number;
+  status?: number;
+  details?: unknown;
 
-  constructor(message: string, options?: { code?: number; status?: number; details?: unknown }) {
-    super(message)
-    this.name = 'APIError'
-    this.code = options?.code
-    this.status = options?.status
-    this.details = options?.details
+  constructor(
+    message: string,
+    options?: { code?: number; status?: number; details?: unknown },
+  ) {
+    super(message);
+    this.name = "APIError";
+    this.code = options?.code;
+    this.status = options?.status;
+    this.details = options?.details;
   }
 }
 
 // Extract detailed error message from various error formats
 function extractErrorMessage(error: unknown): string {
   if (error instanceof AxiosError) {
-    const response = error.response
-    const status = response?.status
-    const statusText = response?.statusText
+    const response = error.response;
+    const status = response?.status;
+    const statusText = response?.statusText;
 
     // Handle timeout errors
-    if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-      return `Request timed out. The server may be experiencing high load.`
+    if (error.code === "ECONNABORTED" || error.message.includes("timeout")) {
+      return `Request timed out. The server may be experiencing high load.`;
     }
 
     // Handle network errors
-    if (error.code === 'ERR_NETWORK') {
-      return `Network error: Unable to connect to the server. Please check your internet connection.`
+    if (error.code === "ERR_NETWORK") {
+      return `Network error: Unable to connect to the server. Please check your internet connection.`;
     }
 
     if (response?.data) {
-      const data = response.data as Record<string, unknown>
+      const data = response.data as Record<string, unknown>;
       // Try various error message formats
-      if (typeof data.message === 'string') {
-        return `${status ? `[${status}] ` : ''}${data.message}`
+      if (typeof data.message === "string") {
+        return `${status ? `[${status}] ` : ""}${data.message}`;
       }
-      if (typeof data.error === 'string') {
-        return `${status ? `[${status}] ` : ''}${data.error}`
+      if (typeof data.error === "string") {
+        return `${status ? `[${status}] ` : ""}${data.error}`;
       }
-      if (typeof data.detail === 'string') {
-        return `${status ? `[${status}] ` : ''}${data.detail}`
+      if (typeof data.detail === "string") {
+        return `${status ? `[${status}] ` : ""}${data.detail}`;
       }
       if (Array.isArray(data.detail)) {
-        const details = data.detail.map((d: { msg?: string; message?: string }) => d.msg || d.message || JSON.stringify(d)).join('; ')
-        return `${status ? `[${status}] ` : ''}${details}`
+        const details = data.detail
+          .map(
+            (d: { msg?: string; message?: string }) =>
+              d.msg || d.message || JSON.stringify(d),
+          )
+          .join("; ");
+        return `${status ? `[${status}] ` : ""}${details}`;
       }
       if (data.errors && Array.isArray(data.errors)) {
-        const errors = data.errors.map((e: { message?: string }) => e.message || JSON.stringify(e)).join('; ')
-        return `${status ? `[${status}] ` : ''}${errors}`
+        const errors = data.errors
+          .map((e: { message?: string }) => e.message || JSON.stringify(e))
+          .join("; ");
+        return `${status ? `[${status}] ` : ""}${errors}`;
       }
       // Fallback to stringified response with status
-      return `${status ? `[${status}${statusText ? ' ' + statusText : ''}] ` : ''}${JSON.stringify(data)}`
+      return `${status ? `[${status}${statusText ? " " + statusText : ""}] ` : ""}${JSON.stringify(data)}`;
     }
 
     // HTTP status without response body
     if (status) {
-      return `HTTP ${status}${statusText ? ': ' + statusText : ''}`
+      return `HTTP ${status}${statusText ? ": " + statusText : ""}`;
     }
 
-    if (error.message) return error.message
+    if (error.message) return error.message;
   }
-  if (error instanceof Error) return error.message
-  return String(error)
+  if (error instanceof Error) return error.message;
+  return String(error);
 }
 
 function createAPIError(error: unknown, fallbackMessage: string): APIError {
-  const message = extractErrorMessage(error) || fallbackMessage
-  const axiosError = error instanceof AxiosError ? error : null
+  const message = extractErrorMessage(error) || fallbackMessage;
+  const axiosError = error instanceof AxiosError ? error : null;
   return new APIError(message, {
     code: axiosError?.response?.data?.code,
     status: axiosError?.response?.status,
-    details: axiosError?.response?.data
-  })
+    details: axiosError?.response?.data,
+  });
 }
 
 export interface RunOptions {
-  timeout?: number
-  pollInterval?: number
-  enableSyncMode?: boolean
-  signal?: AbortSignal
+  timeout?: number;
+  pollInterval?: number;
+  enableSyncMode?: boolean;
+  signal?: AbortSignal;
 }
 
 export interface HistoryFilters {
-  model?: string
-  status?: 'completed' | 'failed' | 'processing' | 'created'
-  created_after?: string
-  created_before?: string
+  model?: string;
+  status?: "completed" | "failed" | "processing" | "created";
+  created_after?: string;
+  created_before?: string;
 }
 
 class WaveSpeedClient {
-  private client: AxiosInstance
-  private apiKey: string = ''
+  private client: AxiosInstance;
+  private apiKey: string = "";
 
   constructor() {
     this.client = axios.create({
@@ -141,99 +164,127 @@ class WaveSpeedClient {
       maxBodyLength: Infinity, // Allow large file uploads
       maxContentLength: Infinity, // Allow large response content
       headers: {
-        'Content-Type': 'application/json',
-        'X-Client-Name': (() => {
-          const os = getOperatingSystem()
-          return os === 'android' || os === 'ios' ? 'wavespeed-mobile' : 'wavespeed-desktop'
+        "Content-Type": "application/json",
+        "X-Client-Name": (() => {
+          const os = getOperatingSystem();
+          return os === "android" || os === "ios"
+            ? "wavespeed-mobile"
+            : "wavespeed-desktop";
         })(),
-        'X-Client-Version': version,
-        'X-Client-OS': getOperatingSystem()
-      }
-    })
+        "X-Client-Version": version,
+        "X-Client-OS": getOperatingSystem(),
+      },
+    });
 
     this.client.interceptors.request.use((config) => {
       if (this.apiKey) {
-        config.headers.Authorization = `Bearer ${this.apiKey}`
+        config.headers.Authorization = `Bearer ${this.apiKey}`;
       }
-      return config
-    })
+      return config;
+    });
   }
 
   setApiKey(apiKey: string) {
-    this.apiKey = apiKey
+    this.apiKey = apiKey;
   }
 
   getApiKey(): string {
-    return this.apiKey
+    return this.apiKey;
   }
 
   async listModels(): Promise<Model[]> {
     try {
-      const response = await this.client.get<ModelsResponse>('/api/v3/models')
+      const response = await this.client.get<ModelsResponse>("/api/v3/models");
       if (response.data.code !== 200) {
-        throw new APIError(response.data.message || 'Failed to fetch models', {
+        throw new APIError(response.data.message || "Failed to fetch models", {
           code: response.data.code,
-          details: response.data
-        })
+          details: response.data,
+        });
       }
-      return response.data.data
+      return response.data.data;
     } catch (error) {
-      throw createAPIError(error, 'Failed to fetch models')
+      throw createAPIError(error, "Failed to fetch models");
     }
   }
 
-  async runPrediction(model: string, input: Record<string, unknown>, options?: { timeout?: number; signal?: AbortSignal }): Promise<PredictionResult> {
+  async runPrediction(
+    model: string,
+    input: Record<string, unknown>,
+    options?: { timeout?: number; signal?: AbortSignal },
+  ): Promise<PredictionResult> {
     try {
-      const response = await this.client.post<PredictionResponse>(`/api/v3/${model}`, input, {
-        timeout: options?.timeout,
-        ...(options?.signal && { signal: options.signal })
-      })
+      const response = await this.client.post<PredictionResponse>(
+        `/api/v3/${model}`,
+        input,
+        {
+          timeout: options?.timeout,
+          ...(options?.signal && { signal: options.signal }),
+        },
+      );
       if (response.data.code !== 200) {
-        throw new APIError(response.data.message || 'Failed to run prediction', {
-          code: response.data.code,
-          details: response.data
-        })
+        throw new APIError(
+          response.data.message || "Failed to run prediction",
+          {
+            code: response.data.code,
+            details: response.data,
+          },
+        );
       }
-      return response.data.data
+      return response.data.data;
     } catch (error) {
-      throw createAPIError(error, 'Failed to run prediction')
+      throw createAPIError(error, "Failed to run prediction");
     }
   }
 
-  async getResult(requestId: string, options?: { signal?: AbortSignal }): Promise<PredictionResult> {
+  async getResult(
+    requestId: string,
+    options?: { signal?: AbortSignal },
+  ): Promise<PredictionResult> {
     try {
-      const response = await this.client.get<PredictionResponse>(`/api/v3/predictions/${requestId}/result`, {
-        ...(options?.signal && { signal: options.signal })
-      })
+      const response = await this.client.get<PredictionResponse>(
+        `/api/v3/predictions/${requestId}/result`,
+        {
+          ...(options?.signal && { signal: options.signal }),
+        },
+      );
       if (response.data.code !== 200) {
-        throw new APIError(response.data.message || 'Failed to get result', {
+        throw new APIError(response.data.message || "Failed to get result", {
           code: response.data.code,
-          details: response.data
-        })
+          details: response.data,
+        });
       }
-      return response.data.data
+      return response.data.data;
     } catch (error) {
       // Re-throw AxiosError directly so the polling loop in run() can detect
       // connection errors and retry instead of aborting the entire prediction.
-      if (error instanceof AxiosError) throw error
-      throw createAPIError(error, 'Failed to get result')
+      if (error instanceof AxiosError) throw error;
+      throw createAPIError(error, "Failed to get result");
     }
   }
 
   // Get prediction details including inputs (if available from API)
-  async getPredictionDetails(predictionId: string): Promise<PredictionResult & { input?: Record<string, unknown> }> {
+  async getPredictionDetails(
+    predictionId: string,
+  ): Promise<PredictionResult & { input?: Record<string, unknown> }> {
     try {
-      const response = await this.client.get<PredictionResponse>(`/api/v3/predictions/${predictionId}/result`)
+      const response = await this.client.get<PredictionResponse>(
+        `/api/v3/predictions/${predictionId}/result`,
+      );
       if (response.data.code !== 200) {
-        throw new APIError(response.data.message || 'Failed to get prediction details', {
-          code: response.data.code,
-          details: response.data
-        })
+        throw new APIError(
+          response.data.message || "Failed to get prediction details",
+          {
+            code: response.data.code,
+            details: response.data,
+          },
+        );
       }
       // The API might return 'input' field with the original inputs
-      return response.data.data as PredictionResult & { input?: Record<string, unknown> }
+      return response.data.data as PredictionResult & {
+        input?: Record<string, unknown>;
+      };
     } catch (error) {
-      throw createAPIError(error, 'Failed to get prediction details')
+      throw createAPIError(error, "Failed to get prediction details");
     }
   }
 
@@ -241,95 +292,120 @@ class WaveSpeedClient {
   private isConnectionError(error: unknown): boolean {
     if (error instanceof AxiosError) {
       // Timeout errors
-      if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-        return true
+      if (error.code === "ECONNABORTED" || error.message.includes("timeout")) {
+        return true;
       }
       // Network errors
-      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
-        return true
+      if (
+        error.code === "ERR_NETWORK" ||
+        error.code === "ECONNREFUSED" ||
+        error.code === "ENOTFOUND"
+      ) {
+        return true;
       }
     }
-    return false
+    return false;
   }
 
   async run(
     model: string,
     input: Record<string, unknown>,
-    options: RunOptions = {}
+    options: RunOptions = {},
   ): Promise<PredictionResult> {
-    const { timeout = 36000000, pollInterval = 1000, enableSyncMode = false, signal } = options
+    const {
+      timeout = 36000000,
+      pollInterval = 1000,
+      enableSyncMode = false,
+      signal,
+    } = options;
 
     const throwIfAborted = (): void => {
-      if (signal?.aborted) throw new DOMException('Cancelled', 'AbortError')
-    }
+      if (signal?.aborted) throw new DOMException("Cancelled", "AbortError");
+    };
 
     // If sync mode is enabled, add it to input and wait for response (use longer timeout)
     if (enableSyncMode) {
-      const result = await this.runPrediction(model, { ...input, enable_sync_mode: true }, { timeout: 120000, signal })
-      return result
+      const result = await this.runPrediction(
+        model,
+        { ...input, enable_sync_mode: true },
+        { timeout: 120000, signal },
+      );
+      return result;
     }
 
-    throwIfAborted()
+    throwIfAborted();
     // Submit prediction
-    const prediction = await this.runPrediction(model, input, { signal })
-    const requestId = prediction.id
+    const prediction = await this.runPrediction(model, input, { signal });
+    const requestId = prediction.id;
 
     if (!requestId) {
-      throw new Error('No request ID in response')
+      throw new Error("No request ID in response");
     }
 
     // Poll for result with retry on connection errors
-    const startTime = Date.now()
-    let consecutiveErrors = 0
-    const MAX_CONSECUTIVE_ERRORS = 10
+    const startTime = Date.now();
+    let consecutiveErrors = 0;
+    const MAX_CONSECUTIVE_ERRORS = 10;
     while (true) {
-      throwIfAborted()
+      throwIfAborted();
       if (Date.now() - startTime > timeout) {
-        throw new Error('Prediction timed out')
+        throw new Error("Prediction timed out");
       }
 
       try {
-        const result = await this.getResult(requestId, { signal })
-        consecutiveErrors = 0 // reset on success
+        const result = await this.getResult(requestId, { signal });
+        consecutiveErrors = 0; // reset on success
 
-        if (result.status === 'completed') {
-          return result
+        if (result.status === "completed") {
+          return result;
         }
 
-        if (result.status === 'failed') {
-          throw new APIError(result.error || 'Prediction failed', {
-            details: result
-          })
+        if (result.status === "failed") {
+          throw new APIError(result.error || "Prediction failed", {
+            details: result,
+          });
         }
       } catch (error) {
-        if (signal?.aborted) throw new DOMException('Cancelled', 'AbortError')
+        if (signal?.aborted) throw new DOMException("Cancelled", "AbortError");
         // Retry with exponential backoff on connection errors
         if (this.isConnectionError(error)) {
-          consecutiveErrors++
+          consecutiveErrors++;
           if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
-            throw new Error(`Polling failed after ${MAX_CONSECUTIVE_ERRORS} consecutive connection errors`)
+            throw new Error(
+              `Polling failed after ${MAX_CONSECUTIVE_ERRORS} consecutive connection errors`,
+            );
           }
-          const backoff = Math.min(1000 * Math.pow(2, consecutiveErrors - 1), 10000)
-          console.warn(`Connection error during polling (${consecutiveErrors}/${MAX_CONSECUTIVE_ERRORS}), retrying in ${backoff}ms...`, error)
-          await new Promise(resolve => setTimeout(resolve, backoff))
-          continue
+          const backoff = Math.min(
+            1000 * Math.pow(2, consecutiveErrors - 1),
+            10000,
+          );
+          console.warn(
+            `Connection error during polling (${consecutiveErrors}/${MAX_CONSECUTIVE_ERRORS}), retrying in ${backoff}ms...`,
+            error,
+          );
+          await new Promise((resolve) => setTimeout(resolve, backoff));
+          continue;
         }
         // Re-throw non-connection errors
-        throw error
+        throw error;
       }
 
       // Wait before next poll (abort-aware when signal provided)
-      throwIfAborted()
+      throwIfAborted();
       if (signal) {
         await new Promise<void>((resolve, reject) => {
-          const t = setTimeout(resolve, pollInterval)
-          signal.addEventListener('abort', () => {
-            clearTimeout(t)
-            reject(new DOMException('Cancelled', 'AbortError'))
-          }, { once: true })
-        })
+          const t = setTimeout(resolve, pollInterval);
+          signal.addEventListener(
+            "abort",
+            () => {
+              clearTimeout(t);
+              reject(new DOMException("Cancelled", "AbortError"));
+            },
+            { once: true },
+          );
+        });
       } else {
-        await new Promise(resolve => setTimeout(resolve, pollInterval))
+        await new Promise((resolve) => setTimeout(resolve, pollInterval));
       }
     }
   }
@@ -337,163 +413,185 @@ class WaveSpeedClient {
   async getHistory(
     page: number = 1,
     pageSize: number = 20,
-    filters?: HistoryFilters
-  ): Promise<HistoryResponse['data']> {
+    filters?: HistoryFilters,
+  ): Promise<HistoryResponse["data"]> {
     try {
       // Default to last 24 hours if no date filters provided
-      const now = new Date()
-      const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+      const now = new Date();
+      const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
       const body: Record<string, unknown> = {
         page,
         page_size: pageSize,
         created_after: filters?.created_after || oneDayAgo.toISOString(),
-        created_before: filters?.created_before || now.toISOString()
-      }
+        created_before: filters?.created_before || now.toISOString(),
+      };
 
-      if (filters?.model) body.model = filters.model
-      if (filters?.status) body.status = filters.status
+      if (filters?.model) body.model = filters.model;
+      if (filters?.status) body.status = filters.status;
 
-      const response = await this.client.post<HistoryResponse>('/api/v3/predictions', body)
+      const response = await this.client.post<HistoryResponse>(
+        "/api/v3/predictions",
+        body,
+      );
       if (response.data.code !== 200) {
-        throw new APIError(response.data.message || 'Failed to fetch history', {
+        throw new APIError(response.data.message || "Failed to fetch history", {
           code: response.data.code,
-          details: response.data
-        })
+          details: response.data,
+        });
       }
-      return response.data.data
+      return response.data.data;
     } catch (error) {
-      throw createAPIError(error, 'Failed to fetch history')
+      throw createAPIError(error, "Failed to fetch history");
     }
   }
 
   async deletePrediction(predictionId: string): Promise<void> {
-    await this.deletePredictions([predictionId])
+    await this.deletePredictions([predictionId]);
   }
 
   async deletePredictions(predictionIds: string[]): Promise<void> {
     try {
       const response = await this.client.post<{
-        code: number
-        message: string
-        data?: unknown
-      }>('/api/v3/predictions/delete', {
-        ids: predictionIds
-      })
+        code: number;
+        message: string;
+        data?: unknown;
+      }>("/api/v3/predictions/delete", {
+        ids: predictionIds,
+      });
 
       if (response.data.code !== 200) {
-        throw new APIError(response.data.message || 'Failed to delete prediction', {
-          code: response.data.code,
-          details: response.data
-        })
+        throw new APIError(
+          response.data.message || "Failed to delete prediction",
+          {
+            code: response.data.code,
+            details: response.data,
+          },
+        );
       }
     } catch (error) {
-      throw createAPIError(error, 'Failed to delete prediction')
+      throw createAPIError(error, "Failed to delete prediction");
     }
   }
 
   async uploadFile(file: File, signal?: AbortSignal): Promise<string> {
     try {
-      const formData = new FormData()
-      formData.append('file', file)
+      const formData = new FormData();
+      formData.append("file", file);
 
       // Dynamic timeout based on file size
       // Minimum 120 seconds, add 1 second per MB, maximum 10 minutes
-      const minTimeout = 120000
-      const maxTimeout = 600000
-      const fileSizeMb = file.size / (1024 * 1024)
-      const timeout = Math.min(maxTimeout, Math.max(minTimeout, Math.ceil(fileSizeMb) * 1000 + minTimeout))
+      const minTimeout = 120000;
+      const maxTimeout = 600000;
+      const fileSizeMb = file.size / (1024 * 1024);
+      const timeout = Math.min(
+        maxTimeout,
+        Math.max(minTimeout, Math.ceil(fileSizeMb) * 1000 + minTimeout),
+      );
 
-      const response = await this.client.post<UploadResponse>('/api/v3/media/upload/binary', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
+      const response = await this.client.post<UploadResponse>(
+        "/api/v3/media/upload/binary",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          timeout,
+          signal,
         },
-        timeout,
-        signal
-      })
+      );
 
       if (response.data.code !== 200) {
-        throw new APIError(response.data.message || 'Failed to upload file', {
+        throw new APIError(response.data.message || "Failed to upload file", {
           code: response.data.code,
-          details: response.data
-        })
+          details: response.data,
+        });
       }
 
-      return response.data.data.download_url
+      return response.data.data.download_url;
     } catch (error) {
       // Check if this is a cancellation error
-      if (axios.isCancel(error) || (error instanceof Error && error.name === 'CanceledError')) {
-        throw new APIError('Upload cancelled', { code: 0 })
+      if (
+        axios.isCancel(error) ||
+        (error instanceof Error && error.name === "CanceledError")
+      ) {
+        throw new APIError("Upload cancelled", { code: 0 });
       }
-      throw createAPIError(error, 'Failed to upload file')
+      throw createAPIError(error, "Failed to upload file");
     }
   }
 
   async optimizePrompt(input: Record<string, unknown>): Promise<string> {
     try {
       const result = await this.run(
-        'wavespeed-ai/prompt-optimizer',
+        "wavespeed-ai/prompt-optimizer",
         { ...input, enable_sync_mode: true },
-        { enableSyncMode: true }
-      )
+        { enableSyncMode: true },
+      );
 
       if (result.outputs && result.outputs.length > 0) {
-        const output = result.outputs[0]
+        const output = result.outputs[0];
         // Prompt optimizer always returns a string
-        return typeof output === 'string' ? output : JSON.stringify(output)
+        return typeof output === "string" ? output : JSON.stringify(output);
       }
 
-      throw new APIError('No optimized prompt returned')
+      throw new APIError("No optimized prompt returned");
     } catch (error) {
-      throw createAPIError(error, 'Failed to optimize prompt')
+      throw createAPIError(error, "Failed to optimize prompt");
     }
   }
 
-  async calculatePricing(modelId: string, inputs: Record<string, unknown>): Promise<number> {
+  async calculatePricing(
+    modelId: string,
+    inputs: Record<string, unknown>,
+  ): Promise<number> {
     try {
       const response = await this.client.post<{
-        code: number
-        message: string
-        data: { unit_price: number }
-      }>('/api/v3/model/pricing', {
+        code: number;
+        message: string;
+        data: { unit_price: number };
+      }>("/api/v3/model/pricing", {
         model_id: modelId,
-        inputs
-      })
+        inputs,
+      });
 
       if (response.data.code !== 200) {
-        throw new APIError(response.data.message || 'Failed to calculate pricing', {
-          code: response.data.code,
-          details: response.data
-        })
+        throw new APIError(
+          response.data.message || "Failed to calculate pricing",
+          {
+            code: response.data.code,
+            details: response.data,
+          },
+        );
       }
 
-      return response.data.data.unit_price
+      return response.data.data.unit_price;
     } catch (error) {
-      throw createAPIError(error, 'Failed to calculate pricing')
+      throw createAPIError(error, "Failed to calculate pricing");
     }
   }
 
   async getBalance(): Promise<number> {
     try {
       const response = await this.client.get<{
-        code: number
-        message: string
-        data: { balance: number }
-      }>('/api/v3/balance')
+        code: number;
+        message: string;
+        data: { balance: number };
+      }>("/api/v3/balance");
 
       if (response.data.code !== 200) {
-        throw new APIError(response.data.message || 'Failed to fetch balance', {
+        throw new APIError(response.data.message || "Failed to fetch balance", {
           code: response.data.code,
-          details: response.data
-        })
+          details: response.data,
+        });
       }
 
-      return response.data.data.balance
+      return response.data.data.balance;
     } catch (error) {
-      throw createAPIError(error, 'Failed to fetch balance')
+      throw createAPIError(error, "Failed to fetch balance");
     }
   }
 }
 
-export const apiClient = new WaveSpeedClient()
-export default apiClient
+export const apiClient = new WaveSpeedClient();
+export default apiClient;

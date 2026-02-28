@@ -1,74 +1,101 @@
 // Z-Image: Local AI Image Generation using Playground components
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Zap, AlertCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Progress } from '@/components/ui/progress'
-import { DynamicForm } from '@/components/playground/DynamicForm'
-import { OutputDisplay } from '@/components/playground/OutputDisplay'
-import { LogConsole } from '@/components/shared/LogConsole'
-import { useSDModelsStore } from '@/stores/sdModelsStore'
-import { useAssetsStore } from '@/stores/assetsStore'
-import { getDownloadTimeoutMs } from '@/stores/settingsStore'
-import { useZImage } from '@/hooks/useZImage'
-import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
-import { createZImageModel, ZIMAGE_DEFAULT_NEGATIVE_PROMPT } from '@/lib/zImageModel'
-import { schemaToFormFields, validateFormValues } from '@/lib/schemaToForm'
-import { PREDEFINED_MODELS } from '@/types/stable-diffusion'
-import { ChunkedDownloader } from '@/lib/chunkedDownloader'
-import { formatBytes } from '@/types/progress'
-import type { PredictionResult } from '@/types/prediction'
-import type { SamplingMethod, Scheduler } from '@/types/stable-diffusion'
-import type { ProgressDetail } from '@/types/progress'
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { Zap, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
+import { DynamicForm } from "@/components/playground/DynamicForm";
+import { OutputDisplay } from "@/components/playground/OutputDisplay";
+import { LogConsole } from "@/components/shared/LogConsole";
+import { useSDModelsStore } from "@/stores/sdModelsStore";
+import { useAssetsStore } from "@/stores/assetsStore";
+import { getDownloadTimeoutMs } from "@/stores/settingsStore";
+import { useZImage } from "@/hooks/useZImage";
+import { useMultiPhaseProgress } from "@/hooks/useMultiPhaseProgress";
+import {
+  createZImageModel,
+  ZIMAGE_DEFAULT_NEGATIVE_PROMPT,
+} from "@/lib/zImageModel";
+import { schemaToFormFields, validateFormValues } from "@/lib/schemaToForm";
+import { PREDEFINED_MODELS } from "@/types/stable-diffusion";
+import { ChunkedDownloader } from "@/lib/chunkedDownloader";
+import { formatBytes } from "@/types/progress";
+import type { PredictionResult } from "@/types/prediction";
+import type { SamplingMethod, Scheduler } from "@/types/stable-diffusion";
+import type { ProgressDetail } from "@/types/progress";
 
 // Check if running in Electron environment (not web polyfill)
 function isElectronAvailable(): boolean {
-  return typeof window !== 'undefined' &&
-    navigator.userAgent.toLowerCase().includes('electron') &&
+  return (
+    typeof window !== "undefined" &&
+    navigator.userAgent.toLowerCase().includes("electron") &&
     !!window.electronAPI?.sdListModels
+  );
 }
 
 const PHASES = [
-  { id: 'download-sd', labelKey: 'Downloading SD', weight: 0.125 },
-  { id: 'download-vae', labelKey: 'Downloading VAE', weight: 0.125 },
-  { id: 'download-llm', labelKey: 'Downloading LLM', weight: 0.25 },
-  { id: 'download-model', labelKey: 'Downloading Model', weight: 0.25 },
-  { id: 'generate', labelKey: 'Generating', weight: 0.25 }
-]
+  { id: "download-sd", labelKey: "Downloading SD", weight: 0.125 },
+  { id: "download-vae", labelKey: "Downloading VAE", weight: 0.125 },
+  { id: "download-llm", labelKey: "Downloading LLM", weight: 0.25 },
+  { id: "download-model", labelKey: "Downloading Model", weight: 0.25 },
+  { id: "generate", labelKey: "Generating", weight: 0.25 },
+];
 
 export function ZImagePage() {
-  const { t } = useTranslation()
-  const electronAvailable = isElectronAvailable()
+  const { t } = useTranslation();
+  const electronAvailable = isElectronAvailable();
 
   // Mobile view state for tab switching
-  const [mobileView, setMobileView] = useState<'config' | 'output'>('config')
+  const [mobileView, setMobileView] = useState<"config" | "output">("config");
 
   // Create ZImage model for DynamicForm
-  const [zImageModel] = useState(() => createZImageModel())
+  const [zImageModel] = useState(() => createZImageModel());
   const zImageFields = useMemo(() => {
-    const apiSchemas = (zImageModel.api_schema as { api_schemas?: Array<{ type: string; request_schema?: { properties?: Record<string, unknown>; required?: string[]; 'x-order-properties'?: string[] } }> })?.api_schemas
-    const requestSchema = apiSchemas?.find(s => s.type === 'model_run')?.request_schema
-    if (!requestSchema?.properties) return []
+    const apiSchemas = (
+      zImageModel.api_schema as {
+        api_schemas?: Array<{
+          type: string;
+          request_schema?: {
+            properties?: Record<string, unknown>;
+            required?: string[];
+            "x-order-properties"?: string[];
+          };
+        }>;
+      }
+    )?.api_schemas;
+    const requestSchema = apiSchemas?.find(
+      (s) => s.type === "model_run",
+    )?.request_schema;
+    if (!requestSchema?.properties) return [];
     return schemaToFormFields(
-      requestSchema.properties as Record<string, import('@/types/model').SchemaProperty>,
+      requestSchema.properties as Record<
+        string,
+        import("@/types/model").SchemaProperty
+      >,
       requestSchema.required || [],
-      requestSchema['x-order-properties']
-    )
-  }, [zImageModel])
+      requestSchema["x-order-properties"],
+    );
+  }, [zImageModel]);
 
   // Form state
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
 
   // Generation state
-  const [error, setError] = useState<string | null>(null)
-  const [prediction, setPrediction] = useState<PredictionResult | null>(null)
-  const [outputs, setOutputs] = useState<string[]>([])
-  const [usedSeed, setUsedSeed] = useState<number | null>(null)
-  const [metalWarning, setMetalWarning] = useState<string | null>(null)
-  const [accelerationInfo, setAccelerationInfo] = useState<{ platform: string; arch: string; acceleration: string } | null>(null)
-  const [vramMb, setVramMb] = useState<number | null>(null)
+  const [error, setError] = useState<string | null>(null);
+  const [prediction, setPrediction] = useState<PredictionResult | null>(null);
+  const [outputs, setOutputs] = useState<string[]>([]);
+  const [usedSeed, setUsedSeed] = useState<number | null>(null);
+  const [metalWarning, setMetalWarning] = useState<string | null>(null);
+  const [accelerationInfo, setAccelerationInfo] = useState<{
+    platform: string;
+    arch: string;
+    acceleration: string;
+  } | null>(null);
+  const [vramMb, setVramMb] = useState<number | null>(null);
 
   // Stores
   const {
@@ -83,14 +110,15 @@ export function ZImagePage() {
     setZImageFormValue,
     setZImageFormValues,
     isGenerating,
-    setIsGenerating
-  } = useSDModelsStore()
+    setIsGenerating,
+  } = useSDModelsStore();
 
   // Assets store for auto-registration
-  const { registerLocalAsset } = useAssetsStore()
+  const { registerLocalAsset } = useAssetsStore();
 
   // Progress tracking
-  const { progress, startPhase, updatePhase, completePhase, complete, reset } = useMultiPhaseProgress({ phases: PHASES })
+  const { progress, startPhase, updatePhase, completePhase, complete, reset } =
+    useMultiPhaseProgress({ phases: PHASES });
 
   // useZImage hook for downloads and generation
   const {
@@ -98,275 +126,325 @@ export function ZImagePage() {
     downloadVae,
     downloadBinary,
     generate: generateZImage,
-    cancelDownload
+    cancelDownload,
   } = useZImage({
     onPhase: (phase) => {
-      if (phase === 'download-binary') startPhase('download-sd')
-      else if (phase === 'download-vae') startPhase('download-vae')
-      else if (phase === 'download-llm') startPhase('download-llm')
-      else startPhase(phase)
+      if (phase === "download-binary") startPhase("download-sd");
+      else if (phase === "download-vae") startPhase("download-vae");
+      else if (phase === "download-llm") startPhase("download-llm");
+      else startPhase(phase);
     },
     onProgress: (phase, prog, detail) => {
-      const progressDetail = detail as ProgressDetail | undefined
-      if (phase === 'download-binary') {
-        updatePhase('download-sd', prog, progressDetail)
-      } else if (phase === 'download-vae') {
-        updatePhase('download-vae', prog, progressDetail)
-      } else if (phase === 'download-llm') {
-        updatePhase('download-llm', prog, progressDetail)
+      const progressDetail = detail as ProgressDetail | undefined;
+      if (phase === "download-binary") {
+        updatePhase("download-sd", prog, progressDetail);
+      } else if (phase === "download-vae") {
+        updatePhase("download-vae", prog, progressDetail);
+      } else if (phase === "download-llm") {
+        updatePhase("download-llm", prog, progressDetail);
       } else {
-        updatePhase(phase, prog, progressDetail)
+        updatePhase(phase, prog, progressDetail);
       }
     },
-    onError: (err) => setError(err)
-  })
+    onError: (err) => setError(err),
+  });
 
   // Refs for cancellation
-  const modelDownloaderRef = useRef<ChunkedDownloader | null>(null)
-  const isCancelledRef = useRef(false)
+  const modelDownloaderRef = useRef<ChunkedDownloader | null>(null);
+  const isCancelledRef = useRef(false);
 
   // Initialize on mount
   useEffect(() => {
     if (electronAvailable) {
-      fetchSDModels()
-      checkAuxiliaryModels()
+      fetchSDModels();
+      checkAuxiliaryModels();
     }
-  }, [electronAvailable, fetchSDModels, checkAuxiliaryModels])
+  }, [electronAvailable, fetchSDModels, checkAuxiliaryModels]);
 
   // Detect hardware acceleration for local generation
   useEffect(() => {
-    let active = true
+    let active = true;
     if (!electronAvailable || !window.electronAPI?.sdGetSystemInfo) {
-      return
+      return;
     }
 
-    window.electronAPI.sdGetSystemInfo().then((info) => {
-      if (!active || !info) return
-      setAccelerationInfo({ platform: info.platform, arch: info.arch, acceleration: info.acceleration })
-    }).catch(() => {
-      // Ignore acceleration detection failures
-    })
+    window.electronAPI
+      .sdGetSystemInfo()
+      .then((info) => {
+        if (!active || !info) return;
+        setAccelerationInfo({
+          platform: info.platform,
+          arch: info.arch,
+          acceleration: info.acceleration,
+        });
+      })
+      .catch(() => {
+        // Ignore acceleration detection failures
+      });
 
     return () => {
-      active = false
-    }
-  }, [electronAvailable])
+      active = false;
+    };
+  }, [electronAvailable]);
 
   // Detect GPU VRAM for auto-toggling low VRAM settings
   useEffect(() => {
-    let active = true
+    let active = true;
     if (!electronAvailable || !window.electronAPI?.sdGetGpuVramMb) {
-      return
+      return;
     }
 
-    window.electronAPI.sdGetGpuVramMb().then((result) => {
-      if (!active) return
-      if (result?.success && Number.isFinite(result.vramMb)) {
-        setVramMb(result.vramMb)
-      } else {
-        setVramMb(null)
-      }
-    }).catch(() => {
-      // Ignore VRAM detection failures
-    })
+    window.electronAPI
+      .sdGetGpuVramMb()
+      .then((result) => {
+        if (!active) return;
+        if (result?.success && Number.isFinite(result.vramMb)) {
+          setVramMb(result.vramMb);
+        } else {
+          setVramMb(null);
+        }
+      })
+      .catch(() => {
+        // Ignore VRAM detection failures
+      });
 
     return () => {
-      active = false
-    }
-  }, [electronAvailable])
+      active = false;
+    };
+  }, [electronAvailable]);
 
-  const isLowVramGpu = vramMb !== null && vramMb < 16000
-  const hasWindowsGpu = accelerationInfo?.platform === 'win32' && accelerationInfo.arch === 'x64' && (accelerationInfo.acceleration !== 'CPU' || vramMb !== null)
+  const isLowVramGpu = vramMb !== null && vramMb < 16000;
+  const hasWindowsGpu =
+    accelerationInfo?.platform === "win32" &&
+    accelerationInfo.arch === "x64" &&
+    (accelerationInfo.acceleration !== "CPU" || vramMb !== null);
 
   useEffect(() => {
-    if (!isLowVramGpu) return
-    setZImageFormValue('low_vram_mode', true)
-    setZImageFormValue('vae_tiling', true)
-  }, [isLowVramGpu, setZImageFormValue])
+    if (!isLowVramGpu) return;
+    setZImageFormValue("low_vram_mode", true);
+    setZImageFormValue("vae_tiling", true);
+  }, [isLowVramGpu, setZImageFormValue]);
 
   // Listen for generation progress from sd.cpp
   useEffect(() => {
     if (!electronAvailable || !window.electronAPI?.onSdProgress) {
-      return
+      return;
     }
 
     const unsubscribe = window.electronAPI.onSdProgress((data) => {
-      if (data.phase !== 'generate') return
-      const detail = data.detail as ProgressDetail | undefined
-      updatePhase('generate', data.progress, detail)
-    })
+      if (data.phase !== "generate") return;
+      const detail = data.detail as ProgressDetail | undefined;
+      updatePhase("generate", data.progress, detail);
+    });
 
     return () => {
-      unsubscribe()
-    }
-  }, [electronAvailable, updatePhase])
+      unsubscribe();
+    };
+  }, [electronAvailable, updatePhase]);
 
   // Listen for Metal fallback errors during generation
   useEffect(() => {
     if (!electronAvailable || !isGenerating || !window.electronAPI?.onSdLog) {
-      return
+      return;
     }
 
     const removeListener = window.electronAPI.onSdLog((data) => {
-      if (metalWarning) return
-      const msg = data.message || ''
-      if (/ggml_metal_init: error|ggml_backend_metal_init: error|failed to create command queue/i.test(msg)) {
-        setMetalWarning(t('zImage.warnings.metalFallback', 'Metal initialization failed, falling back to CPU. Generation will be much slower.'))
+      if (metalWarning) return;
+      const msg = data.message || "";
+      if (
+        /ggml_metal_init: error|ggml_backend_metal_init: error|failed to create command queue/i.test(
+          msg,
+        )
+      ) {
+        setMetalWarning(
+          t(
+            "zImage.warnings.metalFallback",
+            "Metal initialization failed, falling back to CPU. Generation will be much slower.",
+          ),
+        );
       }
-    })
+    });
 
     return () => {
-      removeListener()
-    }
-  }, [electronAvailable, isGenerating, metalWarning, t])
+      removeListener();
+    };
+  }, [electronAvailable, isGenerating, metalWarning, t]);
 
   // Form handlers
-  const handleFormChange = useCallback((key: string, value: unknown) => {
-    if (isLowVramGpu && (key === 'low_vram_mode' || key === 'vae_tiling') && value === false) {
-      setZImageFormValue(key, true)
-      return
-    }
-    setZImageFormValue(key, value)
-    if (validationErrors[key]) {
-      setValidationErrors(prev => ({ ...prev, [key]: '' }))
-    }
-  }, [isLowVramGpu, setZImageFormValue, validationErrors])
+  const handleFormChange = useCallback(
+    (key: string, value: unknown) => {
+      if (
+        isLowVramGpu &&
+        (key === "low_vram_mode" || key === "vae_tiling") &&
+        value === false
+      ) {
+        setZImageFormValue(key, true);
+        return;
+      }
+      setZImageFormValue(key, value);
+      if (validationErrors[key]) {
+        setValidationErrors((prev) => ({ ...prev, [key]: "" }));
+      }
+    },
+    [isLowVramGpu, setZImageFormValue, validationErrors],
+  );
 
-  const handleSetDefaults = useCallback((defaults: Record<string, unknown>) => {
-    setZImageFormValues(defaults)
-  }, [setZImageFormValues])
+  const handleSetDefaults = useCallback(
+    (defaults: Record<string, unknown>) => {
+      setZImageFormValues(defaults);
+    },
+    [setZImageFormValues],
+  );
 
   // Main generation handler
   const handleGenerate = async () => {
-    setError(null)
-    setPrediction(null)
-    setOutputs([])
-    setUsedSeed(null)
-    setMetalWarning(null)
-    isCancelledRef.current = false
-    setValidationErrors({})
+    setError(null);
+    setPrediction(null);
+    setOutputs([]);
+    setUsedSeed(null);
+    setMetalWarning(null);
+    isCancelledRef.current = false;
+    setValidationErrors({});
 
     // Check Electron availability
     if (!electronAvailable) {
-      setError(t('zImage.errors.desktopRequired', 'This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.'))
-      return
+      setError(
+        t(
+          "zImage.errors.desktopRequired",
+          "This feature requires the desktop app. Please download WaveSpeed Desktop or try the online version.",
+        ),
+      );
+      return;
     }
 
     // Get selected SD model
-    const sdModelId = (zImageFormValues.model as string) || 'z-image-turbo-q4-k'
-    const sdModel = PREDEFINED_MODELS.find(m => m.id === sdModelId)
-    const sdModelState = sdModels.find(m => m.id === sdModelId)
+    const sdModelId =
+      (zImageFormValues.model as string) || "z-image-turbo-q4-k";
+    const sdModel = PREDEFINED_MODELS.find((m) => m.id === sdModelId);
+    const sdModelState = sdModels.find((m) => m.id === sdModelId);
 
     if (!sdModel) {
-      setError('Selected model not found')
-      return
+      setError("Selected model not found");
+      return;
     }
 
-    setIsGenerating(true)
-    reset()
-    setMobileView('output') // Auto-switch to output on mobile
+    setIsGenerating(true);
+    reset();
+    setMobileView("output"); // Auto-switch to output on mobile
 
-    let modelPath = sdModelState?.isDownloaded ? sdModelState.localPath : null
+    let modelPath = sdModelState?.isDownloaded ? sdModelState.localPath : null;
 
     try {
       // 1. Download SD binary if needed
       if (!binaryStatus.downloaded) {
-        await downloadBinary()
-        if (isCancelledRef.current) throw new Error('Cancelled')
+        await downloadBinary();
+        if (isCancelledRef.current) throw new Error("Cancelled");
       } else {
-        completePhase('download-sd')
+        completePhase("download-sd");
       }
 
       // 2. Download VAE if needed
       if (!vaeStatus.downloaded) {
-        await downloadVae()
-        if (isCancelledRef.current) throw new Error('Cancelled')
+        await downloadVae();
+        if (isCancelledRef.current) throw new Error("Cancelled");
       } else {
-        completePhase('download-vae')
+        completePhase("download-vae");
       }
 
       // 3. Download LLM if needed
       if (!llmStatus.downloaded) {
-        await downloadLlm()
-        if (isCancelledRef.current) throw new Error('Cancelled')
+        await downloadLlm();
+        if (isCancelledRef.current) throw new Error("Cancelled");
       } else {
-        completePhase('download-llm')
+        completePhase("download-llm");
       }
 
       // 4. Download model if needed
       if (!sdModelState?.isDownloaded) {
-        startPhase('download-model')
-        updateModelDownloadStatus({ downloading: true, progress: 0 })
+        startPhase("download-model");
+        updateModelDownloadStatus({ downloading: true, progress: 0 });
 
-        const modelsResult = await window.electronAPI?.sdGetModelsDir()
+        const modelsResult = await window.electronAPI?.sdGetModelsDir();
         if (!modelsResult?.success || !modelsResult.path) {
-          throw new Error('Failed to get models directory')
+          throw new Error("Failed to get models directory");
         }
 
-        const destPath = `${modelsResult.path}/${sdModel.name}`
-        const downloader = new ChunkedDownloader()
-        modelDownloaderRef.current = downloader
+        const destPath = `${modelsResult.path}/${sdModel.name}`;
+        const downloader = new ChunkedDownloader();
+        modelDownloaderRef.current = downloader;
 
         const result = await downloader.download({
           url: sdModel.downloadUrl,
           destPath,
           onProgress: (prog) => {
-            updatePhase('download-model', prog.progress, prog.detail)
-            updateModelDownloadStatus({ progress: prog.progress, detail: prog.detail })
+            updatePhase("download-model", prog.progress, prog.detail);
+            updateModelDownloadStatus({
+              progress: prog.progress,
+              detail: prog.detail,
+            });
           },
           chunkSize: 10 * 1024 * 1024,
           minValidSize: 500 * 1024 * 1024,
-          timeout: getDownloadTimeoutMs()
-        })
+          timeout: getDownloadTimeoutMs(),
+        });
 
-        modelDownloaderRef.current = null
+        modelDownloaderRef.current = null;
 
         if (!result.success) {
-          updateModelDownloadStatus({ downloading: false, error: result.error })
-          throw new Error(result.error || 'Download failed')
+          updateModelDownloadStatus({
+            downloading: false,
+            error: result.error,
+          });
+          throw new Error(result.error || "Download failed");
         }
 
-        updateModelDownloadStatus({ downloading: false, downloaded: true, progress: 100 })
-        completePhase('download-model')
-        modelPath = result.filePath
-        await fetchSDModels()
+        updateModelDownloadStatus({
+          downloading: false,
+          downloaded: true,
+          progress: 100,
+        });
+        completePhase("download-model");
+        modelPath = result.filePath;
+        await fetchSDModels();
 
-        if (isCancelledRef.current) throw new Error('Cancelled')
+        if (isCancelledRef.current) throw new Error("Cancelled");
       } else {
-        completePhase('download-model')
+        completePhase("download-model");
       }
 
       if (!modelPath) {
-        throw new Error('Model path not available')
+        throw new Error("Model path not available");
       }
 
       // 5. Generate image using useZImage hook
-      startPhase('generate')
+      startPhase("generate");
 
-      const validation = validateFormValues(zImageFields, zImageFormValues)
+      const validation = validateFormValues(zImageFields, zImageFormValues);
       if (Object.keys(validation).length > 0) {
-        setValidationErrors(validation)
-        reset()
-        setIsGenerating(false)
-        return
+        setValidationErrors(validation);
+        reset();
+        setIsGenerating(false);
+        return;
       }
 
-      const prompt = ((zImageFormValues.prompt as string) || '').trim()
-      const negativePrompt = ((zImageFormValues.negative_prompt as string) || '').trim() || ZIMAGE_DEFAULT_NEGATIVE_PROMPT
+      const prompt = ((zImageFormValues.prompt as string) || "").trim();
+      const negativePrompt =
+        ((zImageFormValues.negative_prompt as string) || "").trim() ||
+        ZIMAGE_DEFAULT_NEGATIVE_PROMPT;
 
-      let seed = zImageFormValues.seed as number
+      let seed = zImageFormValues.seed as number;
       if (seed === undefined || seed === -1) {
-        seed = Math.floor(Math.random() * 2147483647)
+        seed = Math.floor(Math.random() * 2147483647);
       }
 
-      const sizeStr = (zImageFormValues.size as string) || '1024*1024'
-      const sizeParts = sizeStr.split('*')
-      const width = parseInt(sizeParts[0], 10) || 1024
-      const height = parseInt(sizeParts[1], 10) || 1024
-      const steps = (zImageFormValues.steps as number) || 4
-      const cfgScale = (zImageFormValues.cfg_scale as number) || 1
-      const lowVramMode = Boolean(zImageFormValues.low_vram_mode)
-      const vaeTiling = Boolean(zImageFormValues.vae_tiling) || lowVramMode
+      const sizeStr = (zImageFormValues.size as string) || "1024*1024";
+      const sizeParts = sizeStr.split("*");
+      const width = parseInt(sizeParts[0], 10) || 1024;
+      const height = parseInt(sizeParts[1], 10) || 1024;
+      const steps = (zImageFormValues.steps as number) || 4;
+      const cfgScale = (zImageFormValues.cfg_scale as number) || 1;
+      const lowVramMode = Boolean(zImageFormValues.low_vram_mode);
+      const vaeTiling = Boolean(zImageFormValues.vae_tiling) || lowVramMode;
 
       const result = await generateZImage({
         modelPath,
@@ -379,64 +457,67 @@ export function ZImagePage() {
         seed,
         lowVramMode,
         vaeTiling,
-        samplingMethod: ((zImageFormValues.sampling_method as string) || 'euler') as SamplingMethod,
-        scheduler: ((zImageFormValues.scheduler as string) || 'simple') as Scheduler
-      })
+        samplingMethod: ((zImageFormValues.sampling_method as string) ||
+          "euler") as SamplingMethod,
+        scheduler: ((zImageFormValues.scheduler as string) ||
+          "simple") as Scheduler,
+      });
 
       if (!result.success || !result.outputPath) {
-        throw new Error(result.error || 'Generation failed')
+        throw new Error(result.error || "Generation failed");
       }
 
-      const imageUrl = `local-asset://${encodeURIComponent(result.outputPath)}`
-      const predictionId = `local-${Date.now()}`
+      const imageUrl = `local-asset://${encodeURIComponent(result.outputPath)}`;
+      const predictionId = `local-${Date.now()}`;
 
-      complete()
+      complete();
       setPrediction({
         id: predictionId,
-        model: 'local/z-image',
-        status: 'completed',
+        model: "local/z-image",
+        status: "completed",
         outputs: [imageUrl],
-        created_at: new Date().toISOString()
-      })
-      setOutputs([imageUrl])
-      setUsedSeed(seed)
+        created_at: new Date().toISOString(),
+      });
+      setOutputs([imageUrl]);
+      setUsedSeed(seed);
 
       // Auto-register to assets
-      await registerLocalAsset(result.outputPath, 'image', {
-        modelId: 'local/z-image',
+      await registerLocalAsset(result.outputPath, "image", {
+        modelId: "local/z-image",
         predictionId,
         originalUrl: imageUrl,
         resultIndex: 0,
-        source: 'z-image'
-      })
-
+        source: "z-image",
+      });
     } catch (err) {
-      const msg = (err as Error).message
-      if (msg === 'Cancelled') {
-        setError(t('zImage.errors.generationCancelled', 'Generation cancelled'))
+      const msg = (err as Error).message;
+      if (msg === "Cancelled") {
+        setError(
+          t("zImage.errors.generationCancelled", "Generation cancelled"),
+        );
       } else {
-        setError(msg)
+        setError(msg);
       }
-      reset()
+      reset();
     } finally {
-      setIsGenerating(false)
+      setIsGenerating(false);
     }
-  }
+  };
 
   // Cancel handler
   const handleCancel = async () => {
-    isCancelledRef.current = true
-    modelDownloaderRef.current?.cancel()
-    cancelDownload()
+    isCancelledRef.current = true;
+    modelDownloaderRef.current?.cancel();
+    cancelDownload();
     if (window.electronAPI?.sdCancelGeneration) {
-      await window.electronAPI.sdCancelGeneration().catch(console.error)
+      await window.electronAPI.sdCancelGeneration().catch(console.error);
     }
-    setIsGenerating(false)
-    reset()
-  }
+    setIsGenerating(false);
+    reset();
+  };
 
   // Get current phase info for progress display
-  const currentPhase = progress.phases[progress.currentPhaseIndex]
+  const currentPhase = progress.phases[progress.currentPhaseIndex];
 
   return (
     <div className="flex h-full flex-col">
@@ -445,30 +526,32 @@ export function ZImagePage() {
         <div className="flex flex-col gap-1.5 md:flex-row md:items-baseline md:gap-3">
           <h1 className="text-xl md:text-2xl font-bold tracking-tight flex items-center gap-2">
             <Zap className="h-5 w-5 text-primary" />
-            {t('zImage.title')}
+            {t("zImage.title")}
           </h1>
-          <span className="hidden md:inline text-xs md:text-sm text-muted-foreground">{t('zImage.subtitle')}</span>
+          <span className="hidden md:inline text-xs md:text-sm text-muted-foreground">
+            {t("zImage.subtitle")}
+          </span>
         </div>
       </div>
 
       {/* Mobile Tab Switcher */}
       <div className="md:hidden flex border-b bg-muted/30">
         <button
-          onClick={() => setMobileView('config')}
+          onClick={() => setMobileView("config")}
           className={`flex-1 py-2 text-sm font-medium transition-colors ${
-            mobileView === 'config'
-              ? 'border-b-2 border-primary text-primary'
-              : 'text-muted-foreground'
+            mobileView === "config"
+              ? "border-b-2 border-primary text-primary"
+              : "text-muted-foreground"
           }`}
         >
           Input
         </button>
         <button
-          onClick={() => setMobileView('output')}
+          onClick={() => setMobileView("output")}
           className={`flex-1 py-2 text-sm font-medium transition-colors ${
-            mobileView === 'output'
-              ? 'border-b-2 border-primary text-primary'
-              : 'text-muted-foreground'
+            mobileView === "output"
+              ? "border-b-2 border-primary text-primary"
+              : "text-muted-foreground"
           }`}
         >
           Output
@@ -478,61 +561,71 @@ export function ZImagePage() {
       {/* Content - Two Column Layout (Desktop) / Single Column (Mobile) */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left Panel - Form */}
-        <div className={`w-full md:w-[420px] flex flex-col md:border-r bg-muted/30 ${mobileView === 'config' ? 'flex' : 'hidden md:flex'}`}>
+        <div
+          className={`w-full md:w-[420px] flex flex-col md:border-r bg-muted/30 ${mobileView === "config" ? "flex" : "hidden md:flex"}`}
+        >
           <div className="flex-1 overflow-auto p-4">
-            {accelerationInfo?.platform === 'darwin' && accelerationInfo.arch !== 'arm64' && (
-              <Alert variant="destructive" className="mb-3">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription className="text-sm">
-                  {t('zImage.tips.intelMacUnsupported')}
-                </AlertDescription>
-              </Alert>
-            )}
+            {accelerationInfo?.platform === "darwin" &&
+              accelerationInfo.arch !== "arm64" && (
+                <Alert variant="destructive" className="mb-3">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription className="text-sm">
+                    {t("zImage.tips.intelMacUnsupported")}
+                  </AlertDescription>
+                </Alert>
+              )}
 
-            {accelerationInfo?.platform === 'linux' && accelerationInfo.arch !== 'x64' && (
-              <Alert variant="destructive" className="mb-3">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription className="text-sm">
-                  {t('zImage.tips.linuxArmUnsupported')}
-                </AlertDescription>
-              </Alert>
-            )}
+            {accelerationInfo?.platform === "linux" &&
+              accelerationInfo.arch !== "x64" && (
+                <Alert variant="destructive" className="mb-3">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription className="text-sm">
+                    {t("zImage.tips.linuxArmUnsupported")}
+                  </AlertDescription>
+                </Alert>
+              )}
 
-            {accelerationInfo?.platform === 'win32' && accelerationInfo.arch !== 'x64' && (
-              <Alert variant="destructive" className="mb-3">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription className="text-sm">
-                  {t('zImage.tips.windowsArmUnsupported')}
-                </AlertDescription>
-              </Alert>
-            )}
+            {accelerationInfo?.platform === "win32" &&
+              accelerationInfo.arch !== "x64" && (
+                <Alert variant="destructive" className="mb-3">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription className="text-sm">
+                    {t("zImage.tips.windowsArmUnsupported")}
+                  </AlertDescription>
+                </Alert>
+              )}
 
-            {accelerationInfo?.platform === 'linux' && accelerationInfo.arch === 'x64' && (
-              <Alert className="mb-3">
-                <AlertCircle className="h-4 w-4 text-yellow-500" />
-                <AlertDescription className="text-sm">
-                  {t('zImage.tips.linuxCpuOnly')}
-                </AlertDescription>
-              </Alert>
-            )}
+            {accelerationInfo?.platform === "linux" &&
+              accelerationInfo.arch === "x64" && (
+                <Alert className="mb-3">
+                  <AlertCircle className="h-4 w-4 text-yellow-500" />
+                  <AlertDescription className="text-sm">
+                    {t("zImage.tips.linuxCpuOnly")}
+                  </AlertDescription>
+                </Alert>
+              )}
 
-            {accelerationInfo?.platform === 'win32' && accelerationInfo.arch === 'x64' && !hasWindowsGpu && (
-              <Alert className="mb-3">
-                <AlertCircle className="h-4 w-4 text-yellow-500" />
-                <AlertDescription className="text-sm">
-                  {t('zImage.tips.windowsVulkanRequired')}
-                </AlertDescription>
-              </Alert>
-            )}
+            {accelerationInfo?.platform === "win32" &&
+              accelerationInfo.arch === "x64" &&
+              !hasWindowsGpu && (
+                <Alert className="mb-3">
+                  <AlertCircle className="h-4 w-4 text-yellow-500" />
+                  <AlertDescription className="text-sm">
+                    {t("zImage.tips.windowsVulkanRequired")}
+                  </AlertDescription>
+                </Alert>
+              )}
 
-            {accelerationInfo?.platform === 'darwin' && accelerationInfo.arch === 'arm64' && accelerationInfo.acceleration === 'CPU' && (
-              <Alert className="mb-3">
-                <AlertCircle className="h-4 w-4 text-yellow-500" />
-                <AlertDescription className="text-sm">
-                  {t('zImage.tips.slowWithoutMetal')}
-                </AlertDescription>
-              </Alert>
-            )}
+            {accelerationInfo?.platform === "darwin" &&
+              accelerationInfo.arch === "arm64" &&
+              accelerationInfo.acceleration === "CPU" && (
+                <Alert className="mb-3">
+                  <AlertCircle className="h-4 w-4 text-yellow-500" />
+                  <AlertDescription className="text-sm">
+                    {t("zImage.tips.slowWithoutMetal")}
+                  </AlertDescription>
+                </Alert>
+              )}
             <DynamicForm
               model={zImageModel}
               values={zImageFormValues}
@@ -556,7 +649,9 @@ export function ZImagePage() {
             {metalWarning && (
               <Alert>
                 <AlertCircle className="h-4 w-4 text-yellow-500" />
-                <AlertDescription className="text-sm">{metalWarning}</AlertDescription>
+                <AlertDescription className="text-sm">
+                  {metalWarning}
+                </AlertDescription>
               </Alert>
             )}
 
@@ -565,27 +660,37 @@ export function ZImagePage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
                   <span>
-                    {currentPhase.id === 'download-sd' && t('zImage.downloadingSd')}
-                    {currentPhase.id === 'download-vae' && t('zImage.downloadingVae')}
-                    {currentPhase.id === 'download-llm' && t('zImage.downloadingLlm')}
-                    {currentPhase.id === 'download-model' && t('zImage.downloadingZImage')}
-                    {currentPhase.id === 'generate' && t('zImage.generating')}
+                    {currentPhase.id === "download-sd" &&
+                      t("zImage.downloadingSd")}
+                    {currentPhase.id === "download-vae" &&
+                      t("zImage.downloadingVae")}
+                    {currentPhase.id === "download-llm" &&
+                      t("zImage.downloadingLlm")}
+                    {currentPhase.id === "download-model" &&
+                      t("zImage.downloadingZImage")}
+                    {currentPhase.id === "generate" && t("zImage.generating")}
                   </span>
                   <span>{Math.round(currentPhase.progress || 0)}%</span>
                 </div>
                 <Progress value={currentPhase.progress || 0} />
-                {currentPhase.detail && currentPhase.id.startsWith('download-') && (
-                  <div className="text-xs text-muted-foreground">
-                    {formatBytes(currentPhase.detail.current || 0)} / {formatBytes(currentPhase.detail.total || 0)}
-                  </div>
-                )}
+                {currentPhase.detail &&
+                  currentPhase.id.startsWith("download-") && (
+                    <div className="text-xs text-muted-foreground">
+                      {formatBytes(currentPhase.detail.current || 0)} /{" "}
+                      {formatBytes(currentPhase.detail.total || 0)}
+                    </div>
+                  )}
               </div>
             )}
 
             {/* Generate Button */}
             {isGenerating ? (
-              <Button className="w-full" variant="destructive" onClick={handleCancel}>
-                {t('zImage.stopGeneration')}
+              <Button
+                className="w-full"
+                variant="destructive"
+                onClick={handleCancel}
+              >
+                {t("zImage.stopGeneration")}
               </Button>
             ) : (
               <Button
@@ -593,7 +698,7 @@ export function ZImagePage() {
                 onClick={handleGenerate}
               >
                 <Zap className="mr-2 h-4 w-4" />
-                {t('zImage.generateImage')}
+                {t("zImage.generateImage")}
               </Button>
             )}
 
@@ -602,7 +707,9 @@ export function ZImagePage() {
         </div>
 
         {/* Right Panel - Output */}
-        <div className={`flex-1 min-w-0 flex-col ${mobileView === 'output' ? 'flex' : 'hidden md:flex'}`}>
+        <div
+          className={`flex-1 min-w-0 flex-col ${mobileView === "output" ? "flex" : "hidden md:flex"}`}
+        >
           <OutputDisplay
             prediction={prediction}
             outputs={outputs}
@@ -618,5 +725,5 @@ export function ZImagePage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,174 +1,192 @@
-import { useState, useRef, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Button } from '@/components/ui/button'
+import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { X, RotateCcw, Check, Loader2, Camera } from 'lucide-react'
-import { cn } from '@/lib/utils'
+} from "@/components/ui/select";
+import { X, RotateCcw, Check, Loader2, Camera } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-type AspectRatio = '16:9' | '4:3' | '1:1' | '9:16'
+type AspectRatio = "16:9" | "4:3" | "1:1" | "9:16";
 
-const ASPECT_RATIO_CONFIG: Record<AspectRatio, { width: number; height: number; class: string }> = {
-  '16:9': { width: 1920, height: 1080, class: 'aspect-[16/9]' },
-  '4:3': { width: 1440, height: 1080, class: 'aspect-[4/3]' },
-  '1:1': { width: 1080, height: 1080, class: 'aspect-[1/1]' },
-  '9:16': { width: 1080, height: 1920, class: 'aspect-[9/16]' },
-}
+const ASPECT_RATIO_CONFIG: Record<
+  AspectRatio,
+  { width: number; height: number; class: string }
+> = {
+  "16:9": { width: 1920, height: 1080, class: "aspect-[16/9]" },
+  "4:3": { width: 1440, height: 1080, class: "aspect-[4/3]" },
+  "1:1": { width: 1080, height: 1080, class: "aspect-[1/1]" },
+  "9:16": { width: 1080, height: 1920, class: "aspect-[9/16]" },
+};
 
 interface CameraCaptureProps {
-  onCapture: (blob: Blob) => void
-  onClose: () => void
-  disabled?: boolean
+  onCapture: (blob: Blob) => void;
+  onClose: () => void;
+  disabled?: boolean;
 }
 
-export function CameraCapture({ onCapture, onClose, disabled }: CameraCaptureProps) {
-  const { t } = useTranslation()
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const streamRef = useRef<MediaStream | null>(null)
+export function CameraCapture({
+  onCapture,
+  onClose,
+  disabled,
+}: CameraCaptureProps) {
+  const { t } = useTranslation();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [capturedImage, setCapturedImage] = useState<string | null>(null)
-  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment')
-  const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9')
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [facingMode, setFacingMode] = useState<"user" | "environment">(
+    "environment",
+  );
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>("16:9");
 
   useEffect(() => {
-    let mounted = true
+    let mounted = true;
 
     const startCamera = async () => {
-      setIsLoading(true)
-      setError(null)
+      setIsLoading(true);
+      setError(null);
 
       // Stop any existing stream
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop())
-        streamRef.current = null
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
       }
 
       try {
-        const config = ASPECT_RATIO_CONFIG[aspectRatio]
+        const config = ASPECT_RATIO_CONFIG[aspectRatio];
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode,
             width: { ideal: config.width },
-            height: { ideal: config.height }
+            height: { ideal: config.height },
           },
-          audio: false
-        })
+          audio: false,
+        });
 
         if (!mounted) {
           // Component unmounted while waiting for permission
-          stream.getTracks().forEach(track => track.stop())
-          return
+          stream.getTracks().forEach((track) => track.stop());
+          return;
         }
 
-        streamRef.current = stream
+        streamRef.current = stream;
 
         if (videoRef.current) {
-          videoRef.current.srcObject = stream
+          videoRef.current.srcObject = stream;
           try {
-            await videoRef.current.play()
+            await videoRef.current.play();
           } catch (playErr) {
             // AbortError is expected when component re-renders during play
-            if (playErr instanceof Error && playErr.name === 'AbortError') {
-              return
+            if (playErr instanceof Error && playErr.name === "AbortError") {
+              return;
             }
-            throw playErr
+            throw playErr;
           }
         }
       } catch (err) {
-        if (!mounted) return
+        if (!mounted) return;
 
-        console.error('Camera error:', err)
+        console.error("Camera error:", err);
         if (err instanceof Error) {
-          if (err.name === 'NotAllowedError') {
-            setError(t('playground.capture.cameraPermissionDenied'))
-          } else if (err.name === 'NotFoundError') {
-            setError(t('playground.capture.noCameraFound'))
+          if (err.name === "NotAllowedError") {
+            setError(t("playground.capture.cameraPermissionDenied"));
+          } else if (err.name === "NotFoundError") {
+            setError(t("playground.capture.noCameraFound"));
           } else {
-            setError(t('playground.capture.cameraError'))
+            setError(t("playground.capture.cameraError"));
           }
         } else {
-          setError(t('playground.capture.cameraError'))
+          setError(t("playground.capture.cameraError"));
         }
       } finally {
         if (mounted) {
-          setIsLoading(false)
+          setIsLoading(false);
         }
       }
-    }
+    };
 
-    startCamera()
+    startCamera();
 
     return () => {
-      mounted = false
+      mounted = false;
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop())
-        streamRef.current = null
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
       }
-    }
-  }, [facingMode, aspectRatio, t])
+    };
+  }, [facingMode, aspectRatio, t]);
 
   const switchCamera = () => {
-    setFacingMode(prev => prev === 'user' ? 'environment' : 'user')
-  }
+    setFacingMode((prev) => (prev === "user" ? "environment" : "user"));
+  };
 
   const takePhoto = () => {
-    if (!videoRef.current || !canvasRef.current) return
+    if (!videoRef.current || !canvasRef.current) return;
 
-    const video = videoRef.current
-    const canvas = canvasRef.current
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
 
-    canvas.width = video.videoWidth
-    canvas.height = video.videoHeight
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
 
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
     // Flip horizontally if using front camera
-    if (facingMode === 'user') {
-      ctx.translate(canvas.width, 0)
-      ctx.scale(-1, 1)
+    if (facingMode === "user") {
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
     }
 
-    ctx.drawImage(video, 0, 0)
+    ctx.drawImage(video, 0, 0);
 
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.9)
-    setCapturedImage(dataUrl)
-  }
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+    setCapturedImage(dataUrl);
+  };
 
   const retake = () => {
-    setCapturedImage(null)
-  }
+    setCapturedImage(null);
+  };
 
   const confirmCapture = () => {
-    if (!canvasRef.current) return
+    if (!canvasRef.current) return;
 
-    canvasRef.current.toBlob((blob) => {
-      if (blob) {
-        onCapture(blob)
-      }
-    }, 'image/jpeg', 0.9)
-  }
+    canvasRef.current.toBlob(
+      (blob) => {
+        if (blob) {
+          onCapture(blob);
+        }
+      },
+      "image/jpeg",
+      0.9,
+    );
+  };
 
   const handleClose = () => {
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop())
+      streamRef.current.getTracks().forEach((track) => track.stop());
     }
-    onClose()
-  }
+    onClose();
+  };
 
-  const aspectConfig = ASPECT_RATIO_CONFIG[aspectRatio]
+  const aspectConfig = ASPECT_RATIO_CONFIG[aspectRatio];
 
   return (
     <div className="space-y-3">
-      <div className={cn("relative rounded-lg overflow-hidden bg-black max-h-80 mx-auto", aspectConfig.class)}>
+      <div
+        className={cn(
+          "relative rounded-lg overflow-hidden bg-black max-h-80 mx-auto",
+          aspectConfig.class,
+        )}
+      >
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-muted">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -189,8 +207,8 @@ export function CameraCapture({ onCapture, onClose, disabled }: CameraCapturePro
           muted
           className={cn(
             "w-full h-full object-cover",
-            facingMode === 'user' && "scale-x-[-1]",
-            capturedImage && "hidden"
+            facingMode === "user" && "scale-x-[-1]",
+            capturedImage && "hidden",
           )}
         />
 
@@ -226,7 +244,7 @@ export function CameraCapture({ onCapture, onClose, disabled }: CameraCapturePro
               size="icon"
               onClick={switchCamera}
               disabled={isLoading || !!error || disabled}
-              title={t('playground.capture.switchCamera')}
+              title={t("playground.capture.switchCamera")}
             >
               <RotateCcw className="h-4 w-4" />
             </Button>
@@ -235,7 +253,7 @@ export function CameraCapture({ onCapture, onClose, disabled }: CameraCapturePro
               onClick={takePhoto}
               disabled={isLoading || !!error || disabled}
               className="h-12 w-12 rounded-full bg-primary hover:bg-primary/90 text-white"
-              title={t('playground.capture.takePhoto')}
+              title={t("playground.capture.takePhoto")}
             >
               <Camera className="h-5 w-5" />
             </Button>
@@ -257,24 +275,17 @@ export function CameraCapture({ onCapture, onClose, disabled }: CameraCapturePro
           </>
         ) : (
           <>
-            <Button
-              variant="outline"
-              onClick={retake}
-              disabled={disabled}
-            >
+            <Button variant="outline" onClick={retake} disabled={disabled}>
               <RotateCcw className="h-4 w-4 mr-2" />
-              {t('playground.capture.retake')}
+              {t("playground.capture.retake")}
             </Button>
-            <Button
-              onClick={confirmCapture}
-              disabled={disabled}
-            >
+            <Button onClick={confirmCapture} disabled={disabled}>
               <Check className="h-4 w-4 mr-2" />
-              {t('playground.capture.usePhoto')}
+              {t("playground.capture.usePhoto")}
             </Button>
           </>
         )}
       </div>
     </div>
-  )
+  );
 }

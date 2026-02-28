@@ -1,26 +1,26 @@
-import { useState, useRef, useCallback, useContext } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { PageResetContext } from '@/components/layout/PageResetContext'
-import { useTranslation } from 'react-i18next'
-import { useFFmpegWorker } from '@/hooks/useFFmpegWorker'
-import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
-import { ProcessingProgress } from '@/components/shared/ProcessingProgress'
+import { useState, useRef, useCallback, useContext } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { PageResetContext } from "@/components/layout/PageResetContext";
+import { useTranslation } from "react-i18next";
+import { useFFmpegWorker } from "@/hooks/useFFmpegWorker";
+import { useMultiPhaseProgress } from "@/hooks/useMultiPhaseProgress";
+import { ProcessingProgress } from "@/components/shared/ProcessingProgress";
 import {
   AUDIO_FORMATS,
   AUDIO_BITRATES,
   getAudioFormat,
-  formatDuration
-} from '@/lib/ffmpegFormats'
-import { formatBytes } from '@/types/progress'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+  formatDuration,
+} from "@/lib/ffmpegFormats";
+import { formatBytes } from "@/types/progress";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
-} from '@/components/ui/select'
+  SelectValue,
+} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,44 +29,44 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle
-} from '@/components/ui/alert-dialog'
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   ArrowLeft,
   Upload,
   Download,
   Loader2,
   FileAudio,
-  RefreshCw
-} from 'lucide-react'
-import { cn } from '@/lib/utils'
+  RefreshCw,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
 // Phase configuration for audio converter
 const PHASES = [
-  { id: 'download', labelKey: 'freeTools.ffmpeg.loading', weight: 0.1 },
-  { id: 'process', labelKey: 'freeTools.ffmpeg.converting', weight: 0.9 }
-]
+  { id: "download", labelKey: "freeTools.ffmpeg.loading", weight: 0.1 },
+  { id: "process", labelKey: "freeTools.ffmpeg.converting", weight: 0.9 },
+];
 
 export function AudioConverterPage() {
-  const { t } = useTranslation()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { resetPage } = useContext(PageResetContext)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const audioRef = useRef<HTMLAudioElement>(null)
-  const dragCounterRef = useRef(0)
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { resetPage } = useContext(PageResetContext);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const dragCounterRef = useRef(0);
 
-  const [audioFile, setAudioFile] = useState<File | null>(null)
-  const [audioUrl, setAudioUrl] = useState<string | null>(null)
-  const [audioDuration, setAudioDuration] = useState<number | null>(null)
-  const [convertedUrl, setConvertedUrl] = useState<string | null>(null)
-  const [convertedBlob, setConvertedBlob] = useState<Blob | null>(null)
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [isDragging, setIsDragging] = useState(false)
-  const [outputFormat, setOutputFormat] = useState('mp3')
-  const [bitrate, setBitrate] = useState('192k')
-  const [error, setError] = useState<string | null>(null)
-  const [showBackWarning, setShowBackWarning] = useState(false)
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [audioDuration, setAudioDuration] = useState<number | null>(null);
+  const [convertedUrl, setConvertedUrl] = useState<string | null>(null);
+  const [convertedBlob, setConvertedBlob] = useState<Blob | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [outputFormat, setOutputFormat] = useState("mp3");
+  const [bitrate, setBitrate] = useState("192k");
+  const [error, setError] = useState<string | null>(null);
+  const [showBackWarning, setShowBackWarning] = useState(false);
 
   // Multi-phase progress tracking
   const {
@@ -75,164 +75,176 @@ export function AudioConverterPage() {
     updatePhase,
     reset: resetProgress,
     resetAndStart,
-    complete: completeAllPhases
-  } = useMultiPhaseProgress({ phases: PHASES })
+    complete: completeAllPhases,
+  } = useMultiPhaseProgress({ phases: PHASES });
 
   const { convert, hasFailed, retryWorker } = useFFmpegWorker({
     onPhase: (phase) => {
-      if (phase === 'download') {
-        startPhase('download')
-      } else if (phase === 'process') {
-        startPhase('process')
+      if (phase === "download") {
+        startPhase("download");
+      } else if (phase === "process") {
+        startPhase("process");
       }
     },
     onProgress: (phase, progressValue, detail) => {
-      const phaseId = phase === 'download' ? 'download' : 'process'
-      updatePhase(phaseId, progressValue, detail)
+      const phaseId = phase === "download" ? "download" : "process";
+      updatePhase(phaseId, progressValue, detail);
     },
     onError: (err) => {
-      console.error('Worker error:', err)
-      setError(err)
-      setIsProcessing(false)
-      resetProgress()
-    }
-  })
+      console.error("Worker error:", err);
+      setError(err);
+      setIsProcessing(false);
+      resetProgress();
+    },
+  });
 
   const handleRetry = useCallback(() => {
-    setError(null)
-    retryWorker()
-  }, [retryWorker])
+    setError(null);
+    retryWorker();
+  }, [retryWorker]);
 
   const handleBack = useCallback(() => {
     if (isProcessing) {
-      setShowBackWarning(true)
+      setShowBackWarning(true);
     } else {
-      resetPage(location.pathname)
-      navigate('/free-tools')
+      resetPage(location.pathname);
+      navigate("/free-tools");
     }
-  }, [isProcessing, resetPage, location.pathname, navigate])
+  }, [isProcessing, resetPage, location.pathname, navigate]);
 
   const handleConfirmBack = useCallback(() => {
-    setShowBackWarning(false)
-    resetPage(location.pathname)
-    navigate('/free-tools')
-  }, [resetPage, location.pathname, navigate])
+    setShowBackWarning(false);
+    resetPage(location.pathname);
+    navigate("/free-tools");
+  }, [resetPage, location.pathname, navigate]);
 
   const handleFileSelect = useCallback(
     (file: File) => {
-      if (!file.type.startsWith('audio/') && !file.name.match(/\.(mp3|m4a|ogg|wav|flac|aac|wma)$/i)) {
-        return
+      if (
+        !file.type.startsWith("audio/") &&
+        !file.name.match(/\.(mp3|m4a|ogg|wav|flac|aac|wma)$/i)
+      ) {
+        return;
       }
 
-      setError(null)
+      setError(null);
       // Clean up previous URLs
-      if (audioUrl) URL.revokeObjectURL(audioUrl)
-      if (convertedUrl) URL.revokeObjectURL(convertedUrl)
+      if (audioUrl) URL.revokeObjectURL(audioUrl);
+      if (convertedUrl) URL.revokeObjectURL(convertedUrl);
 
-      const url = URL.createObjectURL(file)
-      setAudioFile(file)
-      setAudioUrl(url)
-      setConvertedUrl(null)
-      setConvertedBlob(null)
-      resetProgress()
+      const url = URL.createObjectURL(file);
+      setAudioFile(file);
+      setAudioUrl(url);
+      setConvertedUrl(null);
+      setConvertedBlob(null);
+      resetProgress();
 
       // Get duration from audio element
-      const audio = new Audio(url)
-      audio.addEventListener('loadedmetadata', () => {
-        setAudioDuration(audio.duration)
-      })
+      const audio = new Audio(url);
+      audio.addEventListener("loadedmetadata", () => {
+        setAudioDuration(audio.duration);
+      });
     },
-    [audioUrl, convertedUrl, resetProgress]
-  )
+    [audioUrl, convertedUrl, resetProgress],
+  );
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      dragCounterRef.current = 0
-      setIsDragging(false)
-      if (isProcessing) return
-      const file = e.dataTransfer.files[0]
-      if (file) handleFileSelect(file)
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounterRef.current = 0;
+      setIsDragging(false);
+      if (isProcessing) return;
+      const file = e.dataTransfer.files[0];
+      if (file) handleFileSelect(file);
     },
-    [handleFileSelect, isProcessing]
-  )
+    [handleFileSelect, isProcessing],
+  );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-  }, [])
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    dragCounterRef.current++
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current++;
     if (dragCounterRef.current === 1) {
-      setIsDragging(true)
+      setIsDragging(true);
     }
-  }, [])
+  }, []);
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    dragCounterRef.current--
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current--;
     if (dragCounterRef.current === 0) {
-      setIsDragging(false)
+      setIsDragging(false);
     }
-  }, [])
+  }, []);
 
   const handleConvert = async () => {
-    if (!audioFile) return
+    if (!audioFile) return;
 
-    setIsProcessing(true)
-    setError(null)
-    setConvertedUrl(null)
-    setConvertedBlob(null)
-    resetAndStart('download')
+    setIsProcessing(true);
+    setError(null);
+    setConvertedUrl(null);
+    setConvertedBlob(null);
+    resetAndStart("download");
 
-    const format = getAudioFormat(outputFormat)
-    if (!format) return
+    const format = getAudioFormat(outputFormat);
+    if (!format) return;
 
     try {
       // Read file as ArrayBuffer
-      const arrayBuffer = await audioFile.arrayBuffer()
+      const arrayBuffer = await audioFile.arrayBuffer();
 
       // Convert using FFmpeg worker
-      const result = await convert(arrayBuffer, audioFile.name, outputFormat, format.ext, {
-        audioCodec: format.codec,
-        audioBitrate: bitrate
-      })
+      const result = await convert(
+        arrayBuffer,
+        audioFile.name,
+        outputFormat,
+        format.ext,
+        {
+          audioCodec: format.codec,
+          audioBitrate: bitrate,
+        },
+      );
 
       // Create blob and URL
-      const blob = new Blob([result.data], { type: format.mimeType })
-      const url = URL.createObjectURL(blob)
+      const blob = new Blob([result.data], { type: format.mimeType });
+      const url = URL.createObjectURL(blob);
 
-      setConvertedBlob(blob)
-      setConvertedUrl(url)
-      completeAllPhases()
+      setConvertedBlob(blob);
+      setConvertedUrl(url);
+      completeAllPhases();
     } catch (err) {
-      console.error('Conversion failed:', err)
-      setError(err instanceof Error ? err.message : 'Conversion failed')
+      console.error("Conversion failed:", err);
+      setError(err instanceof Error ? err.message : "Conversion failed");
     } finally {
-      setIsProcessing(false)
+      setIsProcessing(false);
     }
-  }
+  };
 
   const handleDownload = () => {
-    if (!convertedUrl || !convertedBlob || !audioFile) return
+    if (!convertedUrl || !convertedBlob || !audioFile) return;
 
-    const format = getAudioFormat(outputFormat)
-    const filename = audioFile.name.replace(/\.[^.]+$/, `.${format?.ext || outputFormat}`)
+    const format = getAudioFormat(outputFormat);
+    const filename = audioFile.name.replace(
+      /\.[^.]+$/,
+      `.${format?.ext || outputFormat}`,
+    );
 
-    const link = document.createElement('a')
-    link.href = convertedUrl
-    link.download = filename
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
+    const link = document.createElement("a");
+    link.href = convertedUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
-  const selectedFormat = getAudioFormat(outputFormat)
+  const selectedFormat = getAudioFormat(outputFormat);
 
   return (
     <div
@@ -242,13 +254,14 @@ export function AudioConverterPage() {
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
     >
-
       {/* Drag overlay */}
       {isDragging && audioFile && (
         <div className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center border-2 border-dashed border-primary rounded-lg m-4">
           <div className="text-center">
             <Upload className="h-12 w-12 text-primary mx-auto mb-2" />
-            <p className="text-lg font-medium">{t('freeTools.audioConverter.dropToReplace')}</p>
+            <p className="text-lg font-medium">
+              {t("freeTools.audioConverter.dropToReplace")}
+            </p>
           </div>
         </div>
       )}
@@ -259,9 +272,11 @@ export function AudioConverterPage() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">{t('freeTools.audioConverter.title')}</h1>
+          <h1 className="text-2xl font-bold">
+            {t("freeTools.audioConverter.title")}
+          </h1>
           <p className="text-muted-foreground text-sm">
-            {t('freeTools.audioConverter.description')}
+            {t("freeTools.audioConverter.description")}
           </p>
         </div>
       </div>
@@ -270,10 +285,10 @@ export function AudioConverterPage() {
       {!audioFile && (
         <Card
           className={cn(
-            'border-2 border-dashed cursor-pointer transition-colors',
+            "border-2 border-dashed cursor-pointer transition-colors",
             isDragging
-              ? 'border-primary bg-primary/5'
-              : 'border-muted-foreground/25 hover:border-primary/50'
+              ? "border-primary bg-primary/5"
+              : "border-muted-foreground/25 hover:border-primary/50",
           )}
           onClick={() => fileInputRef.current?.click()}
         >
@@ -281,12 +296,14 @@ export function AudioConverterPage() {
             <div className="p-4 rounded-full bg-muted mb-4">
               <Upload className="h-8 w-8 text-muted-foreground" />
             </div>
-            <p className="text-lg font-medium">{t('freeTools.audioConverter.selectAudio')}</p>
+            <p className="text-lg font-medium">
+              {t("freeTools.audioConverter.selectAudio")}
+            </p>
             <p className="text-sm text-muted-foreground">
-              {t('freeTools.audioConverter.orDragDrop')}
+              {t("freeTools.audioConverter.orDragDrop")}
             </p>
             <p className="text-xs text-muted-foreground mt-2">
-              {t('freeTools.audioConverter.supportedFormats')}
+              {t("freeTools.audioConverter.supportedFormats")}
             </p>
           </CardContent>
         </Card>
@@ -298,9 +315,9 @@ export function AudioConverterPage() {
         accept="audio/*,.mp3,.m4a,.ogg,.wav,.flac,.aac,.wma"
         className="hidden"
         onChange={(e) => {
-          const file = e.target.files?.[0]
-          if (file) handleFileSelect(file)
-          e.target.value = ''
+          const file = e.target.files?.[0];
+          if (file) handleFileSelect(file);
+          e.target.value = "";
         }}
       />
 
@@ -315,10 +332,14 @@ export function AudioConverterPage() {
               disabled={isProcessing}
             >
               <Upload className="h-4 w-4 mr-2" />
-              {t('freeTools.audioConverter.selectAudio')}
+              {t("freeTools.audioConverter.selectAudio")}
             </Button>
 
-            <Select value={outputFormat} onValueChange={setOutputFormat} disabled={isProcessing}>
+            <Select
+              value={outputFormat}
+              onValueChange={setOutputFormat}
+              disabled={isProcessing}
+            >
               <SelectTrigger className="w-40">
                 <SelectValue />
               </SelectTrigger>
@@ -331,20 +352,26 @@ export function AudioConverterPage() {
               </SelectContent>
             </Select>
 
-            {selectedFormat && selectedFormat.id !== 'flac' && selectedFormat.id !== 'wav' && (
-              <Select value={bitrate} onValueChange={setBitrate} disabled={isProcessing}>
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {AUDIO_BITRATES.map((br) => (
-                    <SelectItem key={br.id} value={br.value}>
-                      {br.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+            {selectedFormat &&
+              selectedFormat.id !== "flac" &&
+              selectedFormat.id !== "wav" && (
+                <Select
+                  value={bitrate}
+                  onValueChange={setBitrate}
+                  disabled={isProcessing}
+                >
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {AUDIO_BITRATES.map((br) => (
+                      <SelectItem key={br.id} value={br.value}>
+                        {br.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
 
             <Button
               onClick={handleConvert}
@@ -354,12 +381,12 @@ export function AudioConverterPage() {
               {isProcessing ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  {t('freeTools.audioConverter.converting')}
+                  {t("freeTools.audioConverter.converting")}
                 </>
               ) : (
                 <>
                   <FileAudio className="h-4 w-4 mr-2" />
-                  {t('freeTools.audioConverter.convert')}
+                  {t("freeTools.audioConverter.convert")}
                 </>
               )}
             </Button>
@@ -367,7 +394,7 @@ export function AudioConverterPage() {
             {convertedUrl && (
               <Button variant="outline" onClick={handleDownload}>
                 <Download className="h-4 w-4 mr-2" />
-                {t('common.download')}
+                {t("common.download")}
               </Button>
             )}
           </div>
@@ -386,7 +413,7 @@ export function AudioConverterPage() {
               <span className="text-sm text-destructive">{error}</span>
               <Button variant="outline" size="sm" onClick={handleRetry}>
                 <RefreshCw className="h-4 w-4 mr-2" />
-                {t('common.retry')}
+                {t("common.retry")}
               </Button>
             </div>
           )}
@@ -398,10 +425,11 @@ export function AudioConverterPage() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-sm font-medium">
-                    {t('freeTools.audioConverter.original')}
+                    {t("freeTools.audioConverter.original")}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    {formatBytes(audioFile.size)} • {formatDuration(audioDuration || 0)}
+                    {formatBytes(audioFile.size)} •{" "}
+                    {formatDuration(audioDuration || 0)}
                   </span>
                 </div>
                 <div className="text-sm text-muted-foreground mb-2 truncate">
@@ -421,7 +449,7 @@ export function AudioConverterPage() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-sm font-medium">
-                    {t('freeTools.audioConverter.converted')}
+                    {t("freeTools.audioConverter.converted")}
                   </span>
                   {convertedBlob && (
                     <span className="text-xs text-green-600 dark:text-green-400">
@@ -434,17 +462,15 @@ export function AudioConverterPage() {
                     <div className="text-sm text-muted-foreground mb-2">
                       {selectedFormat?.label}
                     </div>
-                    <audio
-                      src={convertedUrl}
-                      className="w-full"
-                      controls
-                    />
+                    <audio src={convertedUrl} className="w-full" controls />
                   </>
                 ) : (
                   <div className="h-[54px] bg-muted rounded-lg flex items-center justify-center">
                     <div className="text-center text-muted-foreground text-sm">
                       <FileAudio className="h-5 w-5 mx-auto mb-1 opacity-30" />
-                      <span>{selectedFormat?.label} • {bitrate}</span>
+                      <span>
+                        {selectedFormat?.label} • {bitrate}
+                      </span>
                     </div>
                   </div>
                 )}
@@ -458,19 +484,23 @@ export function AudioConverterPage() {
       <AlertDialog open={showBackWarning} onOpenChange={setShowBackWarning}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('freeTools.backWarning.title')}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t("freeTools.backWarning.title")}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              {t('freeTools.backWarning.description')}
+              {t("freeTools.backWarning.description")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t('freeTools.backWarning.cancel')}</AlertDialogCancel>
+            <AlertDialogCancel>
+              {t("freeTools.backWarning.cancel")}
+            </AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmBack}>
-              {t('freeTools.backWarning.confirm')}
+              {t("freeTools.backWarning.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  )
+  );
 }

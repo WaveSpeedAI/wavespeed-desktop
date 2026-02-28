@@ -83,7 +83,9 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
 }
 
@@ -187,7 +189,7 @@
   }
 
   .gradient-border::before {
-    content: '';
+    content: "";
     position: absolute;
     inset: 0;
     padding: 1px;
@@ -198,8 +200,12 @@
       hsl(var(--gradient-mid)) 50%,
       hsl(var(--gradient-end)) 100%
     );
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     pointer-events: none;
@@ -211,8 +217,9 @@
   }
 
   .glow {
-    box-shadow: 0 0 20px hsl(var(--primary) / 0.3),
-                0 0 40px hsl(var(--primary) / 0.1);
+    box-shadow:
+      0 0 20px hsl(var(--primary) / 0.3),
+      0 0 40px hsl(var(--primary) / 0.1);
   }
 
   .glow-sm {
@@ -222,7 +229,8 @@
 
 /* Animated gradient background */
 @keyframes gradient-shift {
-  0%, 100% {
+  0%,
+  100% {
     background-position: 0% 50%;
   }
   50% {
@@ -245,47 +253,49 @@
 }
 
 .dark .sidebar-bg {
-  background: linear-gradient(
-    180deg,
-    hsl(222 45% 8%) 0%,
-    hsl(222 45% 6%) 100%
-  );
+  background: linear-gradient(180deg, hsl(222 45% 8%) 0%, hsl(222 45% 6%) 100%);
 }
 
 /* Content panel with elevation */
 .content-panel {
   background: hsl(var(--panel-bg));
   border-radius: var(--radius);
-  box-shadow: 0 1px 3px hsl(var(--foreground) / 0.05),
-              0 1px 2px hsl(var(--foreground) / 0.03);
+  box-shadow:
+    0 1px 3px hsl(var(--foreground) / 0.05),
+    0 1px 2px hsl(var(--foreground) / 0.03);
 }
 
 .dark .content-panel {
-  box-shadow: 0 1px 3px hsl(0 0% 0% / 0.3),
-              0 1px 2px hsl(0 0% 0% / 0.2);
+  box-shadow:
+    0 1px 3px hsl(0 0% 0% / 0.3),
+    0 1px 2px hsl(0 0% 0% / 0.2);
 }
 
 /* Elevated card with better shadow */
 .card-elevated {
-  box-shadow: 0 1px 3px hsl(var(--foreground) / 0.06),
-              0 4px 6px hsl(var(--foreground) / 0.04);
+  box-shadow:
+    0 1px 3px hsl(var(--foreground) / 0.06),
+    0 4px 6px hsl(var(--foreground) / 0.04);
   transition: all 0.2s ease;
 }
 
 .card-elevated:hover {
-  box-shadow: 0 4px 12px hsl(var(--foreground) / 0.08),
-              0 8px 16px hsl(var(--foreground) / 0.06);
+  box-shadow:
+    0 4px 12px hsl(var(--foreground) / 0.08),
+    0 8px 16px hsl(var(--foreground) / 0.06);
   transform: translateY(-2px);
 }
 
 .dark .card-elevated {
-  box-shadow: 0 1px 3px hsl(0 0% 0% / 0.4),
-              0 4px 6px hsl(0 0% 0% / 0.3);
+  box-shadow:
+    0 1px 3px hsl(0 0% 0% / 0.4),
+    0 4px 6px hsl(0 0% 0% / 0.3);
 }
 
 .dark .card-elevated:hover {
-  box-shadow: 0 4px 12px hsl(0 0% 0% / 0.5),
-              0 8px 16px hsl(0 0% 0% / 0.4);
+  box-shadow:
+    0 4px 12px hsl(0 0% 0% / 0.5),
+    0 8px 16px hsl(0 0% 0% / 0.4);
 }
 
 /* Page header with background */
@@ -296,7 +306,8 @@
 
 /* Abstract art animations */
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) scale(1);
   }
   50% {
@@ -323,7 +334,8 @@
 }
 
 @keyframes particle {
-  0%, 100% {
+  0%,
+  100% {
     transform: translate(0, 0) scale(1);
     opacity: 0.2;
   }
@@ -401,8 +413,15 @@
 
 /* Workflow node running pulse — visible glow breathe */
 @keyframes pulse-subtle {
-  0%, 100% { box-shadow: 0 0 8px rgba(59,130,246,.2); }
-  50% { box-shadow: 0 0 25px rgba(59,130,246,.5), 0 0 50px rgba(59,130,246,.15); }
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 25px rgba(59, 130, 246, 0.5),
+      0 0 50px rgba(59, 130, 246, 0.15);
+  }
 }
 .animate-pulse-subtle {
   animation: pulse-subtle 1.8s ease-in-out infinite;
@@ -463,15 +482,19 @@
 
 /* Shimmer sweep on hover */
 @keyframes shimmer-sweep {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 .btn-shimmer {
   position: relative;
   overflow: hidden;
 }
 .btn-shimmer::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(
@@ -492,7 +515,9 @@
 
 /* Form field hover lift */
 .field-hover {
-  transition: background-color 0.2s, box-shadow 0.2s;
+  transition:
+    background-color 0.2s,
+    box-shadow 0.2s;
   border-radius: 0.5rem;
   padding: 0.5rem;
   margin: -0.5rem;

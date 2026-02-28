@@ -2,12 +2,7 @@
   "name": "图生视频",
   "i18nKey": "imageToVideo",
   "description": "将静态图片转换为动态视频，并进行高清放大处理",
-  "tags": [
-    "图片",
-    "视频",
-    "AI生成",
-    "视频放大"
-  ],
+  "tags": ["图片", "视频", "AI生成", "视频放大"],
   "category": "ai-generation",
   "author": "WaveSpeed",
   "thumbnail": "https://d1q70pf5vjeyhc.cloudfront.net/media/fb8f674bbb1a429d947016fd223cfae1/images/1759814613446857978_B0Cyvroj.jpeg",

@@ -26,11 +26,13 @@ WaveSpeed Mobile is designed with a **mobile-first, responsive approach**:
 ### Core Features
 
 #### 1. Model Browser (Models)
+
 - Browse all available WaveSpeed AI models
 - Search and filter support
 - Tap a model to use it in Playground
 
 #### 2. AI Workshop (Playground)
+
 - **Input/Output Dual View**: Mobile-specific tab switching design for better screen utilization
 - **Dynamic Forms**: Auto-generated parameter forms based on model schema
 - **Supported Input Types**:
@@ -46,6 +48,7 @@ WaveSpeed Mobile is designed with a **mobile-first, responsive approach**:
 - **Auto Switch**: Automatically switch to output view when generation completes
 
 #### 3. Template Management (Templates)
+
 - Save frequently used parameter configurations as templates
 - Support template renaming
 - Batch export/import templates (JSON format)
@@ -53,6 +56,7 @@ WaveSpeed Mobile is designed with a **mobile-first, responsive approach**:
 - One-tap apply template to Playground
 
 #### 4. History
+
 - Grid view for historical generation records
 - Status filter: All, Completed, Failed, Archived
 - Long-press to enter batch selection mode
@@ -63,6 +67,7 @@ WaveSpeed Mobile is designed with a **mobile-first, responsive approach**:
 - Local input parameter cache (records with bookmark icon can be saved as templates)
 
 #### 5. Settings
+
 - API key management
 - Account balance inquiry
 - Theme switching (Auto/Dark/Light)
@@ -74,6 +79,7 @@ WaveSpeed Mobile is designed with a **mobile-first, responsive approach**:
 Local AI tools that work without API key:
 
 #### 1. Video Enhancer
+
 - Frame-by-frame AI super-resolution upscaling
 - Support 2x-4x upscaling
 - Three quality options (Fast/Balanced/High Quality)
@@ -81,12 +87,14 @@ Local AI tools that work without API key:
 - Output WebM format (30 FPS)
 
 #### 2. Image Enhancer
+
 - AI image super-resolution
 - Support 2x-4x upscaling
 - ESRGAN models (slim/medium/thick)
 - Download PNG/WebP format
 
 #### 3. Background Remover
+
 - AI automatic background removal
 - Three simultaneous outputs:
   - Foreground (transparent background)
@@ -95,6 +103,7 @@ Local AI tools that work without API key:
 - Auto GPU acceleration detection
 
 #### 4. Image Eraser
+
 - Paint to remove objects from images
 - LaMa inpainting model
 - Brush/Eraser/Fill tools
@@ -102,6 +111,7 @@ Local AI tools that work without API key:
 - Smart crop for large image optimization
 
 #### 5. Segment Anything
+
 - Tap to select objects to segment
 - Long-press to mark exclusion areas
 - Real-time segmentation preview
@@ -109,6 +119,7 @@ Local AI tools that work without API key:
 - Multiple download formats
 
 #### 6. Video Converter
+
 - Video format conversion
 - Support WebM (VP8/VP9/AV1) and MP4 (H.264)
 - Auto codec detection
@@ -221,17 +232,17 @@ Local AI tools that work without API key:
 
 ## Differences from Desktop
 
-| Feature | Desktop | Mobile |
-|---------|---------|--------|
-| Runtime Framework | Electron | Capacitor (Android) |
-| Navigation | Sidebar | Bottom Navigation |
-| Playground | Multi-tab | Single page + Input/Output switch |
-| Free Tools | Route switching | Persistent rendering |
-| File Storage | electron-store | Capacitor Preferences |
-| Drag & Drop | Full support | File picker |
-| Video Converter | No | Yes (new feature) |
-| Asset Management | Full page | Simplified |
-| History Inputs | API only | API + Local cache |
+| Feature           | Desktop         | Mobile                            |
+| ----------------- | --------------- | --------------------------------- |
+| Runtime Framework | Electron        | Capacitor (Android)               |
+| Navigation        | Sidebar         | Bottom Navigation                 |
+| Playground        | Multi-tab       | Single page + Input/Output switch |
+| Free Tools        | Route switching | Persistent rendering              |
+| File Storage      | electron-store  | Capacitor Preferences             |
+| Drag & Drop       | Full support    | File picker                       |
+| Video Converter   | No              | Yes (new feature)                 |
+| Asset Management  | Full page       | Simplified                        |
+| History Inputs    | API only        | API + Local cache                 |
 
 ### Mobile-Specific Features
 
@@ -304,6 +315,7 @@ mobile/
 ### Code Sharing
 
 Mobile shares code with desktop via Vite path aliases:
+
 - `@/` - Shared code (parent src/)
 - `@mobile/` - Mobile-specific code
 
@@ -316,6 +328,7 @@ Mobile shares code with desktop via Vite path aliases:
 ## Changelog
 
 ### v0.8.2
+
 - Add video preview thumbnails in History and Playground pages
 - Improve download functionality with proper file naming
 - Fix FlappyBird game text for mobile (remove Space key reference)
@@ -325,6 +338,7 @@ Mobile shares code with desktop via Vite path aliases:
 - Switch to Output view automatically when clicking Run
 
 ### v0.8.1
+
 - Add history delete feature (single/batch)
 - Add long-press selection mode
 - Add batch download feature
@@ -333,6 +347,7 @@ Mobile shares code with desktop via Vite path aliases:
 - Remove unused history status filters
 
 ### v0.8.0
+
 - Add video converter tool
 - Add history archive feature
 - Optimize Segment Anything interaction (long-press to exclude)

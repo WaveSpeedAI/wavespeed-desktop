@@ -1,15 +1,15 @@
-import { useState, useRef, useCallback, useContext } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { PageResetContext } from '@/components/layout/PageResetContext'
-import { useTranslation } from 'react-i18next'
-import { generateFreeToolFilename } from '@/stores/assetsStore'
-import { useFFmpegWorker } from '@/hooks/useFFmpegWorker'
-import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
-import { ProcessingProgress } from '@/components/shared/ProcessingProgress'
-import { getMediaType, formatDuration } from '@/lib/ffmpegFormats'
-import { formatBytes } from '@/types/progress'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { useState, useRef, useCallback, useContext } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { PageResetContext } from "@/components/layout/PageResetContext";
+import { useTranslation } from "react-i18next";
+import { generateFreeToolFilename } from "@/stores/assetsStore";
+import { useFFmpegWorker } from "@/hooks/useFFmpegWorker";
+import { useMultiPhaseProgress } from "@/hooks/useMultiPhaseProgress";
+import { ProcessingProgress } from "@/components/shared/ProcessingProgress";
+import { getMediaType, formatDuration } from "@/lib/ffmpegFormats";
+import { formatBytes } from "@/types/progress";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,8 +18,8 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle
-} from '@/components/ui/alert-dialog'
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   ArrowLeft,
   Upload,
@@ -33,40 +33,40 @@ import {
   Video,
   Trash2,
   ChevronUp,
-  ChevronDown
-} from 'lucide-react'
-import { cn } from '@/lib/utils'
+  ChevronDown,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface MediaItem {
-  id: string
-  file: File
-  type: 'video' | 'audio'
-  duration: number | null
-  preview: string | null
+  id: string;
+  file: File;
+  type: "video" | "audio";
+  duration: number | null;
+  preview: string | null;
 }
 
 // Phase configuration for media merger
 const PHASES = [
-  { id: 'download', labelKey: 'freeTools.ffmpeg.loading', weight: 0.1 },
-  { id: 'transcode', labelKey: 'freeTools.ffmpeg.transcoding', weight: 0.7 },
-  { id: 'merge', labelKey: 'freeTools.ffmpeg.merging', weight: 0.2 }
-]
+  { id: "download", labelKey: "freeTools.ffmpeg.loading", weight: 0.1 },
+  { id: "transcode", labelKey: "freeTools.ffmpeg.transcoding", weight: 0.7 },
+  { id: "merge", labelKey: "freeTools.ffmpeg.merging", weight: 0.2 },
+];
 
 export function MediaMergerPage() {
-  const { t } = useTranslation()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { resetPage } = useContext(PageResetContext)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const dragCounterRef = useRef(0)
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { resetPage } = useContext(PageResetContext);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const dragCounterRef = useRef(0);
 
-  const [mediaItems, setMediaItems] = useState<MediaItem[]>([])
-  const [mergedUrl, setMergedUrl] = useState<string | null>(null)
-  const [mergedBlob, setMergedBlob] = useState<Blob | null>(null)
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [isDragging, setIsDragging] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [showBackWarning, setShowBackWarning] = useState(false)
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
+  const [mergedUrl, setMergedUrl] = useState<string | null>(null);
+  const [mergedBlob, setMergedBlob] = useState<Blob | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showBackWarning, setShowBackWarning] = useState(false);
 
   // Multi-phase progress tracking
   const {
@@ -75,215 +75,225 @@ export function MediaMergerPage() {
     updatePhase,
     reset: resetProgress,
     resetAndStart,
-    complete: completeAllPhases
-  } = useMultiPhaseProgress({ phases: PHASES })
+    complete: completeAllPhases,
+  } = useMultiPhaseProgress({ phases: PHASES });
 
   const { merge, hasFailed, retryWorker } = useFFmpegWorker({
     onPhase: (phase) => {
-      if (phase === 'download' || phase === 'transcode' || phase === 'merge') {
-        startPhase(phase)
+      if (phase === "download" || phase === "transcode" || phase === "merge") {
+        startPhase(phase);
       }
     },
     onProgress: (phase, progressValue, detail) => {
-      if (phase === 'download' || phase === 'transcode' || phase === 'merge') {
-        updatePhase(phase, progressValue, detail)
+      if (phase === "download" || phase === "transcode" || phase === "merge") {
+        updatePhase(phase, progressValue, detail);
       }
     },
     onError: (err) => {
-      console.error('Worker error:', err)
-      setError(err)
-      setIsProcessing(false)
-      resetProgress()
-    }
-  })
+      console.error("Worker error:", err);
+      setError(err);
+      setIsProcessing(false);
+      resetProgress();
+    },
+  });
 
   const handleRetry = useCallback(() => {
-    setError(null)
-    retryWorker()
-  }, [retryWorker])
+    setError(null);
+    retryWorker();
+  }, [retryWorker]);
 
   const handleBack = useCallback(() => {
     if (isProcessing) {
-      setShowBackWarning(true)
+      setShowBackWarning(true);
     } else {
-      resetPage(location.pathname)
-      navigate('/free-tools')
+      resetPage(location.pathname);
+      navigate("/free-tools");
     }
-  }, [isProcessing, resetPage, location.pathname, navigate])
+  }, [isProcessing, resetPage, location.pathname, navigate]);
 
   const handleConfirmBack = useCallback(() => {
-    setShowBackWarning(false)
-    resetPage(location.pathname)
-    navigate('/free-tools')
-  }, [resetPage, location.pathname, navigate])
+    setShowBackWarning(false);
+    resetPage(location.pathname);
+    navigate("/free-tools");
+  }, [resetPage, location.pathname, navigate]);
 
   const handleFilesSelect = useCallback(
     (files: FileList | File[]) => {
-      setError(null)
-      const newItems: MediaItem[] = []
-      const firstType = mediaItems.length > 0 ? mediaItems[0].type : null
+      setError(null);
+      const newItems: MediaItem[] = [];
+      const firstType = mediaItems.length > 0 ? mediaItems[0].type : null;
 
       Array.from(files).forEach((file) => {
-        const type = getMediaType(file)
-        if (type !== 'video' && type !== 'audio') return
+        const type = getMediaType(file);
+        if (type !== "video" && type !== "audio") return;
 
         // Only allow same media type
-        if (firstType && type !== firstType) return
-        if (newItems.length > 0 && type !== newItems[0].type) return
+        if (firstType && type !== firstType) return;
+        if (newItems.length > 0 && type !== newItems[0].type) return;
 
-        const id = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-        const preview = type === 'video' ? URL.createObjectURL(file) : null
+        const id = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const preview = type === "video" ? URL.createObjectURL(file) : null;
 
-        const item: MediaItem = { id, file, type, duration: null, preview }
-        newItems.push(item)
+        const item: MediaItem = { id, file, type, duration: null, preview };
+        newItems.push(item);
 
         // Get duration
-        const media = document.createElement(type === 'video' ? 'video' : 'audio')
-        media.addEventListener('loadedmetadata', () => {
+        const media = document.createElement(
+          type === "video" ? "video" : "audio",
+        );
+        media.addEventListener("loadedmetadata", () => {
           setMediaItems((prev) =>
-            prev.map((m) => (m.id === id ? { ...m, duration: media.duration } : m))
-          )
-        })
-        media.src = URL.createObjectURL(file)
-      })
+            prev.map((m) =>
+              m.id === id ? { ...m, duration: media.duration } : m,
+            ),
+          );
+        });
+        media.src = URL.createObjectURL(file);
+      });
 
-      setMediaItems((prev) => [...prev, ...newItems])
-      setMergedUrl(null)
-      setMergedBlob(null)
-      resetProgress()
+      setMediaItems((prev) => [...prev, ...newItems]);
+      setMergedUrl(null);
+      setMergedBlob(null);
+      resetProgress();
     },
-    [mediaItems, resetProgress]
-  )
+    [mediaItems, resetProgress],
+  );
 
   const handleRemoveItem = useCallback((id: string) => {
     setMediaItems((prev) => {
-      const item = prev.find((m) => m.id === id)
-      if (item?.preview) URL.revokeObjectURL(item.preview)
-      return prev.filter((m) => m.id !== id)
-    })
-  }, [])
+      const item = prev.find((m) => m.id === id);
+      if (item?.preview) URL.revokeObjectURL(item.preview);
+      return prev.filter((m) => m.id !== id);
+    });
+  }, []);
 
-  const handleMoveItem = useCallback((id: string, direction: 'up' | 'down') => {
+  const handleMoveItem = useCallback((id: string, direction: "up" | "down") => {
     setMediaItems((prev) => {
-      const index = prev.findIndex((m) => m.id === id)
-      if (index === -1) return prev
-      if (direction === 'up' && index === 0) return prev
-      if (direction === 'down' && index === prev.length - 1) return prev
+      const index = prev.findIndex((m) => m.id === id);
+      if (index === -1) return prev;
+      if (direction === "up" && index === 0) return prev;
+      if (direction === "down" && index === prev.length - 1) return prev;
 
-      const newItems = [...prev]
-      const swapIndex = direction === 'up' ? index - 1 : index + 1
-      ;[newItems[index], newItems[swapIndex]] = [newItems[swapIndex], newItems[index]]
-      return newItems
-    })
-  }, [])
+      const newItems = [...prev];
+      const swapIndex = direction === "up" ? index - 1 : index + 1;
+      [newItems[index], newItems[swapIndex]] = [
+        newItems[swapIndex],
+        newItems[index],
+      ];
+      return newItems;
+    });
+  }, []);
 
   const handleClearAll = useCallback(() => {
     mediaItems.forEach((item) => {
-      if (item.preview) URL.revokeObjectURL(item.preview)
-    })
-    if (mergedUrl) URL.revokeObjectURL(mergedUrl)
-    setMediaItems([])
-    setMergedUrl(null)
-    setMergedBlob(null)
-    resetProgress()
-  }, [mediaItems, mergedUrl, resetProgress])
+      if (item.preview) URL.revokeObjectURL(item.preview);
+    });
+    if (mergedUrl) URL.revokeObjectURL(mergedUrl);
+    setMediaItems([]);
+    setMergedUrl(null);
+    setMergedBlob(null);
+    resetProgress();
+  }, [mediaItems, mergedUrl, resetProgress]);
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      dragCounterRef.current = 0
-      setIsDragging(false)
-      if (isProcessing) return
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounterRef.current = 0;
+      setIsDragging(false);
+      if (isProcessing) return;
       if (e.dataTransfer.files.length > 0) {
-        handleFilesSelect(e.dataTransfer.files)
+        handleFilesSelect(e.dataTransfer.files);
       }
     },
-    [handleFilesSelect, isProcessing]
-  )
+    [handleFilesSelect, isProcessing],
+  );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-  }, [])
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    dragCounterRef.current++
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current++;
     if (dragCounterRef.current === 1) {
-      setIsDragging(true)
+      setIsDragging(true);
     }
-  }, [])
+  }, []);
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    dragCounterRef.current--
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current--;
     if (dragCounterRef.current === 0) {
-      setIsDragging(false)
+      setIsDragging(false);
     }
-  }, [])
+  }, []);
 
   const handleMerge = async () => {
-    if (mediaItems.length < 2) return
+    if (mediaItems.length < 2) return;
 
-    setIsProcessing(true)
-    setError(null)
-    setMergedUrl(null)
-    setMergedBlob(null)
-    resetAndStart('download')
+    setIsProcessing(true);
+    setError(null);
+    setMergedUrl(null);
+    setMergedBlob(null);
+    resetAndStart("download");
 
-    const mediaType = mediaItems[0].type
-    const ext = mediaType === 'video' ? 'mp4' : 'mp3'
-    const mimeType = mediaType === 'video' ? 'video/mp4' : 'audio/mpeg'
+    const mediaType = mediaItems[0].type;
+    const ext = mediaType === "video" ? "mp4" : "mp3";
+    const mimeType = mediaType === "video" ? "video/mp4" : "audio/mpeg";
 
     try {
       // Read all files as ArrayBuffers
-      const files: ArrayBuffer[] = []
-      const fileNames: string[] = []
+      const files: ArrayBuffer[] = [];
+      const fileNames: string[] = [];
 
       for (const item of mediaItems) {
-        const arrayBuffer = await item.file.arrayBuffer()
-        files.push(arrayBuffer)
-        fileNames.push(item.file.name)
+        const arrayBuffer = await item.file.arrayBuffer();
+        files.push(arrayBuffer);
+        fileNames.push(item.file.name);
       }
 
       // Merge using FFmpeg worker
-      const result = await merge(files, fileNames, ext, ext)
+      const result = await merge(files, fileNames, ext, ext);
 
       // Create blob and URL
-      const blob = new Blob([result.data], { type: mimeType })
-      const url = URL.createObjectURL(blob)
+      const blob = new Blob([result.data], { type: mimeType });
+      const url = URL.createObjectURL(blob);
 
-      setMergedBlob(blob)
-      setMergedUrl(url)
-      completeAllPhases()
+      setMergedBlob(blob);
+      setMergedUrl(url);
+      completeAllPhases();
     } catch (err) {
-      console.error('Merging failed:', err)
-      setError(err instanceof Error ? err.message : 'Merging failed')
+      console.error("Merging failed:", err);
+      setError(err instanceof Error ? err.message : "Merging failed");
     } finally {
-      setIsProcessing(false)
+      setIsProcessing(false);
     }
-  }
+  };
 
   const handleDownload = () => {
-    if (!mergedUrl || !mergedBlob) return
+    if (!mergedUrl || !mergedBlob) return;
 
-    const mediaType = mediaItems[0]?.type || 'video'
-    const ext = mediaType === 'video' ? 'mp4' : 'mp3'
-    const filename = generateFreeToolFilename('media-merger', ext)
+    const mediaType = mediaItems[0]?.type || "video";
+    const ext = mediaType === "video" ? "mp4" : "mp3";
+    const filename = generateFreeToolFilename("media-merger", ext);
 
-    const link = document.createElement('a')
-    link.href = mergedUrl
-    link.download = filename
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
+    const link = document.createElement("a");
+    link.href = mergedUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
-  const totalDuration = mediaItems.reduce((sum, item) => sum + (item.duration || 0), 0)
-  const mediaType = mediaItems.length > 0 ? mediaItems[0].type : null
+  const totalDuration = mediaItems.reduce(
+    (sum, item) => sum + (item.duration || 0),
+    0,
+  );
+  const mediaType = mediaItems.length > 0 ? mediaItems[0].type : null;
 
   return (
     <div
@@ -298,7 +308,9 @@ export function MediaMergerPage() {
         <div className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center border-2 border-dashed border-primary rounded-lg m-4">
           <div className="text-center">
             <Upload className="h-12 w-12 text-primary mx-auto mb-2" />
-            <p className="text-lg font-medium">{t('freeTools.mediaMerger.dropToAdd')}</p>
+            <p className="text-lg font-medium">
+              {t("freeTools.mediaMerger.dropToAdd")}
+            </p>
           </div>
         </div>
       )}
@@ -309,9 +321,11 @@ export function MediaMergerPage() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">{t('freeTools.mediaMerger.title')}</h1>
+          <h1 className="text-2xl font-bold">
+            {t("freeTools.mediaMerger.title")}
+          </h1>
           <p className="text-muted-foreground text-sm">
-            {t('freeTools.mediaMerger.description')}
+            {t("freeTools.mediaMerger.description")}
           </p>
         </div>
       </div>
@@ -320,10 +334,10 @@ export function MediaMergerPage() {
       {mediaItems.length === 0 && (
         <Card
           className={cn(
-            'border-2 border-dashed cursor-pointer transition-colors',
+            "border-2 border-dashed cursor-pointer transition-colors",
             isDragging
-              ? 'border-primary bg-primary/5'
-              : 'border-muted-foreground/25 hover:border-primary/50'
+              ? "border-primary bg-primary/5"
+              : "border-muted-foreground/25 hover:border-primary/50",
           )}
           onClick={() => fileInputRef.current?.click()}
         >
@@ -331,12 +345,14 @@ export function MediaMergerPage() {
             <div className="p-4 rounded-full bg-muted mb-4">
               <Upload className="h-8 w-8 text-muted-foreground" />
             </div>
-            <p className="text-lg font-medium">{t('freeTools.mediaMerger.selectFiles')}</p>
+            <p className="text-lg font-medium">
+              {t("freeTools.mediaMerger.selectFiles")}
+            </p>
             <p className="text-sm text-muted-foreground">
-              {t('freeTools.mediaMerger.orDragDrop')}
+              {t("freeTools.mediaMerger.orDragDrop")}
             </p>
             <p className="text-xs text-muted-foreground mt-2">
-              {t('freeTools.mediaMerger.supportedFormats')}
+              {t("freeTools.mediaMerger.supportedFormats")}
             </p>
           </CardContent>
         </Card>
@@ -349,8 +365,8 @@ export function MediaMergerPage() {
         multiple
         className="hidden"
         onChange={(e) => {
-          if (e.target.files) handleFilesSelect(e.target.files)
-          e.target.value = ''
+          if (e.target.files) handleFilesSelect(e.target.files);
+          e.target.value = "";
         }}
       />
 
@@ -365,7 +381,7 @@ export function MediaMergerPage() {
               disabled={isProcessing}
             >
               <Upload className="h-4 w-4 mr-2" />
-              {t('freeTools.mediaMerger.addMore')}
+              {t("freeTools.mediaMerger.addMore")}
             </Button>
 
             <Button
@@ -376,24 +392,24 @@ export function MediaMergerPage() {
               {isProcessing ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  {t('freeTools.mediaMerger.merging')}
+                  {t("freeTools.mediaMerger.merging")}
                 </>
               ) : (
                 <>
                   <Combine className="h-4 w-4 mr-2" />
-                  {t('freeTools.mediaMerger.merge')} ({mediaItems.length})
+                  {t("freeTools.mediaMerger.merge")} ({mediaItems.length})
                 </>
               )}
             </Button>
 
             <p className="text-xs text-muted-foreground">
-              {t('freeTools.mediaMerger.sameFormatNote')}
+              {t("freeTools.mediaMerger.sameFormatNote")}
             </p>
 
             {mergedUrl && (
               <Button variant="outline" onClick={handleDownload}>
                 <Download className="h-4 w-4 mr-2" />
-                {t('common.download')}
+                {t("common.download")}
               </Button>
             )}
 
@@ -422,7 +438,7 @@ export function MediaMergerPage() {
               <span className="text-sm text-destructive">{error}</span>
               <Button variant="outline" size="sm" onClick={handleRetry}>
                 <RefreshCw className="h-4 w-4 mr-2" />
-                {t('common.retry')}
+                {t("common.retry")}
               </Button>
             </div>
           )}
@@ -445,7 +461,7 @@ export function MediaMergerPage() {
                     </span>
 
                     {/* Preview/Icon */}
-                    {item.type === 'video' && item.preview ? (
+                    {item.type === "video" && item.preview ? (
                       <div className="w-16 h-12 rounded overflow-hidden bg-black shrink-0">
                         <video
                           src={item.preview}
@@ -455,7 +471,7 @@ export function MediaMergerPage() {
                       </div>
                     ) : (
                       <div className="w-12 h-12 rounded bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center shrink-0">
-                        {item.type === 'video' ? (
+                        {item.type === "video" ? (
                           <Video className="h-5 w-5 text-primary/60" />
                         ) : (
                           <Music className="h-5 w-5 text-primary/60" />
@@ -465,10 +481,14 @@ export function MediaMergerPage() {
 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{item.file.name}</p>
+                      <p className="text-sm font-medium truncate">
+                        {item.file.name}
+                      </p>
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
                         <span>{formatBytes(item.file.size)}</span>
-                        {item.duration && <span>{formatDuration(item.duration)}</span>}
+                        {item.duration && (
+                          <span>{formatDuration(item.duration)}</span>
+                        )}
                       </div>
                     </div>
 
@@ -478,7 +498,7 @@ export function MediaMergerPage() {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8"
-                        onClick={() => handleMoveItem(item.id, 'up')}
+                        onClick={() => handleMoveItem(item.id, "up")}
                         disabled={index === 0 || isProcessing}
                       >
                         <ChevronUp className="h-4 w-4" />
@@ -487,8 +507,10 @@ export function MediaMergerPage() {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8"
-                        onClick={() => handleMoveItem(item.id, 'down')}
-                        disabled={index === mediaItems.length - 1 || isProcessing}
+                        onClick={() => handleMoveItem(item.id, "down")}
+                        disabled={
+                          index === mediaItems.length - 1 || isProcessing
+                        }
                       >
                         <ChevronDown className="h-4 w-4" />
                       </Button>
@@ -509,11 +531,16 @@ export function MediaMergerPage() {
               {/* Summary */}
               <div className="flex items-center justify-between mt-4 pt-4 border-t">
                 <div className="text-sm text-muted-foreground">
-                  {mediaItems.length} {mediaType === 'video' ? 'videos' : 'audio files'}
+                  {mediaItems.length}{" "}
+                  {mediaType === "video" ? "videos" : "audio files"}
                 </div>
                 <div className="text-sm">
-                  <span className="text-muted-foreground">{t('freeTools.mediaMerger.totalDuration')}: </span>
-                  <span className="font-medium">{formatDuration(totalDuration)}</span>
+                  <span className="text-muted-foreground">
+                    {t("freeTools.mediaMerger.totalDuration")}:{" "}
+                  </span>
+                  <span className="font-medium">
+                    {formatDuration(totalDuration)}
+                  </span>
                 </div>
               </div>
 
@@ -522,7 +549,7 @@ export function MediaMergerPage() {
                 <div className="mt-4 pt-4 border-t space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                      {t('freeTools.mediaMerger.merged')}
+                      {t("freeTools.mediaMerger.merged")}
                     </span>
                     <span className="text-sm text-muted-foreground">
                       {formatBytes(mergedBlob.size)}
@@ -530,7 +557,7 @@ export function MediaMergerPage() {
                   </div>
 
                   {/* Merged media player */}
-                  {mediaType === 'video' ? (
+                  {mediaType === "video" ? (
                     <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
                       <video
                         src={mergedUrl}
@@ -540,18 +567,12 @@ export function MediaMergerPage() {
                       />
                     </div>
                   ) : (
-                    <audio
-                      src={mergedUrl}
-                      className="w-full"
-                      controls
-                    />
+                    <audio src={mergedUrl} className="w-full" controls />
                   )}
                 </div>
               )}
             </CardContent>
           </Card>
-
-
         </div>
       )}
 
@@ -559,19 +580,23 @@ export function MediaMergerPage() {
       <AlertDialog open={showBackWarning} onOpenChange={setShowBackWarning}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('freeTools.backWarning.title')}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t("freeTools.backWarning.title")}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              {t('freeTools.backWarning.description')}
+              {t("freeTools.backWarning.description")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t('freeTools.backWarning.cancel')}</AlertDialogCancel>
+            <AlertDialogCancel>
+              {t("freeTools.backWarning.cancel")}
+            </AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmBack}>
-              {t('freeTools.backWarning.confirm')}
+              {t("freeTools.backWarning.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  )
+  );
 }

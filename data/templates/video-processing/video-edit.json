@@ -2,11 +2,7 @@
   "name": "视频编辑",
   "i18nKey": "videoEdit",
   "description": "使用AI模型编辑视频内容，支持通过提示词修改视频中的元素",
-  "tags": [
-    "视频",
-    "编辑",
-    "AI"
-  ],
+  "tags": ["视频", "编辑", "AI"],
   "category": "video-editing",
   "author": "WaveSpeed",
   "thumbnail": "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1763608542503495122_E5Jc0qQc.png",
@@ -49,10 +45,7 @@
                 "type": "enum",
                 "description": "The resolution of the output video.",
                 "default": "480p",
-                "enum": [
-                  "480p",
-                  "720p"
-                ],
+                "enum": ["480p", "720p"],
                 "fieldType": "select"
               },
               {

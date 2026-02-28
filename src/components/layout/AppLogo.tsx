@@ -1,11 +1,11 @@
-import logoLight from '@/assets/logo-light.png'
-import logoDark from '@/assets/logo-dark.png'
+import logoLight from "@/assets/logo-light.png";
+import logoDark from "@/assets/logo-dark.png";
 
 interface AppLogoProps {
-  className?: string
+  className?: string;
 }
 
-export function AppLogo({ className = 'h-10 w-10' }: AppLogoProps) {
+export function AppLogo({ className = "h-10 w-10" }: AppLogoProps) {
   return (
     <>
       <img
@@ -19,5 +19,5 @@ export function AppLogo({ className = 'h-10 w-10' }: AppLogoProps) {
         className={`${className} hidden dark:block object-contain`}
       />
     </>
-  )
+  );
 }

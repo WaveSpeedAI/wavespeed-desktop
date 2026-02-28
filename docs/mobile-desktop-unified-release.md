@@ -16,24 +16,24 @@ Mobile 通过 Vite alias 覆写了 Desktop 的 13 个文件。当 Desktop 更新
 
 将 13 个覆写文件合并为 2 个，通过条件判断（`isCapacitorNative()`）让同一份代码兼容两个平台。
 
-| 覆写文件 | 合并前 | 合并后 |
-|---------|-------|-------|
-| slider, PromptOptimizer, DynamicForm | 3 个独立 mobile 版本 | 合并到 Desktop 代码 |
-| 4 个 Worker Hooks | 4 个独立 mobile 版本 | 合并到 Desktop 代码 |
-| API client | 独立 mobile 版本 | 合并到 Desktop 代码 |
-| FormField, SizeSelector | 独立 mobile 版本 | 合并到 Desktop 代码 |
-| FileUpload, AudioRecorder | 独立 mobile 版本 | 合并到 Desktop 代码 |
-| **SettingsPage** | 独立 mobile 版本 | **保留覆写**（差异过大） |
-| **i18n** | 独立 mobile 版本 | **保留覆写**（架构不同） |
+| 覆写文件                             | 合并前               | 合并后                   |
+| ------------------------------------ | -------------------- | ------------------------ |
+| slider, PromptOptimizer, DynamicForm | 3 个独立 mobile 版本 | 合并到 Desktop 代码      |
+| 4 个 Worker Hooks                    | 4 个独立 mobile 版本 | 合并到 Desktop 代码      |
+| API client                           | 独立 mobile 版本     | 合并到 Desktop 代码      |
+| FormField, SizeSelector              | 独立 mobile 版本     | 合并到 Desktop 代码      |
+| FileUpload, AudioRecorder            | 独立 mobile 版本     | 合并到 Desktop 代码      |
+| **SettingsPage**                     | 独立 mobile 版本     | **保留覆写**（差异过大） |
+| **i18n**                             | 独立 mobile 版本     | **保留覆写**（架构不同） |
 
 **结果：13 → 2 个覆写文件（减少 85%）。** Desktop 日常开发的改动会自动同步到 Mobile。
 
 ### 仍需手动同步的 2 个文件
 
-| 文件 | 保留覆写的原因 |
-|------|--------------|
+| 文件                         | 保留覆写的原因                                                                                               |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | `src/pages/SettingsPage.tsx` | Desktop 有 Electron 自动更新、SD 模型管理；Mobile 有 APK 下载更新、Cache API、WASM 模型预下载。功能差异 >40% |
-| `src/i18n/index.ts` | Mobile 通过 deepMerge 扩展 Desktop 翻译，架构层面不同 |
+| `src/i18n/index.ts`          | Mobile 通过 deepMerge 扩展 Desktop 翻译，架构层面不同                                                        |
 
 CI 中已加入检测：如果这 2 个文件在 Desktop 端被修改，构建时会输出警告提醒手动同步。
 
@@ -75,14 +75,14 @@ push tag v1.0.48
 
 一个 GitHub Release 包含所有平台安装包：
 
-| 文件 | 平台 |
-|------|-----|
-| WaveSpeed-Desktop-win-x64.exe | Windows |
-| WaveSpeed-Desktop-mac-x64.dmg | macOS Intel |
-| WaveSpeed-Desktop-mac-arm64.dmg | macOS Apple Silicon |
-| WaveSpeed-Desktop-linux-x86_64.AppImage | Linux |
-| WaveSpeed-Mobile-{version}.apk | Android（带版本号） |
-| WaveSpeed-Mobile.apk | Android（固定链接用） |
+| 文件                                    | 平台                  |
+| --------------------------------------- | --------------------- |
+| WaveSpeed-Desktop-win-x64.exe           | Windows               |
+| WaveSpeed-Desktop-mac-x64.dmg           | macOS Intel           |
+| WaveSpeed-Desktop-mac-arm64.dmg         | macOS Apple Silicon   |
+| WaveSpeed-Desktop-linux-x86_64.AppImage | Linux                 |
+| WaveSpeed-Mobile-{version}.apk          | Android（带版本号）   |
+| WaveSpeed-Mobile.apk                    | Android（固定链接用） |
 
 ### 版本号
 
@@ -98,13 +98,13 @@ Mobile 版本号自动跟随 Desktop。CI 中自动完成：
 
 所有平台均有一键下载徽章，指向 `/releases/latest/download/`，永远是最新版本：
 
-| 平台 | 链接 |
-|------|-----|
-| Windows | `releases/latest/download/WaveSpeed-Desktop-win-x64.exe` |
-| macOS Intel | `releases/latest/download/WaveSpeed-Desktop-mac-x64.dmg` |
-| macOS Silicon | `releases/latest/download/WaveSpeed-Desktop-mac-arm64.dmg` |
-| Linux | `releases/latest/download/WaveSpeed-Desktop-linux-x86_64.AppImage` |
-| Android | `releases/latest/download/WaveSpeed-Mobile.apk` |
+| 平台          | 链接                                                               |
+| ------------- | ------------------------------------------------------------------ |
+| Windows       | `releases/latest/download/WaveSpeed-Desktop-win-x64.exe`           |
+| macOS Intel   | `releases/latest/download/WaveSpeed-Desktop-mac-x64.dmg`           |
+| macOS Silicon | `releases/latest/download/WaveSpeed-Desktop-mac-arm64.dmg`         |
+| Linux         | `releases/latest/download/WaveSpeed-Desktop-linux-x86_64.AppImage` |
+| Android       | `releases/latest/download/WaveSpeed-Mobile.apk`                    |
 
 ---
 
@@ -112,21 +112,21 @@ Mobile 版本号自动跟随 Desktop。CI 中自动完成：
 
 ### Desktop
 
-| 功能 | 支持 |
-|------|-----|
-| 后台自动检查更新 | ✅ 启动后 3 秒自动检查 |
-| 应用内下载 | ✅ 后台静默下载，显示进度 |
-| 自动安装 | ✅ 退出时自动安装新版本 |
-| 更新频道 | ✅ Stable / Nightly 可切换 |
+| 功能             | 支持                       |
+| ---------------- | -------------------------- |
+| 后台自动检查更新 | ✅ 启动后 3 秒自动检查     |
+| 应用内下载       | ✅ 后台静默下载，显示进度  |
+| 自动安装         | ✅ 退出时自动安装新版本    |
+| 更新频道         | ✅ Stable / Nightly 可切换 |
 
 ### Mobile
 
-| 功能 | 支持 |
-|------|-----|
-| 手动检查更新 | ✅ Settings → 检查更新 |
+| 功能           | 支持                                 |
+| -------------- | ------------------------------------ |
+| 手动检查更新   | ✅ Settings → 检查更新               |
 | 应用内下载 APK | ✅ 下载到 Downloads 文件夹，显示进度 |
-| 自动安装 | ❌ 需用户手动点击 APK 安装 |
-| 后台自动检查 | ❌ 需用户主动触发 |
+| 自动安装       | ❌ 需用户手动点击 APK 安装           |
+| 后台自动检查   | ❌ 需用户主动触发                    |
 
 ### Mobile 自动升级的限制
 
@@ -137,6 +137,7 @@ Android 侧载（sideload）应用无法实现静默自动更新，这是 Androi
 3. **安全策略**：APK 自动替换需要系统级权限，普通应用无法获取
 
 **如需实现 Mobile 真正的自动更新，需要上架 Google Play Store。** Google Play 提供：
+
 - 后台自动下载更新
 - Wi-Fi 下静默安装
 - 灰度发布 / 分阶段推送

@@ -2,10 +2,10 @@
 module.exports = {
   darkMode: ["class"],
   content: [
-    './index.html',
-    './src/**/*.{ts,tsx}',
+    "./index.html",
+    "./src/**/*.{ts,tsx}",
     // Include shared components from main project
-    '../src/**/*.{ts,tsx}',
+    "../src/**/*.{ts,tsx}",
   ],
   theme: {
     container: {
@@ -86,21 +86,21 @@ module.exports = {
       },
       // Mobile-specific spacing
       spacing: {
-        'safe-top': 'env(safe-area-inset-top)',
-        'safe-bottom': 'env(safe-area-inset-bottom)',
-        'safe-left': 'env(safe-area-inset-left)',
-        'safe-right': 'env(safe-area-inset-right)',
+        "safe-top": "env(safe-area-inset-top)",
+        "safe-bottom": "env(safe-area-inset-bottom)",
+        "safe-left": "env(safe-area-inset-left)",
+        "safe-right": "env(safe-area-inset-right)",
       },
       // Touch-friendly minimum sizes
       minHeight: {
-        'touch': '44px',
-        'touch-lg': '48px',
+        touch: "44px",
+        "touch-lg": "48px",
       },
       minWidth: {
-        'touch': '44px',
-        'touch-lg': '48px',
+        touch: "44px",
+        "touch-lg": "48px",
       },
     },
   },
   plugins: [require("tailwindcss-animate")],
-}
+};

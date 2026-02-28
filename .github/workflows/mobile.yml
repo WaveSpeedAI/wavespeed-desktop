@@ -3,12 +3,12 @@ name: Mobile Build
 on:
   push:
     tags:
-      - 'v*'  # Unified release: same tag as desktop
+      - "v*" # Unified release: same tag as desktop
     branches:
-      - 'main'
+      - "main"
   pull_request:
     branches: [main]
-  workflow_dispatch:  # Allow manual trigger anytime
+  workflow_dispatch: # Allow manual trigger anytime
 
 jobs:
   # Check for potential mobile sync issues — blocks mobile build if issues found
@@ -212,15 +212,15 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
           cache-dependency-path: mobile/package-lock.json
 
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: "temurin"
+          java-version: "17"
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3

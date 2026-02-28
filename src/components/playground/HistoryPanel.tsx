@@ -1,36 +1,36 @@
-import { useRef, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
-import type { GenerationHistoryItem } from '@/types/prediction'
-import { cn } from '@/lib/utils'
+import { useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import type { GenerationHistoryItem } from "@/types/prediction";
+import { cn } from "@/lib/utils";
 
 interface HistoryPanelProps {
-  history: GenerationHistoryItem[]
-  selectedIndex: number | null
-  onSelect: (index: number | null) => void
-  direction?: 'vertical' | 'horizontal'
+  history: GenerationHistoryItem[];
+  selectedIndex: number | null;
+  onSelect: (index: number | null) => void;
+  direction?: "vertical" | "horizontal";
 }
 
 export function HistoryPanel({
   history,
   selectedIndex,
   onSelect,
-  direction = 'vertical'
+  direction = "vertical",
 }: HistoryPanelProps) {
-  const { t } = useTranslation()
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const { t } = useTranslation();
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to show newest item when history grows
   useEffect(() => {
     if (scrollRef.current) {
-      if (direction === 'vertical') {
-        scrollRef.current.scrollTop = 0
+      if (direction === "vertical") {
+        scrollRef.current.scrollTop = 0;
       } else {
-        scrollRef.current.scrollLeft = 0
+        scrollRef.current.scrollLeft = 0;
       }
     }
-  }, [history.length, direction])
+  }, [history.length, direction]);
 
-  if (direction === 'horizontal') {
+  if (direction === "horizontal") {
     return (
       <div className="border-t bg-muted/30 shrink-0">
         <div
@@ -42,12 +42,12 @@ export function HistoryPanel({
               key={item.id}
               onClick={() => onSelect(selectedIndex === index ? null : index)}
               className={cn(
-                'relative shrink-0 w-16 h-16 rounded-md overflow-hidden bg-muted border-2 transition-all',
+                "relative shrink-0 w-16 h-16 rounded-md overflow-hidden bg-muted border-2 transition-all",
                 selectedIndex === index
-                  ? 'border-blue-500 shadow-md'
+                  ? "border-blue-500 shadow-md"
                   : index === 0 && selectedIndex === null
-                    ? 'border-blue-500/50'
-                    : 'border-transparent hover:border-muted-foreground/30'
+                    ? "border-blue-500/50"
+                    : "border-transparent hover:border-muted-foreground/30",
               )}
             >
               <ThumbnailContent item={item} />
@@ -58,14 +58,14 @@ export function HistoryPanel({
           ))}
         </div>
       </div>
-    )
+    );
   }
 
   // Vertical layout (desktop)
   return (
     <div className="w-[120px] h-full shrink-0 border-l bg-muted/30 flex flex-col">
       <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground border-b truncate">
-        {t('playground.history.title')}
+        {t("playground.history.title")}
       </div>
       <div
         ref={scrollRef}
@@ -76,12 +76,12 @@ export function HistoryPanel({
             key={item.id}
             onClick={() => onSelect(selectedIndex === index ? null : index)}
             className={cn(
-              'relative w-full aspect-square rounded-md overflow-hidden bg-muted border-2 transition-all',
+              "relative w-full aspect-square rounded-md overflow-hidden bg-muted border-2 transition-all",
               selectedIndex === index
-                ? 'border-blue-500 shadow-md'
+                ? "border-blue-500 shadow-md"
                 : index === 0 && selectedIndex === null
-                  ? 'border-blue-500/50'
-                  : 'border-transparent hover:border-muted-foreground/30'
+                  ? "border-blue-500/50"
+                  : "border-transparent hover:border-muted-foreground/30",
             )}
           >
             <ThumbnailContent item={item} />
@@ -92,11 +92,11 @@ export function HistoryPanel({
         ))}
       </div>
     </div>
-  )
+  );
 }
 
 function ThumbnailContent({ item }: { item: GenerationHistoryItem }) {
-  if (item.thumbnailUrl && item.thumbnailType === 'image') {
+  if (item.thumbnailUrl && item.thumbnailType === "image") {
     return (
       <img
         src={item.thumbnailUrl}
@@ -104,10 +104,10 @@ function ThumbnailContent({ item }: { item: GenerationHistoryItem }) {
         className="w-full h-full object-cover"
         loading="lazy"
       />
-    )
+    );
   }
 
-  if (item.thumbnailUrl && item.thumbnailType === 'video') {
+  if (item.thumbnailUrl && item.thumbnailType === "video") {
     return (
       <video
         src={item.thumbnailUrl}
@@ -115,7 +115,7 @@ function ThumbnailContent({ item }: { item: GenerationHistoryItem }) {
         muted
         preload="metadata"
       />
-    )
+    );
   }
 
   // Fallback: show a generic icon
@@ -136,5 +136,5 @@ function ThumbnailContent({ item }: { item: GenerationHistoryItem }) {
         <circle cx="12" cy="13" r="3" />
       </svg>
     </div>
-  )
+  );
 }

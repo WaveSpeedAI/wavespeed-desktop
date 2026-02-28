@@ -1,72 +1,73 @@
 // LogConsole Component - Real-time SD process logs viewer
-import { useState, useEffect, useRef } from 'react'
-import { ChevronDown, ChevronUp, Trash2, Terminal } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { cn } from '@/lib/utils'
-import { useSDModelsStore } from '@/stores/sdModelsStore'
+import { useState, useEffect, useRef } from "react";
+import { ChevronDown, ChevronUp, Trash2, Terminal } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { useSDModelsStore } from "@/stores/sdModelsStore";
 
 interface LogConsoleProps {
-  isGenerating: boolean
+  isGenerating: boolean;
 }
 
 export function LogConsole({ isGenerating }: LogConsoleProps) {
-  const { sdLogs, addSdLog, clearSdLogs } = useSDModelsStore()
-  const [isExpanded, setIsExpanded] = useState(false)
-  const [autoScroll, setAutoScroll] = useState(true)
-  const logsEndRef = useRef<HTMLDivElement>(null)
-  const logsContainerRef = useRef<HTMLDivElement>(null)
+  const { sdLogs, addSdLog, clearSdLogs } = useSDModelsStore();
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [autoScroll, setAutoScroll] = useState(true);
+  const logsEndRef = useRef<HTMLDivElement>(null);
+  const logsContainerRef = useRef<HTMLDivElement>(null);
 
   // Listen to SD logs
   useEffect(() => {
     if (!window.electronAPI?.onSdLog || !isGenerating) {
-      return
+      return;
     }
 
     const removeListener = window.electronAPI.onSdLog((data) => {
       addSdLog({
         type: data.type,
         message: data.message,
-        timestamp: new Date()
-      })
-    })
+        timestamp: new Date(),
+      });
+    });
 
     return () => {
-      removeListener()
-    }
-  }, [isGenerating, addSdLog])
+      removeListener();
+    };
+  }, [isGenerating, addSdLog]);
 
   // Auto-scroll to bottom when new logs arrive
   useEffect(() => {
     if (autoScroll && logsContainerRef.current) {
       // Use scrollTop for instant, jank-free scrolling
-      logsContainerRef.current.scrollTop = logsContainerRef.current.scrollHeight
+      logsContainerRef.current.scrollTop =
+        logsContainerRef.current.scrollHeight;
     }
-  }, [sdLogs, autoScroll])
+  }, [sdLogs, autoScroll]);
 
   // Detect manual scroll and disable auto-scroll
   const handleScroll = () => {
-    if (!logsContainerRef.current) return
+    if (!logsContainerRef.current) return;
 
-    const { scrollTop, scrollHeight, clientHeight } = logsContainerRef.current
-    const isAtBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 10
+    const { scrollTop, scrollHeight, clientHeight } = logsContainerRef.current;
+    const isAtBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 10;
 
-    setAutoScroll(isAtBottom)
-  }
+    setAutoScroll(isAtBottom);
+  };
 
   const formatTimestamp = (date: Date) => {
-    return date.toLocaleTimeString('en-US', {
+    return date.toLocaleTimeString("en-US", {
       hour12: false,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      fractionalSecondDigits: 3
-    } as Intl.DateTimeFormatOptions)
-  }
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      fractionalSecondDigits: 3,
+    } as Intl.DateTimeFormatOptions);
+  };
 
   // Don't show console if not generating and no logs
   if (!isGenerating && sdLogs.length === 0) {
-    return null
+    return null;
   }
 
   return (
@@ -93,8 +94,8 @@ export function LogConsole({ isGenerating }: LogConsoleProps) {
               variant="ghost"
               size="sm"
               onClick={(e) => {
-                e.stopPropagation()
-                clearSdLogs()
+                e.stopPropagation();
+                clearSdLogs();
               }}
               className="h-6 px-2"
             >
@@ -127,8 +128,8 @@ export function LogConsole({ isGenerating }: LogConsoleProps) {
                 <div
                   key={log.id}
                   className={cn(
-                    'flex gap-2 leading-tight py-0.5',
-                    log.type === 'stderr' && 'text-yellow-400'
+                    "flex gap-2 leading-tight py-0.5",
+                    log.type === "stderr" && "text-yellow-400",
                   )}
                 >
                   <span className="text-gray-500 shrink-0 text-[9px]">
@@ -150,8 +151,8 @@ export function LogConsole({ isGenerating }: LogConsoleProps) {
                 variant="link"
                 size="sm"
                 onClick={() => {
-                  setAutoScroll(true)
-                  logsEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+                  setAutoScroll(true);
+                  logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
                 }}
                 className="h-auto p-0 text-[10px]"
               >
@@ -162,5 +163,5 @@ export function LogConsole({ isGenerating }: LogConsoleProps) {
         </CardContent>
       )}
     </Card>
-  )
+  );
 }

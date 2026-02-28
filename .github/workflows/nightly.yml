@@ -3,7 +3,7 @@ name: Nightly Build
 on:
   schedule:
     # Run at 2:00 AM UTC every day
-    - cron: '0 2 * * *'
+    - cron: "0 2 * * *"
 
 jobs:
   check-changes:
@@ -52,8 +52,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci

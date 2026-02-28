@@ -4,8 +4,8 @@
  */
 
 interface WorkerMessage {
-  type: string
-  payload?: unknown
+  type: string;
+  payload?: unknown;
 }
 
 /**
@@ -20,50 +20,62 @@ export function createWorkerPromise<T>(
   worker: Worker,
   successType: string,
   options: {
-    errorType?: string
-    matchId?: number
-    onSuccess: (payload: unknown) => T
-    onError?: (payload: unknown) => Error
-    postMessage: () => void
-  }
+    errorType?: string;
+    matchId?: number;
+    onSuccess: (payload: unknown) => T;
+    onError?: (payload: unknown) => Error;
+    postMessage: () => void;
+  },
 ): Promise<T> {
-  const { errorType = 'error', matchId, onSuccess, onError, postMessage } = options
+  const {
+    errorType = "error",
+    matchId,
+    onSuccess,
+    onError,
+    postMessage,
+  } = options;
 
   return new Promise((resolve, reject) => {
-    let resolved = false
+    let resolved = false;
 
     const cleanup = () => {
-      worker.removeEventListener('message', handleMessage)
-    }
+      worker.removeEventListener("message", handleMessage);
+    };
 
     const handleMessage = (e: MessageEvent<WorkerMessage>) => {
-      if (resolved) return
+      if (resolved) return;
 
-      const { type, payload } = e.data
-      const payloadId = (payload as { id?: number })?.id
+      const { type, payload } = e.data;
+      const payloadId = (payload as { id?: number })?.id;
 
       // If matchId is specified, only handle messages with matching id
-      if (matchId !== undefined && payloadId !== undefined && payloadId !== matchId) {
-        return
+      if (
+        matchId !== undefined &&
+        payloadId !== undefined &&
+        payloadId !== matchId
+      ) {
+        return;
       }
 
       if (type === successType) {
-        resolved = true
-        cleanup()
-        resolve(onSuccess(payload))
+        resolved = true;
+        cleanup();
+        resolve(onSuccess(payload));
       } else if (type === errorType) {
-        resolved = true
-        cleanup()
+        resolved = true;
+        cleanup();
         const error = onError
           ? onError(payload)
-          : new Error((payload as { message?: string })?.message || String(payload))
-        reject(error)
+          : new Error(
+              (payload as { message?: string })?.message || String(payload),
+            );
+        reject(error);
       }
-    }
+    };
 
-    worker.addEventListener('message', handleMessage)
-    postMessage()
-  })
+    worker.addEventListener("message", handleMessage);
+    postMessage();
+  });
 }
 
 /**
@@ -72,17 +84,17 @@ export function createWorkerPromise<T>(
 export const devLog = {
   log: (...args: unknown[]) => {
     if (import.meta.env.DEV) {
-      console.log(...args)
+      console.log(...args);
     }
   },
   warn: (...args: unknown[]) => {
     if (import.meta.env.DEV) {
-      console.warn(...args)
+      console.warn(...args);
     }
   },
   error: (...args: unknown[]) => {
     if (import.meta.env.DEV) {
-      console.error(...args)
+      console.error(...args);
     }
-  }
-}
+  },
+};

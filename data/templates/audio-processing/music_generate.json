@@ -2,12 +2,7 @@
   "name": "音乐生成",
   "i18nKey": "musicGenerate",
   "description": "通过歌词和风格标签生成原创音乐，支持多种音乐风格",
-  "tags": [
-    "音乐",
-    "生成",
-    "AI",
-    "歌词"
-  ],
+  "tags": ["音乐", "生成", "AI", "歌词"],
   "category": "audio-conversion",
   "author": "WaveSpeed",
   "thumbnail": "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1752486874849919611_uMhlqGOZ.png",

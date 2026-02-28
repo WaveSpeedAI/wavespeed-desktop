@@ -1,14 +1,14 @@
-import { useState, useEffect, useRef } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { cn } from '@/lib/utils'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Button, buttonVariants } from '@/components/ui/button'
+import { useState, useEffect, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '@/components/ui/tooltip'
+} from "@/components/ui/tooltip";
 import {
   Home,
   PlayCircle,
@@ -21,114 +21,123 @@ import {
   FolderHeart,
   Sparkles,
   GitBranch,
-  X
-} from 'lucide-react'
+  X,
+} from "lucide-react";
 
 interface NavItem {
-  titleKey: string
-  href: string
-  icon: React.ComponentType<{ className?: string }>
-  matchPrefix?: boolean
+  titleKey: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  matchPrefix?: boolean;
 }
 
 interface SidebarProps {
-  collapsed: boolean
-  onToggle: () => void
-  lastFreeToolsPage: string | null
-  isMobileOpen?: boolean
-  onMobileClose?: () => void
+  collapsed: boolean;
+  onToggle: () => void;
+  lastFreeToolsPage: string | null;
+  isMobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
-export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, onMobileClose }: SidebarProps) {
-  const { t } = useTranslation()
-  const location = useLocation()
-  const navigate = useNavigate()
+export function Sidebar({
+  collapsed,
+  onToggle,
+  lastFreeToolsPage,
+  isMobileOpen,
+  onMobileClose,
+}: SidebarProps) {
+  const { t } = useTranslation();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   // Suppress tooltips during collapse/expand animation to prevent stale popups
-  const [tooltipReady, setTooltipReady] = useState(true)
-  const prevCollapsed = useRef(collapsed)
+  const [tooltipReady, setTooltipReady] = useState(true);
+  const prevCollapsed = useRef(collapsed);
   useEffect(() => {
     if (prevCollapsed.current !== collapsed) {
-      setTooltipReady(false)
-      const timer = setTimeout(() => setTooltipReady(true), 350)
-      prevCollapsed.current = collapsed
-      return () => clearTimeout(timer)
+      setTooltipReady(false);
+      const timer = setTimeout(() => setTooltipReady(true), 350);
+      prevCollapsed.current = collapsed;
+      return () => clearTimeout(timer);
     }
-  }, [collapsed])
+  }, [collapsed]);
 
   const createItems: NavItem[] = [
     {
-      titleKey: 'nav.home',
-      href: '/',
-      icon: Home
+      titleKey: "nav.home",
+      href: "/",
+      icon: Home,
     },
     {
-      titleKey: 'nav.playground',
-      href: '/playground',
+      titleKey: "nav.playground",
+      href: "/playground",
       icon: PlayCircle,
-      matchPrefix: true
+      matchPrefix: true,
     },
-  ]
+  ];
 
   const manageItems: NavItem[] = [
     {
-      titleKey: 'nav.templates',
-      href: '/templates',
-      icon: FolderOpen
+      titleKey: "nav.templates",
+      href: "/templates",
+      icon: FolderOpen,
     },
     {
-      titleKey: 'nav.history',
-      href: '/history',
-      icon: History
+      titleKey: "nav.history",
+      href: "/history",
+      icon: History,
     },
     {
-      titleKey: 'nav.assets',
-      href: '/assets',
-      icon: FolderHeart
-    }
-  ]
+      titleKey: "nav.assets",
+      href: "/assets",
+      icon: FolderHeart,
+    },
+  ];
 
   const toolsItems: NavItem[] = [
     {
-      titleKey: 'nav.workflow',
-      href: '/workflow',
+      titleKey: "nav.workflow",
+      href: "/workflow",
       icon: GitBranch,
-      matchPrefix: true
+      matchPrefix: true,
     },
     {
-      titleKey: 'nav.freeTools',
-      href: '/free-tools',
+      titleKey: "nav.freeTools",
+      href: "/free-tools",
       icon: Sparkles,
-      matchPrefix: true
+      matchPrefix: true,
     },
     {
-      titleKey: 'nav.zImage',
-      href: '/z-image',
-      icon: Zap
-    }
-  ]
+      titleKey: "nav.zImage",
+      href: "/z-image",
+      icon: Zap,
+    },
+  ];
 
   // Check if a nav item is active
   const isActive = (item: NavItem) => {
     if (item.matchPrefix) {
-      return location.pathname === item.href || location.pathname.startsWith(item.href + '/')
+      return (
+        location.pathname === item.href ||
+        location.pathname.startsWith(item.href + "/")
+      );
     }
-    return location.pathname === item.href
-  }
+    return location.pathname === item.href;
+  };
 
   const navGroups = [
-    { key: 'create', label: 'Create', items: createItems },
-    { key: 'manage', label: 'Manage', items: manageItems },
-    { key: 'tools', label: 'Tools', items: toolsItems },
-  ]
+    { key: "create", label: "Create", items: createItems },
+    { key: "manage", label: "Manage", items: manageItems },
+    { key: "tools", label: "Tools", items: toolsItems },
+  ];
 
   const bottomNavItems = [
     {
-      titleKey: 'nav.settings',
-      href: '/settings',
-      icon: Settings
-    }
-  ]
+      titleKey: "nav.settings",
+      href: "/settings",
+      icon: Settings,
+    },
+  ];
 
   return (
     <div
@@ -136,7 +145,7 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
         "flex h-full flex-col bg-background/95 backdrop-blur transition-all duration-300 shrink-0 electron-drag",
         collapsed ? "w-12" : "w-48",
         // Mobile overlay when hamburger opens
-        isMobileOpen && "!fixed inset-y-0 left-0 z-50 w-72 shadow-2xl"
+        isMobileOpen && "!fixed inset-y-0 left-0 z-50 w-72 shadow-2xl",
       )}
     >
       {/* Mobile close button */}
@@ -154,7 +163,10 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
       <ScrollArea className="flex-1 px-1.5 py-2">
         <nav className="flex flex-col gap-5 px-0.5 electron-no-drag">
           {navGroups.map((group) => (
-            <div key={group.key} className={collapsed && !isMobileOpen ? 'contents' : 'space-y-5'}>
+            <div
+              key={group.key}
+              className={collapsed && !isMobileOpen ? "contents" : "space-y-5"}
+            >
               {(!collapsed || isMobileOpen) && (
                 <div className="px-2 pb-0.5 pt-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/80">
                   {group.label}
@@ -162,38 +174,52 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
               )}
 
               {group.items.map((item) => {
-                const active = isActive(item)
-                const showTooltip = collapsed && !isMobileOpen && tooltipReady
-                const isNewFeature = item.href === '/workflow'
+                const active = isActive(item);
+                const showTooltip = collapsed && !isMobileOpen && tooltipReady;
+                const isNewFeature = item.href === "/workflow";
                 return (
-                  <Tooltip key={item.href} delayDuration={0} open={showTooltip ? undefined : false}>
+                  <Tooltip
+                    key={item.href}
+                    delayDuration={0}
+                    open={showTooltip ? undefined : false}
+                  >
                     <TooltipTrigger asChild>
                       <button
                         onClick={() => {
-                          if (item.matchPrefix && location.pathname.startsWith(item.href + '/')) {
-                            return
+                          if (
+                            item.matchPrefix &&
+                            location.pathname.startsWith(item.href + "/")
+                          ) {
+                            return;
                           }
-                          if (item.href === '/free-tools' && lastFreeToolsPage) {
-                            navigate(lastFreeToolsPage)
-                            return
+                          if (
+                            item.href === "/free-tools" &&
+                            lastFreeToolsPage
+                          ) {
+                            navigate(lastFreeToolsPage);
+                            return;
                           }
-                          navigate(item.href)
+                          navigate(item.href);
                         }}
                         className={cn(
-                          buttonVariants({ variant: 'ghost', size: 'sm' }),
-                          'h-8 w-full rounded-lg text-xs transition-all relative overflow-visible',
-                          collapsed && !isMobileOpen ? 'justify-center px-0' : 'justify-start gap-2.5 px-2.5',
+                          buttonVariants({ variant: "ghost", size: "sm" }),
+                          "h-8 w-full rounded-lg text-xs transition-all relative overflow-visible",
+                          collapsed && !isMobileOpen
+                            ? "justify-center px-0"
+                            : "justify-start gap-2.5 px-2.5",
                           active
-                            ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/95 hover:text-primary-foreground'
-                            : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-                          isNewFeature && !active && 'ring-2 ring-blue-500/20 hover:ring-blue-500/30'
+                            ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/95 hover:text-primary-foreground"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                          isNewFeature &&
+                            !active &&
+                            "ring-2 ring-blue-500/20 hover:ring-blue-500/30",
                         )}
                       >
                         {/* Glow effect for new feature */}
                         {isNewFeature && !active && (
                           <span className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 animate-pulse" />
                         )}
-                        
+
                         <item.icon className="h-5 w-5 shrink-0 relative z-10" />
                         {(!collapsed || isMobileOpen) && (
                           <>
@@ -208,16 +234,22 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
                           </>
                         )}
                         {/* Blue dot for collapsed state — only when not active */}
-                        {isNewFeature && !active && (collapsed && !isMobileOpen) && (
-                          <span className="absolute top-1 right-1 flex h-2 w-2 z-10">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-                          </span>
-                        )}
+                        {isNewFeature &&
+                          !active &&
+                          collapsed &&
+                          !isMobileOpen && (
+                            <span className="absolute top-1 right-1 flex h-2 w-2 z-10">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                            </span>
+                          )}
                       </button>
                     </TooltipTrigger>
                     {showTooltip && (
-                      <TooltipContent side="right" className="flex items-center gap-2">
+                      <TooltipContent
+                        side="right"
+                        className="flex items-center gap-2"
+                      >
                         <span>{t(item.titleKey)}</span>
                         {isNewFeature && (
                           <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gradient-to-r from-blue-500 to-purple-500 text-white">
@@ -227,7 +259,7 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
                       </TooltipContent>
                     )}
                   </Tooltip>
-                )
+                );
               })}
             </div>
           ))}
@@ -238,24 +270,32 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
       <div className="mt-auto p-1.5 electron-no-drag">
         <nav className="flex flex-col gap-1">
           {bottomNavItems.map((item) => {
-            const active = location.pathname === item.href
-            const showTooltip = collapsed && !isMobileOpen && tooltipReady
+            const active = location.pathname === item.href;
+            const showTooltip = collapsed && !isMobileOpen && tooltipReady;
             return (
-              <Tooltip key={item.href} delayDuration={0} open={showTooltip ? undefined : false}>
+              <Tooltip
+                key={item.href}
+                delayDuration={0}
+                open={showTooltip ? undefined : false}
+              >
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => navigate(item.href)}
                     className={cn(
-                      buttonVariants({ variant: 'ghost', size: 'sm' }),
-                      'h-8 w-full rounded-lg transition-all',
-                      collapsed && !isMobileOpen ? 'justify-center px-0' : 'justify-start gap-2.5 px-2.5',
+                      buttonVariants({ variant: "ghost", size: "sm" }),
+                      "h-8 w-full rounded-lg transition-all",
+                      collapsed && !isMobileOpen
+                        ? "justify-center px-0"
+                        : "justify-start gap-2.5 px-2.5",
                       active
-                        ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/95 hover:text-primary-foreground'
-                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                        ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/95 hover:text-primary-foreground"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
                     )}
                   >
                     <item.icon className="h-5 w-5 shrink-0" />
-                    {(!collapsed || isMobileOpen) && <span>{t(item.titleKey)}</span>}
+                    {(!collapsed || isMobileOpen) && (
+                      <span>{t(item.titleKey)}</span>
+                    )}
                   </button>
                 </TooltipTrigger>
                 {showTooltip && (
@@ -264,13 +304,16 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
                   </TooltipContent>
                 )}
               </Tooltip>
-            )
+            );
           })}
         </nav>
 
         {/* Collapse/expand: bottom button toggles; state also syncs to window width on resize */}
         {!isMobileOpen && (
-          <Tooltip delayDuration={0} open={collapsed && tooltipReady ? undefined : false}>
+          <Tooltip
+            delayDuration={0}
+            open={collapsed && tooltipReady ? undefined : false}
+          >
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
@@ -278,23 +321,30 @@ export function Sidebar({ collapsed, onToggle, lastFreeToolsPage, isMobileOpen, 
                 onClick={onToggle}
                 className={cn(
                   "mt-3 h-8 w-full rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground",
-                  collapsed ? "justify-center px-0" : "justify-start gap-2.5 px-2.5"
+                  collapsed
+                    ? "justify-center px-0"
+                    : "justify-start gap-2.5 px-2.5",
                 )}
               >
                 {collapsed ? (
                   <PanelLeft className="h-5 w-5" />
                 ) : (
                   <>
-                    <PanelLeftClose className="h-5 w-5" style={{ flexShrink: 0 }} />
-                    <span>{t('nav.collapse')}</span>
+                    <PanelLeftClose
+                      className="h-5 w-5"
+                      style={{ flexShrink: 0 }}
+                    />
+                    <span>{t("nav.collapse")}</span>
                   </>
                 )}
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="right">{t('nav.expand', 'Expand')}</TooltipContent>
+            <TooltipContent side="right">
+              {t("nav.expand", "Expand")}
+            </TooltipContent>
           </Tooltip>
         )}
       </div>
     </div>
-  )
+  );
 }

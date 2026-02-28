@@ -34,20 +34,20 @@ The Android app shares the same React codebase as the desktop version, giving yo
 
 12 free AI-powered creative tools that run entirely in your browser. No API key required, no usage limits, completely free. Also available as a standalone web app at [wavespeed.ai/studio](https://wavespeed.ai/studio) — fully responsive, works on desktop, tablet, and mobile browsers.
 
-| Tool | Description |
-|------|-------------|
-| **Image Enhancer** | Upscale images 2x–4x using ESRGAN with slim, medium, and thick quality options |
-| **Video Enhancer** | Frame-by-frame video upscaling with real-time progress and ETA |
-| **Face Enhancer** | Detect faces with YOLO v8 and enhance with GFPGAN v1.4 (WebGPU accelerated) |
-| **Face Swapper** | Swap faces using InsightFace (SCRFD + ArcFace + Inswapper) with optional GFPGAN post-processing |
+| Tool                   | Description                                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------------------------- |
+| **Image Enhancer**     | Upscale images 2x–4x using ESRGAN with slim, medium, and thick quality options                    |
+| **Video Enhancer**     | Frame-by-frame video upscaling with real-time progress and ETA                                    |
+| **Face Enhancer**      | Detect faces with YOLO v8 and enhance with GFPGAN v1.4 (WebGPU accelerated)                       |
+| **Face Swapper**       | Swap faces using InsightFace (SCRFD + ArcFace + Inswapper) with optional GFPGAN post-processing   |
 | **Background Remover** | Remove backgrounds instantly — outputs foreground, background, and mask with individual downloads |
-| **Image Eraser** | Remove unwanted objects with LaMa inpainting, smart crop and blend (WebGPU accelerated) |
-| **Segment Anything** | Interactive object segmentation with point prompts using SlimSAM |
-| **Video Converter** | Convert between MP4, WebM, AVI, MOV, MKV with codec and quality options |
-| **Audio Converter** | Convert between MP3, WAV, AAC, FLAC, OGG with bitrate control |
-| **Image Converter** | Batch convert between JPG, PNG, WebP, GIF, BMP with quality settings |
-| **Media Trimmer** | Trim video and audio by selecting start and end times |
-| **Media Merger** | Merge multiple video or audio files into one |
+| **Image Eraser**       | Remove unwanted objects with LaMa inpainting, smart crop and blend (WebGPU accelerated)           |
+| **Segment Anything**   | Interactive object segmentation with point prompts using SlimSAM                                  |
+| **Video Converter**    | Convert between MP4, WebM, AVI, MOV, MKV with codec and quality options                           |
+| **Audio Converter**    | Convert between MP3, WAV, AAC, FLAC, OGG with bitrate control                                     |
+| **Image Converter**    | Batch convert between JPG, PNG, WebP, GIF, BMP with quality settings                              |
+| **Media Trimmer**      | Trim video and audio by selecting start and end times                                             |
+| **Media Merger**       | Merge multiple video or audio files into one                                                      |
 
 ![WaveSpeed Creative Studio](https://github.com/user-attachments/assets/67359fa7-8ff4-4001-a982-eb4802e5b841)
 
@@ -186,15 +186,15 @@ npm run dev
 
 ### Scripts
 
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start development server with hot reload |
-| `npx vite` | Start web-only dev server (no Electron) |
-| `npm run build` | Build the application |
-| `npm run build:win` | Build for Windows |
-| `npm run build:mac` | Build for macOS |
-| `npm run build:linux` | Build for Linux |
-| `npm run build:all` | Build for all platforms |
+| Script                | Description                              |
+| --------------------- | ---------------------------------------- |
+| `npm run dev`         | Start development server with hot reload |
+| `npx vite`            | Start web-only dev server (no Electron)  |
+| `npm run build`       | Build the application                    |
+| `npm run build:win`   | Build for Windows                        |
+| `npm run build:mac`   | Build for macOS                          |
+| `npm run build:linux` | Build for Linux                          |
+| `npm run build:all`   | Build for all platforms                  |
 
 ### Mobile Development
 
@@ -263,6 +263,7 @@ wavespeed-desktop/
 ## Tech Stack
 
 ### Desktop
+
 - **Framework**: Electron + electron-vite
 - **Frontend**: React 18 + TypeScript
 - **Styling**: Tailwind CSS + shadcn/ui
@@ -272,6 +273,7 @@ wavespeed-desktop/
 - **Workflow Database**: sql.js (SQLite in-process)
 
 ### Mobile
+
 - **Framework**: Capacitor 6
 - **Frontend**: React 18 + TypeScript (shared with desktop)
 - **Styling**: Tailwind CSS + shadcn/ui (shared)
@@ -290,14 +292,14 @@ Get your API key from [WaveSpeedAI](https://wavespeed.ai)
 
 The application uses the WaveSpeedAI API v3:
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/v3/models` | GET | List available models |
-| `/api/v3/{model}` | POST | Run a prediction |
-| `/api/v3/predictions/{id}/result` | GET | Get prediction result |
-| `/api/v3/predictions` | POST | Get prediction history |
-| `/api/v3/media/upload/binary` | POST | Upload files |
-| `/api/v3/balance` | GET | Get account balance |
+| Endpoint                          | Method | Description            |
+| --------------------------------- | ------ | ---------------------- |
+| `/api/v3/models`                  | GET    | List available models  |
+| `/api/v3/{model}`                 | POST   | Run a prediction       |
+| `/api/v3/predictions/{id}/result` | GET    | Get prediction result  |
+| `/api/v3/predictions`             | POST   | Get prediction history |
+| `/api/v3/media/upload/binary`     | POST   | Upload files           |
+| `/api/v3/balance`                 | GET    | Get account balance    |
 
 ## Contributing
 

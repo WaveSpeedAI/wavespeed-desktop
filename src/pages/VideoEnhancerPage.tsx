@@ -1,22 +1,22 @@
-import { useState, useRef, useCallback, useEffect, useContext } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { PageResetContext } from '@/components/layout/PageResetContext'
-import { useTranslation } from 'react-i18next'
-import { generateFreeToolFilename } from '@/stores/assetsStore'
-import { useUpscalerWorker } from '@/hooks/useUpscalerWorker'
-import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
-import { ProcessingProgress } from '@/components/shared/ProcessingProgress'
-import { Muxer, ArrayBufferTarget } from 'webm-muxer'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { useState, useRef, useCallback, useEffect, useContext } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { PageResetContext } from "@/components/layout/PageResetContext";
+import { useTranslation } from "react-i18next";
+import { generateFreeToolFilename } from "@/stores/assetsStore";
+import { useUpscalerWorker } from "@/hooks/useUpscalerWorker";
+import { useMultiPhaseProgress } from "@/hooks/useMultiPhaseProgress";
+import { ProcessingProgress } from "@/components/shared/ProcessingProgress";
+import { Muxer, ArrayBufferTarget } from "webm-muxer";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
-} from '@/components/ui/select'
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+  SelectValue,
+} from "@/components/ui/select";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,47 +25,59 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle
-} from '@/components/ui/alert-dialog'
-import { ArrowLeft, Upload, Download, Play, Square, X, RefreshCw } from 'lucide-react'
-import { cn } from '@/lib/utils'
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  ArrowLeft,
+  Upload,
+  Download,
+  Play,
+  Square,
+  X,
+  RefreshCw,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
-type ModelType = 'slim' | 'medium' | 'thick'
-type ScaleType = '2x' | '3x' | '4x'
+type ModelType = "slim" | "medium" | "thick";
+type ScaleType = "2x" | "3x" | "4x";
 
 // Phase configuration for video enhancer (model loading is cached by browser)
 const PHASES = [
-  { id: 'process', labelKey: 'freeTools.progress.processingFrames', weight: 0.9 },
-  { id: 'encode', labelKey: 'freeTools.progress.encoding', weight: 0.08 },
-  { id: 'finalize', labelKey: 'freeTools.progress.finalizing', weight: 0.02 }
-]
+  {
+    id: "process",
+    labelKey: "freeTools.progress.processingFrames",
+    weight: 0.9,
+  },
+  { id: "encode", labelKey: "freeTools.progress.encoding", weight: 0.08 },
+  { id: "finalize", labelKey: "freeTools.progress.finalizing", weight: 0.02 },
+];
 
 export function VideoEnhancerPage() {
-  const { t } = useTranslation()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { resetPage } = useContext(PageResetContext)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const outputVideoRef = useRef<HTMLVideoElement>(null)
-  const abortRef = useRef(false)
-  const dragCounterRef = useRef(0)
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { resetPage } = useContext(PageResetContext);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const outputVideoRef = useRef<HTMLVideoElement>(null);
+  const abortRef = useRef(false);
+  const dragCounterRef = useRef(0);
 
-  const [_videoFile, setVideoFile] = useState<File | null>(null)
-  const [videoUrl, setVideoUrl] = useState<string | null>(null)
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [isDragging, setIsDragging] = useState(false)
-  const [model, setModel] = useState<ModelType>('slim')
-  const [scale, setScale] = useState<ScaleType>('2x')
-  const [downloadFormat, setDownloadFormat] = useState<'webm' | 'mp4'>('mp4')
+  const [_videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [model, setModel] = useState<ModelType>("slim");
+  const [scale, setScale] = useState<ScaleType>("2x");
+  const [downloadFormat, setDownloadFormat] = useState<"webm" | "mp4">("mp4");
   const [supportedFormats, setSupportedFormats] = useState<{
-    webm: boolean
-    mp4: boolean
-  }>({ webm: true, mp4: false })
-  const [downloadUrl, setDownloadUrl] = useState<string | null>(null)
-  const [showPreview, setShowPreview] = useState(false)
-  const [showBackWarning, setShowBackWarning] = useState(false)
+    webm: boolean;
+    mp4: boolean;
+  }>({ webm: true, mp4: false });
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [showBackWarning, setShowBackWarning] = useState(false);
 
   // Multi-phase progress tracking
   const {
@@ -75,347 +87,350 @@ export function VideoEnhancerPage() {
     completePhase,
     reset: resetProgress,
     resetAndStart,
-    complete: completeAllPhases
-  } = useMultiPhaseProgress({ phases: PHASES })
+    complete: completeAllPhases,
+  } = useMultiPhaseProgress({ phases: PHASES });
 
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null);
 
-  const { loadModel, upscale, dispose, hasFailed, retryWorker } = useUpscalerWorker({
-    onPhase: () => {
-      // Model loading phases ignored - handled by browser caching
-    },
-    onProgress: () => {
-      // Model loading progress ignored - handled by browser caching
-    },
-    onError: (err) => {
-      console.error('Worker error:', err)
-      setError(err)
-      setIsProcessing(false)
-    }
-  })
+  const { loadModel, upscale, dispose, hasFailed, retryWorker } =
+    useUpscalerWorker({
+      onPhase: () => {
+        // Model loading phases ignored - handled by browser caching
+      },
+      onProgress: () => {
+        // Model loading progress ignored - handled by browser caching
+      },
+      onError: (err) => {
+        console.error("Worker error:", err);
+        setError(err);
+        setIsProcessing(false);
+      },
+    });
 
   const handleRetry = useCallback(() => {
-    setError(null)
-    retryWorker()
-  }, [retryWorker])
+    setError(null);
+    retryWorker();
+  }, [retryWorker]);
 
   const handleBack = useCallback(() => {
     if (isProcessing) {
-      setShowBackWarning(true)
+      setShowBackWarning(true);
     } else {
-      abortRef.current = true
-      dispose()
-      resetPage(location.pathname)
-      navigate('/free-tools')
+      abortRef.current = true;
+      dispose();
+      resetPage(location.pathname);
+      navigate("/free-tools");
     }
-  }, [isProcessing, dispose, resetPage, location.pathname, navigate])
+  }, [isProcessing, dispose, resetPage, location.pathname, navigate]);
 
   const handleConfirmBack = useCallback(() => {
-    setShowBackWarning(false)
-    abortRef.current = true
-    dispose()
-    resetPage(location.pathname)
-    navigate('/free-tools')
-  }, [dispose, resetPage, location.pathname, navigate])
+    setShowBackWarning(false);
+    abortRef.current = true;
+    dispose();
+    resetPage(location.pathname);
+    navigate("/free-tools");
+  }, [dispose, resetPage, location.pathname, navigate]);
 
   // Check supported video formats
   useEffect(() => {
-    const webmSupported = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+    const webmSupported = MediaRecorder.isTypeSupported(
+      "video/webm;codecs=vp9",
+    );
     const mp4Supported =
-      MediaRecorder.isTypeSupported('video/mp4;codecs=avc1') ||
-      MediaRecorder.isTypeSupported('video/mp4')
-    setSupportedFormats({ webm: webmSupported, mp4: mp4Supported })
+      MediaRecorder.isTypeSupported("video/mp4;codecs=avc1") ||
+      MediaRecorder.isTypeSupported("video/mp4");
+    setSupportedFormats({ webm: webmSupported, mp4: mp4Supported });
     // Fallback to webm if mp4 is not supported (default is mp4)
     if (!mp4Supported) {
-      setDownloadFormat('webm')
+      setDownloadFormat("webm");
     }
-  }, [])
+  }, []);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (videoUrl) URL.revokeObjectURL(videoUrl)
-      if (downloadUrl) URL.revokeObjectURL(downloadUrl)
-      abortRef.current = true
-    }
+      if (videoUrl) URL.revokeObjectURL(videoUrl);
+      if (downloadUrl) URL.revokeObjectURL(downloadUrl);
+      abortRef.current = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, []);
 
   const handleFileSelect = useCallback(
     (file: File) => {
-      if (!file.type.startsWith('video/')) return
+      if (!file.type.startsWith("video/")) return;
 
-      setError(null)
+      setError(null);
       // Cleanup previous
-      if (videoUrl) URL.revokeObjectURL(videoUrl)
-      if (downloadUrl) URL.revokeObjectURL(downloadUrl)
-      abortRef.current = true
+      if (videoUrl) URL.revokeObjectURL(videoUrl);
+      if (downloadUrl) URL.revokeObjectURL(downloadUrl);
+      abortRef.current = true;
 
-      const url = URL.createObjectURL(file)
-      setVideoFile(file)
-      setVideoUrl(url)
-      setDownloadUrl(null)
-      resetProgress()
+      const url = URL.createObjectURL(file);
+      setVideoFile(file);
+      setVideoUrl(url);
+      setDownloadUrl(null);
+      resetProgress();
 
       // Force video to show first frame on mobile
       // Wait for video element to be ready, then seek to show preview
       setTimeout(() => {
         if (videoRef.current) {
-          videoRef.current.currentTime = 0.001
+          videoRef.current.currentTime = 0.001;
         }
-      }, 100)
+      }, 100);
       // eslint-disable-next-line react-hooks/exhaustive-deps
     },
-    [videoUrl, downloadUrl, resetProgress]
-  )
+    [videoUrl, downloadUrl, resetProgress],
+  );
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      dragCounterRef.current = 0
-      setIsDragging(false)
-      if (isProcessing) return
-      const file = e.dataTransfer.files[0]
-      if (file) handleFileSelect(file)
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounterRef.current = 0;
+      setIsDragging(false);
+      if (isProcessing) return;
+      const file = e.dataTransfer.files[0];
+      if (file) handleFileSelect(file);
     },
-    [handleFileSelect, isProcessing]
-  )
+    [handleFileSelect, isProcessing],
+  );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-  }, [])
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    dragCounterRef.current++
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current++;
     if (dragCounterRef.current === 1) {
-      setIsDragging(true)
+      setIsDragging(true);
     }
-  }, [])
+  }, []);
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    dragCounterRef.current--
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current--;
     if (dragCounterRef.current === 0) {
-      setIsDragging(false)
+      setIsDragging(false);
     }
-  }, [])
+  }, []);
 
   const startProcessing = async () => {
-    if (!videoRef.current || !canvasRef.current) return
+    if (!videoRef.current || !canvasRef.current) return;
 
-    abortRef.current = false
-    setIsProcessing(true)
-    resetAndStart('process')
-    setDownloadUrl(null)
+    abortRef.current = false;
+    setIsProcessing(true);
+    resetAndStart("process");
+    setDownloadUrl(null);
 
     try {
       // Load the selected model in worker (cached by browser after first download)
-      await loadModel(model, scale)
+      await loadModel(model, scale);
 
-      const video = videoRef.current
-      const outputCanvas = canvasRef.current
+      const video = videoRef.current;
+      const outputCanvas = canvasRef.current;
 
       // Wait for video metadata
       await new Promise<void>((resolve) => {
         if (video.readyState >= 1) {
-          resolve()
+          resolve();
         } else {
-          video.onloadedmetadata = () => resolve()
+          video.onloadedmetadata = () => resolve();
         }
-      })
+      });
 
       // Get scale multiplier
-      const scaleMultiplier = parseInt(scale.replace('x', ''))
+      const scaleMultiplier = parseInt(scale.replace("x", ""));
 
       // Setup output canvas size
-      outputCanvas.width = video.videoWidth * scaleMultiplier
-      outputCanvas.height = video.videoHeight * scaleMultiplier
-      const outputCtx = outputCanvas.getContext('2d')!
+      outputCanvas.width = video.videoWidth * scaleMultiplier;
+      outputCanvas.height = video.videoHeight * scaleMultiplier;
+      const outputCtx = outputCanvas.getContext("2d")!;
 
       // Create source canvas for extracting frames
-      const sourceCanvas = document.createElement('canvas')
-      sourceCanvas.width = video.videoWidth
-      sourceCanvas.height = video.videoHeight
-      const sourceCtx = sourceCanvas.getContext('2d')!
+      const sourceCanvas = document.createElement("canvas");
+      sourceCanvas.width = video.videoWidth;
+      sourceCanvas.height = video.videoHeight;
+      const sourceCtx = sourceCanvas.getContext("2d")!;
 
-      const duration = video.duration
-      const targetFps = 30
-      const frameInterval = 1 / targetFps
-      const totalFrames = Math.ceil(duration * targetFps)
+      const duration = video.duration;
+      const targetFps = 30;
+      const frameInterval = 1 / targetFps;
+      const totalFrames = Math.ceil(duration * targetFps);
 
-      video.pause()
-      video.muted = true
+      video.pause();
+      video.muted = true;
 
       // Setup muxer
-      const muxerTarget = new ArrayBufferTarget()
+      const muxerTarget = new ArrayBufferTarget();
       const muxer = new Muxer({
         target: muxerTarget,
         video: {
-          codec: 'V_VP9',
+          codec: "V_VP9",
           width: outputCanvas.width,
           height: outputCanvas.height,
-          frameRate: targetFps
+          frameRate: targetFps,
         },
-        firstTimestampBehavior: 'offset'
-      })
+        firstTimestampBehavior: "offset",
+      });
 
       // Setup encoder
-      let encodedFrames = 0
+      let encodedFrames = 0;
       const encoder = new VideoEncoder({
         output: (chunk, meta) => {
-          encodedFrames++
-          muxer.addVideoChunk(chunk, meta)
+          encodedFrames++;
+          muxer.addVideoChunk(chunk, meta);
         },
-        error: (e) => console.error('Encoder error:', e)
-      })
+        error: (e) => console.error("Encoder error:", e),
+      });
 
       encoder.configure({
-        codec: 'vp09.00.10.08',
+        codec: "vp09.00.10.08",
         width: outputCanvas.width,
         height: outputCanvas.height,
         bitrate: 8_000_000,
-        framerate: targetFps
-      })
+        framerate: targetFps,
+      });
 
-      console.log('Processing', totalFrames, 'frames at', targetFps, 'fps')
+      console.log("Processing", totalFrames, "frames at", targetFps, "fps");
 
       // Process each frame
       for (let frameIndex = 0; frameIndex < totalFrames; frameIndex++) {
         if (abortRef.current) {
-          throw new Error('Aborted')
+          throw new Error("Aborted");
         }
 
-        const currentTime = frameIndex * frameInterval
+        const currentTime = frameIndex * frameInterval;
 
         // Seek to frame position
-        video.currentTime = currentTime
+        video.currentTime = currentTime;
         await new Promise<void>((resolve) => {
-          video.onseeked = () => resolve()
-        })
+          video.onseeked = () => resolve();
+        });
 
         // Draw video frame to source canvas
-        sourceCtx.drawImage(video, 0, 0)
+        sourceCtx.drawImage(video, 0, 0);
 
         // Get ImageData for worker
         const imageData = sourceCtx.getImageData(
           0,
           0,
           video.videoWidth,
-          video.videoHeight
-        )
+          video.videoHeight,
+        );
 
         // Upscale with worker
-        const upscaledDataUrl = await upscale(imageData)
+        const upscaledDataUrl = await upscale(imageData);
 
         // Draw upscaled result to output canvas
-        const upscaledImg = new Image()
+        const upscaledImg = new Image();
         await new Promise<void>((resolve) => {
           upscaledImg.onload = () => {
-            outputCtx.drawImage(upscaledImg, 0, 0)
-            resolve()
-          }
-          upscaledImg.src = upscaledDataUrl
-        })
+            outputCtx.drawImage(upscaledImg, 0, 0);
+            resolve();
+          };
+          upscaledImg.src = upscaledDataUrl;
+        });
 
         // Create video frame with correct timestamp
-        const timestamp = Math.round(currentTime * 1_000_000) // microseconds
-        const frame = new VideoFrame(outputCanvas, { timestamp })
-        encoder.encode(frame, { keyFrame: frameIndex % 30 === 0 })
-        frame.close()
+        const timestamp = Math.round(currentTime * 1_000_000); // microseconds
+        const frame = new VideoFrame(outputCanvas, { timestamp });
+        encoder.encode(frame, { keyFrame: frameIndex % 30 === 0 });
+        frame.close();
 
         // Update progress with frame detail
-        const frameProgress = ((frameIndex + 1) / totalFrames) * 100
-        updatePhase('process', frameProgress, {
+        const frameProgress = ((frameIndex + 1) / totalFrames) * 100;
+        updatePhase("process", frameProgress, {
           current: frameIndex + 1,
           total: totalFrames,
-          unit: 'frames'
-        })
+          unit: "frames",
+        });
 
         if (frameIndex % 30 === 0) {
-          console.log(`Frame ${frameIndex + 1}/${totalFrames}`)
+          console.log(`Frame ${frameIndex + 1}/${totalFrames}`);
         }
       }
 
-      console.log('All frames processed:', encodedFrames)
+      console.log("All frames processed:", encodedFrames);
 
-      video.currentTime = 0
-      completePhase('process')
+      video.currentTime = 0;
+      completePhase("process");
 
       // Encoding phase
-      startPhase('encode')
-      await encoder.flush()
-      encoder.close()
-      completePhase('encode')
+      startPhase("encode");
+      await encoder.flush();
+      encoder.close();
+      completePhase("encode");
 
       // Finalize phase
-      startPhase('finalize')
-      muxer.finalize()
-      const buffer = muxerTarget.buffer
+      startPhase("finalize");
+      muxer.finalize();
+      const buffer = muxerTarget.buffer;
 
       if (!buffer || buffer.byteLength === 0) {
-        throw new Error('Encoder produced no output')
+        throw new Error("Encoder produced no output");
       }
 
-      const finalBlob = new Blob([buffer], { type: 'video/webm' })
+      const finalBlob = new Blob([buffer], { type: "video/webm" });
       console.log(
-        'Final video size:',
+        "Final video size:",
         finalBlob.size,
-        'bytes, frames:',
-        encodedFrames
-      )
+        "bytes, frames:",
+        encodedFrames,
+      );
 
-      const url = URL.createObjectURL(finalBlob)
-      console.log('Created blob URL:', url)
-      setDownloadUrl(url)
-      completeAllPhases()
-      setIsProcessing(false)
+      const url = URL.createObjectURL(finalBlob);
+      console.log("Created blob URL:", url);
+      setDownloadUrl(url);
+      completeAllPhases();
+      setIsProcessing(false);
 
       // Show output video
       if (outputVideoRef.current) {
-        outputVideoRef.current.src = url
-        outputVideoRef.current.load()
+        outputVideoRef.current.src = url;
+        outputVideoRef.current.load();
       }
     } catch (error) {
-      if ((error as Error).message !== 'Aborted') {
-        console.error('Failed to process video:', error)
+      if ((error as Error).message !== "Aborted") {
+        console.error("Failed to process video:", error);
       }
-      setIsProcessing(false)
+      setIsProcessing(false);
       // Reset video state on error
       if (videoRef.current) {
-        videoRef.current.playbackRate = 1
-        videoRef.current.pause()
+        videoRef.current.playbackRate = 1;
+        videoRef.current.pause();
       }
     }
-  }
+  };
 
   const stopProcessing = () => {
-    abortRef.current = true
-    setIsProcessing(false)
-    resetProgress()
+    abortRef.current = true;
+    setIsProcessing(false);
+    resetProgress();
     if (videoRef.current) {
-      videoRef.current.pause()
-      videoRef.current.playbackRate = 1
-      videoRef.current.currentTime = 0
+      videoRef.current.pause();
+      videoRef.current.playbackRate = 1;
+      videoRef.current.currentTime = 0;
     }
-  }
+  };
 
   const handleDownload = () => {
-    if (!downloadUrl) return
+    if (!downloadUrl) return;
 
     const extension =
-      downloadFormat === 'mp4' && supportedFormats.mp4 ? 'mp4' : 'webm'
-    const link = document.createElement('a')
-    link.href = downloadUrl
-    link.download = generateFreeToolFilename('video-enhancer', extension)
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
+      downloadFormat === "mp4" && supportedFormats.mp4 ? "mp4" : "webm";
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = generateFreeToolFilename("video-enhancer", extension);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div
@@ -431,26 +446,22 @@ export function VideoEnhancerPage() {
           <div className="text-center">
             <Upload className="h-12 w-12 text-primary mx-auto mb-2" />
             <p className="text-lg font-medium">
-              {t('freeTools.videoEnhancer.orDragDrop')}
+              {t("freeTools.videoEnhancer.orDragDrop")}
             </p>
           </div>
         </div>
       )}
       {/* Header - hidden on mobile (MobileHeader already shows title) */}
       <div className="hidden md:flex items-center gap-4 mb-8">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleBack}
-        >
+        <Button variant="ghost" size="icon" onClick={handleBack}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
           <h1 className="text-2xl font-bold">
-            {t('freeTools.videoEnhancer.title')}
+            {t("freeTools.videoEnhancer.title")}
           </h1>
           <p className="text-muted-foreground text-sm">
-            {t('freeTools.videoEnhancer.description')}
+            {t("freeTools.videoEnhancer.description")}
           </p>
         </div>
       </div>
@@ -468,10 +479,10 @@ export function VideoEnhancerPage() {
       {!videoUrl && (
         <Card
           className={cn(
-            'border-2 border-dashed cursor-pointer transition-colors',
+            "border-2 border-dashed cursor-pointer transition-colors",
             isDragging
-              ? 'border-primary bg-primary/5'
-              : 'border-muted-foreground/25 hover:border-primary/50'
+              ? "border-primary bg-primary/5"
+              : "border-muted-foreground/25 hover:border-primary/50",
           )}
           onClick={() => fileInputRef.current?.click()}
           onDrop={handleDrop}
@@ -484,10 +495,10 @@ export function VideoEnhancerPage() {
               <Upload className="h-8 w-8 text-muted-foreground" />
             </div>
             <p className="text-lg font-medium">
-              {t('freeTools.videoEnhancer.selectVideo')}
+              {t("freeTools.videoEnhancer.selectVideo")}
             </p>
             <p className="text-sm text-muted-foreground">
-              {t('freeTools.videoEnhancer.orDragDrop')}
+              {t("freeTools.videoEnhancer.orDragDrop")}
             </p>
           </CardContent>
         </Card>
@@ -499,8 +510,8 @@ export function VideoEnhancerPage() {
         accept="video/*"
         className="hidden"
         onChange={(e) => {
-          const file = e.target.files?.[0]
-          if (file) handleFileSelect(file)
+          const file = e.target.files?.[0];
+          if (file) handleFileSelect(file);
         }}
       />
 
@@ -515,7 +526,7 @@ export function VideoEnhancerPage() {
               disabled={isProcessing}
             >
               <Upload className="h-4 w-4 mr-2" />
-              {t('freeTools.videoEnhancer.selectVideo')}
+              {t("freeTools.videoEnhancer.selectVideo")}
             </Button>
 
             <Select
@@ -528,13 +539,13 @@ export function VideoEnhancerPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="slim">
-                  {t('freeTools.videoEnhancer.modelFast')}
+                  {t("freeTools.videoEnhancer.modelFast")}
                 </SelectItem>
                 <SelectItem value="medium">
-                  {t('freeTools.videoEnhancer.modelBalanced')}
+                  {t("freeTools.videoEnhancer.modelBalanced")}
                 </SelectItem>
                 <SelectItem value="thick">
-                  {t('freeTools.videoEnhancer.modelQuality')}
+                  {t("freeTools.videoEnhancer.modelQuality")}
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -557,12 +568,12 @@ export function VideoEnhancerPage() {
             {!isProcessing ? (
               <Button onClick={startProcessing} className="gradient-bg">
                 <Play className="h-4 w-4 mr-2" />
-                {t('freeTools.videoEnhancer.start')}
+                {t("freeTools.videoEnhancer.start")}
               </Button>
             ) : (
               <Button variant="destructive" onClick={stopProcessing}>
                 <Square className="h-4 w-4 mr-2" />
-                {t('freeTools.videoEnhancer.stop')}
+                {t("freeTools.videoEnhancer.stop")}
               </Button>
             )}
 
@@ -570,7 +581,7 @@ export function VideoEnhancerPage() {
               <>
                 <Select
                   value={downloadFormat}
-                  onValueChange={(v) => setDownloadFormat(v as 'webm' | 'mp4')}
+                  onValueChange={(v) => setDownloadFormat(v as "webm" | "mp4")}
                 >
                   <SelectTrigger className="w-28">
                     <SelectValue />
@@ -584,7 +595,7 @@ export function VideoEnhancerPage() {
                 </Select>
                 <Button variant="outline" onClick={handleDownload}>
                   <Download className="h-4 w-4 mr-2" />
-                  {t('freeTools.videoEnhancer.download')}
+                  {t("freeTools.videoEnhancer.download")}
                 </Button>
               </>
             )}
@@ -604,7 +615,7 @@ export function VideoEnhancerPage() {
               <span className="text-sm text-destructive">{error}</span>
               <Button variant="outline" size="sm" onClick={handleRetry}>
                 <RefreshCw className="h-4 w-4 mr-2" />
-                {t('common.retry')}
+                {t("common.retry")}
               </Button>
             </div>
           )}
@@ -616,7 +627,7 @@ export function VideoEnhancerPage() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-sm font-medium">
-                    {t('freeTools.videoEnhancer.original')}
+                    {t("freeTools.videoEnhancer.original")}
                   </span>
                 </div>
                 <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
@@ -630,8 +641,11 @@ export function VideoEnhancerPage() {
                     preload="metadata"
                     onLoadedMetadata={() => {
                       // Force show first frame on mobile
-                      if (videoRef.current && videoRef.current.currentTime === 0) {
-                        videoRef.current.currentTime = 0.001
+                      if (
+                        videoRef.current &&
+                        videoRef.current.currentTime === 0
+                      ) {
+                        videoRef.current.currentTime = 0.001;
                       }
                     }}
                   />
@@ -644,13 +658,13 @@ export function VideoEnhancerPage() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-sm font-medium">
-                    {t('freeTools.videoEnhancer.enhanced')}
+                    {t("freeTools.videoEnhancer.enhanced")}
                   </span>
                 </div>
                 <div
                   className={cn(
-                    'relative aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center',
-                    downloadUrl && 'cursor-pointer'
+                    "relative aspect-video bg-black rounded-lg overflow-hidden flex items-center justify-center",
+                    downloadUrl && "cursor-pointer",
                   )}
                   onClick={() => downloadUrl && setShowPreview(true)}
                 >
@@ -676,8 +690,8 @@ export function VideoEnhancerPage() {
                     ref={canvasRef}
                     className={cn(
                       isProcessing
-                        ? 'w-full h-full object-contain'
-                        : 'absolute -left-[9999px] -top-[9999px]'
+                        ? "w-full h-full object-contain"
+                        : "absolute -left-[9999px] -top-[9999px]",
                     )}
                   />
                 </div>
@@ -717,19 +731,23 @@ export function VideoEnhancerPage() {
       <AlertDialog open={showBackWarning} onOpenChange={setShowBackWarning}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('freeTools.backWarning.title')}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t("freeTools.backWarning.title")}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              {t('freeTools.backWarning.description')}
+              {t("freeTools.backWarning.description")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t('freeTools.backWarning.cancel')}</AlertDialogCancel>
+            <AlertDialogCancel>
+              {t("freeTools.backWarning.cancel")}
+            </AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmBack}>
-              {t('freeTools.backWarning.confirm')}
+              {t("freeTools.backWarning.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  )
+  );
 }

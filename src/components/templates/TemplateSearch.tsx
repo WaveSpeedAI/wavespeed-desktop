@@ -1,37 +1,41 @@
-import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Search, X } from 'lucide-react'
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Search, X } from "lucide-react";
 
 interface TemplateSearchProps {
-  value: string
-  onChange: (value: string) => void
-  placeholder?: string
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
 }
 
-export function TemplateSearch({ value, onChange, placeholder }: TemplateSearchProps) {
-  const { t } = useTranslation()
-  const [localValue, setLocalValue] = useState(value)
+export function TemplateSearch({
+  value,
+  onChange,
+  placeholder,
+}: TemplateSearchProps) {
+  const { t } = useTranslation();
+  const [localValue, setLocalValue] = useState(value);
 
   // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
-      onChange(localValue)
-    }, 300)
+      onChange(localValue);
+    }, 300);
 
-    return () => clearTimeout(timer)
-  }, [localValue, onChange])
+    return () => clearTimeout(timer);
+  }, [localValue, onChange]);
 
   // Sync with external value changes
   useEffect(() => {
-    setLocalValue(value)
-  }, [value])
+    setLocalValue(value);
+  }, [value]);
 
   const handleClear = () => {
-    setLocalValue('')
-    onChange('')
-  }
+    setLocalValue("");
+    onChange("");
+  };
 
   return (
     <div className="relative">
@@ -39,7 +43,7 @@ export function TemplateSearch({ value, onChange, placeholder }: TemplateSearchP
       <Input
         value={localValue}
         onChange={(e) => setLocalValue(e.target.value)}
-        placeholder={placeholder || t('templates.searchPlaceholder')}
+        placeholder={placeholder || t("templates.searchPlaceholder")}
         className="pl-10 pr-10"
       />
       {localValue && (
@@ -53,5 +57,5 @@ export function TemplateSearch({ value, onChange, placeholder }: TemplateSearchP
         </Button>
       )}
     </div>
-  )
+  );
 }

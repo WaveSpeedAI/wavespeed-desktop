@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -7,33 +7,33 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
-import { X, ImagePlus, Trash2 } from 'lucide-react'
-import type { Template } from '@/types/template'
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { X, ImagePlus, Trash2 } from "lucide-react";
+import type { Template } from "@/types/template";
 
 interface TemplateDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  template?: Template | null
-  onSave: (data: TemplateFormData) => void | Promise<void>
-  mode: 'create' | 'edit'
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  template?: Template | null;
+  onSave: (data: TemplateFormData) => void | Promise<void>;
+  mode: "create" | "edit";
   /** Pre-fill name for create mode */
-  defaultName?: string
+  defaultName?: string;
   /** Whether this is a workflow template (shows category field) */
-  isWorkflow?: boolean
+  isWorkflow?: boolean;
 }
 
 export interface TemplateFormData {
-  name: string
-  description: string
-  tags: string[]
-  category?: string
-  thumbnail?: string | null
+  name: string;
+  description: string;
+  tags: string[];
+  category?: string;
+  thumbnail?: string | null;
 }
 
 export function TemplateDialog({
@@ -45,72 +45,72 @@ export function TemplateDialog({
   defaultName,
   isWorkflow,
 }: TemplateDialogProps) {
-  const { t } = useTranslation()
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [tags, setTags] = useState<string[]>([])
-  const [tagInput, setTagInput] = useState('')
-  const [category, setCategory] = useState('')
-  const [thumbnail, setThumbnail] = useState<string | null>(null)
-  const [isSaving, setIsSaving] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const { t } = useTranslation();
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
+  const [category, setCategory] = useState("");
+  const [thumbnail, setThumbnail] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const showCategoryField = isWorkflow ?? template?.templateType === 'workflow'
+  const showCategoryField = isWorkflow ?? template?.templateType === "workflow";
 
   // Initialize form with template data
   useEffect(() => {
     if (template) {
-      setName(template.name)
-      setDescription(template.description || '')
-      setTags(template.tags || [])
-      setThumbnail(template.thumbnail || null)
+      setName(template.name);
+      setDescription(template.description || "");
+      setTags(template.tags || []);
+      setThumbnail(template.thumbnail || null);
       if (template.workflowData) {
-        setCategory(template.workflowData.category || '')
+        setCategory(template.workflowData.category || "");
       }
     } else {
-      setName(defaultName || '')
-      setDescription('')
-      setTags([])
-      setCategory('')
-      setThumbnail(null)
+      setName(defaultName || "");
+      setDescription("");
+      setTags([]);
+      setCategory("");
+      setThumbnail(null);
     }
-  }, [template, open, defaultName])
+  }, [template, open, defaultName]);
 
   const handleAddTag = () => {
-    const trimmed = tagInput.trim()
+    const trimmed = tagInput.trim();
     if (trimmed && !tags.includes(trimmed)) {
-      setTags([...tags, trimmed])
-      setTagInput('')
+      setTags([...tags, trimmed]);
+      setTagInput("");
     }
-  }
+  };
 
   const handleRemoveTag = (tag: string) => {
-    setTags(tags.filter(t => t !== tag))
-  }
+    setTags(tags.filter((t) => t !== tag));
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      handleAddTag()
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddTag();
     }
-  }
+  };
 
   const handleThumbnailSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const file = e.target.files?.[0];
+    if (!file) return;
     // Convert to base64 data URL
-    const reader = new FileReader()
+    const reader = new FileReader();
     reader.onload = () => {
-      setThumbnail(reader.result as string)
-    }
-    reader.readAsDataURL(file)
-    e.target.value = ''
-  }
+      setThumbnail(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
 
   const handleSave = async () => {
-    if (!name.trim()) return
+    if (!name.trim()) return;
 
-    setIsSaving(true)
+    setIsSaving(true);
     try {
       await onSave({
         name: name.trim(),
@@ -118,31 +118,33 @@ export function TemplateDialog({
         tags,
         category: category.trim() || undefined,
         thumbnail,
-      })
-      onOpenChange(false)
+      });
+      onOpenChange(false);
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {mode === 'create' ? t('templates.createTemplate') : t('templates.editTemplate')}
+            {mode === "create"
+              ? t("templates.createTemplate")
+              : t("templates.editTemplate")}
           </DialogTitle>
           <DialogDescription>
-            {mode === 'create' 
-              ? t('templates.createTemplateDesc') 
-              : t('templates.editTemplateDesc')}
+            {mode === "create"
+              ? t("templates.createTemplateDesc")
+              : t("templates.editTemplateDesc")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* Thumbnail / Cover Image */}
           <div className="space-y-2">
-            <Label>{t('templates.coverImage', 'Cover Image')}</Label>
+            <Label>{t("templates.coverImage", "Cover Image")}</Label>
             <input
               ref={fileInputRef}
               type="file"
@@ -152,7 +154,11 @@ export function TemplateDialog({
             />
             {thumbnail ? (
               <div className="relative group rounded-lg overflow-hidden border border-border">
-                <img src={thumbnail} alt="Cover" className="w-full h-32 object-cover" />
+                <img
+                  src={thumbnail}
+                  alt="Cover"
+                  className="w-full h-32 object-cover"
+                />
                 <button
                   onClick={() => setThumbnail(null)}
                   className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80"
@@ -166,30 +172,34 @@ export function TemplateDialog({
                 className="w-full h-24 rounded-lg border-2 border-dashed border-border hover:border-primary/50 transition-colors flex flex-col items-center justify-center gap-1.5 text-muted-foreground hover:text-foreground"
               >
                 <ImagePlus className="h-5 w-5" />
-                <span className="text-xs">{t('templates.uploadCover', 'Click to upload cover image')}</span>
+                <span className="text-xs">
+                  {t("templates.uploadCover", "Click to upload cover image")}
+                </span>
               </button>
             )}
           </div>
 
           {/* Name */}
           <div className="space-y-2">
-            <Label htmlFor="template-name">{t('templates.templateName')}</Label>
+            <Label htmlFor="template-name">{t("templates.templateName")}</Label>
             <Input
               id="template-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder={t('templates.templateNamePlaceholder')}
+              placeholder={t("templates.templateNamePlaceholder")}
             />
           </div>
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="template-description">{t('templates.descriptionLabel', 'Description')}</Label>
+            <Label htmlFor="template-description">
+              {t("templates.descriptionLabel", "Description")}
+            </Label>
             <Textarea
               id="template-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder={t('templates.descriptionPlaceholder')}
+              placeholder={t("templates.descriptionPlaceholder")}
               rows={3}
             />
           </div>
@@ -197,26 +207,28 @@ export function TemplateDialog({
           {/* Category (for workflow templates) */}
           {showCategoryField && (
             <div className="space-y-2">
-              <Label htmlFor="template-category">{t('templates.category')}</Label>
+              <Label htmlFor="template-category">
+                {t("templates.category")}
+              </Label>
               <Input
                 id="template-category"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                placeholder={t('templates.categoryPlaceholder')}
+                placeholder={t("templates.categoryPlaceholder")}
               />
             </div>
           )}
 
           {/* Tags */}
           <div className="space-y-2">
-            <Label htmlFor="template-tags">{t('templates.tags')}</Label>
+            <Label htmlFor="template-tags">{t("templates.tags")}</Label>
             <div className="flex gap-2">
               <Input
                 id="template-tags"
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={t('templates.tagsPlaceholder')}
+                placeholder={t("templates.tagsPlaceholder")}
               />
               <Button
                 type="button"
@@ -224,7 +236,7 @@ export function TemplateDialog({
                 onClick={handleAddTag}
                 disabled={!tagInput.trim()}
               >
-                {t('common.add')}
+                {t("common.add")}
               </Button>
             </div>
             {tags.length > 0 && (
@@ -251,16 +263,13 @@ export function TemplateDialog({
             onClick={() => onOpenChange(false)}
             disabled={isSaving}
           >
-            {t('common.cancel')}
+            {t("common.cancel")}
           </Button>
-          <Button
-            onClick={handleSave}
-            disabled={!name.trim() || isSaving}
-          >
-            {isSaving ? t('common.saving') : t('common.save')}
+          <Button onClick={handleSave} disabled={!name.trim() || isSaving}>
+            {isSaving ? t("common.saving") : t("common.save")}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

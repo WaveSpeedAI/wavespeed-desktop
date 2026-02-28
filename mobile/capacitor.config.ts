@@ -1,14 +1,14 @@
-import type { CapacitorConfig } from '@capacitor/cli'
+import type { CapacitorConfig } from "@capacitor/cli";
 
 // Only enable debugging in development builds
-const isDev = process.env.NODE_ENV === 'development'
+const isDev = process.env.NODE_ENV === "development";
 
 const config: CapacitorConfig = {
-  appId: 'ai.wavespeed.mobile',
-  appName: 'WaveSpeed',
-  webDir: 'dist',
+  appId: "ai.wavespeed.mobile",
+  appName: "WaveSpeed",
+  webDir: "dist",
   server: {
-    androidScheme: 'https',
+    androidScheme: "https",
     // Uncomment for live reload during development:
     // url: 'http://YOUR_LOCAL_IP:5173',
     // cleartext: true
@@ -17,27 +17,27 @@ const config: CapacitorConfig = {
     SplashScreen: {
       launchShowDuration: 2000,
       launchAutoHide: true,
-      backgroundColor: '#0f172a',
-      androidScaleType: 'CENTER_CROP',
-      showSpinner: false
+      backgroundColor: "#0f172a",
+      androidScaleType: "CENTER_CROP",
+      showSpinner: false,
     },
     Keyboard: {
-      resize: 'body',
-      resizeOnFullScreen: true
+      resize: "body",
+      resizeOnFullScreen: true,
     },
     StatusBar: {
-      style: 'DARK',
-      backgroundColor: '#0f172a'
+      style: "DARK",
+      backgroundColor: "#0f172a",
     },
     Camera: {
-      presentationStyle: 'fullscreen'
-    }
+      presentationStyle: "fullscreen",
+    },
   },
   android: {
     allowMixedContent: true,
     // SECURITY: Only enable debugging in development, disabled in production builds
-    webContentsDebuggingEnabled: isDev
-  }
-}
+    webContentsDebuggingEnabled: isDev,
+  },
+};
 
-export default config
+export default config;

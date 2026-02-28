@@ -2,12 +2,7 @@
   "name": "图像编辑",
   "i18nKey": "imageEdit",
   "description": "使用AI模型编辑图像，支持自定义提示词进行精确修改",
-  "tags": [
-    "图像",
-    "编辑",
-    "AI",
-    "提示词"
-  ],
+  "tags": ["图像", "编辑", "AI", "提示词"],
   "category": "image-processing",
   "author": "WaveSpeed",
   "thumbnail": "https://d1q70pf5vjeyhc.cloudfront.net/media/a171ce9f725a41f49d5694458dba5f2a/images/1771092349188456413_57k0enwG.jpg",
@@ -81,11 +76,7 @@
                 "type": "enum",
                 "description": "The format of the output image.",
                 "default": "jpeg",
-                "enum": [
-                  "jpeg",
-                  "png",
-                  "webp"
-                ],
+                "enum": ["jpeg", "png", "webp"],
                 "fieldType": "select"
               }
             ]

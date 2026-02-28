@@ -1,281 +1,416 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer } from "electron";
 
 interface Settings {
-  theme: 'light' | 'dark' | 'system'
-  defaultPollInterval: number
-  defaultTimeout: number
-  updateChannel: 'stable' | 'nightly'
-  autoCheckUpdate: boolean
-  language?: string
+  theme: "light" | "dark" | "system";
+  defaultPollInterval: number;
+  defaultTimeout: number;
+  updateChannel: "stable" | "nightly";
+  autoCheckUpdate: boolean;
+  language?: string;
 }
 
 interface UpdateStatus {
-  status: string
-  version?: string
-  releaseNotes?: string | null
-  releaseDate?: string
-  percent?: number
-  bytesPerSecond?: number
-  transferred?: number
-  total?: number
-  message?: string
+  status: string;
+  version?: string;
+  releaseNotes?: string | null;
+  releaseDate?: string;
+  percent?: number;
+  bytesPerSecond?: number;
+  transferred?: number;
+  total?: number;
+  message?: string;
 }
 
 interface UpdateCheckResult {
-  status: string
+  status: string;
   updateInfo?: {
-    version: string
-    releaseNotes?: string | null
-  }
-  message?: string
+    version: string;
+    releaseNotes?: string | null;
+  };
+  message?: string;
 }
 
 interface DownloadResult {
-  success: boolean
-  filePath?: string
-  error?: string
-  canceled?: boolean
+  success: boolean;
+  filePath?: string;
+  error?: string;
+  canceled?: boolean;
 }
 
 interface AssetsSettings {
-  autoSaveAssets: boolean
-  assetsDirectory: string
+  autoSaveAssets: boolean;
+  assetsDirectory: string;
 }
 
 interface SaveAssetResult {
-  success: boolean
-  filePath?: string
-  fileSize?: number
-  error?: string
+  success: boolean;
+  filePath?: string;
+  fileSize?: number;
+  error?: string;
 }
 
 interface DeleteAssetResult {
-  success: boolean
-  error?: string
+  success: boolean;
+  error?: string;
 }
 
 interface DeleteAssetsBulkResult {
-  success: boolean
-  deleted: number
+  success: boolean;
+  deleted: number;
 }
 
 interface SelectDirectoryResult {
-  success: boolean
-  path?: string
-  canceled?: boolean
-  error?: string
+  success: boolean;
+  path?: string;
+  canceled?: boolean;
+  error?: string;
 }
 
 interface AssetMetadata {
-  id: string
-  filePath: string
-  fileName: string
-  type: 'image' | 'video' | 'audio' | 'text' | 'json'
-  modelId: string
-  modelName: string
-  createdAt: string
-  fileSize: number
-  tags: string[]
-  favorite: boolean
-  predictionId?: string
-  originalUrl?: string
+  id: string;
+  filePath: string;
+  fileName: string;
+  type: "image" | "video" | "audio" | "text" | "json";
+  modelId: string;
+  modelName: string;
+  createdAt: string;
+  fileSize: number;
+  tags: string[];
+  favorite: boolean;
+  predictionId?: string;
+  originalUrl?: string;
 }
 
 const electronAPI = {
-  getApiKey: (): Promise<string> => ipcRenderer.invoke('get-api-key'),
-  setApiKey: (apiKey: string): Promise<boolean> => ipcRenderer.invoke('set-api-key', apiKey),
-  getSettings: (): Promise<Settings> => ipcRenderer.invoke('get-settings'),
-  setSettings: (settings: Partial<Settings>): Promise<boolean> => ipcRenderer.invoke('set-settings', settings),
-  clearAllData: (): Promise<boolean> => ipcRenderer.invoke('clear-all-data'),
-  downloadFile: (url: string, defaultFilename: string): Promise<DownloadResult> =>
-    ipcRenderer.invoke('download-file', url, defaultFilename),
-  saveFileSilent: (url: string, dir: string, fileName: string): Promise<DownloadResult> =>
-    ipcRenderer.invoke('save-file-silent', url, dir, fileName),
-  openExternal: (url: string): Promise<void> => ipcRenderer.invoke('open-external', url),
+  getApiKey: (): Promise<string> => ipcRenderer.invoke("get-api-key"),
+  setApiKey: (apiKey: string): Promise<boolean> =>
+    ipcRenderer.invoke("set-api-key", apiKey),
+  getSettings: (): Promise<Settings> => ipcRenderer.invoke("get-settings"),
+  setSettings: (settings: Partial<Settings>): Promise<boolean> =>
+    ipcRenderer.invoke("set-settings", settings),
+  clearAllData: (): Promise<boolean> => ipcRenderer.invoke("clear-all-data"),
+  downloadFile: (
+    url: string,
+    defaultFilename: string,
+  ): Promise<DownloadResult> =>
+    ipcRenderer.invoke("download-file", url, defaultFilename),
+  saveFileSilent: (
+    url: string,
+    dir: string,
+    fileName: string,
+  ): Promise<DownloadResult> =>
+    ipcRenderer.invoke("save-file-silent", url, dir, fileName),
+  openExternal: (url: string): Promise<void> =>
+    ipcRenderer.invoke("open-external", url),
 
   // Title bar theme
-  updateTitlebarTheme: (isDark: boolean): Promise<void> => ipcRenderer.invoke('update-titlebar-theme', isDark),
+  updateTitlebarTheme: (isDark: boolean): Promise<void> =>
+    ipcRenderer.invoke("update-titlebar-theme", isDark),
 
   // Auto-updater APIs
-  getAppVersion: (): Promise<string> => ipcRenderer.invoke('get-app-version'),
-  getLogFilePath: (): Promise<string> => ipcRenderer.invoke('get-log-file-path'),
+  getAppVersion: (): Promise<string> => ipcRenderer.invoke("get-app-version"),
+  getLogFilePath: (): Promise<string> =>
+    ipcRenderer.invoke("get-log-file-path"),
   openLogDirectory: (): Promise<{ success: boolean; path: string }> =>
-    ipcRenderer.invoke('open-log-directory'),
-  checkForUpdates: (): Promise<UpdateCheckResult> => ipcRenderer.invoke('check-for-updates'),
-  downloadUpdate: (): Promise<{ status: string; message?: string }> => ipcRenderer.invoke('download-update'),
+    ipcRenderer.invoke("open-log-directory"),
+  checkForUpdates: (): Promise<UpdateCheckResult> =>
+    ipcRenderer.invoke("check-for-updates"),
+  downloadUpdate: (): Promise<{ status: string; message?: string }> =>
+    ipcRenderer.invoke("download-update"),
   installUpdate: (): void => {
-    ipcRenderer.invoke('install-update')
+    ipcRenderer.invoke("install-update");
   },
-  setUpdateChannel: (channel: 'stable' | 'nightly'): Promise<boolean> =>
-    ipcRenderer.invoke('set-update-channel', channel),
+  setUpdateChannel: (channel: "stable" | "nightly"): Promise<boolean> =>
+    ipcRenderer.invoke("set-update-channel", channel),
   onUpdateStatus: (callback: (status: UpdateStatus) => void): (() => void) => {
-    const handler = (_: unknown, status: UpdateStatus) => callback(status)
-    ipcRenderer.on('update-status', handler)
-    return () => ipcRenderer.removeListener('update-status', handler)
+    const handler = (_: unknown, status: UpdateStatus) => callback(status);
+    ipcRenderer.on("update-status", handler);
+    return () => ipcRenderer.removeListener("update-status", handler);
   },
 
   // Assets APIs
-  getAssetsSettings: (): Promise<AssetsSettings> => ipcRenderer.invoke('get-assets-settings'),
+  getAssetsSettings: (): Promise<AssetsSettings> =>
+    ipcRenderer.invoke("get-assets-settings"),
   setAssetsSettings: (settings: Partial<AssetsSettings>): Promise<boolean> =>
-    ipcRenderer.invoke('set-assets-settings', settings),
-  getDefaultAssetsDirectory: (): Promise<string> => ipcRenderer.invoke('get-default-assets-directory'),
-  getZImageOutputPath: (): Promise<string> => ipcRenderer.invoke('get-zimage-output-path'),
-  selectDirectory: (): Promise<SelectDirectoryResult> => ipcRenderer.invoke('select-directory'),
-  saveAsset: (url: string, type: string, fileName: string, subDir: string): Promise<SaveAssetResult> =>
-    ipcRenderer.invoke('save-asset', url, type, fileName, subDir),
-  deleteAsset: (filePath: string): Promise<DeleteAssetResult> => ipcRenderer.invoke('delete-asset', filePath),
+    ipcRenderer.invoke("set-assets-settings", settings),
+  getDefaultAssetsDirectory: (): Promise<string> =>
+    ipcRenderer.invoke("get-default-assets-directory"),
+  getZImageOutputPath: (): Promise<string> =>
+    ipcRenderer.invoke("get-zimage-output-path"),
+  selectDirectory: (): Promise<SelectDirectoryResult> =>
+    ipcRenderer.invoke("select-directory"),
+  saveAsset: (
+    url: string,
+    type: string,
+    fileName: string,
+    subDir: string,
+  ): Promise<SaveAssetResult> =>
+    ipcRenderer.invoke("save-asset", url, type, fileName, subDir),
+  deleteAsset: (filePath: string): Promise<DeleteAssetResult> =>
+    ipcRenderer.invoke("delete-asset", filePath),
   deleteAssetsBulk: (filePaths: string[]): Promise<DeleteAssetsBulkResult> =>
-    ipcRenderer.invoke('delete-assets-bulk', filePaths),
-  getAssetsMetadata: (): Promise<AssetMetadata[]> => ipcRenderer.invoke('get-assets-metadata'),
+    ipcRenderer.invoke("delete-assets-bulk", filePaths),
+  getAssetsMetadata: (): Promise<AssetMetadata[]> =>
+    ipcRenderer.invoke("get-assets-metadata"),
   saveAssetsMetadata: (metadata: AssetMetadata[]): Promise<boolean> =>
-    ipcRenderer.invoke('save-assets-metadata', metadata),
+    ipcRenderer.invoke("save-assets-metadata", metadata),
   openFileLocation: (filePath: string): Promise<DeleteAssetResult> =>
-    ipcRenderer.invoke('open-file-location', filePath),
-  checkFileExists: (filePath: string): Promise<boolean> => ipcRenderer.invoke('check-file-exists', filePath),
+    ipcRenderer.invoke("open-file-location", filePath),
+  checkFileExists: (filePath: string): Promise<boolean> =>
+    ipcRenderer.invoke("check-file-exists", filePath),
   openAssetsFolder: (): Promise<{ success: boolean; error?: string }> =>
-    ipcRenderer.invoke('open-assets-folder'),
-  scanAssetsDirectory: (): Promise<Array<{
-    filePath: string
-    fileName: string
-    type: 'image' | 'video' | 'audio' | 'text'
-    fileSize: number
-    createdAt: string
-  }>> => ipcRenderer.invoke('scan-assets-directory'),
+    ipcRenderer.invoke("open-assets-folder"),
+  scanAssetsDirectory: (): Promise<
+    Array<{
+      filePath: string;
+      fileName: string;
+      type: "image" | "video" | "audio" | "text";
+      fileSize: number;
+      createdAt: string;
+    }>
+  > => ipcRenderer.invoke("scan-assets-directory"),
 
   // Stable Diffusion APIs
-  sdGetBinaryPath: (): Promise<{ success: boolean; path?: string; error?: string }> =>
-    ipcRenderer.invoke('sd-get-binary-path'),
-  sdGetSystemInfo: (): Promise<{ platform: string; arch: string; acceleration: string; supported: boolean }> =>
-    ipcRenderer.invoke('sd-get-system-info'),
-  sdGetGpuVramMb: (): Promise<{ success: boolean; vramMb: number | null; error?: string }> =>
-    ipcRenderer.invoke('sd-get-gpu-vram'),
-  sdCheckAuxiliaryModels: (): Promise<{ success: boolean; llmExists: boolean; vaeExists: boolean; llmPath: string; vaePath: string; error?: string }> =>
-    ipcRenderer.invoke('sd-check-auxiliary-models'),
-  sdListAuxiliaryModels: (): Promise<{ success: boolean; models?: Array<{ name: string; path: string; size: number; type: 'llm' | 'vae' }>; error?: string }> =>
-    ipcRenderer.invoke('sd-list-auxiliary-models'),
-  sdDeleteAuxiliaryModel: (type: 'llm' | 'vae'): Promise<{ success: boolean; error?: string }> =>
-    ipcRenderer.invoke('sd-delete-auxiliary-model', type),
+  sdGetBinaryPath: (): Promise<{
+    success: boolean;
+    path?: string;
+    error?: string;
+  }> => ipcRenderer.invoke("sd-get-binary-path"),
+  sdGetSystemInfo: (): Promise<{
+    platform: string;
+    arch: string;
+    acceleration: string;
+    supported: boolean;
+  }> => ipcRenderer.invoke("sd-get-system-info"),
+  sdGetGpuVramMb: (): Promise<{
+    success: boolean;
+    vramMb: number | null;
+    error?: string;
+  }> => ipcRenderer.invoke("sd-get-gpu-vram"),
+  sdCheckAuxiliaryModels: (): Promise<{
+    success: boolean;
+    llmExists: boolean;
+    vaeExists: boolean;
+    llmPath: string;
+    vaePath: string;
+    error?: string;
+  }> => ipcRenderer.invoke("sd-check-auxiliary-models"),
+  sdListAuxiliaryModels: (): Promise<{
+    success: boolean;
+    models?: Array<{
+      name: string;
+      path: string;
+      size: number;
+      type: "llm" | "vae";
+    }>;
+    error?: string;
+  }> => ipcRenderer.invoke("sd-list-auxiliary-models"),
+  sdDeleteAuxiliaryModel: (
+    type: "llm" | "vae",
+  ): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke("sd-delete-auxiliary-model", type),
   sdGenerateImage: (params: {
-    modelPath: string
-    llmPath?: string
-    vaePath?: string
-    lowVramMode?: boolean
-    vaeTiling?: boolean
-    prompt: string
-    negativePrompt?: string
-    width: number
-    height: number
-    steps: number
-    cfgScale: number
-    seed?: number
-    outputPath: string
+    modelPath: string;
+    llmPath?: string;
+    vaePath?: string;
+    lowVramMode?: boolean;
+    vaeTiling?: boolean;
+    prompt: string;
+    negativePrompt?: string;
+    width: number;
+    height: number;
+    steps: number;
+    cfgScale: number;
+    seed?: number;
+    outputPath: string;
   }): Promise<{ success: boolean; outputPath?: string; error?: string }> =>
-    ipcRenderer.invoke('sd-generate-image', params),
+    ipcRenderer.invoke("sd-generate-image", params),
   sdCancelGeneration: (): Promise<{ success: boolean; error?: string }> =>
-    ipcRenderer.invoke('sd-cancel-generation'),
-  sdSaveModelFromCache: (filename: string, data: Uint8Array, type: 'model' | 'llm' | 'vae'): Promise<{ success: boolean; filePath?: string; error?: string }> =>
-    ipcRenderer.invoke('sd-save-model-from-cache', filename, data, type),
+    ipcRenderer.invoke("sd-cancel-generation"),
+  sdSaveModelFromCache: (
+    filename: string,
+    data: Uint8Array,
+    type: "model" | "llm" | "vae",
+  ): Promise<{ success: boolean; filePath?: string; error?: string }> =>
+    ipcRenderer.invoke("sd-save-model-from-cache", filename, data, type),
   sdListModels: (): Promise<{
-    success: boolean
-    models?: Array<{ name: string; path: string; size: number; createdAt: string }>
-    error?: string
-  }> => ipcRenderer.invoke('sd-list-models'),
-  sdDeleteModel: (modelPath: string): Promise<{ success: boolean; error?: string }> =>
-    ipcRenderer.invoke('sd-delete-model', modelPath),
+    success: boolean;
+    models?: Array<{
+      name: string;
+      path: string;
+      size: number;
+      createdAt: string;
+    }>;
+    error?: string;
+  }> => ipcRenderer.invoke("sd-list-models"),
+  sdDeleteModel: (
+    modelPath: string,
+  ): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke("sd-delete-model", modelPath),
   sdDeleteBinary: (): Promise<{ success: boolean; error?: string }> =>
-    ipcRenderer.invoke('sd-delete-binary'),
+    ipcRenderer.invoke("sd-delete-binary"),
   getFileSize: (filePath: string): Promise<number> =>
-    ipcRenderer.invoke('get-file-size', filePath),
-  onSdProgress: (callback: (data: { phase: string; progress: number; detail?: unknown }) => void): (() => void) => {
-    const handler = (_: unknown, data: unknown) => callback(data as { phase: string; progress: number; detail?: unknown })
-    ipcRenderer.on('sd-progress', handler)
-    return () => ipcRenderer.removeListener('sd-progress', handler)
+    ipcRenderer.invoke("get-file-size", filePath),
+  onSdProgress: (
+    callback: (data: {
+      phase: string;
+      progress: number;
+      detail?: unknown;
+    }) => void,
+  ): (() => void) => {
+    const handler = (_: unknown, data: unknown) =>
+      callback(data as { phase: string; progress: number; detail?: unknown });
+    ipcRenderer.on("sd-progress", handler);
+    return () => ipcRenderer.removeListener("sd-progress", handler);
   },
-  onSdLog: (callback: (data: { type: 'stdout' | 'stderr'; message: string }) => void): (() => void) => {
-    const handler = (_: unknown, data: unknown) => callback(data as { type: 'stdout' | 'stderr'; message: string })
-    ipcRenderer.on('sd-log', handler)
-    return () => ipcRenderer.removeListener('sd-log', handler)
+  onSdLog: (
+    callback: (data: { type: "stdout" | "stderr"; message: string }) => void,
+  ): (() => void) => {
+    const handler = (_: unknown, data: unknown) =>
+      callback(data as { type: "stdout" | "stderr"; message: string });
+    ipcRenderer.on("sd-log", handler);
+    return () => ipcRenderer.removeListener("sd-log", handler);
   },
-  onSdDownloadProgress: (callback: (data: { phase: string; progress: number; detail?: unknown }) => void): (() => void) => {
-    const handler = (_: unknown, data: unknown) => callback(data as { phase: string; progress: number; detail?: unknown })
-    ipcRenderer.on('sd-download-progress', handler)
-    return () => ipcRenderer.removeListener('sd-download-progress', handler)
+  onSdDownloadProgress: (
+    callback: (data: {
+      phase: string;
+      progress: number;
+      detail?: unknown;
+    }) => void,
+  ): (() => void) => {
+    const handler = (_: unknown, data: unknown) =>
+      callback(data as { phase: string; progress: number; detail?: unknown });
+    ipcRenderer.on("sd-download-progress", handler);
+    return () => ipcRenderer.removeListener("sd-download-progress", handler);
   },
-  onSdBinaryDownloadProgress: (callback: (data: { phase: string; progress: number; detail?: unknown }) => void): (() => void) => {
-    const handler = (_: unknown, data: unknown) => callback(data as { phase: string; progress: number; detail?: unknown })
-    ipcRenderer.on('sd-binary-download-progress', handler)
-    return () => ipcRenderer.removeListener('sd-binary-download-progress', handler)
+  onSdBinaryDownloadProgress: (
+    callback: (data: {
+      phase: string;
+      progress: number;
+      detail?: unknown;
+    }) => void,
+  ): (() => void) => {
+    const handler = (_: unknown, data: unknown) =>
+      callback(data as { phase: string; progress: number; detail?: unknown });
+    ipcRenderer.on("sd-binary-download-progress", handler);
+    return () =>
+      ipcRenderer.removeListener("sd-binary-download-progress", handler);
   },
-  onSdLlmDownloadProgress: (callback: (data: { phase: string; progress: number; detail?: unknown }) => void): (() => void) => {
-    const handler = (_: unknown, data: unknown) => callback(data as { phase: string; progress: number; detail?: unknown })
-    ipcRenderer.on('sd-llm-download-progress', handler)
-    return () => ipcRenderer.removeListener('sd-llm-download-progress', handler)
+  onSdLlmDownloadProgress: (
+    callback: (data: {
+      phase: string;
+      progress: number;
+      detail?: unknown;
+    }) => void,
+  ): (() => void) => {
+    const handler = (_: unknown, data: unknown) =>
+      callback(data as { phase: string; progress: number; detail?: unknown });
+    ipcRenderer.on("sd-llm-download-progress", handler);
+    return () =>
+      ipcRenderer.removeListener("sd-llm-download-progress", handler);
   },
-  onSdVaeDownloadProgress: (callback: (data: { phase: string; progress: number; detail?: unknown }) => void): (() => void) => {
-    const handler = (_: unknown, data: unknown) => callback(data as { phase: string; progress: number; detail?: unknown })
-    ipcRenderer.on('sd-vae-download-progress', handler)
-    return () => ipcRenderer.removeListener('sd-vae-download-progress', handler)
+  onSdVaeDownloadProgress: (
+    callback: (data: {
+      phase: string;
+      progress: number;
+      detail?: unknown;
+    }) => void,
+  ): (() => void) => {
+    const handler = (_: unknown, data: unknown) =>
+      callback(data as { phase: string; progress: number; detail?: unknown });
+    ipcRenderer.on("sd-vae-download-progress", handler);
+    return () =>
+      ipcRenderer.removeListener("sd-vae-download-progress", handler);
   },
 
   // File operations for chunked downloads
-  fileGetSize: (filePath: string): Promise<{ success: boolean; size?: number; error?: string }> =>
-    ipcRenderer.invoke('file-get-size', filePath),
-  fileAppendChunk: (filePath: string, chunk: ArrayBuffer): Promise<{ success: boolean; error?: string }> =>
-    ipcRenderer.invoke('file-append-chunk', filePath, chunk),
-  fileRename: (oldPath: string, newPath: string): Promise<{ success: boolean; error?: string }> =>
-    ipcRenderer.invoke('file-rename', oldPath, newPath),
-  fileDelete: (filePath: string): Promise<{ success: boolean; error?: string }> =>
-    ipcRenderer.invoke('file-delete', filePath),
+  fileGetSize: (
+    filePath: string,
+  ): Promise<{ success: boolean; size?: number; error?: string }> =>
+    ipcRenderer.invoke("file-get-size", filePath),
+  fileAppendChunk: (
+    filePath: string,
+    chunk: ArrayBuffer,
+  ): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke("file-append-chunk", filePath, chunk),
+  fileRename: (
+    oldPath: string,
+    newPath: string,
+  ): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke("file-rename", oldPath, newPath),
+  fileDelete: (
+    filePath: string,
+  ): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke("file-delete", filePath),
 
   // SD download path helpers for chunked downloads
-  sdGetBinaryDownloadPath: (): Promise<{ success: boolean; path?: string; error?: string }> =>
-    ipcRenderer.invoke('sd-get-binary-download-path'),
-  sdGetAuxiliaryModelDownloadPath: (type: 'llm' | 'vae'): Promise<{ success: boolean; path?: string; error?: string }> =>
-    ipcRenderer.invoke('sd-get-auxiliary-model-download-path', type),
-  sdGetModelsDir: (): Promise<{ success: boolean; path?: string; error?: string }> =>
-    ipcRenderer.invoke('sd-get-models-dir'),
-  sdExtractBinary: (zipPath: string, destPath: string): Promise<{ success: boolean; path?: string; error?: string }> =>
-    ipcRenderer.invoke('sd-extract-binary', zipPath, destPath),
+  sdGetBinaryDownloadPath: (): Promise<{
+    success: boolean;
+    path?: string;
+    error?: string;
+  }> => ipcRenderer.invoke("sd-get-binary-download-path"),
+  sdGetAuxiliaryModelDownloadPath: (
+    type: "llm" | "vae",
+  ): Promise<{ success: boolean; path?: string; error?: string }> =>
+    ipcRenderer.invoke("sd-get-auxiliary-model-download-path", type),
+  sdGetModelsDir: (): Promise<{
+    success: boolean;
+    path?: string;
+    error?: string;
+  }> => ipcRenderer.invoke("sd-get-models-dir"),
+  sdExtractBinary: (
+    zipPath: string,
+    destPath: string,
+  ): Promise<{ success: boolean; path?: string; error?: string }> =>
+    ipcRenderer.invoke("sd-extract-binary", zipPath, destPath),
 
   // Persistent key-value state (survives app restarts, unlike renderer localStorage)
-  getState: (key: string): Promise<unknown> => ipcRenderer.invoke('get-state', key),
-  setState: (key: string, value: unknown): Promise<boolean> => ipcRenderer.invoke('set-state', key, value),
-  removeState: (key: string): Promise<boolean> => ipcRenderer.invoke('remove-state', key),
+  getState: (key: string): Promise<unknown> =>
+    ipcRenderer.invoke("get-state", key),
+  setState: (key: string, value: unknown): Promise<boolean> =>
+    ipcRenderer.invoke("set-state", key, value),
+  removeState: (key: string): Promise<boolean> =>
+    ipcRenderer.invoke("remove-state", key),
 
   // Assets event listener (workflow executor pushes new assets)
   onAssetsNewAsset: (callback: (asset: unknown) => void): (() => void) => {
-    const handler = (_: unknown, asset: unknown) => callback(asset)
-    ipcRenderer.on('assets:new-asset', handler)
-    return () => ipcRenderer.removeListener('assets:new-asset', handler)
-  }
-}
+    const handler = (_: unknown, asset: unknown) => callback(asset);
+    ipcRenderer.on("assets:new-asset", handler);
+    return () => ipcRenderer.removeListener("assets:new-asset", handler);
+  },
+};
 
 // ─── Workflow API (isolated namespace to avoid collision with electronAPI) ────
 const workflowAPI = {
   invoke: (channel: string, args?: unknown): Promise<unknown> =>
     ipcRenderer.invoke(channel, args),
   on: (channel: string, callback: (...args: unknown[]) => void): void => {
-    const handler = (_event: unknown, ...rest: unknown[]) => callback(...rest)
-    ipcRenderer.on(channel, handler)
+    const handler = (_event: unknown, ...rest: unknown[]) => callback(...rest);
+    ipcRenderer.on(channel, handler);
     // Store handler reference for removal
-    ;(workflowAPI as Record<string, unknown>)[`__handler_${channel}_${callback.toString().slice(0, 50)}`] = handler
+    (workflowAPI as Record<string, unknown>)[
+      `__handler_${channel}_${callback.toString().slice(0, 50)}`
+    ] = handler;
   },
-  removeListener: (channel: string, _callback: (...args: unknown[]) => void): void => {
+  removeListener: (
+    channel: string,
+    _callback: (...args: unknown[]) => void,
+  ): void => {
     // Best-effort removal — remove all listeners for this channel
-    ipcRenderer.removeAllListeners(channel)
-  }
-}
+    ipcRenderer.removeAllListeners(channel);
+  },
+};
 
 if (process.contextIsolated) {
   try {
-    contextBridge.exposeInMainWorld('electronAPI', electronAPI)
-    contextBridge.exposeInMainWorld('workflowAPI', workflowAPI)
+    contextBridge.exposeInMainWorld("electronAPI", electronAPI);
+    contextBridge.exposeInMainWorld("workflowAPI", workflowAPI);
   } catch (error) {
-    console.error(error)
+    console.error(error);
   }
 } else {
   // @ts-ignore - fallback for non-isolated context
-  window.electronAPI = electronAPI
+  window.electronAPI = electronAPI;
   // @ts-ignore
-  window.workflowAPI = workflowAPI
+  window.workflowAPI = workflowAPI;
 }

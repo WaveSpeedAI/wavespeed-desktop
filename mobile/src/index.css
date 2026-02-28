@@ -1,5 +1,5 @@
 /* Import shared styles from main project - must be first */
-@import '../../src/index.css';
+@import "../../src/index.css";
 
 @tailwind base;
 @tailwind components;
@@ -29,7 +29,9 @@
   }
 
   /* Allow text selection in specific elements */
-  input, textarea, [contenteditable="true"] {
+  input,
+  textarea,
+  [contenteditable="true"] {
     -webkit-user-select: text;
     user-select: text;
   }
@@ -196,7 +198,8 @@ textarea {
 }
 
 /* Pull-to-refresh disabled */
-html, body {
+html,
+body {
   overscroll-behavior-y: contain;
 }
 
@@ -245,7 +248,7 @@ html, body {
 }
 
 .ripple::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -255,7 +258,10 @@ html, body {
   opacity: 0.1;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  transition: width 0.3s, height 0.3s, opacity 0.3s;
+  transition:
+    width 0.3s,
+    height 0.3s,
+    opacity 0.3s;
 }
 
 .ripple:active::after {
@@ -274,7 +280,10 @@ input:not([type="number"]):not([type="range"]) {
    ==================================== */
 
 /* Collapsed state: show only the magnifying glass icon */
-.mobile-models-page .page-header > div:nth-child(2) > .relative.flex-1.max-w-md {
+.mobile-models-page
+  .page-header
+  > div:nth-child(2)
+  > .relative.flex-1.max-w-md {
   flex: 0 0 36px !important;
   width: 36px !important;
   max-width: 36px !important;
@@ -287,18 +296,29 @@ input:not([type="number"]):not([type="range"]) {
 }
 
 /* SVG icon pass-through so tapping focuses the input */
-.mobile-models-page .page-header > div:nth-child(2) > .relative.flex-1.max-w-md > svg {
+.mobile-models-page
+  .page-header
+  > div:nth-child(2)
+  > .relative.flex-1.max-w-md
+  > svg {
   pointer-events: none;
 }
 
 /* Hide input text when collapsed */
-.mobile-models-page .page-header > div:nth-child(2) > .relative.flex-1.max-w-md > input {
+.mobile-models-page
+  .page-header
+  > div:nth-child(2)
+  > .relative.flex-1.max-w-md
+  > input {
   caret-color: transparent;
   color: transparent;
 }
 
 /* Expanded state: full-width search bar */
-.mobile-models-page .page-header > div:nth-child(2) > .relative.flex-1.max-w-md:focus-within {
+.mobile-models-page
+  .page-header
+  > div:nth-child(2)
+  > .relative.flex-1.max-w-md:focus-within {
   flex: 1 1 0% !important;
   width: auto !important;
   max-width: none !important;
@@ -308,14 +328,22 @@ input:not([type="number"]):not([type="range"]) {
   background: transparent;
 }
 
-.mobile-models-page .page-header > div:nth-child(2) > .relative.flex-1.max-w-md:focus-within > input {
+.mobile-models-page
+  .page-header
+  > div:nth-child(2)
+  > .relative.flex-1.max-w-md:focus-within
+  > input {
   caret-color: auto;
   color: inherit;
   height: 44px;
 }
 
 /* Hide sibling controls when search is expanded */
-.mobile-models-page .page-header > div:nth-child(2) > .relative.flex-1.max-w-md:focus-within ~ * {
+.mobile-models-page
+  .page-header
+  > div:nth-child(2)
+  > .relative.flex-1.max-w-md:focus-within
+  ~ * {
   display: none !important;
 }
 

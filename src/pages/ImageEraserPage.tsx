@@ -1,11 +1,11 @@
-import { useState, useRef, useCallback, useEffect, useContext } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { PageResetContext } from '@/components/layout/PageResetContext'
-import { useTranslation } from 'react-i18next'
-import { generateFreeToolFilename } from '@/stores/assetsStore'
-import { useImageEraserWorker } from '@/hooks/useImageEraserWorker'
-import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
-import { ProcessingProgress } from '@/components/shared/ProcessingProgress'
+import { useState, useRef, useCallback, useEffect, useContext } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { PageResetContext } from "@/components/layout/PageResetContext";
+import { useTranslation } from "react-i18next";
+import { generateFreeToolFilename } from "@/stores/assetsStore";
+import { useImageEraserWorker } from "@/hooks/useImageEraserWorker";
+import { useMultiPhaseProgress } from "@/hooks/useMultiPhaseProgress";
+import { ProcessingProgress } from "@/components/shared/ProcessingProgress";
 import {
   canvasToFloat32Array,
   maskCanvasToFloat32Array,
@@ -15,20 +15,24 @@ import {
   cropCanvas,
   pasteWithBlending,
   addReflectPadding,
-  addMaskReflectPadding
-} from '@/lib/lamaUtils'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Slider } from '@/components/ui/slider'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+  addMaskReflectPadding,
+} from "@/lib/lamaUtils";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Slider } from "@/components/ui/slider";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
-} from '@/components/ui/select'
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+  SelectValue,
+} from "@/components/ui/select";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,8 +41,8 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle
-} from '@/components/ui/alert-dialog'
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   ArrowLeft,
   Upload,
@@ -53,54 +57,64 @@ import {
   ZoomIn,
   ZoomOut,
   Maximize2,
-  RefreshCw
-} from 'lucide-react'
-import { cn } from '@/lib/utils'
+  RefreshCw,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
-type Tool = 'brush' | 'eraser'
+type Tool = "brush" | "eraser";
 
 // Phase configuration for image eraser
 const PHASES = [
-  { id: 'download', labelKey: 'freeTools.progress.downloading', weight: 0.1 },
-  { id: 'loading', labelKey: 'freeTools.progress.loading', weight: 0.1 },
-  { id: 'process', labelKey: 'freeTools.progress.processing', weight: 0.8 }
-]
+  { id: "download", labelKey: "freeTools.progress.downloading", weight: 0.1 },
+  { id: "loading", labelKey: "freeTools.progress.loading", weight: 0.1 },
+  { id: "process", labelKey: "freeTools.progress.processing", weight: 0.8 },
+];
 
 export function ImageEraserPage() {
-  const { t } = useTranslation()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { resetPage } = useContext(PageResetContext)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const imageCanvasRef = useRef<HTMLCanvasElement>(null)
-  const maskCanvasRef = useRef<HTMLCanvasElement>(null)
-  const resultCanvasRef = useRef<HTMLCanvasElement>(null)
-  const dragCounterRef = useRef(0)
-  const lastPosRef = useRef<{ x: number; y: number } | null>(null)
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { resetPage } = useContext(PageResetContext);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const imageCanvasRef = useRef<HTMLCanvasElement>(null);
+  const maskCanvasRef = useRef<HTMLCanvasElement>(null);
+  const resultCanvasRef = useRef<HTMLCanvasElement>(null);
+  const dragCounterRef = useRef(0);
+  const lastPosRef = useRef<{ x: number; y: number } | null>(null);
 
-  const [originalImage, setOriginalImage] = useState<string | null>(null)
-  const [loadedImage, setLoadedImage] = useState<HTMLImageElement | null>(null)
-  const [resultImage, setResultImage] = useState<string | null>(null)
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [isDragging, setIsDragging] = useState(false)
-  const [isDrawing, setIsDrawing] = useState(false)
-  const [canvasSize, setCanvasSize] = useState({ width: 512, height: 512 })
-  const [originalSize, setOriginalSize] = useState<{ width: number; height: number } | null>(null)
-  const [containerSize, setContainerSize] = useState({ width: 800, height: 600 })
-  const [tool, setTool] = useState<Tool>('brush')
-  const [brushSize, setBrushSize] = useState(30)
+  const [originalImage, setOriginalImage] = useState<string | null>(null);
+  const [loadedImage, setLoadedImage] = useState<HTMLImageElement | null>(null);
+  const [resultImage, setResultImage] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [canvasSize, setCanvasSize] = useState({ width: 512, height: 512 });
+  const [originalSize, setOriginalSize] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
+  const [containerSize, setContainerSize] = useState({
+    width: 800,
+    height: 600,
+  });
+  const [tool, setTool] = useState<Tool>("brush");
+  const [brushSize, setBrushSize] = useState(30);
   // Mask drawing history (for current editing session)
-  const [maskHistory, setMaskHistory] = useState<ImageData[]>([])
-  const [maskHistoryIndex, setMaskHistoryIndex] = useState(-1)
+  const [maskHistory, setMaskHistory] = useState<ImageData[]>([]);
+  const [maskHistoryIndex, setMaskHistoryIndex] = useState(-1);
   // Image edit history (for undo/redo of object removal operations)
-  const [imageHistory, setImageHistory] = useState<ImageData[]>([])
-  const [imageHistoryIndex, setImageHistoryIndex] = useState(-1)
-  const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(null)
-  const [downloadFormat, setDownloadFormat] = useState<'png' | 'jpeg' | 'webp'>('jpeg')
-  const [previewImage, setPreviewImage] = useState<string | null>(null)
-  const [showBackWarning, setShowBackWarning] = useState(false)
-  const [zoom, setZoom] = useState(1)
+  const [imageHistory, setImageHistory] = useState<ImageData[]>([]);
+  const [imageHistoryIndex, setImageHistoryIndex] = useState(-1);
+  const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(
+    null,
+  );
+  const [downloadFormat, setDownloadFormat] = useState<"png" | "jpeg" | "webp">(
+    "jpeg",
+  );
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [showBackWarning, setShowBackWarning] = useState(false);
+  const [zoom, setZoom] = useState(1);
 
   // Multi-phase progress tracking
   const {
@@ -109,517 +123,588 @@ export function ImageEraserPage() {
     updatePhase,
     reset: resetProgress,
     resetAndStart,
-    complete: completeAllPhases
-  } = useMultiPhaseProgress({ phases: PHASES })
+    complete: completeAllPhases,
+  } = useMultiPhaseProgress({ phases: PHASES });
 
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null);
 
-  const { initModel, removeObjects, dispose, hasFailed, retryWorker } = useImageEraserWorker({
-    onPhase: (phase) => {
-      if (phase === 'download') {
-        startPhase('download')
-      } else if (phase === 'loading') {
-        startPhase('loading')
-      } else if (phase === 'process') {
-        startPhase('process')
-      }
-    },
-    onProgress: (phase, progressValue, detail) => {
-      const phaseId = phase === 'download' ? 'download' : phase === 'loading' ? 'loading' : 'process'
-      updatePhase(phaseId, progressValue, detail)
-    },
-    onReady: () => {
-      setError(null)
-    },
-    onError: (err) => {
-      console.error('Worker error:', err)
-      setError(err)
-      setIsProcessing(false)
-    }
-  })
+  const { initModel, removeObjects, dispose, hasFailed, retryWorker } =
+    useImageEraserWorker({
+      onPhase: (phase) => {
+        if (phase === "download") {
+          startPhase("download");
+        } else if (phase === "loading") {
+          startPhase("loading");
+        } else if (phase === "process") {
+          startPhase("process");
+        }
+      },
+      onProgress: (phase, progressValue, detail) => {
+        const phaseId =
+          phase === "download"
+            ? "download"
+            : phase === "loading"
+              ? "loading"
+              : "process";
+        updatePhase(phaseId, progressValue, detail);
+      },
+      onReady: () => {
+        setError(null);
+      },
+      onError: (err) => {
+        console.error("Worker error:", err);
+        setError(err);
+        setIsProcessing(false);
+      },
+    });
 
   const handleRetry = useCallback(() => {
-    setError(null)
-    retryWorker()
-  }, [retryWorker])
+    setError(null);
+    retryWorker();
+  }, [retryWorker]);
 
   const handleBack = useCallback(() => {
     if (isProcessing) {
-      setShowBackWarning(true)
+      setShowBackWarning(true);
     } else {
-      dispose()
-      resetPage(location.pathname)
-      navigate('/free-tools')
+      dispose();
+      resetPage(location.pathname);
+      navigate("/free-tools");
     }
-  }, [isProcessing, dispose, resetPage, location.pathname, navigate])
+  }, [isProcessing, dispose, resetPage, location.pathname, navigate]);
 
   const handleConfirmBack = useCallback(() => {
-    setShowBackWarning(false)
-    dispose()
-    resetPage(location.pathname)
-    navigate('/free-tools')
-  }, [dispose, resetPage, location.pathname, navigate])
+    setShowBackWarning(false);
+    dispose();
+    resetPage(location.pathname);
+    navigate("/free-tools");
+  }, [dispose, resetPage, location.pathname, navigate]);
 
   // Measure available container size on mount and window resize
   useEffect(() => {
     const updateContainerSize = () => {
       // Use most of viewport width (minus sidebar ~240px and padding)
       // Use generous height - page can scroll if needed
-      const viewportWidth = window.innerWidth
-      const viewportHeight = window.innerHeight
-      const availableWidth = Math.max(500, viewportWidth - 300)
-      const availableHeight = Math.max(500, viewportHeight - 250)
-      setContainerSize({ width: availableWidth, height: availableHeight })
-    }
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const availableWidth = Math.max(500, viewportWidth - 300);
+      const availableHeight = Math.max(500, viewportHeight - 250);
+      setContainerSize({ width: availableWidth, height: availableHeight });
+    };
 
-    updateContainerSize()
-    window.addEventListener('resize', updateContainerSize)
-    return () => window.removeEventListener('resize', updateContainerSize)
-  }, [])
+    updateContainerSize();
+    window.addEventListener("resize", updateContainerSize);
+    return () => window.removeEventListener("resize", updateContainerSize);
+  }, []);
 
   // Recalculate canvas size when container or image changes
   useEffect(() => {
-    if (!loadedImage) return
+    if (!loadedImage) return;
 
-    const imgWidth = loadedImage.width
-    const imgHeight = loadedImage.height
+    const imgWidth = loadedImage.width;
+    const imgHeight = loadedImage.height;
 
-    let width = imgWidth
-    let height = imgHeight
+    let width = imgWidth;
+    let height = imgHeight;
 
     // Scale to fit container while maintaining aspect ratio
     if (width > containerSize.width) {
-      height = (height * containerSize.width) / width
-      width = containerSize.width
+      height = (height * containerSize.width) / width;
+      width = containerSize.width;
     }
     if (height > containerSize.height) {
-      width = (width * containerSize.height) / height
-      height = containerSize.height
+      width = (width * containerSize.height) / height;
+      height = containerSize.height;
     }
 
-    setCanvasSize({ width: Math.round(width), height: Math.round(height) })
-  }, [loadedImage, containerSize])
+    setCanvasSize({ width: Math.round(width), height: Math.round(height) });
+  }, [loadedImage, containerSize]);
 
   // Draw loaded image to canvas at ORIGINAL resolution (not display size)
   useEffect(() => {
-    if (!loadedImage || !imageCanvasRef.current || !originalSize) return
+    if (!loadedImage || !imageCanvasRef.current || !originalSize) return;
 
-    const imageCanvas = imageCanvasRef.current
+    const imageCanvas = imageCanvasRef.current;
     // Set canvas buffer to original image size for full resolution processing
-    imageCanvas.width = originalSize.width
-    imageCanvas.height = originalSize.height
+    imageCanvas.width = originalSize.width;
+    imageCanvas.height = originalSize.height;
 
-    const ctx = imageCanvas.getContext('2d', { willReadFrequently: true })
-    if (!ctx) return
+    const ctx = imageCanvas.getContext("2d", { willReadFrequently: true });
+    if (!ctx) return;
 
-    ctx.drawImage(loadedImage, 0, 0, originalSize.width, originalSize.height)
-  }, [loadedImage, originalSize])
+    ctx.drawImage(loadedImage, 0, 0, originalSize.width, originalSize.height);
+  }, [loadedImage, originalSize]);
 
   // Initialize mask canvas when image loads (at original resolution)
   useEffect(() => {
-    if (!originalImage || !maskCanvasRef.current || !originalSize) return
+    if (!originalImage || !maskCanvasRef.current || !originalSize) return;
 
-    const maskCanvas = maskCanvasRef.current
+    const maskCanvas = maskCanvasRef.current;
     // Set mask canvas to original image size
-    maskCanvas.width = originalSize.width
-    maskCanvas.height = originalSize.height
+    maskCanvas.width = originalSize.width;
+    maskCanvas.height = originalSize.height;
 
-    const maskCtx = maskCanvas.getContext('2d', { willReadFrequently: true })
-    if (!maskCtx) return
+    const maskCtx = maskCanvas.getContext("2d", { willReadFrequently: true });
+    if (!maskCtx) return;
 
     // Clear mask canvas to transparent (no mask)
-    maskCtx.clearRect(0, 0, originalSize.width, originalSize.height)
+    maskCtx.clearRect(0, 0, originalSize.width, originalSize.height);
 
     // Save initial mask state to mask history
-    const initialMaskState = maskCtx.getImageData(0, 0, originalSize.width, originalSize.height)
-    setMaskHistory([initialMaskState])
-    setMaskHistoryIndex(0)
-  }, [originalImage, originalSize])
+    const initialMaskState = maskCtx.getImageData(
+      0,
+      0,
+      originalSize.width,
+      originalSize.height,
+    );
+    setMaskHistory([initialMaskState]);
+    setMaskHistoryIndex(0);
+  }, [originalImage, originalSize]);
 
   // Initialize image history when image is drawn to canvas
   useEffect(() => {
-    if (!loadedImage || !imageCanvasRef.current || !originalSize) return
+    if (!loadedImage || !imageCanvasRef.current || !originalSize) return;
 
     // Small delay to ensure image is drawn to canvas
     const timer = setTimeout(() => {
-      const imageCtx = imageCanvasRef.current?.getContext('2d', { willReadFrequently: true })
-      if (!imageCtx) return
+      const imageCtx = imageCanvasRef.current?.getContext("2d", {
+        willReadFrequently: true,
+      });
+      if (!imageCtx) return;
 
-      const initialImageState = imageCtx.getImageData(0, 0, originalSize.width, originalSize.height)
-      setImageHistory([initialImageState])
-      setImageHistoryIndex(0)
-    }, 50)
+      const initialImageState = imageCtx.getImageData(
+        0,
+        0,
+        originalSize.width,
+        originalSize.height,
+      );
+      setImageHistory([initialImageState]);
+      setImageHistoryIndex(0);
+    }, 50);
 
-    return () => clearTimeout(timer)
-  }, [loadedImage, originalSize])
+    return () => clearTimeout(timer);
+  }, [loadedImage, originalSize]);
 
   // Save mask history snapshot (for mask drawing undo/redo)
   const saveMaskSnapshot = useCallback(() => {
-    const maskCanvas = maskCanvasRef.current
-    const maskCtx = maskCanvas?.getContext('2d', { willReadFrequently: true })
-    if (!maskCtx || !maskCanvas) return
+    const maskCanvas = maskCanvasRef.current;
+    const maskCtx = maskCanvas?.getContext("2d", { willReadFrequently: true });
+    if (!maskCtx || !maskCanvas) return;
 
-    const imageData = maskCtx.getImageData(0, 0, maskCanvas.width, maskCanvas.height)
+    const imageData = maskCtx.getImageData(
+      0,
+      0,
+      maskCanvas.width,
+      maskCanvas.height,
+    );
 
     setMaskHistory((prev) => {
-      const newHistory = prev.slice(0, maskHistoryIndex + 1)
-      newHistory.push(imageData)
+      const newHistory = prev.slice(0, maskHistoryIndex + 1);
+      newHistory.push(imageData);
       if (newHistory.length > 50) {
-        newHistory.shift()
-        return newHistory
+        newHistory.shift();
+        return newHistory;
       }
-      return newHistory
-    })
-    setMaskHistoryIndex((prev) => Math.min(prev + 1, 49))
-  }, [maskHistoryIndex])
+      return newHistory;
+    });
+    setMaskHistoryIndex((prev) => Math.min(prev + 1, 49));
+  }, [maskHistoryIndex]);
 
   // Save image history snapshot (for object removal undo/redo)
   const saveImageSnapshot = useCallback(() => {
-    const imageCanvas = imageCanvasRef.current
-    const imageCtx = imageCanvas?.getContext('2d', { willReadFrequently: true })
-    if (!imageCtx || !imageCanvas) return
+    const imageCanvas = imageCanvasRef.current;
+    const imageCtx = imageCanvas?.getContext("2d", {
+      willReadFrequently: true,
+    });
+    if (!imageCtx || !imageCanvas) return;
 
-    const imageData = imageCtx.getImageData(0, 0, imageCanvas.width, imageCanvas.height)
+    const imageData = imageCtx.getImageData(
+      0,
+      0,
+      imageCanvas.width,
+      imageCanvas.height,
+    );
 
     setImageHistory((prev) => {
-      const newHistory = prev.slice(0, imageHistoryIndex + 1)
-      newHistory.push(imageData)
+      const newHistory = prev.slice(0, imageHistoryIndex + 1);
+      newHistory.push(imageData);
       if (newHistory.length > 20) {
         // Keep fewer image snapshots (they're larger)
-        newHistory.shift()
-        return newHistory
+        newHistory.shift();
+        return newHistory;
       }
-      return newHistory
-    })
-    setImageHistoryIndex((prev) => Math.min(prev + 1, 19))
-  }, [imageHistoryIndex])
+      return newHistory;
+    });
+    setImageHistoryIndex((prev) => Math.min(prev + 1, 19));
+  }, [imageHistoryIndex]);
 
   // Undo mask drawing
   const undoMask = useCallback(() => {
-    if (maskHistoryIndex <= 0) return
+    if (maskHistoryIndex <= 0) return;
 
-    const newIndex = maskHistoryIndex - 1
-    const maskCtx = maskCanvasRef.current?.getContext('2d', { willReadFrequently: true })
-    if (!maskCtx || !maskHistory[newIndex]) return
+    const newIndex = maskHistoryIndex - 1;
+    const maskCtx = maskCanvasRef.current?.getContext("2d", {
+      willReadFrequently: true,
+    });
+    if (!maskCtx || !maskHistory[newIndex]) return;
 
-    maskCtx.putImageData(maskHistory[newIndex], 0, 0)
-    setMaskHistoryIndex(newIndex)
-  }, [maskHistoryIndex, maskHistory])
+    maskCtx.putImageData(maskHistory[newIndex], 0, 0);
+    setMaskHistoryIndex(newIndex);
+  }, [maskHistoryIndex, maskHistory]);
 
   // Redo mask drawing
   const redoMask = useCallback(() => {
-    if (maskHistoryIndex >= maskHistory.length - 1) return
+    if (maskHistoryIndex >= maskHistory.length - 1) return;
 
-    const newIndex = maskHistoryIndex + 1
-    const maskCtx = maskCanvasRef.current?.getContext('2d', { willReadFrequently: true })
-    if (!maskCtx || !maskHistory[newIndex]) return
+    const newIndex = maskHistoryIndex + 1;
+    const maskCtx = maskCanvasRef.current?.getContext("2d", {
+      willReadFrequently: true,
+    });
+    if (!maskCtx || !maskHistory[newIndex]) return;
 
-    maskCtx.putImageData(maskHistory[newIndex], 0, 0)
-    setMaskHistoryIndex(newIndex)
-  }, [maskHistoryIndex, maskHistory])
+    maskCtx.putImageData(maskHistory[newIndex], 0, 0);
+    setMaskHistoryIndex(newIndex);
+  }, [maskHistoryIndex, maskHistory]);
 
   // Undo image edit (object removal)
   const undoImage = useCallback(() => {
-    if (imageHistoryIndex <= 0) return
+    if (imageHistoryIndex <= 0) return;
 
-    const newIndex = imageHistoryIndex - 1
-    const imageCtx = imageCanvasRef.current?.getContext('2d', { willReadFrequently: true })
-    if (!imageCtx || !imageHistory[newIndex]) return
+    const newIndex = imageHistoryIndex - 1;
+    const imageCtx = imageCanvasRef.current?.getContext("2d", {
+      willReadFrequently: true,
+    });
+    if (!imageCtx || !imageHistory[newIndex]) return;
 
-    imageCtx.putImageData(imageHistory[newIndex], 0, 0)
-    setImageHistoryIndex(newIndex)
+    imageCtx.putImageData(imageHistory[newIndex], 0, 0);
+    setImageHistoryIndex(newIndex);
 
     // Update result image preview
     if (imageCanvasRef.current) {
-      const dataUrl = imageCanvasRef.current.toDataURL('image/png')
-      setResultImage(dataUrl)
+      const dataUrl = imageCanvasRef.current.toDataURL("image/png");
+      setResultImage(dataUrl);
     }
-  }, [imageHistoryIndex, imageHistory])
+  }, [imageHistoryIndex, imageHistory]);
 
   // Redo image edit (object removal)
   const redoImage = useCallback(() => {
-    if (imageHistoryIndex >= imageHistory.length - 1) return
+    if (imageHistoryIndex >= imageHistory.length - 1) return;
 
-    const newIndex = imageHistoryIndex + 1
-    const imageCtx = imageCanvasRef.current?.getContext('2d', { willReadFrequently: true })
-    if (!imageCtx || !imageHistory[newIndex]) return
+    const newIndex = imageHistoryIndex + 1;
+    const imageCtx = imageCanvasRef.current?.getContext("2d", {
+      willReadFrequently: true,
+    });
+    if (!imageCtx || !imageHistory[newIndex]) return;
 
-    imageCtx.putImageData(imageHistory[newIndex], 0, 0)
-    setImageHistoryIndex(newIndex)
+    imageCtx.putImageData(imageHistory[newIndex], 0, 0);
+    setImageHistoryIndex(newIndex);
 
     // Update result image preview
     if (imageCanvasRef.current) {
-      const dataUrl = imageCanvasRef.current.toDataURL('image/png')
-      setResultImage(dataUrl)
+      const dataUrl = imageCanvasRef.current.toDataURL("image/png");
+      setResultImage(dataUrl);
     }
-  }, [imageHistoryIndex, imageHistory])
+  }, [imageHistoryIndex, imageHistory]);
 
   // Clear mask
   const clearMask = useCallback(() => {
-    const maskCanvas = maskCanvasRef.current
-    const maskCtx = maskCanvas?.getContext('2d', { willReadFrequently: true })
-    if (!maskCtx || !maskCanvas) return
+    const maskCanvas = maskCanvasRef.current;
+    const maskCtx = maskCanvas?.getContext("2d", { willReadFrequently: true });
+    if (!maskCtx || !maskCanvas) return;
 
-    maskCtx.clearRect(0, 0, maskCanvas.width, maskCanvas.height)
-    saveMaskSnapshot()
-  }, [saveMaskSnapshot])
+    maskCtx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
+    saveMaskSnapshot();
+  }, [saveMaskSnapshot]);
 
   // Zoom controls
   const zoomIn = useCallback(() => {
-    setZoom((prev) => Math.min(prev + 0.25, 3))
-  }, [])
+    setZoom((prev) => Math.min(prev + 0.25, 3));
+  }, []);
 
   const zoomOut = useCallback(() => {
-    setZoom((prev) => Math.max(prev - 0.25, 0.5))
-  }, [])
+    setZoom((prev) => Math.max(prev - 0.25, 0.5));
+  }, []);
 
   const resetZoom = useCallback(() => {
-    setZoom(1)
-  }, [])
+    setZoom(1);
+  }, []);
 
   // Get coordinates relative to canvas (accounting for zoom)
   const getCanvasCoords = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
-      const canvas = maskCanvasRef.current
-      if (!canvas) return null
+      const canvas = maskCanvasRef.current;
+      if (!canvas) return null;
 
-      const rect = canvas.getBoundingClientRect()
-      const scaleX = canvas.width / rect.width
-      const scaleY = canvas.height / rect.height
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
 
       return {
         x: (e.clientX - rect.left) * scaleX,
-        y: (e.clientY - rect.top) * scaleY
-      }
+        y: (e.clientY - rect.top) * scaleY,
+      };
     },
-    []
-  )
+    [],
+  );
 
   // Get display coordinates for cursor overlay (adjusted for zoom)
   const getDisplayCoords = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
-      const canvas = maskCanvasRef.current
-      if (!canvas) return null
+      const canvas = maskCanvasRef.current;
+      if (!canvas) return null;
 
-      const rect = canvas.getBoundingClientRect()
+      const rect = canvas.getBoundingClientRect();
       // Divide by zoom because cursor is inside the scaled container
       return {
         x: (e.clientX - rect.left) / zoom,
-        y: (e.clientY - rect.top) / zoom
-      }
+        y: (e.clientY - rect.top) / zoom,
+      };
     },
-    [zoom]
-  )
+    [zoom],
+  );
 
   // Draw at position
   const drawAt = useCallback(
     (x: number, y: number, lastX?: number, lastY?: number) => {
-      const maskCanvas = maskCanvasRef.current
-      const maskCtx = maskCanvas?.getContext('2d', { willReadFrequently: true })
-      if (!maskCtx || !maskCanvas) return
+      const maskCanvas = maskCanvasRef.current;
+      const maskCtx = maskCanvas?.getContext("2d", {
+        willReadFrequently: true,
+      });
+      if (!maskCtx || !maskCanvas) return;
 
       // Scale brush size from display to canvas coordinates
-      const scaleRatio = maskCanvas.width / canvasSize.width
-      const scaledBrushSize = brushSize * scaleRatio
+      const scaleRatio = maskCanvas.width / canvasSize.width;
+      const scaledBrushSize = brushSize * scaleRatio;
 
-      if (tool === 'eraser') {
+      if (tool === "eraser") {
         // Eraser: use destination-out to make transparent
-        maskCtx.globalCompositeOperation = 'destination-out'
-        maskCtx.fillStyle = 'rgba(0,0,0,1)'
-        maskCtx.strokeStyle = 'rgba(0,0,0,1)'
+        maskCtx.globalCompositeOperation = "destination-out";
+        maskCtx.fillStyle = "rgba(0,0,0,1)";
+        maskCtx.strokeStyle = "rgba(0,0,0,1)";
       } else {
         // Brush: draw with full opacity (transparency applied via CSS)
-        maskCtx.globalCompositeOperation = 'source-over'
-        maskCtx.fillStyle = 'rgba(255, 80, 80, 1)'
-        maskCtx.strokeStyle = 'rgba(255, 80, 80, 1)'
+        maskCtx.globalCompositeOperation = "source-over";
+        maskCtx.fillStyle = "rgba(255, 80, 80, 1)";
+        maskCtx.strokeStyle = "rgba(255, 80, 80, 1)";
       }
 
-      maskCtx.lineWidth = scaledBrushSize
-      maskCtx.lineCap = 'round'
-      maskCtx.lineJoin = 'round'
+      maskCtx.lineWidth = scaledBrushSize;
+      maskCtx.lineCap = "round";
+      maskCtx.lineJoin = "round";
 
       if (lastX !== undefined && lastY !== undefined) {
-        maskCtx.beginPath()
-        maskCtx.moveTo(lastX, lastY)
-        maskCtx.lineTo(x, y)
-        maskCtx.stroke()
+        maskCtx.beginPath();
+        maskCtx.moveTo(lastX, lastY);
+        maskCtx.lineTo(x, y);
+        maskCtx.stroke();
       } else {
-        maskCtx.beginPath()
-        maskCtx.arc(x, y, scaledBrushSize / 2, 0, Math.PI * 2)
-        maskCtx.fill()
+        maskCtx.beginPath();
+        maskCtx.arc(x, y, scaledBrushSize / 2, 0, Math.PI * 2);
+        maskCtx.fill();
       }
 
       // Reset composite operation
-      maskCtx.globalCompositeOperation = 'source-over'
+      maskCtx.globalCompositeOperation = "source-over";
     },
-    [tool, brushSize, canvasSize.width]
-  )
+    [tool, brushSize, canvasSize.width],
+  );
 
   // Mouse event handlers for drawing
   const handleMouseDown = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (isProcessing) return
+      if (isProcessing) return;
 
-      const coords = getCanvasCoords(e)
-      if (!coords) return
+      const coords = getCanvasCoords(e);
+      if (!coords) return;
 
-      setIsDrawing(true)
-      lastPosRef.current = coords
-      drawAt(coords.x, coords.y)
+      setIsDrawing(true);
+      lastPosRef.current = coords;
+      drawAt(coords.x, coords.y);
     },
-    [isProcessing, getCanvasCoords, drawAt]
-  )
+    [isProcessing, getCanvasCoords, drawAt],
+  );
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
-      const displayCoords = getDisplayCoords(e)
+      const displayCoords = getDisplayCoords(e);
       if (displayCoords) {
-        setCursorPos(displayCoords)
+        setCursorPos(displayCoords);
       }
 
-      if (!isDrawing) return
+      if (!isDrawing) return;
 
-      const coords = getCanvasCoords(e)
-      if (!coords) return
+      const coords = getCanvasCoords(e);
+      if (!coords) return;
 
-      const lastPos = lastPosRef.current
-      drawAt(coords.x, coords.y, lastPos?.x, lastPos?.y)
-      lastPosRef.current = coords
+      const lastPos = lastPosRef.current;
+      drawAt(coords.x, coords.y, lastPos?.x, lastPos?.y);
+      lastPosRef.current = coords;
     },
-    [isDrawing, getCanvasCoords, getDisplayCoords, drawAt]
-  )
+    [isDrawing, getCanvasCoords, getDisplayCoords, drawAt],
+  );
 
   const handleMouseUp = useCallback(() => {
     if (isDrawing) {
-      setIsDrawing(false)
-      lastPosRef.current = null
-      saveMaskSnapshot()
+      setIsDrawing(false);
+      lastPosRef.current = null;
+      saveMaskSnapshot();
     }
-  }, [isDrawing, saveMaskSnapshot])
+  }, [isDrawing, saveMaskSnapshot]);
 
   const handleMouseLeave = useCallback(() => {
-    setCursorPos(null)
+    setCursorPos(null);
     if (isDrawing) {
-      setIsDrawing(false)
-      lastPosRef.current = null
-      saveMaskSnapshot()
+      setIsDrawing(false);
+      lastPosRef.current = null;
+      saveMaskSnapshot();
     }
-  }, [isDrawing, saveMaskSnapshot])
+  }, [isDrawing, saveMaskSnapshot]);
 
   const handleFileSelect = useCallback(
     (file: File) => {
-      if (!file.type.startsWith('image/')) return
+      if (!file.type.startsWith("image/")) return;
 
-      setError(null)
-      const reader = new FileReader()
+      setError(null);
+      const reader = new FileReader();
       reader.onload = (e) => {
-        const dataUrl = e.target?.result as string
-        setOriginalImage(dataUrl)
-        setResultImage(null)
-        setLoadedImage(null)
-        setZoom(1)
-        resetProgress()
+        const dataUrl = e.target?.result as string;
+        setOriginalImage(dataUrl);
+        setResultImage(null);
+        setLoadedImage(null);
+        setZoom(1);
+        resetProgress();
 
         // Load image to get dimensions
-        const img = new Image()
+        const img = new Image();
         img.onload = () => {
-          setOriginalSize({ width: img.width, height: img.height })
-          setLoadedImage(img) // Canvas size is calculated by effect
-        }
-        img.src = dataUrl
-      }
-      reader.readAsDataURL(file)
+          setOriginalSize({ width: img.width, height: img.height });
+          setLoadedImage(img); // Canvas size is calculated by effect
+        };
+        img.src = dataUrl;
+      };
+      reader.readAsDataURL(file);
     },
-    [resetProgress]
-  )
+    [resetProgress],
+  );
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      dragCounterRef.current = 0
-      setIsDragging(false)
-      if (isProcessing) return
-      const file = e.dataTransfer.files[0]
-      if (file) handleFileSelect(file)
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounterRef.current = 0;
+      setIsDragging(false);
+      if (isProcessing) return;
+      const file = e.dataTransfer.files[0];
+      if (file) handleFileSelect(file);
     },
-    [handleFileSelect, isProcessing]
-  )
+    [handleFileSelect, isProcessing],
+  );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-  }, [])
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    dragCounterRef.current++
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current++;
     if (dragCounterRef.current === 1) {
-      setIsDragging(true)
+      setIsDragging(true);
     }
-  }, [])
+  }, []);
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    dragCounterRef.current--
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current--;
     if (dragCounterRef.current === 0) {
-      setIsDragging(false)
+      setIsDragging(false);
     }
-  }, [])
+  }, []);
 
   const handleRemoveObjects = async () => {
-    const imageCanvas = imageCanvasRef.current
-    const maskCanvas = maskCanvasRef.current
-    if (!imageCanvas || !maskCanvas) return
+    const imageCanvas = imageCanvasRef.current;
+    const maskCanvas = maskCanvasRef.current;
+    if (!imageCanvas || !maskCanvas) return;
 
     // Find mask bounding box (at least 512x512 and 2x mask size)
-    const bbox = getMaskBoundingBox(maskCanvas)
+    const bbox = getMaskBoundingBox(maskCanvas);
     if (!bbox) {
-      console.warn('No mask drawn')
-      return
+      console.warn("No mask drawn");
+      return;
     }
 
-    setIsProcessing(true)
-    resetAndStart('download')
+    setIsProcessing(true);
+    resetAndStart("download");
 
     try {
       // Initialize model if not already done (instant if cached)
-      await initModel()
+      await initModel();
 
       // Crop the region around the mask
-      const croppedImage = cropCanvas(imageCanvas, bbox.x, bbox.y, bbox.width, bbox.height)
-      const croppedMask = cropCanvas(maskCanvas, bbox.x, bbox.y, bbox.width, bbox.height)
+      const croppedImage = cropCanvas(
+        imageCanvas,
+        bbox.x,
+        bbox.y,
+        bbox.width,
+        bbox.height,
+      );
+      const croppedMask = cropCanvas(
+        maskCanvas,
+        bbox.x,
+        bbox.y,
+        bbox.width,
+        bbox.height,
+      );
 
       // Add reflect padding at image edges to prevent seams
-      const padAmount = 32
+      const padAmount = 32;
       const padding = {
         top: bbox.y === 0 ? padAmount : 0,
         left: bbox.x === 0 ? padAmount : 0,
-        bottom: originalSize && bbox.y + bbox.height >= originalSize.height ? padAmount : 0,
-        right: originalSize && bbox.x + bbox.width >= originalSize.width ? padAmount : 0
-      }
-      const hasPadding = padding.top > 0 || padding.left > 0 || padding.bottom > 0 || padding.right > 0
+        bottom:
+          originalSize && bbox.y + bbox.height >= originalSize.height
+            ? padAmount
+            : 0,
+        right:
+          originalSize && bbox.x + bbox.width >= originalSize.width
+            ? padAmount
+            : 0,
+      };
+      const hasPadding =
+        padding.top > 0 ||
+        padding.left > 0 ||
+        padding.bottom > 0 ||
+        padding.right > 0;
 
       // Apply padding if needed
-      const processImage = hasPadding ? addReflectPadding(croppedImage, padding) : croppedImage
-      const processMask = hasPadding ? addMaskReflectPadding(croppedMask, padding) : croppedMask
+      const processImage = hasPadding
+        ? addReflectPadding(croppedImage, padding)
+        : croppedImage;
+      const processMask = hasPadding
+        ? addMaskReflectPadding(croppedMask, padding)
+        : croppedMask;
 
       // Convert to Float32Arrays (worker handles resize to 768x768 internally)
-      const imageData = canvasToFloat32Array(processImage)
-      const maskData = maskCanvasToFloat32Array(processMask)
+      const imageData = canvasToFloat32Array(processImage);
+      const maskData = maskCanvasToFloat32Array(processMask);
 
       // Run inference (worker handles resize internally)
       const result = await removeObjects(
         imageData,
         maskData,
         processImage.width,
-        processImage.height
-      )
+        processImage.height,
+      );
 
       // Convert result back to canvas (DeepFillv2 outputs normalized 0-1)
-      let resultCanvas = tensorToCanvas(result.data, result.width, result.height, true)
+      let resultCanvas = tensorToCanvas(
+        result.data,
+        result.width,
+        result.height,
+        true,
+      );
 
       // Crop away padding if it was added
       if (hasPadding) {
@@ -628,105 +713,126 @@ export function ImageEraserPage() {
           padding.left,
           padding.top,
           bbox.width,
-          bbox.height
-        )
+          bbox.height,
+        );
       }
 
       // Paste back into original image with blending
-      pasteWithBlending(imageCanvas, resultCanvas, croppedMask, bbox.x, bbox.y, 12)
+      pasteWithBlending(
+        imageCanvas,
+        resultCanvas,
+        croppedMask,
+        bbox.x,
+        bbox.y,
+        12,
+      );
 
       // Save the new image state to history (for undo/redo of removals)
-      saveImageSnapshot()
+      saveImageSnapshot();
 
       // Copy to result canvas ref for download (full size)
       if (resultCanvasRef.current && originalSize) {
-        resultCanvasRef.current.width = originalSize.width
-        resultCanvasRef.current.height = originalSize.height
-        const downloadCtx = resultCanvasRef.current.getContext('2d')
+        resultCanvasRef.current.width = originalSize.width;
+        resultCanvasRef.current.height = originalSize.height;
+        const downloadCtx = resultCanvasRef.current.getContext("2d");
         if (downloadCtx) {
-          downloadCtx.drawImage(imageCanvas, 0, 0)
+          downloadCtx.drawImage(imageCanvas, 0, 0);
         }
       }
 
       // Convert to data URL for preview
-      const blob = await canvasToBlob(imageCanvas)
-      const resultUrl = URL.createObjectURL(blob)
-      setResultImage(resultUrl)
+      const blob = await canvasToBlob(imageCanvas);
+      const resultUrl = URL.createObjectURL(blob);
+      setResultImage(resultUrl);
 
       // Clear the mask canvas for next iteration
-      const maskCtx = maskCanvas.getContext('2d', { willReadFrequently: true })
+      const maskCtx = maskCanvas.getContext("2d", { willReadFrequently: true });
       if (maskCtx) {
-        maskCtx.clearRect(0, 0, maskCanvas.width, maskCanvas.height)
+        maskCtx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
         // Reset mask history for new editing session
-        const initialState = maskCtx.getImageData(0, 0, maskCanvas.width, maskCanvas.height)
-        setMaskHistory([initialState])
-        setMaskHistoryIndex(0)
+        const initialState = maskCtx.getImageData(
+          0,
+          0,
+          maskCanvas.width,
+          maskCanvas.height,
+        );
+        setMaskHistory([initialState]);
+        setMaskHistoryIndex(0);
       }
 
-      completeAllPhases()
+      completeAllPhases();
     } catch (error) {
-      console.error('Object removal failed:', error)
+      console.error("Object removal failed:", error);
     } finally {
-      setIsProcessing(false)
+      setIsProcessing(false);
     }
-  }
+  };
 
   const handleDownload = () => {
     // Prefer result canvas, fallback to image canvas
-    const canvas = resultCanvasRef.current || imageCanvasRef.current
-    if (!canvas) return
+    const canvas = resultCanvasRef.current || imageCanvasRef.current;
+    if (!canvas) return;
 
-    const mimeType = `image/${downloadFormat}`
-    const quality = downloadFormat === 'png' ? undefined : 0.95
-    const dataUrl = canvas.toDataURL(mimeType, quality)
+    const mimeType = `image/${downloadFormat}`;
+    const quality = downloadFormat === "png" ? undefined : 0.95;
+    const dataUrl = canvas.toDataURL(mimeType, quality);
 
-    const link = document.createElement('a')
-    link.href = dataUrl
-    link.download = generateFreeToolFilename('image-eraser', downloadFormat)
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
+    const link = document.createElement("a");
+    link.href = dataUrl;
+    link.download = generateFreeToolFilename("image-eraser", downloadFormat);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey) {
-        if (e.key === 'z' && !e.shiftKey) {
-          e.preventDefault()
+        if (e.key === "z" && !e.shiftKey) {
+          e.preventDefault();
           // Prefer mask undo if available, otherwise image undo
           if (maskHistoryIndex > 0) {
-            undoMask()
+            undoMask();
           } else if (imageHistoryIndex > 0) {
-            undoImage()
+            undoImage();
           }
-        } else if ((e.key === 'z' && e.shiftKey) || e.key === 'y') {
-          e.preventDefault()
+        } else if ((e.key === "z" && e.shiftKey) || e.key === "y") {
+          e.preventDefault();
           // Prefer mask redo if available, otherwise image redo
           if (maskHistoryIndex < maskHistory.length - 1) {
-            redoMask()
+            redoMask();
           } else if (imageHistoryIndex < imageHistory.length - 1) {
-            redoImage()
+            redoImage();
           }
         }
       }
-    }
+    };
 
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [undoMask, redoMask, undoImage, redoImage, maskHistoryIndex, maskHistory.length, imageHistoryIndex, imageHistory.length])
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [
+    undoMask,
+    redoMask,
+    undoImage,
+    redoImage,
+    maskHistoryIndex,
+    maskHistory.length,
+    imageHistoryIndex,
+    imageHistory.length,
+  ]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      dispose()
-    }
-  }, [dispose])
+      dispose();
+    };
+  }, [dispose]);
 
-  const canUndoMask = maskHistoryIndex > 0
-  const canRedoMask = maskHistoryIndex < maskHistory.length - 1
-  const canUndoImage = imageHistoryIndex > 0
-  const canRedoImage = imageHistoryIndex < imageHistory.length - 1
+  const canUndoMask = maskHistoryIndex > 0;
+  const canRedoMask = maskHistoryIndex < maskHistory.length - 1;
+  const canUndoImage = imageHistoryIndex > 0;
+  const canRedoImage = imageHistoryIndex < imageHistory.length - 1;
 
   return (
     <div
@@ -744,7 +850,9 @@ export function ImageEraserPage() {
         <div className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center border-2 border-dashed border-primary rounded-lg m-4">
           <div className="text-center">
             <Upload className="h-12 w-12 text-primary mx-auto mb-2" />
-            <p className="text-lg font-medium">{t('freeTools.imageEraser.orDragDrop')}</p>
+            <p className="text-lg font-medium">
+              {t("freeTools.imageEraser.orDragDrop")}
+            </p>
           </div>
         </div>
       )}
@@ -755,9 +863,11 @@ export function ImageEraserPage() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h1 className="text-xl font-bold">{t('freeTools.imageEraser.title')}</h1>
+          <h1 className="text-xl font-bold">
+            {t("freeTools.imageEraser.title")}
+          </h1>
           <p className="text-muted-foreground text-xs">
-            {t('freeTools.imageEraser.description')}
+            {t("freeTools.imageEraser.description")}
           </p>
         </div>
       </div>
@@ -766,10 +876,10 @@ export function ImageEraserPage() {
       {!originalImage && (
         <Card
           className={cn(
-            'border-2 border-dashed cursor-pointer transition-colors',
+            "border-2 border-dashed cursor-pointer transition-colors",
             isDragging
-              ? 'border-primary bg-primary/5'
-              : 'border-muted-foreground/25 hover:border-primary/50'
+              ? "border-primary bg-primary/5"
+              : "border-muted-foreground/25 hover:border-primary/50",
           )}
           onClick={() => fileInputRef.current?.click()}
         >
@@ -777,9 +887,11 @@ export function ImageEraserPage() {
             <div className="p-4 rounded-full bg-muted mb-4">
               <Upload className="h-8 w-8 text-muted-foreground" />
             </div>
-            <p className="text-lg font-medium">{t('freeTools.imageEraser.selectImage')}</p>
+            <p className="text-lg font-medium">
+              {t("freeTools.imageEraser.selectImage")}
+            </p>
             <p className="text-sm text-muted-foreground">
-              {t('freeTools.imageEraser.orDragDrop')}
+              {t("freeTools.imageEraser.orDragDrop")}
             </p>
           </CardContent>
         </Card>
@@ -791,8 +903,8 @@ export function ImageEraserPage() {
         accept="image/*"
         className="hidden"
         onChange={(e) => {
-          const file = e.target.files?.[0]
-          if (file) handleFileSelect(file)
+          const file = e.target.files?.[0];
+          if (file) handleFileSelect(file);
         }}
       />
 
@@ -807,7 +919,7 @@ export function ImageEraserPage() {
               disabled={isProcessing}
             >
               <Upload className="h-4 w-4 mr-2" />
-              {t('freeTools.imageEraser.selectImage')}
+              {t("freeTools.imageEraser.selectImage")}
             </Button>
 
             {/* Drawing tools */}
@@ -815,29 +927,33 @@ export function ImageEraserPage() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant={tool === 'brush' ? 'default' : 'outline'}
+                    variant={tool === "brush" ? "default" : "outline"}
                     size="icon"
-                    onClick={() => setTool('brush')}
+                    onClick={() => setTool("brush")}
                     disabled={isProcessing}
                   >
                     <Paintbrush className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>{t('freeTools.imageEraser.brush')}</TooltipContent>
+                <TooltipContent>
+                  {t("freeTools.imageEraser.brush")}
+                </TooltipContent>
               </Tooltip>
 
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant={tool === 'eraser' ? 'default' : 'outline'}
+                    variant={tool === "eraser" ? "default" : "outline"}
                     size="icon"
-                    onClick={() => setTool('eraser')}
+                    onClick={() => setTool("eraser")}
                     disabled={isProcessing}
                   >
                     <Eraser className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>{t('freeTools.imageEraser.eraser')}</TooltipContent>
+                <TooltipContent>
+                  {t("freeTools.imageEraser.eraser")}
+                </TooltipContent>
               </Tooltip>
             </div>
 
@@ -856,7 +972,9 @@ export function ImageEraserPage() {
                     <Undo2 className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>{t('freeTools.imageEraser.undo')} (Ctrl+Z)</TooltipContent>
+                <TooltipContent>
+                  {t("freeTools.imageEraser.undo")} (Ctrl+Z)
+                </TooltipContent>
               </Tooltip>
 
               <Tooltip>
@@ -871,7 +989,7 @@ export function ImageEraserPage() {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {t('freeTools.imageEraser.redo')} (Ctrl+Shift+Z)
+                  {t("freeTools.imageEraser.redo")} (Ctrl+Shift+Z)
                 </TooltipContent>
               </Tooltip>
 
@@ -886,7 +1004,9 @@ export function ImageEraserPage() {
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>{t('freeTools.imageEraser.clear')}</TooltipContent>
+                <TooltipContent>
+                  {t("freeTools.imageEraser.clear")}
+                </TooltipContent>
               </Tooltip>
             </div>
 
@@ -896,7 +1016,7 @@ export function ImageEraserPage() {
                 <div className="h-6 w-px bg-border" />
                 <div className="flex items-center gap-1">
                   <span className="text-xs text-muted-foreground mr-1">
-                    {t('freeTools.imageEraser.edits')}:
+                    {t("freeTools.imageEraser.edits")}:
                   </span>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -909,7 +1029,9 @@ export function ImageEraserPage() {
                         <Undo2 className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>{t('freeTools.imageEraser.undoEdit')}</TooltipContent>
+                    <TooltipContent>
+                      {t("freeTools.imageEraser.undoEdit")}
+                    </TooltipContent>
                   </Tooltip>
 
                   <Tooltip>
@@ -923,7 +1045,9 @@ export function ImageEraserPage() {
                         <Redo2 className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>{t('freeTools.imageEraser.redoEdit')}</TooltipContent>
+                    <TooltipContent>
+                      {t("freeTools.imageEraser.redoEdit")}
+                    </TooltipContent>
                   </Tooltip>
                 </div>
               </>
@@ -985,7 +1109,7 @@ export function ImageEraserPage() {
             {/* Brush size */}
             <div className="flex items-center gap-3 min-w-[150px] max-w-[200px]">
               <span className="text-xs text-muted-foreground whitespace-nowrap">
-                {t('freeTools.imageEraser.brushSize')}
+                {t("freeTools.imageEraser.brushSize")}
               </span>
               <Slider
                 value={[brushSize]}
@@ -996,7 +1120,9 @@ export function ImageEraserPage() {
                 disabled={isProcessing}
                 className="flex-1"
               />
-              <span className="text-xs text-muted-foreground w-6 text-right">{brushSize}</span>
+              <span className="text-xs text-muted-foreground w-6 text-right">
+                {brushSize}
+              </span>
             </div>
 
             <div className="flex-1" />
@@ -1009,12 +1135,12 @@ export function ImageEraserPage() {
               {isProcessing ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  {t('freeTools.imageEraser.processing')}
+                  {t("freeTools.imageEraser.processing")}
                 </>
               ) : (
                 <>
                   <Eraser className="h-4 w-4 mr-2" />
-                  {t('freeTools.imageEraser.removeObjects')}
+                  {t("freeTools.imageEraser.removeObjects")}
                 </>
               )}
             </Button>
@@ -1034,7 +1160,7 @@ export function ImageEraserPage() {
               <span className="text-sm text-destructive">{error}</span>
               <Button variant="outline" size="sm" onClick={handleRetry}>
                 <RefreshCw className="h-4 w-4 mr-2" />
-                {t('common.retry')}
+                {t("common.retry")}
               </Button>
             </div>
           )}
@@ -1044,7 +1170,7 @@ export function ImageEraserPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-medium">
-                  {t('freeTools.imageEraser.drawMask')}
+                  {t("freeTools.imageEraser.drawMask")}
                 </span>
                 <div className="flex items-center gap-2">
                   {originalSize && (
@@ -1056,7 +1182,9 @@ export function ImageEraserPage() {
                     <>
                       <Select
                         value={downloadFormat}
-                        onValueChange={(v) => setDownloadFormat(v as 'png' | 'jpeg' | 'webp')}
+                        onValueChange={(v) =>
+                          setDownloadFormat(v as "png" | "jpeg" | "webp")
+                        }
                       >
                         <SelectTrigger className="h-7 w-20 text-xs">
                           <SelectValue />
@@ -1082,7 +1210,9 @@ export function ImageEraserPage() {
               <div
                 ref={containerRef}
                 className="relative flex items-center justify-center bg-muted rounded-lg overflow-auto"
-                style={{ minHeight: Math.max(400, canvasSize.height * zoom + 16) }}
+                style={{
+                  minHeight: Math.max(400, canvasSize.height * zoom + 16),
+                }}
               >
                 <div
                   className="relative cursor-none"
@@ -1090,64 +1220,67 @@ export function ImageEraserPage() {
                     width: canvasSize.width,
                     height: canvasSize.height,
                     transform: `scale(${zoom})`,
-                    transformOrigin: 'center center'
+                    transformOrigin: "center center",
                   }}
                 >
-                {/* Background image canvas - buffer at original res, displayed at canvasSize */}
-                <canvas
-                  ref={imageCanvasRef}
-                  className="absolute inset-0 cursor-none"
-                  style={{
-                    width: canvasSize.width,
-                    height: canvasSize.height,
-                    objectFit: 'contain'
-                  }}
-                  onClick={() => resultImage && setPreviewImage(resultImage)}
-                />
-
-                {/* Mask canvas (drawing layer) - buffer at original res, displayed at canvasSize */}
-                <canvas
-                  ref={maskCanvasRef}
-                  className={cn('absolute inset-0 cursor-none', isProcessing && 'pointer-events-none')}
-                  style={{
-                    width: canvasSize.width,
-                    height: canvasSize.height,
-                    opacity: 0.5
-                  }}
-                  onMouseDown={handleMouseDown}
-                  onMouseMove={handleMouseMove}
-                  onMouseUp={handleMouseUp}
-                  onMouseLeave={handleMouseLeave}
-                />
-
-                {/* Processing overlay */}
-                {isProcessing && (
-                  <div className="absolute inset-0 bg-background/50 flex items-center justify-center">
-                    <Loader2 className="h-8 w-8 animate-spin" />
-                  </div>
-                )}
-
-                {/* Brush cursor indicator */}
-                {cursorPos && !isProcessing && (
-                  <div
-                    className="pointer-events-none absolute rounded-full border-2"
+                  {/* Background image canvas - buffer at original res, displayed at canvasSize */}
+                  <canvas
+                    ref={imageCanvasRef}
+                    className="absolute inset-0 cursor-none"
                     style={{
-                      left: cursorPos.x,
-                      top: cursorPos.y,
-                      width: brushSize,
-                      height: brushSize,
-                      transform: 'translate(-50%, -50%)',
-                      borderColor:
-                        tool === 'eraser'
-                          ? 'rgba(0, 0, 0, 0.8)'
-                          : 'rgba(255, 255, 255, 0.8)',
-                      boxShadow:
-                        tool === 'eraser'
-                          ? '0 0 0 1px rgba(255, 255, 255, 0.5)'
-                          : '0 0 0 1px rgba(0, 0, 0, 0.5)'
+                      width: canvasSize.width,
+                      height: canvasSize.height,
+                      objectFit: "contain",
                     }}
+                    onClick={() => resultImage && setPreviewImage(resultImage)}
                   />
-                )}
+
+                  {/* Mask canvas (drawing layer) - buffer at original res, displayed at canvasSize */}
+                  <canvas
+                    ref={maskCanvasRef}
+                    className={cn(
+                      "absolute inset-0 cursor-none",
+                      isProcessing && "pointer-events-none",
+                    )}
+                    style={{
+                      width: canvasSize.width,
+                      height: canvasSize.height,
+                      opacity: 0.5,
+                    }}
+                    onMouseDown={handleMouseDown}
+                    onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseLeave}
+                  />
+
+                  {/* Processing overlay */}
+                  {isProcessing && (
+                    <div className="absolute inset-0 bg-background/50 flex items-center justify-center">
+                      <Loader2 className="h-8 w-8 animate-spin" />
+                    </div>
+                  )}
+
+                  {/* Brush cursor indicator */}
+                  {cursorPos && !isProcessing && (
+                    <div
+                      className="pointer-events-none absolute rounded-full border-2"
+                      style={{
+                        left: cursorPos.x,
+                        top: cursorPos.y,
+                        width: brushSize,
+                        height: brushSize,
+                        transform: "translate(-50%, -50%)",
+                        borderColor:
+                          tool === "eraser"
+                            ? "rgba(0, 0, 0, 0.8)"
+                            : "rgba(255, 255, 255, 0.8)",
+                        boxShadow:
+                          tool === "eraser"
+                            ? "0 0 0 1px rgba(255, 255, 255, 0.5)"
+                            : "0 0 0 1px rgba(0, 0, 0, 0.5)",
+                      }}
+                    />
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -1184,19 +1317,23 @@ export function ImageEraserPage() {
       <AlertDialog open={showBackWarning} onOpenChange={setShowBackWarning}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('freeTools.backWarning.title')}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t("freeTools.backWarning.title")}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              {t('freeTools.backWarning.description')}
+              {t("freeTools.backWarning.description")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t('freeTools.backWarning.cancel')}</AlertDialogCancel>
+            <AlertDialogCancel>
+              {t("freeTools.backWarning.cancel")}
+            </AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmBack}>
-              {t('freeTools.backWarning.confirm')}
+              {t("freeTools.backWarning.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  )
+  );
 }

@@ -4,11 +4,11 @@
  * with automatic CPU fallback when GPU is unavailable or fails
  */
 
-let device: GPUDevice | null = null
-let initialized = false
+let device: GPUDevice | null = null;
+let initialized = false;
 
 // Shader cache
-const pipelineCache = new Map<string, GPUComputePipeline>()
+const pipelineCache = new Map<string, GPUComputePipeline>();
 
 // ============================================================================
 // CPU Fallback Implementations
@@ -17,152 +17,172 @@ const pipelineCache = new Map<string, GPUComputePipeline>()
 /**
  * CPU Gaussian blur implementation (separable)
  */
-function gaussianBlurCPU(input: Float32Array, w: number, h: number, kernelSize: number): Float32Array {
-  const half = Math.floor(kernelSize / 2)
-  const sigma = kernelSize / 6
+function gaussianBlurCPU(
+  input: Float32Array,
+  w: number,
+  h: number,
+  kernelSize: number,
+): Float32Array {
+  const half = Math.floor(kernelSize / 2);
+  const sigma = kernelSize / 6;
 
   // Build Gaussian kernel
-  const kernel: number[] = []
-  let sum = 0
+  const kernel: number[] = [];
+  let sum = 0;
   for (let i = -half; i <= half; i++) {
-    const val = Math.exp(-(i * i) / (2 * sigma * sigma))
-    kernel.push(val)
-    sum += val
+    const val = Math.exp(-(i * i) / (2 * sigma * sigma));
+    kernel.push(val);
+    sum += val;
   }
-  for (let i = 0; i < kernel.length; i++) kernel[i] /= sum
+  for (let i = 0; i < kernel.length; i++) kernel[i] /= sum;
 
   // Horizontal pass
-  const temp = new Float32Array(w * h)
+  const temp = new Float32Array(w * h);
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      let val = 0
+      let val = 0;
       for (let k = -half; k <= half; k++) {
-        const nx = Math.max(0, Math.min(w - 1, x + k))
-        val += input[y * w + nx] * kernel[k + half]
+        const nx = Math.max(0, Math.min(w - 1, x + k));
+        val += input[y * w + nx] * kernel[k + half];
       }
-      temp[y * w + x] = val
+      temp[y * w + x] = val;
     }
   }
 
   // Vertical pass
-  const result = new Float32Array(w * h)
+  const result = new Float32Array(w * h);
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      let val = 0
+      let val = 0;
       for (let k = -half; k <= half; k++) {
-        const ny = Math.max(0, Math.min(h - 1, y + k))
-        val += temp[ny * w + x] * kernel[k + half]
+        const ny = Math.max(0, Math.min(h - 1, y + k));
+        val += temp[ny * w + x] * kernel[k + half];
       }
-      result[y * w + x] = val
+      result[y * w + x] = val;
     }
   }
 
-  return result
+  return result;
 }
 
 /**
  * CPU box blur implementation (separable)
  */
-function boxBlurCPU(input: Float32Array, w: number, h: number, kernelSize: number): Float32Array {
-  const half = Math.floor(kernelSize / 2)
+function boxBlurCPU(
+  input: Float32Array,
+  w: number,
+  h: number,
+  kernelSize: number,
+): Float32Array {
+  const half = Math.floor(kernelSize / 2);
 
   // Horizontal pass
-  const temp = new Float32Array(w * h)
+  const temp = new Float32Array(w * h);
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      let sum = 0
+      let sum = 0;
       for (let k = -half; k <= half; k++) {
-        const nx = Math.max(0, Math.min(w - 1, x + k))
-        sum += input[y * w + nx]
+        const nx = Math.max(0, Math.min(w - 1, x + k));
+        sum += input[y * w + nx];
       }
-      temp[y * w + x] = sum / kernelSize
+      temp[y * w + x] = sum / kernelSize;
     }
   }
 
   // Vertical pass
-  const result = new Float32Array(w * h)
+  const result = new Float32Array(w * h);
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      let sum = 0
+      let sum = 0;
       for (let k = -half; k <= half; k++) {
-        const ny = Math.max(0, Math.min(h - 1, y + k))
-        sum += temp[ny * w + x]
+        const ny = Math.max(0, Math.min(h - 1, y + k));
+        sum += temp[ny * w + x];
       }
-      result[y * w + x] = sum / kernelSize
+      result[y * w + x] = sum / kernelSize;
     }
   }
 
-  return result
+  return result;
 }
 
 /**
  * CPU erosion implementation (separable min filter)
  */
-function erodeMaskCPU(input: Float32Array, w: number, h: number, kernelSize: number): Float32Array {
-  const half = Math.floor(kernelSize / 2)
+function erodeMaskCPU(
+  input: Float32Array,
+  w: number,
+  h: number,
+  kernelSize: number,
+): Float32Array {
+  const half = Math.floor(kernelSize / 2);
 
   // Horizontal min
-  const temp = new Float32Array(w * h)
+  const temp = new Float32Array(w * h);
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      let minVal = 255
+      let minVal = 255;
       for (let k = -half; k <= half; k++) {
-        const nx = Math.max(0, Math.min(w - 1, x + k))
-        minVal = Math.min(minVal, input[y * w + nx])
+        const nx = Math.max(0, Math.min(w - 1, x + k));
+        minVal = Math.min(minVal, input[y * w + nx]);
       }
-      temp[y * w + x] = minVal
+      temp[y * w + x] = minVal;
     }
   }
 
   // Vertical min
-  const result = new Float32Array(w * h)
+  const result = new Float32Array(w * h);
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      let minVal = 255
+      let minVal = 255;
       for (let k = -half; k <= half; k++) {
-        const ny = Math.max(0, Math.min(h - 1, y + k))
-        minVal = Math.min(minVal, temp[ny * w + x])
+        const ny = Math.max(0, Math.min(h - 1, y + k));
+        minVal = Math.min(minVal, temp[ny * w + x]);
       }
-      result[y * w + x] = minVal
+      result[y * w + x] = minVal;
     }
   }
 
-  return result
+  return result;
 }
 
 /**
  * CPU dilation implementation (separable max filter)
  */
-function dilateMaskCPU(input: Float32Array, w: number, h: number, kernelSize: number): Float32Array {
-  const half = Math.floor(kernelSize / 2)
+function dilateMaskCPU(
+  input: Float32Array,
+  w: number,
+  h: number,
+  kernelSize: number,
+): Float32Array {
+  const half = Math.floor(kernelSize / 2);
 
   // Horizontal max
-  const temp = new Float32Array(w * h)
+  const temp = new Float32Array(w * h);
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      let maxVal = 0
+      let maxVal = 0;
       for (let k = -half; k <= half; k++) {
-        const nx = Math.max(0, Math.min(w - 1, x + k))
-        maxVal = Math.max(maxVal, input[y * w + nx])
+        const nx = Math.max(0, Math.min(w - 1, x + k));
+        maxVal = Math.max(maxVal, input[y * w + nx]);
       }
-      temp[y * w + x] = maxVal
+      temp[y * w + x] = maxVal;
     }
   }
 
   // Vertical max
-  const result = new Float32Array(w * h)
+  const result = new Float32Array(w * h);
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      let maxVal = 0
+      let maxVal = 0;
       for (let k = -half; k <= half; k++) {
-        const ny = Math.max(0, Math.min(h - 1, y + k))
-        maxVal = Math.max(maxVal, temp[ny * w + x])
+        const ny = Math.max(0, Math.min(h - 1, y + k));
+        maxVal = Math.max(maxVal, temp[ny * w + x]);
       }
-      result[y * w + x] = maxVal
+      result[y * w + x] = maxVal;
     }
   }
 
-  return result
+  return result;
 }
 
 /**
@@ -172,19 +192,19 @@ function dilateMaskCPU(input: Float32Array, w: number, h: number, kernelSize: nu
 function colorMatchCPU(
   input: Float32Array,
   colorShift: [number, number, number],
-  faceSize: number
+  faceSize: number,
 ): Float32Array {
-  const result = new Float32Array(input.length)
-  const totalPixels = faceSize * faceSize
+  const result = new Float32Array(input.length);
+  const totalPixels = faceSize * faceSize;
 
   for (let c = 0; c < 3; c++) {
     for (let i = 0; i < totalPixels; i++) {
-      const idx = c * totalPixels + i
-      result[idx] = Math.max(0, Math.min(1, input[idx] + colorShift[c]))
+      const idx = c * totalPixels + i;
+      result[idx] = Math.max(0, Math.min(1, input[idx] + colorShift[c]));
     }
   }
 
-  return result
+  return result;
 }
 
 // ============================================================================
@@ -195,35 +215,35 @@ function colorMatchCPU(
  * Initialize WebGPU device
  */
 export async function initWebGPU(): Promise<boolean> {
-  if (initialized) return device !== null
+  if (initialized) return device !== null;
 
   try {
     if (!navigator.gpu) {
-      console.log('WebGPU not supported')
-      initialized = true
-      return false
+      console.log("WebGPU not supported");
+      initialized = true;
+      return false;
     }
 
-    const adapter = await navigator.gpu.requestAdapter()
+    const adapter = await navigator.gpu.requestAdapter();
     if (!adapter) {
-      console.log('No WebGPU adapter found')
-      initialized = true
-      return false
+      console.log("No WebGPU adapter found");
+      initialized = true;
+      return false;
     }
 
-    device = await adapter.requestDevice()
-    initialized = true
-    console.log('WebGPU compute initialized')
-    return true
+    device = await adapter.requestDevice();
+    initialized = true;
+    console.log("WebGPU compute initialized");
+    return true;
   } catch (e) {
-    console.warn('WebGPU init failed:', e)
-    initialized = true
-    return false
+    console.warn("WebGPU init failed:", e);
+    initialized = true;
+    return false;
   }
 }
 
 export function isWebGPUAvailable(): boolean {
-  return device !== null
+  return device !== null;
 }
 
 /**
@@ -267,7 +287,7 @@ fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
 
   output[idx] = sum;
 }
-`
+`;
 
 /**
  * Separable Box Blur
@@ -307,7 +327,7 @@ fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
 
   output[idx] = sum / f32(kernelSize);
 }
-`
+`;
 
 /**
  * Separable Erosion (min filter)
@@ -347,7 +367,7 @@ fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
 
   output[idx] = minVal;
 }
-`
+`;
 
 /**
  * Separable Dilation (max filter)
@@ -387,7 +407,7 @@ fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
 
   output[idx] = maxVal;
 }
-`
+`;
 
 /**
  * Inverse warp and blend shader
@@ -459,21 +479,24 @@ fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
     }
   }
 }
-`
+`;
 
-function getOrCreatePipeline(name: string, shaderCode: string): GPUComputePipeline {
-  if (!device) throw new Error('WebGPU not initialized')
+function getOrCreatePipeline(
+  name: string,
+  shaderCode: string,
+): GPUComputePipeline {
+  if (!device) throw new Error("WebGPU not initialized");
 
-  let pipeline = pipelineCache.get(name)
+  let pipeline = pipelineCache.get(name);
   if (!pipeline) {
-    const shaderModule = device.createShaderModule({ code: shaderCode })
+    const shaderModule = device.createShaderModule({ code: shaderCode });
     pipeline = device.createComputePipeline({
-      layout: 'auto',
-      compute: { module: shaderModule, entryPoint: 'main' }
-    })
-    pipelineCache.set(name, pipeline)
+      layout: "auto",
+      compute: { module: shaderModule, entryPoint: "main" },
+    });
+    pipelineCache.set(name, pipeline);
   }
-  return pipeline
+  return pipeline;
 }
 
 /**
@@ -486,116 +509,124 @@ async function runSeparableFilter(
   kernelSize: number,
   shaderCode: string,
   pipelineName: string,
-  kernel?: Float32Array
+  kernel?: Float32Array,
 ): Promise<Float32Array> {
-  if (!device) throw new Error('WebGPU not initialized')
+  if (!device) throw new Error("WebGPU not initialized");
 
-  const pipeline = getOrCreatePipeline(pipelineName, shaderCode)
-  const size = w * h
+  const pipeline = getOrCreatePipeline(pipelineName, shaderCode);
+  const size = w * h;
 
   // Create buffers
   const inputBuffer = device.createBuffer({
     size: size * 4,
-    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
-  })
+    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+  });
   const tempBuffer = device.createBuffer({
     size: size * 4,
-    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC
-  })
+    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC,
+  });
   const outputBuffer = device.createBuffer({
     size: size * 4,
-    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC
-  })
+    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC,
+  });
   const paramsBuffer = device.createBuffer({
     size: 16,
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-  })
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
   const resultBuffer = device.createBuffer({
     size: size * 4,
-    usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST
-  })
+    usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
+  });
 
   // Kernel buffer for Gaussian blur
-  let kernelBuffer: GPUBuffer | null = null
+  let kernelBuffer: GPUBuffer | null = null;
   if (kernel) {
     kernelBuffer = device.createBuffer({
       size: kernel.length * 4,
-      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
-    })
-    device.queue.writeBuffer(kernelBuffer, 0, new Float32Array(kernel))
+      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+    });
+    device.queue.writeBuffer(kernelBuffer, 0, new Float32Array(kernel));
   }
 
-  device.queue.writeBuffer(inputBuffer, 0, new Float32Array(input))
+  device.queue.writeBuffer(inputBuffer, 0, new Float32Array(input));
 
-  const workgroups = Math.ceil(size / 256)
+  const workgroups = Math.ceil(size / 256);
 
   // Horizontal pass
-  device.queue.writeBuffer(paramsBuffer, 0, new Uint32Array([w, h, kernelSize, 0]))
+  device.queue.writeBuffer(
+    paramsBuffer,
+    0,
+    new Uint32Array([w, h, kernelSize, 0]),
+  );
 
   let bindGroupEntries: GPUBindGroupEntry[] = [
     { binding: 0, resource: { buffer: inputBuffer } },
     { binding: 1, resource: { buffer: tempBuffer } },
-    { binding: 2, resource: { buffer: paramsBuffer } }
-  ]
+    { binding: 2, resource: { buffer: paramsBuffer } },
+  ];
   if (kernelBuffer) {
-    bindGroupEntries.push({ binding: 3, resource: { buffer: kernelBuffer } })
+    bindGroupEntries.push({ binding: 3, resource: { buffer: kernelBuffer } });
   }
 
   const bindGroup1 = device.createBindGroup({
     layout: pipeline.getBindGroupLayout(0),
-    entries: bindGroupEntries
-  })
+    entries: bindGroupEntries,
+  });
 
-  let encoder = device.createCommandEncoder()
-  let pass = encoder.beginComputePass()
-  pass.setPipeline(pipeline)
-  pass.setBindGroup(0, bindGroup1)
-  pass.dispatchWorkgroups(workgroups)
-  pass.end()
-  device.queue.submit([encoder.finish()])
+  let encoder = device.createCommandEncoder();
+  let pass = encoder.beginComputePass();
+  pass.setPipeline(pipeline);
+  pass.setBindGroup(0, bindGroup1);
+  pass.dispatchWorkgroups(workgroups);
+  pass.end();
+  device.queue.submit([encoder.finish()]);
 
   // Vertical pass
-  device.queue.writeBuffer(paramsBuffer, 0, new Uint32Array([w, h, kernelSize, 1]))
+  device.queue.writeBuffer(
+    paramsBuffer,
+    0,
+    new Uint32Array([w, h, kernelSize, 1]),
+  );
 
   bindGroupEntries = [
     { binding: 0, resource: { buffer: tempBuffer } },
     { binding: 1, resource: { buffer: outputBuffer } },
-    { binding: 2, resource: { buffer: paramsBuffer } }
-  ]
+    { binding: 2, resource: { buffer: paramsBuffer } },
+  ];
   if (kernelBuffer) {
-    bindGroupEntries.push({ binding: 3, resource: { buffer: kernelBuffer } })
+    bindGroupEntries.push({ binding: 3, resource: { buffer: kernelBuffer } });
   }
 
   const bindGroup2 = device.createBindGroup({
     layout: pipeline.getBindGroupLayout(0),
-    entries: bindGroupEntries
-  })
+    entries: bindGroupEntries,
+  });
 
-  encoder = device.createCommandEncoder()
-  pass = encoder.beginComputePass()
-  pass.setPipeline(pipeline)
-  pass.setBindGroup(0, bindGroup2)
-  pass.dispatchWorkgroups(workgroups)
-  pass.end()
+  encoder = device.createCommandEncoder();
+  pass = encoder.beginComputePass();
+  pass.setPipeline(pipeline);
+  pass.setBindGroup(0, bindGroup2);
+  pass.dispatchWorkgroups(workgroups);
+  pass.end();
 
   // Copy result
-  encoder.copyBufferToBuffer(outputBuffer, 0, resultBuffer, 0, size * 4)
-  device.queue.submit([encoder.finish()])
+  encoder.copyBufferToBuffer(outputBuffer, 0, resultBuffer, 0, size * 4);
+  device.queue.submit([encoder.finish()]);
 
   // Read back
-  await resultBuffer.mapAsync(GPUMapMode.READ)
-  const result = new Float32Array(resultBuffer.getMappedRange().slice(0))
-  resultBuffer.unmap()
+  await resultBuffer.mapAsync(GPUMapMode.READ);
+  const result = new Float32Array(resultBuffer.getMappedRange().slice(0));
+  resultBuffer.unmap();
 
   // Cleanup
-  inputBuffer.destroy()
-  tempBuffer.destroy()
-  outputBuffer.destroy()
-  paramsBuffer.destroy()
-  resultBuffer.destroy()
-  kernelBuffer?.destroy()
+  inputBuffer.destroy();
+  tempBuffer.destroy();
+  outputBuffer.destroy();
+  paramsBuffer.destroy();
+  resultBuffer.destroy();
+  kernelBuffer?.destroy();
 
-  return result
+  return result;
 }
 
 // ============================================================================
@@ -609,22 +640,30 @@ async function gaussianBlurGPUImpl(
   mask: Float32Array,
   w: number,
   h: number,
-  kernelSize: number
+  kernelSize: number,
 ): Promise<Float32Array> {
-  const half = Math.floor(kernelSize / 2)
-  const sigma = kernelSize / 6
+  const half = Math.floor(kernelSize / 2);
+  const sigma = kernelSize / 6;
 
   // Build Gaussian kernel
-  const kernel = new Float32Array(kernelSize)
-  let sum = 0
+  const kernel = new Float32Array(kernelSize);
+  let sum = 0;
   for (let i = -half; i <= half; i++) {
-    const val = Math.exp(-(i * i) / (2 * sigma * sigma))
-    kernel[i + half] = val
-    sum += val
+    const val = Math.exp(-(i * i) / (2 * sigma * sigma));
+    kernel[i + half] = val;
+    sum += val;
   }
-  for (let i = 0; i < kernelSize; i++) kernel[i] /= sum
+  for (let i = 0; i < kernelSize; i++) kernel[i] /= sum;
 
-  return runSeparableFilter(mask, w, h, kernelSize, gaussianBlurShader, 'gaussianBlur', kernel)
+  return runSeparableFilter(
+    mask,
+    w,
+    h,
+    kernelSize,
+    gaussianBlurShader,
+    "gaussianBlur",
+    kernel,
+  );
 }
 
 /**
@@ -634,9 +673,9 @@ async function boxBlurGPUImpl(
   mask: Float32Array,
   w: number,
   h: number,
-  kernelSize: number
+  kernelSize: number,
 ): Promise<Float32Array> {
-  return runSeparableFilter(mask, w, h, kernelSize, boxBlurShader, 'boxBlur')
+  return runSeparableFilter(mask, w, h, kernelSize, boxBlurShader, "boxBlur");
 }
 
 /**
@@ -646,9 +685,9 @@ async function erodeMaskGPUImpl(
   mask: Float32Array,
   w: number,
   h: number,
-  kernelSize: number
+  kernelSize: number,
 ): Promise<Float32Array> {
-  return runSeparableFilter(mask, w, h, kernelSize, erodeShader, 'erode')
+  return runSeparableFilter(mask, w, h, kernelSize, erodeShader, "erode");
 }
 
 /**
@@ -658,9 +697,9 @@ async function dilateMaskGPUImpl(
   mask: Float32Array,
   w: number,
   h: number,
-  kernelSize: number
+  kernelSize: number,
 ): Promise<Float32Array> {
-  return runSeparableFilter(mask, w, h, kernelSize, dilateShader, 'dilate')
+  return runSeparableFilter(mask, w, h, kernelSize, dilateShader, "dilate");
 }
 
 // ============================================================================
@@ -675,16 +714,16 @@ export async function gaussianBlur(
   mask: Float32Array,
   w: number,
   h: number,
-  kernelSize: number
+  kernelSize: number,
 ): Promise<Float32Array> {
   if (device) {
     try {
-      return await gaussianBlurGPUImpl(mask, w, h, kernelSize)
+      return await gaussianBlurGPUImpl(mask, w, h, kernelSize);
     } catch (e) {
-      console.warn('GPU gaussianBlur failed, using CPU fallback:', e)
+      console.warn("GPU gaussianBlur failed, using CPU fallback:", e);
     }
   }
-  return gaussianBlurCPU(mask, w, h, kernelSize)
+  return gaussianBlurCPU(mask, w, h, kernelSize);
 }
 
 /**
@@ -695,16 +734,16 @@ export async function boxBlur(
   mask: Float32Array,
   w: number,
   h: number,
-  kernelSize: number
+  kernelSize: number,
 ): Promise<Float32Array> {
   if (device) {
     try {
-      return await boxBlurGPUImpl(mask, w, h, kernelSize)
+      return await boxBlurGPUImpl(mask, w, h, kernelSize);
     } catch (e) {
-      console.warn('GPU boxBlur failed, using CPU fallback:', e)
+      console.warn("GPU boxBlur failed, using CPU fallback:", e);
     }
   }
-  return boxBlurCPU(mask, w, h, kernelSize)
+  return boxBlurCPU(mask, w, h, kernelSize);
 }
 
 /**
@@ -715,16 +754,16 @@ export async function erodeMask(
   mask: Float32Array,
   w: number,
   h: number,
-  kernelSize: number
+  kernelSize: number,
 ): Promise<Float32Array> {
   if (device) {
     try {
-      return await erodeMaskGPUImpl(mask, w, h, kernelSize)
+      return await erodeMaskGPUImpl(mask, w, h, kernelSize);
     } catch (e) {
-      console.warn('GPU erodeMask failed, using CPU fallback:', e)
+      console.warn("GPU erodeMask failed, using CPU fallback:", e);
     }
   }
-  return erodeMaskCPU(mask, w, h, kernelSize)
+  return erodeMaskCPU(mask, w, h, kernelSize);
 }
 
 /**
@@ -735,16 +774,16 @@ export async function dilateMask(
   mask: Float32Array,
   w: number,
   h: number,
-  kernelSize: number
+  kernelSize: number,
 ): Promise<Float32Array> {
   if (device) {
     try {
-      return await dilateMaskGPUImpl(mask, w, h, kernelSize)
+      return await dilateMaskGPUImpl(mask, w, h, kernelSize);
     } catch (e) {
-      console.warn('GPU dilateMask failed, using CPU fallback:', e)
+      console.warn("GPU dilateMask failed, using CPU fallback:", e);
     }
   }
-  return dilateMaskCPU(mask, w, h, kernelSize)
+  return dilateMaskCPU(mask, w, h, kernelSize);
 }
 
 /**
@@ -761,62 +800,68 @@ export async function inverseWarpBlendGPU(
   by0: number,
   bw: number,
   bh: number,
-  faceSize: number
+  faceSize: number,
 ): Promise<Float32Array> {
-  if (!device) throw new Error('WebGPU not initialized')
+  if (!device) throw new Error("WebGPU not initialized");
 
-  const pipeline = getOrCreatePipeline('inverseWarpBlend', inverseWarpBlendShader)
+  const pipeline = getOrCreatePipeline(
+    "inverseWarpBlend",
+    inverseWarpBlendShader,
+  );
 
-  const imgSize = imgW * imgH * 3
-  const faceDataSize = faceSize * faceSize * 3
-  const maskSize = bw * bh
+  const imgSize = imgW * imgH * 3;
+  const faceDataSize = faceSize * faceSize * 3;
+  const maskSize = bw * bh;
 
   // Create buffers
   const originalBuffer = device.createBuffer({
     size: imgSize * 4,
-    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
-  })
+    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+  });
   const faceBuffer = device.createBuffer({
     size: faceDataSize * 4,
-    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
-  })
+    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+  });
   const maskBuffer = device.createBuffer({
     size: maskSize * 4,
-    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
-  })
+    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+  });
   const resultBuffer = device.createBuffer({
     size: imgSize * 4,
-    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST
-  })
+    usage:
+      GPUBufferUsage.STORAGE |
+      GPUBufferUsage.COPY_SRC |
+      GPUBufferUsage.COPY_DST,
+  });
   const paramsBuffer = device.createBuffer({
     size: 64, // Params struct size
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-  })
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
   const readbackBuffer = device.createBuffer({
     size: imgSize * 4,
-    usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST
-  })
+    usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
+  });
 
   // Write data
-  device.queue.writeBuffer(originalBuffer, 0, new Float32Array(originalImage))
-  device.queue.writeBuffer(faceBuffer, 0, new Float32Array(swappedFace))
-  device.queue.writeBuffer(maskBuffer, 0, new Float32Array(blendMask))
-  device.queue.writeBuffer(resultBuffer, 0, new Float32Array(originalImage)) // Start with original
+  device.queue.writeBuffer(originalBuffer, 0, new Float32Array(originalImage));
+  device.queue.writeBuffer(faceBuffer, 0, new Float32Array(swappedFace));
+  device.queue.writeBuffer(maskBuffer, 0, new Float32Array(blendMask));
+  device.queue.writeBuffer(resultBuffer, 0, new Float32Array(originalImage)); // Start with original
 
   // Params: imgW, imgH, bx0, by0, bw, bh, faceSize, pad, matrix[6]
-  const paramsData = new ArrayBuffer(64)
-  const paramsU32 = new Uint32Array(paramsData, 0, 8)
-  const paramsF32 = new Float32Array(paramsData, 32, 6)
-  paramsU32[0] = imgW
-  paramsU32[1] = imgH
-  paramsU32[2] = bx0
-  paramsU32[3] = by0
-  paramsU32[4] = bw
-  paramsU32[5] = bh
-  paramsU32[6] = faceSize
-  paramsU32[7] = 0
-  for (let i = 0; i < 6; i++) paramsF32[i] = matrix[i]
-  device.queue.writeBuffer(paramsBuffer, 0, paramsData)
+  const paramsData = new ArrayBuffer(64);
+  const paramsU32 = new Uint32Array(paramsData, 0, 8);
+  const paramsF32 = new Float32Array(paramsData, 32, 6);
+  paramsU32[0] = imgW;
+  paramsU32[1] = imgH;
+  paramsU32[2] = bx0;
+  paramsU32[3] = by0;
+  paramsU32[4] = bw;
+  paramsU32[5] = bh;
+  paramsU32[6] = faceSize;
+  paramsU32[7] = 0;
+  for (let i = 0; i < 6; i++) paramsF32[i] = matrix[i];
+  device.queue.writeBuffer(paramsBuffer, 0, paramsData);
 
   const bindGroup = device.createBindGroup({
     layout: pipeline.getBindGroupLayout(0),
@@ -825,36 +870,36 @@ export async function inverseWarpBlendGPU(
       { binding: 1, resource: { buffer: faceBuffer } },
       { binding: 2, resource: { buffer: maskBuffer } },
       { binding: 3, resource: { buffer: resultBuffer } },
-      { binding: 4, resource: { buffer: paramsBuffer } }
-    ]
-  })
+      { binding: 4, resource: { buffer: paramsBuffer } },
+    ],
+  });
 
-  const workgroups = Math.ceil(maskSize / 256)
+  const workgroups = Math.ceil(maskSize / 256);
 
-  const encoder = device.createCommandEncoder()
-  const pass = encoder.beginComputePass()
-  pass.setPipeline(pipeline)
-  pass.setBindGroup(0, bindGroup)
-  pass.dispatchWorkgroups(workgroups)
-  pass.end()
+  const encoder = device.createCommandEncoder();
+  const pass = encoder.beginComputePass();
+  pass.setPipeline(pipeline);
+  pass.setBindGroup(0, bindGroup);
+  pass.dispatchWorkgroups(workgroups);
+  pass.end();
 
-  encoder.copyBufferToBuffer(resultBuffer, 0, readbackBuffer, 0, imgSize * 4)
-  device.queue.submit([encoder.finish()])
+  encoder.copyBufferToBuffer(resultBuffer, 0, readbackBuffer, 0, imgSize * 4);
+  device.queue.submit([encoder.finish()]);
 
   // Read back
-  await readbackBuffer.mapAsync(GPUMapMode.READ)
-  const result = new Float32Array(readbackBuffer.getMappedRange().slice(0))
-  readbackBuffer.unmap()
+  await readbackBuffer.mapAsync(GPUMapMode.READ);
+  const result = new Float32Array(readbackBuffer.getMappedRange().slice(0));
+  readbackBuffer.unmap();
 
   // Cleanup
-  originalBuffer.destroy()
-  faceBuffer.destroy()
-  maskBuffer.destroy()
-  resultBuffer.destroy()
-  paramsBuffer.destroy()
-  readbackBuffer.destroy()
+  originalBuffer.destroy();
+  faceBuffer.destroy();
+  maskBuffer.destroy();
+  resultBuffer.destroy();
+  paramsBuffer.destroy();
+  readbackBuffer.destroy();
 
-  return result
+  return result;
 }
 
 /**
@@ -864,9 +909,9 @@ export async function inverseWarpBlendGPU(
 async function colorMatchGPUImpl(
   swappedFace: Float32Array,
   colorShift: [number, number, number],
-  faceSize: number
+  faceSize: number,
 ): Promise<Float32Array> {
-  if (!device) throw new Error('WebGPU not initialized')
+  if (!device) throw new Error("WebGPU not initialized");
 
   const shaderCode = `
 @group(0) @binding(0) var<storage, read> input: array<f32>;
@@ -891,71 +936,75 @@ fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
     output[srcIdx] = clamp(input[srcIdx] + shift[c], 0.0, 1.0);
   }
 }
-`
+`;
 
-  const cacheKey = 'colorMatch'
-  let pipeline = pipelineCache.get(cacheKey)
+  const cacheKey = "colorMatch";
+  let pipeline = pipelineCache.get(cacheKey);
   if (!pipeline) {
-    const shaderModule = device.createShaderModule({ code: shaderCode })
+    const shaderModule = device.createShaderModule({ code: shaderCode });
     pipeline = device.createComputePipeline({
-      layout: 'auto',
-      compute: { module: shaderModule, entryPoint: 'main' }
-    })
-    pipelineCache.set(cacheKey, pipeline)
+      layout: "auto",
+      compute: { module: shaderModule, entryPoint: "main" },
+    });
+    pipelineCache.set(cacheKey, pipeline);
   }
 
-  const totalSize = faceSize * faceSize * 3
+  const totalSize = faceSize * faceSize * 3;
 
   const inputBuffer = device.createBuffer({
     size: totalSize * 4,
-    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
-  })
+    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+  });
   const outputBuffer = device.createBuffer({
     size: totalSize * 4,
-    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC
-  })
+    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC,
+  });
   const paramsBuffer = device.createBuffer({
     size: 16,
-    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-  })
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
   const readbackBuffer = device.createBuffer({
     size: totalSize * 4,
-    usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST
-  })
+    usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST,
+  });
 
-  device.queue.writeBuffer(inputBuffer, 0, new Float32Array(swappedFace))
-  device.queue.writeBuffer(paramsBuffer, 0, new Float32Array([colorShift[0], colorShift[1], colorShift[2], faceSize]))
+  device.queue.writeBuffer(inputBuffer, 0, new Float32Array(swappedFace));
+  device.queue.writeBuffer(
+    paramsBuffer,
+    0,
+    new Float32Array([colorShift[0], colorShift[1], colorShift[2], faceSize]),
+  );
 
   const bindGroup = device.createBindGroup({
     layout: pipeline.getBindGroupLayout(0),
     entries: [
       { binding: 0, resource: { buffer: inputBuffer } },
       { binding: 1, resource: { buffer: outputBuffer } },
-      { binding: 2, resource: { buffer: paramsBuffer } }
-    ]
-  })
+      { binding: 2, resource: { buffer: paramsBuffer } },
+    ],
+  });
 
-  const workgroups = Math.ceil((faceSize * faceSize) / 256)
-  const encoder = device.createCommandEncoder()
-  const pass = encoder.beginComputePass()
-  pass.setPipeline(pipeline)
-  pass.setBindGroup(0, bindGroup)
-  pass.dispatchWorkgroups(workgroups)
-  pass.end()
+  const workgroups = Math.ceil((faceSize * faceSize) / 256);
+  const encoder = device.createCommandEncoder();
+  const pass = encoder.beginComputePass();
+  pass.setPipeline(pipeline);
+  pass.setBindGroup(0, bindGroup);
+  pass.dispatchWorkgroups(workgroups);
+  pass.end();
 
-  encoder.copyBufferToBuffer(outputBuffer, 0, readbackBuffer, 0, totalSize * 4)
-  device.queue.submit([encoder.finish()])
+  encoder.copyBufferToBuffer(outputBuffer, 0, readbackBuffer, 0, totalSize * 4);
+  device.queue.submit([encoder.finish()]);
 
-  await readbackBuffer.mapAsync(GPUMapMode.READ)
-  const result = new Float32Array(readbackBuffer.getMappedRange().slice(0))
-  readbackBuffer.unmap()
+  await readbackBuffer.mapAsync(GPUMapMode.READ);
+  const result = new Float32Array(readbackBuffer.getMappedRange().slice(0));
+  readbackBuffer.unmap();
 
-  inputBuffer.destroy()
-  outputBuffer.destroy()
-  paramsBuffer.destroy()
-  readbackBuffer.destroy()
+  inputBuffer.destroy();
+  outputBuffer.destroy();
+  paramsBuffer.destroy();
+  readbackBuffer.destroy();
 
-  return result
+  return result;
 }
 
 /**
@@ -966,23 +1015,23 @@ fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
 export async function colorMatch(
   swappedFace: Float32Array,
   colorShift: [number, number, number],
-  faceSize: number
+  faceSize: number,
 ): Promise<Float32Array> {
   if (device) {
     try {
-      return await colorMatchGPUImpl(swappedFace, colorShift, faceSize)
+      return await colorMatchGPUImpl(swappedFace, colorShift, faceSize);
     } catch (e) {
-      console.warn('GPU colorMatch failed, using CPU fallback:', e)
+      console.warn("GPU colorMatch failed, using CPU fallback:", e);
     }
   }
-  return colorMatchCPU(swappedFace, colorShift, faceSize)
+  return colorMatchCPU(swappedFace, colorShift, faceSize);
 }
 
 /**
  * Dispose WebGPU resources
  */
 export function disposeWebGPU(): void {
-  pipelineCache.clear()
-  device = null
-  initialized = false
+  pipelineCache.clear();
+  device = null;
+  initialized = false;
 }

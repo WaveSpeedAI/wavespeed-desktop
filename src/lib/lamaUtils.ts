@@ -4,7 +4,7 @@
  */
 
 // LaMa model requires fixed 512x512 input
-export const LAMA_INPUT_SIZE = 512
+export const LAMA_INPUT_SIZE = 512;
 
 /**
  * Add reflect padding to a canvas on specified edges
@@ -12,59 +12,79 @@ export const LAMA_INPUT_SIZE = 512
  */
 export function addReflectPadding(
   canvas: HTMLCanvasElement,
-  padding: { top: number; right: number; bottom: number; left: number }
+  padding: { top: number; right: number; bottom: number; left: number },
 ): HTMLCanvasElement {
-  const { top, right, bottom, left } = padding
-  const newWidth = canvas.width + left + right
-  const newHeight = canvas.height + top + bottom
+  const { top, right, bottom, left } = padding;
+  const newWidth = canvas.width + left + right;
+  const newHeight = canvas.height + top + bottom;
 
-  const padded = document.createElement('canvas')
-  padded.width = newWidth
-  padded.height = newHeight
-  const ctx = padded.getContext('2d', { willReadFrequently: true })
-  if (!ctx) throw new Error('Failed to get canvas context')
+  const padded = document.createElement("canvas");
+  padded.width = newWidth;
+  padded.height = newHeight;
+  const ctx = padded.getContext("2d", { willReadFrequently: true });
+  if (!ctx) throw new Error("Failed to get canvas context");
 
   // Draw original image in center
-  ctx.drawImage(canvas, left, top)
+  ctx.drawImage(canvas, left, top);
 
   // Reflect padding on each edge
   if (top > 0) {
     // Top edge: flip vertically
-    ctx.save()
-    ctx.translate(left, top)
-    ctx.scale(1, -1)
-    ctx.drawImage(canvas, 0, 0, canvas.width, top, 0, 0, canvas.width, top)
-    ctx.restore()
+    ctx.save();
+    ctx.translate(left, top);
+    ctx.scale(1, -1);
+    ctx.drawImage(canvas, 0, 0, canvas.width, top, 0, 0, canvas.width, top);
+    ctx.restore();
   }
 
   if (bottom > 0) {
     // Bottom edge: flip vertically
-    ctx.save()
-    ctx.translate(left, newHeight)
-    ctx.scale(1, -1)
-    ctx.drawImage(canvas, 0, canvas.height - bottom, canvas.width, bottom, 0, 0, canvas.width, bottom)
-    ctx.restore()
+    ctx.save();
+    ctx.translate(left, newHeight);
+    ctx.scale(1, -1);
+    ctx.drawImage(
+      canvas,
+      0,
+      canvas.height - bottom,
+      canvas.width,
+      bottom,
+      0,
+      0,
+      canvas.width,
+      bottom,
+    );
+    ctx.restore();
   }
 
   if (left > 0) {
     // Left edge: flip horizontally
-    ctx.save()
-    ctx.translate(left, top)
-    ctx.scale(-1, 1)
-    ctx.drawImage(canvas, 0, 0, left, canvas.height, 0, 0, left, canvas.height)
-    ctx.restore()
+    ctx.save();
+    ctx.translate(left, top);
+    ctx.scale(-1, 1);
+    ctx.drawImage(canvas, 0, 0, left, canvas.height, 0, 0, left, canvas.height);
+    ctx.restore();
   }
 
   if (right > 0) {
     // Right edge: flip horizontally
-    ctx.save()
-    ctx.translate(newWidth, top)
-    ctx.scale(-1, 1)
-    ctx.drawImage(canvas, canvas.width - right, 0, right, canvas.height, 0, 0, right, canvas.height)
-    ctx.restore()
+    ctx.save();
+    ctx.translate(newWidth, top);
+    ctx.scale(-1, 1);
+    ctx.drawImage(
+      canvas,
+      canvas.width - right,
+      0,
+      right,
+      canvas.height,
+      0,
+      0,
+      right,
+      canvas.height,
+    );
+    ctx.restore();
   }
 
-  return padded
+  return padded;
 }
 
 /**
@@ -72,37 +92,40 @@ export function addReflectPadding(
  */
 export function addMaskReflectPadding(
   canvas: HTMLCanvasElement,
-  padding: { top: number; right: number; bottom: number; left: number }
+  padding: { top: number; right: number; bottom: number; left: number },
 ): HTMLCanvasElement {
-  const { top, right, bottom, left } = padding
-  const newWidth = canvas.width + left + right
-  const newHeight = canvas.height + top + bottom
+  const { top, right, bottom, left } = padding;
+  const newWidth = canvas.width + left + right;
+  const newHeight = canvas.height + top + bottom;
 
-  const padded = document.createElement('canvas')
-  padded.width = newWidth
-  padded.height = newHeight
-  const ctx = padded.getContext('2d', { willReadFrequently: true })
-  if (!ctx) throw new Error('Failed to get canvas context')
+  const padded = document.createElement("canvas");
+  padded.width = newWidth;
+  padded.height = newHeight;
+  const ctx = padded.getContext("2d", { willReadFrequently: true });
+  if (!ctx) throw new Error("Failed to get canvas context");
 
   // Draw original mask in center
-  ctx.drawImage(canvas, left, top)
+  ctx.drawImage(canvas, left, top);
 
   // For mask, extend the mask to cover padded edges (don't reflect)
   // This ensures the model inpaints the padded area too
-  ctx.fillStyle = 'rgba(255, 80, 80, 1)'
+  ctx.fillStyle = "rgba(255, 80, 80, 1)";
 
   // Get mask bounds to know where to extend from
-  const maskCtx = canvas.getContext('2d', { willReadFrequently: true })
+  const maskCtx = canvas.getContext("2d", { willReadFrequently: true });
   if (maskCtx) {
-    const imgData = maskCtx.getImageData(0, 0, canvas.width, canvas.height)
-    let minX = canvas.width, minY = canvas.height, maxX = -1, maxY = -1
+    const imgData = maskCtx.getImageData(0, 0, canvas.width, canvas.height);
+    let minX = canvas.width,
+      minY = canvas.height,
+      maxX = -1,
+      maxY = -1;
     for (let y = 0; y < canvas.height; y++) {
       for (let x = 0; x < canvas.width; x++) {
         if (imgData.data[(y * canvas.width + x) * 4 + 3] > 0) {
-          minX = Math.min(minX, x)
-          minY = Math.min(minY, y)
-          maxX = Math.max(maxX, x)
-          maxY = Math.max(maxY, y)
+          minX = Math.min(minX, x);
+          minY = Math.min(minY, y);
+          maxX = Math.max(maxX, x);
+          maxY = Math.max(maxY, y);
         }
       }
     }
@@ -110,21 +133,31 @@ export function addMaskReflectPadding(
     if (maxX >= 0) {
       // Extend mask into padded regions
       if (top > 0) {
-        ctx.fillRect(left + minX, 0, maxX - minX + 1, top + minY)
+        ctx.fillRect(left + minX, 0, maxX - minX + 1, top + minY);
       }
       if (bottom > 0) {
-        ctx.fillRect(left + minX, top + maxY + 1, maxX - minX + 1, bottom + (canvas.height - maxY - 1))
+        ctx.fillRect(
+          left + minX,
+          top + maxY + 1,
+          maxX - minX + 1,
+          bottom + (canvas.height - maxY - 1),
+        );
       }
       if (left > 0) {
-        ctx.fillRect(0, top + minY, left + minX, maxY - minY + 1)
+        ctx.fillRect(0, top + minY, left + minX, maxY - minY + 1);
       }
       if (right > 0) {
-        ctx.fillRect(left + maxX + 1, top + minY, right + (canvas.width - maxX - 1), maxY - minY + 1)
+        ctx.fillRect(
+          left + maxX + 1,
+          top + minY,
+          right + (canvas.width - maxX - 1),
+          maxY - minY + 1,
+        );
       }
     }
   }
 
-  return padded
+  return padded;
 }
 
 /**
@@ -134,68 +167,76 @@ export function addMaskReflectPadding(
  */
 export function getMaskBoundingBox(
   canvas: HTMLCanvasElement,
-  minSize = LAMA_INPUT_SIZE
+  minSize = LAMA_INPUT_SIZE,
 ): { x: number; y: number; width: number; height: number } | null {
-  const ctx = canvas.getContext('2d', { willReadFrequently: true })
-  if (!ctx) return null
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) return null;
 
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-  const { data, width: canvasWidth, height: canvasHeight } = imageData
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const { data, width: canvasWidth, height: canvasHeight } = imageData;
 
-  let minX = canvasWidth
-  let minY = canvasHeight
-  let maxX = 0
-  let maxY = 0
-  let hasMask = false
+  let minX = canvasWidth;
+  let minY = canvasHeight;
+  let maxX = 0;
+  let maxY = 0;
+  let hasMask = false;
 
   for (let y = 0; y < canvasHeight; y++) {
     for (let x = 0; x < canvasWidth; x++) {
-      const alpha = data[(y * canvasWidth + x) * 4 + 3]
+      const alpha = data[(y * canvasWidth + x) * 4 + 3];
       if (alpha > 0) {
-        hasMask = true
-        minX = Math.min(minX, x)
-        minY = Math.min(minY, y)
-        maxX = Math.max(maxX, x)
-        maxY = Math.max(maxY, y)
+        hasMask = true;
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
       }
     }
   }
 
-  if (!hasMask) return null
+  if (!hasMask) return null;
 
   // Calculate mask dimensions
-  const maskWidth = maxX - minX + 1
-  const maskHeight = maxY - minY + 1
+  const maskWidth = maxX - minX + 1;
+  const maskHeight = maxY - minY + 1;
 
   // Desired crop should be at least 2x mask size and at least minSize (512)
-  const desiredSize = Math.max(minSize, maskWidth * 2, maskHeight * 2)
+  const desiredSize = Math.max(minSize, maskWidth * 2, maskHeight * 2);
 
   // Limit crop size to canvas dimensions
-  const cropSize = Math.min(desiredSize, canvasWidth, canvasHeight)
+  const cropSize = Math.min(desiredSize, canvasWidth, canvasHeight);
 
   // Center the crop around the mask
-  const maskCenterX = minX + maskWidth / 2
-  const maskCenterY = minY + maskHeight / 2
+  const maskCenterX = minX + maskWidth / 2;
+  const maskCenterY = minY + maskHeight / 2;
 
-  let x = Math.round(maskCenterX - cropSize / 2)
-  let y = Math.round(maskCenterY - cropSize / 2)
+  let x = Math.round(maskCenterX - cropSize / 2);
+  let y = Math.round(maskCenterY - cropSize / 2);
 
   // Ensure crop contains the entire mask (priority over centering)
   // Shift crop if mask would be cut off
-  if (x > minX) x = Math.max(0, minX - Math.floor((cropSize - maskWidth) / 2))
-  if (y > minY) y = Math.max(0, minY - Math.floor((cropSize - maskHeight) / 2))
-  if (x + cropSize < maxX + 1) x = Math.min(canvasWidth - cropSize, maxX + 1 - cropSize + Math.floor((cropSize - maskWidth) / 2))
-  if (y + cropSize < maxY + 1) y = Math.min(canvasHeight - cropSize, maxY + 1 - cropSize + Math.floor((cropSize - maskHeight) / 2))
+  if (x > minX) x = Math.max(0, minX - Math.floor((cropSize - maskWidth) / 2));
+  if (y > minY) y = Math.max(0, minY - Math.floor((cropSize - maskHeight) / 2));
+  if (x + cropSize < maxX + 1)
+    x = Math.min(
+      canvasWidth - cropSize,
+      maxX + 1 - cropSize + Math.floor((cropSize - maskWidth) / 2),
+    );
+  if (y + cropSize < maxY + 1)
+    y = Math.min(
+      canvasHeight - cropSize,
+      maxY + 1 - cropSize + Math.floor((cropSize - maskHeight) / 2),
+    );
 
   // Final clamp to canvas bounds
-  x = Math.max(0, Math.min(x, canvasWidth - cropSize))
-  y = Math.max(0, Math.min(y, canvasHeight - cropSize))
+  x = Math.max(0, Math.min(x, canvasWidth - cropSize));
+  y = Math.max(0, Math.min(y, canvasHeight - cropSize));
 
   // Verify mask fits in crop (if not, mask is larger than canvas - rare edge case)
-  const finalWidth = Math.min(cropSize, canvasWidth)
-  const finalHeight = Math.min(cropSize, canvasHeight)
+  const finalWidth = Math.min(cropSize, canvasWidth);
+  const finalHeight = Math.min(cropSize, canvasHeight);
 
-  return { x, y, width: finalWidth, height: finalHeight }
+  return { x, y, width: finalWidth, height: finalHeight };
 }
 
 /**
@@ -206,16 +247,16 @@ export function cropCanvas(
   x: number,
   y: number,
   width: number,
-  height: number
+  height: number,
 ): HTMLCanvasElement {
-  const cropped = document.createElement('canvas')
-  cropped.width = width
-  cropped.height = height
-  const ctx = cropped.getContext('2d', { willReadFrequently: true })
-  if (!ctx) throw new Error('Failed to get canvas context')
+  const cropped = document.createElement("canvas");
+  cropped.width = width;
+  cropped.height = height;
+  const ctx = cropped.getContext("2d", { willReadFrequently: true });
+  if (!ctx) throw new Error("Failed to get canvas context");
 
-  ctx.drawImage(canvas, x, y, width, height, 0, 0, width, height)
-  return cropped
+  ctx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
+  return cropped;
 }
 
 /**
@@ -227,64 +268,67 @@ export function pasteWithBlending(
   maskCanvas: HTMLCanvasElement,
   x: number,
   y: number,
-  blendEdge = 8
+  blendEdge = 8,
 ): void {
-  const targetCtx = targetCanvas.getContext('2d', { willReadFrequently: true })
-  const sourceCtx = sourceCanvas.getContext('2d', { willReadFrequently: true })
-  const maskCtx = maskCanvas.getContext('2d', { willReadFrequently: true })
-  if (!targetCtx || !sourceCtx || !maskCtx) return
+  const targetCtx = targetCanvas.getContext("2d", { willReadFrequently: true });
+  const sourceCtx = sourceCanvas.getContext("2d", { willReadFrequently: true });
+  const maskCtx = maskCanvas.getContext("2d", { willReadFrequently: true });
+  if (!targetCtx || !sourceCtx || !maskCtx) return;
 
-  const width = sourceCanvas.width
-  const height = sourceCanvas.height
+  const width = sourceCanvas.width;
+  const height = sourceCanvas.height;
 
-  const targetData = targetCtx.getImageData(x, y, width, height)
-  const sourceData = sourceCtx.getImageData(0, 0, width, height)
-  const maskData = maskCtx.getImageData(0, 0, width, height)
+  const targetData = targetCtx.getImageData(x, y, width, height);
+  const sourceData = sourceCtx.getImageData(0, 0, width, height);
+  const maskData = maskCtx.getImageData(0, 0, width, height);
 
   for (let py = 0; py < height; py++) {
     for (let px = 0; px < width; px++) {
-      const i = (py * width + px) * 4
-      const maskAlpha = maskData.data[i + 3]
+      const i = (py * width + px) * 4;
+      const maskAlpha = maskData.data[i + 3];
 
       if (maskAlpha > 0) {
         // Calculate distance from mask edge for blending
-        let blendFactor = 1.0
+        let blendFactor = 1.0;
 
         // Check distance to transparent pixels for edge blending
-        let minDist = blendEdge
+        let minDist = blendEdge;
         for (let dy = -blendEdge; dy <= blendEdge && minDist > 0; dy++) {
           for (let dx = -blendEdge; dx <= blendEdge && minDist > 0; dx++) {
-            const nx = px + dx
-            const ny = py + dy
+            const nx = px + dx;
+            const ny = py + dy;
             if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-              const ni = (ny * width + nx) * 4
+              const ni = (ny * width + nx) * 4;
               if (maskData.data[ni + 3] === 0) {
-                const dist = Math.sqrt(dx * dx + dy * dy)
-                minDist = Math.min(minDist, dist)
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                minDist = Math.min(minDist, dist);
               }
             }
           }
         }
 
         if (minDist < blendEdge) {
-          blendFactor = minDist / blendEdge
+          blendFactor = minDist / blendEdge;
         }
 
         // Blend source and target
         targetData.data[i] = Math.round(
-          targetData.data[i] * (1 - blendFactor) + sourceData.data[i] * blendFactor
-        )
+          targetData.data[i] * (1 - blendFactor) +
+            sourceData.data[i] * blendFactor,
+        );
         targetData.data[i + 1] = Math.round(
-          targetData.data[i + 1] * (1 - blendFactor) + sourceData.data[i + 1] * blendFactor
-        )
+          targetData.data[i + 1] * (1 - blendFactor) +
+            sourceData.data[i + 1] * blendFactor,
+        );
         targetData.data[i + 2] = Math.round(
-          targetData.data[i + 2] * (1 - blendFactor) + sourceData.data[i + 2] * blendFactor
-        )
+          targetData.data[i + 2] * (1 - blendFactor) +
+            sourceData.data[i + 2] * blendFactor,
+        );
       }
     }
   }
 
-  targetCtx.putImageData(targetData, x, y)
+  targetCtx.putImageData(targetData, x, y);
 }
 
 /**
@@ -292,20 +336,20 @@ export function pasteWithBlending(
  * Output shape: [1, 3, height, width] normalized to 0-1
  */
 export function canvasToFloat32Array(canvas: HTMLCanvasElement): Float32Array {
-  const ctx = canvas.getContext('2d', { willReadFrequently: true })
-  if (!ctx) throw new Error('Failed to get canvas context')
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) throw new Error("Failed to get canvas context");
 
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-  const { data, width, height } = imageData
-  const float32 = new Float32Array(3 * width * height)
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const { data, width, height } = imageData;
+  const float32 = new Float32Array(3 * width * height);
 
   for (let i = 0; i < width * height; i++) {
-    float32[i] = data[i * 4] / 255                        // R -> channel 0
-    float32[width * height + i] = data[i * 4 + 1] / 255   // G -> channel 1
-    float32[2 * width * height + i] = data[i * 4 + 2] / 255 // B -> channel 2
+    float32[i] = data[i * 4] / 255; // R -> channel 0
+    float32[width * height + i] = data[i * 4 + 1] / 255; // G -> channel 1
+    float32[2 * width * height + i] = data[i * 4 + 2] / 255; // B -> channel 2
   }
 
-  return float32
+  return float32;
 }
 
 /**
@@ -313,20 +357,22 @@ export function canvasToFloat32Array(canvas: HTMLCanvasElement): Float32Array {
  * Output shape: [1, 1, height, width] binary 0 or 1
  * Non-transparent pixels (alpha > 0) become 1 (area to inpaint), transparent become 0
  */
-export function maskCanvasToFloat32Array(canvas: HTMLCanvasElement): Float32Array {
-  const ctx = canvas.getContext('2d', { willReadFrequently: true })
-  if (!ctx) throw new Error('Failed to get canvas context')
+export function maskCanvasToFloat32Array(
+  canvas: HTMLCanvasElement,
+): Float32Array {
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) throw new Error("Failed to get canvas context");
 
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-  const { data, width, height } = imageData
-  const float32 = new Float32Array(width * height)
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const { data, width, height } = imageData;
+  const float32 = new Float32Array(width * height);
 
   for (let i = 0; i < width * height; i++) {
     // Check alpha channel - any non-transparent pixel is part of the mask
-    float32[i] = data[i * 4 + 3] > 0 ? 1 : 0
+    float32[i] = data[i * 4 + 3] > 0 ? 1 : 0;
   }
 
-  return float32
+  return float32;
 }
 
 /**
@@ -338,35 +384,43 @@ export function tensorToCanvas(
   tensor: Float32Array,
   width: number,
   height: number,
-  normalized = true
+  normalized = true,
 ): HTMLCanvasElement {
-  const canvas = document.createElement('canvas')
-  canvas.width = width
-  canvas.height = height
-  const ctx = canvas.getContext('2d')
-  if (!ctx) throw new Error('Failed to get canvas context')
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Failed to get canvas context");
 
-  const imageData = ctx.createImageData(width, height)
-  const { data } = imageData
+  const imageData = ctx.createImageData(width, height);
+  const { data } = imageData;
 
   for (let i = 0; i < width * height; i++) {
     // Convert from CHW back to HWC (RGBA)
     if (normalized) {
       // 0-1 range -> multiply by 255
-      data[i * 4] = Math.round(Math.max(0, Math.min(1, tensor[i])) * 255)                        // R
-      data[i * 4 + 1] = Math.round(Math.max(0, Math.min(1, tensor[width * height + i])) * 255)   // G
-      data[i * 4 + 2] = Math.round(Math.max(0, Math.min(1, tensor[2 * width * height + i])) * 255) // B
+      data[i * 4] = Math.round(Math.max(0, Math.min(1, tensor[i])) * 255); // R
+      data[i * 4 + 1] = Math.round(
+        Math.max(0, Math.min(1, tensor[width * height + i])) * 255,
+      ); // G
+      data[i * 4 + 2] = Math.round(
+        Math.max(0, Math.min(1, tensor[2 * width * height + i])) * 255,
+      ); // B
     } else {
       // 0-255 range -> clamp directly
-      data[i * 4] = Math.round(Math.max(0, Math.min(255, tensor[i])))                        // R
-      data[i * 4 + 1] = Math.round(Math.max(0, Math.min(255, tensor[width * height + i])))   // G
-      data[i * 4 + 2] = Math.round(Math.max(0, Math.min(255, tensor[2 * width * height + i]))) // B
+      data[i * 4] = Math.round(Math.max(0, Math.min(255, tensor[i]))); // R
+      data[i * 4 + 1] = Math.round(
+        Math.max(0, Math.min(255, tensor[width * height + i])),
+      ); // G
+      data[i * 4 + 2] = Math.round(
+        Math.max(0, Math.min(255, tensor[2 * width * height + i])),
+      ); // B
     }
-    data[i * 4 + 3] = 255 // A
+    data[i * 4 + 3] = 255; // A
   }
 
-  ctx.putImageData(imageData, 0, 0)
-  return canvas
+  ctx.putImageData(imageData, 0, 0);
+  return canvas;
 }
 
 /**
@@ -375,23 +429,25 @@ export function tensorToCanvas(
 export function resizeCanvas(
   sourceCanvas: HTMLCanvasElement,
   targetWidth: number,
-  targetHeight: number
+  targetHeight: number,
 ): HTMLCanvasElement {
-  const canvas = document.createElement('canvas')
-  canvas.width = targetWidth
-  canvas.height = targetHeight
-  const ctx = canvas.getContext('2d')
-  if (!ctx) throw new Error('Failed to get canvas context')
+  const canvas = document.createElement("canvas");
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Failed to get canvas context");
 
-  ctx.drawImage(sourceCanvas, 0, 0, targetWidth, targetHeight)
-  return canvas
+  ctx.drawImage(sourceCanvas, 0, 0, targetWidth, targetHeight);
+  return canvas;
 }
 
 /**
  * Resize canvas to LaMa model input size (512x512)
  */
-export function resizeToModelInput(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
-  return resizeCanvas(sourceCanvas, LAMA_INPUT_SIZE, LAMA_INPUT_SIZE)
+export function resizeToModelInput(
+  sourceCanvas: HTMLCanvasElement,
+): HTMLCanvasElement {
+  return resizeCanvas(sourceCanvas, LAMA_INPUT_SIZE, LAMA_INPUT_SIZE);
 }
 
 /**
@@ -400,9 +456,9 @@ export function resizeToModelInput(sourceCanvas: HTMLCanvasElement): HTMLCanvasE
 export function resizeFromModelOutput(
   resultCanvas: HTMLCanvasElement,
   originalWidth: number,
-  originalHeight: number
+  originalHeight: number,
 ): HTMLCanvasElement {
-  return resizeCanvas(resultCanvas, originalWidth, originalHeight)
+  return resizeCanvas(resultCanvas, originalWidth, originalHeight);
 }
 
 /**
@@ -410,45 +466,49 @@ export function resizeFromModelOutput(
  */
 export async function blobToCanvas(blob: Blob): Promise<HTMLCanvasElement> {
   return new Promise((resolve, reject) => {
-    const img = new Image()
+    const img = new Image();
     img.onload = () => {
-      const canvas = document.createElement('canvas')
-      canvas.width = img.width
-      canvas.height = img.height
-      const ctx = canvas.getContext('2d')
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
       if (!ctx) {
-        reject(new Error('Failed to get canvas context'))
-        return
+        reject(new Error("Failed to get canvas context"));
+        return;
       }
-      ctx.drawImage(img, 0, 0)
-      URL.revokeObjectURL(img.src)
-      resolve(canvas)
-    }
+      ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(img.src);
+      resolve(canvas);
+    };
     img.onerror = () => {
-      URL.revokeObjectURL(img.src)
-      reject(new Error('Failed to load image'))
-    }
-    img.src = URL.createObjectURL(blob)
-  })
+      URL.revokeObjectURL(img.src);
+      reject(new Error("Failed to load image"));
+    };
+    img.src = URL.createObjectURL(blob);
+  });
 }
 
 /**
  * Convert canvas to blob
  */
-export function canvasToBlob(canvas: HTMLCanvasElement, type = 'image/png', quality = 1): Promise<Blob> {
+export function canvasToBlob(
+  canvas: HTMLCanvasElement,
+  type = "image/png",
+  quality = 1,
+): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => {
         if (blob) {
-          resolve(blob)
+          resolve(blob);
         } else {
-          reject(new Error('Failed to convert canvas to blob'))
+          reject(new Error("Failed to convert canvas to blob"));
         }
       },
       type,
-      quality
-    )
-  })
+      quality,
+    );
+  });
 }
 
 /**
@@ -458,43 +518,47 @@ export function canvasToBlob(canvas: HTMLCanvasElement, type = 'image/png', qual
 export function applyMaskedResult(
   originalCanvas: HTMLCanvasElement,
   resultCanvas: HTMLCanvasElement,
-  maskCanvas: HTMLCanvasElement
+  maskCanvas: HTMLCanvasElement,
 ): HTMLCanvasElement {
-  const width = originalCanvas.width
-  const height = originalCanvas.height
+  const width = originalCanvas.width;
+  const height = originalCanvas.height;
 
-  const outputCanvas = document.createElement('canvas')
-  outputCanvas.width = width
-  outputCanvas.height = height
-  const outputCtx = outputCanvas.getContext('2d')
-  if (!outputCtx) throw new Error('Failed to get canvas context')
+  const outputCanvas = document.createElement("canvas");
+  outputCanvas.width = width;
+  outputCanvas.height = height;
+  const outputCtx = outputCanvas.getContext("2d");
+  if (!outputCtx) throw new Error("Failed to get canvas context");
 
-  const originalCtx = originalCanvas.getContext('2d')
-  const resultCtx = resultCanvas.getContext('2d')
-  const maskCtx = maskCanvas.getContext('2d')
-  if (!originalCtx || !resultCtx || !maskCtx) throw new Error('Failed to get canvas context')
+  const originalCtx = originalCanvas.getContext("2d");
+  const resultCtx = resultCanvas.getContext("2d");
+  const maskCtx = maskCanvas.getContext("2d");
+  if (!originalCtx || !resultCtx || !maskCtx)
+    throw new Error("Failed to get canvas context");
 
-  const originalData = originalCtx.getImageData(0, 0, width, height)
-  const resultData = resultCtx.getImageData(0, 0, width, height)
-  const maskData = maskCtx.getImageData(0, 0, width, height)
-  const outputData = outputCtx.createImageData(width, height)
+  const originalData = originalCtx.getImageData(0, 0, width, height);
+  const resultData = resultCtx.getImageData(0, 0, width, height);
+  const maskData = maskCtx.getImageData(0, 0, width, height);
+  const outputData = outputCtx.createImageData(width, height);
 
   for (let i = 0; i < width * height; i++) {
-    const maskValue = maskData.data[i * 4] / 255 // 0-1 for blending
+    const maskValue = maskData.data[i * 4] / 255; // 0-1 for blending
 
     // Blend based on mask value
     outputData.data[i * 4] = Math.round(
-      originalData.data[i * 4] * (1 - maskValue) + resultData.data[i * 4] * maskValue
-    )
+      originalData.data[i * 4] * (1 - maskValue) +
+        resultData.data[i * 4] * maskValue,
+    );
     outputData.data[i * 4 + 1] = Math.round(
-      originalData.data[i * 4 + 1] * (1 - maskValue) + resultData.data[i * 4 + 1] * maskValue
-    )
+      originalData.data[i * 4 + 1] * (1 - maskValue) +
+        resultData.data[i * 4 + 1] * maskValue,
+    );
     outputData.data[i * 4 + 2] = Math.round(
-      originalData.data[i * 4 + 2] * (1 - maskValue) + resultData.data[i * 4 + 2] * maskValue
-    )
-    outputData.data[i * 4 + 3] = 255
+      originalData.data[i * 4 + 2] * (1 - maskValue) +
+        resultData.data[i * 4 + 2] * maskValue,
+    );
+    outputData.data[i * 4 + 3] = 255;
   }
 
-  outputCtx.putImageData(outputData, 0, 0)
-  return outputCanvas
+  outputCtx.putImageData(outputData, 0, 0);
+  return outputCanvas;
 }

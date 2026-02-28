@@ -86,7 +86,7 @@ wavespeed-desktop/
 - **`src/workflow/browser/run-in-browser.ts`**: Workflow execution (browser only): AI task via apiClient, free-tool nodes, I/O nodes
 - **`src/workflow/ipc/ipc-client.ts`**: Typed IPC client for workflow, execution, models, cost, history, registry, settings
 - **`src/workflow/types/node-defs.ts`**: NodeTypeDefinition, WaveSpeedModel, ParamDefinition
-- **`src/workflow/types/ipc.ts`**: IPC channel types (workflow:*, execution:*, models:*, cost:*, history:*, etc.)
+- **`src/workflow/types/ipc.ts`**: IPC channel types (workflow:_, execution:_, models:_, cost:_, history:\*, etc.)
 - **`src/workflow/hooks/useFreeToolListener.ts`**: Listens for free-tool execution requests from main process (used by Layout)
 - **`src/workflow/lib/free-tool-runner.ts`**: Runs free-tool nodes (e.g. background-remover) and returns outputs to main
 - **`src/components/playground/DynamicForm.tsx`**: Generates forms from model schemas
@@ -149,18 +149,19 @@ Authentication: `Authorization: Bearer {API_KEY}`
 
 ### Endpoints
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/v3/models` | GET | List available models with schemas |
-| `/api/v3/{model}` | POST | Run a prediction |
-| `/api/v3/predictions/{id}/result` | GET | Poll for prediction result |
-| `/api/v3/predictions` | POST | Get prediction history (with date filters) |
-| `/api/v3/media/upload/binary` | POST | Upload files (multipart/form-data) |
-| `/api/v3/balance` | GET | Get account balance (returns `{ data: { balance: number } }`) |
+| Endpoint                          | Method | Description                                                   |
+| --------------------------------- | ------ | ------------------------------------------------------------- |
+| `/api/v3/models`                  | GET    | List available models with schemas                            |
+| `/api/v3/{model}`                 | POST   | Run a prediction                                              |
+| `/api/v3/predictions/{id}/result` | GET    | Poll for prediction result                                    |
+| `/api/v3/predictions`             | POST   | Get prediction history (with date filters)                    |
+| `/api/v3/media/upload/binary`     | POST   | Upload files (multipart/form-data)                            |
+| `/api/v3/balance`                 | GET    | Get account balance (returns `{ data: { balance: number } }`) |
 
 ### History API
 
 The predictions history endpoint requires a POST request with JSON body:
+
 ```json
 {
   "page": 1,
@@ -185,19 +186,23 @@ npm run build:all    # Build for all platforms
 ## Common Tasks
 
 ### Adding a new page
+
 1. Create component in `src/pages/`
 2. Add route in `src/App.tsx`
 3. Add navigation item in `src/components/layout/Sidebar.tsx` under the appropriate section (Create, Manage, or Tools)
 
 ### Adding a new API method
+
 1. Add method to `WaveSpeedClient` class in `src/api/client.ts`
 2. Add types in `src/types/` if needed
 
 ### Modifying the build
+
 1. Build config is in `package.json` under `"build"` key
 2. GitHub Actions in `.github/workflows/`
 
 ### Adding a new UI component (shadcn/ui pattern)
+
 1. Create component in `src/components/ui/` following the existing pattern
 2. Use `@radix-ui/*` primitives (already installed: dialog, select, dropdown-menu, etc.)
 3. Use `cn()` for className merging

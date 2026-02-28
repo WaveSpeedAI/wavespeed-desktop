@@ -1,22 +1,23 @@
-import * as React from "react"
-import * as SliderPrimitive from "@radix-ui/react-slider"
+import * as React from "react";
+import * as SliderPrimitive from "@radix-ui/react-slider";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 const Slider = React.forwardRef<
   React.ElementRef<typeof SliderPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root>
 >(({ className, value, defaultValue, ...props }, ref) => {
   // Determine how many thumbs to render based on value/defaultValue
-  const thumbCount = Array.isArray(value) ? value.length : Array.isArray(defaultValue) ? defaultValue.length : 1
+  const thumbCount = Array.isArray(value)
+    ? value.length
+    : Array.isArray(defaultValue)
+      ? defaultValue.length
+      : 1;
 
   return (
     <SliderPrimitive.Root
       ref={ref}
-      className={cn(
-        "relative flex w-full select-none items-center",
-        className
-      )}
+      className={cn("relative flex w-full select-none items-center", className)}
       value={value}
       defaultValue={defaultValue}
       {...props}
@@ -31,8 +32,8 @@ const Slider = React.forwardRef<
         />
       ))}
     </SliderPrimitive.Root>
-  )
-})
-Slider.displayName = SliderPrimitive.Root.displayName
+  );
+});
+Slider.displayName = SliderPrimitive.Root.displayName;
 
-export { Slider }
+export { Slider };

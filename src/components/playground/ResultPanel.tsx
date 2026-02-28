@@ -1,24 +1,24 @@
-import { OutputDisplay } from './OutputDisplay'
-import { BatchOutputGrid } from './BatchOutputGrid'
-import type { PredictionResult } from '@/types/prediction'
-import type { BatchResult, BatchQueueItem } from '@/types/batch'
+import { OutputDisplay } from "./OutputDisplay";
+import { BatchOutputGrid } from "./BatchOutputGrid";
+import type { PredictionResult } from "@/types/prediction";
+import type { BatchResult, BatchQueueItem } from "@/types/batch";
 
 interface ResultPanelProps {
-  prediction: PredictionResult | null
-  outputs: (string | Record<string, unknown>)[]
-  error: string | null
-  isLoading: boolean
-  modelId?: string
+  prediction: PredictionResult | null;
+  outputs: (string | Record<string, unknown>)[];
+  error: string | null;
+  isLoading: boolean;
+  modelId?: string;
   // Batch
-  batchResults: BatchResult[]
-  batchIsRunning?: boolean
-  batchTotalCount?: number
-  batchQueue?: BatchQueueItem[]
-  onClearBatch: () => void
+  batchResults: BatchResult[];
+  batchIsRunning?: boolean;
+  batchTotalCount?: number;
+  batchQueue?: BatchQueueItem[];
+  onClearBatch: () => void;
   // Batch preview
-  batchPreviewInputs: Record<string, unknown>[]
+  batchPreviewInputs: Record<string, unknown>[];
   // History
-  historyIndex: number | null
+  historyIndex: number | null;
 }
 
 export function ResultPanel({
@@ -59,7 +59,7 @@ export function ResultPanel({
             id: `preview-${index}`,
             index,
             input,
-            status: 'pending' as const
+            status: "pending" as const,
           }))}
         />
       ) : (
@@ -72,5 +72,5 @@ export function ResultPanel({
         />
       )}
     </div>
-  )
+  );
 }

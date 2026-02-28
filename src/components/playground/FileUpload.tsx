@@ -1,33 +1,49 @@
-import { useState, useCallback, useMemo, useRef } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useDropzone } from 'react-dropzone'
-import { apiClient } from '@/api/client'
-import { cn } from '@/lib/utils'
-import { getSingleImageFromValues, getSingleVideoFromValues } from '@/lib/schemaToForm'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { Upload, X, Loader2, FileVideo, FileAudio, Image, FileArchive, File as FileIcon, Camera, Video, Mic, Brush } from 'lucide-react'
-import { CameraCapture } from './CameraCapture'
-import { VideoRecorder } from './VideoRecorder'
-import { AudioRecorder } from './AudioRecorder'
-import { MaskEditor } from './MaskEditor'
+import { useState, useCallback, useMemo, useRef } from "react";
+import { useTranslation } from "react-i18next";
+import { useDropzone } from "react-dropzone";
+import { apiClient } from "@/api/client";
+import { cn } from "@/lib/utils";
+import {
+  getSingleImageFromValues,
+  getSingleVideoFromValues,
+} from "@/lib/schemaToForm";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Upload,
+  X,
+  Loader2,
+  FileVideo,
+  FileAudio,
+  Image,
+  FileArchive,
+  File as FileIcon,
+  Camera,
+  Video,
+  Mic,
+  Brush,
+} from "lucide-react";
+import { CameraCapture } from "./CameraCapture";
+import { VideoRecorder } from "./VideoRecorder";
+import { AudioRecorder } from "./AudioRecorder";
+import { MaskEditor } from "./MaskEditor";
 
-type CaptureMode = 'upload' | 'camera' | 'video' | 'audio' | 'mask'
+type CaptureMode = "upload" | "camera" | "video" | "audio" | "mask";
 
 interface FileUploadProps {
-  accept: string
-  multiple?: boolean
-  maxFiles?: number
-  value: string | string[]
-  onChange: (urls: string | string[]) => void
-  disabled?: boolean
-  placeholder?: string
-  isMaskField?: boolean
-  formValues?: Record<string, unknown>
-  onUploadingChange?: (isUploading: boolean) => void
+  accept: string;
+  multiple?: boolean;
+  maxFiles?: number;
+  value: string | string[];
+  onChange: (urls: string | string[]) => void;
+  disabled?: boolean;
+  placeholder?: string;
+  isMaskField?: boolean;
+  formValues?: Record<string, unknown>;
+  onUploadingChange?: (isUploading: boolean) => void;
   /** When provided (e.g. workflow), use this instead of API upload. Returned URL is stored as value. */
-  onUploadFile?: (file: File) => Promise<string>
+  onUploadFile?: (file: File) => Promise<string>;
 }
 
 export function FileUpload({
@@ -40,168 +56,194 @@ export function FileUpload({
   isMaskField = false,
   formValues,
   onUploadingChange,
-  onUploadFile
+  onUploadFile,
 }: FileUploadProps) {
-  const { t } = useTranslation()
-  const [isUploading, setIsUploading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [urlInput, setUrlInput] = useState('')
-  const [captureMode, setCaptureMode] = useState<CaptureMode>('upload')
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const [previewType, setPreviewType] = useState<'image' | 'video' | 'audio' | null>(null)
-  const [draggingIndex, setDraggingIndex] = useState<number | null>(null)
+  const { t } = useTranslation();
+  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [urlInput, setUrlInput] = useState("");
+  const [captureMode, setCaptureMode] = useState<CaptureMode>("upload");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewType, setPreviewType] = useState<
+    "image" | "video" | "audio" | null
+  >(null);
+  const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
 
-  const abortControllerRef = useRef<AbortController | null>(null)
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Convert value to array for consistent handling
-  const urls = Array.isArray(value) ? value : value ? [value] : []
+  const urls = Array.isArray(value) ? value : value ? [value] : [];
 
   // Determine what capture options are available based on accept type
-  const supportsCamera = accept.includes('image') && !isMaskField
-  const supportsVideo = accept.includes('video')
-  const supportsAudio = accept.includes('audio')
-  const supportsMask = isMaskField && accept.includes('image')
-  const hasCaptureOptions = supportsCamera || supportsVideo || supportsAudio || supportsMask
+  const supportsCamera = accept.includes("image") && !isMaskField;
+  const supportsVideo = accept.includes("video");
+  const supportsAudio = accept.includes("audio");
+  const supportsMask = isMaskField && accept.includes("image");
+  const hasCaptureOptions =
+    supportsCamera || supportsVideo || supportsAudio || supportsMask;
 
   // Get reference image/video URL from formValues for mask editor (images → image)
   const referenceImageUrl = useMemo(() => {
-    if (!formValues || !supportsMask) return undefined
-    return getSingleImageFromValues(formValues)
-  }, [formValues, supportsMask])
+    if (!formValues || !supportsMask) return undefined;
+    return getSingleImageFromValues(formValues);
+  }, [formValues, supportsMask]);
 
   const referenceVideoUrl = useMemo(() => {
-    if (!formValues || !supportsMask) return undefined
-    return getSingleVideoFromValues(formValues)
-  }, [formValues, supportsMask])
+    if (!formValues || !supportsMask) return undefined;
+    return getSingleVideoFromValues(formValues);
+  }, [formValues, supportsMask]);
 
   const handleAddUrl = () => {
-    if (!urlInput.trim()) return
+    if (!urlInput.trim()) return;
 
-    const newUrl = urlInput.trim()
+    const newUrl = urlInput.trim();
     if (multiple) {
-      onChange([...urls, newUrl])
+      onChange([...urls, newUrl]);
     } else {
-      onChange(newUrl)
+      onChange(newUrl);
     }
-    setUrlInput('')
-  }
+    setUrlInput("");
+  };
 
-  const handleCapture = useCallback(async (blob: Blob) => {
-    setError(null)
-    setIsUploading(true)
-    onUploadingChange?.(true)
-    setCaptureMode('upload')
+  const handleCapture = useCallback(
+    async (blob: Blob) => {
+      setError(null);
+      setIsUploading(true);
+      onUploadingChange?.(true);
+      setCaptureMode("upload");
 
-    // Create abort controller for this upload
-    abortControllerRef.current = new AbortController()
+      // Create abort controller for this upload
+      abortControllerRef.current = new AbortController();
 
-    try {
-      // Create a file from the blob with appropriate extension
-      const extension = blob.type.includes('video') ? 'webm' :
-                       blob.type.includes('audio') ? 'webm' :
-                       blob.type.includes('png') ? 'png' : 'jpg'
-      const filename = `capture_${Date.now()}.${extension}`
-      const file = new File([blob], filename, { type: blob.type })
+      try {
+        // Create a file from the blob with appropriate extension
+        const extension = blob.type.includes("video")
+          ? "webm"
+          : blob.type.includes("audio")
+            ? "webm"
+            : blob.type.includes("png")
+              ? "png"
+              : "jpg";
+        const filename = `capture_${Date.now()}.${extension}`;
+        const file = new File([blob], filename, { type: blob.type });
 
-      const url = onUploadFile
-        ? await onUploadFile(file)
-        : await apiClient.uploadFile(file, abortControllerRef.current.signal)
+        const url = onUploadFile
+          ? await onUploadFile(file)
+          : await apiClient.uploadFile(file, abortControllerRef.current.signal);
 
-      if (multiple) {
-        onChange([...urls, url])
-      } else {
-        onChange(url)
-      }
-    } catch (err) {
-      // Don't show error for cancelled uploads
-      if (err instanceof Error && err.message === 'Upload cancelled') {
-        // Silently ignore
-      } else {
-        setError(err instanceof Error ? err.message : 'Upload failed')
-      }
-    } finally {
-      abortControllerRef.current = null
-      setIsUploading(false)
-      onUploadingChange?.(false)
-    }
-  }, [multiple, urls, onChange, onUploadingChange, onUploadFile])
-
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    if (disabled) return
-
-    setError(null)
-    setIsUploading(true)
-    onUploadingChange?.(true)
-
-    // Create abort controller for this upload batch
-    abortControllerRef.current = new AbortController()
-
-    try {
-      const uploadPromises = acceptedFiles.slice(0, maxFiles - urls.length).map(async (file) => {
-        try {
-          const url = onUploadFile
-            ? await onUploadFile(file)
-            : await apiClient.uploadFile(file, abortControllerRef.current?.signal)
-          return { url, name: file.name, type: file.type }
-        } catch (err) {
-          // Re-throw cancellation errors to stop all uploads
-          if (err instanceof Error && err.message === 'Upload cancelled') {
-            throw err
-          }
-          throw new Error(`Failed to upload ${file.name}`)
+        if (multiple) {
+          onChange([...urls, url]);
+        } else {
+          onChange(url);
         }
-      })
-
-      const results = await Promise.all(uploadPromises)
-      const newUrls = results.map(r => r.url)
-
-      if (multiple) {
-        onChange([...urls, ...newUrls])
-      } else {
-        onChange(newUrls[0] || '')
+      } catch (err) {
+        // Don't show error for cancelled uploads
+        if (err instanceof Error && err.message === "Upload cancelled") {
+          // Silently ignore
+        } else {
+          setError(err instanceof Error ? err.message : "Upload failed");
+        }
+      } finally {
+        abortControllerRef.current = null;
+        setIsUploading(false);
+        onUploadingChange?.(false);
       }
-    } catch (err) {
-      // Don't show error for cancelled uploads
-      if (err instanceof Error && err.message === 'Upload cancelled') {
-        // Silently ignore
-      } else {
-        setError(err instanceof Error ? err.message : 'Upload failed')
+    },
+    [multiple, urls, onChange, onUploadingChange, onUploadFile],
+  );
+
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      if (disabled) return;
+
+      setError(null);
+      setIsUploading(true);
+      onUploadingChange?.(true);
+
+      // Create abort controller for this upload batch
+      abortControllerRef.current = new AbortController();
+
+      try {
+        const uploadPromises = acceptedFiles
+          .slice(0, maxFiles - urls.length)
+          .map(async (file) => {
+            try {
+              const url = onUploadFile
+                ? await onUploadFile(file)
+                : await apiClient.uploadFile(
+                    file,
+                    abortControllerRef.current?.signal,
+                  );
+              return { url, name: file.name, type: file.type };
+            } catch (err) {
+              // Re-throw cancellation errors to stop all uploads
+              if (err instanceof Error && err.message === "Upload cancelled") {
+                throw err;
+              }
+              throw new Error(`Failed to upload ${file.name}`);
+            }
+          });
+
+        const results = await Promise.all(uploadPromises);
+        const newUrls = results.map((r) => r.url);
+
+        if (multiple) {
+          onChange([...urls, ...newUrls]);
+        } else {
+          onChange(newUrls[0] || "");
+        }
+      } catch (err) {
+        // Don't show error for cancelled uploads
+        if (err instanceof Error && err.message === "Upload cancelled") {
+          // Silently ignore
+        } else {
+          setError(err instanceof Error ? err.message : "Upload failed");
+        }
+      } finally {
+        abortControllerRef.current = null;
+        setIsUploading(false);
+        onUploadingChange?.(false);
       }
-    } finally {
-      abortControllerRef.current = null
-      setIsUploading(false)
-      onUploadingChange?.(false)
-    }
-  }, [disabled, maxFiles, urls, multiple, onChange, onUploadingChange, onUploadFile])
+    },
+    [
+      disabled,
+      maxFiles,
+      urls,
+      multiple,
+      onChange,
+      onUploadingChange,
+      onUploadFile,
+    ],
+  );
 
   // Parse accept string into react-dropzone format
   // Maps MIME types to extensions for better browser compatibility
   const dropzoneAccept = useMemo(() => {
-    const result: Record<string, string[]> = {}
-    const extensions: string[] = []
+    const result: Record<string, string[]> = {};
+    const extensions: string[] = [];
 
     // MIME type to extension mappings for common types
     const mimeToExt: Record<string, string[]> = {
-      'application/zip': ['.zip'],
-      'application/x-zip-compressed': ['.zip'],
-      'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg'],
-      'video/*': ['.mp4', '.webm', '.mov', '.avi', '.mkv'],
-      'audio/*': ['.mp3', '.wav', '.ogg', '.m4a', '.webm', '.flac'],
-    }
+      "application/zip": [".zip"],
+      "application/x-zip-compressed": [".zip"],
+      "image/*": [".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".svg"],
+      "video/*": [".mp4", ".webm", ".mov", ".avi", ".mkv"],
+      "audio/*": [".mp3", ".wav", ".ogg", ".m4a", ".webm", ".flac"],
+    };
 
-    for (const type of accept.split(',')) {
-      const trimmed = type.trim()
-      if (trimmed.startsWith('.')) {
+    for (const type of accept.split(",")) {
+      const trimmed = type.trim();
+      if (trimmed.startsWith(".")) {
         // Collect file extensions
-        extensions.push(trimmed)
+        extensions.push(trimmed);
       } else {
         // MIME type - add with known extensions or empty array
-        result[trimmed] = mimeToExt[trimmed] || []
+        result[trimmed] = mimeToExt[trimmed] || [];
         // For zip MIME types, also add the alternative MIME type for Windows compatibility
-        if (trimmed === 'application/zip') {
-          result['application/x-zip-compressed'] = ['.zip']
-        } else if (trimmed === 'application/x-zip-compressed') {
-          result['application/zip'] = ['.zip']
+        if (trimmed === "application/zip") {
+          result["application/x-zip-compressed"] = [".zip"];
+        } else if (trimmed === "application/x-zip-compressed") {
+          result["application/zip"] = [".zip"];
         }
       }
     }
@@ -209,63 +251,65 @@ export function FileUpload({
     // If we have standalone extensions, add them under a wildcard or specific MIME
     if (extensions.length > 0) {
       // Add extensions to existing MIME types or create a catch-all
-      const hasZip = extensions.includes('.zip')
+      const hasZip = extensions.includes(".zip");
       if (hasZip) {
-        result['application/zip'] = ['.zip']
-        result['application/x-zip-compressed'] = ['.zip']
+        result["application/zip"] = [".zip"];
+        result["application/x-zip-compressed"] = [".zip"];
       }
       // For other extensions, add to application/octet-stream as fallback
-      const otherExts = extensions.filter(e => e !== '.zip')
+      const otherExts = extensions.filter((e) => e !== ".zip");
       if (otherExts.length > 0) {
-        result['application/octet-stream'] = otherExts
+        result["application/octet-stream"] = otherExts;
       }
     }
 
-    return result
-  }, [accept])
+    return result;
+  }, [accept]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: dropzoneAccept,
     multiple: multiple && urls.length < maxFiles,
     disabled: disabled || isUploading || (!multiple && urls.length >= 1),
-    maxFiles: maxFiles - urls.length
-  })
+    maxFiles: maxFiles - urls.length,
+  });
 
   const removeFile = (index: number) => {
-    const newUrls = urls.filter((_, i) => i !== index)
+    const newUrls = urls.filter((_, i) => i !== index);
     if (multiple) {
-      onChange(newUrls)
+      onChange(newUrls);
     } else {
-      onChange('')
+      onChange("");
     }
-  }
-
-
+  };
 
   const getFileIcon = () => {
-    if (accept.includes('video')) return FileVideo
-    if (accept.includes('audio')) return FileAudio
-    if (accept.includes('zip') || accept.includes('application')) return FileArchive
-    if (accept.includes('image')) return Image
-    return FileIcon
-  }
+    if (accept.includes("video")) return FileVideo;
+    if (accept.includes("audio")) return FileAudio;
+    if (accept.includes("zip") || accept.includes("application"))
+      return FileArchive;
+    if (accept.includes("image")) return Image;
+    return FileIcon;
+  };
 
-  const canAddMore = multiple ? urls.length < maxFiles : urls.length === 0
+  const canAddMore = multiple ? urls.length < maxFiles : urls.length === 0;
 
   const handleCancelUpload = useCallback(() => {
     if (abortControllerRef.current) {
-      abortControllerRef.current.abort()
+      abortControllerRef.current.abort();
     }
-  }, [])
+  }, []);
 
-  const moveUrl = useCallback((fromIndex: number, toIndex: number) => {
-    if (fromIndex === toIndex) return
-    const nextUrls = [...urls]
-    const [moved] = nextUrls.splice(fromIndex, 1)
-    nextUrls.splice(toIndex, 0, moved)
-    onChange(multiple ? nextUrls : nextUrls[0] || '')
-  }, [urls, onChange, multiple])
+  const moveUrl = useCallback(
+    (fromIndex: number, toIndex: number) => {
+      if (fromIndex === toIndex) return;
+      const nextUrls = [...urls];
+      const [moved] = nextUrls.splice(fromIndex, 1);
+      nextUrls.splice(toIndex, 0, moved);
+      onChange(multiple ? nextUrls : nextUrls[0] || "");
+    },
+    [urls, onChange, multiple],
+  );
 
   return (
     <div className="space-y-2">
@@ -273,48 +317,54 @@ export function FileUpload({
       {urls.length > 0 && (
         <div className="flex gap-2 flex-wrap">
           {urls.map((url, index) => {
-            const FileIconComponent = getFileIcon()
-            const hasImageExt = url.match(/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i)
-            const hasVideoExt = url.match(/\.(mp4|webm|mov|avi|mkv)(\?.*)?$/i)
-            const hasAudioExt = url.match(/\.(mp3|wav|ogg|webm|m4a)(\?.*)?$/i)
+            const FileIconComponent = getFileIcon();
+            const hasImageExt = url.match(/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i);
+            const hasVideoExt = url.match(/\.(mp4|webm|mov|avi|mkv)(\?.*)?$/i);
+            const hasAudioExt = url.match(/\.(mp3|wav|ogg|webm|m4a)(\?.*)?$/i);
             // Fallback: if accept type matches but URL has no recognized extension, trust accept
-            const isImage = accept.includes('image') && (hasImageExt || (!hasVideoExt && !hasAudioExt))
-            const isVideo = accept.includes('video') && (hasVideoExt || (!hasImageExt && !hasAudioExt))
-            const isAudio = accept.includes('audio') && (hasAudioExt || (!hasImageExt && !hasVideoExt))
+            const isImage =
+              accept.includes("image") &&
+              (hasImageExt || (!hasVideoExt && !hasAudioExt));
+            const isVideo =
+              accept.includes("video") &&
+              (hasVideoExt || (!hasImageExt && !hasAudioExt));
+            const isAudio =
+              accept.includes("audio") &&
+              (hasAudioExt || (!hasImageExt && !hasVideoExt));
 
             const handlePreview = () => {
-              setPreviewUrl(url)
-              if (isImage) setPreviewType('image')
-              else if (isVideo) setPreviewType('video')
-              else if (isAudio) setPreviewType('audio')
-            }
+              setPreviewUrl(url);
+              if (isImage) setPreviewType("image");
+              else if (isVideo) setPreviewType("video");
+              else if (isAudio) setPreviewType("audio");
+            };
 
             return (
               <div
                 key={index}
                 className={cn(
-                  'relative group rounded-lg border bg-muted/50 overflow-hidden h-28 w-28 flex-shrink-0 cursor-pointer transition-all duration-200 hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30 hover:scale-[1.03]',
-                  draggingIndex === index && 'opacity-60 scale-95'
+                  "relative group rounded-lg border bg-muted/50 overflow-hidden h-28 w-28 flex-shrink-0 cursor-pointer transition-all duration-200 hover:shadow-lg hover:shadow-primary/10 hover:border-primary/30 hover:scale-[1.03]",
+                  draggingIndex === index && "opacity-60 scale-95",
                 )}
                 draggable={multiple && !disabled}
                 onDragStart={(e) => {
-                  if (!multiple || disabled) return
-                  e.dataTransfer.effectAllowed = 'move'
-                  e.dataTransfer.setData('text/plain', String(index))
-                  setDraggingIndex(index)
+                  if (!multiple || disabled) return;
+                  e.dataTransfer.effectAllowed = "move";
+                  e.dataTransfer.setData("text/plain", String(index));
+                  setDraggingIndex(index);
                 }}
                 onDragOver={(e) => {
-                  if (!multiple || disabled) return
-                  e.preventDefault()
-                  e.dataTransfer.dropEffect = 'move'
-                  if (draggingIndex === null || draggingIndex === index) return
-                  moveUrl(draggingIndex, index)
-                  setDraggingIndex(index)
+                  if (!multiple || disabled) return;
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = "move";
+                  if (draggingIndex === null || draggingIndex === index) return;
+                  moveUrl(draggingIndex, index);
+                  setDraggingIndex(index);
                 }}
                 onDrop={(e) => {
-                  if (!multiple || disabled) return
-                  e.preventDefault()
-                  setDraggingIndex(null)
+                  if (!multiple || disabled) return;
+                  e.preventDefault();
+                  setDraggingIndex(null);
                 }}
                 onDragEnd={() => setDraggingIndex(null)}
                 onClick={handlePreview}
@@ -333,8 +383,8 @@ export function FileUpload({
                     playsInline
                     onMouseEnter={(e) => e.currentTarget.play()}
                     onMouseLeave={(e) => {
-                      e.currentTarget.pause()
-                      e.currentTarget.currentTime = 0
+                      e.currentTarget.pause();
+                      e.currentTarget.currentTime = 0;
                     }}
                   />
                 ) : isAudio ? (
@@ -351,15 +401,15 @@ export function FileUpload({
                   size="icon"
                   className="absolute top-0.5 right-0.5 h-5 w-5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                   onClick={(e) => {
-                    e.stopPropagation()
-                    removeFile(index)
+                    e.stopPropagation();
+                    removeFile(index);
                   }}
                   disabled={disabled}
                 >
                   <X className="h-3 w-3" />
                 </Button>
               </div>
-            )
+            );
           })}
         </div>
       )}
@@ -368,79 +418,86 @@ export function FileUpload({
       {canAddMore && (
         <div className="space-y-1.5">
           {/* Camera capture */}
-          {captureMode === 'camera' && (
+          {captureMode === "camera" && (
             <CameraCapture
               onCapture={handleCapture}
-              onClose={() => setCaptureMode('upload')}
+              onClose={() => setCaptureMode("upload")}
               disabled={disabled || isUploading}
             />
           )}
 
           {/* Video recorder */}
-          {captureMode === 'video' && (
+          {captureMode === "video" && (
             <VideoRecorder
               onRecord={handleCapture}
-              onClose={() => setCaptureMode('upload')}
+              onClose={() => setCaptureMode("upload")}
               disabled={disabled || isUploading}
             />
           )}
 
           {/* Audio recorder */}
-          {captureMode === 'audio' && (
+          {captureMode === "audio" && (
             <AudioRecorder
               onRecord={handleCapture}
-              onClose={() => setCaptureMode('upload')}
+              onClose={() => setCaptureMode("upload")}
               disabled={disabled || isUploading}
             />
           )}
 
           {/* Mask editor */}
-          {captureMode === 'mask' && (
+          {captureMode === "mask" && (
             <MaskEditor
               referenceImageUrl={referenceImageUrl}
               referenceVideoUrl={referenceVideoUrl}
               onComplete={handleCapture}
-              onClose={() => setCaptureMode('upload')}
+              onClose={() => setCaptureMode("upload")}
               disabled={disabled || isUploading}
             />
           )}
 
           {/* File upload dropzone with integrated controls */}
-          {captureMode === 'upload' && (
+          {captureMode === "upload" && (
             <div className="flex gap-1.5 items-stretch">
               {/* Dropzone */}
               <div
                 {...getRootProps()}
                 className={cn(
-                  'flex-1 border-2 border-dashed rounded-lg px-3 py-2 cursor-pointer transition-all duration-200 min-h-[38px] flex items-center',
-                  isDragActive && 'border-primary bg-primary/5 shadow-inner shadow-primary/10 scale-[1.01]',
-                  disabled && 'opacity-50 cursor-not-allowed',
-                  !disabled && !isDragActive && 'hover:border-primary/50 hover:bg-muted/30 hover:shadow-sm'
+                  "flex-1 border-2 border-dashed rounded-lg px-3 py-2 cursor-pointer transition-all duration-200 min-h-[38px] flex items-center",
+                  isDragActive &&
+                    "border-primary bg-primary/5 shadow-inner shadow-primary/10 scale-[1.01]",
+                  disabled && "opacity-50 cursor-not-allowed",
+                  !disabled &&
+                    !isDragActive &&
+                    "hover:border-primary/50 hover:bg-muted/30 hover:shadow-sm",
                 )}
               >
                 <input {...getInputProps()} />
                 {isUploading ? (
                   <div className="flex items-center gap-2 w-full justify-center">
                     <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">{t('playground.capture.uploading')}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {t("playground.capture.uploading")}
+                    </span>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       onClick={(e) => {
-                        e.stopPropagation()
-                        handleCancelUpload()
+                        e.stopPropagation();
+                        handleCancelUpload();
                       }}
                       className="h-5 px-1.5 text-xs text-muted-foreground hover:text-destructive"
                     >
                       <X className="h-3 w-3 mr-0.5" />
-                      {t('common.cancel')}
+                      {t("common.cancel")}
                     </Button>
                   </div>
                 ) : (
                   <div className="flex items-center gap-1.5 w-full justify-center">
                     <Upload className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">{t('playground.capture.clickToUpload')}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {t("playground.capture.clickToUpload")}
+                    </span>
                   </div>
                 )}
               </div>
@@ -453,10 +510,10 @@ export function FileUpload({
                       type="button"
                       variant="outline"
                       size="icon"
-                      onClick={() => setCaptureMode('camera')}
+                      onClick={() => setCaptureMode("camera")}
                       disabled={disabled || isUploading}
                       className="h-[38px] w-[38px]"
-                      title={t('playground.capture.camera')}
+                      title={t("playground.capture.camera")}
                     >
                       <Camera className="h-4 w-4" />
                     </Button>
@@ -466,10 +523,10 @@ export function FileUpload({
                       type="button"
                       variant="outline"
                       size="icon"
-                      onClick={() => setCaptureMode('video')}
+                      onClick={() => setCaptureMode("video")}
                       disabled={disabled || isUploading}
                       className="h-[38px] w-[38px]"
-                      title={t('playground.capture.record')}
+                      title={t("playground.capture.record")}
                     >
                       <Video className="h-4 w-4" />
                     </Button>
@@ -479,10 +536,10 @@ export function FileUpload({
                       type="button"
                       variant="outline"
                       size="icon"
-                      onClick={() => setCaptureMode('audio')}
+                      onClick={() => setCaptureMode("audio")}
                       disabled={disabled || isUploading}
                       className="h-[38px] w-[38px]"
-                      title={t('playground.capture.audio')}
+                      title={t("playground.capture.audio")}
                     >
                       <Mic className="h-4 w-4" />
                     </Button>
@@ -492,10 +549,10 @@ export function FileUpload({
                       type="button"
                       variant="outline"
                       size="icon"
-                      onClick={() => setCaptureMode('mask')}
+                      onClick={() => setCaptureMode("mask")}
                       disabled={disabled || isUploading}
                       className="h-[38px] w-[38px]"
-                      title={t('playground.capture.drawMask')}
+                      title={t("playground.capture.drawMask")}
                     >
                       <Brush className="h-4 w-4" />
                     </Button>
@@ -506,14 +563,14 @@ export function FileUpload({
           )}
 
           {/* URL input - only show in upload mode */}
-          {captureMode === 'upload' && (
+          {captureMode === "upload" && (
             <div className="flex gap-1.5">
               <Input
                 type="url"
-                placeholder={t('playground.capture.enterUrl')}
+                placeholder={t("playground.capture.enterUrl")}
                 value={urlInput}
                 onChange={(e) => setUrlInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleAddUrl()}
+                onKeyDown={(e) => e.key === "Enter" && handleAddUrl()}
                 disabled={disabled}
                 className="flex-1 h-8 text-xs"
               />
@@ -525,7 +582,7 @@ export function FileUpload({
                   disabled={disabled}
                   className="h-8 px-3"
                 >
-                  {t('playground.capture.add')}
+                  {t("playground.capture.add")}
                 </Button>
               )}
             </div>
@@ -534,21 +591,22 @@ export function FileUpload({
       )}
 
       {/* Error */}
-      {error && (
-        <p className="text-xs text-destructive">{error}</p>
-      )}
+      {error && <p className="text-xs text-destructive">{error}</p>}
 
       {/* Preview Dialog */}
-      <Dialog open={!!previewUrl} onOpenChange={(open) => !open && setPreviewUrl(null)}>
+      <Dialog
+        open={!!previewUrl}
+        onOpenChange={(open) => !open && setPreviewUrl(null)}
+      >
         <DialogContent className="max-w-4xl p-0 overflow-hidden">
-          {previewType === 'image' && previewUrl && (
+          {previewType === "image" && previewUrl && (
             <img
               src={previewUrl}
               alt="Preview"
               className="w-full h-auto max-h-[80vh] object-contain"
             />
           )}
-          {previewType === 'video' && previewUrl && (
+          {previewType === "video" && previewUrl && (
             <video
               src={previewUrl}
               controls
@@ -556,20 +614,13 @@ export function FileUpload({
               className="w-full h-auto max-h-[80vh]"
             />
           )}
-          {previewType === 'audio' && previewUrl && (
+          {previewType === "audio" && previewUrl && (
             <div className="p-8">
-              <audio
-                src={previewUrl}
-                controls
-                autoPlay
-                className="w-full"
-              />
+              <audio src={previewUrl} controls autoPlay className="w-full" />
             </div>
           )}
         </DialogContent>
       </Dialog>
-
-
     </div>
-  )
+  );
 }

@@ -1,24 +1,24 @@
-import { useState, useRef, useCallback, useContext } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { PageResetContext } from '@/components/layout/PageResetContext'
-import { useTranslation } from 'react-i18next'
-import { generateFreeToolFilename } from '@/stores/assetsStore'
-import { useUpscalerWorker } from '@/hooks/useUpscalerWorker'
-import { useFaceEnhancerWorker } from '@/hooks/useFaceEnhancerWorker'
-import { useMultiPhaseProgress } from '@/hooks/useMultiPhaseProgress'
-import { ProcessingProgress } from '@/components/shared/ProcessingProgress'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
+import { useState, useRef, useCallback, useContext } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { PageResetContext } from "@/components/layout/PageResetContext";
+import { useTranslation } from "react-i18next";
+import { generateFreeToolFilename } from "@/stores/assetsStore";
+import { useUpscalerWorker } from "@/hooks/useUpscalerWorker";
+import { useFaceEnhancerWorker } from "@/hooks/useFaceEnhancerWorker";
+import { useMultiPhaseProgress } from "@/hooks/useMultiPhaseProgress";
+import { ProcessingProgress } from "@/components/shared/ProcessingProgress";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
-} from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,8 +27,8 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle
-} from '@/components/ui/alert-dialog'
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   ArrowLeft,
   Upload,
@@ -38,58 +38,78 @@ import {
   X,
   Columns2,
   SplitSquareHorizontal,
-  RefreshCw
-} from 'lucide-react'
-import { cn } from '@/lib/utils'
+  RefreshCw,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
-type ViewMode = 'sideBySide' | 'comparison'
+type ViewMode = "sideBySide" | "comparison";
 
-type ModelType = 'slim' | 'medium' | 'thick'
-type ScaleType = '2x' | '3x' | '4x'
+type ModelType = "slim" | "medium" | "thick";
+type ScaleType = "2x" | "3x" | "4x";
 
 // Phase configuration for image enhancer (face enhancement + upscale)
 const PHASES = [
-  { id: 'face-download', labelKey: 'freeTools.progress.downloading', weight: 0.1 },
-  { id: 'face-loading', labelKey: 'freeTools.progress.loading', weight: 0.1 },
-  { id: 'face-detect', labelKey: 'freeTools.faceEnhancer.detecting', weight: 0.1 },
-  { id: 'face-enhance', labelKey: 'freeTools.faceEnhancer.enhancing', weight: 0.2 },
-  { id: 'upscale-download', labelKey: 'freeTools.progress.downloading', weight: 0.1 },
-  { id: 'upscale-process', labelKey: 'freeTools.progress.processing', weight: 0.4 }
-]
+  {
+    id: "face-download",
+    labelKey: "freeTools.progress.downloading",
+    weight: 0.1,
+  },
+  { id: "face-loading", labelKey: "freeTools.progress.loading", weight: 0.1 },
+  {
+    id: "face-detect",
+    labelKey: "freeTools.faceEnhancer.detecting",
+    weight: 0.1,
+  },
+  {
+    id: "face-enhance",
+    labelKey: "freeTools.faceEnhancer.enhancing",
+    weight: 0.2,
+  },
+  {
+    id: "upscale-download",
+    labelKey: "freeTools.progress.downloading",
+    weight: 0.1,
+  },
+  {
+    id: "upscale-process",
+    labelKey: "freeTools.progress.processing",
+    weight: 0.4,
+  },
+];
 
 export function ImageEnhancerPage() {
-  const { t } = useTranslation()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { resetPage } = useContext(PageResetContext)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const dragCounterRef = useRef(0)
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { resetPage } = useContext(PageResetContext);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const dragCounterRef = useRef(0);
 
-  const [originalImage, setOriginalImage] = useState<string | null>(null)
-  const [enhancedImage, setEnhancedImage] = useState<string | null>(null)
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [isDragging, setIsDragging] = useState(false)
+  const [originalImage, setOriginalImage] = useState<string | null>(null);
+  const [enhancedImage, setEnhancedImage] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [originalSize, setOriginalSize] = useState<{
-    width: number
-    height: number
-  } | null>(null)
+    width: number;
+    height: number;
+  } | null>(null);
   const [enhancedSize, setEnhancedSize] = useState<{
-    width: number
-    height: number
-  } | null>(null)
-  const [model, setModel] = useState<ModelType>('slim')
-  const [scale, setScale] = useState<ScaleType>('2x')
-  const [enhanceFace, setEnhanceFace] = useState(false)
-  const [downloadFormat, setDownloadFormat] = useState<'png' | 'jpeg' | 'webp'>(
-    'jpeg'
-  )
-  const [previewImage, setPreviewImage] = useState<string | null>(null)
-  const [showBackWarning, setShowBackWarning] = useState(false)
-  const [viewMode, setViewMode] = useState<ViewMode>('sideBySide')
-  const [sliderPosition, setSliderPosition] = useState(50)
-  const comparisonRef = useRef<HTMLDivElement>(null)
-  const isDraggingSlider = useRef(false)
+    width: number;
+    height: number;
+  } | null>(null);
+  const [model, setModel] = useState<ModelType>("slim");
+  const [scale, setScale] = useState<ScaleType>("2x");
+  const [enhanceFace, setEnhanceFace] = useState(false);
+  const [downloadFormat, setDownloadFormat] = useState<"png" | "jpeg" | "webp">(
+    "jpeg",
+  );
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [showBackWarning, setShowBackWarning] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("sideBySide");
+  const [sliderPosition, setSliderPosition] = useState(50);
+  const comparisonRef = useRef<HTMLDivElement>(null);
+  const isDraggingSlider = useRef(false);
 
   // Multi-phase progress tracking
   const {
@@ -99,316 +119,326 @@ export function ImageEnhancerPage() {
     completePhase,
     reset: resetProgress,
     resetAndStart,
-    complete: completeAllPhases
-  } = useMultiPhaseProgress({ phases: PHASES })
+    complete: completeAllPhases,
+  } = useMultiPhaseProgress({ phases: PHASES });
 
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null);
 
-  const { loadModel, upscale, dispose, hasFailed, retryWorker } = useUpscalerWorker({
-    onPhase: (phase) => {
-      // Start the corresponding phase when worker reports it
-      if (phase === 'download') {
-        startPhase('upscale-download')
-      } else if (phase === 'process') {
-        startPhase('upscale-process')
-      }
-    },
-    onProgress: (phase, progressValue, detail) => {
-      // Update the phase that worker reports
-      const phaseId = phase === 'download' ? 'upscale-download' : 'upscale-process'
-      updatePhase(phaseId, progressValue, detail)
-    },
-    onError: (err) => {
-      console.error('Worker error:', err)
-      setError(err)
-      setIsProcessing(false)
-    }
-  })
+  const { loadModel, upscale, dispose, hasFailed, retryWorker } =
+    useUpscalerWorker({
+      onPhase: (phase) => {
+        // Start the corresponding phase when worker reports it
+        if (phase === "download") {
+          startPhase("upscale-download");
+        } else if (phase === "process") {
+          startPhase("upscale-process");
+        }
+      },
+      onProgress: (phase, progressValue, detail) => {
+        // Update the phase that worker reports
+        const phaseId =
+          phase === "download" ? "upscale-download" : "upscale-process";
+        updatePhase(phaseId, progressValue, detail);
+      },
+      onError: (err) => {
+        console.error("Worker error:", err);
+        setError(err);
+        setIsProcessing(false);
+      },
+    });
 
   const {
     initModel: initFaceModel,
     enhance: enhanceFaces,
     dispose: disposeFaceEnhancer,
     hasFailed: hasFaceFailed,
-    retryWorker: retryFaceWorker
+    retryWorker: retryFaceWorker,
   } = useFaceEnhancerWorker({
     onPhase: (phase) => {
-      if (phase === 'download') {
-        startPhase('face-download')
-      } else if (phase === 'loading') {
-        startPhase('face-loading')
-      } else if (phase === 'detect') {
-        startPhase('face-detect')
-      } else if (phase === 'enhance') {
-        startPhase('face-enhance')
+      if (phase === "download") {
+        startPhase("face-download");
+      } else if (phase === "loading") {
+        startPhase("face-loading");
+      } else if (phase === "detect") {
+        startPhase("face-detect");
+      } else if (phase === "enhance") {
+        startPhase("face-enhance");
       }
     },
     onProgress: (phase, progressValue, detail) => {
       const phaseId =
-        phase === 'download'
-          ? 'face-download'
-          : phase === 'loading'
-            ? 'face-loading'
-          : phase === 'detect'
-            ? 'face-detect'
-            : 'face-enhance'
-      updatePhase(phaseId, progressValue, detail)
+        phase === "download"
+          ? "face-download"
+          : phase === "loading"
+            ? "face-loading"
+            : phase === "detect"
+              ? "face-detect"
+              : "face-enhance";
+      updatePhase(phaseId, progressValue, detail);
     },
     onError: (err) => {
-      console.error('Face enhancer error:', err)
-      setError(err)
-      setIsProcessing(false)
-    }
-  })
+      console.error("Face enhancer error:", err);
+      setError(err);
+      setIsProcessing(false);
+    },
+  });
 
   const handleRetry = useCallback(() => {
-    setError(null)
-    retryWorker()
-    retryFaceWorker()
-  }, [retryWorker, retryFaceWorker])
+    setError(null);
+    retryWorker();
+    retryFaceWorker();
+  }, [retryWorker, retryFaceWorker]);
 
   const handleBack = useCallback(() => {
     if (isProcessing) {
-      setShowBackWarning(true)
+      setShowBackWarning(true);
     } else {
-      dispose()
-      disposeFaceEnhancer()
-      resetPage(location.pathname)
-      navigate('/free-tools')
+      dispose();
+      disposeFaceEnhancer();
+      resetPage(location.pathname);
+      navigate("/free-tools");
     }
-  }, [isProcessing, dispose, disposeFaceEnhancer, resetPage, location.pathname, navigate])
+  }, [
+    isProcessing,
+    dispose,
+    disposeFaceEnhancer,
+    resetPage,
+    location.pathname,
+    navigate,
+  ]);
 
   const handleConfirmBack = useCallback(() => {
-    setShowBackWarning(false)
-    dispose()
-    disposeFaceEnhancer()
-    resetPage(location.pathname)
-    navigate('/free-tools')
-  }, [dispose, disposeFaceEnhancer, resetPage, location.pathname, navigate])
+    setShowBackWarning(false);
+    dispose();
+    disposeFaceEnhancer();
+    resetPage(location.pathname);
+    navigate("/free-tools");
+  }, [dispose, disposeFaceEnhancer, resetPage, location.pathname, navigate]);
 
   const handleFileSelect = useCallback(
     (file: File) => {
-      if (!file.type.startsWith('image/')) return
+      if (!file.type.startsWith("image/")) return;
 
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = (e) => {
-        const dataUrl = e.target?.result as string
-        setError(null)
-        setOriginalImage(dataUrl)
-        setEnhancedImage(null)
-        setEnhancedSize(null)
-        resetProgress()
+        const dataUrl = e.target?.result as string;
+        setError(null);
+        setOriginalImage(dataUrl);
+        setEnhancedImage(null);
+        setEnhancedSize(null);
+        resetProgress();
 
         // Get original dimensions
-        const img = new Image()
+        const img = new Image();
         img.onload = () => {
-          setOriginalSize({ width: img.width, height: img.height })
-        }
-        img.src = dataUrl
-      }
-      reader.readAsDataURL(file)
+          setOriginalSize({ width: img.width, height: img.height });
+        };
+        img.src = dataUrl;
+      };
+      reader.readAsDataURL(file);
     },
-    [resetProgress]
-  )
+    [resetProgress],
+  );
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      dragCounterRef.current = 0
-      setIsDragging(false)
-      if (isProcessing) return
-      const file = e.dataTransfer.files[0]
-      if (file) handleFileSelect(file)
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounterRef.current = 0;
+      setIsDragging(false);
+      if (isProcessing) return;
+      const file = e.dataTransfer.files[0];
+      if (file) handleFileSelect(file);
     },
-    [handleFileSelect, isProcessing]
-  )
+    [handleFileSelect, isProcessing],
+  );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-  }, [])
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    dragCounterRef.current++
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current++;
     if (dragCounterRef.current === 1) {
-      setIsDragging(true)
+      setIsDragging(true);
     }
-  }, [])
+  }, []);
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    dragCounterRef.current--
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current--;
     if (dragCounterRef.current === 0) {
-      setIsDragging(false)
+      setIsDragging(false);
     }
-  }, [])
+  }, []);
 
   // Comparison slider handlers
   const handleSliderMove = useCallback((clientX: number) => {
-    if (!comparisonRef.current) return
-    const rect = comparisonRef.current.getBoundingClientRect()
-    const x = clientX - rect.left
-    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100))
-    setSliderPosition(percentage)
-  }, [])
+    if (!comparisonRef.current) return;
+    const rect = comparisonRef.current.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+    setSliderPosition(percentage);
+  }, []);
 
   const handleSliderMouseDown = useCallback(
     (e: React.MouseEvent) => {
-      e.preventDefault()
-      isDraggingSlider.current = true
-      handleSliderMove(e.clientX)
+      e.preventDefault();
+      isDraggingSlider.current = true;
+      handleSliderMove(e.clientX);
 
       const handleMouseMove = (e: MouseEvent) => {
         if (isDraggingSlider.current) {
-          handleSliderMove(e.clientX)
+          handleSliderMove(e.clientX);
         }
-      }
+      };
 
       const handleMouseUp = () => {
-        isDraggingSlider.current = false
-        document.removeEventListener('mousemove', handleMouseMove)
-        document.removeEventListener('mouseup', handleMouseUp)
-      }
+        isDraggingSlider.current = false;
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+      };
 
-      document.addEventListener('mousemove', handleMouseMove)
-      document.addEventListener('mouseup', handleMouseUp)
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
     },
-    [handleSliderMove]
-  )
+    [handleSliderMove],
+  );
 
   const handleSliderTouchStart = useCallback(
     (e: React.TouchEvent) => {
-      isDraggingSlider.current = true
-      handleSliderMove(e.touches[0].clientX)
+      isDraggingSlider.current = true;
+      handleSliderMove(e.touches[0].clientX);
 
       const handleTouchMove = (e: TouchEvent) => {
         if (isDraggingSlider.current) {
-          handleSliderMove(e.touches[0].clientX)
+          handleSliderMove(e.touches[0].clientX);
         }
-      }
+      };
 
       const handleTouchEnd = () => {
-        isDraggingSlider.current = false
-        document.removeEventListener('touchmove', handleTouchMove)
-        document.removeEventListener('touchend', handleTouchEnd)
-      }
+        isDraggingSlider.current = false;
+        document.removeEventListener("touchmove", handleTouchMove);
+        document.removeEventListener("touchend", handleTouchEnd);
+      };
 
-      document.addEventListener('touchmove', handleTouchMove)
-      document.addEventListener('touchend', handleTouchEnd)
+      document.addEventListener("touchmove", handleTouchMove);
+      document.addEventListener("touchend", handleTouchEnd);
     },
-    [handleSliderMove]
-  )
+    [handleSliderMove],
+  );
 
   const handleEnhance = async () => {
-    if (!originalImage || !originalSize || !canvasRef.current) return
+    if (!originalImage || !originalSize || !canvasRef.current) return;
 
-    setIsProcessing(true)
-    setError(null)
+    setIsProcessing(true);
+    setError(null);
     if (enhanceFace) {
-      resetAndStart('face-download')
+      resetAndStart("face-download");
     } else {
-      resetAndStart('upscale-download')
-      completePhase('face-download')
-      completePhase('face-loading')
-      completePhase('face-detect')
-      completePhase('face-enhance')
+      resetAndStart("upscale-download");
+      completePhase("face-download");
+      completePhase("face-loading");
+      completePhase("face-detect");
+      completePhase("face-enhance");
     }
 
     try {
       // Load the selected model in worker (cached by browser after first download)
-      await loadModel(model, scale)
+      await loadModel(model, scale);
 
       // Create source image and get ImageData
-      const img = new Image()
+      const img = new Image();
       await new Promise<void>((resolve, reject) => {
-        img.onload = () => resolve()
-        img.onerror = () => reject(new Error('Failed to load image'))
-        img.src = originalImage
-      })
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error("Failed to load image"));
+        img.src = originalImage;
+      });
 
       // Draw to canvas to get ImageData
-      const tempCanvas = document.createElement('canvas')
-      tempCanvas.width = img.width
-      tempCanvas.height = img.height
-      const tempCtx = tempCanvas.getContext('2d')!
-      tempCtx.drawImage(img, 0, 0)
-      const imageData = tempCtx.getImageData(0, 0, img.width, img.height)
+      const tempCanvas = document.createElement("canvas");
+      tempCanvas.width = img.width;
+      tempCanvas.height = img.height;
+      const tempCtx = tempCanvas.getContext("2d")!;
+      tempCtx.drawImage(img, 0, 0);
+      const imageData = tempCtx.getImageData(0, 0, img.width, img.height);
 
-      let baseImageData = imageData
+      let baseImageData = imageData;
       if (enhanceFace) {
-        await initFaceModel()
-        const { dataUrl, faces } = await enhanceFaces(imageData)
+        await initFaceModel();
+        const { dataUrl, faces } = await enhanceFaces(imageData);
         if (faces === 0) {
-          setError(t('freeTools.faceEnhancer.noFaces'))
+          setError(t("freeTools.faceEnhancer.noFaces"));
         }
 
-        const faceImg = new Image()
+        const faceImg = new Image();
         await new Promise<void>((resolve, reject) => {
-          faceImg.onload = () => resolve()
-          faceImg.onerror = () => reject(new Error('Failed to load face enhanced image'))
-          faceImg.src = dataUrl
-        })
-        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height)
-        tempCtx.drawImage(faceImg, 0, 0)
-        baseImageData = tempCtx.getImageData(0, 0, img.width, img.height)
+          faceImg.onload = () => resolve();
+          faceImg.onerror = () =>
+            reject(new Error("Failed to load face enhanced image"));
+          faceImg.src = dataUrl;
+        });
+        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+        tempCtx.drawImage(faceImg, 0, 0);
+        baseImageData = tempCtx.getImageData(0, 0, img.width, img.height);
       }
 
       // Upscale in worker
-      const upscaledDataUrl = await upscale(baseImageData)
+      const upscaledDataUrl = await upscale(baseImageData);
 
       // Get scale multiplier
-      const scaleMultiplier = parseInt(scale.replace('x', ''))
+      const scaleMultiplier = parseInt(scale.replace("x", ""));
 
       setEnhancedSize({
         width: originalSize.width * scaleMultiplier,
-        height: originalSize.height * scaleMultiplier
-      })
+        height: originalSize.height * scaleMultiplier,
+      });
 
       // Draw to canvas for face enhancement and download format conversion
-      const canvas = canvasRef.current
-      canvas.width = originalSize.width * scaleMultiplier
-      canvas.height = originalSize.height * scaleMultiplier
-      const ctx = canvas.getContext('2d')!
-      const resultImg = new Image()
+      const canvas = canvasRef.current;
+      canvas.width = originalSize.width * scaleMultiplier;
+      canvas.height = originalSize.height * scaleMultiplier;
+      const ctx = canvas.getContext("2d")!;
+      const resultImg = new Image();
       await new Promise<void>((resolve) => {
         resultImg.onload = () => {
-          ctx.drawImage(resultImg, 0, 0)
-          resolve()
-        }
-        resultImg.src = upscaledDataUrl
-      })
+          ctx.drawImage(resultImg, 0, 0);
+          resolve();
+        };
+        resultImg.src = upscaledDataUrl;
+      });
 
       // Set the enhanced image
-      setEnhancedImage(upscaledDataUrl)
+      setEnhancedImage(upscaledDataUrl);
 
-      completeAllPhases()
+      completeAllPhases();
     } catch (error) {
-      console.error('Enhancement failed:', error)
+      console.error("Enhancement failed:", error);
     } finally {
-      setIsProcessing(false)
+      setIsProcessing(false);
     }
-  }
+  };
 
   const handleDownload = () => {
-    if (!enhancedImage || !canvasRef.current) return
+    if (!enhancedImage || !canvasRef.current) return;
 
     // Get canvas and convert to selected format
-    const canvas = canvasRef.current
-    const mimeType = `image/${downloadFormat}`
-    const quality = downloadFormat === 'png' ? undefined : 0.95
-    const dataUrl = canvas.toDataURL(mimeType, quality)
+    const canvas = canvasRef.current;
+    const mimeType = `image/${downloadFormat}`;
+    const quality = downloadFormat === "png" ? undefined : 0.95;
+    const dataUrl = canvas.toDataURL(mimeType, quality);
 
-    const link = document.createElement('a')
-    link.href = dataUrl
-    link.download = generateFreeToolFilename('image-enhancer', downloadFormat)
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
+    const link = document.createElement("a");
+    link.href = dataUrl;
+    link.download = generateFreeToolFilename("image-enhancer", downloadFormat);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div
@@ -427,7 +457,7 @@ export function ImageEnhancerPage() {
           <div className="text-center">
             <Upload className="h-12 w-12 text-primary mx-auto mb-2" />
             <p className="text-lg font-medium">
-              {t('freeTools.imageEnhancer.orDragDrop')}
+              {t("freeTools.imageEnhancer.orDragDrop")}
             </p>
           </div>
         </div>
@@ -435,19 +465,15 @@ export function ImageEnhancerPage() {
 
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleBack}
-        >
+        <Button variant="ghost" size="icon" onClick={handleBack}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
           <h1 className="text-2xl font-bold">
-            {t('freeTools.imageEnhancer.title')}
+            {t("freeTools.imageEnhancer.title")}
           </h1>
           <p className="text-muted-foreground text-sm">
-            {t('freeTools.imageEnhancer.description')}
+            {t("freeTools.imageEnhancer.description")}
           </p>
         </div>
       </div>
@@ -456,10 +482,10 @@ export function ImageEnhancerPage() {
       {!originalImage && (
         <Card
           className={cn(
-            'border-2 border-dashed cursor-pointer transition-colors',
+            "border-2 border-dashed cursor-pointer transition-colors",
             isDragging
-              ? 'border-primary bg-primary/5'
-              : 'border-muted-foreground/25 hover:border-primary/50'
+              ? "border-primary bg-primary/5"
+              : "border-muted-foreground/25 hover:border-primary/50",
           )}
           onClick={() => fileInputRef.current?.click()}
           onDrop={handleDrop}
@@ -472,10 +498,10 @@ export function ImageEnhancerPage() {
               <Upload className="h-8 w-8 text-muted-foreground" />
             </div>
             <p className="text-lg font-medium">
-              {t('freeTools.imageEnhancer.selectImage')}
+              {t("freeTools.imageEnhancer.selectImage")}
             </p>
             <p className="text-sm text-muted-foreground">
-              {t('freeTools.imageEnhancer.orDragDrop')}
+              {t("freeTools.imageEnhancer.orDragDrop")}
             </p>
           </CardContent>
         </Card>
@@ -487,8 +513,8 @@ export function ImageEnhancerPage() {
         accept="image/*"
         className="hidden"
         onChange={(e) => {
-          const file = e.target.files?.[0]
-          if (file) handleFileSelect(file)
+          const file = e.target.files?.[0];
+          if (file) handleFileSelect(file);
         }}
       />
 
@@ -503,7 +529,7 @@ export function ImageEnhancerPage() {
               disabled={isProcessing}
             >
               <Upload className="h-4 w-4 mr-2" />
-              {t('freeTools.imageEnhancer.selectImage')}
+              {t("freeTools.imageEnhancer.selectImage")}
             </Button>
 
             <Select
@@ -516,13 +542,13 @@ export function ImageEnhancerPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="slim">
-                  {t('freeTools.imageEnhancer.modelFast')}
+                  {t("freeTools.imageEnhancer.modelFast")}
                 </SelectItem>
                 <SelectItem value="medium">
-                  {t('freeTools.imageEnhancer.modelBalanced')}
+                  {t("freeTools.imageEnhancer.modelBalanced")}
                 </SelectItem>
                 <SelectItem value="thick">
-                  {t('freeTools.imageEnhancer.modelQuality')}
+                  {t("freeTools.imageEnhancer.modelQuality")}
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -549,8 +575,11 @@ export function ImageEnhancerPage() {
                 onCheckedChange={setEnhanceFace}
                 disabled={isProcessing}
               />
-              <Label htmlFor="image-enhancer-face-toggle" className="text-xs whitespace-nowrap">
-                {t('freeTools.imageEnhancer.enhanceFace')}
+              <Label
+                htmlFor="image-enhancer-face-toggle"
+                className="text-xs whitespace-nowrap"
+              >
+                {t("freeTools.imageEnhancer.enhanceFace")}
               </Label>
             </div>
 
@@ -562,12 +591,12 @@ export function ImageEnhancerPage() {
               {isProcessing ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  {t('freeTools.imageEnhancer.processing')}
+                  {t("freeTools.imageEnhancer.processing")}
                 </>
               ) : (
                 <>
                   <ImageUp className="h-4 w-4 mr-2" />
-                  {t('freeTools.imageEnhancer.enhance')}
+                  {t("freeTools.imageEnhancer.enhance")}
                 </>
               )}
             </Button>
@@ -576,20 +605,20 @@ export function ImageEnhancerPage() {
                 {/* View mode toggle */}
                 <div className="flex rounded-md border">
                   <Button
-                    variant={viewMode === 'sideBySide' ? 'secondary' : 'ghost'}
+                    variant={viewMode === "sideBySide" ? "secondary" : "ghost"}
                     size="sm"
                     className="rounded-r-none border-0"
-                    onClick={() => setViewMode('sideBySide')}
-                    title={t('freeTools.imageEnhancer.sideBySide')}
+                    onClick={() => setViewMode("sideBySide")}
+                    title={t("freeTools.imageEnhancer.sideBySide")}
                   >
                     <Columns2 className="h-4 w-4" />
                   </Button>
                   <Button
-                    variant={viewMode === 'comparison' ? 'secondary' : 'ghost'}
+                    variant={viewMode === "comparison" ? "secondary" : "ghost"}
                     size="sm"
                     className="rounded-l-none border-0"
-                    onClick={() => setViewMode('comparison')}
-                    title={t('freeTools.imageEnhancer.comparison')}
+                    onClick={() => setViewMode("comparison")}
+                    title={t("freeTools.imageEnhancer.comparison")}
                   >
                     <SplitSquareHorizontal className="h-4 w-4" />
                   </Button>
@@ -598,7 +627,7 @@ export function ImageEnhancerPage() {
                 <Select
                   value={downloadFormat}
                   onValueChange={(v) =>
-                    setDownloadFormat(v as 'png' | 'jpeg' | 'webp')
+                    setDownloadFormat(v as "png" | "jpeg" | "webp")
                   }
                 >
                   <SelectTrigger className="w-28">
@@ -612,7 +641,7 @@ export function ImageEnhancerPage() {
                 </Select>
                 <Button variant="outline" onClick={handleDownload}>
                   <Download className="h-4 w-4 mr-2" />
-                  {t('freeTools.imageEnhancer.download')}
+                  {t("freeTools.imageEnhancer.download")}
                 </Button>
               </>
             )}
@@ -632,20 +661,22 @@ export function ImageEnhancerPage() {
               <span className="text-sm text-destructive">{error}</span>
               <Button variant="outline" size="sm" onClick={handleRetry}>
                 <RefreshCw className="h-4 w-4 mr-2" />
-                {t('common.retry')}
+                {t("common.retry")}
               </Button>
             </div>
           )}
 
           {/* No faces warning (non-fatal) */}
-          {error && error === t('freeTools.faceEnhancer.noFaces') && !isProcessing && (
-            <div className="flex items-center justify-center gap-3 p-4 bg-warning/10 border border-warning/20 rounded-lg">
-              <span className="text-sm text-warning-foreground">{error}</span>
-            </div>
-          )}
+          {error &&
+            error === t("freeTools.faceEnhancer.noFaces") &&
+            !isProcessing && (
+              <div className="flex items-center justify-center gap-3 p-4 bg-warning/10 border border-warning/20 rounded-lg">
+                <span className="text-sm text-warning-foreground">{error}</span>
+              </div>
+            )}
 
           {/* Preview area */}
-          {viewMode === 'sideBySide' || !enhancedImage ? (
+          {viewMode === "sideBySide" || !enhancedImage ? (
             /* Side by side preview */
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Original */}
@@ -653,7 +684,7 @@ export function ImageEnhancerPage() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-sm font-medium">
-                      {t('freeTools.imageEnhancer.original')}
+                      {t("freeTools.imageEnhancer.original")}
                     </span>
                     {originalSize && (
                       <span className="text-xs text-muted-foreground">
@@ -677,7 +708,7 @@ export function ImageEnhancerPage() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-sm font-medium">
-                      {t('freeTools.imageEnhancer.enhanced')}
+                      {t("freeTools.imageEnhancer.enhanced")}
                     </span>
                     {enhancedSize && (
                       <span className="text-xs text-muted-foreground">
@@ -699,7 +730,7 @@ export function ImageEnhancerPage() {
                           <>
                             <Loader2 className="h-8 w-8 animate-spin mb-2" />
                             <span className="text-sm">
-                              {t('freeTools.imageEnhancer.processing')}
+                              {t("freeTools.imageEnhancer.processing")}
                             </span>
                           </>
                         ) : (
@@ -718,24 +749,28 @@ export function ImageEnhancerPage() {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-4">
                     <span className="text-sm font-medium">
-                      {t('freeTools.imageEnhancer.original')}
+                      {t("freeTools.imageEnhancer.original")}
                     </span>
                     <span className="text-xs text-muted-foreground">←</span>
                     <span className="text-xs text-muted-foreground">
-                      {t('freeTools.imageEnhancer.dragToCompare')}
+                      {t("freeTools.imageEnhancer.dragToCompare")}
                     </span>
                     <span className="text-xs text-muted-foreground">→</span>
                     <span className="text-sm font-medium">
-                      {t('freeTools.imageEnhancer.enhanced')}
+                      {t("freeTools.imageEnhancer.enhanced")}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     {originalSize && (
-                      <span>{originalSize.width} x {originalSize.height}</span>
+                      <span>
+                        {originalSize.width} x {originalSize.height}
+                      </span>
                     )}
                     <span>→</span>
                     {enhancedSize && (
-                      <span>{enhancedSize.width} x {enhancedSize.height}</span>
+                      <span>
+                        {enhancedSize.width} x {enhancedSize.height}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -759,7 +794,7 @@ export function ImageEnhancerPage() {
                     alt="Original"
                     className="absolute inset-0 w-full max-h-[70vh] object-contain pointer-events-none"
                     style={{
-                      clipPath: `inset(0 ${100 - sliderPosition}% 0 0)`
+                      clipPath: `inset(0 ${100 - sliderPosition}% 0 0)`,
                     }}
                     draggable={false}
                   />
@@ -769,8 +804,9 @@ export function ImageEnhancerPage() {
                     className="absolute top-0 bottom-0 w-0.5 bg-white cursor-ew-resize"
                     style={{
                       left: `${sliderPosition}%`,
-                      transform: 'translateX(-50%)',
-                      boxShadow: '0 0 0 1px rgba(0,0,0,0.3), 0 0 8px rgba(0,0,0,0.5)'
+                      transform: "translateX(-50%)",
+                      boxShadow:
+                        "0 0 0 1px rgba(0,0,0,0.3), 0 0 8px rgba(0,0,0,0.5)",
                     }}
                   >
                     {/* Handle grip */}
@@ -784,10 +820,10 @@ export function ImageEnhancerPage() {
 
                   {/* Labels */}
                   <div className="absolute bottom-3 left-3 px-2 py-1 bg-black/60 text-white text-xs rounded">
-                    {t('freeTools.imageEnhancer.original')}
+                    {t("freeTools.imageEnhancer.original")}
                   </div>
                   <div className="absolute bottom-3 right-3 px-2 py-1 bg-black/60 text-white text-xs rounded">
-                    {t('freeTools.imageEnhancer.enhanced')}
+                    {t("freeTools.imageEnhancer.enhanced")}
                   </div>
                 </div>
               </CardContent>
@@ -797,7 +833,10 @@ export function ImageEnhancerPage() {
       )}
 
       {/* Fullscreen Preview Dialog */}
-      <Dialog open={!!previewImage} onOpenChange={(open) => !open && setPreviewImage(null)}>
+      <Dialog
+        open={!!previewImage}
+        onOpenChange={(open) => !open && setPreviewImage(null)}
+      >
         <DialogContent
           className="w-screen h-screen max-w-none max-h-none p-0 border-0 bg-black flex items-center justify-center"
           hideCloseButton
@@ -825,19 +864,23 @@ export function ImageEnhancerPage() {
       <AlertDialog open={showBackWarning} onOpenChange={setShowBackWarning}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('freeTools.backWarning.title')}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t("freeTools.backWarning.title")}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              {t('freeTools.backWarning.description')}
+              {t("freeTools.backWarning.description")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t('freeTools.backWarning.cancel')}</AlertDialogCancel>
+            <AlertDialogCancel>
+              {t("freeTools.backWarning.cancel")}
+            </AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmBack}>
-              {t('freeTools.backWarning.confirm')}
+              {t("freeTools.backWarning.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  )
+  );
 }

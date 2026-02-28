@@ -448,6 +448,8 @@
     "filterByModel": "模型",
     "filterBySource": "来源",
     "allModels": "所有模型",
+    "all": "全部",
+    "allSources": "全部",
     "favorites": "收藏",
     "showFavoritesOnly": "仅显示收藏",
     "types": {

@@ -448,6 +448,8 @@
     "filterByModel": "Model",
     "filterBySource": "Source",
     "allModels": "All Models",
+    "all": "All",
+    "allSources": "All",
     "favorites": "Favorites",
     "showFavoritesOnly": "Show favorites only",
     "types": {

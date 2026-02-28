@@ -447,6 +447,8 @@
     "filterByType": "類型",
     "filterByModel": "模型",
     "allModels": "所有模型",
+    "all": "全部",
+    "allSources": "全部",
     "favorites": "收藏",
     "showFavoritesOnly": "僅顯示收藏",
     "types": {

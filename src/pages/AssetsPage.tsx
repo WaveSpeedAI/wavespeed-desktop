@@ -608,7 +608,7 @@ export function AssetsPage() {
           </p>
         </div>
 
-        {/* Search, Filters & Actions */}
+        {/* Toolbar */}
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative w-56">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -636,6 +636,22 @@ export function AssetsPage() {
               <SelectItem value="size-asc">{t('assets.sort.sizeSmallest')}</SelectItem>
             </SelectContent>
           </Select>
+          <Select
+            value={(filter.models && filter.models[0]) || 'all'}
+            onValueChange={handleModelFilterChange}
+          >
+            <SelectTrigger className="h-9 w-full rounded-lg border-border/80 bg-background sm:w-[170px]">
+              <SelectValue placeholder={t('assets.allModels')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t('assets.allModels')}</SelectItem>
+              {allModels.map((modelId) => (
+                <SelectItem key={modelId} value={modelId}>
+                  {modelId}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button
             variant={loadPreviews ? 'default' : 'outline'}
             size="icon"
@@ -648,6 +664,15 @@ export function AssetsPage() {
             ) : (
               <EyeOff className="h-4 w-4" />
             )}
+          </Button>
+          <Button
+            variant={filter.favoritesOnly ? 'default' : 'outline'}
+            size="icon"
+            onClick={() => handleFavoritesFilterChange(!filter.favoritesOnly)}
+            title={t('assets.showFavoritesOnly')}
+            className="h-9 w-9 rounded-lg"
+          >
+            <Star className={cn('h-4 w-4', filter.favoritesOnly && 'fill-current')} />
           </Button>
           <Button
             variant={showFilters ? 'default' : 'outline'}
@@ -734,120 +759,65 @@ export function AssetsPage() {
 
         {/* Filter Panel */}
         {showFilters && (
-          <div className="mt-3 space-y-2.5">
-            {/* Row 1: Type & Source pills */}
-            <div className="flex flex-wrap items-start gap-6 rounded-lg border border-border/50 bg-card/40 px-4 py-3">
-              {/* Type */}
-              <div className="space-y-1.5">
-                <span className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-wider">{t('assets.filterByType')}</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {(['image', 'video', 'audio', 'text'] as AssetType[]).map((type) => {
-                    const isActive = (filter.types || []).includes(type)
-                    return (
-                      <button
-                        key={type}
-                        onClick={() => handleTypeFilterChange(type, !isActive)}
-                        className={cn(
-                          'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs transition-colors',
-                          'cursor-pointer select-none border',
-                          isActive
-                            ? 'border-primary/40 bg-primary/10 text-primary'
-                            : 'border-transparent text-muted-foreground hover:bg-accent/50 hover:text-foreground'
-                        )}
-                      >
-                        <AssetTypeIcon type={type} className="h-3.5 w-3.5" />
-                        {t(`assets.typesPlural.${type}`)}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-
-              {/* Source */}
-              <div className="space-y-1.5">
-                <span className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-wider">{t('assets.filterBySource', 'Source')}</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {([
-                    { value: 'playground' as const, label: 'Playground', icon: Sparkles },
-                    { value: 'workflow' as const, label: 'Workflow', icon: GitBranch },
-                    { value: 'free-tool' as const, label: 'Free Tool', icon: Wrench },
-                    { value: 'z-image' as const, label: 'Z-Image', icon: Cpu },
-                  ]).map(({ value, label, icon: Icon }) => {
-                    const isActive = (filter.sources || []).includes(value)
-                    return (
-                      <button
-                        key={value}
-                        onClick={() => {
-                          setFilter(f => {
-                            const current = f.sources || []
-                            return { ...f, sources: isActive ? current.filter(s => s !== value) : [...current, value] }
-                          })
-                        }}
-                        className={cn(
-                          'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs transition-colors',
-                          'cursor-pointer select-none border',
-                          isActive
-                            ? 'border-primary/40 bg-primary/10 text-primary'
-                            : 'border-transparent text-muted-foreground hover:bg-accent/50 hover:text-foreground'
-                        )}
-                      >
-                        <Icon className="h-3.5 w-3.5" />
-                        {label}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
-
-            {/* Row 2: Model, Favorites, Clear */}
-            <div className="flex flex-wrap items-center gap-4 px-1">
-              {/* Model dropdown */}
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-wider">{t('assets.filterByModel')}</span>
-                <Select
-                  value={(filter.models && filter.models[0]) || 'all'}
-                  onValueChange={handleModelFilterChange}
-                >
-                  <SelectTrigger className="h-7 w-[160px] text-xs border-border/40 bg-card/40 rounded-md">
-                    <SelectValue placeholder={t('assets.allModels')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t('assets.allModels')}</SelectItem>
-                    {allModels.map((modelId) => (
-                      <SelectItem key={modelId} value={modelId}>
-                        {modelId}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="h-4 w-px bg-border/30" />
-
-              {/* Favorites toggle */}
+          <div className="mt-3 space-y-2">
+        {/* Source tabs */}
+        <div className="flex items-end gap-0.5">
+          {([
+            { value: 'playground' as const, label: 'Playground', icon: Sparkles },
+            { value: 'workflow' as const, label: 'Workflow', icon: GitBranch },
+            { value: 'free-tool' as const, label: 'Free Tool', icon: Wrench },
+            { value: 'z-image' as const, label: 'Z-Image', icon: Cpu },
+          ]).map(({ value, label, icon: Icon }) => {
+            const isActive = (filter.sources || []).includes(value)
+            return (
               <button
-                onClick={() => handleFavoritesFilterChange(!filter.favoritesOnly)}
+                key={value}
+                onClick={() => {
+                  setFilter(f => {
+                    const current = f.sources || []
+                    return { ...f, sources: isActive ? current.filter(s => s !== value) : [...current, value] }
+                  })
+                }}
                 className={cn(
-                  'inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs transition-colors',
+                  'relative inline-flex items-center gap-1.5 px-3 pb-2 text-[13px] font-medium transition-colors',
                   'cursor-pointer select-none',
-                  filter.favoritesOnly
-                    ? 'text-yellow-400'
-                    : 'text-muted-foreground hover:text-foreground'
+                  isActive
+                    ? 'text-primary'
+                    : 'text-muted-foreground/60 hover:text-muted-foreground'
                 )}
               >
-                <Star className={cn('h-3.5 w-3.5', filter.favoritesOnly && 'fill-current')} />
-                {t('assets.showFavoritesOnly')}
+                <Icon className="h-3.5 w-3.5" />
+                {label}
+                <span className={cn(
+                  'absolute bottom-0 left-[6%] right-[6%] h-[2.5px] rounded-full transition-colors',
+                  isActive ? 'bg-primary' : 'bg-muted-foreground/25'
+                )} />
               </button>
+            )
+          })}
+        </div>
 
-              {/* Clear filters */}
-              <button
-                onClick={handleClearFilters}
-                className="ml-auto inline-flex items-center gap-1 text-[11px] text-muted-foreground/40 hover:text-muted-foreground transition-colors cursor-pointer select-none"
-              >
-                <X className="h-3 w-3" />
-                {t('assets.clearFilters')}
-              </button>
+            {/* Type pills */}
+            <div className="flex flex-wrap items-center gap-1.5 pl-3">
+              {(['image', 'video', 'audio', 'text'] as AssetType[]).map((type) => {
+                const isActive = (filter.types || []).includes(type)
+                return (
+                  <button
+                    key={type}
+                    onClick={() => handleTypeFilterChange(type, !isActive)}
+                    className={cn(
+                      'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-all',
+                      'cursor-pointer select-none',
+                      isActive
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground'
+                    )}
+                  >
+                    <AssetTypeIcon type={type} className="h-3.5 w-3.5" />
+                    {t(`assets.typesPlural.${type}`)}
+                  </button>
+                )
+              })}
             </div>
           </div>
         )}

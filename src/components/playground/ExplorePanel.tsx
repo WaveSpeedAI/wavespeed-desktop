@@ -198,7 +198,7 @@ export function ExplorePanel({
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("popularity");
-  const [sortAsc, setSortAsc] = useState(true);
+  const [sortAsc, setSortAsc] = useState(false);
 
   // Local search state with debounce
   const [searchInput, setSearchInput] = useState("");

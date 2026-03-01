@@ -1052,7 +1052,7 @@ export function AssetsPage() {
                   onClick={() => navigateAsset("prev")}
                   className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full opacity-80 hover:opacity-100"
                 >
-                  <span className="text-xl">◀</span>
+                  <ChevronLeft className="h-5 w-5" />
                 </Button>
                 <Button
                   size="icon"
@@ -1060,7 +1060,7 @@ export function AssetsPage() {
                   onClick={() => navigateAsset("next")}
                   className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full opacity-80 hover:opacity-100"
                 >
-                  <span className="text-xl">▶</span>
+                  <ChevronRight className="h-5 w-5" />
                 </Button>
               </>
             )}

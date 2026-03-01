@@ -280,7 +280,7 @@ export function Sidebar({
                               {t(item.titleKey)}
                             </span>
                             {isNewFeature && (
-                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-sm ml-auto relative z-10">
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-sm ml-auto relative z-10 animate-in fade-in zoom-in-75 duration-500">
                                 NEW
                               </span>
                             )}
@@ -291,7 +291,7 @@ export function Sidebar({
                           !active &&
                           collapsed &&
                           !isMobileOpen && (
-                            <span className="absolute top-1 right-1 flex h-2 w-2 z-10">
+                            <span className="absolute top-1 right-1 flex h-2 w-2 z-10 animate-in fade-in zoom-in-50 duration-500">
                               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                               <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
                             </span>

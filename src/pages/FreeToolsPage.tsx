@@ -170,10 +170,11 @@ export function FreeToolsPage() {
 
       <div className="flex-1 overflow-auto p-4 md:p-6">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-6">
-          {tools.map((tool) => (
+          {tools.map((tool, index) => (
             <Card
               key={tool.id}
-              className="group relative flex cursor-pointer flex-col overflow-hidden rounded-xl border border-border/70 bg-card/80 shadow-sm transition-all duration-200 hover:border-primary/40 hover:shadow-lg"
+              className="group relative flex cursor-pointer flex-col overflow-hidden rounded-xl border border-border/70 bg-card/80 shadow-sm transition-all duration-200 hover:border-primary/40 hover:shadow-lg animate-in fade-in slide-in-from-bottom-2 fill-mode-both"
+              style={{ animationDelay: `${index * 60}ms` }}
               onClick={() => navigate(tool.route)}
             >
               {/* Decorative gradient background */}

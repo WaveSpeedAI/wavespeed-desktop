@@ -665,8 +665,8 @@ export function HistoryPage() {
               )}
             </div>
           ) : items.length === 0 ? (
-            <div className="text-center py-8">
-              <Clock className="mx-auto h-10 w-10 text-muted-foreground mb-3" />
+            <div className="text-center py-16 animate-in fade-in duration-500">
+              <Clock className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4 animate-pulse" />
               <p className="text-muted-foreground text-sm">
                 {t("history.noHistory")}
               </p>

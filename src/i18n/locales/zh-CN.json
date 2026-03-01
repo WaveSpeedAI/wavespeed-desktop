@@ -199,6 +199,7 @@
       "micInUse": "麦克风正被其他应用使用",
       "tapToRecord": "点击开始录制"
     },
+    "generationComplete": "生成完成",
     "autoSaved": "已自动保存到资产",
     "autoSavedDesc": "已保存 {{count}} 个输出到我的资产",
     "savedToAssets": "已保存到资产",

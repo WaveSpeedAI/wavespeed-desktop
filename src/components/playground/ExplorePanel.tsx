@@ -248,14 +248,21 @@ export function ExplorePanel({
     // Sort
     const sorted = [...result].sort((a, b) => {
       if (sortKey === "name") return a.name.localeCompare(b.name);
-      if (sortKey === "price")
-        return (a.base_price ?? 0) - (b.base_price ?? 0);
+      if (sortKey === "price") return (a.base_price ?? 0) - (b.base_price ?? 0);
       // popularity: use sort_order (lower = more popular)
       return (a.sort_order ?? 9999) - (b.sort_order ?? 9999);
     });
 
     return sortAsc ? sorted : sorted.reverse();
-  }, [models, search, typeFilter, showFavoritesOnly, isFavorite, sortKey, sortAsc]);
+  }, [
+    models,
+    search,
+    typeFilter,
+    showFavoritesOnly,
+    isFavorite,
+    sortKey,
+    sortAsc,
+  ]);
 
   const handleToggleFavorite = useCallback(
     (e: React.MouseEvent, modelId: string) => {
@@ -431,7 +438,10 @@ export function ExplorePanel({
           {filteredModels.length === 0 && (
             <div className="py-12 text-center text-sm text-muted-foreground">
               {showFavoritesOnly
-                ? t("playground.explore.noFavorites", "No favorites yet — star a model to save it here")
+                ? t(
+                    "playground.explore.noFavorites",
+                    "No favorites yet — star a model to save it here",
+                  )
                 : t("models.noResults", "No models found")}
             </div>
           )}

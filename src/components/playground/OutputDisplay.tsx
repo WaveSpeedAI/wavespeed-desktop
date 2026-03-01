@@ -252,6 +252,7 @@ export function OutputDisplay({
         }
       }
       toast({
+        title: t("playground.generationComplete", "Generation complete"),
         description: t("playground.autoSaved"),
         duration: 2000,
       });

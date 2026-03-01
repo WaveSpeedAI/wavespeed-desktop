@@ -36,8 +36,7 @@ export function ResultPanel({
   historyIndex,
 }: ResultPanelProps) {
   // Only show batch grid when there are actual results
-  const showBatchGrid =
-    batchResults.length > 0 && historyIndex === null;
+  const showBatchGrid = batchResults.length > 0 && historyIndex === null;
 
   return (
     <div className="flex-1 min-w-0 overflow-auto p-5 md:p-6">

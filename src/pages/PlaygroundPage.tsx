@@ -578,7 +578,10 @@ export function PlaygroundPage() {
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
                     >
                       <Star className="h-3.5 w-3.5" />
-                      {t("playground.rightPanel.featuredModels", "Featured Models")}
+                      {t(
+                        "playground.rightPanel.featuredModels",
+                        "Featured Models",
+                      )}
                     </button>
                     <button
                       onClick={() => switchTab("models")}

@@ -199,6 +199,7 @@
       "removeFile": "Remove File",
       "removeFileConfirm": "Are you sure you want to remove this file?"
     },
+    "generationComplete": "Generation complete",
     "autoSaved": "Auto-saved to Assets",
     "autoSavedDesc": "Saved {{count}} output(s) to My Assets",
     "savedToAssets": "Saved to Assets",

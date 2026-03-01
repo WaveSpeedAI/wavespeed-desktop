@@ -244,6 +244,7 @@ export function BatchOutputGrid({
     if (savedIndexes.size === 0) return;
 
     toast({
+      title: t("playground.generationComplete", "Generation complete"),
       description: t("playground.autoSaved"),
       duration: 2000,
     });

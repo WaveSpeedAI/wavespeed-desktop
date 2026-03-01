@@ -1273,15 +1273,13 @@ export function WorkflowPage() {
           },
         },
       }));
-      const wfEdges = useWorkflowStore
-        .getState()
-        .edges.map((e) => ({
-          id: e.id,
-          sourceNodeId: e.source,
-          targetNodeId: e.target,
-          sourceOutputKey: e.sourceHandle ?? "output",
-          targetInputKey: e.targetHandle ?? "input",
-        }));
+      const wfEdges = useWorkflowStore.getState().edges.map((e) => ({
+        id: e.id,
+        sourceNodeId: e.source,
+        targetNodeId: e.target,
+        sourceOutputKey: e.sourceHandle ?? "output",
+        targetInputKey: e.targetHandle ?? "input",
+      }));
       const idForExport = workflowId ?? "";
       const nameForExport = workflowName || "Untitled Workflow";
       await storageIpc.exportWorkflowJson(idForExport, nameForExport, {
@@ -1319,15 +1317,13 @@ export function WorkflowPage() {
             },
           },
         }));
-        const wfEdges = useWorkflowStore
-          .getState()
-          .edges.map((e) => ({
-            id: e.id,
-            sourceNodeId: e.source,
-            targetNodeId: e.target,
-            sourceOutputKey: e.sourceHandle ?? "output",
-            targetInputKey: e.targetHandle ?? "input",
-          }));
+        const wfEdges = useWorkflowStore.getState().edges.map((e) => ({
+          id: e.id,
+          sourceNodeId: e.source,
+          targetNodeId: e.target,
+          sourceOutputKey: e.sourceHandle ?? "output",
+          targetInputKey: e.targetHandle ?? "input",
+        }));
         const nodeTypes = Array.from(
           new Set(nodes.map((n) => n.data.nodeType)),
         );

@@ -36,7 +36,8 @@ const FEATURED_MODEL_FAMILIES = [
   {
     name: "Seedream 4.5",
     provider: "bytedance",
-    description: "Ultra-realistic image generation with stunning detail and accuracy",
+    description:
+      "Ultra-realistic image generation with stunning detail and accuracy",
     poster:
       "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1764761216479761378_Yy864da9.png",
     primaryVariant: "bytedance/seedream-v4.5",
@@ -151,7 +152,10 @@ export function FeaturedModelsPanel({
   const posters = FEATURED_MODEL_FAMILIES.filter((f) => f.ratio === "poster");
   const squares = FEATURED_MODEL_FAMILIES.filter((f) => f.ratio === "square");
 
-  const card = (family: (typeof FEATURED_MODEL_FAMILIES)[number], cls?: string) => (
+  const card = (
+    family: (typeof FEATURED_MODEL_FAMILIES)[number],
+    cls?: string,
+  ) => (
     <PosterCard
       key={family.primaryVariant}
       family={family}
@@ -170,8 +174,9 @@ export function FeaturedModelsPanel({
             Featured Models
           </h3>
           <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-            Hand-picked models for image generation, video creation, and animation.
-            From photorealistic portraits to cinematic motion — explore what's trending and start creating in seconds.
+            Hand-picked models for image generation, video creation, and
+            animation. From photorealistic portraits to cinematic motion —
+            explore what's trending and start creating in seconds.
           </p>
         </div>
 

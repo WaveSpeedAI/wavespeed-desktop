@@ -56,16 +56,14 @@ export function BatchControls({
     enabled && repeatCount > 1 ? `${runLabel} (${repeatCount})` : runLabel;
 
   // Calculate display price (multiply by repeatCount if batch enabled)
+  // Note: price is a plain number string like "0.0100" — the "$" prefix is in JSX
   const displayPrice = (() => {
     if (!price) return null;
     if (!enabled) return price;
-    // Parse price string (e.g., "$0.01" -> 0.01)
     const numericPrice = parseFloat(price.replace(/[^0-9.]/g, ""));
     if (isNaN(numericPrice)) return price;
     const totalPrice = numericPrice * repeatCount;
-    // Format back with same currency symbol
-    const currencySymbol = price.match(/^[^0-9]*/)?.[0] || "$";
-    return `${currencySymbol}${totalPrice.toFixed(2)}`;
+    return totalPrice.toFixed(2);
   })();
 
   return (
@@ -93,6 +91,9 @@ export function BatchControls({
                 ${displayPrice}
               </span>
             )}
+            <kbd className="ml-auto text-[10px] font-normal opacity-60 tracking-wide">
+              {navigator.platform?.includes("Mac") ? "⌘" : "Ctrl"}↵
+            </kbd>
           </>
         )}
       </Button>

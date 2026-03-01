@@ -139,6 +139,11 @@ function PosterCard({
               {tag}
             </span>
           ))}
+          {price !== undefined && (
+            <span className="text-[8px] rounded-full px-1.5 py-[2px] leading-none text-white/90 bg-white/20 ml-auto">
+              ${price.toFixed(3)}
+            </span>
+          )}
         </div>
       </div>
     </div>

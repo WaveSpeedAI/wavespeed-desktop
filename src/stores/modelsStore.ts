@@ -71,7 +71,14 @@ export const useModelsStore = create<ModelsState>((set, get) => ({
     }
     set({ isLoading: true, error: null });
     try {
-      const models = await apiClient.listModels();
+      const raw = await apiClient.listModels();
+      // Deduplicate by model_id (API may return duplicates)
+      const seen = new Set<string>();
+      const models = raw.filter((m) => {
+        if (seen.has(m.model_id)) return false;
+        seen.add(m.model_id);
+        return true;
+      });
       set({ models, isLoading: false, hasFetched: true });
     } catch (error) {
       set({

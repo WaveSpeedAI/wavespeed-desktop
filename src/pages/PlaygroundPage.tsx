@@ -381,11 +381,13 @@ export function PlaygroundPage() {
     [setFormValues],
   );
 
-  const handleRun = async () => {
+  const handleRun = useCallback(async () => {
     if (!activeTab) return;
 
     // Switch to output view on mobile when running
     setMobileView("output");
+    // Auto-switch to Result tab so user sees the output
+    switchTab("result");
 
     const { batchConfig } = activeTab;
     if (batchConfig.enabled && batchConfig.repeatCount > 1) {
@@ -393,7 +395,21 @@ export function PlaygroundPage() {
     } else {
       await runPrediction();
     }
-  };
+  }, [activeTab, switchTab, runBatch, runPrediction]);
+
+  // Ctrl+Enter / Cmd+Enter keyboard shortcut to run
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        if (activeTab?.selectedModel && !activeTab.isRunning) {
+          handleRun();
+        }
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [activeTab, handleRun]);
 
   const handleReset = () => {
     resetForm();

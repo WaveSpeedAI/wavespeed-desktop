@@ -22,19 +22,15 @@ function getModelFamily(modelId: string): string {
 
 /**
  * Get the "base family" for grouping related models.
- * e.g. "wavespeed-ai/infinitetalk-fast" shares base "wavespeed-ai/infinitetalk" with "wavespeed-ai/infinitetalk".
- * Strips known speed/quality suffixes (-fast, -turbo, -lite, -pro, -plus, -ultra, -mini, -small, -large, -xl, -xxl)
- * from the second path segment to find the base name.
+ * Only strips clear speed-variant suffixes (-fast, -turbo) that indicate
+ * the same model at different speed tiers. Does NOT strip quality/size
+ * suffixes like -pro, -ultra, -lite which are distinct model variants.
  */
 function getBaseFamily(modelId: string): string {
   const family = getModelFamily(modelId);
   const parts = family.split("/");
   if (parts.length < 2) return family;
-  // Strip known variant suffixes from the model name (second segment)
-  const baseName = parts[1].replace(
-    /-(fast|turbo|lite|pro|plus|ultra|mini|small|large|xl|xxl)$/i,
-    "",
-  );
+  const baseName = parts[1].replace(/-(fast|turbo)$/i, "");
   return `${parts[0]}/${baseName}`;
 }
 
@@ -148,16 +144,28 @@ export function ModelSelector({
     };
   }, [localSearch]);
 
+  // Unique families: one representative model per base family
+  const familyModels = useMemo(() => {
+    const seen = new Set<string>();
+    return models.filter((m) => {
+      const family = getBaseFamily(m.model_id);
+      if (seen.has(family)) return false;
+      seen.add(family);
+      return true;
+    });
+  }, [models]);
+
   const filteredModels = useMemo(() => {
     if (!debouncedSearch.trim()) {
-      return [...models].sort((a, b) => a.name.localeCompare(b.name));
+      return [...familyModels].sort((a, b) =>
+        getModelFamily(a.model_id).localeCompare(getModelFamily(b.model_id)),
+      );
     }
-    return fuzzySearch(models, debouncedSearch, (model) => [
-      model.name,
-      model.model_id,
-      model.description || "",
+    // Search against family name only (short, e.g. "google/nano-banana-pro")
+    return fuzzySearch(familyModels, debouncedSearch, (model) => [
+      getModelFamily(model.model_id),
     ]).map((r) => r.item);
-  }, [models, debouncedSearch]);
+  }, [familyModels, debouncedSearch]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -290,29 +298,32 @@ export function ModelSelector({
                     {t("models.noResults")}
                   </div>
                 ) : (
-                  filteredModels.map((model) => (
-                    <button
-                      key={model.model_id}
-                      type="button"
-                      onClick={() => handleSelect(model.model_id)}
-                      className={cn(
-                        "relative flex w-full cursor-pointer select-none items-center rounded-lg px-2.5 py-2 text-sm outline-none",
-                        "hover:bg-accent hover:text-accent-foreground",
-                        model.model_id === value &&
-                          "bg-primary/10 text-foreground",
-                      )}
-                    >
-                      <Check
+                  filteredModels.map((model) => {
+                    const family = getModelFamily(model.model_id);
+                    const isSelected =
+                      value &&
+                      getBaseFamily(value) === getBaseFamily(model.model_id);
+                    return (
+                      <button
+                        key={model.model_id}
+                        type="button"
+                        onClick={() => handleSelect(model.model_id)}
                         className={cn(
-                          "mr-2 h-4 w-4 shrink-0",
-                          model.model_id === value
-                            ? "opacity-100"
-                            : "opacity-0",
+                          "relative flex w-full cursor-pointer select-none items-center rounded-lg px-2.5 py-2 text-sm outline-none",
+                          "hover:bg-accent hover:text-accent-foreground",
+                          isSelected && "bg-primary/10 text-foreground",
                         )}
-                      />
-                      <span className="truncate">{model.name}</span>
-                    </button>
-                  ))
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4 shrink-0",
+                            isSelected ? "opacity-100" : "opacity-0",
+                          )}
+                        />
+                        <span className="truncate">{family}</span>
+                      </button>
+                    );
+                  })
                 )}
               </div>
             </div>

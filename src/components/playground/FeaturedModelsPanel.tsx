@@ -112,7 +112,7 @@ function PosterCard({
         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         loading="lazy"
       />
-      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
       {family.isNew && (
         <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-[9px] px-1.5 py-0 font-bold leading-4">
           NEW
@@ -125,6 +125,11 @@ function PosterCard({
         <h4 className="text-[13px] font-bold text-white leading-tight line-clamp-1 mt-1 drop-shadow-sm">
           {family.name}
         </h4>
+        {family.description && (
+          <p className="text-[10px] text-white/70 leading-snug line-clamp-1 mt-0.5">
+            {family.description}
+          </p>
+        )}
         <div className="flex items-center flex-wrap gap-1 mt-1.5">
           {family.tags.map((tag, i) => (
             <span

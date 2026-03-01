@@ -133,6 +133,12 @@ export function PlaygroundPage() {
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const workspaceRef = useRef<HTMLDivElement>(null);
 
+  // Sliding tab indicator for right panel
+  const tabBarRef = useRef<HTMLDivElement>(null);
+  const [tabIndicatorStyle, setTabIndicatorStyle] =
+    useState<React.CSSProperties>({ opacity: 0 });
+  const tabIndicatorPositioned = useRef(false);
+
   // Close workspace dropdown on click outside
   useEffect(() => {
     if (!workspaceOpen) return;
@@ -147,6 +153,36 @@ export function PlaygroundPage() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [workspaceOpen]);
+
+  // Measure sliding tab indicator position
+  useEffect(() => {
+    const measure = () => {
+      const bar = tabBarRef.current;
+      if (!bar) return;
+      const activeBtn = bar.querySelector(
+        "[data-tab-active]",
+      ) as HTMLElement | null;
+      if (!activeBtn) {
+        setTabIndicatorStyle((s) => ({ ...s, opacity: 0 }));
+        return;
+      }
+      const barRect = bar.getBoundingClientRect();
+      const btnRect = activeBtn.getBoundingClientRect();
+      setTabIndicatorStyle({
+        left: btnRect.left - barRect.left,
+        width: btnRect.width,
+        opacity: 1,
+      });
+      tabIndicatorPositioned.current = true;
+    };
+    requestAnimationFrame(measure);
+    const timer = setTimeout(measure, 350);
+    window.addEventListener("resize", measure);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", measure);
+    };
+  }, [rightPanelTab, workspaceOpen]);
 
   // Template dialog states
   const [showSaveTemplateDialog, setShowSaveTemplateDialog] = useState(false);
@@ -335,7 +371,6 @@ export function PlaygroundPage() {
         createTab(model);
       }
       navigate(`/playground/${modelId}`);
-      switchTab("result");
     }
   };
 
@@ -386,10 +421,9 @@ export function PlaygroundPage() {
           createTab(model);
         }
         navigate(`/playground/${modelId}`);
-        switchTab("result");
       }
     },
-    [models, activeTab, setSelectedModel, createTab, navigate, switchTab],
+    [models, activeTab, setSelectedModel, createTab, navigate],
   );
 
   // Explore: select a featured model → open in new tab
@@ -399,10 +433,9 @@ export function PlaygroundPage() {
       if (model) {
         createTab(model);
         navigate(`/playground/${primaryVariant}`);
-        switchTab("result");
       }
     },
-    [models, createTab, navigate, switchTab],
+    [models, createTab, navigate],
   );
 
   // Templates panel: use a template
@@ -651,7 +684,19 @@ export function PlaygroundPage() {
             )}
           >
             {/* Content Tabs - always visible at top */}
-            <div className="flex items-center justify-between pl-4 pr-4 pt-2 border-b border-border shrink-0">
+            <div
+              ref={tabBarRef}
+              className="relative flex items-center justify-between pl-4 pr-4 pt-2 border-b border-border shrink-0"
+            >
+              {/* Sliding tab indicator */}
+              <div
+                className={cn(
+                  "absolute bottom-0 h-[2px] bg-primary rounded-full pointer-events-none",
+                  tabIndicatorPositioned.current &&
+                    "transition-[left,width,opacity] duration-300 ease-out",
+                )}
+                style={tabIndicatorStyle}
+              />
               {/* Left group: Workspace + Result */}
               <div className="flex items-center gap-4">
                 {/* Workspace / Active Session dropdown */}
@@ -681,9 +726,6 @@ export function PlaygroundPage() {
                         workspaceOpen && "rotate-180",
                       )}
                     />
-                    {rightPanelTab === "result" && !workspaceOpen && (
-                      <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-full" />
-                    )}
                   </button>
 
                   {/* Sessions dropdown */}
@@ -758,6 +800,9 @@ export function PlaygroundPage() {
                     switchTab("result");
                     setWorkspaceOpen(false);
                   }}
+                  data-tab-active={
+                    rightPanelTab === "result" ? true : undefined
+                  }
                   className={cn(
                     "relative flex items-center gap-2 pb-2.5 pt-2 text-sm font-medium transition-colors",
                     rightPanelTab === "result"
@@ -767,9 +812,6 @@ export function PlaygroundPage() {
                 >
                   <LayoutGrid className="h-4 w-4" />
                   {t("playground.rightPanel.result", "Results")}
-                  {rightPanelTab === "result" && (
-                    <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-full" />
-                  )}
                 </button>
               </div>
 
@@ -807,6 +849,9 @@ export function PlaygroundPage() {
                       switchTab(tab.key);
                       setWorkspaceOpen(false);
                     }}
+                    data-tab-active={
+                      rightPanelTab === tab.key ? true : undefined
+                    }
                     className={cn(
                       "relative flex items-center gap-2 pb-2.5 pt-2 text-sm font-medium transition-colors",
                       rightPanelTab === tab.key
@@ -816,9 +861,6 @@ export function PlaygroundPage() {
                   >
                     {tab.icon}
                     {tab.label}
-                    {rightPanelTab === tab.key && (
-                      <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-full" />
-                    )}
                   </button>
                 ))}
               </div>
@@ -876,8 +918,40 @@ export function PlaygroundPage() {
                     />
                   </>
                 ) : (
-                  <div className="flex-1 flex items-center justify-center text-muted-foreground">
-                    <p>{t("playground.selectModelPrompt")}</p>
+                  <div className="flex-1 flex flex-col items-center justify-center gap-4 px-6 text-center">
+                    <div className="rounded-2xl bg-primary/10 p-4">
+                      <LayoutGrid className="h-8 w-8 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">
+                        {t("playground.selectModelPrompt")}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {t(
+                          "playground.emptyStateHint",
+                          "Pick a featured model or browse all models to get started",
+                        )}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => switchTab("featured")}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
+                      >
+                        <Star className="h-3.5 w-3.5" />
+                        {t(
+                          "playground.rightPanel.featuredModels",
+                          "Featured Models",
+                        )}
+                      </button>
+                      <button
+                        onClick={() => switchTab("models")}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                      >
+                        <Layers className="h-3.5 w-3.5" />
+                        {t("playground.rightPanel.models", "All Models")}
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

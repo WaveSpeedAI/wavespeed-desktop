@@ -557,8 +557,37 @@ export function PlaygroundPage() {
                   scrollable={false}
                 />
               ) : (
-                <div className="h-full flex items-center justify-center text-muted-foreground">
-                  <p>{t("playground.selectModelPrompt")}</p>
+                <div className="h-full flex flex-col items-center justify-center gap-4 px-6 text-center">
+                  <div className="rounded-2xl bg-primary/10 p-4">
+                    <Sparkles className="h-8 w-8 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      {t("playground.selectModelPrompt")}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t(
+                        "playground.emptyStateHint",
+                        "Pick a featured model or browse all models to get started",
+                      )}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => switchTab("featured")}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
+                    >
+                      <Star className="h-3.5 w-3.5" />
+                      {t("playground.rightPanel.featuredModels", "Featured Models")}
+                    </button>
+                    <button
+                      onClick={() => switchTab("models")}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                    >
+                      <Layers className="h-3.5 w-3.5" />
+                      {t("playground.rightPanel.models", "All Models")}
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

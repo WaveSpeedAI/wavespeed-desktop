@@ -306,13 +306,11 @@ export function ModelsPage() {
       filtered = filtered.filter((m) => m.type === selectedType);
     }
 
-    // Then apply fuzzy search
+    // Then apply fuzzy search (match name and model_id only, not description)
     if (searchQuery.trim()) {
       const results = fuzzySearch(filtered, searchQuery, (model) => [
         model.name,
         model.model_id,
-        model.description || "",
-        model.type || "",
       ]);
       return results.map((r) => r.item);
     }

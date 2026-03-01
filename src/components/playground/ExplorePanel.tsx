@@ -236,13 +236,11 @@ export function ExplorePanel({
     // Type filter
     if (typeFilter) result = result.filter((m) => m.type === typeFilter);
 
-    // Search
+    // Search — match against name and model_id only (not description, too loose)
     if (search.trim()) {
-      return fuzzySearch(result, search, (m) => [
-        m.name,
-        m.model_id,
-        m.description || "",
-      ]).map((r) => r.item);
+      return fuzzySearch(result, search, (m) => [m.name, m.model_id]).map(
+        (r) => r.item,
+      );
     }
 
     // Sort

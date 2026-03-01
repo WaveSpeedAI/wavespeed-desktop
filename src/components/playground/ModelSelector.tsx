@@ -45,6 +45,14 @@ function getFamilyName(modelId: string): string {
   return parts[1] || parts[0];
 }
 
+/** Format a slug to title case. e.g. "nano-banana-pro" → "Nano Banana Pro" */
+function formatSlug(s: string): string {
+  return s
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
 /** Readable type label: "text-to-video" → "Text To Video" */
 function formatType(type: string): string {
   return type
@@ -254,11 +262,11 @@ export function ModelSelector({
             {breadcrumb ? (
               <span className="flex items-center gap-1 min-w-0 flex-1 text-left">
                 <span className="font-semibold text-foreground shrink-0">
-                  {breadcrumb.provider}
+                  {formatSlug(breadcrumb.provider)}
                 </span>
                 <span className="text-muted-foreground shrink-0">/</span>
                 <span className="font-medium text-foreground truncate">
-                  {breadcrumb.familyName}
+                  {formatSlug(breadcrumb.familyName)}
                 </span>
               </span>
             ) : (
@@ -303,6 +311,7 @@ export function ModelSelector({
                     const isSelected =
                       value &&
                       getBaseFamily(value) === getBaseFamily(model.model_id);
+                    const parts = family.split("/");
                     return (
                       <button
                         key={model.model_id}
@@ -320,7 +329,21 @@ export function ModelSelector({
                             isSelected ? "opacity-100" : "opacity-0",
                           )}
                         />
-                        <span className="truncate">{family}</span>
+                        <span className="truncate">
+                          <span className="text-muted-foreground">
+                            {formatSlug(parts[0])}
+                          </span>
+                          {parts[1] && (
+                            <>
+                              <span className="text-muted-foreground mx-1">
+                                /
+                              </span>
+                              <span className="font-medium">
+                                {formatSlug(parts[1])}
+                              </span>
+                            </>
+                          )}
+                        </span>
                       </button>
                     );
                   })

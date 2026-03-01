@@ -32,6 +32,20 @@ import { cn } from "@/lib/utils";
 
 type SortKey = "popularity" | "name" | "price";
 
+/** Get the meaningful model name (second path segment). e.g. "wavespeed-ai/ai-kissing" → "ai-kissing" */
+function getModelShortName(modelId: string): string {
+  const parts = modelId.split("/");
+  return parts[1] || parts[0];
+}
+
+/** Format slug to title case. e.g. "ai-kissing" → "Ai Kissing" */
+function formatSlug(s: string): string {
+  return s
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
 /** Color mapping for model type tags */
 function getTypeColor(type: string): string {
   const t = type.toLowerCase();
@@ -236,16 +250,20 @@ export function ExplorePanel({
     // Type filter
     if (typeFilter) result = result.filter((m) => m.type === typeFilter);
 
-    // Search — match against name and model_id only (not description, too loose)
+    // Search — match against short name and model_id
     if (search.trim()) {
-      return fuzzySearch(result, search, (m) => [m.name, m.model_id]).map(
-        (r) => r.item,
-      );
+      return fuzzySearch(result, search, (m) => [
+        getModelShortName(m.model_id),
+        m.model_id,
+      ]).map((r) => r.item);
     }
 
     // Sort
     const sorted = [...result].sort((a, b) => {
-      if (sortKey === "name") return a.name.localeCompare(b.name);
+      if (sortKey === "name")
+        return getModelShortName(a.model_id).localeCompare(
+          getModelShortName(b.model_id),
+        );
       if (sortKey === "price") return (a.base_price ?? 0) - (b.base_price ?? 0);
       // popularity: use sort_order (lower = more popular)
       return (a.sort_order ?? 9999) - (b.sort_order ?? 9999);

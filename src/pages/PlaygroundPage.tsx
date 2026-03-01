@@ -48,6 +48,18 @@ import {
 
 type RightPanelTab = "result" | "models" | "featured" | "templates";
 
+/** Format raw model name/id for display. e.g. "google/nano-banana-pro/text-to-image" → "Google / Nano Banana Pro" */
+function formatModelDisplay(name: string): string {
+  const parts = name.split("/");
+  const fmt = (s: string) =>
+    s
+      .split("-")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+  if (parts.length >= 2) return `${fmt(parts[0])} / ${fmt(parts[1])}`;
+  return fmt(parts[0]);
+}
+
 const isCapacitorNative = () => {
   try {
     return !!(window as any).Capacitor?.isNativePlatform?.();
@@ -709,7 +721,7 @@ export function PlaygroundPage() {
                 className={cn(
                   "absolute bottom-0 h-[2px] bg-primary rounded-full pointer-events-none",
                   tabIndicatorPositioned.current &&
-                    "transition-[left,width,opacity] duration-300 ease-out",
+                    "transition-[left,width,opacity] duration-200 ease-out",
                 )}
                 style={tabIndicatorStyle}
               />
@@ -728,8 +740,9 @@ export function PlaygroundPage() {
                   >
                     <Monitor className="h-4 w-4" />
                     <span className="max-w-[160px] truncate">
-                      {activeTab?.selectedModel?.name ||
-                        t("playground.workspace", "Workspace")}
+                      {activeTab?.selectedModel?.name
+                        ? formatModelDisplay(activeTab.selectedModel.name)
+                        : t("playground.workspace", "Workspace")}
                     </span>
                     {tabs.length > 0 && (
                       <span className="text-[10px] bg-primary/15 text-primary rounded-full px-1.5 py-0.5 font-semibold leading-none">
@@ -774,8 +787,9 @@ export function PlaygroundPage() {
                                 <Sparkles className="h-3.5 w-3.5 shrink-0" />
                               )}
                               <span className="flex-1 text-left truncate">
-                                {tab.selectedModel?.name ||
-                                  t("playground.tabs.newTab")}
+                                {tab.selectedModel?.name
+                                  ? formatModelDisplay(tab.selectedModel.name)
+                                  : t("playground.tabs.newTab")}
                               </span>
                               {tab.id === activeTabId && (
                                 <span className="text-[9px] bg-primary/20 text-primary rounded px-1 py-0.5 font-medium shrink-0">

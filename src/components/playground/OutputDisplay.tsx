@@ -198,6 +198,15 @@ export function OutputDisplay({
     }
   }, [outputs.length, isLoading, error]);
 
+  // Auto-switch from game to results when generation completes
+  useEffect(() => {
+    const wasLoading = prevLoadingRef.current;
+    // Don't update ref here — the auto-save effect below also reads it
+    if (wasLoading && !isLoading && outputs.length > 0 && !error) {
+      setShowGame(false);
+    }
+  }, [isLoading, outputs.length, error]);
+
   const handleGameStart = useCallback(() => {
     setIsGameStarted(true);
   }, []);

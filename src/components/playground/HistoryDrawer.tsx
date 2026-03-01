@@ -93,6 +93,8 @@ export function HistoryDrawer({
       // Don't intercept if user is typing in an input/textarea
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      // Don't intercept if a dialog/modal is open (e.g. fullscreen preview, batch detail)
+      if (document.querySelector("[role='dialog']")) return;
 
       if (e.key === "ArrowLeft") {
         e.preventDefault();

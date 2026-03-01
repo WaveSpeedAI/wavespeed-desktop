@@ -593,7 +593,9 @@ export function BatchOutputGrid({
               {/* Thumbnail */}
               <div className="aspect-square bg-muted/70 flex items-center justify-center">
                 {item.isPending && isRunning ? (
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  <div className="w-full h-full animate-pulse bg-gradient-to-r from-muted/50 via-muted to-muted/50 bg-[length:200%_100%] flex items-center justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  </div>
                 ) : item.isPending ? (
                   <div className="w-full h-full bg-muted/50" />
                 ) : item.hasError ? (

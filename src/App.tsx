@@ -1,9 +1,9 @@
-import { useEffect, lazy, Suspense } from "react";
+import { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { WelcomePage } from "@/pages/WelcomePage";
 import { PlaygroundPage } from "@/pages/PlaygroundPage";
-const ModelsPage = lazy(() => import("@/pages/ModelsPage").then(m => ({ default: m.ModelsPage })));
+import { ModelsPage } from "@/pages/ModelsPage";
 import { TemplatesPage } from "@/pages/TemplatesPage";
 import { HistoryPage } from "@/pages/HistoryPage";
 import { AssetsPage } from "@/pages/AssetsPage";
@@ -68,7 +68,7 @@ function App() {
           path="featured-models/:familyId"
           element={<SmartPlaygroundPage />}
         />
-        <Route path="models" element={<Suspense fallback={null}><ModelsPage /></Suspense>} />
+        <Route path="models" element={<ModelsPage />} />
         <Route path="playground" element={<PlaygroundPage />} />
         <Route path="playground/*" element={<PlaygroundPage />} />
         <Route path="templates" element={<TemplatesPage />} />

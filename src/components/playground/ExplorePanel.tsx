@@ -123,37 +123,79 @@ const ModelCard = memo(function ModelCard({
           <div className="flex gap-0.5 ml-auto">
             <HoverCard openDelay={200} closeDelay={100}>
               <HoverCardTrigger asChild>
-                <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={(e) => e.stopPropagation()}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 w-6 p-0"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <Info className="h-3 w-3" />
                 </Button>
               </HoverCardTrigger>
               <HoverCardContent className="w-64" side="top" align="end">
                 <div className="space-y-1.5">
                   <h4 className="font-semibold text-sm">{model.name}</h4>
-                  <p className="text-xs text-muted-foreground font-mono break-all">{model.model_id}</p>
-                  {model.description && <p className="text-xs text-muted-foreground">{model.description}</p>}
+                  <p className="text-xs text-muted-foreground font-mono break-all">
+                    {model.model_id}
+                  </p>
+                  {model.description && (
+                    <p className="text-xs text-muted-foreground">
+                      {model.description}
+                    </p>
+                  )}
                   {model.type && (
                     <div className="flex items-center gap-2 text-xs">
-                      <span className="text-muted-foreground">{t("models.type")}:</span>
-                      <Badge variant="secondary" className="text-xs">{model.type}</Badge>
+                      <span className="text-muted-foreground">
+                        {t("models.type")}:
+                      </span>
+                      <Badge variant="secondary" className="text-xs">
+                        {model.type}
+                      </Badge>
                     </div>
                   )}
                   {model.base_price !== undefined && (
                     <div className="flex items-center gap-2 text-xs">
-                      <span className="text-muted-foreground">{t("models.basePrice")}:</span>
-                      <span className="font-medium text-primary">${model.base_price.toFixed(4)}</span>
+                      <span className="text-muted-foreground">
+                        {t("models.basePrice")}:
+                      </span>
+                      <span className="font-medium text-primary">
+                        ${model.base_price.toFixed(4)}
+                      </span>
                     </div>
                   )}
                 </div>
               </HoverCardContent>
             </HoverCard>
-            <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={(e) => onToggleFav(e, model.model_id)}>
-              <Star className={cn("h-3 w-3", isFav && "fill-yellow-400 text-yellow-400")} />
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 w-6 p-0"
+              onClick={(e) => onToggleFav(e, model.model_id)}
+            >
+              <Star
+                className={cn(
+                  "h-3 w-3",
+                  isFav && "fill-yellow-400 text-yellow-400",
+                )}
+              />
             </Button>
-            <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={(e) => { e.stopPropagation(); onSelect(model.model_id); }}>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 w-6 p-0"
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelect(model.model_id);
+              }}
+            >
               <PlayCircle className="h-3 w-3" />
             </Button>
-            <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={(e) => onNewTab(e, model.model_id)}>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 w-6 p-0"
+              onClick={(e) => onNewTab(e, model.model_id)}
+            >
               <ExternalLink className="h-3 w-3" />
             </Button>
           </div>
@@ -196,34 +238,42 @@ export function ExplorePanel({
 
   const allTypes = useMemo(() => {
     const typeSet = new Set<string>();
-    models.forEach((m) => { if (m.type) typeSet.add(m.type); });
+    models.forEach((m) => {
+      if (m.type) typeSet.add(m.type);
+    });
     return Array.from(typeSet).sort();
   }, [models]);
 
-  // Deferred filtered+sorted list
-  const [filteredModels, setFilteredModels] = useState<typeof models>([]);
-  useEffect(() => {
-    let cancelled = false;
-    const compute = () => {
-      if (cancelled) return;
-      let result = models;
-      if (showFavoritesOnly) result = result.filter((m) => isFavorite(m.model_id));
-      if (typeFilter) result = result.filter((m) => m.type === typeFilter);
-      if (search.trim()) {
-        const r = fuzzySearch(result, search, (m) => [getModelShortName(m.model_id), m.model_id]).map((r) => r.item);
-        if (!cancelled) setFilteredModels(r);
-        return;
-      }
-      const sorted = [...result].sort((a, b) => {
-        if (sortKey === "name") return getModelShortName(a.model_id).localeCompare(getModelShortName(b.model_id));
-        if (sortKey === "price") return (a.base_price ?? 0) - (b.base_price ?? 0);
-        return (a.sort_order ?? 9999) - (b.sort_order ?? 9999);
-      });
-      if (!cancelled) setFilteredModels(sortAsc ? sorted : sorted.reverse());
-    };
-    const id = requestAnimationFrame(compute);
-    return () => { cancelled = true; cancelAnimationFrame(id); };
-  }, [models, search, typeFilter, showFavoritesOnly, isFavorite, sortKey, sortAsc]);
+  // Filtered + sorted list (synchronous — model list is small enough)
+  const filteredModels = useMemo(() => {
+    let result = models;
+    if (showFavoritesOnly)
+      result = result.filter((m) => isFavorite(m.model_id));
+    if (typeFilter) result = result.filter((m) => m.type === typeFilter);
+    if (search.trim()) {
+      return fuzzySearch(result, search, (m) => [
+        getModelShortName(m.model_id),
+        m.model_id,
+      ]).map((r) => r.item);
+    }
+    const sorted = [...result].sort((a, b) => {
+      if (sortKey === "name")
+        return getModelShortName(a.model_id).localeCompare(
+          getModelShortName(b.model_id),
+        );
+      if (sortKey === "price") return (a.base_price ?? 0) - (b.base_price ?? 0);
+      return (a.sort_order ?? 9999) - (b.sort_order ?? 9999);
+    });
+    return sortAsc ? sorted : sorted.reverse();
+  }, [
+    models,
+    search,
+    typeFilter,
+    showFavoritesOnly,
+    isFavorite,
+    sortKey,
+    sortAsc,
+  ]);
 
   // Responsive grid columns — use window resize to measure scroll container width
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -255,10 +305,15 @@ export function ExplorePanel({
   }, [calcCols]);
 
   // Callback ref to assign scrollContainerRef and do initial measurement
-  const scrollRefCallback = useCallback((el: HTMLDivElement | null) => {
-    (scrollContainerRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
-    if (el) setCols(calcCols(el.getBoundingClientRect().width));
-  }, [calcCols]);
+  const scrollRefCallback = useCallback(
+    (el: HTMLDivElement | null) => {
+      (
+        scrollContainerRef as React.MutableRefObject<HTMLDivElement | null>
+      ).current = el;
+      if (el) setCols(calcCols(el.getBoundingClientRect().width));
+    },
+    [calcCols],
+  );
 
   const rowCount = Math.ceil(filteredModels.length / cols);
   const rowVirtualizer = useVirtualizer({
@@ -304,7 +359,10 @@ export function ExplorePanel({
                 type="text"
                 value={searchInput}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                placeholder={t("playground.explore.searchPlaceholder", "Search models...")}
+                placeholder={t(
+                  "playground.explore.searchPlaceholder",
+                  "Search models...",
+                )}
                 className="w-full h-[34px] pl-9 pr-8 rounded-lg border border-border bg-muted/40 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all"
               />
               {searchInput && (
@@ -321,15 +379,25 @@ export function ExplorePanel({
               size="sm"
               className={cn(
                 "h-[34px] w-[34px] p-0 shrink-0 border border-border",
-                showFavoritesOnly && "bg-yellow-500/10 border-yellow-500/30 text-yellow-500",
+                showFavoritesOnly &&
+                  "bg-yellow-500/10 border-yellow-500/30 text-yellow-500",
               )}
               onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
             >
-              <Star className={cn("h-4 w-4", showFavoritesOnly && "fill-yellow-400 text-yellow-400")} />
+              <Star
+                className={cn(
+                  "h-4 w-4",
+                  showFavoritesOnly && "fill-yellow-400 text-yellow-400",
+                )}
+              />
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-[34px] px-2.5 shrink-0 border border-border text-xs font-medium gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-[34px] px-2.5 shrink-0 border border-border text-xs font-medium gap-1"
+                >
                   {sortLabels[sortKey]}
                   <ChevronDown className="h-3 w-3" />
                 </Button>
@@ -339,15 +407,27 @@ export function ExplorePanel({
                   <DropdownMenuItem
                     key={key}
                     onClick={() => setSortKey(key)}
-                    className={cn("text-xs", sortKey === key && "font-semibold text-primary")}
+                    className={cn(
+                      "text-xs",
+                      sortKey === key && "font-semibold text-primary",
+                    )}
                   >
                     {sortLabels[key]}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button variant="ghost" size="sm" className="h-[34px] w-[34px] p-0 shrink-0 border border-border" onClick={() => setSortAsc(!sortAsc)}>
-              {sortAsc ? <ArrowDownNarrowWide className="h-4 w-4" /> : <ArrowUpNarrowWide className="h-4 w-4" />}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-[34px] w-[34px] p-0 shrink-0 border border-border"
+              onClick={() => setSortAsc(!sortAsc)}
+            >
+              {sortAsc ? (
+                <ArrowDownNarrowWide className="h-4 w-4" />
+              ) : (
+                <ArrowUpNarrowWide className="h-4 w-4" />
+              )}
             </Button>
             <Button
               variant="ghost"
@@ -356,22 +436,33 @@ export function ExplorePanel({
               disabled={isRefreshing}
               onClick={async () => {
                 setIsRefreshing(true);
-                try { await fetchModels(true); } finally { setIsRefreshing(false); }
+                try {
+                  await fetchModels(true);
+                } finally {
+                  setIsRefreshing(false);
+                }
               }}
             >
-              <RefreshCw className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin")} />
+              <RefreshCw
+                className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin")}
+              />
               {t("common.refresh", "Refresh")}
             </Button>
           </div>
         </div>
       )}
-      <div ref={scrollRefCallback} className="flex-1 overflow-y-auto overflow-x-hidden">
+      <div
+        ref={scrollRefCallback}
+        className="flex-1 overflow-y-auto overflow-x-hidden"
+      >
         <div className="px-4 pb-6 pt-3">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
             {showFavoritesOnly
               ? t("playground.explore.favorites", "Favorites")
               : search
-                ? t("playground.explore.searchResults", "{{count}} results", { count: filteredModels.length })
+                ? t("playground.explore.searchResults", "{{count}} results", {
+                    count: filteredModels.length,
+                  })
                 : t("playground.explore.allModels", "All Models")}
           </h3>
           <div className="flex gap-1.5 flex-wrap mb-3">
@@ -379,7 +470,9 @@ export function ExplorePanel({
               onClick={() => setTypeFilter(null)}
               className={cn(
                 "text-[10px] px-2 py-0.5 rounded-full font-medium transition-colors whitespace-nowrap",
-                !typeFilter ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground",
+                !typeFilter
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:text-foreground",
               )}
             >
               {t("playground.explore.all", "All")}
@@ -390,7 +483,9 @@ export function ExplorePanel({
                 onClick={() => setTypeFilter(typeFilter === type ? null : type)}
                 className={cn(
                   "text-[10px] px-2 py-0.5 rounded-full font-medium transition-colors whitespace-nowrap",
-                  typeFilter === type ? "ring-1 ring-current " + getTypeColor(type) : getTypeColor(type) + " hover:opacity-80",
+                  typeFilter === type
+                    ? "ring-1 ring-current " + getTypeColor(type)
+                    : getTypeColor(type) + " hover:opacity-80",
                 )}
               >
                 {type}
@@ -401,13 +496,25 @@ export function ExplorePanel({
           {filteredModels.length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground">
               {showFavoritesOnly
-                ? t("playground.explore.noFavorites", "No favorites yet — star a model to save it here")
+                ? t(
+                    "playground.explore.noFavorites",
+                    "No favorites yet — star a model to save it here",
+                  )
                 : t("models.noResults", "No models found")}
             </div>
           ) : (
-            <div key={cols} style={{ height: `${rowVirtualizer.getTotalSize()}px`, position: "relative" }}>
+            <div
+              key={cols}
+              style={{
+                height: `${rowVirtualizer.getTotalSize()}px`,
+                position: "relative",
+              }}
+            >
               {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                const rowModels = filteredModels.slice(virtualRow.index * cols, virtualRow.index * cols + cols);
+                const rowModels = filteredModels.slice(
+                  virtualRow.index * cols,
+                  virtualRow.index * cols + cols,
+                );
                 return (
                   <div
                     key={virtualRow.key}

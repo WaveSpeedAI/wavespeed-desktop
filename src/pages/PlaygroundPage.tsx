@@ -22,7 +22,7 @@ import { ModelSelector } from "@/components/playground/ModelSelector";
 import { BatchControls } from "@/components/playground/BatchControls";
 import { HistoryDrawer } from "@/components/playground/HistoryDrawer";
 import { ResultPanel } from "@/components/playground/ResultPanel";
-import { TemplatesPanel } from "@/components/playground/TemplatesPanel";
+// TemplatesPanel removed from top bar (sidebar entry remains)
 import { FeaturedModelsPanel } from "@/components/playground/FeaturedModelsPanel";
 import {
   RotateCcw,
@@ -33,8 +33,7 @@ import {
   Sparkles,
   PlayCircle,
   LayoutGrid,
-  FolderOpen,
-  Star,
+  Compass,
   Layers,
   ChevronDown,
   Clock,
@@ -46,7 +45,7 @@ import {
   type TemplateFormData,
 } from "@/components/templates/TemplateDialog";
 
-type RightPanelTab = "result" | "featured" | "templates";
+type RightPanelTab = "result" | "featured";
 
 /** Format raw model name/id for display. e.g. "google/nano-banana-pro/text-to-image" → "Google / Nano Banana Pro" */
 function formatModelDisplay(name: string): string {
@@ -142,29 +141,32 @@ export function PlaygroundPage() {
   const [leftPanelWidth, setLeftPanelWidth] = useState(300);
   const isDraggingRef = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const handleResizeStart = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    isDraggingRef.current = true;
-    const startX = e.clientX;
-    const startWidth = leftPanelWidth;
-    const onMove = (ev: MouseEvent) => {
-      if (!isDraggingRef.current) return;
-      const delta = ev.clientX - startX;
-      const newWidth = Math.max(220, Math.min(500, startWidth + delta));
-      setLeftPanelWidth(newWidth);
-    };
-    const onUp = () => {
-      isDraggingRef.current = false;
-      document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseup", onUp);
-      document.body.style.cursor = "";
-      document.body.style.userSelect = "";
-    };
-    document.body.style.cursor = "col-resize";
-    document.body.style.userSelect = "none";
-    document.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseup", onUp);
-  }, [leftPanelWidth]);
+  const handleResizeStart = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      isDraggingRef.current = true;
+      const startX = e.clientX;
+      const startWidth = leftPanelWidth;
+      const onMove = (ev: MouseEvent) => {
+        if (!isDraggingRef.current) return;
+        const delta = ev.clientX - startX;
+        const newWidth = Math.max(220, Math.min(500, startWidth + delta));
+        setLeftPanelWidth(newWidth);
+      };
+      const onUp = () => {
+        isDraggingRef.current = false;
+        document.removeEventListener("mousemove", onMove);
+        document.removeEventListener("mouseup", onUp);
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+      };
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mouseup", onUp);
+    },
+    [leftPanelWidth],
+  );
 
   // Right panel tab state
   const isMobile = isCapacitorNative();
@@ -172,7 +174,9 @@ export function PlaygroundPage() {
   const [rightPanelTab, setRightPanelTab] = useState<RightPanelTab>(() => {
     // If arriving with a modelId in the URL, go straight to result
     if (params["*"] || params.modelId) return "result";
-    const saved = sessionStorage.getItem("pg_rightPanelTab") as RightPanelTab | null;
+    const saved = sessionStorage.getItem(
+      "pg_rightPanelTab",
+    ) as RightPanelTab | null;
     return saved ?? (tabs.length > 0 ? "result" : "featured");
   });
   const [, startTransition] = useTransition();
@@ -521,15 +525,20 @@ export function PlaygroundPage() {
         flushSync(() => {
           if (!activeTab) {
             const model = template.playgroundData!.modelId
-              ? models.find((m) => m.model_id === template.playgroundData!.modelId)
+              ? models.find(
+                  (m) => m.model_id === template.playgroundData!.modelId,
+                )
               : undefined;
             createTab(model);
           } else {
             if (
               template.playgroundData!.modelId &&
-              activeTab.selectedModel?.model_id !== template.playgroundData!.modelId
+              activeTab.selectedModel?.model_id !==
+                template.playgroundData!.modelId
             ) {
-              const model = models.find((m) => m.model_id === template.playgroundData!.modelId);
+              const model = models.find(
+                (m) => m.model_id === template.playgroundData!.modelId,
+              );
               if (model) setSelectedModel(model);
             }
             setFormValues(template.playgroundData!.values);
@@ -539,7 +548,9 @@ export function PlaygroundPage() {
         });
 
         if (template.playgroundData.modelId) {
-          navigate(`/playground/${template.playgroundData.modelId}`, { replace: true });
+          navigate(`/playground/${template.playgroundData.modelId}`, {
+            replace: true,
+          });
         }
 
         // For new tab: set form values after tab is active
@@ -555,7 +566,15 @@ export function PlaygroundPage() {
         });
       }
     },
-    [activeTab, models, setSelectedModel, setFormValues, createTab, navigate, t],
+    [
+      activeTab,
+      models,
+      setSelectedModel,
+      setFormValues,
+      createTab,
+      navigate,
+      t,
+    ],
   );
 
   const handleCloseTab = (e: React.MouseEvent, tabId: string) => {
@@ -621,12 +640,17 @@ export function PlaygroundPage() {
           </button>
         </div>
 
-        <div ref={containerRef} className="flex flex-1 flex-col overflow-hidden md:flex-row">
+        <div
+          ref={containerRef}
+          className="flex flex-1 flex-col overflow-hidden md:flex-row"
+        >
           {/* Left Panel - Configuration (always visible) */}
           <div
             className={cn(
               "w-full md:w-auto flex flex-col min-h-0 border-b bg-card/70 md:overflow-hidden md:border-r md:border-b-0 md:shrink-0 md:grow-0",
-              mobileView === "config" ? "flex flex-1 md:flex-initial" : "hidden md:flex",
+              mobileView === "config"
+                ? "flex flex-1 md:flex-initial"
+                : "hidden md:flex",
             )}
             style={{ flexBasis: `${leftPanelWidth}px` }}
           >
@@ -682,7 +706,7 @@ export function PlaygroundPage() {
                       onClick={() => switchTab("featured")}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
                     >
-                      <Star className="h-3.5 w-3.5" />
+                      <Compass className="h-3.5 w-3.5" />
                       {t(
                         "playground.rightPanel.featuredModels",
                         "Featured Models",
@@ -766,7 +790,12 @@ export function PlaygroundPage() {
                   )}
                   title={t("playground.tabs.allTabs", "All Tabs")}
                 >
-                  <ChevronDown className={cn("h-4 w-4 transition-transform", tabListOpen && "rotate-180")} />
+                  <ChevronDown
+                    className={cn(
+                      "h-4 w-4 transition-transform",
+                      tabListOpen && "rotate-180",
+                    )}
+                  />
                 </button>
                 {tabListOpen && (
                   <div className="absolute z-50 mt-1 left-0 min-w-[320px] max-h-[400px] overflow-y-auto rounded-xl border border-border/80 bg-popover shadow-xl animate-in fade-in-0 zoom-in-95">
@@ -807,7 +836,10 @@ export function PlaygroundPage() {
                                 )}
                                 <span className="flex items-center gap-0.5">
                                   <Clock className="h-2.5 w-2.5" />
-                                  {new Date(tab.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                                  {new Date(tab.createdAt).toLocaleTimeString(
+                                    [],
+                                    { hour: "2-digit", minute: "2-digit" },
+                                  )}
                                 </span>
                               </div>
                             </div>
@@ -856,9 +888,10 @@ export function PlaygroundPage() {
                   }
                 }}
               >
-                <div className="flex items-center w-max gap-1">
+                <div className="flex items-center gap-1">
                   {tabs.map((tab) => {
-                    const isActive = tab.id === activeTabId && rightPanelTab === "result";
+                    const isActive =
+                      tab.id === activeTabId && rightPanelTab === "result";
                     return (
                       <div
                         key={tab.id}
@@ -871,7 +904,7 @@ export function PlaygroundPage() {
                           handleTabClick(tab.id);
                         }}
                         className={cn(
-                          "group relative flex h-8 items-center gap-1.5 px-3 text-xs transition-all cursor-pointer select-none shrink-0 max-w-[180px] hover:bg-primary/10 dark:hover:bg-muted/60",
+                          "group relative flex h-8 items-center gap-1.5 px-3 text-xs transition-colors cursor-pointer select-none min-w-[60px] max-w-[180px] hover:bg-primary/10 dark:hover:bg-muted/60",
                           dragTabId === tab.id && "opacity-40",
                           isActive
                             ? "bg-primary/15 dark:bg-primary/10 text-foreground font-medium"
@@ -899,15 +932,19 @@ export function PlaygroundPage() {
                         </span>
                         <button
                           onClick={(e) => handleCloseTab(e, tab.id)}
-                          className="ml-1 rounded p-0.5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted text-muted-foreground hover:text-foreground"
+                          className={cn(
+                            "ml-1 rounded p-0.5 transition-opacity hover:bg-muted text-muted-foreground hover:text-foreground",
+                            isActive
+                              ? "opacity-70"
+                              : "opacity-0 group-hover:opacity-100",
+                          )}
                         >
                           <X className="h-3 w-3" />
                         </button>
                       </div>
                     );
                   })}
-                  {/* + button inside scroll area when not overflowing — removed, always fixed outside */}
-                  {/* + button follows last tab inside scroll area */}
+                  {/* + button inside scroll area, right after last tab */}
                   <button
                     onClick={handleNewTab}
                     className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
@@ -917,33 +954,24 @@ export function PlaygroundPage() {
                   </button>
                 </div>
               </div>
-              {/* Right group: Featured Models / Templates */}
+              {/* Featured Models icon button */}
               {!isMobile && (
                 <button
                   onClick={() => switchTab("featured")}
                   className={cn(
-                    "flex items-center gap-1.5 h-8 px-3.5 rounded-lg text-xs font-semibold transition-all shrink-0 backdrop-blur-sm",
+                    "flex items-center justify-center h-8 w-8 rounded-lg transition-all shrink-0 backdrop-blur-sm",
                     rightPanelTab === "featured"
                       ? "bg-blue-600 text-white shadow-sm hover:bg-blue-700 border border-blue-500/50"
                       : "bg-white/5 text-muted-foreground hover:text-foreground hover:bg-white/10 border border-white/10 hover:border-white/20",
                   )}
+                  title={t(
+                    "playground.rightPanel.featuredModels",
+                    "Featured Models",
+                  )}
                 >
-                  <Star className="h-3.5 w-3.5" />
-                  {t("playground.rightPanel.featuredModels", "Featured Models")}
+                  <Compass className="h-4 w-4" />
                 </button>
               )}
-              <button
-                onClick={() => switchTab("templates")}
-                className={cn(
-                  "flex items-center gap-1.5 h-8 px-3.5 rounded-lg text-xs font-semibold transition-all shrink-0 backdrop-blur-sm",
-                  rightPanelTab === "templates"
-                    ? "bg-blue-600 text-white shadow-sm hover:bg-blue-700 border border-blue-500/50"
-                    : "bg-white/5 text-muted-foreground hover:text-foreground hover:bg-white/10 border border-white/10 hover:border-white/20",
-                )}
-              >
-                <FolderOpen className="h-3.5 w-3.5" />
-                {t("playground.rightPanel.templates", "Templates")}
-              </button>
             </div>
 
             {/* Right Panel Content — all panels stacked via absolute positioning, no hidden/show remount */}
@@ -954,8 +982,10 @@ export function PlaygroundPage() {
                   className="absolute inset-0 flex flex-col overflow-hidden transition-opacity duration-150"
                   style={{
                     opacity: rightPanelTab === "featured" ? 1 : 0,
-                    pointerEvents: rightPanelTab === "featured" ? "auto" : "none",
-                    visibility: rightPanelTab === "featured" ? "visible" : "hidden",
+                    pointerEvents:
+                      rightPanelTab === "featured" ? "auto" : "none",
+                    visibility:
+                      rightPanelTab === "featured" ? "visible" : "hidden",
                   }}
                 >
                   <FeaturedModelsPanel
@@ -1019,7 +1049,7 @@ export function PlaygroundPage() {
                         onClick={() => switchTab("featured")}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
                       >
-                        <Star className="h-3.5 w-3.5" />
+                        <Compass className="h-3.5 w-3.5" />
                         {t(
                           "playground.rightPanel.featuredModels",
                           "Featured Models",
@@ -1035,18 +1065,6 @@ export function PlaygroundPage() {
                     </div>
                   </div>
                 )}
-              </div>
-
-              {/* Templates panel */}
-              <div
-                className="absolute inset-0 flex flex-col overflow-hidden transition-opacity duration-150"
-                style={{
-                  opacity: rightPanelTab === "templates" ? 1 : 0,
-                  pointerEvents: rightPanelTab === "templates" ? "auto" : "none",
-                  visibility: rightPanelTab === "templates" ? "visible" : "hidden",
-                }}
-              >
-                <TemplatesPanel onUseTemplate={handleUseTemplateFromPanel} />
               </div>
             </div>
           </div>

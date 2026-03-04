@@ -67,12 +67,18 @@ export const useAgentActivityStore = create<AgentActivityState>((set) => ({
   },
 
   completePhase: (phaseId) =>
-    set((s) => ({
-      phases: s.phases.map((p) =>
+    set((s) => {
+      const updated = s.phases.map((p) =>
         p.id === phaseId ? { ...p, status: "done" as TaskStatus } : p,
-      ),
-      currentPhaseId: null,
-    })),
+      );
+      // isActive = false only when ALL phases are done
+      const allDone = updated.every((p) => p.status === "done" || p.status === "error");
+      return {
+        phases: updated,
+        currentPhaseId: null,
+        isActive: !allDone,
+      };
+    }),
 
   startTask: (phaseId, agent, label) => {
     const id = uuid();

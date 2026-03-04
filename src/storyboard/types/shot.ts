@@ -2,6 +2,29 @@
  * Shot (镜头) — the core entity of the storyboard system.
  */
 
+/**
+ * Strategy types for generation routing:
+ * A1 = same-scene continuous action (frame chain)
+ * A2 = same-scene angle change (no frame chain)
+ * B  = same-scene long shot (segmented with frame chain)
+ * C  = cross-scene short (fully independent)
+ * D  = cross-scene long (first segment independent, rest chained)
+ */
+export type StrategyType = "A1" | "A2" | "B" | "C" | "D";
+
+export interface ShotStrategy {
+  strategy_type: StrategyType;
+  use_frame_chain: boolean;
+  frame_chain_source: string | null; // previous shot's last_frame_path
+  character_refs: string[];          // character anchor image paths
+  scene_ref: string | null;          // scene anchor image path
+  style_ref: string | null;          // global style reference (future: style embedding)
+  segments: number;                  // >1 for B/D types
+  correction_interval: number;       // every N segments do a correction pass
+  is_scene_anchor_shot: boolean;     // first shot in scene → writes anchor_image
+  parallel_eligible: boolean;        // C and A2 can run in parallel
+}
+
 export type ShotType =
   | "wide"
   | "medium"
@@ -81,6 +104,9 @@ export interface Shot {
   generated_assets: GeneratedAssets;
   qc_score: number;
   qc_warnings: string[];
+  // Strategy fields (populated before generation)
+  strategy?: ShotStrategy;
+  user_strategy_override?: Partial<ShotStrategy>;
 }
 
 export interface Scene {

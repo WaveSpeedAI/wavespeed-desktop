@@ -1,7 +1,6 @@
 /**
  * Agent Activity Panel — real-time visualization of AI agent work.
  * Shows streaming LLM output, phase progression, task status, and token counts.
- * Designed to feel like watching an AI brain work in real-time.
  */
 import { useRef, useEffect, useState } from "react";
 import { useAgentActivityStore, type AgentTask, type AgentName } from "../stores/agent-activity.store";
@@ -24,21 +23,21 @@ import {
 } from "lucide-react";
 
 const AGENT_META: Record<AgentName, { icon: typeof Brain; label: string; color: string }> = {
-  orchestrator: { icon: Brain, label: "主控Agent", color: "text-violet-400" },
-  story: { icon: Clapperboard, label: "创作Agent", color: "text-blue-400" },
-  asset: { icon: Image, label: "资产Agent", color: "text-emerald-400" },
-  production: { icon: Film, label: "生成Agent", color: "text-orange-400" },
+  orchestrator: { icon: Brain, label: "主控Agent", color: "text-violet-600 dark:text-violet-400" },
+  story: { icon: Clapperboard, label: "创作Agent", color: "text-blue-600 dark:text-blue-400" },
+  asset: { icon: Image, label: "资产Agent", color: "text-emerald-600 dark:text-emerald-400" },
+  production: { icon: Film, label: "生成Agent", color: "text-orange-600 dark:text-orange-400" },
 };
 
 function TaskStatusIcon({ status }: { status: string }) {
   switch (status) {
     case "running":
     case "streaming":
-      return <Loader2 className="h-3 w-3 animate-spin text-blue-400" />;
+      return <Loader2 className="h-3 w-3 animate-spin text-primary" />;
     case "done":
-      return <CheckCircle2 className="h-3 w-3 text-green-400" />;
+      return <CheckCircle2 className="h-3 w-3 text-emerald-500 dark:text-emerald-400" />;
     case "error":
-      return <XCircle className="h-3 w-3 text-red-400" />;
+      return <XCircle className="h-3 w-3 text-destructive" />;
     default:
       return <div className="h-3 w-3 rounded-full bg-muted-foreground/30" />;
   }
@@ -56,9 +55,7 @@ function StreamingText({ text, isActive }: { text: string; isActive: boolean }) 
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isActive) {
-      endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-    }
+    if (isActive) endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [text, isActive]);
 
   if (!text) return null;
@@ -66,12 +63,12 @@ function StreamingText({ text, isActive }: { text: string; isActive: boolean }) 
   return (
     <div
       ref={containerRef}
-      className="mt-1.5 rounded-md bg-black/40 border border-white/5 p-2 max-h-48 overflow-y-auto font-mono text-[10px] leading-relaxed"
+      className="mt-1.5 rounded-md bg-muted/50 border p-2 max-h-48 overflow-y-auto font-mono text-[10px] leading-relaxed"
     >
-      <pre className="whitespace-pre-wrap break-words text-emerald-300/80">
+      <pre className="whitespace-pre-wrap break-words text-emerald-700 dark:text-emerald-300/80">
         {text}
         {isActive && (
-          <span className="inline-block w-1.5 h-3 bg-emerald-400 animate-pulse ml-0.5 align-middle" />
+          <span className="inline-block w-1.5 h-3 bg-primary animate-pulse ml-0.5 align-middle" />
         )}
       </pre>
       <div ref={endRef} />
@@ -87,13 +84,13 @@ function TaskItem({ task, isExpanded, onToggle }: { task: AgentTask; isExpanded:
   return (
     <div className={cn(
       "rounded-lg border transition-all duration-300",
-      isActive ? "border-blue-500/30 bg-blue-500/5 shadow-sm shadow-blue-500/10" : "border-white/5 bg-white/[0.02]",
-      task.status === "done" && "border-green-500/20",
-      task.status === "error" && "border-red-500/20 bg-red-500/5",
+      isActive ? "border-primary/30 bg-primary/5 shadow-sm" : "border-border bg-card/50",
+      task.status === "done" && "border-emerald-500/20 dark:border-emerald-400/20",
+      task.status === "error" && "border-destructive/20 bg-destructive/5",
     )}>
       <button
         onClick={onToggle}
-        className="w-full flex items-center gap-2 p-2 text-left hover:bg-white/5 rounded-lg transition-colors"
+        className="w-full flex items-center gap-2 p-2 text-left hover:bg-muted/50 rounded-lg transition-colors"
       >
         <TaskStatusIcon status={task.status} />
         <AgentIcon className={cn("h-3.5 w-3.5", meta.color)} />
@@ -115,14 +112,12 @@ function TaskItem({ task, isExpanded, onToggle }: { task: AgentTask; isExpanded:
 
       {isExpanded && (
         <div className="px-2 pb-2">
-          {task.streamingText && (
-            <StreamingText text={task.streamingText} isActive={isActive} />
-          )}
+          {task.streamingText && <StreamingText text={task.streamingText} isActive={isActive} />}
           {task.result && (
-            <div className="mt-1 text-[10px] text-green-400/80 px-1">{task.result}</div>
+            <div className="mt-1 text-[10px] text-emerald-600 dark:text-emerald-400/80 px-1">{task.result}</div>
           )}
           {task.error && (
-            <div className="mt-1 text-[10px] text-red-400/80 px-1">❌ {task.error}</div>
+            <div className="mt-1 text-[10px] text-destructive px-1">❌ {task.error}</div>
           )}
         </div>
       )}
@@ -137,10 +132,8 @@ export function AgentActivityPanel() {
   const panelOpen = useAgentActivityStore((s) => s.panelOpen);
   const togglePanel = useAgentActivityStore((s) => s.togglePanel);
 
-  // Auto-expand the latest active task
   const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set());
 
-  // Auto-expand streaming tasks
   useEffect(() => {
     for (const phase of phases) {
       for (const task of phase.tasks) {
@@ -173,16 +166,21 @@ export function AgentActivityPanel() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-white/5 shrink-0">
+      <div className="flex items-center justify-between px-3 py-2 border-b shrink-0">
         <div className="flex items-center gap-2">
           <Terminal className="h-3.5 w-3.5 text-primary" />
           <span className="text-[11px] font-semibold">Agent 工作台</span>
-          {isActive && (
-            <span className="flex items-center gap-1 text-[9px] text-blue-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-blue-400 animate-pulse" />
+          {isActive ? (
+            <span className="flex items-center gap-1 text-[9px] text-primary">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
               运行中
             </span>
-          )}
+          ) : phases.length > 0 ? (
+            <span className="flex items-center gap-1 text-[9px] text-emerald-600 dark:text-emerald-400">
+              <CheckCircle2 className="h-3 w-3" />
+              已完成
+            </span>
+          ) : null}
         </div>
         <div className="flex items-center gap-2">
           {totalTokens > 0 && (
@@ -202,18 +200,15 @@ export function AgentActivityPanel() {
           <div className="p-2 space-y-3">
             {phases.map((phase) => (
               <div key={phase.id}>
-                {/* Phase header */}
                 <div className="flex items-center gap-2 mb-1.5 px-1">
                   <div className={cn(
                     "h-1.5 w-1.5 rounded-full",
-                    phase.status === "running" ? "bg-blue-400 animate-pulse" : phase.status === "done" ? "bg-green-400" : "bg-muted-foreground/30",
+                    phase.status === "running" ? "bg-primary animate-pulse" : phase.status === "done" ? "bg-emerald-500" : "bg-muted-foreground/30",
                   )} />
                   <span className="text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider">
                     {phase.name}
                   </span>
                 </div>
-
-                {/* Tasks */}
                 <div className="space-y-1.5">
                   {phase.tasks.map((task) => (
                     <TaskItem

@@ -4,7 +4,7 @@
 import { useStoryboardStore } from "../stores/storyboard.store";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { User, MapPin, Palette, Volume2 } from "lucide-react";
+import { User, MapPin, Palette, Volume2, Pencil } from "lucide-react";
 
 export function LeftPanel() {
   const characters = useStoryboardStore((s) => s.characters);
@@ -27,40 +27,56 @@ export function LeftPanel() {
               <User className="h-3 w-3" /> 角色 ({characters.length})
             </h3>
             <div className="space-y-2">
-              {characters.map((char) => (
-                <div
-                  key={char.character_id}
-                  onClick={() => selectCharacter(char.character_id)}
-                  className={cn(
-                    "rounded-lg border p-2 cursor-pointer transition-all hover:shadow-sm",
-                    selectedCharacterId === char.character_id
-                      ? "border-primary bg-primary/5 ring-1 ring-primary/30"
-                      : "border-border/50 hover:border-border",
-                  )}
-                >
-                  <div className="flex items-start gap-2">
-                    {/* Avatar placeholder */}
-                    <div className="w-10 h-10 rounded-lg bg-muted/50 flex items-center justify-center shrink-0 overflow-hidden">
-                      {char.anchor_images.front ? (
-                        <img src={char.anchor_images.front} alt={char.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <User className="h-4 w-4 text-muted-foreground/40" />
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-medium truncate">{char.name}</p>
-                      <p className="text-[10px] text-muted-foreground line-clamp-2 leading-tight">
-                        {char.visual_description.slice(0, 60)}...
-                      </p>
-                      {char.voice_id && (
-                        <span className="text-[9px] text-muted-foreground/60 flex items-center gap-0.5 mt-0.5">
-                          <Volume2 className="h-2.5 w-2.5" /> {char.voice_id}
-                        </span>
-                      )}
+              {characters.map((char) => {
+                const initial = char.name.charAt(0).toUpperCase();
+                const hue = char.name.split("").reduce((h, c) => h + c.charCodeAt(0), 0) % 360;
+
+                return (
+                  <div
+                    key={char.character_id}
+                    onClick={() => selectCharacter(char.character_id)}
+                    className={cn(
+                      "rounded-lg border p-2 cursor-pointer transition-all hover:shadow-sm group",
+                      selectedCharacterId === char.character_id
+                        ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                        : "border-border/50 hover:border-border",
+                    )}
+                  >
+                    <div className="flex items-start gap-2">
+                      {/* Avatar with colored initial fallback */}
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 overflow-hidden"
+                        style={!char.anchor_images.front ? { backgroundColor: `hsl(${hue}, 50%, 85%)` } : undefined}
+                      >
+                        {char.anchor_images.front ? (
+                          <img src={char.anchor_images.front} alt={char.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-sm font-bold" style={{ color: `hsl(${hue}, 60%, 35%)` }}>{initial}</span>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs font-medium truncate">{char.name}</p>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); selectCharacter(char.character_id); }}
+                            className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-muted transition-all"
+                            title="编辑角色"
+                          >
+                            <Pencil className="h-3 w-3 text-muted-foreground/60" />
+                          </button>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground line-clamp-2 leading-tight">
+                          {char.visual_description.slice(0, 60)}...
+                        </p>
+                        {char.voice_id && (
+                          <span className="text-[9px] text-muted-foreground/60 flex items-center gap-0.5 mt-0.5">
+                            <Volume2 className="h-2.5 w-2.5" /> {char.voice_id}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
 
@@ -70,34 +86,49 @@ export function LeftPanel() {
               <MapPin className="h-3 w-3" /> 场景 ({scenes.length})
             </h3>
             <div className="space-y-2">
-              {scenes.map((scene) => (
-                <div
-                  key={scene.scene_id}
-                  onClick={() => selectScene(scene.scene_id)}
-                  className={cn(
-                    "rounded-lg border p-2 cursor-pointer transition-all hover:shadow-sm",
-                    selectedSceneId === scene.scene_id
-                      ? "border-primary bg-primary/5 ring-1 ring-primary/30"
-                      : "border-border/50 hover:border-border",
-                  )}
-                >
-                  <div className="flex items-start gap-2">
-                    <div className="w-10 h-10 rounded-lg bg-muted/50 flex items-center justify-center shrink-0 overflow-hidden">
-                      {scene.anchor_image ? (
-                        <img src={scene.anchor_image} alt={scene.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <MapPin className="h-4 w-4 text-muted-foreground/40" />
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-medium truncate">{scene.name}</p>
-                      <p className="text-[10px] text-muted-foreground line-clamp-2 leading-tight">
-                        {scene.description.slice(0, 60)}...
-                      </p>
+              {scenes.map((scene) => {
+                const hue = scene.name.split("").reduce((h, c) => h + c.charCodeAt(0), 0) % 360;
+
+                return (
+                  <div
+                    key={scene.scene_id}
+                    onClick={() => selectScene(scene.scene_id)}
+                    className={cn(
+                      "rounded-lg border p-2 cursor-pointer transition-all hover:shadow-sm group",
+                      selectedSceneId === scene.scene_id
+                        ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                        : "border-border/50 hover:border-border",
+                    )}
+                  >
+                    <div className="flex items-start gap-2">
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 overflow-hidden"
+                        style={!scene.anchor_image ? { backgroundColor: `hsl(${hue}, 45%, 88%)` } : undefined}
+                      >
+                        {scene.anchor_image ? (
+                          <img src={scene.anchor_image} alt={scene.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <MapPin className="h-4 w-4" style={{ color: `hsl(${hue}, 50%, 40%)` }} />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs font-medium truncate">{scene.name}</p>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); selectScene(scene.scene_id); }}
+                            className="p-0.5 rounded opacity-0 group-hover:opacity-100 hover:bg-muted transition-all"
+                            title="编辑场景"
+                          >
+                            <Pencil className="h-3 w-3 text-muted-foreground/60" />
+                          </button>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground line-clamp-2 leading-tight">
+                          {scene.description.slice(0, 60)}...
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
 
@@ -118,3 +149,5 @@ export function LeftPanel() {
     </div>
   );
 }
+
+

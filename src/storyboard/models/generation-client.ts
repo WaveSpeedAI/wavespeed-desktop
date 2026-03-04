@@ -88,6 +88,7 @@ export async function generateVideo(
   options?: {
     imageUrl?: string;     // reference image for i2v
     negativePrompt?: string;
+    duration?: number;     // target duration in seconds (4-12 for Seedance)
     seed?: number;
     model?: ModelOption;
     phaseId?: string;
@@ -115,8 +116,10 @@ export async function generateVideo(
       ...(options?.negativePrompt && { negative_prompt: options.negativePrompt }),
       ...(options?.seed !== undefined && { seed: options.seed }),
       ...(options?.imageUrl && { image: options.imageUrl }),
+      ...(options?.duration !== undefined && { duration: options.duration }),
     };
 
+    taskId && activity.appendStream(taskId, `时长: ${options?.duration ?? "默认"}s\n`);
     taskId && activity.appendStream(taskId, "提交生成请求...\n");
 
     const result = await apiClient.run(model.modelId, input);

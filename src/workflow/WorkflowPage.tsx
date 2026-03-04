@@ -1742,46 +1742,61 @@ export function WorkflowPage() {
                 </TooltipContent>
               </Tooltip>
               {/* Run count */}
-              <div className="h-7 flex items-center bg-[hsl(var(--muted))] border-l border-[hsl(var(--border))]">
-                <input
-                  type="number"
-                  min={1}
-                  max={99}
-                  value={runCount}
-                  onChange={(e) =>
-                    setRunCount(
-                      Math.max(1, Math.min(99, Number(e.target.value) || 1)),
-                    )
-                  }
-                  className="w-10 h-full bg-transparent px-1 text-xs text-center text-foreground focus:outline-none dark:[color-scheme:dark]"
-                  title={t("workflow.runCount", "Run count")}
-                />
-              </div>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <div className="h-7 flex items-center bg-[hsl(var(--muted))] border-l border-[hsl(var(--border))]">
+                    <input
+                      type="number"
+                      min={1}
+                      max={99}
+                      value={runCount}
+                      onChange={(e) =>
+                        setRunCount(
+                          Math.max(
+                            1,
+                            Math.min(99, Number(e.target.value) || 1),
+                          ),
+                        )
+                      }
+                      className="w-10 h-full bg-transparent px-1 text-xs text-center text-foreground focus:outline-none dark:[color-scheme:dark]"
+                    />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  {t("workflow.runCount", "Run count")}
+                </TooltipContent>
+              </Tooltip>
             </div>
             {/* Cancel button */}
             {(isRunning || isBatchRunning) && (
-              <button
-                className="h-7 w-7 rounded-lg flex items-center justify-center bg-red-900/60 text-red-300 hover:bg-red-800/70 transition-colors"
-                onClick={() => {
-                  runCancelRef.current = true;
-                  if (workflowId) cancelAll(workflowId);
-                }}
-                title={t("workflow.cancelAll", "Cancel All")}
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <button
+                    className="h-7 w-7 rounded-lg flex items-center justify-center bg-red-900/60 text-red-300 hover:bg-red-800/70 transition-colors"
+                    onClick={() => {
+                      runCancelRef.current = true;
+                      if (workflowId) cancelAll(workflowId);
+                    }}
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  {t("workflow.cancelAll", "Cancel All")}
+                </TooltipContent>
+              </Tooltip>
             )}
           </div>
           {/* Monitor side panel toggle */}

@@ -469,7 +469,7 @@ export function ExplorePanel({
             <button
               onClick={() => setTypeFilter(null)}
               className={cn(
-                "text-[10px] px-2 py-0.5 rounded-full font-medium transition-colors whitespace-nowrap",
+                "text-xs px-2.5 py-1 rounded-full font-medium transition-colors whitespace-nowrap",
                 !typeFilter
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted text-muted-foreground hover:text-foreground",
@@ -482,7 +482,7 @@ export function ExplorePanel({
                 key={type}
                 onClick={() => setTypeFilter(typeFilter === type ? null : type)}
                 className={cn(
-                  "text-[10px] px-2 py-0.5 rounded-full font-medium transition-colors whitespace-nowrap",
+                  "text-xs px-2.5 py-1 rounded-full font-medium transition-colors whitespace-nowrap",
                   typeFilter === type
                     ? "ring-1 ring-current " + getTypeColor(type)
                     : getTypeColor(type) + " hover:opacity-80",

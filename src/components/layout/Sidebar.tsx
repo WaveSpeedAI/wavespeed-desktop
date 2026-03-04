@@ -63,15 +63,29 @@ export function Sidebar({
     }
   }, [collapsed]);
 
-  // Dismiss tooltips when the window loses focus so they don't linger after Alt+Tab
+  // Dismiss stale tooltips after Alt+Tab: suppress on blur, re-enable on next mouse move
+  const blurredRef = useRef(false);
   useEffect(() => {
     const handleBlur = () => {
+      blurredRef.current = true;
       setTooltipReady(false);
-      // Brief delay so the tooltip disappears, then re-enable for future hovers
-      setTimeout(() => setTooltipReady(true), 300);
+    };
+    const handleFocus = () => {
+      if (!blurredRef.current) return;
+      // Keep suppressed — will be re-enabled by mousemove
+      const onMove = () => {
+        blurredRef.current = false;
+        setTooltipReady(true);
+        window.removeEventListener("mousemove", onMove);
+      };
+      window.addEventListener("mousemove", onMove, { once: true });
     };
     window.addEventListener("blur", handleBlur);
-    return () => window.removeEventListener("blur", handleBlur);
+    window.addEventListener("focus", handleFocus);
+    return () => {
+      window.removeEventListener("blur", handleBlur);
+      window.removeEventListener("focus", handleFocus);
+    };
   }, []);
 
   const createItems: NavItem[] = [

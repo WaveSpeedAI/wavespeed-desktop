@@ -7,7 +7,6 @@ import { ModelsPage } from "@/pages/ModelsPage";
 import { TemplatesPage } from "@/pages/TemplatesPage";
 // HistoryPage and AssetsPage are rendered persistently in Layout
 import { SettingsPage } from "@/pages/SettingsPage";
-import { FeaturedModelsPage } from "@/pages/FeaturedModelsPage";
 import { SmartPlaygroundPage } from "@/pages/SmartPlaygroundPage";
 import { FreeToolsPage } from "@/pages/FreeToolsPage";
 import { ZImagePage } from "@/pages/ZImagePage";
@@ -62,7 +61,6 @@ function App() {
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<WelcomePage />} />
-        <Route path="featured-models" element={<FeaturedModelsPage />} />
         <Route
           path="featured-models/:familyId"
           element={<SmartPlaygroundPage />}

@@ -53,7 +53,6 @@ export function MobileLayout() {
   // Pages that don't require API key
   const publicPaths = [
     "/",
-    "/featured-models",
     "/settings",
     "/templates",
     "/assets",

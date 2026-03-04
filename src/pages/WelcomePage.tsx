@@ -34,6 +34,7 @@ interface FeatureCardProps {
   shapeGradient: string;
   href: string;
   badge?: string;
+  onClick?: () => void;
 }
 
 function FeatureCard({
@@ -44,6 +45,7 @@ function FeatureCard({
   shapeGradient,
   href,
   badge,
+  onClick,
 }: FeatureCardProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -57,7 +59,13 @@ function FeatureCard({
           ? "border-blue-500/30 ring-2 ring-blue-500/10 hover:ring-blue-500/20"
           : "border-border/50 hover:border-border",
       )}
-      onClick={() => navigate(href)}
+      onClick={() => {
+        if (onClick) {
+          onClick();
+        } else {
+          navigate(href);
+        }
+      }}
     >
       {/* Enhanced glow for new feature */}
       {isNewFeature && (
@@ -130,8 +138,12 @@ export function WelcomePage() {
       gradient:
         "bg-gradient-to-br from-amber-500/40 via-orange-500/20 to-transparent",
       shapeGradient: "from-amber-500/40 to-orange-500/30",
-      href: "/featured-models",
+      href: "/playground",
       badge: t("welcome.featuredModels.badge"),
+      onClick: () => {
+        sessionStorage.setItem("pg_rightPanelTab", "featured");
+        navigate("/playground");
+      },
     },
     {
       icon: <Boxes className="h-6 w-6 text-blue-600 dark:text-blue-400" />,

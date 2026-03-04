@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import { MobileLayout } from "@mobile/components/layout/MobileLayout";
 import { WelcomePage } from "@/pages/WelcomePage";
-import { FeaturedModelsPage } from "@/pages/FeaturedModelsPage";
 import { SmartPlaygroundPage } from "@/pages/SmartPlaygroundPage";
 import { MobileModelsPage } from "@mobile/pages/MobileModelsPage";
 import { MobilePlaygroundPage } from "@mobile/pages/MobilePlaygroundPage";
@@ -38,7 +37,6 @@ function App() {
     <Routes>
       <Route path="/" element={<MobileLayout />}>
         <Route index element={<WelcomePage />} />
-        <Route path="featured-models" element={<FeaturedModelsPage />} />
         <Route
           path="featured-models/:familyId"
           element={<SmartPlaygroundPage />}

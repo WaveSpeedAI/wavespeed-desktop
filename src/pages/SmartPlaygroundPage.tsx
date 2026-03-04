@@ -508,10 +508,7 @@ export function SmartPlaygroundPage() {
       <div className="flex h-full items-center justify-center">
         <div className="text-center space-y-2">
           <p className="text-muted-foreground">Family not found</p>
-          <Button
-            variant="outline"
-            onClick={() => navigate("/featured-models")}
-          >
+          <Button variant="outline" onClick={() => navigate("/playground")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             {t("smartPlayground.back")}
           </Button>
@@ -541,7 +538,7 @@ export function SmartPlaygroundPage() {
             variant="ghost"
             size="sm"
             className="h-8 w-8 p-0"
-            onClick={() => navigate("/featured-models")}
+            onClick={() => navigate("/playground")}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>

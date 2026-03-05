@@ -415,7 +415,7 @@ ipcMain.handle("update-titlebar-theme", (_, isDark: boolean) => {
   if (process.platform === "darwin" || !mainWindow) return;
   try {
     mainWindow.setTitleBarOverlay({
-      color: isDark ? "#080c16" : "#f6f7f9",
+      color: isDark ? "#080c16" : "#ffffff",
       symbolColor: isDark ? "#9ca3af" : "#6b7280",
       height: 32,
     });

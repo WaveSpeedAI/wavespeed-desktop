@@ -711,7 +711,7 @@ export function PlaygroundPage() {
           {/* Left Panel - Configuration (always visible) */}
           <div
             className={cn(
-              "w-full md:w-auto flex flex-col min-h-0 border-b bg-card/70 md:overflow-hidden md:border-r md:border-b-0 md:shrink-0 md:grow-0",
+              "w-full md:w-auto flex flex-col min-h-0 border-b md:overflow-hidden md:border-r md:border-b-0 md:shrink-0 md:grow-0",
               mobileView === "config"
                 ? "flex flex-1 md:flex-initial"
                 : "hidden md:flex",

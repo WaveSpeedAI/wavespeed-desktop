@@ -363,7 +363,7 @@ export function ExplorePanel({
                   "playground.explore.searchPlaceholder",
                   "Search models...",
                 )}
-                className="w-full h-[34px] pl-9 pr-8 rounded-lg border border-border bg-muted/40 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all"
+                className="w-full h-[34px] pl-9 pr-8 rounded-lg border border-gray-400 dark:border-gray-500 bg-muted/40 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm"
               />
               {searchInput && (
                 <button
@@ -378,7 +378,7 @@ export function ExplorePanel({
               variant="ghost"
               size="sm"
               className={cn(
-                "h-[34px] w-[34px] p-0 shrink-0 border border-border",
+                "h-[34px] w-[34px] p-0 shrink-0 border border-gray-400 dark:border-gray-500 shadow-sm",
                 showFavoritesOnly &&
                   "bg-yellow-500/10 border-yellow-500/30 text-yellow-500",
               )}
@@ -396,7 +396,7 @@ export function ExplorePanel({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-[34px] px-2.5 shrink-0 border border-border text-xs font-medium gap-1"
+                  className="h-[34px] px-2.5 shrink-0 border border-gray-400 dark:border-gray-500 shadow-sm text-xs font-medium gap-1"
                 >
                   {sortLabels[sortKey]}
                   <ChevronDown className="h-3 w-3" />
@@ -420,7 +420,7 @@ export function ExplorePanel({
             <Button
               variant="ghost"
               size="sm"
-              className="h-[34px] w-[34px] p-0 shrink-0 border border-border"
+              className="h-[34px] w-[34px] p-0 shrink-0 border border-gray-400 dark:border-gray-500 shadow-sm"
               onClick={() => setSortAsc(!sortAsc)}
             >
               {sortAsc ? (
@@ -432,7 +432,7 @@ export function ExplorePanel({
             <Button
               variant="ghost"
               size="sm"
-              className="h-[34px] px-2.5 shrink-0 border border-border text-xs font-medium gap-1.5"
+              className="h-[34px] px-2.5 shrink-0 border border-gray-400 dark:border-gray-500 shadow-sm text-xs font-medium gap-1.5"
               disabled={isRefreshing}
               onClick={async () => {
                 setIsRefreshing(true);

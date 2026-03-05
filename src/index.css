@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: 220 20% 97%;
+    --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
@@ -35,8 +35,8 @@
     --sidebar-text-hover: #111827;
 
     /* Content area */
-    --content-bg: 220 20% 97%;
-    --content-area: 220 16% 94%;
+    --content-bg: 0 0% 100%;
+    --content-area: 220 10% 99.2%;
     --panel-bg: 0 0% 100%;
   }
 
@@ -247,8 +247,8 @@
 .sidebar-bg {
   background: linear-gradient(
     180deg,
-    hsl(220 30% 96%) 0%,
-    hsl(220 25% 94%) 100%
+    hsl(0 0% 100%) 0%,
+    hsl(0 0% 100%) 100%
   );
 }
 

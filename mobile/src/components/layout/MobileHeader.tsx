@@ -32,7 +32,16 @@ export function MobileHeader() {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
-  const { theme, setTheme, resolvedTheme } = useThemeStore();
+  const { theme, setTheme } = useThemeStore();
+
+  // Resolve "auto" to actual theme
+  const resolvedTheme =
+    theme === "auto"
+      ? typeof window !== "undefined" &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light"
+      : theme;
 
   // Toggle between light and dark
   const toggleTheme = () => {

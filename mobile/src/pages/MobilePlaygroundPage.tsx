@@ -61,12 +61,8 @@ export function MobilePlaygroundPage() {
     clearBatchResults,
     selectHistoryItem,
   } = usePlaygroundStore();
-  const {
-    templates,
-    loadTemplates,
-    saveTemplate,
-    isLoaded: templatesLoaded,
-  } = useTemplateStore();
+  const { templates, loadTemplates, createTemplate } = useTemplateStore();
+  const [templatesLoaded, setTemplatesLoaded] = useState(false);
   const {
     save: savePredictionInputs,
     load: loadPredictionInputs,
@@ -109,7 +105,7 @@ export function MobilePlaygroundPage() {
   // Load templates and prediction inputs on mount
   useEffect(() => {
     if (!templatesLoaded) {
-      loadTemplates();
+      loadTemplates().then(() => setTemplatesLoaded(true));
     }
     if (!inputsLoaded) {
       loadPredictionInputs();
@@ -173,15 +169,16 @@ export function MobilePlaygroundPage() {
         // after DynamicForm loads the model schema and sets default values.
         // This avoids the race condition where defaults overwrite template values.
         pendingTemplateRef.current = {
-          values: template.values,
+          values: template.playgroundData?.values ?? {},
           name: template.name,
         };
         // If model is already correct and form fields exist, apply immediately
         if (
-          activeTab.selectedModel?.model_id === template.modelId &&
+          activeTab.selectedModel?.model_id ===
+            template.playgroundData?.modelId &&
           activeTab.formFields.length > 0
         ) {
-          setFormValues(template.values);
+          setFormValues(template.playgroundData?.values ?? {});
           pendingTemplateRef.current = null;
           toast({
             title: t("playground.templateLoaded"),
@@ -206,12 +203,16 @@ export function MobilePlaygroundPage() {
   const handleSaveTemplate = () => {
     if (!activeTab?.selectedModel || !newTemplateName.trim()) return;
 
-    saveTemplate(
-      newTemplateName.trim(),
-      activeTab.selectedModel.model_id,
-      activeTab.selectedModel.name,
-      activeTab.formValues,
-    );
+    createTemplate({
+      name: newTemplateName.trim(),
+      type: "custom",
+      templateType: "playground",
+      playgroundData: {
+        modelId: activeTab.selectedModel.model_id,
+        modelName: activeTab.selectedModel.name,
+        values: activeTab.formValues,
+      },
+    });
     setNewTemplateName("");
     setShowSaveTemplateDialog(false);
     toast({
@@ -536,7 +537,6 @@ export function MobilePlaygroundPage() {
                     <BatchOutputGrid
                       results={activeTab.batchResults}
                       modelId={activeTab.selectedModel?.model_id}
-                      modelName={activeTab.selectedModel?.name}
                       onClear={clearBatchResults}
                       isRunning={activeTab.isRunning}
                       totalCount={activeTab.batchConfig?.repeatCount}

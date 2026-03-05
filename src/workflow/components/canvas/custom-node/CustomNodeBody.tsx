@@ -167,12 +167,7 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
               <Row key={inp.key}>
                 <div className="flex items-center justify-between gap-2 w-full">
                   <span className="text-xs whitespace-nowrap flex-shrink-0 text-green-400 font-semibold">
-                    <HandleAnchor
-                      id={hid}
-                      type="target"
-                      connected
-                      media
-                    />
+                    <HandleAnchor id={hid} type="target" connected media />
                     {localizeInputLabel(inp.key, inp.label)}
                   </span>
                   <ConnectedInputControl
@@ -187,7 +182,10 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
             );
           })}
         {isAITask && (
-          <div className="nodrag px-3 mb-1" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="nodrag px-3 mb-1"
+            onClick={(e) => e.stopPropagation()}
+          >
             <ModelSelector
               models={storeModels}
               value={currentModelId || undefined}
@@ -311,12 +309,7 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
               <Row key={inp.key}>
                 <div className="flex items-center justify-between gap-2 w-full">
                   <span className="text-xs whitespace-nowrap flex-shrink-0 text-green-400 font-semibold">
-                    <HandleAnchor
-                      id={hid}
-                      type="target"
-                      connected
-                      media
-                    />
+                    <HandleAnchor id={hid} type="target" connected media />
                     {localizeInputLabel(inp.key, inp.label)}
                     {inp.required && <span className="text-red-400"> *</span>}
                   </span>
@@ -356,8 +349,7 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
                       const edge = edges.find(
                         (e) => e.target === id && e.targetHandle === hid,
                       );
-                      if (edge)
-                        useWorkflowStore.getState().removeEdge(edge.id);
+                      if (edge) useWorkflowStore.getState().removeEdge(edge.id);
                     }}
                   />
                 </div>

@@ -60,6 +60,7 @@ export function MobilePlaygroundPage() {
     runBatch,
     clearBatchResults,
     selectHistoryItem,
+    consumePendingFormValues,
   } = usePlaygroundStore();
   const { templates, loadTemplates, createTemplate } = useTemplateStore();
   const [templatesLoaded, setTemplatesLoaded] = useState(false);
@@ -247,7 +248,12 @@ export function MobilePlaygroundPage() {
 
   const handleSetDefaults = useCallback(
     (defaults: Record<string, unknown>) => {
-      setFormValues(defaults);
+      const pending = consumePendingFormValues();
+      if (pending) {
+        setFormValues({ ...defaults, ...pending });
+      } else {
+        setFormValues(defaults);
+      }
       // Apply pending template values after defaults are set (overrides defaults)
       if (pendingTemplateRef.current) {
         const { values, name } = pendingTemplateRef.current;
@@ -259,8 +265,18 @@ export function MobilePlaygroundPage() {
         });
       }
     },
-    [setFormValues, t],
+    [setFormValues, consumePendingFormValues, t],
   );
+
+  // When a tab is created with pendingFormValues and DynamicForm doesn't call onSetDefaults
+  useEffect(() => {
+    if (!activeTab?.pendingFormValues) return;
+    const pending = consumePendingFormValues();
+    if (pending) {
+      setFormValues({ ...activeTab.formValues, ...pending });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTabId]);
 
   const handleRun = async () => {
     // Switch to output view immediately so user can play game while waiting
@@ -560,6 +576,18 @@ export function MobilePlaygroundPage() {
                     selectedIndex={activeTab.selectedHistoryIndex}
                     onSelect={selectHistoryItem}
                     direction="horizontal"
+                    onDuplicateToNewTab={(index) => {
+                      const item = activeTab.generationHistory[index];
+                      if (item && activeTab.selectedModel) {
+                        createTab(activeTab.selectedModel, item.formValues);
+                      }
+                    }}
+                    onApplySettings={(index) => {
+                      const item = activeTab.generationHistory[index];
+                      if (item?.formValues) {
+                        setFormValues(item.formValues);
+                      }
+                    }}
                   />
                 )}
               </div>

@@ -265,7 +265,9 @@
       "less": "Daha az"
     },
     "history": {
-      "title": "Geçmiş"
+      "title": "Geçmiş",
+      "openInNewTab": "Yeni sekmede aç",
+      "useSettings": "Bu ayarları kullan"
     }
   },
   "history": {
@@ -317,7 +319,9 @@
     "downloadCompleteDesc": "{{count}} dosya indirildi",
     "downloadFailed": "İndirme başarısız",
     "downloadFailedDesc": "{{count}} dosya indirilemedi",
-    "longPressHint": "Seçmek için uzun basın"
+    "longPressHint": "Seçmek için uzun basın",
+    "openInPlayground": "Playground'da aç",
+    "modelNotAvailable": "Model artık mevcut değil"
   },
   "templates": {
     "title": "Şablonlar",

@@ -270,7 +270,9 @@
       "less": "收起"
     },
     "history": {
-      "title": "历史记录"
+      "title": "历史记录",
+      "openInNewTab": "在新标签页打开",
+      "useSettings": "使用此设置"
     },
     "rightPanel": {
       "explore": "探索",
@@ -338,7 +340,9 @@
       "successDesc": "您可以在模板页面使用它",
       "error": "保存模板失败"
     },
-    "longPressHint": "长按选择"
+    "longPressHint": "长按选择",
+    "openInPlayground": "在 Playground 中打开",
+    "modelNotAvailable": "模型已不可用"
   },
   "templates": {
     "title": "模板",

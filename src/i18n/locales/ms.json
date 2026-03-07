@@ -265,7 +265,9 @@
       "less": "Kurang"
     },
     "history": {
-      "title": "Sejarah"
+      "title": "Sejarah",
+      "openInNewTab": "Buka di tab baharu",
+      "useSettings": "Gunakan tetapan ini"
     }
   },
   "history": {
@@ -317,7 +319,9 @@
       "successDesc": "Anda boleh menggunakannya dari halaman templat",
       "error": "Gagal menyimpan templat"
     },
-    "longPressHint": "Tekan lama untuk memilih"
+    "longPressHint": "Tekan lama untuk memilih",
+    "openInPlayground": "Buka di Playground",
+    "modelNotAvailable": "Model tidak lagi tersedia"
   },
   "templates": {
     "title": "Templat",

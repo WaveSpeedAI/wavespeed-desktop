@@ -265,7 +265,9 @@
       "less": "Meno"
     },
     "history": {
-      "title": "Cronologia"
+      "title": "Cronologia",
+      "openInNewTab": "Apri in una nuova scheda",
+      "useSettings": "Usa queste impostazioni"
     }
   },
   "history": {
@@ -317,7 +319,9 @@
     "downloadCompleteDesc": "{{count}} file scaricato/i",
     "downloadFailed": "Download fallito",
     "downloadFailedDesc": "{{count}} file non scaricato/i",
-    "longPressHint": "Tieni premuto per selezionare"
+    "longPressHint": "Tieni premuto per selezionare",
+    "openInPlayground": "Apri nel Playground",
+    "modelNotAvailable": "Il modello non è più disponibile"
   },
   "templates": {
     "title": "Template",

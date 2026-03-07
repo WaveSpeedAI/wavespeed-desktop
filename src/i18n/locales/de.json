@@ -265,7 +265,9 @@
       "less": "Weniger"
     },
     "history": {
-      "title": "Verlauf"
+      "title": "Verlauf",
+      "openInNewTab": "In neuem Tab öffnen",
+      "useSettings": "Diese Einstellungen verwenden"
     }
   },
   "history": {
@@ -317,7 +319,9 @@
     "downloadCompleteDesc": "{{count}} Datei(en) heruntergeladen",
     "downloadFailed": "Download fehlgeschlagen",
     "downloadFailedDesc": "{{count}} Datei(en) konnten nicht heruntergeladen werden",
-    "longPressHint": "Lang drücken zum Auswählen"
+    "longPressHint": "Lang drücken zum Auswählen",
+    "openInPlayground": "Im Playground öffnen",
+    "modelNotAvailable": "Modell ist nicht mehr verfügbar"
   },
   "templates": {
     "title": "Vorlagen",

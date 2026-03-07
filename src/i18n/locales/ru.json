@@ -265,7 +265,9 @@
       "less": "Свернуть"
     },
     "history": {
-      "title": "История"
+      "title": "История",
+      "openInNewTab": "Открыть в новой вкладке",
+      "useSettings": "Использовать эти настройки"
     }
   },
   "history": {
@@ -317,7 +319,9 @@
     "downloadCompleteDesc": "Загружено {{count}} файл(ов)",
     "downloadFailed": "Ошибка загрузки",
     "downloadFailedDesc": "Не удалось загрузить {{count}} файл(ов)",
-    "longPressHint": "Нажмите и удерживайте для выбора"
+    "longPressHint": "Нажмите и удерживайте для выбора",
+    "openInPlayground": "Открыть в Playground",
+    "modelNotAvailable": "Модель больше не доступна"
   },
   "templates": {
     "title": "Шаблоны",

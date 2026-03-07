@@ -265,7 +265,9 @@
       "less": "أقل"
     },
     "history": {
-      "title": "السجل"
+      "title": "السجل",
+      "openInNewTab": "فتح في علامة تبويب جديدة",
+      "useSettings": "استخدام هذه الإعدادات"
     }
   },
   "history": {
@@ -317,7 +319,9 @@
       "successDesc": "يمكنك استخدامه من صفحة القوالب",
       "error": "فشل حفظ القالب"
     },
-    "longPressHint": "اضغط مطولاً للتحديد"
+    "longPressHint": "اضغط مطولاً للتحديد",
+    "openInPlayground": "فتح في Playground",
+    "modelNotAvailable": "النموذج لم يعد متاحًا"
   },
   "templates": {
     "title": "القوالب",

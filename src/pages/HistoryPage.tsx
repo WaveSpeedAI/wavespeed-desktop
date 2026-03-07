@@ -1,7 +1,11 @@
 import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { apiClient } from "@/api/client";
 import { useApiKeyStore } from "@/stores/apiKeyStore";
+import { usePlaygroundStore } from "@/stores/playgroundStore";
+import { useModelsStore } from "@/stores/modelsStore";
+import { usePredictionInputsStore } from "@mobile/stores/predictionInputsStore";
 import { usePageActive } from "@/hooks/usePageActive";
 import { useDeferredClose } from "@/hooks/useDeferredClose";
 import type { HistoryItem } from "@/types/prediction";
@@ -13,6 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -55,6 +60,7 @@ import {
   Trash2,
   CheckSquare,
   History,
+  Play,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AudioPlayer } from "@/components/shared/AudioPlayer";
@@ -311,6 +317,7 @@ const HistoryCard = memo(function HistoryCard({
 
 export function HistoryPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const isActive = usePageActive("/history");
   const {
     isLoading: isLoadingApiKey,
@@ -318,6 +325,13 @@ export function HistoryPage() {
     loadApiKey,
     hasAttemptedLoad,
   } = useApiKeyStore();
+  const { createTab } = usePlaygroundStore();
+  const { getModelById } = useModelsStore();
+  const {
+    get: getLocalInputs,
+    load: loadPredictionInputs,
+    isLoaded: inputsLoaded,
+  } = usePredictionInputsStore();
   const [items, setItems] = useState<HistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -333,6 +347,7 @@ export function HistoryPage() {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+  const [isOpeningPlayground, setIsOpeningPlayground] = useState(false);
   const pageSize = 50;
 
   const handleCopyId = async (id: string) => {
@@ -340,6 +355,53 @@ export function HistoryPage() {
     setCopiedId(true);
     setTimeout(() => setCopiedId(false), 2000);
   };
+
+  const handleOpenInPlayground = useCallback(
+    async (item: HistoryItem) => {
+      const model = getModelById(item.model);
+      if (!model) {
+        toast({
+          title: t("common.error"),
+          description: t(
+            "history.modelNotAvailable",
+            "Model is no longer available",
+          ),
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Try local storage first (saved from previous Playground runs)
+      const localEntry = getLocalInputs(item.id);
+      if (localEntry?.inputs && Object.keys(localEntry.inputs).length > 0) {
+        createTab(model, localEntry.inputs);
+        setSelectedItem(null);
+        navigate(`/playground/${encodeURIComponent(item.model)}`);
+        return;
+      }
+
+      // Fallback: try API
+      setIsOpeningPlayground(true);
+      try {
+        const details = await apiClient.getPredictionDetails(item.id);
+        const apiInput =
+          (details as any).input || (details as any).inputs || {};
+        createTab(
+          model,
+          Object.keys(apiInput).length > 0 ? apiInput : undefined,
+        );
+        setSelectedItem(null);
+        navigate(`/playground/${encodeURIComponent(item.model)}`);
+      } catch {
+        createTab(model);
+        setSelectedItem(null);
+        navigate(`/playground/${encodeURIComponent(item.model)}`);
+      } finally {
+        setIsOpeningPlayground(false);
+      }
+    },
+    [getModelById, getLocalInputs, createTab, navigate, t],
+  );
 
   // Navigate to previous/next history item (with loop support)
   const navigateHistory = useCallback(
@@ -498,10 +560,11 @@ export function HistoryPage() {
     setSelectedIds(new Set());
   }, []);
 
-  // Load API key on mount
+  // Load API key and prediction inputs on mount
   useEffect(() => {
     loadApiKey();
-  }, [loadApiKey]);
+    if (!inputsLoaded) loadPredictionInputs();
+  }, [loadApiKey, inputsLoaded, loadPredictionInputs]);
 
   // Only fetch when deps change; skip if data is fresh (< 30s old)
   const lastFetchTimeRef = useRef(0);
@@ -813,6 +876,9 @@ export function HistoryPage() {
                 </span>
               )}
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              {deferredSelectedItem?.model ?? ""}
+            </DialogDescription>
           </DialogHeader>
           {deferredSelectedItem && (
             <div className="flex-1 overflow-y-auto space-y-4 relative">
@@ -837,7 +903,20 @@ export function HistoryPage() {
                   </Button>
                 </>
               )}
-              <div className="flex justify-end">
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => handleOpenInPlayground(deferredSelectedItem)}
+                  disabled={isOpeningPlayground}
+                >
+                  {isOpeningPlayground ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Play className="h-4 w-4 mr-2" />
+                  )}
+                  {t("history.openInPlayground", "Open in Playground")}
+                </Button>
                 <Button
                   variant="destructive"
                   size="sm"

@@ -265,7 +265,9 @@
       "less": "Lebih sedikit"
     },
     "history": {
-      "title": "Riwayat"
+      "title": "Riwayat",
+      "openInNewTab": "Buka di tab baru",
+      "useSettings": "Gunakan pengaturan ini"
     }
   },
   "history": {
@@ -317,7 +319,9 @@
     "downloadCompleteDesc": "{{count}} file diunduh",
     "downloadFailed": "Unduhan gagal",
     "downloadFailedDesc": "{{count}} file gagal diunduh",
-    "longPressHint": "Tahan untuk memilih"
+    "longPressHint": "Tahan untuk memilih",
+    "openInPlayground": "Buka di Playground",
+    "modelNotAvailable": "Model tidak lagi tersedia"
   },
   "templates": {
     "title": "Template",

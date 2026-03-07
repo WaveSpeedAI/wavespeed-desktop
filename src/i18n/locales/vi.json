@@ -265,7 +265,9 @@
       "less": "Ẩn"
     },
     "history": {
-      "title": "Lịch sử"
+      "title": "Lịch sử",
+      "openInNewTab": "Mở trong tab mới",
+      "useSettings": "Sử dụng cài đặt này"
     }
   },
   "history": {
@@ -317,7 +319,9 @@
       "successDesc": "Bạn có thể sử dụng từ trang mẫu",
       "error": "Lưu mẫu thất bại"
     },
-    "longPressHint": "Nhấn giữ để chọn"
+    "longPressHint": "Nhấn giữ để chọn",
+    "openInPlayground": "Mở trong Playground",
+    "modelNotAvailable": "Mô hình không còn khả dụng"
   },
   "templates": {
     "title": "Mẫu",

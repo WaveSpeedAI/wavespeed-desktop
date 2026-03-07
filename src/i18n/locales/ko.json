@@ -265,7 +265,9 @@
       "less": "접기"
     },
     "history": {
-      "title": "기록"
+      "title": "기록",
+      "openInNewTab": "새 탭에서 열기",
+      "useSettings": "이 설정 사용"
     }
   },
   "history": {
@@ -317,7 +319,9 @@
     "downloadCompleteDesc": "{{count}}개 파일 다운로드됨",
     "downloadFailed": "다운로드 실패",
     "downloadFailedDesc": "{{count}}개 파일 다운로드 실패",
-    "longPressHint": "길게 눌러 선택"
+    "longPressHint": "길게 눌러 선택",
+    "openInPlayground": "Playground에서 열기",
+    "modelNotAvailable": "모델을 사용할 수 없습니다"
   },
   "templates": {
     "title": "템플릿",

@@ -265,7 +265,9 @@
       "less": "कम"
     },
     "history": {
-      "title": "इतिहास"
+      "title": "इतिहास",
+      "openInNewTab": "नए टैब में खोलें",
+      "useSettings": "इन सेटिंग्स का उपयोग करें"
     }
   },
   "history": {
@@ -317,7 +319,9 @@
     "downloadCompleteDesc": "{{count}} फ़ाइल(फ़ाइलें) डाउनलोड की गईं",
     "downloadFailed": "डाउनलोड विफल",
     "downloadFailedDesc": "{{count}} फ़ाइल(फ़ाइलें) डाउनलोड विफल",
-    "longPressHint": "चयन करने के लिए लंबे समय तक दबाएं"
+    "longPressHint": "चयन करने के लिए लंबे समय तक दबाएं",
+    "openInPlayground": "Playground में खोलें",
+    "modelNotAvailable": "मॉडल अब उपलब्ध नहीं है"
   },
   "templates": {
     "title": "टेम्पलेट",

@@ -265,7 +265,9 @@
       "less": "收起"
     },
     "history": {
-      "title": "歷史記錄"
+      "title": "歷史記錄",
+      "openInNewTab": "在新分頁開啟",
+      "useSettings": "使用此設定"
     }
   },
   "history": {
@@ -317,7 +319,9 @@
     "downloadCompleteDesc": "已下載 {{count}} 個檔案",
     "downloadFailed": "下載失敗",
     "downloadFailedDesc": "{{count}} 個檔案下載失敗",
-    "longPressHint": "長按選擇"
+    "longPressHint": "長按選擇",
+    "openInPlayground": "在 Playground 中開啟",
+    "modelNotAvailable": "模型已不可用"
   },
   "templates": {
     "title": "範本",

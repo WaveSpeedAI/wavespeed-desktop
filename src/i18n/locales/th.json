@@ -265,7 +265,9 @@
       "less": "น้อยลง"
     },
     "history": {
-      "title": "ประวัติ"
+      "title": "ประวัติ",
+      "openInNewTab": "เปิดในแท็บใหม่",
+      "useSettings": "ใช้การตั้งค่านี้"
     }
   },
   "history": {
@@ -317,7 +319,9 @@
       "successDesc": "คุณสามารถใช้ได้จากหน้าแม่แบบ",
       "error": "บันทึกแม่แบบล้มเหลว"
     },
-    "longPressHint": "กดค้างไว้เพื่อเลือก"
+    "longPressHint": "กดค้างไว้เพื่อเลือก",
+    "openInPlayground": "เปิดใน Playground",
+    "modelNotAvailable": "โมเดลไม่พร้อมใช้งานแล้ว"
   },
   "templates": {
     "title": "เทมเพลต",

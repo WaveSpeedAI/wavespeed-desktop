@@ -7,12 +7,23 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  MoreHorizontal,
+  ExternalLink,
+  Copy,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface HistoryDrawerProps {
   history: GenerationHistoryItem[];
   selectedIndex: number | null;
   onSelect: (index: number | null) => void;
+  onDuplicateToNewTab?: (index: number) => void;
+  onApplySettings?: (index: number) => void;
 }
 
 function ThumbnailContent({ item }: { item: GenerationHistoryItem }) {
@@ -48,6 +59,8 @@ export function HistoryDrawer({
   history,
   selectedIndex,
   onSelect,
+  onDuplicateToNewTab,
+  onApplySettings,
 }: HistoryDrawerProps) {
   const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(true);
@@ -193,23 +206,62 @@ export function HistoryDrawer({
             className="flex gap-2 px-4 pb-1 mb-2 overflow-x-auto"
           >
             {history.map((item, index) => (
-              <button
-                key={item.id}
-                onClick={() => onSelect(selectedIndex === index ? null : index)}
-                className={cn(
-                  "relative shrink-0 w-[72px] h-[72px] rounded-lg overflow-hidden bg-muted border-2 transition-all hover:scale-105",
-                  selectedIndex === index
-                    ? "border-primary shadow-md shadow-primary/20"
-                    : index === 0 && selectedIndex === null
-                      ? "border-primary/40"
-                      : "border-transparent hover:border-muted-foreground/30",
+              <div key={item.id} className="relative shrink-0 group">
+                <button
+                  onClick={() =>
+                    onSelect(selectedIndex === index ? null : index)
+                  }
+                  className={cn(
+                    "relative w-[72px] h-[72px] rounded-lg overflow-hidden bg-muted border-2 transition-all hover:scale-105",
+                    selectedIndex === index
+                      ? "border-primary shadow-md shadow-primary/20"
+                      : index === 0 && selectedIndex === null
+                        ? "border-primary/40"
+                        : "border-transparent hover:border-muted-foreground/30",
+                  )}
+                >
+                  <ThumbnailContent item={item} />
+                  <span className="absolute bottom-0 right-0 bg-black/60 text-white text-[9px] px-1 rounded-tl font-medium">
+                    {index + 1}
+                  </span>
+                </button>
+                {onDuplicateToNewTab && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className="absolute top-0.5 right-0.5 z-10 h-5 w-5 rounded bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <MoreHorizontal className="h-3 w-3" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" side="bottom">
+                      <DropdownMenuItem
+                        onClick={() => onDuplicateToNewTab(index)}
+                      >
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        {t(
+                          "playground.history.openInNewTab",
+                          "Open in New Tab",
+                        )}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() =>
+                          onApplySettings
+                            ? onApplySettings(index)
+                            : onSelect(index)
+                        }
+                      >
+                        <Copy className="h-4 w-4 mr-2" />
+                        {t(
+                          "playground.history.useSettings",
+                          "Use These Settings",
+                        )}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 )}
-              >
-                <ThumbnailContent item={item} />
-                <span className="absolute bottom-0 right-0 bg-black/60 text-white text-[9px] px-1 rounded-tl font-medium">
-                  {index + 1}
-                </span>
-              </button>
+              </div>
             ))}
           </div>
         </div>

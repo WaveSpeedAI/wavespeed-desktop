@@ -265,7 +265,9 @@
       "less": "Moins"
     },
     "history": {
-      "title": "Historique"
+      "title": "Historique",
+      "openInNewTab": "Ouvrir dans un nouvel onglet",
+      "useSettings": "Utiliser ces paramètres"
     }
   },
   "history": {
@@ -317,7 +319,9 @@
     "downloadCompleteDesc": "{{count}} fichier(s) téléchargé(s)",
     "downloadFailed": "Échec du téléchargement",
     "downloadFailedDesc": "{{count}} fichier(s) n'a/ont pas pu être téléchargé(s)",
-    "longPressHint": "Appuyez longuement pour sélectionner"
+    "longPressHint": "Appuyez longuement pour sélectionner",
+    "openInPlayground": "Ouvrir dans le Playground",
+    "modelNotAvailable": "Le modèle n'est plus disponible"
   },
   "templates": {
     "title": "Modèles",

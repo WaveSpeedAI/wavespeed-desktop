@@ -270,7 +270,9 @@
       "less": "Less"
     },
     "history": {
-      "title": "History"
+      "title": "History",
+      "openInNewTab": "Open in New Tab",
+      "useSettings": "Use These Settings"
     },
     "rightPanel": {
       "explore": "Explore",
@@ -342,7 +344,9 @@
       "success": "Template Saved",
       "successDesc": "You can use it from the templates page",
       "error": "Failed to save template"
-    }
+    },
+    "openInPlayground": "Open in Playground",
+    "modelNotAvailable": "Model is no longer available"
   },
   "templates": {
     "title": "Templates",

@@ -18,6 +18,7 @@ import { useModelsStore } from "@/stores/modelsStore";
 import { useApiKeyStore } from "@/stores/apiKeyStore";
 import { apiClient } from "@/api/client";
 import { useTemplateStore } from "@/stores/templateStore";
+import { usePredictionInputsStore } from "@mobile/stores/predictionInputsStore";
 import { usePageActive } from "@/hooks/usePageActive";
 import { DynamicForm } from "@/components/playground/DynamicForm";
 import { ModelSelector } from "@/components/playground/ModelSelector";
@@ -124,9 +125,15 @@ export function PlaygroundPage() {
     setUploading,
     selectHistoryItem,
     reorderTab,
+    consumePendingFormValues,
   } = usePlaygroundStore();
   const { templates, loadTemplates, createTemplate, migrateFromLocalStorage } =
     useTemplateStore();
+  const {
+    save: savePredictionInputs,
+    load: loadPredictionInputs,
+    isLoaded: inputsLoaded,
+  } = usePredictionInputsStore();
 
   const activeTab = getActiveTab();
 
@@ -357,13 +364,49 @@ export function PlaygroundPage() {
   // Load API key and fetch models on mount
   useEffect(() => {
     loadApiKey();
-  }, [loadApiKey]);
+    if (!inputsLoaded) loadPredictionInputs();
+  }, [loadApiKey, inputsLoaded, loadPredictionInputs]);
 
   useEffect(() => {
     if (isValidated) {
       fetchModels();
     }
   }, [isValidated, fetchModels]);
+
+  // Save prediction inputs to local storage when prediction completes
+  const lastSavedPredictionRef = useRef<string | null>(null);
+  useEffect(() => {
+    const prediction = activeTab?.currentPrediction;
+    const model = activeTab?.selectedModel;
+    const formValues = activeTab?.formValues;
+    const outputs = activeTab?.outputs;
+    const isRunning = activeTab?.isRunning;
+    if (
+      prediction?.id &&
+      !isRunning &&
+      outputs &&
+      outputs.length > 0 &&
+      model &&
+      formValues &&
+      Object.keys(formValues).length > 0 &&
+      lastSavedPredictionRef.current !== prediction.id
+    ) {
+      savePredictionInputs(
+        prediction.id,
+        model.model_id,
+        model.name,
+        formValues,
+      );
+      lastSavedPredictionRef.current = prediction.id;
+    }
+  }, [
+    activeTab?.currentPrediction,
+    activeTab?.selectedModel,
+    activeTab?.formValues,
+    activeTab?.outputs,
+    activeTab?.isRunning,
+    savePredictionInputs,
+  ]);
 
   // Calculate dynamic pricing with debounce — deferred start
   useEffect(() => {
@@ -503,10 +546,27 @@ export function PlaygroundPage() {
 
   const handleSetDefaults = useCallback(
     (defaults: Record<string, unknown>) => {
-      setFormValues(defaults);
+      const pending = consumePendingFormValues();
+      if (pending) {
+        setFormValues({ ...defaults, ...pending });
+      } else {
+        setFormValues(defaults);
+      }
     },
-    [setFormValues],
+    [setFormValues, consumePendingFormValues],
   );
+
+  // When a tab is created with pendingFormValues (e.g. from History "Open in Playground")
+  // and DynamicForm does NOT call onSetDefaults (same model, schema cached),
+  // apply pending values directly.
+  useEffect(() => {
+    if (!activeTab?.pendingFormValues) return;
+    const pending = consumePendingFormValues();
+    if (pending) {
+      setFormValues({ ...activeTab.formValues, ...pending });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTabId]);
 
   const handleRun = useCallback(async () => {
     if (!activeTab) return;
@@ -1167,6 +1227,18 @@ export function PlaygroundPage() {
                       history={activeTab.generationHistory}
                       selectedIndex={activeTab.selectedHistoryIndex}
                       onSelect={selectHistoryItem}
+                      onDuplicateToNewTab={(index) => {
+                        const item = activeTab.generationHistory[index];
+                        if (item && activeTab.selectedModel) {
+                          createTab(activeTab.selectedModel, item.formValues);
+                        }
+                      }}
+                      onApplySettings={(index) => {
+                        const item = activeTab.generationHistory[index];
+                        if (item?.formValues) {
+                          setFormValues(item.formValues);
+                        }
+                      }}
                     />
                   </>
                 ) : (

@@ -265,7 +265,9 @@
       "less": "Menos"
     },
     "history": {
-      "title": "Histórico"
+      "title": "Histórico",
+      "openInNewTab": "Abrir em nova aba",
+      "useSettings": "Usar estas configurações"
     }
   },
   "history": {
@@ -317,7 +319,9 @@
     "downloadCompleteDesc": "{{count}} ficheiro(s) transferido(s)",
     "downloadFailed": "Download falhou",
     "downloadFailedDesc": "{{count}} ficheiro(s) falhou na transferência",
-    "longPressHint": "Prima e mantenha para selecionar"
+    "longPressHint": "Prima e mantenha para selecionar",
+    "openInPlayground": "Abrir no Playground",
+    "modelNotAvailable": "O modelo não está mais disponível"
   },
   "templates": {
     "title": "Modelos",

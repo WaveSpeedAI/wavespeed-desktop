@@ -265,7 +265,9 @@
       "less": "Menos"
     },
     "history": {
-      "title": "Historial"
+      "title": "Historial",
+      "openInNewTab": "Abrir en nueva pestaña",
+      "useSettings": "Usar esta configuración"
     }
   },
   "history": {
@@ -317,7 +319,9 @@
     "downloadCompleteDesc": "{{count}} archivo(s) descargado(s)",
     "downloadFailed": "Descarga fallida",
     "downloadFailedDesc": "{{count}} archivo(s) no se pudieron descargar",
-    "longPressHint": "Mantén pulsado para seleccionar"
+    "longPressHint": "Mantén pulsado para seleccionar",
+    "openInPlayground": "Abrir en Playground",
+    "modelNotAvailable": "El modelo ya no está disponible"
   },
   "templates": {
     "title": "Plantillas",

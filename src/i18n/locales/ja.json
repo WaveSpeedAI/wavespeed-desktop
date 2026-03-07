@@ -265,7 +265,9 @@
       "less": "閉じる"
     },
     "history": {
-      "title": "履歴"
+      "title": "履歴",
+      "openInNewTab": "新しいタブで開く",
+      "useSettings": "この設定を使用"
     }
   },
   "history": {
@@ -317,7 +319,9 @@
     "downloadCompleteDesc": "{{count}}件のファイルをダウンロードしました",
     "downloadFailed": "ダウンロード失敗",
     "downloadFailedDesc": "{{count}}件のファイルのダウンロードに失敗しました",
-    "longPressHint": "長押しで選択"
+    "longPressHint": "長押しで選択",
+    "openInPlayground": "Playgroundで開く",
+    "modelNotAvailable": "モデルは利用できません"
   },
   "templates": {
     "title": "テンプレート",

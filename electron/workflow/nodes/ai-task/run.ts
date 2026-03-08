@@ -11,6 +11,8 @@ import type { NodeTypeDefinition } from "../../../../src/workflow/types/node-def
 import { getWaveSpeedClient } from "../../services/service-locator";
 import { getModelById } from "../../services/model-list";
 import { normalizePayloadArrays } from "../../../../src/lib/schemaToForm";
+import { existsSync, readFileSync } from "fs";
+import { basename } from "path";
 
 export const aiTaskDef: NodeTypeDefinition = {
   type: "ai-task/run",
@@ -52,12 +54,14 @@ export class AITaskHandler extends BaseNodeHandler {
     }
 
     const apiParams = this.buildApiParams(ctx);
+    // Upload any local-asset:// URLs to CDN before sending to API
+    const resolvedParams = await this.uploadLocalAssets(apiParams);
     ctx.onProgress(5, `Running ${modelId}...`);
 
     try {
       const client = getWaveSpeedClient();
       // Use Desktop's apiClient.run() which handles submit + poll; pass abortSignal so Stop cancels in-flight request/polling
-      const result = await client.run(modelId, apiParams, {
+      const result = await client.run(modelId, resolvedParams, {
         signal: ctx.abortSignal,
       });
 
@@ -121,6 +125,52 @@ export class AITaskHandler extends BaseNodeHandler {
     if (!modelId) return 0;
     const model = getModelById(modelId);
     return model?.costPerRun ?? 0;
+  }
+
+  /**
+   * Upload any local-asset:// URLs in params to CDN so the API receives valid HTTP URLs.
+   * This handles the case where upstream nodes (e.g. concat) pass through local file paths.
+   */
+  private async uploadLocalAssets(
+    params: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
+    const out = { ...params };
+    const client = getWaveSpeedClient();
+
+    const uploadOne = async (url: string): Promise<string> => {
+      if (!/^local-asset:\/\//i.test(url)) return url;
+      const localPath = decodeURIComponent(
+        url.replace(/^local-asset:\/\//i, ""),
+      );
+      if (!existsSync(localPath)) {
+        throw new Error(`Local file not found: ${localPath}`);
+      }
+      const buffer = readFileSync(localPath);
+      const filename = basename(localPath);
+      const blob = new Blob([buffer]);
+      const file = new File([blob], filename);
+      return client.uploadFile(file, filename);
+    };
+
+    for (const [key, value] of Object.entries(out)) {
+      if (typeof value === "string" && /^local-asset:\/\//i.test(value)) {
+        out[key] = await uploadOne(value);
+      } else if (Array.isArray(value)) {
+        const hasLocal = value.some(
+          (v) => typeof v === "string" && /^local-asset:\/\//i.test(v),
+        );
+        if (hasLocal) {
+          out[key] = await Promise.all(
+            value.map((v) =>
+              typeof v === "string" && /^local-asset:\/\//i.test(v)
+                ? uploadOne(v)
+                : v,
+            ),
+          );
+        }
+      }
+    }
+    return out;
   }
 
   private buildApiParams(ctx: NodeExecutionContext): Record<string, unknown> {

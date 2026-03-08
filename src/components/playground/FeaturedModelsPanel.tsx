@@ -89,6 +89,8 @@ const TAG_COLORS = [
 interface FeaturedModelsPanelProps {
   onSelectFeatured: (primaryVariant: string) => void;
   models: Model[];
+  /** Mobile layout: 2-col grids instead of 3/4 */
+  mobile?: boolean;
 }
 
 function PosterCard({
@@ -157,6 +159,7 @@ function PosterCard({
 export function FeaturedModelsPanel({
   onSelectFeatured,
   models,
+  mobile,
 }: FeaturedModelsPanelProps) {
   const getPrice = (modelId: string) => {
     const model = models.find((m) => m.model_id === modelId);
@@ -183,7 +186,7 @@ export function FeaturedModelsPanel({
     <ScrollArea className="flex-1">
       <div className="p-3 space-y-3">
         {/* Header */}
-        <div className="pb-1">
+        <div className="pb-1 animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both">
           <h3 className="text-2xl font-bold tracking-tight text-foreground">
             Featured Models
           </h3>
@@ -194,13 +197,27 @@ export function FeaturedModelsPanel({
           </p>
         </div>
 
-        {/* Top row: 3 poster cards (3:4) */}
-        <div className="grid grid-cols-3 gap-2">
+        {/* Top row: poster cards (3:4) — 2 cols on mobile, 3 on desktop */}
+        <div
+          className={
+            mobile
+              ? "grid grid-cols-2 gap-2"
+              : "grid grid-cols-3 gap-2 animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both"
+          }
+          style={mobile ? undefined : { animationDelay: "80ms" }}
+        >
           {posters.map((f) => card(f, "aspect-[3/4]"))}
         </div>
 
-        {/* Bottom row: 4 square cards (1:1) */}
-        <div className="grid grid-cols-4 gap-2">
+        {/* Bottom row: square cards (1:1) — 2 cols on mobile, 4 on desktop */}
+        <div
+          className={
+            mobile
+              ? "grid grid-cols-2 gap-2"
+              : "grid grid-cols-4 gap-2 animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both"
+          }
+          style={mobile ? undefined : { animationDelay: "160ms" }}
+        >
           {squares.map((f) => card(f, "aspect-square"))}
         </div>
       </div>

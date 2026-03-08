@@ -19,6 +19,7 @@ interface BatchControlsProps {
   onRun: () => void;
   runLabel: string;
   runningLabel: string;
+  price?: string;
 }
 
 export function BatchControls({
@@ -28,6 +29,7 @@ export function BatchControls({
   onRun,
   runLabel,
   runningLabel,
+  price,
 }: BatchControlsProps) {
   const { t } = useTranslation();
   const { getActiveTab, setBatchConfig } = usePlaygroundStore();
@@ -74,9 +76,14 @@ export function BatchControls({
           <>
             <Play className="mr-2 h-4 w-4" />
             {displayLabel}
-            <kbd className="ml-auto text-[10px] font-normal opacity-60 tracking-wide">
-              {navigator.platform?.includes("Mac") ? "⌘" : "Ctrl"}↵
-            </kbd>
+            {price && (
+              <span className="ml-1.5 text-xs opacity-70">
+                $
+                {enabled && repeatCount > 1
+                  ? (parseFloat(price) * repeatCount).toFixed(4)
+                  : price}
+              </span>
+            )}
           </>
         )}
       </Button>

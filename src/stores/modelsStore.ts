@@ -93,7 +93,8 @@ export const useModelsStore = create<ModelsState>((set, get) => ({
       set({ models, isLoading: false, hasFetched: true });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : "Failed to fetch models",
+        error:
+          error instanceof Error ? error.message : "Failed to fetch models",
         isLoading: false,
       });
     }

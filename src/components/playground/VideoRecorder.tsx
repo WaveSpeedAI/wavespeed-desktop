@@ -92,7 +92,9 @@ export function VideoRecorder({
         const dataIndex = Math.floor((i * bufferLength) / barCount);
         const barHeight = (dataArray[dataIndex] / 255) * canvas.height;
 
-        ctx.fillStyle = `rgba(59, 130, 246, ${0.5 + (dataArray[dataIndex] / 255) * 0.4})`;
+        ctx.fillStyle = `rgba(59, 130, 246, ${
+          0.5 + (dataArray[dataIndex] / 255) * 0.4
+        })`;
         ctx.fillRect(
           i * barWidth + barGap / 2,
           canvas.height - barHeight,

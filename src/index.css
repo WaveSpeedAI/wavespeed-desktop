@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: 220 20% 97%;
+    --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
@@ -35,8 +35,8 @@
     --sidebar-text-hover: #111827;
 
     /* Content area */
-    --content-bg: 220 20% 97%;
-    --content-area: 220 16% 94%;
+    --content-bg: 0 0% 100%;
+    --content-area: 220 10% 99.2%;
     --panel-bg: 0 0% 100%;
   }
 
@@ -245,11 +245,7 @@
 
 /* Sidebar background with depth */
 .sidebar-bg {
-  background: linear-gradient(
-    180deg,
-    hsl(220 30% 96%) 0%,
-    hsl(220 25% 94%) 100%
-  );
+  background: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(0 0% 100%) 100%);
 }
 
 .dark .sidebar-bg {
@@ -527,4 +523,21 @@
 .field-hover:hover {
   background-color: hsl(var(--muted) / 0.3);
   box-shadow: 0 1px 3px hsl(var(--foreground) / 0.04);
+}
+
+/* Settings page staggered card entrance */
+.settings-stagger > :is(.mt-6, [class*="Card"]):nth-child(2) {
+  animation: field-enter 0.3s cubic-bezier(0.4, 0, 0.2, 1) 50ms both;
+}
+.settings-stagger > :is(.mt-6, [class*="Card"]):nth-child(3) {
+  animation: field-enter 0.3s cubic-bezier(0.4, 0, 0.2, 1) 100ms both;
+}
+.settings-stagger > :is(.mt-6, [class*="Card"]):nth-child(4) {
+  animation: field-enter 0.3s cubic-bezier(0.4, 0, 0.2, 1) 150ms both;
+}
+.settings-stagger > :is(.mt-6, [class*="Card"]):nth-child(5) {
+  animation: field-enter 0.3s cubic-bezier(0.4, 0, 0.2, 1) 200ms both;
+}
+.settings-stagger > :is(.mt-6, [class*="Card"]):nth-child(n + 6) {
+  animation: field-enter 0.3s cubic-bezier(0.4, 0, 0.2, 1) 250ms both;
 }

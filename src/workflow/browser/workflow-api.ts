@@ -9,7 +9,6 @@ import type {
   CreateWorkflowInput,
   SaveWorkflowInput,
 } from "@/workflow/types/ipc";
-import type { Workflow } from "@/workflow/types/workflow";
 import type { BudgetConfig, ApiKeyConfig } from "@/workflow/types/ipc";
 import type { NodeExecutionRecord } from "@/workflow/types/execution";
 
@@ -17,10 +16,6 @@ const NOT_AVAILABLE =
   "Not available in browser (run in Electron for full workflow features).";
 
 const listeners = new Map<string, Set<(args: unknown) => void>>();
-
-function emit(channel: string, args: unknown): void {
-  listeners.get(channel)?.forEach((cb) => cb(args));
-}
 
 async function handleInvoke(channel: string, args?: unknown): Promise<unknown> {
   switch (channel) {
@@ -75,7 +70,6 @@ async function handleInvoke(channel: string, args?: unknown): Promise<unknown> {
       return 0;
 
     case "history:list": {
-      const { nodeId } = args as { nodeId: string };
       return [] as NodeExecutionRecord[];
     }
     case "history:set-current":

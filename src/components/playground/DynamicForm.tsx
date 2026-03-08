@@ -1,5 +1,4 @@
 import { useMemo, useEffect, useState, useRef } from "react";
-import { useTranslation } from "react-i18next";
 import type { Model } from "@/types/model";
 import {
   schemaToFormFields,
@@ -37,7 +36,6 @@ export function DynamicForm({
   collapsible = false,
   scrollable = true,
 }: DynamicFormProps) {
-  const { t } = useTranslation();
   // Track which hidden fields are enabled
   const [enabledHiddenFields, setEnabledHiddenFields] = useState<Set<string>>(
     new Set(),
@@ -252,9 +250,7 @@ export function DynamicForm({
 
   // Collapsible: render all fields flat (primary + advanced together)
   const formContent = (
-    <div className="space-y-4 py-2">
-      {fields.map(renderField)}
-    </div>
+    <div className="space-y-4 py-2">{fields.map(renderField)}</div>
   );
 
   if (!scrollable) return formContent;

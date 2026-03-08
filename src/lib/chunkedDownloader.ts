@@ -81,7 +81,9 @@ export class ChunkedDownloader {
       // Validate file size if minValidSize is specified
       if (minValidSize > 0 && finalFileCheck.size < minValidSize) {
         console.warn(
-          `[ChunkedDownloader] File is too small (${fileSizeMB}MB < ${Math.round(minValidSize / 1024 / 1024)}MB), likely incomplete`,
+          `[ChunkedDownloader] File is too small (${fileSizeMB}MB < ${Math.round(
+            minValidSize / 1024 / 1024,
+          )}MB), likely incomplete`,
         );
         console.warn(
           `[ChunkedDownloader] Deleting incomplete file and restarting download...`,
@@ -108,7 +110,9 @@ export class ChunkedDownloader {
 
       if (startByte > 0) {
         console.log(
-          `[ChunkedDownloader] Found partial download: ${Math.round(startByte / 1024 / 1024)}MB`,
+          `[ChunkedDownloader] Found partial download: ${Math.round(
+            startByte / 1024 / 1024,
+          )}MB`,
         );
       }
 
@@ -142,7 +146,9 @@ export class ChunkedDownloader {
         if (attempt < maxRetries) {
           const waitTime = attempt * 2000; // 2s, 4s, 6s
           console.log(
-            `[ChunkedDownloader] Retry ${attempt + 1}/${maxRetries} in ${waitTime / 1000}s...`,
+            `[ChunkedDownloader] Retry ${
+              attempt + 1
+            }/${maxRetries} in ${waitTime / 1000}s...`,
           );
           await new Promise((resolve) => setTimeout(resolve, waitTime));
         }
@@ -194,7 +200,9 @@ export class ChunkedDownloader {
     if (params.startByte > 0) {
       headers["Range"] = `bytes=${params.startByte}-`;
       console.log(
-        `[ChunkedDownloader] Requesting resume from byte ${params.startByte} (${Math.round(params.startByte / 1024 / 1024)}MB)`,
+        `[ChunkedDownloader] Requesting resume from byte ${
+          params.startByte
+        } (${Math.round(params.startByte / 1024 / 1024)}MB)`,
       );
     }
 
@@ -269,10 +277,14 @@ export class ChunkedDownloader {
       }
 
       console.log(
-        `[ChunkedDownloader] Total size: ${Math.round(totalBytes / 1024 / 1024)}MB`,
+        `[ChunkedDownloader] Total size: ${Math.round(
+          totalBytes / 1024 / 1024,
+        )}MB`,
       );
       console.log(
-        `[ChunkedDownloader] Starting from: ${Math.round(params.startByte / 1024 / 1024)}MB (${params.startByte > 0 ? "RESUME" : "NEW"})`,
+        `[ChunkedDownloader] Starting from: ${Math.round(
+          params.startByte / 1024 / 1024,
+        )}MB (${params.startByte > 0 ? "RESUME" : "NEW"})`,
       );
 
       // Read response body as stream
@@ -356,7 +368,9 @@ export class ChunkedDownloader {
       }
 
       console.log(
-        `[ChunkedDownloader] Download completed, received ${Math.round(receivedBytes / 1024 / 1024)}MB`,
+        `[ChunkedDownloader] Download completed, received ${Math.round(
+          receivedBytes / 1024 / 1024,
+        )}MB`,
       );
 
       // Rename .part file to final filename

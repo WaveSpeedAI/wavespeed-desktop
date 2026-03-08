@@ -273,6 +273,61 @@ function downstreamNodeIds(
 /** Cache blob→CDN URL mappings so the same blob is only uploaded once across runs */
 const blobToCdnCache = new Map<string, string>();
 
+/** Returns true if the URL is a local/blob reference that needs CDN upload before API use */
+function needsCdnUpload(url: string): boolean {
+  return url.startsWith("blob:") || /^local-asset:\/\//i.test(url);
+}
+
+/**
+ * Upload a single local-asset:// or blob: URL to CDN, returning the CDN URL.
+ * Results are cached so the same source is only uploaded once.
+ */
+async function ensureCdnUrl(
+  url: string,
+  signal?: AbortSignal,
+): Promise<string> {
+  if (!needsCdnUpload(url)) return url;
+  const cached = blobToCdnCache.get(url);
+  if (cached) return cached;
+  const resp = await fetch(url);
+  const blob = await resp.blob();
+  // Try to extract a filename from the URL
+  const decoded = /^local-asset:\/\//i.test(url)
+    ? decodeURIComponent(url.replace(/^local-asset:\/\//i, ""))
+    : url;
+  const name = decoded.split(/[/\\]/).pop() || "upload";
+  const file = new File([blob], name, { type: blob.type });
+  const cdnUrl = await apiClient.uploadFile(file, signal);
+  blobToCdnCache.set(url, cdnUrl);
+  return cdnUrl;
+}
+
+/**
+ * Walk all values in API params and upload any local-asset:// or blob: URLs to CDN.
+ * This ensures the API always receives valid HTTP URLs.
+ */
+async function uploadLocalUrls(
+  params: Record<string, unknown>,
+  signal?: AbortSignal,
+): Promise<Record<string, unknown>> {
+  const out = { ...params };
+  for (const [key, value] of Object.entries(out)) {
+    if (typeof value === "string" && needsCdnUpload(value)) {
+      out[key] = await ensureCdnUrl(value, signal);
+    } else if (Array.isArray(value)) {
+      const arr = await Promise.all(
+        value.map((v) =>
+          typeof v === "string" && needsCdnUpload(v)
+            ? ensureCdnUrl(v, signal)
+            : v,
+        ),
+      );
+      out[key] = arr;
+    }
+  }
+  return out;
+}
+
 export async function executeWorkflowInBrowser(
   nodes: BrowserNode[],
   edges: BrowserEdge[],
@@ -280,7 +335,7 @@ export async function executeWorkflowInBrowser(
   options?: {
     runOnlyNodeId?: string;
     continueFromNodeId?: string;
-    existingResults?: Map<string, string>;
+    existingResults?: Map<string, string[]>;
     signal?: AbortSignal;
   },
 ): Promise<void> {
@@ -384,21 +439,36 @@ export async function executeWorkflowInBrowser(
 
         // continueFrom: skip upstream nodes — use existing results so downstream can resolve inputs
         if (skipNodeIds?.has(nodeId)) {
-          const existingUrl = options?.existingResults?.get(nodeId);
-          const existingOutput =
-            existingUrl ||
-            String(
+          const existingUrls = options?.existingResults?.get(nodeId);
+          if (existingUrls && existingUrls.length > 0) {
+            // Preserve full array for multi-output nodes (e.g. concat)
+            const outputValue =
+              existingUrls.length === 1 ? existingUrls[0] : existingUrls;
+            results.set(nodeId, {
+              outputUrl: existingUrls[0],
+              resultMetadata: {
+                output: outputValue,
+                resultUrl: existingUrls[0],
+                resultUrls: existingUrls,
+              },
+            });
+          } else {
+            const existingOutput = String(
               params.uploadedUrl ??
                 params.text ??
                 params.prompt ??
                 params.output ??
                 "",
             );
-          if (existingOutput) {
-            results.set(nodeId, {
-              outputUrl: existingOutput,
-              resultMetadata: { output: existingOutput },
-            });
+            if (existingOutput) {
+              results.set(nodeId, {
+                outputUrl: existingOutput,
+                resultMetadata: {
+                  output: existingOutput,
+                  resultUrl: existingOutput,
+                },
+              });
+            }
           }
           return;
         }
@@ -434,8 +504,12 @@ export async function executeWorkflowInBrowser(
               throw new Error("No model selected.");
             }
             const apiParams = buildApiParams(params, inputs);
+            // Ensure all URLs are valid HTTP URLs (upload local-asset:// / blob: to CDN)
+            const resolvedParams = await uploadLocalUrls(apiParams, signal);
             callbacks.onProgress(nodeId, 5, `Running ${modelId}...`);
-            const result = await apiClient.run(modelId, apiParams, { signal });
+            const result = await apiClient.run(modelId, resolvedParams, {
+              signal,
+            });
             const outputUrl =
               Array.isArray(result.outputs) && result.outputs.length > 0
                 ? String(result.outputs[0])
@@ -470,29 +544,10 @@ export async function executeWorkflowInBrowser(
             let url = String(inputs.media ?? params.uploadedUrl ?? "");
             if (!url) throw new Error("No file uploaded or connected.");
 
-            // If the URL is still a blob: URL, the CDN upload hasn't completed yet.
-            // Fetch the blob and upload it to CDN before passing downstream.
-            if (url.startsWith("blob:")) {
-              // Check cache first — avoid re-uploading the same blob
-              const cached = blobToCdnCache.get(url);
-              if (cached) {
-                url = cached;
-              } else {
-                callbacks.onProgress(nodeId, 10, "Uploading file to CDN...");
-                try {
-                  const resp = await fetch(url);
-                  const blob = await resp.blob();
-                  const fileName = String(params.fileName ?? "upload");
-                  const file = new File([blob], fileName, { type: blob.type });
-                  const cdnUrl = await apiClient.uploadFile(file, signal);
-                  blobToCdnCache.set(url, cdnUrl);
-                  url = cdnUrl;
-                } catch (uploadErr) {
-                  throw new Error(
-                    `Failed to upload file to CDN: ${uploadErr instanceof Error ? uploadErr.message : String(uploadErr)}`,
-                  );
-                }
-              }
+            // Upload blob: or local-asset:// URLs to CDN before passing downstream
+            if (needsCdnUpload(url)) {
+              callbacks.onProgress(nodeId, 10, "Uploading file to CDN...");
+              url = await ensureCdnUrl(url, signal);
             }
 
             results.set(nodeId, {

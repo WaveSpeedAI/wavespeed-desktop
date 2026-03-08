@@ -1,6 +1,6 @@
 {
   "name": "wavespeed-desktop",
-  "version": "2.0.12",
+  "version": "2.0.14",
   "description": "WaveSpeedAI Desktop Application - A playground for AI models",
   "main": "./out/main/index.js",
   "author": {
@@ -27,7 +27,9 @@
     "dist": "npm run build && electron-builder",
     "build:web": "vite build",
     "preview:web": "vite preview --port 5173 --host 0.0.0.0",
-    "dev:web": "vite --port 5173 --host 0.0.0.0"
+    "dev:web": "vite --port 5173 --host 0.0.0.0",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"electron/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"electron/**/*.ts\""
   },
   "dependencies": {
     "adm-zip": "^0.5.16",
@@ -87,6 +89,7 @@
     "mp4-muxer": "^5.2.2",
     "onnxruntime-web": "1.21.0",
     "postcss": "^8.4.47",
+    "prettier": "^3.8.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-dropzone": "^14.2.9",

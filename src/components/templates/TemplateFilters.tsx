@@ -2,18 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  X,
-  Folder,
-  Globe,
-  User,
-  Grid3x3,
-  Image,
-  Video,
-  Music,
-  Sparkle,
-  Star,
-} from "lucide-react";
+import { X, Star } from "lucide-react";
 import type { TemplateFilter } from "@/types/template";
 
 interface TemplateFiltersProps {

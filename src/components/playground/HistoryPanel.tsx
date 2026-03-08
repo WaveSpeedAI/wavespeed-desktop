@@ -2,12 +2,21 @@ import { useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { GenerationHistoryItem } from "@/types/prediction";
 import { cn } from "@/lib/utils";
+import { MoreHorizontal, ExternalLink, Copy } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface HistoryPanelProps {
   history: GenerationHistoryItem[];
   selectedIndex: number | null;
   onSelect: (index: number | null) => void;
   direction?: "vertical" | "horizontal";
+  onDuplicateToNewTab?: (index: number) => void;
+  onApplySettings?: (index: number) => void;
 }
 
 export function HistoryPanel({
@@ -15,6 +24,8 @@ export function HistoryPanel({
   selectedIndex,
   onSelect,
   direction = "vertical",
+  onDuplicateToNewTab,
+  onApplySettings,
 }: HistoryPanelProps) {
   const { t } = useTranslation();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -38,23 +49,57 @@ export function HistoryPanel({
           className="flex gap-2 p-2 overflow-x-auto scrollbar-thin"
         >
           {history.map((item, index) => (
-            <button
-              key={item.id}
-              onClick={() => onSelect(selectedIndex === index ? null : index)}
-              className={cn(
-                "relative shrink-0 w-16 h-16 rounded-md overflow-hidden bg-muted border-2 transition-all",
-                selectedIndex === index
-                  ? "border-blue-500 shadow-md"
-                  : index === 0 && selectedIndex === null
-                    ? "border-blue-500/50"
-                    : "border-transparent hover:border-muted-foreground/30",
+            <div key={item.id} className="relative shrink-0 group">
+              <button
+                onClick={() => onSelect(selectedIndex === index ? null : index)}
+                className={cn(
+                  "relative w-16 h-16 rounded-md overflow-hidden bg-muted border-2 transition-all",
+                  selectedIndex === index
+                    ? "border-blue-500 shadow-md"
+                    : index === 0 && selectedIndex === null
+                      ? "border-blue-500/50"
+                      : "border-transparent hover:border-muted-foreground/30",
+                )}
+              >
+                <ThumbnailContent item={item} />
+                <span className="absolute bottom-0 right-0 bg-black/60 text-white text-[10px] px-1 rounded-tl">
+                  {history.length - index}
+                </span>
+              </button>
+              {onDuplicateToNewTab && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className="absolute top-0.5 right-0.5 z-10 h-5 w-5 rounded bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <MoreHorizontal className="h-3 w-3" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" side="bottom">
+                    <DropdownMenuItem
+                      onClick={() => onDuplicateToNewTab(index)}
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      {t("playground.history.openInNewTab", "Open in New Tab")}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() =>
+                        onApplySettings
+                          ? onApplySettings(index)
+                          : onSelect(index)
+                      }
+                    >
+                      <Copy className="h-4 w-4 mr-2" />
+                      {t(
+                        "playground.history.useSettings",
+                        "Use These Settings",
+                      )}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
-            >
-              <ThumbnailContent item={item} />
-              <span className="absolute bottom-0 right-0 bg-black/60 text-white text-[10px] px-1 rounded-tl">
-                {history.length - index}
-              </span>
-            </button>
+            </div>
           ))}
         </div>
       </div>
@@ -72,23 +117,46 @@ export function HistoryPanel({
         className="flex-1 overflow-y-auto scrollbar-thin p-2 space-y-2"
       >
         {history.map((item, index) => (
-          <button
-            key={item.id}
-            onClick={() => onSelect(selectedIndex === index ? null : index)}
-            className={cn(
-              "relative w-full aspect-square rounded-md overflow-hidden bg-muted border-2 transition-all",
-              selectedIndex === index
-                ? "border-blue-500 shadow-md"
-                : index === 0 && selectedIndex === null
-                  ? "border-blue-500/50"
-                  : "border-transparent hover:border-muted-foreground/30",
+          <div key={item.id} className="relative group">
+            <button
+              onClick={() => onSelect(selectedIndex === index ? null : index)}
+              className={cn(
+                "relative w-full aspect-square rounded-md overflow-hidden bg-muted border-2 transition-all",
+                selectedIndex === index
+                  ? "border-blue-500 shadow-md"
+                  : index === 0 && selectedIndex === null
+                    ? "border-blue-500/50"
+                    : "border-transparent hover:border-muted-foreground/30",
+              )}
+            >
+              <ThumbnailContent item={item} />
+              <span className="absolute bottom-0 right-0 bg-black/60 text-white text-[10px] px-1 rounded-tl">
+                {history.length - index}
+              </span>
+            </button>
+            {onDuplicateToNewTab && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="absolute top-0.5 right-0.5 z-10 h-5 w-5 rounded bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <MoreHorizontal className="h-3 w-3" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" side="right">
+                  <DropdownMenuItem onClick={() => onDuplicateToNewTab(index)}>
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    {t("playground.history.openInNewTab", "Open in New Tab")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onSelect(index)}>
+                    <Copy className="h-4 w-4 mr-2" />
+                    {t("playground.history.useSettings", "Use These Settings")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
-          >
-            <ThumbnailContent item={item} />
-            <span className="absolute bottom-0 right-0 bg-black/60 text-white text-[10px] px-1 rounded-tl">
-              {history.length - index}
-            </span>
-          </button>
+          </div>
         ))}
       </div>
     </div>

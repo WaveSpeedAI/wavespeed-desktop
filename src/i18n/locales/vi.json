@@ -36,7 +36,9 @@
     "clearAll": "Xóa tất cả",
     "deselectAll": "Bỏ chọn tất cả",
     "add": "Add",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "showMore": "Xem thêm",
+    "showLess": "Thu gọn"
   },
   "nav": {
     "home": "Trang chủ",
@@ -117,6 +119,7 @@
     "type": "Loại",
     "basePrice": "Giá cơ bản",
     "openInNewTab": "Mở trong tab mới",
+    "replaceCurrentTab": "Thay thế tab hiện tại",
     "addToFavorites": "Thêm vào yêu thích",
     "removeFromFavorites": "Xóa khỏi yêu thích"
   },
@@ -262,7 +265,9 @@
       "less": "Ẩn"
     },
     "history": {
-      "title": "Lịch sử"
+      "title": "Lịch sử",
+      "openInNewTab": "Mở trong tab mới",
+      "useSettings": "Sử dụng cài đặt này"
     }
   },
   "history": {
@@ -314,7 +319,9 @@
       "successDesc": "Bạn có thể sử dụng từ trang mẫu",
       "error": "Lưu mẫu thất bại"
     },
-    "longPressHint": "Nhấn giữ để chọn"
+    "longPressHint": "Nhấn giữ để chọn",
+    "openInPlayground": "Mở trong Playground",
+    "modelNotAvailable": "Mô hình không còn khả dụng"
   },
   "templates": {
     "title": "Mẫu",
@@ -1135,6 +1142,10 @@
     "hideRun": "Ẩn lần chạy này",
     "output": "Đầu ra",
     "outputLowercase": "Đầu ra",
+    "expandNode": "Mở rộng",
+    "collapseNode": "Thu gọn",
+    "collapseAll": "Thu gọn tất cả",
+    "expandAll": "Mở rộng tất cả",
     "invalidUrl": "URL không hợp lệ",
     "removeLast": "Xóa mục cuối",
     "enterField": "Nhập {{field}}...",
@@ -1156,6 +1167,7 @@
     "nodeDefs": {
       "ai-task/run": {
         "label": "WaveSpeed API",
+        "hint": "Chạy bất kỳ mô hình AI nào — hình ảnh, video, âm thanh và hơn thế",
         "emptyHint": "Nhấp vào nút này, sau đó chọn mô hình →",
         "params": {
           "modelId": {
@@ -1165,6 +1177,7 @@
       },
       "input/media-upload": {
         "label": "Tải lên",
+        "hint": "Tải lên hình ảnh, video hoặc tệp âm thanh làm đầu vào pipeline",
         "inputs": {
           "media": {
             "label": "Phương tiện"
@@ -1178,6 +1191,7 @@
       },
       "input/text-input": {
         "label": "Văn bản",
+        "hint": "Nhập văn bản hoặc prompt để truyền đến các nút tiếp theo",
         "params": {
           "text": {
             "label": "Văn bản"
@@ -1186,6 +1200,7 @@
       },
       "output/preview": {
         "label": "Xem trước",
+        "hint": "Xem trước kết quả trực tiếp trên canvas",
         "inputs": {
           "input": {
             "label": "URL"
@@ -1209,6 +1224,7 @@
       },
       "output/file": {
         "label": "Xuất tệp",
+        "hint": "Lưu kết quả vào tệp cục bộ",
         "inputs": {
           "url": {
             "label": "URL"
@@ -1236,25 +1252,32 @@
         }
       },
       "free-tool/image-enhancer": {
-        "label": "Tăng cường hình ảnh"
+        "label": "Tăng cường hình ảnh",
+        "hint": "Phóng to và làm sắc nét hình ảnh (2×–4×) miễn phí"
       },
       "free-tool/background-remover": {
-        "label": "Xóa nền"
+        "label": "Xóa nền",
+        "hint": "Tự động xóa nền hình ảnh miễn phí"
       },
       "free-tool/face-enhancer": {
-        "label": "Tăng cường khuôn mặt"
+        "label": "Tăng cường khuôn mặt",
+        "hint": "Cải thiện và phục hồi khuôn mặt trong ảnh miễn phí"
       },
       "free-tool/video-enhancer": {
-        "label": "Tăng cường video"
+        "label": "Tăng cường video",
+        "hint": "Phóng to và nâng cao chất lượng video miễn phí"
       },
       "free-tool/face-swapper": {
-        "label": "Đổi mặt"
+        "label": "Đổi mặt",
+        "hint": "Đổi khuôn mặt từ ảnh này sang ảnh khác miễn phí"
       },
       "free-tool/image-eraser": {
-        "label": "Tẩy ảnh"
+        "label": "Tẩy ảnh",
+        "hint": "Xóa đối tượng khỏi ảnh bằng mặt nạ miễn phí"
       },
       "free-tool/segment-anything": {
         "label": "Phân đoạn mọi thứ",
+        "hint": "Tạo mặt nạ cho bất kỳ đối tượng nào trong ảnh miễn phí",
         "params": {
           "pointX": {
             "label": "Điểm X",
@@ -1270,19 +1293,32 @@
         }
       },
       "free-tool/video-converter": {
-        "label": "Chuyển đổi video"
+        "label": "Chuyển đổi video",
+        "hint": "Chuyển đổi định dạng, codec hoặc độ phân giải video miễn phí"
       },
       "free-tool/audio-converter": {
-        "label": "Chuyển đổi âm thanh"
+        "label": "Chuyển đổi âm thanh",
+        "hint": "Chuyển đổi âm thanh giữa MP3, WAV, FLAC và nhiều hơn miễn phí"
       },
       "free-tool/image-converter": {
-        "label": "Chuyển đổi hình ảnh"
+        "label": "Chuyển đổi hình ảnh",
+        "hint": "Chuyển đổi hình ảnh giữa PNG, JPG, WebP và nhiều hơn miễn phí"
       },
       "free-tool/media-trimmer": {
-        "label": "Cắt media"
+        "label": "Cắt media",
+        "hint": "Cắt video hoặc âm thanh theo khoảng thời gian cụ thể miễn phí"
       },
       "free-tool/media-merger": {
-        "label": "Gộp media"
+        "label": "Gộp media",
+        "hint": "Gộp nhiều clip video hoặc âm thanh thành một miễn phí"
+      },
+      "processing/concat": {
+        "label": "Nối",
+        "hint": "Kết hợp nhiều giá trị đơn thành một mảng (vd. ảnh → ảnh[])"
+      },
+      "processing/select": {
+        "label": "Chọn",
+        "hint": "Chọn một mục từ mảng theo chỉ mục"
       }
     },
     "modelSelector": {
@@ -1392,6 +1428,10 @@
           "costEstimate": "Uoc tinh chi phi theo thoi gian thuc moi lan chay de ban biet gia truoc khi thuc thi",
           "upstream": "Ket noi dau ra tu node truoc (anh, van ban) lam dau vao — xay dung pipeline AI nhieu buoc"
         }
+      },
+      "concat": {
+        "title": "Node Concat — Gop Nhieu Dau Ra",
+        "desc": "Can truyen nhieu hinh anh vao dau vao \"images\"? Su dung node Concat:\n\n1. Ket noi dau ra image cua moi node phia truoc voi value1, value2, value3, v.v. cua Concat\n2. Ket noi dau ra output cua Concat (bay gio la mang) voi tham so images cua node phia sau\n\nVi du:\n[Upload A] → image → Concat → output (mang) → [AI Task].images\n[Upload B] → image ↗\n\nDieu nay hoat dong voi bat ky loai dau ra nao — hinh anh, video, van ban — bat cu khi nao ban can gop nhieu gia tri don le thanh mot dau vao mang."
       },
       "canvas": {
         "title": "Tuong tac Canvas",

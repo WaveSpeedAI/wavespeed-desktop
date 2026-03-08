@@ -1,9 +1,18 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  startTransition,
+  lazy,
+  Suspense,
+} from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Sidebar } from "./Sidebar";
 import { AppLogo } from "./AppLogo";
 import { PageResetContext } from "./PageResetContext";
+import { PersistentPage } from "./PersistentPage";
 import { Toaster } from "@/components/ui/toaster";
 import { UpdateBanner } from "./UpdateBanner";
 import {
@@ -29,26 +38,132 @@ import {
   Globe,
   FileText,
 } from "lucide-react";
-import { VideoEnhancerPage } from "@/pages/VideoEnhancerPage";
-import { ImageEnhancerPage } from "@/pages/ImageEnhancerPage";
-import { BackgroundRemoverPage } from "@/pages/BackgroundRemoverPage";
-import { ImageEraserPage } from "@/pages/ImageEraserPage";
-import { SegmentAnythingPage } from "@/pages/SegmentAnythingPage";
-import { ZImagePage } from "@/pages/ZImagePage";
-import { VideoConverterPage } from "@/pages/VideoConverterPage";
-import { AudioConverterPage } from "@/pages/AudioConverterPage";
-import { ImageConverterPage } from "@/pages/ImageConverterPage";
-import { MediaTrimmerPage } from "@/pages/MediaTrimmerPage";
-import { MediaMergerPage } from "@/pages/MediaMergerPage";
-import { FaceEnhancerPage } from "@/pages/FaceEnhancerPage";
-import { FaceSwapperPage } from "@/pages/FaceSwapperPage";
-import { HistoryPage } from "@/pages/HistoryPage";
-import { AssetsPage } from "@/pages/AssetsPage";
-import { WorkflowPage } from "@/workflow/WorkflowPage";
-import { StoryboardPage } from "@/storyboard/StoryboardPage";
+// Lazy-load all persistent pages — only loaded when first visited
+const LazyVideoEnhancerPage = lazy(() =>
+  import("@/pages/VideoEnhancerPage").then((m) => ({
+    default: m.VideoEnhancerPage,
+  })),
+);
+const LazyImageEnhancerPage = lazy(() =>
+  import("@/pages/ImageEnhancerPage").then((m) => ({
+    default: m.ImageEnhancerPage,
+  })),
+);
+const LazyBackgroundRemoverPage = lazy(() =>
+  import("@/pages/BackgroundRemoverPage").then((m) => ({
+    default: m.BackgroundRemoverPage,
+  })),
+);
+const LazyImageEraserPage = lazy(() =>
+  import("@/pages/ImageEraserPage").then((m) => ({
+    default: m.ImageEraserPage,
+  })),
+);
+const LazySegmentAnythingPage = lazy(() =>
+  import("@/pages/SegmentAnythingPage").then((m) => ({
+    default: m.SegmentAnythingPage,
+  })),
+);
+const LazyZImagePage = lazy(() =>
+  import("@/pages/ZImagePage").then((m) => ({ default: m.ZImagePage })),
+);
+const LazyVideoConverterPage = lazy(() =>
+  import("@/pages/VideoConverterPage").then((m) => ({
+    default: m.VideoConverterPage,
+  })),
+);
+const LazyAudioConverterPage = lazy(() =>
+  import("@/pages/AudioConverterPage").then((m) => ({
+    default: m.AudioConverterPage,
+  })),
+);
+const LazyImageConverterPage = lazy(() =>
+  import("@/pages/ImageConverterPage").then((m) => ({
+    default: m.ImageConverterPage,
+  })),
+);
+const LazyMediaTrimmerPage = lazy(() =>
+  import("@/pages/MediaTrimmerPage").then((m) => ({
+    default: m.MediaTrimmerPage,
+  })),
+);
+const LazyMediaMergerPage = lazy(() =>
+  import("@/pages/MediaMergerPage").then((m) => ({
+    default: m.MediaMergerPage,
+  })),
+);
+const LazyFaceEnhancerPage = lazy(() =>
+  import("@/pages/FaceEnhancerPage").then((m) => ({
+    default: m.FaceEnhancerPage,
+  })),
+);
+const LazyFaceSwapperPage = lazy(() =>
+  import("@/pages/FaceSwapperPage").then((m) => ({
+    default: m.FaceSwapperPage,
+  })),
+);
+const LazyHistoryPage = lazy(() =>
+  import("@/pages/HistoryPage").then((m) => ({ default: m.HistoryPage })),
+);
+const LazyAssetsPage = lazy(() =>
+  import("@/pages/AssetsPage").then((m) => ({ default: m.AssetsPage })),
+);
+const LazyWorkflowPage = lazy(() =>
+  import("@/workflow/WorkflowPage").then((m) => ({ default: m.WorkflowPage })),
+);
+const LazyPlaygroundPage = lazy(() =>
+  import("@/pages/PlaygroundPage").then((m) => ({
+    default: m.PlaygroundPage,
+  })),
+);
+const LazyStoryboardPage = lazy(() =>
+  import("@/storyboard/StoryboardPage").then((m) => ({
+    default: m.StoryboardPage,
+  })),
+);
 import { useFreeToolListener } from "@/workflow/hooks/useFreeToolListener";
 
 const isElectron = navigator.userAgent.toLowerCase().includes("electron");
+
+// Hoisted constants — avoid re-creation on every render
+const PERSISTENT_PATHS = [
+  "/history",
+  "/assets",
+  "/free-tools/video-enhancer",
+  "/free-tools/image-enhancer",
+  "/free-tools/face-enhancer",
+  "/free-tools/face-swapper",
+  "/free-tools/background-remover",
+  "/free-tools/image-eraser",
+  "/free-tools/segment-anything",
+  "/free-tools/video-converter",
+  "/free-tools/audio-converter",
+  "/free-tools/image-converter",
+  "/free-tools/media-trimmer",
+  "/free-tools/media-merger",
+  "/z-image",
+  "/workflow",
+  "/storyboard",
+  "/playground",
+] as const;
+const PERSISTENT_PATHS_SET = new Set<string>(PERSISTENT_PATHS);
+const NOOP = () => {};
+
+/** Check if a pathname matches a persistent path (exact or prefix for /playground) */
+function isPersistentPath(pathname: string): boolean {
+  if (PERSISTENT_PATHS_SET.has(pathname)) return true;
+  // /playground and /playground/* are persistent
+  if (pathname === "/playground" || pathname.startsWith("/playground/"))
+    return true;
+  return false;
+}
+
+/** Get the persistent path key for a pathname (normalizes /playground/* → /playground) */
+function getPersistentKey(pathname: string): string {
+  if (pathname === "/playground" || pathname.startsWith("/playground/"))
+    return "/playground";
+  return pathname;
+}
 
 // Helper to generate next key
 let keyCounter = 0;
@@ -56,8 +171,18 @@ const nextKey = () => ++keyCounter;
 
 export function Layout() {
   const { t } = useTranslation();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    const stored = localStorage.getItem("sidebarCollapsed");
+    return stored !== null ? stored === "true" : false;
+  });
+
+  const toggleSidebar = useCallback(() => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem("sidebarCollapsed", String(next));
+      return next;
+    });
+  }, []);
   const navigate = useNavigate();
   const location = useLocation();
   const hasShownUpdateToast = useRef(false);
@@ -65,8 +190,18 @@ export function Layout() {
   // Register free-tool IPC listener globally (must be always mounted for workflow execution)
   useFreeToolListener();
 
-  // Track which persistent pages have been visited (to delay initial mount)
-  const [visitedPages, setVisitedPages] = useState<Set<string>>(new Set());
+  // Track which persistent pages have been visited (to delay initial mount).
+  // Using a ref + counter avoids creating a new Set on every navigation which
+  // would cause every PersistentPage wrapper to re-render.
+  const visitedPagesRef = useRef<Set<string>>(new Set());
+  const [visitedVersion, setVisitedVersion] = useState(0);
+  // Stable lookup: returns true if page was visited. The `visitedVersion`
+  // dependency ensures the component re-renders when a NEW page is first visited.
+  const hasVisited = useCallback(
+    (path: string) => visitedPagesRef.current.has(path),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [visitedVersion],
+  );
   // Track the last visited free-tools sub-page for navigation
   const [lastFreeToolsPage, setLastFreeToolsPage] = useState<string | null>(
     null,
@@ -109,40 +244,23 @@ export function Layout() {
 
   // Track visits to persistent pages and last visited free-tools page
   useEffect(() => {
-    const persistentPaths = [
-      "/history",
-      "/assets",
-      "/free-tools/video-enhancer",
-      "/free-tools/image-enhancer",
-      "/free-tools/face-enhancer",
-      "/free-tools/face-swapper",
-      "/free-tools/background-remover",
-      "/free-tools/image-eraser",
-      "/free-tools/segment-anything",
-      "/free-tools/video-converter",
-      "/free-tools/audio-converter",
-      "/free-tools/image-converter",
-      "/free-tools/media-trimmer",
-      "/free-tools/media-merger",
-      "/z-image",
-      "/workflow",
-      "/storyboard",
-    ];
-    if (persistentPaths.includes(location.pathname)) {
-      // Track for lazy mounting
-      if (!visitedPages.has(location.pathname)) {
-        setVisitedPages((prev) => new Set(prev).add(location.pathname));
+    if (isPersistentPath(location.pathname)) {
+      const key = getPersistentKey(location.pathname);
+      // Track for lazy mounting — only bump version when truly new
+      if (!visitedPagesRef.current.has(key)) {
+        visitedPagesRef.current.add(key);
+        startTransition(() => {
+          setVisitedVersion((v) => v + 1);
+        });
       }
       // Track last visited for sidebar navigation (only for free-tools sub-pages)
       if (location.pathname.startsWith("/free-tools/")) {
         setLastFreeToolsPage(location.pathname);
       }
     } else if (location.pathname === "/free-tools") {
-      // Clear last visited page when on main Free Tools page
-      // So clicking sidebar will return to main page, not sub-page
       setLastFreeToolsPage(null);
     }
-  }, [location.pathname, visitedPages]);
+  }, [location.pathname]);
 
   // mainRef kept for potential future use
   const mainRef = useRef<HTMLElement>(null);
@@ -150,7 +268,6 @@ export function Layout() {
   // Pages that don't require API key
   const publicPaths = [
     "/",
-    "/featured-models",
     "/settings",
     "/templates",
     "/assets",
@@ -394,10 +511,10 @@ export function Layout() {
           <div className="flex flex-1 overflow-hidden">
             <Sidebar
               collapsed={sidebarCollapsed}
-              onToggle={() => setSidebarCollapsed((prev) => !prev)}
+              onToggle={toggleSidebar}
               lastFreeToolsPage={lastFreeToolsPage}
               isMobileOpen={false}
-              onMobileClose={() => {}}
+              onMobileClose={NOOP}
             />
             <main
               ref={mainRef}
@@ -411,246 +528,209 @@ export function Layout() {
                   {/* Regular routes via Outlet */}
                   <div
                     className={
-                      [
-                        "/history",
-                        "/assets",
-                        "/free-tools/video-enhancer",
-                        "/free-tools/image-enhancer",
-                        "/free-tools/face-enhancer",
-                        "/free-tools/face-swapper",
-                        "/free-tools/background-remover",
-                        "/free-tools/image-eraser",
-                        "/free-tools/segment-anything",
-                        "/free-tools/video-converter",
-                        "/free-tools/audio-converter",
-                        "/free-tools/image-converter",
-                        "/free-tools/media-trimmer",
-                        "/free-tools/media-merger",
-                        "/z-image",
-                        "/workflow",
-                        "/storyboard",
-                      ].includes(location.pathname)
+                      isPersistentPath(location.pathname)
                         ? "hidden"
                         : "h-full overflow-auto"
                     }
                   >
                     <Outlet />
                   </div>
-                  {/* Persistent History page */}
-                  {visitedPages.has("/history") && (
-                    <div
-                      className={
-                        location.pathname === "/history"
-                          ? "h-full overflow-auto"
-                          : "hidden"
-                      }
-                    >
-                      <HistoryPage key={pageKeys["/history"] || 0} />
-                    </div>
-                  )}
-                  {/* Persistent Assets page */}
-                  {visitedPages.has("/assets") && (
-                    <div
-                      className={
-                        location.pathname === "/assets"
-                          ? "h-full overflow-auto"
-                          : "hidden"
-                      }
-                    >
-                      <AssetsPage key={pageKeys["/assets"] || 0} />
-                    </div>
-                  )}
-                  {/* Persistent Free Tools pages - mounted once visited, removed from visitedPages forces unmount */}
-                  {visitedPages.has("/free-tools/video-enhancer") && (
-                    <div
-                      className={
-                        location.pathname === "/free-tools/video-enhancer"
-                          ? "h-full overflow-auto"
-                          : "hidden"
-                      }
-                    >
-                      <VideoEnhancerPage
-                        key={pageKeys["/free-tools/video-enhancer"] || 0}
-                      />
-                    </div>
-                  )}
-                  {visitedPages.has("/free-tools/image-enhancer") && (
-                    <div
-                      className={
-                        location.pathname === "/free-tools/image-enhancer"
-                          ? "h-full overflow-auto"
-                          : "hidden"
-                      }
-                    >
-                      <ImageEnhancerPage
-                        key={pageKeys["/free-tools/image-enhancer"] || 0}
-                      />
-                    </div>
-                  )}
-                  {visitedPages.has("/free-tools/face-enhancer") && (
-                    <div
-                      className={
-                        location.pathname === "/free-tools/face-enhancer"
-                          ? "h-full overflow-auto"
-                          : "hidden"
-                      }
-                    >
-                      <FaceEnhancerPage
-                        key={pageKeys["/free-tools/face-enhancer"] || 0}
-                      />
-                    </div>
-                  )}
-                  {visitedPages.has("/free-tools/face-swapper") && (
-                    <div
-                      className={
-                        location.pathname === "/free-tools/face-swapper"
-                          ? "h-full overflow-auto"
-                          : "hidden"
-                      }
-                    >
-                      <FaceSwapperPage
-                        key={pageKeys["/free-tools/face-swapper"] || 0}
-                      />
-                    </div>
-                  )}
-                  {visitedPages.has("/free-tools/background-remover") && (
-                    <div
-                      className={
-                        location.pathname === "/free-tools/background-remover"
-                          ? "h-full overflow-auto"
-                          : "hidden"
-                      }
-                    >
-                      <BackgroundRemoverPage
-                        key={pageKeys["/free-tools/background-remover"] || 0}
-                      />
-                    </div>
-                  )}
-                  {visitedPages.has("/free-tools/image-eraser") && (
-                    <div
-                      className={
-                        location.pathname === "/free-tools/image-eraser"
-                          ? "h-full overflow-auto"
-                          : "hidden"
-                      }
-                    >
-                      <ImageEraserPage
-                        key={pageKeys["/free-tools/image-eraser"] || 0}
-                      />
-                    </div>
-                  )}
-                  {visitedPages.has("/free-tools/segment-anything") && (
-                    <div
-                      className={
-                        location.pathname === "/free-tools/segment-anything"
-                          ? "h-full overflow-auto"
-                          : "hidden"
-                      }
-                    >
-                      <SegmentAnythingPage
-                        key={pageKeys["/free-tools/segment-anything"] || 0}
-                      />
-                    </div>
-                  )}
-                  {/* Persistent Z-Image page - mounted once visited, then persist via CSS show/hide */}
-                  {visitedPages.has("/z-image") && (
-                    <div
-                      className={
-                        location.pathname === "/z-image"
-                          ? "h-full overflow-auto"
-                          : "hidden"
-                      }
-                    >
-                      <ZImagePage key={pageKeys["/z-image"] || 0} />
-                    </div>
-                  )}
-                  {visitedPages.has("/free-tools/video-converter") && (
-                    <div
-                      className={
-                        location.pathname === "/free-tools/video-converter"
-                          ? "h-full overflow-auto"
-                          : "hidden"
-                      }
-                    >
-                      <VideoConverterPage
-                        key={pageKeys["/free-tools/video-converter"] || 0}
-                      />
-                    </div>
-                  )}
-                  {visitedPages.has("/free-tools/audio-converter") && (
-                    <div
-                      className={
-                        location.pathname === "/free-tools/audio-converter"
-                          ? "h-full overflow-auto"
-                          : "hidden"
-                      }
-                    >
-                      <AudioConverterPage
-                        key={pageKeys["/free-tools/audio-converter"] || 0}
-                      />
-                    </div>
-                  )}
-                  {visitedPages.has("/free-tools/image-converter") && (
-                    <div
-                      className={
-                        location.pathname === "/free-tools/image-converter"
-                          ? "h-full overflow-auto"
-                          : "hidden"
-                      }
-                    >
-                      <ImageConverterPage
-                        key={pageKeys["/free-tools/image-converter"] || 0}
-                      />
-                    </div>
-                  )}
-                  {visitedPages.has("/free-tools/media-trimmer") && (
-                    <div
-                      className={
-                        location.pathname === "/free-tools/media-trimmer"
-                          ? "h-full overflow-auto"
-                          : "hidden"
-                      }
-                    >
-                      <MediaTrimmerPage
-                        key={pageKeys["/free-tools/media-trimmer"] || 0}
-                      />
-                    </div>
-                  )}
-                  {visitedPages.has("/free-tools/media-merger") && (
-                    <div
-                      className={
-                        location.pathname === "/free-tools/media-merger"
-                          ? "h-full overflow-auto"
-                          : "hidden"
-                      }
-                    >
-                      <MediaMergerPage
-                        key={pageKeys["/free-tools/media-merger"] || 0}
-                      />
-                    </div>
-                  )}
-                  {/* Persistent Workflow page */}
-                  {visitedPages.has("/workflow") && (
+                  {/* Persistent pages — mounted on first visit, hidden via CSS when inactive */}
+                  <PersistentPage
+                    visited={hasVisited("/playground")}
+                    active={
+                      location.pathname === "/playground" ||
+                      location.pathname.startsWith("/playground/")
+                    }
+                    pageKey={pageKeys["/playground"] || 0}
+                  >
+                    <LazyPlaygroundPage key={pageKeys["/playground"] || 0} />
+                  </PersistentPage>
+                  <PersistentPage
+                    visited={hasVisited("/history")}
+                    active={location.pathname === "/history"}
+                    pageKey={pageKeys["/history"] || 0}
+                  >
+                    <LazyHistoryPage key={pageKeys["/history"] || 0} />
+                  </PersistentPage>
+                  <PersistentPage
+                    visited={hasVisited("/assets")}
+                    active={location.pathname === "/assets"}
+                    pageKey={pageKeys["/assets"] || 0}
+                  >
+                    <LazyAssetsPage key={pageKeys["/assets"] || 0} />
+                  </PersistentPage>
+                  <PersistentPage
+                    visited={hasVisited("/free-tools/video-enhancer")}
+                    active={location.pathname === "/free-tools/video-enhancer"}
+                    pageKey={pageKeys["/free-tools/video-enhancer"] || 0}
+                  >
+                    <LazyVideoEnhancerPage
+                      key={pageKeys["/free-tools/video-enhancer"] || 0}
+                    />
+                  </PersistentPage>
+                  <PersistentPage
+                    visited={hasVisited("/free-tools/image-enhancer")}
+                    active={location.pathname === "/free-tools/image-enhancer"}
+                    pageKey={pageKeys["/free-tools/image-enhancer"] || 0}
+                  >
+                    <LazyImageEnhancerPage
+                      key={pageKeys["/free-tools/image-enhancer"] || 0}
+                    />
+                  </PersistentPage>
+                  <PersistentPage
+                    visited={hasVisited("/free-tools/face-enhancer")}
+                    active={location.pathname === "/free-tools/face-enhancer"}
+                    pageKey={pageKeys["/free-tools/face-enhancer"] || 0}
+                  >
+                    <LazyFaceEnhancerPage
+                      key={pageKeys["/free-tools/face-enhancer"] || 0}
+                    />
+                  </PersistentPage>
+                  <PersistentPage
+                    visited={hasVisited("/free-tools/face-swapper")}
+                    active={location.pathname === "/free-tools/face-swapper"}
+                    pageKey={pageKeys["/free-tools/face-swapper"] || 0}
+                  >
+                    <LazyFaceSwapperPage
+                      key={pageKeys["/free-tools/face-swapper"] || 0}
+                    />
+                  </PersistentPage>
+                  <PersistentPage
+                    visited={hasVisited("/free-tools/background-remover")}
+                    active={
+                      location.pathname === "/free-tools/background-remover"
+                    }
+                    pageKey={pageKeys["/free-tools/background-remover"] || 0}
+                  >
+                    <LazyBackgroundRemoverPage
+                      key={pageKeys["/free-tools/background-remover"] || 0}
+                    />
+                  </PersistentPage>
+                  <PersistentPage
+                    visited={hasVisited("/free-tools/image-eraser")}
+                    active={location.pathname === "/free-tools/image-eraser"}
+                    pageKey={pageKeys["/free-tools/image-eraser"] || 0}
+                  >
+                    <LazyImageEraserPage
+                      key={pageKeys["/free-tools/image-eraser"] || 0}
+                    />
+                  </PersistentPage>
+                  <PersistentPage
+                    visited={hasVisited("/free-tools/segment-anything")}
+                    active={
+                      location.pathname === "/free-tools/segment-anything"
+                    }
+                    pageKey={pageKeys["/free-tools/segment-anything"] || 0}
+                  >
+                    <LazySegmentAnythingPage
+                      key={pageKeys["/free-tools/segment-anything"] || 0}
+                    />
+                  </PersistentPage>
+                  <PersistentPage
+                    visited={hasVisited("/z-image")}
+                    active={location.pathname === "/z-image"}
+                    pageKey={pageKeys["/z-image"] || 0}
+                  >
+                    <LazyZImagePage key={pageKeys["/z-image"] || 0} />
+                  </PersistentPage>
+                  <PersistentPage
+                    visited={hasVisited("/free-tools/video-converter")}
+                    active={location.pathname === "/free-tools/video-converter"}
+                    pageKey={pageKeys["/free-tools/video-converter"] || 0}
+                  >
+                    <LazyVideoConverterPage
+                      key={pageKeys["/free-tools/video-converter"] || 0}
+                    />
+                  </PersistentPage>
+                  <PersistentPage
+                    visited={hasVisited("/free-tools/audio-converter")}
+                    active={location.pathname === "/free-tools/audio-converter"}
+                    pageKey={pageKeys["/free-tools/audio-converter"] || 0}
+                  >
+                    <LazyAudioConverterPage
+                      key={pageKeys["/free-tools/audio-converter"] || 0}
+                    />
+                  </PersistentPage>
+                  <PersistentPage
+                    visited={hasVisited("/free-tools/image-converter")}
+                    active={location.pathname === "/free-tools/image-converter"}
+                    pageKey={pageKeys["/free-tools/image-converter"] || 0}
+                  >
+                    <LazyImageConverterPage
+                      key={pageKeys["/free-tools/image-converter"] || 0}
+                    />
+                  </PersistentPage>
+                  <PersistentPage
+                    visited={hasVisited("/free-tools/media-trimmer")}
+                    active={location.pathname === "/free-tools/media-trimmer"}
+                    pageKey={pageKeys["/free-tools/media-trimmer"] || 0}
+                  >
+                    <LazyMediaTrimmerPage
+                      key={pageKeys["/free-tools/media-trimmer"] || 0}
+                    />
+                  </PersistentPage>
+                  <PersistentPage
+                    visited={hasVisited("/free-tools/media-merger")}
+                    active={location.pathname === "/free-tools/media-merger"}
+                    pageKey={pageKeys["/free-tools/media-merger"] || 0}
+                  >
+                    <LazyMediaMergerPage
+                      key={pageKeys["/free-tools/media-merger"] || 0}
+                    />
+                  </PersistentPage>
+                  {/* Persistent Workflow page — overflow hidden (canvas) */}
+                  {hasVisited("/workflow") && (
                     <div
                       className={
                         location.pathname === "/workflow"
                           ? "h-full overflow-hidden"
                           : "hidden"
                       }
+                      style={
+                        location.pathname === "/workflow"
+                          ? undefined
+                          : { contentVisibility: "hidden" }
+                      }
                     >
-                      <WorkflowPage key={pageKeys["/workflow"] || 0} />
+                      <Suspense
+                        fallback={
+                          location.pathname === "/workflow" ? (
+                            <div className="flex h-full items-center justify-center">
+                              <Loader2 className="h-7 w-7 animate-spin text-muted-foreground" />
+                            </div>
+                          ) : null
+                        }
+                      >
+                        <LazyWorkflowPage key={pageKeys["/workflow"] || 0} />
+                      </Suspense>
                     </div>
                   )}
                   {/* Persistent Storyboard page */}
-                  {visitedPages.has("/storyboard") && (
+                  {hasVisited("/storyboard") && (
                     <div
                       className={
                         location.pathname === "/storyboard"
                           ? "h-full overflow-hidden"
                           : "hidden"
                       }
+                      style={
+                        location.pathname === "/storyboard"
+                          ? undefined
+                          : { contentVisibility: "hidden" }
+                      }
                     >
-                      <StoryboardPage key={pageKeys["/storyboard"] || 0} />
+                      <Suspense
+                        fallback={
+                          location.pathname === "/storyboard" ? (
+                            <div className="flex h-full items-center justify-center">
+                              <Loader2 className="h-7 w-7 animate-spin text-muted-foreground" />
+                            </div>
+                          ) : null
+                        }
+                      >
+                        <LazyStoryboardPage key={pageKeys["/storyboard"] || 0} />
+                      </Suspense>
                     </div>
                   )}
                 </>

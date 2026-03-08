@@ -28,11 +28,11 @@ export function LoraSelector({
 
   const addLora = (lora: LoraItem) => {
     if (value.length >= maxItems) {
-      toast.info(`Maximum ${maxItems} LoRAs allowed`);
+      toast({ description: `Maximum ${maxItems} LoRAs allowed` });
       return;
     }
     if (value.some((v) => v.path === lora.path)) {
-      toast.info("LoRA already added");
+      toast({ description: "LoRA already added" });
       return;
     }
     onChange([...value, lora]);

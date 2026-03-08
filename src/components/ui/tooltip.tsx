@@ -27,4 +27,53 @@ const TooltipContent = React.forwardRef<
 ));
 TooltipContent.displayName = TooltipPrimitive.Content.displayName;
 
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider };
+/**
+ * Touch-friendly Tooltip wrapper.
+ * On touch devices, tapping the trigger toggles the tooltip open/closed.
+ * On desktop, hover behavior works as usual.
+ */
+function TouchTooltip({
+  children,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Root>) {
+  const [open, setOpen] = React.useState(false);
+
+  return (
+    <TooltipPrimitive.Root
+      open={open}
+      onOpenChange={setOpen}
+      delayDuration={0}
+      {...props}
+    >
+      {React.Children.map(children, (child) => {
+        if (React.isValidElement(child) && child.type === TooltipTrigger) {
+          return React.cloneElement(
+            child as React.ReactElement<Record<string, unknown>>,
+            {
+              onClick: (e: React.MouseEvent) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setOpen((prev) => !prev);
+              },
+              onPointerDown: (e: React.PointerEvent) => {
+                // Prevent Radix from immediately closing on touch
+                if (e.pointerType === "touch") {
+                  e.preventDefault();
+                }
+              },
+            },
+          );
+        }
+        return child;
+      })}
+    </TooltipPrimitive.Root>
+  );
+}
+
+export {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+  TouchTooltip,
+};

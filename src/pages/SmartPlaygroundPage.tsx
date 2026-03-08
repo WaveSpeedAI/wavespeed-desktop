@@ -508,10 +508,7 @@ export function SmartPlaygroundPage() {
       <div className="flex h-full items-center justify-center">
         <div className="text-center space-y-2">
           <p className="text-muted-foreground">Family not found</p>
-          <Button
-            variant="outline"
-            onClick={() => navigate("/featured-models")}
-          >
+          <Button variant="outline" onClick={() => navigate("/playground")}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             {t("smartPlayground.back")}
           </Button>
@@ -535,13 +532,13 @@ export function SmartPlaygroundPage() {
   return (
     <div className="flex h-full flex-col overflow-hidden">
       {/* Header */}
-      <div className="shrink-0 border-b px-4 py-3">
+      <div className="shrink-0 border-b px-4 py-3 animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="sm"
             className="h-8 w-8 p-0"
-            onClick={() => navigate("/featured-models")}
+            onClick={() => navigate("/playground")}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -655,7 +652,10 @@ export function SmartPlaygroundPage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 min-h-0 flex">
+      <div
+        className="flex-1 min-h-0 flex animate-in fade-in duration-300 fill-mode-both"
+        style={{ animationDelay: "80ms" }}
+      >
         {/* Left Panel: Form (desktop always visible, mobile conditional) */}
         <div
           className={cn(

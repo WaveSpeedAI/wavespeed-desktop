@@ -24,7 +24,7 @@ export function registerStorageIpc(): void {
     "storage:get-execution-cache",
     async (
       _event,
-      args: { workflowId: string; nodeId: string; executionId: string },
+      _args: { workflowId: string; nodeId: string; executionId: string },
     ) => {
       return null; // simplified — execution cache not used in new structure
     },

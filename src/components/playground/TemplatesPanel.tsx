@@ -10,7 +10,7 @@ import { toast } from "@/hooks/useToast";
 import type { Template } from "@/types/template";
 
 interface TemplatesPanelProps {
-  onUseTemplate: (template: Template) => void;
+  onUseTemplate: (template: Template, mode?: "new" | "replace") => void;
 }
 
 export function TemplatesPanel({ onUseTemplate }: TemplatesPanelProps) {

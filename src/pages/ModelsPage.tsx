@@ -26,14 +26,17 @@ export function ModelsPage() {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Page Title */}
-      <div className="px-4 md:px-6 py-4 pt-14 md:pt-4 border-b border-border shrink-0">
+      <div className="px-4 md:px-6 py-4 pt-14 md:pt-4 border-b border-border shrink-0 animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both">
         <h1 className="text-xl md:text-2xl font-bold tracking-tight flex items-center gap-2">
           <Layers className="h-5 w-5 text-primary" />
           {t("playground.rightPanel.models", "All Models")}
         </h1>
       </div>
       {/* ExplorePanel fills the rest */}
-      <div className="flex-1 overflow-hidden">
+      <div
+        className="flex-1 overflow-hidden animate-in fade-in duration-300 fill-mode-both"
+        style={{ animationDelay: "100ms" }}
+      >
         <ExplorePanel onSelectModel={handleSelectModel} />
       </div>
     </div>

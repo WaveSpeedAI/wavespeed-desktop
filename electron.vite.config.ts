@@ -49,6 +49,7 @@ export default defineConfig({
     resolve: {
       alias: {
         "@": resolve(__dirname, "src"),
+        "@mobile": resolve(__dirname, "mobile/src"),
       },
     },
     plugins: [stubCapacitorPlugin(), react()],

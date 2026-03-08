@@ -36,7 +36,9 @@
     "settings": "설정",
     "clearAll": "모두 지우기",
     "add": "Add",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "showMore": "더 보기",
+    "showLess": "접기"
   },
   "nav": {
     "home": "홈",
@@ -117,6 +119,7 @@
     "type": "유형",
     "basePrice": "기본 가격",
     "openInNewTab": "새 탭에서 열기",
+    "replaceCurrentTab": "현재 탭 교체",
     "addToFavorites": "즐겨찾기에 추가",
     "removeFromFavorites": "즐겨찾기에서 제거"
   },
@@ -262,7 +265,9 @@
       "less": "접기"
     },
     "history": {
-      "title": "기록"
+      "title": "기록",
+      "openInNewTab": "새 탭에서 열기",
+      "useSettings": "이 설정 사용"
     }
   },
   "history": {
@@ -314,7 +319,9 @@
     "downloadCompleteDesc": "{{count}}개 파일 다운로드됨",
     "downloadFailed": "다운로드 실패",
     "downloadFailedDesc": "{{count}}개 파일 다운로드 실패",
-    "longPressHint": "길게 눌러 선택"
+    "longPressHint": "길게 눌러 선택",
+    "openInPlayground": "Playground에서 열기",
+    "modelNotAvailable": "모델을 사용할 수 없습니다"
   },
   "templates": {
     "title": "템플릿",
@@ -1136,6 +1143,10 @@
     "hideRun": "이 실행 숨기기",
     "output": "출력",
     "outputLowercase": "출력",
+    "expandNode": "펼치기",
+    "collapseNode": "접기",
+    "collapseAll": "모두 접기",
+    "expandAll": "모두 펼치기",
     "invalidUrl": "잘못된 URL",
     "removeLast": "마지막 제거",
     "enterField": "{{field}} 입력...",
@@ -1157,6 +1168,7 @@
     "nodeDefs": {
       "ai-task/run": {
         "label": "WaveSpeed API",
+        "hint": "이미지, 비디오, 오디오 등 모든 AI 모델을 실행",
         "emptyHint": "이 노드를 클릭한 다음 모델 선택 →",
         "params": {
           "modelId": {
@@ -1166,6 +1178,7 @@
       },
       "input/media-upload": {
         "label": "업로드",
+        "hint": "이미지, 비디오 또는 오디오 파일을 파이프라인 입력으로 업로드",
         "inputs": {
           "media": {
             "label": "미디어"
@@ -1179,6 +1192,7 @@
       },
       "input/text-input": {
         "label": "텍스트",
+        "hint": "텍스트 또는 프롬프트를 입력하여 다음 노드로 전달",
         "params": {
           "text": {
             "label": "텍스트"
@@ -1187,6 +1201,7 @@
       },
       "output/preview": {
         "label": "미리보기",
+        "hint": "캔버스에서 결과를 바로 미리보기",
         "inputs": {
           "input": {
             "label": "URL"
@@ -1210,6 +1225,7 @@
       },
       "output/file": {
         "label": "파일 내보내기",
+        "hint": "결과를 로컬 파일로 저장",
         "inputs": {
           "url": {
             "label": "URL"
@@ -1237,25 +1253,32 @@
         }
       },
       "free-tool/image-enhancer": {
-        "label": "이미지 향상"
+        "label": "이미지 향상",
+        "hint": "이미지를 무료로 업스케일 및 선명하게 (2×–4×)"
       },
       "free-tool/background-remover": {
-        "label": "배경 제거"
+        "label": "배경 제거",
+        "hint": "이미지 배경을 무료로 자동 제거"
       },
       "free-tool/face-enhancer": {
-        "label": "얼굴 향상"
+        "label": "얼굴 향상",
+        "hint": "사진 속 얼굴을 무료로 향상 및 복원"
       },
       "free-tool/video-enhancer": {
-        "label": "비디오 향상"
+        "label": "비디오 향상",
+        "hint": "비디오 품질을 무료로 업스케일 및 향상"
       },
       "free-tool/face-swapper": {
-        "label": "얼굴 교체"
+        "label": "얼굴 교체",
+        "hint": "한 이미지의 얼굴을 다른 이미지에 무료로 교체"
       },
       "free-tool/image-eraser": {
-        "label": "이미지 지우개"
+        "label": "이미지 지우개",
+        "hint": "마스크를 사용하여 이미지에서 객체를 무료로 제거"
       },
       "free-tool/segment-anything": {
         "label": "세그먼트 애니싱",
+        "hint": "이미지 내 모든 객체의 마스크를 무료로 생성",
         "params": {
           "pointX": {
             "label": "포인트 X",
@@ -1271,19 +1294,32 @@
         }
       },
       "free-tool/video-converter": {
-        "label": "비디오 변환"
+        "label": "비디오 변환",
+        "hint": "비디오 형식, 코덱 또는 해상도를 무료로 변환"
       },
       "free-tool/audio-converter": {
-        "label": "오디오 변환"
+        "label": "오디오 변환",
+        "hint": "MP3, WAV, FLAC 등 오디오 형식을 무료로 변환"
       },
       "free-tool/image-converter": {
-        "label": "이미지 변환"
+        "label": "이미지 변환",
+        "hint": "PNG, JPG, WebP 등 이미지 형식을 무료로 변환"
       },
       "free-tool/media-trimmer": {
-        "label": "미디어 트리머"
+        "label": "미디어 트리머",
+        "hint": "비디오 또는 오디오를 특정 시간 범위로 무료로 자르기"
       },
       "free-tool/media-merger": {
-        "label": "미디어 병합"
+        "label": "미디어 병합",
+        "hint": "여러 비디오 또는 오디오 클립을 무료로 하나로 병합"
+      },
+      "processing/concat": {
+        "label": "결합",
+        "hint": "여러 단일 값을 하나의 배열로 결합 (예: 이미지 → 이미지[])"
+      },
+      "processing/select": {
+        "label": "선택",
+        "hint": "배열에서 인덱스로 항목 하나를 선택"
       }
     },
     "modelSelector": {
@@ -1363,6 +1399,10 @@
           "costEstimate": "실행당 실시간 비용 추정으로 실행 전 항상 가격을 확인할 수 있습니다",
           "upstream": "상위 노드 출력(이미지, 텍스트)을 입력으로 연결 — 다단계 AI 파이프라인 구축"
         }
+      },
+      "concat": {
+        "title": "Concat 노드 — 여러 출력 병합",
+        "desc": "여러 이미지를 \"images\" 입력에 전달해야 하나요? Concat 노드를 사용하세요:\n\n1. 각 업스트림 노드의 image 출력을 Concat의 value1, value2, value3 등에 연결\n2. Concat의 output(배열)을 다운스트림 노드의 images 매개변수에 연결\n\n예시:\n[업로드 A] → image → Concat → output(배열) → [AI 작업].images\n[업로드 B] → image ↗\n\n이미지, 비디오, 텍스트 등 여러 단일 값을 하나의 배열 입력으로 결합해야 할 때 사용합니다."
       },
       "canvas": {
         "title": "캔버스 상호작용",

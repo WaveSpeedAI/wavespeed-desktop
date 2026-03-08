@@ -36,7 +36,9 @@
     "settings": "Impostazioni",
     "clearAll": "Cancella tutto",
     "add": "Add",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "showMore": "Mostra di più",
+    "showLess": "Mostra meno"
   },
   "nav": {
     "home": "Home",
@@ -117,6 +119,7 @@
     "type": "Tipo",
     "basePrice": "Prezzo base",
     "openInNewTab": "Apri in nuova scheda",
+    "replaceCurrentTab": "Sostituisci scheda corrente",
     "addToFavorites": "Aggiungi ai preferiti",
     "removeFromFavorites": "Rimuovi dai preferiti"
   },
@@ -262,7 +265,9 @@
       "less": "Meno"
     },
     "history": {
-      "title": "Cronologia"
+      "title": "Cronologia",
+      "openInNewTab": "Apri in una nuova scheda",
+      "useSettings": "Usa queste impostazioni"
     }
   },
   "history": {
@@ -314,7 +319,9 @@
     "downloadCompleteDesc": "{{count}} file scaricato/i",
     "downloadFailed": "Download fallito",
     "downloadFailedDesc": "{{count}} file non scaricato/i",
-    "longPressHint": "Tieni premuto per selezionare"
+    "longPressHint": "Tieni premuto per selezionare",
+    "openInPlayground": "Apri nel Playground",
+    "modelNotAvailable": "Il modello non è più disponibile"
   },
   "templates": {
     "title": "Template",
@@ -1135,6 +1142,10 @@
     "hideRun": "Nascondi questa esecuzione",
     "output": "Output",
     "outputLowercase": "Output",
+    "expandNode": "Espandi",
+    "collapseNode": "Comprimi",
+    "collapseAll": "Comprimi Tutto",
+    "expandAll": "Espandi Tutto",
     "invalidUrl": "URL non valida",
     "removeLast": "Rimuovi ultimo",
     "enterField": "Inserisci {{field}}...",
@@ -1156,6 +1167,7 @@
     "nodeDefs": {
       "ai-task/run": {
         "label": "WaveSpeed API",
+        "hint": "Esegui qualsiasi modello IA — immagini, video, audio e altro",
         "emptyHint": "Clicca su questo nodo, poi seleziona un modello →",
         "params": {
           "modelId": {
@@ -1165,6 +1177,7 @@
       },
       "input/media-upload": {
         "label": "Carica",
+        "hint": "Carica un'immagine, video o file audio come input della pipeline",
         "inputs": {
           "media": {
             "label": "Media"
@@ -1178,6 +1191,7 @@
       },
       "input/text-input": {
         "label": "Testo",
+        "hint": "Inserisci testo o un prompt da inviare ai nodi successivi",
         "params": {
           "text": {
             "label": "Testo"
@@ -1186,6 +1200,7 @@
       },
       "output/preview": {
         "label": "Anteprima",
+        "hint": "Anteprima del risultato direttamente sul canvas",
         "inputs": {
           "input": {
             "label": "URL"
@@ -1209,6 +1224,7 @@
       },
       "output/file": {
         "label": "Esporta file",
+        "hint": "Salva il risultato in un file locale",
         "inputs": {
           "url": {
             "label": "URL"
@@ -1236,25 +1252,32 @@
         }
       },
       "free-tool/image-enhancer": {
-        "label": "Migliora immagine"
+        "label": "Migliora immagine",
+        "hint": "Ingrandisci e migliora le immagini (2×–4×) gratis"
       },
       "free-tool/background-remover": {
-        "label": "Rimuovi sfondo"
+        "label": "Rimuovi sfondo",
+        "hint": "Rimuovi automaticamente lo sfondo delle immagini gratis"
       },
       "free-tool/face-enhancer": {
-        "label": "Migliora volto"
+        "label": "Migliora volto",
+        "hint": "Migliora e ripristina i volti nelle foto gratis"
       },
       "free-tool/video-enhancer": {
-        "label": "Migliora video"
+        "label": "Migliora video",
+        "hint": "Ingrandisci e migliora la qualità video gratis"
       },
       "free-tool/face-swapper": {
-        "label": "Scambio volto"
+        "label": "Scambio volto",
+        "hint": "Scambia un volto da un'immagine a un'altra gratis"
       },
       "free-tool/image-eraser": {
-        "label": "Cancella immagine"
+        "label": "Cancella immagine",
+        "hint": "Cancella oggetti dalle immagini usando una maschera gratis"
       },
       "free-tool/segment-anything": {
         "label": "Segmenta qualsiasi cosa",
+        "hint": "Genera una maschera per qualsiasi oggetto in un'immagine gratis",
         "params": {
           "pointX": {
             "label": "Punto X",
@@ -1270,19 +1293,32 @@
         }
       },
       "free-tool/video-converter": {
-        "label": "Convertitore video"
+        "label": "Convertitore video",
+        "hint": "Converti formato, codec o risoluzione video gratis"
       },
       "free-tool/audio-converter": {
-        "label": "Convertitore audio"
+        "label": "Convertitore audio",
+        "hint": "Converti audio tra MP3, WAV, FLAC e altri gratis"
       },
       "free-tool/image-converter": {
-        "label": "Convertitore immagini"
+        "label": "Convertitore immagini",
+        "hint": "Converti immagini tra PNG, JPG, WebP e altri gratis"
       },
       "free-tool/media-trimmer": {
-        "label": "Tagliatore media"
+        "label": "Tagliatore media",
+        "hint": "Taglia video o audio a un intervallo di tempo specifico gratis"
       },
       "free-tool/media-merger": {
-        "label": "Unione media"
+        "label": "Unione media",
+        "hint": "Unisci più clip video o audio in uno solo gratis"
+      },
+      "processing/concat": {
+        "label": "Concatena",
+        "hint": "Combina più valori singoli in un array (es. immagini → immagini[])"
+      },
+      "processing/select": {
+        "label": "Seleziona",
+        "hint": "Scegli un elemento da un array per indice"
       }
     },
     "modelSelector": {
@@ -1392,6 +1428,10 @@
           "costEstimate": "Stima dei costi in tempo reale per ogni esecuzione, cosi conosci sempre il prezzo prima di avviare",
           "upstream": "Collega gli output dei nodi a monte (immagini, testo) come input — crea pipeline AI multi-step"
         }
+      },
+      "concat": {
+        "title": "Nodo Concat — Unisci più output",
+        "desc": "Devi passare più immagini a un input \"images\"? Usa il nodo Concat:\n\n1. Collega l'output image di ogni nodo a monte a value1, value2, value3, ecc. di Concat\n2. Collega l'output di Concat (ora un array) al parametro images del nodo a valle\n\nEsempio:\n[Upload A] → image → Concat → output (array) → [Task AI].images\n[Upload B] → image ↗\n\nFunziona per qualsiasi tipo di output — immagini, video, testo — ogni volta che devi combinare più valori singoli in un unico input array."
       },
       "canvas": {
         "title": "Interazioni della canvas",

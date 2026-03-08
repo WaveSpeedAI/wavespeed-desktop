@@ -36,7 +36,9 @@
     "settings": "Settings",
     "clearAll": "Clear All",
     "add": "Add",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "showMore": "Show more",
+    "showLess": "Show less"
   },
   "nav": {
     "home": "Home",
@@ -118,6 +120,7 @@
     "type": "Type",
     "basePrice": "Base price",
     "openInNewTab": "Open in new tab",
+    "replaceCurrentTab": "Replace current tab",
     "addToFavorites": "Add to favorites",
     "removeFromFavorites": "Remove from favorites"
   },
@@ -268,7 +271,9 @@
       "less": "Less"
     },
     "history": {
-      "title": "History"
+      "title": "History",
+      "openInNewTab": "Open in New Tab",
+      "useSettings": "Use These Settings"
     },
     "rightPanel": {
       "explore": "Explore",
@@ -340,7 +345,9 @@
       "success": "Template Saved",
       "successDesc": "You can use it from the templates page",
       "error": "Failed to save template"
-    }
+    },
+    "openInPlayground": "Open in Playground",
+    "modelNotAvailable": "Model is no longer available"
   },
   "templates": {
     "title": "Templates",
@@ -1196,6 +1203,10 @@
     "hideRun": "Hide this run",
     "output": "Output",
     "outputLowercase": "output",
+    "expandNode": "Expand",
+    "collapseNode": "Collapse",
+    "collapseAll": "Collapse All",
+    "expandAll": "Expand All",
     "invalidUrl": "Invalid URL",
     "removeLast": "Remove last",
     "enterField": "Enter {{field}}...",
@@ -1217,6 +1228,7 @@
     "nodeDefs": {
       "ai-task/run": {
         "label": "WaveSpeed API",
+        "hint": "Run any AI model on the platform — image, video, audio, and more",
         "emptyHint": "Click this node, then select a model →",
         "params": {
           "modelId": {
@@ -1226,6 +1238,7 @@
       },
       "input/media-upload": {
         "label": "Upload",
+        "hint": "Upload an image, video, or audio file as pipeline input",
         "inputs": {
           "media": {
             "label": "Media"
@@ -1239,6 +1252,7 @@
       },
       "input/text-input": {
         "label": "Text",
+        "hint": "Enter text or a prompt to feed into downstream nodes",
         "params": {
           "text": {
             "label": "Text"
@@ -1247,6 +1261,7 @@
       },
       "output/preview": {
         "label": "Preview",
+        "hint": "Preview the result directly on the canvas",
         "inputs": {
           "input": {
             "label": "URL"
@@ -1270,6 +1285,7 @@
       },
       "output/file": {
         "label": "File Export",
+        "hint": "Save the result to a local file",
         "inputs": {
           "url": {
             "label": "URL"
@@ -1297,25 +1313,32 @@
         }
       },
       "free-tool/image-enhancer": {
-        "label": "Image Enhancer"
+        "label": "Image Enhancer",
+        "hint": "Upscale and sharpen images (2×–4×) for free"
       },
       "free-tool/background-remover": {
-        "label": "Background Remover"
+        "label": "Background Remover",
+        "hint": "Remove image backgrounds automatically for free"
       },
       "free-tool/face-enhancer": {
-        "label": "Face Enhancer"
+        "label": "Face Enhancer",
+        "hint": "Enhance and restore faces in photos for free"
       },
       "free-tool/video-enhancer": {
-        "label": "Video Enhancer"
+        "label": "Video Enhancer",
+        "hint": "Upscale and enhance video quality for free"
       },
       "free-tool/face-swapper": {
-        "label": "Face Swapper"
+        "label": "Face Swapper",
+        "hint": "Swap a face from one image onto another for free"
       },
       "free-tool/image-eraser": {
-        "label": "Image Eraser"
+        "label": "Image Eraser",
+        "hint": "Erase objects from images using a mask for free"
       },
       "free-tool/segment-anything": {
         "label": "Segment Anything",
+        "hint": "Generate a mask for any object in an image for free",
         "params": {
           "pointX": {
             "label": "Point X",
@@ -1331,19 +1354,32 @@
         }
       },
       "free-tool/video-converter": {
-        "label": "Video Converter"
+        "label": "Video Converter",
+        "hint": "Convert video format, codec, or resolution for free"
       },
       "free-tool/audio-converter": {
-        "label": "Audio Converter"
+        "label": "Audio Converter",
+        "hint": "Convert audio between MP3, WAV, FLAC, and more for free"
       },
       "free-tool/image-converter": {
-        "label": "Image Converter"
+        "label": "Image Converter",
+        "hint": "Convert images between PNG, JPG, WebP, and more for free"
       },
       "free-tool/media-trimmer": {
-        "label": "Media Trimmer"
+        "label": "Media Trimmer",
+        "hint": "Trim video or audio to a specific time range for free"
       },
       "free-tool/media-merger": {
-        "label": "Media Merger"
+        "label": "Media Merger",
+        "hint": "Merge multiple video or audio clips into one for free"
+      },
+      "processing/concat": {
+        "label": "Concat",
+        "hint": "Combine multiple single values into one array (e.g. images → images[])"
+      },
+      "processing/select": {
+        "label": "Select",
+        "hint": "Pick one item from an array by index"
       }
     },
     "modelSelector": {
@@ -1423,6 +1459,10 @@
           "costEstimate": "Real-time cost estimation per execution, so you always know the price before running",
           "upstream": "Connect upstream node outputs (images, text) as inputs — build multi-step AI pipelines"
         }
+      },
+      "concat": {
+        "title": "Concat Node — Merge Multiple Outputs",
+        "desc": "Need to pass multiple images into an \"images\" input? Use the Concat node:\n\n1. Connect each upstream node's image output to Concat's value1, value2, value3, etc.\n2. Connect Concat's output (now an array) to the downstream node's images parameter.\n\nExample:\n[Upload A] → image → Concat → output (array) → [AI Task].images\n[Upload B] → image ↗\n\nThis works for any type of output — images, videos, text — whenever you need to combine multiple single values into one array input."
       },
       "canvas": {
         "title": "Canvas Interactions",

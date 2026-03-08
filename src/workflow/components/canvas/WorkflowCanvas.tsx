@@ -43,6 +43,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
+import { ChevronsDownUp, ChevronsUpDown } from "lucide-react";
 
 const CATEGORY_ORDER: NodeCategory[] = [
   "ai-task",
@@ -89,6 +90,27 @@ function CanvasZoomControls() {
   const setInteractionMode = useUIStore((s) => s.setInteractionMode);
   const showGrid = useUIStore((s) => s.showGrid);
   const toggleGrid = useUIStore((s) => s.toggleGrid);
+  const nodes = useWorkflowStore((s) => s.nodes);
+  const updateNodeParams = useWorkflowStore((s) => s.updateNodeParams);
+
+  // Check if any non-annotation node is currently expanded (not collapsed)
+  const hasExpandedNodes = nodes.some(
+    (n) => n.type !== "annotation" && !n.data?.params?.__nodeCollapsed,
+  );
+
+  const toggleAllCollapsed = useCallback(() => {
+    const shouldCollapse = hasExpandedNodes;
+    for (const n of nodes) {
+      if (n.type === "annotation") continue;
+      const current = Boolean(n.data?.params?.__nodeCollapsed);
+      if (current !== shouldCollapse) {
+        updateNodeParams(n.id, {
+          ...n.data.params,
+          __nodeCollapsed: shouldCollapse,
+        });
+      }
+    }
+  }, [nodes, hasExpandedNodes, updateNodeParams]);
   return (
     <div
       className="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex flex-col rounded-lg border border-border bg-card shadow-lg overflow-hidden"
@@ -170,8 +192,8 @@ function CanvasZoomControls() {
         </TooltipTrigger>
         <TooltipContent side="left">
           {interactionMode === "select"
-            ? t("workflow.selectMode", "Select (V)")
-            : t("workflow.handMode", "Hand (H)")}
+            ? t("workflow.selectMode", "Select (V / Space)")
+            : t("workflow.handMode", "Hand (H / Space)")}
         </TooltipContent>
       </Tooltip>
       <div className="h-px bg-border" />
@@ -203,6 +225,27 @@ function CanvasZoomControls() {
         </TooltipTrigger>
         <TooltipContent side="left">
           {t("workflow.zoomOut", "Zoom out")}
+        </TooltipContent>
+      </Tooltip>
+      {/* Collapse / Expand all nodes */}
+      <Tooltip delayDuration={0}>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            onClick={toggleAllCollapsed}
+            className="flex items-center justify-center w-9 h-9 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors border-t border-border"
+          >
+            {hasExpandedNodes ? (
+              <ChevronsDownUp className="w-[15px] h-[15px]" />
+            ) : (
+              <ChevronsUpDown className="w-[15px] h-[15px]" />
+            )}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="left">
+          {hasExpandedNodes
+            ? t("workflow.collapseAll", "Collapse All")
+            : t("workflow.expandAll", "Expand All")}
         </TooltipContent>
       </Tooltip>
       <div className="h-px bg-border" />
@@ -399,7 +442,7 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
         event.preventDefault();
         redo();
       }
-      // V = Select mode, H = Hand (pan) mode
+      // V = Select mode, H = Hand (pan) mode, Space = Toggle
       if (event.key === "v" || event.key === "V") {
         if (!ctrlOrCmd) {
           setInteractionMode("select");
@@ -409,6 +452,11 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
         if (!ctrlOrCmd) {
           setInteractionMode("hand");
         }
+      }
+      if (event.key === " ") {
+        event.preventDefault();
+        const current = useUIStore.getState().interactionMode;
+        setInteractionMode(current === "select" ? "hand" : "select");
       }
       if (ctrlOrCmd && event.key === "v") {
         event.preventDefault();
@@ -454,6 +502,47 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
     recordRecentNodeType,
     onNodesChange,
   ]);
+
+  // Touch gesture handling: 2 fingers = pan, 3 fingers = select, pinch = zoom (native)
+  useEffect(() => {
+    const wrapper = reactFlowWrapper.current;
+    if (!wrapper) return;
+
+    let modeBeforeTouch: "select" | "hand" | null = null;
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length >= 3) {
+        // 3+ fingers → select mode
+        modeBeforeTouch = useUIStore.getState().interactionMode;
+        if (modeBeforeTouch !== "select") {
+          setInteractionMode("select");
+        }
+      } else if (e.touches.length === 2) {
+        // 2 fingers → pan mode (pinch zoom handled natively by ReactFlow)
+        modeBeforeTouch = useUIStore.getState().interactionMode;
+        if (modeBeforeTouch !== "hand") {
+          setInteractionMode("hand");
+        }
+      }
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      // Restore previous mode when all fingers are lifted
+      if (e.touches.length === 0 && modeBeforeTouch !== null) {
+        setInteractionMode(modeBeforeTouch);
+        modeBeforeTouch = null;
+      }
+    };
+
+    wrapper.addEventListener("touchstart", onTouchStart, { passive: true });
+    wrapper.addEventListener("touchend", onTouchEnd, { passive: true });
+    wrapper.addEventListener("touchcancel", onTouchEnd, { passive: true });
+    return () => {
+      wrapper.removeEventListener("touchstart", onTouchStart);
+      wrapper.removeEventListener("touchend", onTouchEnd);
+      wrapper.removeEventListener("touchcancel", onTouchEnd);
+    };
+  }, [setInteractionMode]);
 
   const onConnect = useCallback(
     (connection: Connection) => addEdge(connection),
@@ -1128,6 +1217,7 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
           selectionMode={SelectionMode.Partial}
           multiSelectionKeyCode="Shift"
           panOnDrag={interactionMode === "hand"}
+          panOnScroll
           deleteKeyCode={null}
           minZoom={0.05}
           maxZoom={2.5}

@@ -44,9 +44,11 @@ const mobileDownload = async (
   try {
     // Dynamic imports for Capacitor modules (vite-ignore to prevent desktop build errors)
     const { CapacitorHttp } = await import(
+      // @ts-expect-error -- Capacitor only available in mobile builds
       /* @vite-ignore */ "@capacitor/core"
     );
     const { Filesystem, Directory } = await import(
+      // @ts-expect-error -- Capacitor only available in mobile builds
       /* @vite-ignore */ "@capacitor/filesystem"
     );
 
@@ -168,7 +170,13 @@ export function BatchOutputGrid({
   const autoSavedIndexesRef = useRef<Set<number>>(new Set());
   const prevRunningRef = useRef(false);
 
-  const { saveAsset, settings, hasAssetForPrediction } = useAssetsStore();
+  const { saveAsset, settings, loadSettings, hasAssetForPrediction } =
+    useAssetsStore();
+
+  // Ensure settings are loaded (auto-save depends on settings.autoSaveAssets)
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
 
   const completedResults = results.filter((r) => !r.error);
   const completedCount = completedResults.length;

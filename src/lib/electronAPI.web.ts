@@ -1,7 +1,7 @@
 // Web mock implementation of electronAPI.
 // Provides Electron API-compatible interfaces in browser environments.
 
-import type { ElectronAPI } from "@/types/electron";
+import type { ElectronAPI, DownloadResult } from "@/types/electron";
 
 // Check whether we are running in a browser environment.
 const isBrowser = typeof window !== "undefined" && !window.electronAPI;
@@ -37,6 +37,12 @@ export const electronAPIWeb: ElectronAPI = {
       return false;
     }
   },
+
+  saveFileSilent: async (): Promise<DownloadResult> => {
+    return { success: false };
+  },
+
+  updateTitlebarTheme: async (): Promise<void> => {},
 
   // Settings management
   getSettings: async () => {

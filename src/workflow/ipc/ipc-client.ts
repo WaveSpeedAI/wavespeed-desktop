@@ -15,10 +15,7 @@ import type {
   ApiKeyConfig,
 } from "@/workflow/types/ipc";
 import type { Workflow } from "@/workflow/types/workflow";
-import type {
-  NodeExecutionRecord,
-  EdgeStatus,
-} from "@/workflow/types/execution";
+import type { NodeExecutionRecord } from "@/workflow/types/execution";
 import type {
   NodeTypeDefinition,
   WaveSpeedModel,
@@ -81,10 +78,10 @@ export const historyIpc = {
     invoke("history:list", { nodeId }),
   /** Delete a single execution record and its local result files */
   delete: (executionId: string): Promise<void> =>
-    invoke("history:delete", { executionId }),
+    rawInvoke("history:delete", { executionId }) as Promise<void>,
   /** Delete ALL execution records for a node and their local result files */
   deleteAll: (nodeId: string): Promise<void> =>
-    invoke("history:delete-all", { nodeId }),
+    rawInvoke("history:delete-all", { nodeId }) as Promise<void>,
   setCurrent: (nodeId: string, executionId: string): Promise<void> =>
     invoke("history:set-current", { nodeId, executionId }),
   star: (executionId: string, starred: boolean): Promise<void> =>

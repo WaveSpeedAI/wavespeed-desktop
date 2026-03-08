@@ -28,6 +28,7 @@ import type { NodeStatus } from "@/workflow/types/execution";
 import type { WaveSpeedModel } from "@/workflow/types/node-defs";
 import type { FormFieldConfig } from "@/lib/schemaToForm";
 
+import { ChevronDown, ChevronUp } from "lucide-react";
 import {
   type CustomNodeData,
   MIN_NODE_WIDTH,
@@ -75,6 +76,20 @@ function CustomNodeComponent({
   const [resizing, setResizing] = useState(false);
   const { getViewport, setNodes } = useReactFlow();
   const shortId = id.slice(0, 8);
+  const collapsed =
+    (data.params?.__nodeCollapsed as boolean | undefined) ?? false;
+  const setCollapsed = useCallback(
+    (value: boolean) =>
+      updateNodeParams(id, { ...data.params, __nodeCollapsed: value }),
+    [id, data.params, updateNodeParams],
+  );
+  const toggleCollapsed = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setCollapsed(!collapsed);
+    },
+    [collapsed, setCollapsed],
+  );
   const NodeIcon = getNodeIcon(data.nodeType);
   const nodeLabel =
     data.nodeType === "ai-task/run"
@@ -707,6 +722,22 @@ function CustomNodeComponent({
                     : "bg-[hsl(var(--muted-foreground))] opacity-30"
           }`}
           />
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            className="nodrag nopan flex-shrink-0 p-1 rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+            title={
+              collapsed
+                ? t("workflow.expandNode", "Expand")
+                : t("workflow.collapseNode", "Collapse")
+            }
+          >
+            {collapsed ? (
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            ) : (
+              <ChevronUp className="w-4 h-4 text-muted-foreground" />
+            )}
+          </button>
           {NodeIcon && (
             <div className="rounded-md bg-primary/10 p-1 flex-shrink-0">
               <NodeIcon className="w-3.5 h-3.5 text-primary" />
@@ -719,7 +750,6 @@ function CustomNodeComponent({
             {shortId}
           </span>
         </div>
-
         {/* ── Running status bar ── */}
         {running && (
           <div className="px-3 py-1.5 bg-blue-500/5">
@@ -799,7 +829,7 @@ function CustomNodeComponent({
           </div>
         )}
 
-        {/* ── Body ───────────────────────────────────────────────────── */}
+        {/* ── Body (full when expanded; only connected rows when collapsed) ────────────── */}
         <CustomNodeBody
           id={id}
           data={data}
@@ -843,6 +873,7 @@ function CustomNodeComponent({
           inlinePreviewIs3D={inlinePreviewIs3D}
           resultsExpanded={resultsExpanded}
           setResultsExpanded={setResultsExpanded}
+          collapsed={collapsed}
         />
 
         {/* ── Resize handles — 4 edges + 4 corners ────────────────── */}

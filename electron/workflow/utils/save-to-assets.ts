@@ -98,6 +98,10 @@ function detectAssetType(url: string): "image" | "video" | "audio" | null {
   if (/\.(jpg|jpeg|png|gif|webp|bmp|svg|avif)$/.test(cleaned)) return "image";
   if (/\.(mp4|webm|mov|avi|mkv)$/.test(cleaned)) return "video";
   if (/\.(mp3|wav|ogg|flac|aac|m4a|wma)$/.test(cleaned)) return "audio";
+  // Fallback: infer from URL path segments for CDN URLs without extensions
+  if (/\/(image|img)[s]?\//i.test(cleaned)) return "image";
+  if (/\/(video|vid)[s]?\//i.test(cleaned)) return "video";
+  if (/\/(audio|sound)[s]?\//i.test(cleaned)) return "audio";
   return null;
 }
 
@@ -112,27 +116,55 @@ function guessExt(url: string): string {
   return ".png";
 }
 
-/** Download a remote URL to a local file path. Returns true on success. */
+/** Download a remote URL to a local file path. Uses .download temp file, renames on completion. */
 function downloadToFile(url: string, destPath: string): Promise<boolean> {
+  const tempPath = destPath + ".download";
   return new Promise((resolve) => {
     const proto = url.startsWith("https") ? https : http;
-    const file = createWriteStream(destPath);
+    const file = createWriteStream(tempPath);
+
+    const finalize = () => {
+      file.close();
+      try {
+        require("fs").renameSync(tempPath, destPath);
+        resolve(true);
+      } catch {
+        resolve(false);
+      }
+    };
+
+    const cleanup = () => {
+      file.close();
+      try {
+        if (existsSync(tempPath)) require("fs").unlinkSync(tempPath);
+      } catch {
+        /* best-effort */
+      }
+      resolve(false);
+    };
+
     const handleResponse = (response: http.IncomingMessage) => {
       if (response.statusCode === 301 || response.statusCode === 302) {
         const loc = response.headers.location;
         if (loc) {
           const rp = loc.startsWith("https") ? https : http;
-          rp.get(loc, handleResponse).on("error", () => resolve(false));
+          rp.get(loc, handleResponse).on("error", cleanup);
           return;
         }
       }
+      // Reject non-2xx responses to avoid saving error pages as assets
+      if (
+        response.statusCode &&
+        (response.statusCode < 200 || response.statusCode >= 300)
+      ) {
+        response.resume();
+        cleanup();
+        return;
+      }
       response.pipe(file);
-      file.on("finish", () => {
-        file.close();
-        resolve(true);
-      });
+      file.on("finish", finalize);
     };
-    proto.get(url, handleResponse).on("error", () => resolve(false));
+    proto.get(url, handleResponse).on("error", cleanup);
   });
 }
 

@@ -36,7 +36,9 @@
     "settings": "設定",
     "clearAll": "全部清除",
     "add": "Add",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "showMore": "顯示更多",
+    "showLess": "收起"
   },
   "nav": {
     "home": "首頁",
@@ -117,6 +119,7 @@
     "type": "類型",
     "basePrice": "基礎價格",
     "openInNewTab": "在新分頁開啟",
+    "replaceCurrentTab": "替換當前分頁",
     "addToFavorites": "加入收藏",
     "removeFromFavorites": "取消收藏"
   },
@@ -262,7 +265,9 @@
       "less": "收起"
     },
     "history": {
-      "title": "歷史記錄"
+      "title": "歷史記錄",
+      "openInNewTab": "在新分頁開啟",
+      "useSettings": "使用此設定"
     }
   },
   "history": {
@@ -314,7 +319,9 @@
     "downloadCompleteDesc": "已下載 {{count}} 個檔案",
     "downloadFailed": "下載失敗",
     "downloadFailedDesc": "{{count}} 個檔案下載失敗",
-    "longPressHint": "長按選擇"
+    "longPressHint": "長按選擇",
+    "openInPlayground": "在 Playground 中開啟",
+    "modelNotAvailable": "模型已不可用"
   },
   "templates": {
     "title": "範本",
@@ -1093,6 +1100,10 @@
     "pointsLabel": "分割點",
     "output": "輸出",
     "outputLowercase": "輸出",
+    "expandNode": "展開",
+    "collapseNode": "收合",
+    "collapseAll": "全部收合",
+    "expandAll": "全部展開",
     "invalidUrl": "無效 URL",
     "removeLast": "移除最後一項",
     "enterField": "輸入 {{field}}...",
@@ -1121,6 +1132,7 @@
     "nodeDefs": {
       "ai-task/run": {
         "label": "WaveSpeed API",
+        "hint": "運行平台上的任意 AI 模型——圖片、影片、音訊等",
         "emptyHint": "點擊此節點，然後選擇模型 →",
         "params": {
           "modelId": {
@@ -1130,6 +1142,7 @@
       },
       "input/media-upload": {
         "label": "上傳",
+        "hint": "上傳圖片、影片或音訊檔案作為流水線輸入",
         "inputs": {
           "media": {
             "label": "媒體"
@@ -1143,6 +1156,7 @@
       },
       "input/text-input": {
         "label": "文字",
+        "hint": "輸入文字或提示詞，傳遞給下游節點",
         "params": {
           "text": {
             "label": "文字"
@@ -1151,6 +1165,7 @@
       },
       "output/preview": {
         "label": "預覽",
+        "hint": "在畫布上直接預覽結果",
         "inputs": {
           "input": {
             "label": "URL"
@@ -1174,6 +1189,7 @@
       },
       "output/file": {
         "label": "檔案匯出",
+        "hint": "將結果儲存為本機檔案",
         "inputs": {
           "url": {
             "label": "URL"
@@ -1201,25 +1217,32 @@
         }
       },
       "free-tool/image-enhancer": {
-        "label": "圖片增強"
+        "label": "圖片增強",
+        "hint": "免費放大和銳化圖片（2×–4×）"
       },
       "free-tool/background-remover": {
-        "label": "背景移除"
+        "label": "背景移除",
+        "hint": "免費自動移除圖片背景"
       },
       "free-tool/face-enhancer": {
-        "label": "人臉增強"
+        "label": "人臉增強",
+        "hint": "免費增強和修復照片中的人臉"
       },
       "free-tool/video-enhancer": {
-        "label": "影片增強"
+        "label": "影片增強",
+        "hint": "免費提升影片畫質和解析度"
       },
       "free-tool/face-swapper": {
-        "label": "換臉"
+        "label": "換臉",
+        "hint": "免費將一張圖片的人臉替換到另一張上"
       },
       "free-tool/image-eraser": {
-        "label": "圖像擦除"
+        "label": "圖像擦除",
+        "hint": "免費使用遮罩擦除圖片中的物體"
       },
       "free-tool/segment-anything": {
         "label": "智慧分割",
+        "hint": "免費為圖片中的任意物體生成遮罩",
         "params": {
           "pointX": {
             "label": "點 X",
@@ -1235,19 +1258,32 @@
         }
       },
       "free-tool/video-converter": {
-        "label": "影片轉換"
+        "label": "影片轉換",
+        "hint": "免費轉換影片格式、編碼或解析度"
       },
       "free-tool/audio-converter": {
-        "label": "音訊轉換"
+        "label": "音訊轉換",
+        "hint": "免費在 MP3、WAV、FLAC 等格式間轉換"
       },
       "free-tool/image-converter": {
-        "label": "圖片轉換"
+        "label": "圖片轉換",
+        "hint": "免費在 PNG、JPG、WebP 等格式間轉換"
       },
       "free-tool/media-trimmer": {
-        "label": "媒體裁剪"
+        "label": "媒體裁剪",
+        "hint": "免費將影片或音訊裁剪到指定時間段"
       },
       "free-tool/media-merger": {
-        "label": "媒體合併"
+        "label": "媒體合併",
+        "hint": "免費將多個影片或音訊片段合併為一個"
+      },
+      "processing/concat": {
+        "label": "合併",
+        "hint": "將多個單值合併為一個陣列（如多個 image → images[]）"
+      },
+      "processing/select": {
+        "label": "選擇",
+        "hint": "按索引從陣列中取出一個元素"
       }
     },
     "modelSelector": {
@@ -1394,6 +1430,10 @@
           "costEstimate": "每次執行即時成本估算，執行前就能掌握價格",
           "upstream": "將上游節點輸出（圖像、文字）連接為輸入——建立多步驟 AI 流水線"
         }
+      },
+      "concat": {
+        "title": "Concat 節點 — 合併多個輸出",
+        "desc": "需要將多張圖片傳入「images」參數？使用 Concat 節點：\n\n1. 將每個上游節點的 image 輸出分別連接到 Concat 的 value1、value2、value3 等輸入口\n2. 將 Concat 的 output（此時為陣列）連接到下游節點的 images 參數\n\n範例：\n[上傳 A] → image → Concat → output（陣列）→ [AI 任務].images\n[上傳 B] → image ↗\n\n適用於任何類型的輸出——圖片、影片、文字——只要你需要將多個單值合併為一個陣列輸入。"
       },
       "canvas": {
         "title": "畫布操作",

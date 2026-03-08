@@ -329,16 +329,54 @@ export function FileUpload({
             const hasImageExt = url.match(/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i);
             const hasVideoExt = url.match(/\.(mp4|webm|mov|avi|mkv)(\?.*)?$/i);
             const hasAudioExt = url.match(/\.(mp3|wav|ogg|webm|m4a)(\?.*)?$/i);
+            // For local-asset:// URLs, decode first then check extension
+            const decodedUrl = /^local-asset:\/\//i.test(url)
+              ? decodeURIComponent(url)
+              : url;
+            const hasImageExtDecoded = decodedUrl.match(
+              /\.(jpg|jpeg|png|gif|webp|bmp|svg|avif)(\?.*)?$/i,
+            );
+            const hasVideoExtDecoded = decodedUrl.match(
+              /\.(mp4|webm|mov|avi|mkv)(\?.*)?$/i,
+            );
+            const hasAudioExtDecoded = decodedUrl.match(
+              /\.(mp3|wav|ogg|flac|aac|m4a)(\?.*)?$/i,
+            );
+            const acceptAll = accept === "*/*";
             // Fallback: if accept type matches but URL has no recognized extension, trust accept
             const isImage =
-              accept.includes("image") &&
-              (hasImageExt || (!hasVideoExt && !hasAudioExt));
+              hasImageExt || hasImageExtDecoded
+                ? true
+                : hasVideoExt ||
+                    hasVideoExtDecoded ||
+                    hasAudioExt ||
+                    hasAudioExtDecoded
+                  ? false
+                  : acceptAll
+                    ? false
+                    : accept.includes("image");
             const isVideo =
-              accept.includes("video") &&
-              (hasVideoExt || (!hasImageExt && !hasAudioExt));
+              hasVideoExt || hasVideoExtDecoded
+                ? true
+                : hasImageExt ||
+                    hasImageExtDecoded ||
+                    hasAudioExt ||
+                    hasAudioExtDecoded
+                  ? false
+                  : acceptAll
+                    ? false
+                    : accept.includes("video");
             const isAudio =
-              accept.includes("audio") &&
-              (hasAudioExt || (!hasImageExt && !hasVideoExt));
+              hasAudioExt || hasAudioExtDecoded
+                ? true
+                : hasImageExt ||
+                    hasImageExtDecoded ||
+                    hasVideoExt ||
+                    hasVideoExtDecoded
+                  ? false
+                  : acceptAll
+                    ? false
+                    : accept.includes("audio");
 
             const handlePreview = () => {
               setPreviewUrl(url);

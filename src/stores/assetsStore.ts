@@ -58,15 +58,22 @@ function getSubDir(type: AssetType): string {
 // Helper to detect asset type from URL
 export function detectAssetType(url: string): AssetType | null {
   const ext = getExtensionFromUrl(url);
-  if (!ext) return null;
+  if (ext) {
+    const imageExts = ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg"];
+    const videoExts = ["mp4", "webm", "mov", "avi", "mkv"];
+    const audioExts = ["mp3", "wav", "ogg", "flac", "aac", "m4a", "wma"];
 
-  const imageExts = ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg"];
-  const videoExts = ["mp4", "webm", "mov", "avi", "mkv"];
-  const audioExts = ["mp3", "wav", "ogg", "flac", "aac", "m4a", "wma"];
+    if (imageExts.includes(ext)) return "image";
+    if (videoExts.includes(ext)) return "video";
+    if (audioExts.includes(ext)) return "audio";
+  }
 
-  if (imageExts.includes(ext)) return "image";
-  if (videoExts.includes(ext)) return "video";
-  if (audioExts.includes(ext)) return "audio";
+  // Fallback: infer from URL path segments for CDN URLs without extensions
+  // e.g. https://cdn.example.com/outputs/.../result
+  const lower = url.toLowerCase();
+  if (/\/(image|img)[s]?\//i.test(lower)) return "image";
+  if (/\/(video|vid)[s]?\//i.test(lower)) return "video";
+  if (/\/(audio|sound)[s]?\//i.test(lower)) return "audio";
 
   return null;
 }

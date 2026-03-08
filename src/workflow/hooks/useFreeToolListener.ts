@@ -176,9 +176,9 @@ export function useFreeToolListener(): void {
 
     const api = getApi();
     if (!api) return;
-    api.on("free-tool:execute", handler);
+    api.on("free-tool:execute", handler as any);
     return () => {
-      api.removeListener("free-tool:execute", handler);
+      api.removeListener("free-tool:execute", handler as any);
     };
   }, []);
 }

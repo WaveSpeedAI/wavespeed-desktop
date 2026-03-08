@@ -52,7 +52,7 @@ function parseInputSchema(apiSchema: Model["api_schema"]): ModelParamSchema[] {
       const properties = components.schemas.Request.properties;
       const required = components.schemas.Request.required ?? [];
       return parseProperties(
-        properties as Record<string, Record<string, unknown>>,
+        properties as unknown as Record<string, Record<string, unknown>>,
         required,
       );
     }
@@ -64,7 +64,7 @@ function parseInputSchema(apiSchema: Model["api_schema"]): ModelParamSchema[] {
   const orderProperties = requestSchema["x-order-properties"];
 
   let result = parseProperties(
-    properties as Record<string, Record<string, unknown>>,
+    properties as unknown as Record<string, Record<string, unknown>>,
     required,
   );
 
@@ -266,6 +266,7 @@ export function formFieldsToModelParamSchema(
   return fields.map((f) => {
     const base: ModelParamSchema = {
       name: f.name,
+      type: "string",
       label: f.label,
       description: f.description,
       default: f.default,

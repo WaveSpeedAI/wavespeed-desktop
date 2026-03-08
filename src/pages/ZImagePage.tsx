@@ -153,11 +153,14 @@ export function ZImagePage() {
   const modelDownloaderRef = useRef<ChunkedDownloader | null>(null);
   const isCancelledRef = useRef(false);
 
-  // Initialize on mount
+  // Initialize on mount — defer IPC calls to avoid blocking first paint
   useEffect(() => {
     if (electronAvailable) {
-      fetchSDModels();
-      checkAuxiliaryModels();
+      const timer = setTimeout(() => {
+        fetchSDModels();
+        checkAuxiliaryModels();
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [electronAvailable, fetchSDModels, checkAuxiliaryModels]);
 
@@ -522,7 +525,7 @@ export function ZImagePage() {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="px-4 md:px-6 py-4 border-b">
+      <div className="px-4 md:px-6 py-4 border-b animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both">
         <div className="flex flex-col gap-1.5 md:flex-row md:items-baseline md:gap-3">
           <h1 className="text-xl md:text-2xl font-bold tracking-tight flex items-center gap-2">
             <Zap className="h-5 w-5 text-primary" />
@@ -559,7 +562,10 @@ export function ZImagePage() {
       </div>
 
       {/* Content - Two Column Layout (Desktop) / Single Column (Mobile) */}
-      <div className="flex flex-1 overflow-hidden">
+      <div
+        className="flex flex-1 overflow-hidden animate-in fade-in duration-300 fill-mode-both"
+        style={{ animationDelay: "80ms" }}
+      >
         {/* Left Panel - Form */}
         <div
           className={`w-full md:w-[420px] flex flex-col md:border-r bg-muted/30 ${mobileView === "config" ? "flex" : "hidden md:flex"}`}

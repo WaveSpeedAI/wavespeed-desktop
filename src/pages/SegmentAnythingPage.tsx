@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect, useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { PageResetContext } from "@/components/layout/PageResetContext";
 import { useTranslation } from "react-i18next";
+import { usePageActive } from "@/hooks/usePageActive";
 import { generateFreeToolFilename } from "@/stores/assetsStore";
 import {
   useSegmentAnythingWorker,
@@ -66,6 +67,7 @@ export function SegmentAnythingPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const isActive = usePageActive("/free-tools/segment-anything");
   const { resetPage } = useContext(PageResetContext);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
@@ -172,6 +174,7 @@ export function SegmentAnythingPage() {
 
   // Measure available container size on mount and window resize
   useEffect(() => {
+    if (!isActive) return;
     const updateContainerSize = () => {
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
@@ -183,7 +186,7 @@ export function SegmentAnythingPage() {
     updateContainerSize();
     window.addEventListener("resize", updateContainerSize);
     return () => window.removeEventListener("resize", updateContainerSize);
-  }, []);
+  }, [isActive]);
 
   // Recalculate canvas size when container or image changes
   useEffect(() => {
@@ -649,7 +652,7 @@ export function SegmentAnythingPage() {
       )}
 
       {/* Header */}
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-center gap-3 mb-4 animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both">
         <Button variant="ghost" size="icon" onClick={handleBack}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -667,11 +670,12 @@ export function SegmentAnythingPage() {
       {!originalImage && (
         <Card
           className={cn(
-            "border-2 border-dashed cursor-pointer transition-colors",
+            "border-2 border-dashed cursor-pointer transition-colors animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both",
             isDragging
               ? "border-primary bg-primary/5"
               : "border-muted-foreground/25 hover:border-primary/50",
           )}
+          style={{ animationDelay: "80ms" }}
           onClick={() => fileInputRef.current?.click()}
         >
           <CardContent className="flex flex-col items-center justify-center py-16">

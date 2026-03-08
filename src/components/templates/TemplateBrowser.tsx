@@ -20,7 +20,7 @@ import type { Template } from "@/types/template";
 
 interface TemplateBrowserProps {
   templateType: "playground" | "workflow";
-  onUseTemplate: (template: Template) => void;
+  onUseTemplate: (template: Template, mode?: "new" | "replace") => void;
   onEditTemplate?: (template: Template) => void;
   onDeleteTemplate?: (template: Template) => void;
   onExportTemplate?: (template: Template) => void;

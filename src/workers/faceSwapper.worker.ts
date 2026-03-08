@@ -12,7 +12,6 @@ import { pipeline, env, RawImage } from "@huggingface/transformers";
 import { FACE_LABELS, featherMask } from "@/lib/faceParsingUtils";
 import {
   initWebGPU,
-  isWebGPUAvailable,
   gaussianBlur,
   boxBlur,
   erodeMask,

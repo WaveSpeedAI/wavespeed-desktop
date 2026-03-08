@@ -544,7 +544,9 @@ export function AudioRecorder({
                   <div
                     className="absolute top-1 bottom-1 w-1 bg-primary rounded-full shadow-lg"
                     style={{
-                      left: `calc(${audioDuration ? (currentTime / audioDuration) * 100 : 0}% - 2px)`,
+                      left: `calc(${
+                        audioDuration ? (currentTime / audioDuration) * 100 : 0
+                      }% - 2px)`,
                     }}
                   />
                 </div>

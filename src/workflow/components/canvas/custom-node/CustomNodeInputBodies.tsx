@@ -249,8 +249,14 @@ export function MediaUploadBody({
           if (uploadState !== "uploading") fileInputRef.current?.click();
         }}
         className={`relative rounded-lg border-2 border-dashed p-4 text-center transition-colors cursor-pointer
-          ${dragOver ? "border-blue-500 bg-blue-500/10" : "border-[hsl(var(--border))] hover:border-blue-500/50"}
-          ${uploadState === "uploading" ? "opacity-60 pointer-events-none" : ""}`}
+          ${
+            dragOver
+              ? "border-blue-500 bg-blue-500/10"
+              : "border-[hsl(var(--border))] hover:border-blue-500/50"
+          }
+          ${
+            uploadState === "uploading" ? "opacity-60 pointer-events-none" : ""
+          }`}
       >
         {uploadState === "uploading" ? (
           <div className="py-2">
@@ -487,7 +493,11 @@ export function TextInputBody({
               }}
               title={t("workflow.textInput.promptLibrary", "Prompt Library")}
               className={`flex items-center justify-center w-6 h-6 rounded-md transition-colors
-              ${snippetOpen ? "bg-blue-500/20 text-blue-400" : "hover:bg-[hsl(var(--accent))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"}`}
+              ${
+                snippetOpen
+                  ? "bg-blue-500/20 text-blue-400"
+                  : "hover:bg-[hsl(var(--accent))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+              }`}
             >
               <svg
                 width="13"
@@ -636,14 +646,22 @@ export function TextInputBody({
             <button
               type="button"
               onClick={toggleOptimizeOnRun}
-              className={`inline-flex h-6 items-center gap-1.5 rounded-md border px-2.5 text-[10px] font-semibold transition-all ${optimizeOnRun ? "border-emerald-500/55 bg-emerald-500/15 text-emerald-600 dark:text-emerald-200 shadow-sm" : "border-[hsl(var(--border))] bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"}`}
+              className={`inline-flex h-6 items-center gap-1.5 rounded-md border px-2.5 text-[10px] font-semibold transition-all ${
+                optimizeOnRun
+                  ? "border-emerald-500/55 bg-emerald-500/15 text-emerald-600 dark:text-emerald-200 shadow-sm"
+                  : "border-[hsl(var(--border))] bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]"
+              }`}
               title={t(
                 "workflow.textInput.autoOnRunTitle",
                 "Only optimize when Run is clicked",
               )}
             >
               <span
-                className={`inline-block h-1.5 w-1.5 rounded-full ${optimizeOnRun ? "bg-emerald-500 dark:bg-emerald-300" : "bg-[hsl(var(--muted-foreground))]/70"}`}
+                className={`inline-block h-1.5 w-1.5 rounded-full ${
+                  optimizeOnRun
+                    ? "bg-emerald-500 dark:bg-emerald-300"
+                    : "bg-[hsl(var(--muted-foreground))]/70"
+                }`}
               />
               {t("workflow.textInput.autoOnRun", "Optimize On Run")}
             </button>

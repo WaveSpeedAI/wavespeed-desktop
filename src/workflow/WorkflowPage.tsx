@@ -15,6 +15,7 @@ import {
 import ReactDOM from "react-dom";
 import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { usePageActive } from "@/hooks/usePageActive";
 import { WorkflowCanvas } from "./components/canvas/WorkflowCanvas";
 import { NodePalette } from "./components/canvas/NodePalette";
 import { WorkflowList } from "./components/WorkflowList";
@@ -188,6 +189,7 @@ const _initialSession = hydrateSessionSync();
 
 export function WorkflowPage() {
   const { t } = useTranslation();
+  const isActive = usePageActive("/workflow");
   const [searchParams, setSearchParams] = useSearchParams();
   const [nodeDefs, setNodeDefs] = useState<NodeTypeDefinition[]>([]);
   const workflowName = useWorkflowStore((s) => s.workflowName);
@@ -205,7 +207,6 @@ export function WorkflowPage() {
     toggleNodePalette,
     toggleWorkflowPanel,
     toggleWorkflowResultsPanel,
-    selectedNodeId,
     previewSrc,
     previewItems,
     previewIndex,
@@ -218,7 +219,7 @@ export function WorkflowPage() {
   } = useUIStore();
   const [showTemplateDialog, setShowTemplateDialog] = useState(false);
   const guide = useWorkflowGuide();
-  const [guideStepKey, setGuideStepKey] = useState<string | null>(null);
+  const [, setGuideStepKey] = useState<string | null>(null);
   const { cancelAll, activeExecutions } = useExecutionStore();
   const initListeners = useExecutionStore((s) => s.initListeners);
   const wasRunning = useExecutionStore((s) => s._wasRunning);
@@ -282,7 +283,7 @@ export function WorkflowPage() {
   const canNavigatePreview = previewIsImage && previewItems.length > 1;
 
   useEffect(() => {
-    if (!previewSrc) return;
+    if (!previewSrc || !isActive) return;
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
@@ -300,7 +301,14 @@ export function WorkflowPage() {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [previewSrc, canNavigatePreview, prevPreview, nextPreview, closePreview]);
+  }, [
+    isActive,
+    previewSrc,
+    canNavigatePreview,
+    prevPreview,
+    nextPreview,
+    closePreview,
+  ]);
 
   // Unified save handler with visual feedback
   const handleSave = useCallback(async () => {
@@ -330,9 +338,8 @@ export function WorkflowPage() {
   const [activeTabId, setActiveTabId] = useState(
     () => _initialSession.activeTabId,
   );
-  const [startupSessionReady, setStartupSessionReady] = useState(true);
-  const [restoredFromPersistedSession, setRestoredFromPersistedSession] =
-    useState(_initialSession.restored);
+  const [startupSessionReady] = useState(true);
+  const [restoredFromPersistedSession] = useState(_initialSession.restored);
   const [hasRestoredLastWorkflow, setHasRestoredLastWorkflow] = useState(false);
 
   // Save current store state into the active tab snapshot
@@ -507,7 +514,10 @@ export function WorkflowPage() {
   useEffect(() => {
     if (!wfTabListOpen) return;
     const handler = (e: MouseEvent) => {
-      if (wfTabListRef.current && !wfTabListRef.current.contains(e.target as Node)) {
+      if (
+        wfTabListRef.current &&
+        !wfTabListRef.current.contains(e.target as Node)
+      ) {
         setWfTabListOpen(false);
       }
     };
@@ -854,6 +864,7 @@ export function WorkflowPage() {
   // Load template from URL query param
   useEffect(() => {
     const templateId = searchParams.get("template");
+    const templateMode = searchParams.get("mode") as "new" | "replace" | null;
     if (!templateId || !startupSessionReady) return;
 
     const loadTemplateData = async () => {
@@ -943,6 +954,26 @@ export function WorkflowPage() {
           targetHandle: e.targetInputKey,
           type: "custom",
         }));
+
+        // Create new tab for the template (unless replacing current)
+        if (templateMode !== "replace") {
+          saveCurrentTabSnapshot();
+          tabIdCounter++;
+          const newTabId = `tab-${tabIdCounter}`;
+          setTabs((prev) => [
+            ...prev,
+            {
+              tabId: newTabId,
+              workflowId: null,
+              workflowName: result.name,
+              nodes: [],
+              edges: [],
+              isDirty: false,
+              createdAt: Date.now(),
+            },
+          ]);
+          setActiveTabId(newTabId);
+        }
 
         // Update workflow store
         useWorkflowStore.setState({
@@ -1039,6 +1070,7 @@ export function WorkflowPage() {
 
   // Global Ctrl+S handler (works even when focus is in input/textarea)
   useEffect(() => {
+    if (!isActive) return;
     const onKeyDown = (e: KeyboardEvent) => {
       const ctrlOrCmd =
         navigator.platform.toUpperCase().indexOf("MAC") >= 0
@@ -1051,10 +1083,12 @@ export function WorkflowPage() {
     };
     window.addEventListener("keydown", onKeyDown, true); // capture phase
     return () => window.removeEventListener("keydown", onKeyDown, true);
-  }, [handleSave]);
+  }, [isActive, handleSave]);
 
   // Global Ctrl/Cmd+W handler — close active tab
+  // Global Ctrl/Cmd+W handler — close active tab
   useEffect(() => {
+    if (!isActive) return;
     const onKeyDown = (e: KeyboardEvent) => {
       const ctrlOrCmd =
         navigator.platform.toUpperCase().indexOf("MAC") >= 0
@@ -1072,7 +1106,7 @@ export function WorkflowPage() {
     };
     window.addEventListener("keydown", onKeyDown, true);
     return () => window.removeEventListener("keydown", onKeyDown, true);
-  }, [tabs, activeTabId, doCloseTab]);
+  }, [isActive, tabs, activeTabId, doCloseTab]);
 
   // Init
   useEffect(() => {
@@ -1431,7 +1465,10 @@ export function WorkflowPage() {
       )}
 
       {/* ── Toolbar — unified header ──────────────────────────── */}
-      <div className="relative" style={{ zIndex: 2 }}>
+      <div
+        className="relative animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both"
+        style={{ zIndex: 2 }}
+      >
         {/* Page title block — matches other pages' title style, extends below tab bar with diagonal */}
         <div
           className="absolute left-0 top-0 z-[2] flex items-center bg-background"
@@ -1444,7 +1481,10 @@ export function WorkflowPage() {
             clipPath: `polygon(0 0, 100% 0, 100% 40px, calc(100% - 16px) 100%, 0 100%)`,
           }}
         >
-          <h1 ref={wfTitleRef} className="text-xl md:text-2xl font-bold tracking-tight flex items-center gap-2 whitespace-nowrap">
+          <h1
+            ref={wfTitleRef}
+            className="text-xl md:text-2xl font-bold tracking-tight flex items-center gap-2 whitespace-nowrap"
+          >
             <GitBranch className="h-5 w-5 text-primary" />
             {t("nav.workflow")}
           </h1>
@@ -1455,23 +1495,52 @@ export function WorkflowPage() {
           style={{ width: wfTitleWidth, height: 60 }}
           fill="none"
         >
-          <line x1="0" y1="60" x2={wfTitleWidth - 16} y2="60" className="stroke-border" strokeWidth="1" vectorEffect="non-scaling-stroke" />
-          <line x1={wfTitleWidth - 16} y1="60" x2={wfTitleWidth} y2="40" className="stroke-border" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+          <line
+            x1="0"
+            y1="60"
+            x2={wfTitleWidth - 16}
+            y2="60"
+            className="stroke-border"
+            strokeWidth="1"
+            vectorEffect="non-scaling-stroke"
+          />
+          <line
+            x1={wfTitleWidth - 16}
+            y1="60"
+            x2={wfTitleWidth}
+            y2="40"
+            className="stroke-border"
+            strokeWidth="1"
+            vectorEffect="non-scaling-stroke"
+          />
         </svg>
-        <div className="flex items-center border-b border-border px-2 gap-1.5 h-10 bg-background" style={{ paddingLeft: wfTitleWidth }}>
+        <div
+          className="flex items-center border-b border-border px-2 gap-1.5 h-10 bg-background"
+          style={{ paddingLeft: wfTitleWidth }}
+        >
           {/* Tab list dropdown button */}
           <div ref={wfTabListRef} className="relative shrink-0">
-            <button
-              onClick={() => setWfTabListOpen(!wfTabListOpen)}
-              className={`flex items-center justify-center w-7 h-7 rounded-md transition-colors shrink-0 ${
-                wfTabListOpen
-                  ? "bg-primary/15 text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
-              title={t("workflow.allTabs", "All Tabs")}
-            >
-              <ChevronDown className={`h-4 w-4 transition-transform ${wfTabListOpen ? "rotate-180" : ""}`} />
-            </button>
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setWfTabListOpen(!wfTabListOpen)}
+                  className={`flex items-center justify-center w-7 h-7 rounded-md transition-colors shrink-0 ${
+                    wfTabListOpen
+                      ? "bg-primary/15 text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`}
+                >
+                  <ChevronDown
+                    className={`h-4 w-4 transition-transform ${wfTabListOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+              </TooltipTrigger>
+              {!wfTabListOpen && (
+                <TooltipContent side="bottom">
+                  {t("workflow.allTabs", "All Tabs")}
+                </TooltipContent>
+              )}
+            </Tooltip>
             {wfTabListOpen && (
               <div className="absolute z-50 mt-1 left-0 min-w-[320px] max-h-[400px] overflow-y-auto rounded-xl border border-border/80 bg-popover shadow-xl animate-in fade-in-0 zoom-in-95">
                 <div className="p-1.5">
@@ -1495,11 +1564,16 @@ export function WorkflowPage() {
                       >
                         <GitBranch className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                         <div className="flex-1 min-w-0">
-                          <div className="truncate font-medium">{tab.workflowName}</div>
+                          <div className="truncate font-medium">
+                            {tab.workflowName}
+                          </div>
                           {tab.createdAt && (
                             <div className="flex items-center gap-0.5 text-[10px] text-muted-foreground mt-0.5">
                               <Clock className="h-2.5 w-2.5" />
-                              {new Date(tab.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                              {new Date(tab.createdAt).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
                             </div>
                           )}
                         </div>
@@ -1642,38 +1716,50 @@ export function WorkflowPage() {
               })}
               {/* + button inside scroll area: visible when tabs don't overflow */}
               {!wfTabsOverflow && (
-                <button
-                  onClick={addTab}
-                  className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 mx-1"
-                  title={t("workflow.newTab", "New tab")}
-                >
-                  <Plus className="h-4 w-4" />
-                </button>
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={addTab}
+                      className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 mx-1"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    {t("workflow.newTab", "New tab")}
+                  </TooltipContent>
+                </Tooltip>
               )}
             </div>
           </div>
           {/* + button fixed outside: visible only when tabs overflow */}
           {wfTabsOverflow && (
-            <button
-              onClick={addTab}
-              className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
-              title={t("workflow.newTab", "New tab")}
-            >
-              <Plus className="h-4 w-4" />
-            </button>
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={addTab}
+                  className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                {t("workflow.newTab", "New tab")}
+              </TooltipContent>
+            </Tooltip>
           )}
 
-          <div className="w-px h-5 bg-border mx-1" />
+          <div className="w-px h-5 bg-border mx-2" />
 
           {/* Last saved indicator */}
           {lastSavedAt && (
-            <span className="text-[10px] text-muted-foreground">
+            <span className="text-[10px] text-muted-foreground mr-2">
               {t("workflow.savedAt", "Saved")}{" "}
               {lastSavedAt.toLocaleTimeString()}
             </span>
           )}
           {isDirty && workflowId && (
-            <span className="text-[10px] text-orange-400">
+            <span className="text-[10px] text-orange-400 mr-2">
               {t("workflow.unsaved", "unsaved")}
             </span>
           )}
@@ -1710,46 +1796,61 @@ export function WorkflowPage() {
                 </TooltipContent>
               </Tooltip>
               {/* Run count */}
-              <div className="h-7 flex items-center bg-[hsl(var(--muted))] border-l border-[hsl(var(--border))]">
-                <input
-                  type="number"
-                  min={1}
-                  max={99}
-                  value={runCount}
-                  onChange={(e) =>
-                    setRunCount(
-                      Math.max(1, Math.min(99, Number(e.target.value) || 1)),
-                    )
-                  }
-                  className="w-10 h-full bg-transparent px-1 text-xs text-center text-foreground focus:outline-none dark:[color-scheme:dark]"
-                  title={t("workflow.runCount", "Run count")}
-                />
-              </div>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <div className="h-7 flex items-center bg-[hsl(var(--muted))] border-l border-[hsl(var(--border))]">
+                    <input
+                      type="number"
+                      min={1}
+                      max={99}
+                      value={runCount}
+                      onChange={(e) =>
+                        setRunCount(
+                          Math.max(
+                            1,
+                            Math.min(99, Number(e.target.value) || 1),
+                          ),
+                        )
+                      }
+                      className="w-10 h-full bg-transparent px-1 text-xs text-center text-foreground focus:outline-none dark:[color-scheme:dark]"
+                    />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  {t("workflow.runCount", "Run count")}
+                </TooltipContent>
+              </Tooltip>
             </div>
             {/* Cancel button */}
             {(isRunning || isBatchRunning) && (
-              <button
-                className="h-7 w-7 rounded-lg flex items-center justify-center bg-red-900/60 text-red-300 hover:bg-red-800/70 transition-colors"
-                onClick={() => {
-                  runCancelRef.current = true;
-                  if (workflowId) cancelAll(workflowId);
-                }}
-                title={t("workflow.cancelAll", "Cancel All")}
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <button
+                    className="h-7 w-7 rounded-lg flex items-center justify-center bg-red-900/60 text-red-300 hover:bg-red-800/70 transition-colors"
+                    onClick={() => {
+                      runCancelRef.current = true;
+                      if (workflowId) cancelAll(workflowId);
+                    }}
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  {t("workflow.cancelAll", "Cancel All")}
+                </TooltipContent>
+              </Tooltip>
             )}
           </div>
           {/* Monitor side panel toggle */}
@@ -2085,24 +2186,28 @@ export function WorkflowPage() {
         open={showTemplateDialog}
         onOpenChange={setShowTemplateDialog}
         templateType="workflow"
-        onUseTemplate={async (template) => {
+        onUseTemplate={async (template, mode) => {
           if (template.workflowData?.graphDefinition) {
-            saveCurrentTabSnapshot();
-            tabIdCounter++;
-            const newTabId = `tab-${tabIdCounter}`;
-            setTabs((prev) => [
-              ...prev,
-              {
-                tabId: newTabId,
-                workflowId: null,
-                workflowName: template.name,
-                nodes: [],
-                edges: [],
-                isDirty: false,
-                createdAt: Date.now(),
-              },
-            ]);
-            setActiveTabId(newTabId);
+            const shouldCreateNewTab = mode !== "replace";
+
+            if (shouldCreateNewTab) {
+              saveCurrentTabSnapshot();
+              tabIdCounter++;
+              const newTabId = `tab-${tabIdCounter}`;
+              setTabs((prev) => [
+                ...prev,
+                {
+                  tabId: newTabId,
+                  workflowId: null,
+                  workflowName: template.name,
+                  nodes: [],
+                  edges: [],
+                  isDirty: false,
+                  createdAt: Date.now(),
+                },
+              ]);
+              setActiveTabId(newTabId);
+            }
 
             // Build a definition map from already-loaded nodeDefs
             const defMap = new Map(
@@ -2516,13 +2621,10 @@ let _workflowListCache: Array<{
   name: string;
   updatedAt: string;
 }> | null = null;
-let _workflowListCacheTime = 0;
-const CACHE_TTL = 30_000; // refresh after 30 seconds
 
 /** Call this to invalidate the cache after save/create/delete */
 export function invalidateWorkflowListCache() {
-  _workflowListCache = null;
-  _workflowListCacheTime = 0;
+  if (_workflowListCache) _workflowListCache = null;
 }
 
 /* ── Monitor Toggle Button ─────────────────────────────────────────── */

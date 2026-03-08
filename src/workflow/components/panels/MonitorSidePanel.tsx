@@ -284,14 +284,13 @@ function SessionCard({
   /** Signal to expand/collapse all node rows within this session */
   const [nodeExpandSignal, setNodeExpandSignal] = useState(0);
   const nodesAllExpanded = nodeExpandSignal % 2 === 1;
-  const { nodeIds, nodeLabels, nodeResults, nodeCosts, status } = session;
+  const { nodeIds, nodeLabels, nodeResults, status } = session;
   const total = nodeIds.length;
   const completed = Object.values(nodeResults).filter(
     (v) => v === "done",
   ).length;
   const errors = Object.values(nodeResults).filter((v) => v === "error").length;
   const pct = total > 0 ? Math.round(((completed + errors) / total) * 100) : 0;
-  const totalCost = Object.values(nodeCosts).reduce((sum, c) => sum + c, 0);
 
   const statusColor =
     status === "running"
@@ -352,7 +351,6 @@ function SessionCard({
             <span className="text-muted-foreground/60 ml-2">
               {elapsedStr} ago
             </span>
-
           </div>
         </div>
         <button

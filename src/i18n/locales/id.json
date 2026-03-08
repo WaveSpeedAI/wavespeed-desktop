@@ -36,7 +36,9 @@
     "settings": "Pengaturan",
     "clearAll": "Hapus semua",
     "add": "Add",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "showMore": "Tampilkan lebih",
+    "showLess": "Tampilkan sedikit"
   },
   "nav": {
     "home": "Beranda",
@@ -117,6 +119,7 @@
     "type": "Tipe",
     "basePrice": "Harga dasar",
     "openInNewTab": "Buka di tab baru",
+    "replaceCurrentTab": "Ganti tab saat ini",
     "addToFavorites": "Tambahkan ke favorit",
     "removeFromFavorites": "Hapus dari favorit"
   },
@@ -262,7 +265,9 @@
       "less": "Lebih sedikit"
     },
     "history": {
-      "title": "Riwayat"
+      "title": "Riwayat",
+      "openInNewTab": "Buka di tab baru",
+      "useSettings": "Gunakan pengaturan ini"
     }
   },
   "history": {
@@ -314,7 +319,9 @@
     "downloadCompleteDesc": "{{count}} file diunduh",
     "downloadFailed": "Unduhan gagal",
     "downloadFailedDesc": "{{count}} file gagal diunduh",
-    "longPressHint": "Tahan untuk memilih"
+    "longPressHint": "Tahan untuk memilih",
+    "openInPlayground": "Buka di Playground",
+    "modelNotAvailable": "Model tidak lagi tersedia"
   },
   "templates": {
     "title": "Template",
@@ -1135,6 +1142,10 @@
     "hideRun": "Sembunyikan proses ini",
     "output": "Keluaran",
     "outputLowercase": "Keluaran",
+    "expandNode": "Perluas",
+    "collapseNode": "Ciutkan",
+    "collapseAll": "Ciutkan Semua",
+    "expandAll": "Perluas Semua",
     "invalidUrl": "URL tidak valid",
     "removeLast": "Hapus terakhir",
     "enterField": "Masukkan {{field}}...",
@@ -1156,6 +1167,7 @@
     "nodeDefs": {
       "ai-task/run": {
         "label": "WaveSpeed API",
+        "hint": "Jalankan model AI apa pun — gambar, video, audio, dan lainnya",
         "emptyHint": "Klik node ini, lalu pilih model →",
         "params": {
           "modelId": {
@@ -1165,6 +1177,7 @@
       },
       "input/media-upload": {
         "label": "Unggah",
+        "hint": "Unggah file gambar, video, atau audio sebagai input pipeline",
         "inputs": {
           "media": {
             "label": "Media"
@@ -1178,6 +1191,7 @@
       },
       "input/text-input": {
         "label": "Teks",
+        "hint": "Masukkan teks atau prompt untuk diteruskan ke node berikutnya",
         "params": {
           "text": {
             "label": "Teks"
@@ -1186,6 +1200,7 @@
       },
       "output/preview": {
         "label": "Pratinjau",
+        "hint": "Pratinjau hasil langsung di kanvas",
         "inputs": {
           "input": {
             "label": "URL"
@@ -1209,6 +1224,7 @@
       },
       "output/file": {
         "label": "Ekspor file",
+        "hint": "Simpan hasil ke file lokal",
         "inputs": {
           "url": {
             "label": "URL"
@@ -1236,25 +1252,32 @@
         }
       },
       "free-tool/image-enhancer": {
-        "label": "Peningkat gambar"
+        "label": "Peningkat gambar",
+        "hint": "Perbesar dan pertajam gambar (2×–4×) secara gratis"
       },
       "free-tool/background-remover": {
-        "label": "Penghapus latar belakang"
+        "label": "Penghapus latar belakang",
+        "hint": "Hapus latar belakang gambar secara otomatis dan gratis"
       },
       "free-tool/face-enhancer": {
-        "label": "Peningkat wajah"
+        "label": "Peningkat wajah",
+        "hint": "Tingkatkan dan pulihkan wajah di foto secara gratis"
       },
       "free-tool/video-enhancer": {
-        "label": "Peningkat video"
+        "label": "Peningkat video",
+        "hint": "Perbesar dan tingkatkan kualitas video secara gratis"
       },
       "free-tool/face-swapper": {
-        "label": "Penukar wajah"
+        "label": "Penukar wajah",
+        "hint": "Tukar wajah dari satu gambar ke gambar lain secara gratis"
       },
       "free-tool/image-eraser": {
-        "label": "Penghapus gambar"
+        "label": "Penghapus gambar",
+        "hint": "Hapus objek dari gambar menggunakan masker secara gratis"
       },
       "free-tool/segment-anything": {
         "label": "Segmentasi apapun",
+        "hint": "Buat masker untuk objek apa pun dalam gambar secara gratis",
         "params": {
           "pointX": {
             "label": "Titik X",
@@ -1270,19 +1293,32 @@
         }
       },
       "free-tool/video-converter": {
-        "label": "Konverter video"
+        "label": "Konverter video",
+        "hint": "Konversi format, codec, atau resolusi video secara gratis"
       },
       "free-tool/audio-converter": {
-        "label": "Konverter audio"
+        "label": "Konverter audio",
+        "hint": "Konversi audio antara MP3, WAV, FLAC, dan lainnya secara gratis"
       },
       "free-tool/image-converter": {
-        "label": "Konverter gambar"
+        "label": "Konverter gambar",
+        "hint": "Konversi gambar antara PNG, JPG, WebP, dan lainnya secara gratis"
       },
       "free-tool/media-trimmer": {
-        "label": "Pemangkas media"
+        "label": "Pemangkas media",
+        "hint": "Pangkas video atau audio ke rentang waktu tertentu secara gratis"
       },
       "free-tool/media-merger": {
-        "label": "Penggabung media"
+        "label": "Penggabung media",
+        "hint": "Gabungkan beberapa klip video atau audio menjadi satu secara gratis"
+      },
+      "processing/concat": {
+        "label": "Gabung",
+        "hint": "Gabungkan beberapa nilai tunggal menjadi satu array (mis. gambar → gambar[])"
+      },
+      "processing/select": {
+        "label": "Pilih",
+        "hint": "Pilih satu item dari array berdasarkan indeks"
       }
     },
     "modelSelector": {
@@ -1392,6 +1428,10 @@
           "costEstimate": "Estimasi biaya real-time per eksekusi agar Anda selalu tahu harga sebelum menjalankan",
           "upstream": "Hubungkan output node hulu (gambar, teks) sebagai input — bangun pipeline AI multi-langkah"
         }
+      },
+      "concat": {
+        "title": "Node Concat — Gabungkan Beberapa Output",
+        "desc": "Perlu memasukkan beberapa gambar ke input \"images\"? Gunakan node Concat:\n\n1. Hubungkan output image dari setiap node hulu ke value1, value2, value3, dll. milik Concat\n2. Hubungkan output Concat (sekarang berupa array) ke parameter images node hilir\n\nContoh:\n[Upload A] → image → Concat → output (array) → [AI Task].images\n[Upload B] → image ↗\n\nIni berlaku untuk semua jenis output — gambar, video, teks — kapan pun Anda perlu menggabungkan beberapa nilai tunggal menjadi satu input array."
       },
       "canvas": {
         "title": "Interaksi Kanvas",

@@ -16,14 +16,16 @@ import {
 import { FileUpload } from "./FileUpload";
 import { SizeSelector } from "./SizeSelector";
 import { LoraSelector, type LoraItem } from "./LoraSelector";
+import { ObjectArrayField } from "./ObjectArrayField";
 import { PromptOptimizer } from "./PromptOptimizer";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
+  TouchTooltip,
 } from "@/components/ui/tooltip";
-import { Dices, Info } from "lucide-react";
+import { Dices, Info, Trash2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FormFieldProps {
@@ -396,6 +398,58 @@ export function FormField({
           />
         );
 
+      case "multi-select": {
+        // Value is stored as plain string[] internally; wrapKey wrapping happens at submission time
+        const selected = Array.isArray(value) ? (value as string[]) : [];
+        const options = field.options ?? [];
+        return (
+          <div className="flex flex-wrap gap-1.5">
+            {options.map((opt) => {
+              const optStr = String(opt);
+              const isActive = selected.includes(optStr);
+              return (
+                <button
+                  key={optStr}
+                  type="button"
+                  disabled={
+                    disabled ||
+                    (!isActive &&
+                      field.max !== undefined &&
+                      selected.length >= field.max)
+                  }
+                  onClick={() => {
+                    const next = isActive
+                      ? selected.filter((v) => v !== optStr)
+                      : [...selected, optStr];
+                    onChange(next);
+                  }}
+                  className={cn(
+                    "px-2.5 py-1 text-xs rounded-md border transition-colors",
+                    isActive
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-muted/50 text-muted-foreground border-border hover:bg-muted",
+                    disabled && "opacity-50 cursor-not-allowed",
+                  )}
+                >
+                  {optStr}
+                </button>
+              );
+            })}
+          </div>
+        );
+      }
+
+      case "object-array":
+        return (
+          <ObjectArrayField
+            itemFields={field.itemFields || []}
+            value={(value as Record<string, unknown>[]) || []}
+            onChange={(v) => onChange(v)}
+            maxItems={field.max}
+            disabled={disabled}
+          />
+        );
+
       case "loras":
         return (
           <LoraSelector
@@ -405,6 +459,51 @@ export function FormField({
             disabled={disabled}
           />
         );
+
+      case "string-array": {
+        const items = Array.isArray(value) ? (value as string[]) : [];
+        return (
+          <div className="space-y-2">
+            {items.map((item, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <Input
+                  value={item}
+                  onChange={(e) => {
+                    const next = [...items];
+                    next[i] = e.target.value;
+                    onChange(next);
+                  }}
+                  disabled={disabled}
+                  placeholder={`Item ${i + 1}`}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+                  onClick={() => onChange(items.filter((_, idx) => idx !== i))}
+                  disabled={disabled}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => onChange([...items, ""])}
+              disabled={
+                disabled ||
+                (field.maxFiles ? items.length >= field.maxFiles : false)
+              }
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              {t("common.addItem", "Add Item")}
+            </Button>
+          </div>
+        );
+      }
 
       default:
         return (
@@ -444,9 +543,9 @@ export function FormField({
             field.description &&
             field.type !== "text" &&
             field.type !== "textarea" && (
-              <Tooltip delayDuration={0}>
+              <TouchTooltip>
                 <TooltipTrigger asChild>
-                  <Info className="h-3.5 w-3.5 text-muted-foreground shrink-0 translate-y-px" />
+                  <Info className="h-3.5 w-3.5 text-muted-foreground shrink-0 translate-y-px cursor-pointer" />
                 </TooltipTrigger>
                 <TooltipContent side="top" className="max-w-[280px]">
                   <p className="text-xs">
@@ -456,7 +555,7 @@ export function FormField({
                       : ""}
                   </p>
                 </TooltipContent>
-              </Tooltip>
+              </TouchTooltip>
             )}
           {isOptimizablePrompt && (
             <PromptOptimizer
@@ -481,6 +580,8 @@ export function FormField({
           field.type !== "loras" &&
             field.type !== "file" &&
             field.type !== "file-array" &&
+            field.type !== "string-array" &&
+            field.type !== "object-array" &&
             "overflow-hidden",
           error &&
             "[&_input]:border-destructive [&_textarea]:border-destructive",

@@ -749,8 +749,8 @@ export function SettingsPage() {
   };
 
   return (
-    <div className="container max-w-2xl px-4 md:px-6 py-6 md:py-8 pt-14 md:pt-4">
-      <div className="mb-6 md:mb-8">
+    <div className="container max-w-2xl px-4 md:px-6 py-6 md:py-8 pt-14 md:pt-4 settings-stagger">
+      <div className="mb-6 md:mb-8 animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both">
         <h1 className="text-xl md:text-2xl font-bold tracking-tight flex items-center gap-2">
           <Settings className="h-5 w-5 text-primary" />
           {t("settings.title")}
@@ -1198,8 +1198,8 @@ export function SettingsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>{t("settings.cache.clear")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {cacheSize > 0
-                ? `This will delete ${formatSize(cacheSize)} of cached data including SD models and browser cache. Downloaded models will need to be re-downloaded. This cannot be undone.`
+              {(cacheSize ?? 0) > 0
+                ? `This will delete ${formatSize(cacheSize ?? 0)} of cached data including SD models and browser cache. Downloaded models will need to be re-downloaded. This cannot be undone.`
                 : "This will clear all cached data. This cannot be undone."}
             </AlertDialogDescription>
           </AlertDialogHeader>

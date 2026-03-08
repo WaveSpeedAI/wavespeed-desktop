@@ -7,7 +7,7 @@ import {
   useTransition,
 } from "react";
 import { flushSync } from "react-dom";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   usePlaygroundStore,
@@ -16,7 +16,10 @@ import {
 } from "@/stores/playgroundStore";
 import { useModelsStore } from "@/stores/modelsStore";
 import { useApiKeyStore } from "@/stores/apiKeyStore";
+import { apiClient } from "@/api/client";
 import { useTemplateStore } from "@/stores/templateStore";
+import { usePredictionInputsStore } from "@mobile/stores/predictionInputsStore";
+import { usePageActive } from "@/hooks/usePageActive";
 import { DynamicForm } from "@/components/playground/DynamicForm";
 import { ModelSelector } from "@/components/playground/ModelSelector";
 import { BatchControls } from "@/components/playground/BatchControls";
@@ -76,13 +79,28 @@ const isCapacitorNative = () => {
 
 export function PlaygroundPage() {
   const { t } = useTranslation();
-  const params = useParams();
-  // Support both old format (playground/:modelId) and new format (playground/*)
-  const modelId = params["*"] || params.modelId;
+  const location = useLocation();
+  const isActive = usePageActive("/playground");
+  // Extract modelId from pathname: /playground/some/model/id → "some/model/id"
+  const modelId = useMemo(() => {
+    const prefix = "/playground/";
+    if (location.pathname.startsWith(prefix)) {
+      const raw = location.pathname.slice(prefix.length);
+      if (raw) {
+        try {
+          return decodeURIComponent(raw);
+        } catch {
+          return raw;
+        }
+      }
+    }
+    return undefined;
+  }, [location.pathname]);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { models, fetchModels } = useModelsStore();
   const {
+    apiKey,
     isLoading: isLoadingApiKey,
     isValidated,
     loadApiKey,
@@ -107,9 +125,15 @@ export function PlaygroundPage() {
     setUploading,
     selectHistoryItem,
     reorderTab,
+    consumePendingFormValues,
   } = usePlaygroundStore();
   const { templates, loadTemplates, createTemplate, migrateFromLocalStorage } =
     useTemplateStore();
+  const {
+    save: savePredictionInputs,
+    load: loadPredictionInputs,
+    isLoaded: inputsLoaded,
+  } = usePredictionInputsStore();
 
   const activeTab = getActiveTab();
 
@@ -141,11 +165,16 @@ export function PlaygroundPage() {
   const templateLoadedRef = useRef<string | null>(null);
   const initialTabCreatedRef = useRef(false);
 
+  // Dynamic pricing state
+  const [calculatedPrice, setCalculatedPrice] = useState<number | null>(null);
+  const [isPricingLoading, setIsPricingLoading] = useState(false);
+  const pricingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // Mobile view state: 'config' or 'output'
   const [mobileView, setMobileView] = useState<"config" | "output">("config");
 
   // Resizable left panel
-  const [leftPanelWidth, setLeftPanelWidth] = useState(300);
+  const [leftPanelWidth, setLeftPanelWidth] = useState(360);
   const isDraggingRef = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const handleResizeStart = useCallback(
@@ -180,7 +209,7 @@ export function PlaygroundPage() {
   // Persist rightPanelTab across navigation using sessionStorage
   const [rightPanelTab, setRightPanelTab] = useState<RightPanelTab>(() => {
     // If arriving with a modelId in the URL, go straight to result
-    if (params["*"] || params.modelId) return "result";
+    if (modelId) return "result";
     const saved = sessionStorage.getItem(
       "pg_rightPanelTab",
     ) as RightPanelTab | null;
@@ -304,7 +333,7 @@ export function PlaygroundPage() {
     return generateBatchInputs();
   }, [activeTab, generateBatchInputs]);
 
-  // Migrate templates and load on mount
+  // Migrate templates and load on mount (runs once since page is persistent)
   useEffect(() => {
     const init = async () => {
       await migrateFromLocalStorage();
@@ -312,7 +341,7 @@ export function PlaygroundPage() {
     };
     init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on mount
+  }, []);
 
   // Hydrate playground session from Electron persistent storage on first mount
   useEffect(() => {
@@ -335,13 +364,82 @@ export function PlaygroundPage() {
   // Load API key and fetch models on mount
   useEffect(() => {
     loadApiKey();
-  }, [loadApiKey]);
+    if (!inputsLoaded) loadPredictionInputs();
+  }, [loadApiKey, inputsLoaded, loadPredictionInputs]);
 
   useEffect(() => {
     if (isValidated) {
       fetchModels();
     }
   }, [isValidated, fetchModels]);
+
+  // Save prediction inputs to local storage when prediction completes
+  const lastSavedPredictionRef = useRef<string | null>(null);
+  useEffect(() => {
+    const prediction = activeTab?.currentPrediction;
+    const model = activeTab?.selectedModel;
+    const formValues = activeTab?.formValues;
+    const outputs = activeTab?.outputs;
+    const isRunning = activeTab?.isRunning;
+    if (
+      prediction?.id &&
+      !isRunning &&
+      outputs &&
+      outputs.length > 0 &&
+      model &&
+      formValues &&
+      Object.keys(formValues).length > 0 &&
+      lastSavedPredictionRef.current !== prediction.id
+    ) {
+      savePredictionInputs(
+        prediction.id,
+        model.model_id,
+        model.name,
+        formValues,
+      );
+      lastSavedPredictionRef.current = prediction.id;
+    }
+  }, [
+    activeTab?.currentPrediction,
+    activeTab?.selectedModel,
+    activeTab?.formValues,
+    activeTab?.outputs,
+    activeTab?.isRunning,
+    savePredictionInputs,
+  ]);
+
+  // Calculate dynamic pricing with debounce — deferred start
+  useEffect(() => {
+    if (!activeTab?.selectedModel || !apiKey) {
+      setCalculatedPrice(null);
+      return;
+    }
+
+    if (pricingTimeoutRef.current) {
+      clearTimeout(pricingTimeoutRef.current);
+    }
+
+    pricingTimeoutRef.current = setTimeout(async () => {
+      setIsPricingLoading(true);
+      try {
+        const price = await apiClient.calculatePricing(
+          activeTab.selectedModel!.model_id,
+          activeTab.formValues,
+        );
+        setCalculatedPrice(price);
+      } catch {
+        setCalculatedPrice(null);
+      } finally {
+        setIsPricingLoading(false);
+      }
+    }, 800);
+
+    return () => {
+      if (pricingTimeoutRef.current) {
+        clearTimeout(pricingTimeoutRef.current);
+      }
+    };
+  }, [activeTab?.selectedModel, activeTab?.formValues, apiKey]);
 
   // Load template from URL query param
   useEffect(() => {
@@ -448,10 +546,27 @@ export function PlaygroundPage() {
 
   const handleSetDefaults = useCallback(
     (defaults: Record<string, unknown>) => {
-      setFormValues(defaults);
+      const pending = consumePendingFormValues();
+      if (pending) {
+        setFormValues({ ...defaults, ...pending });
+      } else {
+        setFormValues(defaults);
+      }
     },
-    [setFormValues],
+    [setFormValues, consumePendingFormValues],
   );
+
+  // When a tab is created with pendingFormValues (e.g. from History "Open in Playground")
+  // and DynamicForm does NOT call onSetDefaults (same model, schema cached),
+  // apply pending values directly.
+  useEffect(() => {
+    if (!activeTab?.pendingFormValues) return;
+    const pending = consumePendingFormValues();
+    if (pending) {
+      setFormValues({ ...activeTab.formValues, ...pending });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTabId]);
 
   const handleRun = useCallback(async () => {
     if (!activeTab) return;
@@ -471,6 +586,7 @@ export function PlaygroundPage() {
 
   // Ctrl+Enter / Cmd+Enter to run; Ctrl+W / Cmd+W to close active tab
   useEffect(() => {
+    if (!isActive) return;
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
         e.preventDefault();
@@ -485,7 +601,7 @@ export function PlaygroundPage() {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [activeTab, activeTabId, handleRun, closeTab]);
+  }, [isActive, activeTab, activeTabId, handleRun, closeTab]);
 
   const handleReset = () => {
     resetForm();
@@ -527,10 +643,31 @@ export function PlaygroundPage() {
 
   // Templates panel: use a template
   const handleUseTemplateFromPanel = useCallback(
-    (template: import("@/types/template").Template) => {
+    (
+      template: import("@/types/template").Template,
+      mode?: "new" | "replace",
+    ) => {
       if (template.playgroundData) {
+        // Determine effective mode:
+        // - explicit "replace" from overlay button
+        // - explicit "new" from overlay button
+        // - no mode (card click): default to "new" unless no active tab exists
+        // - special case: if active tab has no model selected, auto-replace (fill empty tab)
+        let effectiveMode: "new" | "replace";
+        if (mode) {
+          effectiveMode = mode;
+        } else {
+          effectiveMode = "new";
+        }
+        // Auto-replace empty tab (no model selected) even when mode is "new"
+        if (effectiveMode === "new" && activeTab && !activeTab.selectedModel) {
+          effectiveMode = "replace";
+        }
+
+        const shouldCreateNewTab = effectiveMode === "new" || !activeTab;
+
         flushSync(() => {
-          if (!activeTab) {
+          if (shouldCreateNewTab) {
             const model = template.playgroundData!.modelId
               ? models.find(
                   (m) => m.model_id === template.playgroundData!.modelId,
@@ -538,9 +675,10 @@ export function PlaygroundPage() {
               : undefined;
             createTab(model);
           } else {
+            // Replace current tab
             if (
               template.playgroundData!.modelId &&
-              activeTab.selectedModel?.model_id !==
+              activeTab!.selectedModel?.model_id !==
                 template.playgroundData!.modelId
             ) {
               const model = models.find(
@@ -561,16 +699,11 @@ export function PlaygroundPage() {
         }
 
         // For new tab: set form values after tab is active
-        if (!activeTab) {
+        if (shouldCreateNewTab) {
           setTimeout(() => {
             setFormValues(template.playgroundData!.values);
           }, 0);
         }
-
-        toast({
-          title: t("playground.templateLoaded"),
-          description: t("playground.loadedTemplate", { name: template.name }),
-        });
       }
     },
     [
@@ -649,12 +782,13 @@ export function PlaygroundPage() {
 
         <div
           ref={containerRef}
-          className="flex flex-1 flex-col overflow-hidden md:flex-row"
+          className="flex flex-1 flex-col overflow-hidden md:flex-row animate-in fade-in duration-300 fill-mode-both"
+          style={{ animationDelay: "80ms" }}
         >
           {/* Left Panel - Configuration (always visible) */}
           <div
             className={cn(
-              "w-full md:w-auto flex flex-col min-h-0 border-b bg-card/70 md:overflow-hidden md:border-r md:border-b-0 md:shrink-0 md:grow-0",
+              "w-full md:w-auto flex flex-col min-h-0 border-b md:overflow-hidden md:border-r md:border-b-0 md:shrink-0 md:grow-0",
               mobileView === "config"
                 ? "flex flex-1 md:flex-initial"
                 : "hidden md:flex",
@@ -662,7 +796,7 @@ export function PlaygroundPage() {
             style={{ flexBasis: `${leftPanelWidth}px` }}
           >
             {/* Page Title + quick-nav chips */}
-            <div className="px-4 md:px-6 py-4 pt-14 md:pt-4 border-b border-border shrink-0">
+            <div className="px-4 md:px-6 py-4 pt-14 md:pt-4 border-b border-border shrink-0 animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both">
               <div className="flex items-end gap-2">
                 <h1 className="text-xl md:text-2xl font-bold tracking-tight flex items-center gap-2 shrink-0 leading-none">
                   <PlayCircle className="h-5 w-5 text-primary" />
@@ -684,7 +818,10 @@ export function PlaygroundPage() {
                       </button>
                     </TooltipTrigger>
                     <TooltipContent side="bottom">
-                      {t("playground.rightPanel.featuredModels", "Featured Models")}
+                      {t(
+                        "playground.rightPanel.featuredModels",
+                        "Featured Models",
+                      )}
                     </TooltipContent>
                   </Tooltip>
                   <Tooltip delayDuration={200}>
@@ -786,6 +923,15 @@ export function PlaygroundPage() {
                         ? `${t("playground.running")} (${activeTab.batchState.queue.length})`
                         : t("playground.running")
                     }
+                    price={
+                      isPricingLoading
+                        ? "..."
+                        : calculatedPrice != null
+                          ? `${calculatedPrice.toFixed(4)}`
+                          : activeTab?.selectedModel?.base_price != null
+                            ? `${activeTab.selectedModel.base_price.toFixed(4)}`
+                            : undefined
+                    }
                   />
                 </div>
                 <button
@@ -855,6 +1001,11 @@ export function PlaygroundPage() {
                         tabs.map((tab) => (
                           <div
                             key={tab.id}
+                            title={
+                              tab.selectedModel?.name
+                                ? formatModelDisplay(tab.selectedModel.name)
+                                : t("playground.tabs.newTab")
+                            }
                             onClick={() => {
                               handleTabClick(tab.id);
                               setTabListOpen(false);
@@ -950,6 +1101,11 @@ export function PlaygroundPage() {
                         onClick={() => {
                           handleTabClick(tab.id);
                         }}
+                        title={
+                          tab.selectedModel?.name
+                            ? formatModelDisplay(tab.selectedModel.name)
+                            : t("playground.tabs.newTab")
+                        }
                         className={cn(
                           "group relative flex h-8 items-center gap-1.5 px-3 text-xs transition-colors cursor-pointer select-none min-w-[60px] max-w-[180px] hover:bg-primary/10 dark:hover:bg-muted/60",
                           dragTabId === tab.id && "opacity-40",
@@ -1071,6 +1227,18 @@ export function PlaygroundPage() {
                       history={activeTab.generationHistory}
                       selectedIndex={activeTab.selectedHistoryIndex}
                       onSelect={selectHistoryItem}
+                      onDuplicateToNewTab={(index) => {
+                        const item = activeTab.generationHistory[index];
+                        if (item && activeTab.selectedModel) {
+                          createTab(activeTab.selectedModel, item.formValues);
+                        }
+                      }}
+                      onApplySettings={(index) => {
+                        const item = activeTab.generationHistory[index];
+                        if (item?.formValues) {
+                          setFormValues(item.formValues);
+                        }
+                      }}
                     />
                   </>
                 ) : (

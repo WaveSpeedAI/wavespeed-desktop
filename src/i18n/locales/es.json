@@ -36,7 +36,9 @@
     "settings": "Configuración",
     "clearAll": "Borrar todo",
     "add": "Add",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "showMore": "Mostrar más",
+    "showLess": "Mostrar menos"
   },
   "nav": {
     "home": "Inicio",
@@ -117,6 +119,7 @@
     "type": "Tipo",
     "basePrice": "Precio base",
     "openInNewTab": "Abrir en nueva pestaña",
+    "replaceCurrentTab": "Reemplazar pestaña actual",
     "addToFavorites": "Agregar a favoritos",
     "removeFromFavorites": "Quitar de favoritos"
   },
@@ -262,7 +265,9 @@
       "less": "Menos"
     },
     "history": {
-      "title": "Historial"
+      "title": "Historial",
+      "openInNewTab": "Abrir en nueva pestaña",
+      "useSettings": "Usar esta configuración"
     }
   },
   "history": {
@@ -314,7 +319,9 @@
     "downloadCompleteDesc": "{{count}} archivo(s) descargado(s)",
     "downloadFailed": "Descarga fallida",
     "downloadFailedDesc": "{{count}} archivo(s) no se pudieron descargar",
-    "longPressHint": "Mantén pulsado para seleccionar"
+    "longPressHint": "Mantén pulsado para seleccionar",
+    "openInPlayground": "Abrir en Playground",
+    "modelNotAvailable": "El modelo ya no está disponible"
   },
   "templates": {
     "title": "Plantillas",
@@ -1135,6 +1142,10 @@
     "hideRun": "Ocultar esta ejecución",
     "output": "Salida",
     "outputLowercase": "Salida",
+    "expandNode": "Expandir",
+    "collapseNode": "Contraer",
+    "collapseAll": "Contraer Todo",
+    "expandAll": "Expandir Todo",
     "invalidUrl": "URL no válida",
     "removeLast": "Quitar último",
     "enterField": "Introducir {{field}}...",
@@ -1156,6 +1167,7 @@
     "nodeDefs": {
       "ai-task/run": {
         "label": "WaveSpeed API",
+        "hint": "Ejecuta cualquier modelo de IA — imagen, vídeo, audio y más",
         "emptyHint": "Haz clic en este nodo, luego selecciona un modelo →",
         "params": {
           "modelId": {
@@ -1165,6 +1177,7 @@
       },
       "input/media-upload": {
         "label": "Subir",
+        "hint": "Sube una imagen, vídeo o archivo de audio como entrada del pipeline",
         "inputs": {
           "media": {
             "label": "Medios"
@@ -1178,6 +1191,7 @@
       },
       "input/text-input": {
         "label": "Texto",
+        "hint": "Introduce texto o un prompt para alimentar los nodos siguientes",
         "params": {
           "text": {
             "label": "Texto"
@@ -1186,6 +1200,7 @@
       },
       "output/preview": {
         "label": "Vista previa",
+        "hint": "Previsualizar el resultado directamente en el lienzo",
         "inputs": {
           "input": {
             "label": "URL"
@@ -1209,6 +1224,7 @@
       },
       "output/file": {
         "label": "Exportar archivo",
+        "hint": "Guardar el resultado en un archivo local",
         "inputs": {
           "url": {
             "label": "URL"
@@ -1236,25 +1252,32 @@
         }
       },
       "free-tool/image-enhancer": {
-        "label": "Mejorador de imagen"
+        "label": "Mejorador de imagen",
+        "hint": "Ampliar y mejorar imágenes (2×–4×) gratis"
       },
       "free-tool/background-remover": {
-        "label": "Quitafondos"
+        "label": "Quitafondos",
+        "hint": "Eliminar fondos de imágenes automáticamente gratis"
       },
       "free-tool/face-enhancer": {
-        "label": "Mejorador de rostros"
+        "label": "Mejorador de rostros",
+        "hint": "Mejorar y restaurar rostros en fotos gratis"
       },
       "free-tool/video-enhancer": {
-        "label": "Mejorador de video"
+        "label": "Mejorador de video",
+        "hint": "Ampliar y mejorar la calidad de video gratis"
       },
       "free-tool/face-swapper": {
-        "label": "Cambiador de rostros"
+        "label": "Cambiador de rostros",
+        "hint": "Intercambiar un rostro de una imagen a otra gratis"
       },
       "free-tool/image-eraser": {
-        "label": "Borrador de imágenes"
+        "label": "Borrador de imágenes",
+        "hint": "Borrar objetos de imágenes usando una máscara gratis"
       },
       "free-tool/segment-anything": {
         "label": "Segmentar cualquier cosa",
+        "hint": "Generar una máscara para cualquier objeto en una imagen gratis",
         "params": {
           "pointX": {
             "label": "Punto X",
@@ -1270,19 +1293,32 @@
         }
       },
       "free-tool/video-converter": {
-        "label": "Conversor de video"
+        "label": "Conversor de video",
+        "hint": "Convertir formato, códec o resolución de video gratis"
       },
       "free-tool/audio-converter": {
-        "label": "Conversor de audio"
+        "label": "Conversor de audio",
+        "hint": "Convertir audio entre MP3, WAV, FLAC y más gratis"
       },
       "free-tool/image-converter": {
-        "label": "Conversor de imágenes"
+        "label": "Conversor de imágenes",
+        "hint": "Convertir imágenes entre PNG, JPG, WebP y más gratis"
       },
       "free-tool/media-trimmer": {
-        "label": "Recortador de medios"
+        "label": "Recortador de medios",
+        "hint": "Recortar video o audio a un rango de tiempo específico gratis"
       },
       "free-tool/media-merger": {
-        "label": "Fusionador de medios"
+        "label": "Fusionador de medios",
+        "hint": "Fusionar varios clips de video o audio en uno gratis"
+      },
+      "processing/concat": {
+        "label": "Concatenar",
+        "hint": "Combinar varios valores individuales en un array (ej. imágenes → imágenes[])"
+      },
+      "processing/select": {
+        "label": "Seleccionar",
+        "hint": "Elegir un elemento de un array por índice"
       }
     },
     "modelSelector": {
@@ -1392,6 +1428,10 @@
           "costEstimate": "Estimación de costo en tiempo real por ejecución, para que siempre conozcas el precio antes de ejecutar",
           "upstream": "Conecta salidas de nodos anteriores (imágenes, texto) como entradas — construye flujos de IA de varios pasos"
         }
+      },
+      "concat": {
+        "title": "Nodo Concat — Combinar múltiples salidas",
+        "desc": "¿Necesitas pasar múltiples imágenes a una entrada \"images\"? Usa el nodo Concat:\n\n1. Conecta la salida image de cada nodo anterior a value1, value2, value3, etc. de Concat\n2. Conecta la salida output de Concat (ahora un array) al parámetro images del nodo siguiente\n\nEjemplo:\n[Upload A] → image → Concat → output (array) → [Tarea AI].images\n[Upload B] → image ↗\n\nFunciona para cualquier tipo de salida — imágenes, videos, texto — siempre que necesites combinar múltiples valores individuales en una entrada de array."
       },
       "canvas": {
         "title": "Interacciones del lienzo",

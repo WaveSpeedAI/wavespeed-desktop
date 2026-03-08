@@ -70,6 +70,7 @@ function parsePlaygroundSession(
         uploadingCount: 0,
         generationHistory: [],
         selectedHistoryIndex: null,
+        pendingFormValues: null,
       }),
     );
     const activeTabId =
@@ -149,6 +150,8 @@ interface PlaygroundTab {
   // Generation history (multi-output splitting)
   generationHistory: GenerationHistoryItem[];
   selectedHistoryIndex: number | null;
+  // Pending form values to apply after schema defaults are set
+  pendingFormValues: Record<string, unknown> | null;
 }
 
 interface PlaygroundState {
@@ -156,7 +159,10 @@ interface PlaygroundState {
   activeTabId: string | null;
 
   // Tab management
-  createTab: (model?: Model) => string;
+  createTab: (
+    model?: Model,
+    initialFormValues?: Record<string, unknown>,
+  ) => string;
   closeTab: (tabId: string) => void;
   setActiveTab: (tabId: string) => void;
   reorderTab: (fromIndex: number, toIndex: number) => void;
@@ -187,6 +193,9 @@ interface PlaygroundState {
 
   // History selection
   selectHistoryItem: (index: number | null) => void;
+
+  // Consume pending form values (returns them and clears from tab)
+  consumePendingFormValues: () => Record<string, unknown> | null;
 }
 
 // Check if a value is considered "empty"
@@ -217,6 +226,7 @@ function createEmptyTab(id: string, model?: Model): PlaygroundTab {
     // Generation history
     generationHistory: [],
     selectedHistoryIndex: null,
+    pendingFormValues: null,
   };
 }
 
@@ -233,9 +243,12 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
   tabs: initialSession?.tabs ?? [],
   activeTabId: initialSession?.activeTabId ?? null,
 
-  createTab: (model?: Model) => {
+  createTab: (model?: Model, initialFormValues?: Record<string, unknown>) => {
     const id = `tab-${++tabCounter}`;
     const newTab = createEmptyTab(id, model);
+    if (initialFormValues) {
+      newTab.pendingFormValues = { ...initialFormValues };
+    }
     set((state) => ({
       tabs: [...state.tabs, newTab],
       activeTabId: id,
@@ -882,5 +895,19 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
         ),
       };
     });
+  },
+
+  consumePendingFormValues: () => {
+    const activeTab = get().getActiveTab();
+    if (!activeTab?.pendingFormValues) return null;
+    const pending = activeTab.pendingFormValues;
+    set((state) => ({
+      tabs: state.tabs.map((tab) =>
+        tab.id === state.activeTabId
+          ? { ...tab, pendingFormValues: null }
+          : tab,
+      ),
+    }));
+    return pending;
   },
 }));

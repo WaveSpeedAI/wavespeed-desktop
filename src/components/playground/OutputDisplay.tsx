@@ -24,16 +24,9 @@ import {
   X,
   Save,
   FolderHeart,
-  Gamepad2,
   Sparkles,
 } from "lucide-react";
-import {
-  isUrl,
-  getUrlExtension,
-  isImageUrl,
-  isVideoUrl,
-  isAudioUrl,
-} from "@/lib/mediaUtils";
+import { isImageUrl, isVideoUrl, isAudioUrl } from "@/lib/mediaUtils";
 import { AudioPlayer } from "@/components/shared/AudioPlayer";
 import { FlappyBird } from "./FlappyBird";
 import { toast } from "@/hooks/useToast";
@@ -57,9 +50,11 @@ const mobileDownload = async (
   try {
     // Dynamic imports for Capacitor modules (vite-ignore to prevent desktop build errors)
     const { CapacitorHttp } = await import(
+      // @ts-expect-error -- Capacitor only available in mobile builds
       /* @vite-ignore */ "@capacitor/core"
     );
     const { Filesystem, Directory } = await import(
+      // @ts-expect-error -- Capacitor only available in mobile builds
       /* @vite-ignore */ "@capacitor/filesystem"
     );
 
@@ -119,8 +114,6 @@ export function OutputDisplay({
   error,
   isLoading,
   modelId,
-  hideGameButton,
-  gridLayout,
   historyLength,
   onNavigateHistory,
 }: OutputDisplayProps) {
@@ -134,12 +127,13 @@ export function OutputDisplay({
 
   // Game state
   const [isGameStarted, setIsGameStarted] = useState(false);
-  const [showGame, setShowGame] = useState(true);
+  const [showGame, setShowGame] = useState(
+    () => outputs.length === 0 || isLoading,
+  );
   const [gameEndedWithResults, setGameEndedWithResults] = useState(false);
   const prevOutputsLengthRef = useRef(0);
 
-  const { settings, loadSettings, saveAsset, hasAssetForPrediction } =
-    useAssetsStore();
+  const { settings, loadSettings, saveAsset } = useAssetsStore();
 
   // Build list of media outputs for fullscreen navigation
   const mediaOutputs = useMemo(() => {
@@ -415,6 +409,7 @@ export function OutputDisplay({
     if (isCapacitorNative()) {
       try {
         const { Browser } = await import(
+          // @ts-expect-error -- Capacitor only available in mobile builds
           /* @vite-ignore */ "@capacitor/browser"
         );
         await Browser.open({ url });
@@ -651,10 +646,22 @@ export function OutputDisplay({
               {isAudio && <AudioPlayer src={outputStr} />}
 
               {isObject && (
-                <div className="p-4 w-full h-full overflow-auto">
-                  <pre className="text-sm font-mono whitespace-pre-wrap break-all">
-                    {outputStr}
-                  </pre>
+                <div className="flex items-center justify-center w-full h-full p-6 overflow-auto">
+                  <div className="w-full max-w-md space-y-3">
+                    {Object.entries(output as Record<string, unknown>).map(
+                      ([key, val]) =>
+                        val !== null && val !== undefined ? (
+                          <div key={key} className="space-y-0.5">
+                            <p className="text-xs text-muted-foreground">
+                              {key.replace(/_/g, " ")}
+                            </p>
+                            <p className="text-sm font-medium break-all">
+                              {String(val)}
+                            </p>
+                          </div>
+                        ) : null,
+                    )}
+                  </div>
                 </div>
               )}
 

@@ -1,7 +1,13 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { apiClient } from "@/api/client";
 import { useApiKeyStore } from "@/stores/apiKeyStore";
+import { usePlaygroundStore } from "@/stores/playgroundStore";
+import { useModelsStore } from "@/stores/modelsStore";
+import { usePredictionInputsStore } from "@mobile/stores/predictionInputsStore";
+import { usePageActive } from "@/hooks/usePageActive";
+import { useDeferredClose } from "@/hooks/useDeferredClose";
 import type { HistoryItem } from "@/types/prediction";
 import { OutputDisplay } from "@/components/playground/OutputDisplay";
 import { Button } from "@/components/ui/button";
@@ -11,6 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -51,9 +58,9 @@ import {
   Eye,
   EyeOff,
   Trash2,
-  Sparkles,
   CheckSquare,
   History,
+  Play,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AudioPlayer } from "@/components/shared/AudioPlayer";
@@ -116,20 +123,222 @@ function VideoPreview({ src, enabled }: { src: string; enabled: boolean }) {
   );
 }
 
+// ── Module-level helpers (stable references, no re-creation) ─────────
+
+function formatDate(dateString: string) {
+  return new Date(dateString).toLocaleString();
+}
+
+function getOutputType(
+  output: unknown,
+): "image" | "video" | "audio" | "url" | "json" | "text" {
+  if (typeof output === "object" && output !== null) return "json";
+  if (typeof output === "string") {
+    if (output.match(/\.(jpg|jpeg|png|gif|webp|bmp)(\?.*)?$/i)) return "image";
+    if (output.match(/\.(mp4|webm|mov|avi|mkv)(\?.*)?$/i)) return "video";
+    if (output.match(/\.(mp3|wav|ogg|flac|aac|m4a|wma)(\?.*)?$/i))
+      return "audio";
+    if (output.startsWith("http://") || output.startsWith("https://"))
+      return "url";
+  }
+  return "text";
+}
+
+function getPreviewIcon(item: HistoryItem) {
+  const firstOutput = item.outputs?.[0];
+  const type = getOutputType(firstOutput);
+  switch (type) {
+    case "image":
+      return Image;
+    case "video":
+      return Video;
+    case "audio":
+      return Music;
+    case "url":
+      return Link;
+    case "json":
+      return FileJson;
+    case "text":
+      return FileText;
+    default:
+      return File;
+  }
+}
+
+// ── Memoized HistoryCard (prevents full-list remount on dialog open/close) ──
+
+interface HistoryCardProps {
+  item: HistoryItem;
+  index: number;
+  loadPreviews: boolean;
+  isSelectionMode: boolean;
+  isSelected: boolean;
+  onToggleSelect: (id: string) => void;
+  onSelect: (item: HistoryItem) => void;
+}
+
+const HistoryCard = memo(function HistoryCard({
+  item,
+  index,
+  loadPreviews,
+  isSelectionMode,
+  isSelected,
+  onToggleSelect,
+  onSelect,
+}: HistoryCardProps) {
+  const { t } = useTranslation();
+  const { ref, isInView } = useInView<HTMLDivElement>();
+  const PreviewIcon = getPreviewIcon(item);
+  const hasPreview = item.outputs && item.outputs.length > 0;
+  const firstOutput = item.outputs?.[0];
+  const shouldLoad = loadPreviews && isInView;
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "completed":
+        return <Badge variant="success">{t("history.status.completed")}</Badge>;
+      case "failed":
+        return (
+          <Badge variant="destructive">{t("history.status.failed")}</Badge>
+        );
+      case "processing":
+        return (
+          <Badge variant="warning">{t("history.status.processing")}</Badge>
+        );
+      case "created":
+        return <Badge variant="info">{t("history.status.created")}</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
+    }
+  };
+
+  return (
+    <Card
+      className={cn(
+        "overflow-hidden cursor-pointer rounded-xl border border-border/70 bg-card/80 shadow-sm hover:shadow-md transition-all animate-in fade-in slide-in-from-bottom-2 fill-mode-both",
+        isSelected && "ring-2 ring-primary",
+      )}
+      style={{ animationDelay: `${Math.min(index, 19) * 30}ms` }}
+      onClick={() =>
+        isSelectionMode ? onToggleSelect(item.id) : onSelect(item)
+      }
+    >
+      {/* Preview */}
+      <div ref={ref} className="aspect-square bg-muted relative">
+        {isSelectionMode && (
+          <div
+            className="absolute top-2 left-2 z-10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={() => onToggleSelect(item.id)}
+              className="bg-background"
+            />
+          </div>
+        )}
+        {shouldLoad &&
+        hasPreview &&
+        typeof firstOutput === "string" &&
+        firstOutput.match(/\.(jpg|jpeg|png|gif|webp)/i) ? (
+          <img
+            src={firstOutput}
+            alt="Preview"
+            className="w-full h-full object-cover"
+            loading="lazy"
+            decoding="async"
+          />
+        ) : shouldLoad &&
+          hasPreview &&
+          typeof firstOutput === "string" &&
+          firstOutput.match(/\.(mp4|webm|mov)/i) ? (
+          <VideoPreview src={firstOutput} enabled={shouldLoad} />
+        ) : shouldLoad &&
+          hasPreview &&
+          typeof firstOutput === "string" &&
+          firstOutput.match(/\.(mp3|wav|ogg|flac|aac|m4a|wma)/i) ? (
+          <div
+            className="w-full h-full flex items-center justify-center p-3"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <AudioPlayer src={firstOutput} compact />
+          </div>
+        ) : shouldLoad && hasPreview && typeof firstOutput === "object" ? (
+          <div className="w-full h-full flex flex-col items-center justify-center p-3 gap-1">
+            <FileJson className="h-6 w-6 text-muted-foreground shrink-0" />
+            <pre className="text-[10px] text-muted-foreground overflow-hidden text-ellipsis w-full text-center line-clamp-3">
+              {JSON.stringify(firstOutput, null, 0).slice(0, 100)}
+            </pre>
+          </div>
+        ) : shouldLoad &&
+          hasPreview &&
+          typeof firstOutput === "string" &&
+          !firstOutput.startsWith("http") ? (
+          <div className="w-full h-full flex flex-col items-center justify-center p-3 gap-1">
+            <FileText className="h-6 w-6 text-muted-foreground shrink-0" />
+            <p className="text-[10px] text-muted-foreground overflow-hidden text-ellipsis w-full text-center line-clamp-3">
+              {firstOutput.slice(0, 150)}
+            </p>
+          </div>
+        ) : shouldLoad &&
+          hasPreview &&
+          typeof firstOutput === "string" &&
+          firstOutput.startsWith("http") ? (
+          <div className="w-full h-full flex flex-col items-center justify-center p-3 gap-1">
+            <Link className="h-6 w-6 text-muted-foreground shrink-0" />
+            <p className="text-[10px] text-muted-foreground overflow-hidden text-ellipsis w-full text-center line-clamp-2 break-all">
+              {firstOutput}
+            </p>
+          </div>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <PreviewIcon className="h-10 w-10 text-muted-foreground" />
+          </div>
+        )}
+        <div className="absolute top-1.5 right-1.5">
+          {getStatusBadge(item.status)}
+        </div>
+      </div>
+
+      <CardContent className="p-2.5">
+        <p className="text-sm font-medium truncate">{item.model}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground truncate">
+          {formatDate(item.created_at)}
+        </p>
+        {item.execution_time && (
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {(item.execution_time / 1000).toFixed(2)}s
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+});
+
 export function HistoryPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const isActive = usePageActive("/history");
   const {
     isLoading: isLoadingApiKey,
     isValidated,
     loadApiKey,
     hasAttemptedLoad,
   } = useApiKeyStore();
+  const { createTab } = usePlaygroundStore();
+  const { getModelById } = useModelsStore();
+  const {
+    get: getLocalInputs,
+    load: loadPredictionInputs,
+    isLoaded: inputsLoaded,
+  } = usePredictionInputsStore();
   const [items, setItems] = useState<HistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedItem, setSelectedItem] = useState<HistoryItem | null>(null);
+  const deferredSelectedItem = useDeferredClose(selectedItem);
   const [copiedId, setCopiedId] = useState(false);
   const [loadPreviews, setLoadPreviews] = useState(true);
   const [deleteConfirmItem, setDeleteConfirmItem] =
@@ -138,6 +347,7 @@ export function HistoryPage() {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+  const [isOpeningPlayground, setIsOpeningPlayground] = useState(false);
   const pageSize = 50;
 
   const handleCopyId = async (id: string) => {
@@ -145,6 +355,53 @@ export function HistoryPage() {
     setCopiedId(true);
     setTimeout(() => setCopiedId(false), 2000);
   };
+
+  const handleOpenInPlayground = useCallback(
+    async (item: HistoryItem) => {
+      const model = getModelById(item.model);
+      if (!model) {
+        toast({
+          title: t("common.error"),
+          description: t(
+            "history.modelNotAvailable",
+            "Model is no longer available",
+          ),
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Try local storage first (saved from previous Playground runs)
+      const localEntry = getLocalInputs(item.id);
+      if (localEntry?.inputs && Object.keys(localEntry.inputs).length > 0) {
+        createTab(model, localEntry.inputs);
+        setSelectedItem(null);
+        navigate(`/playground/${encodeURIComponent(item.model)}`);
+        return;
+      }
+
+      // Fallback: try API
+      setIsOpeningPlayground(true);
+      try {
+        const details = await apiClient.getPredictionDetails(item.id);
+        const apiInput =
+          (details as any).input || (details as any).inputs || {};
+        createTab(
+          model,
+          Object.keys(apiInput).length > 0 ? apiInput : undefined,
+        );
+        setSelectedItem(null);
+        navigate(`/playground/${encodeURIComponent(item.model)}`);
+      } catch {
+        createTab(model);
+        setSelectedItem(null);
+        navigate(`/playground/${encodeURIComponent(item.model)}`);
+      } finally {
+        setIsOpeningPlayground(false);
+      }
+    },
+    [getModelById, getLocalInputs, createTab, navigate, t],
+  );
 
   // Navigate to previous/next history item (with loop support)
   const navigateHistory = useCallback(
@@ -168,7 +425,7 @@ export function HistoryPage() {
 
   // Keyboard navigation for detail dialog
   useEffect(() => {
-    if (!selectedItem) return;
+    if (!selectedItem || !isActive) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") {
         e.preventDefault();
@@ -180,7 +437,7 @@ export function HistoryPage() {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [selectedItem, navigateHistory]);
+  }, [isActive, selectedItem, navigateHistory]);
 
   const fetchHistory = useCallback(async () => {
     if (!isValidated) return;
@@ -303,12 +560,18 @@ export function HistoryPage() {
     setSelectedIds(new Set());
   }, []);
 
-  // Load API key on mount
+  // Load API key and prediction inputs on mount
   useEffect(() => {
     loadApiKey();
-  }, [loadApiKey]);
+    if (!inputsLoaded) loadPredictionInputs();
+  }, [loadApiKey, inputsLoaded, loadPredictionInputs]);
 
+  // Only fetch when deps change; skip if data is fresh (< 30s old)
+  const lastFetchTimeRef = useRef(0);
   useEffect(() => {
+    const now = Date.now();
+    if (now - lastFetchTimeRef.current < 30_000 && items.length > 0) return;
+    lastFetchTimeRef.current = now;
     fetchHistory();
   }, [fetchHistory]);
 
@@ -317,13 +580,6 @@ export function HistoryPage() {
   }, [page, statusFilter]);
 
   const maxSelectablePages = 100;
-  const pageOptions = Array.from(
-    { length: maxSelectablePages },
-    (_, index) => index + 1,
-  );
-  const displayStart = items.length === 0 ? 0 : (page - 1) * pageSize + 1;
-  const displayEnd =
-    items.length === 0 ? 0 : (page - 1) * pageSize + items.length;
 
   useEffect(() => {
     if (page > maxSelectablePages) {
@@ -331,6 +587,7 @@ export function HistoryPage() {
     }
   }, [page, maxSelectablePages]);
 
+  // Status badge helper for the detail dialog
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
@@ -350,159 +607,6 @@ export function HistoryPage() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
-  };
-
-  const getOutputType = (
-    output: unknown,
-  ): "image" | "video" | "audio" | "url" | "json" | "text" => {
-    if (typeof output === "object" && output !== null) {
-      return "json";
-    }
-    if (typeof output === "string") {
-      if (output.match(/\.(jpg|jpeg|png|gif|webp|bmp)(\?.*)?$/i))
-        return "image";
-      if (output.match(/\.(mp4|webm|mov|avi|mkv)(\?.*)?$/i)) return "video";
-      if (output.match(/\.(mp3|wav|ogg|flac|aac|m4a|wma)(\?.*)?$/i))
-        return "audio";
-      if (output.startsWith("http://") || output.startsWith("https://"))
-        return "url";
-    }
-    return "text";
-  };
-
-  const getPreviewIcon = (item: HistoryItem) => {
-    const firstOutput = item.outputs?.[0];
-    const type = getOutputType(firstOutput);
-    switch (type) {
-      case "image":
-        return Image;
-      case "video":
-        return Video;
-      case "audio":
-        return Music;
-      case "url":
-        return Link;
-      case "json":
-        return FileJson;
-      case "text":
-        return FileText;
-      default:
-        return File;
-    }
-  };
-
-  const HistoryCard = ({ item }: { item: HistoryItem }) => {
-    const { ref, isInView } = useInView<HTMLDivElement>();
-    const PreviewIcon = getPreviewIcon(item);
-    const hasPreview = item.outputs && item.outputs.length > 0;
-    const firstOutput = item.outputs?.[0];
-    const shouldLoad = loadPreviews && isInView;
-
-    return (
-      <Card
-        key={item.id}
-        className={cn(
-          "overflow-hidden cursor-pointer rounded-xl border border-border/70 bg-card/80 shadow-sm hover:shadow-md transition-all",
-          selectedIds.has(item.id) && "ring-2 ring-primary",
-        )}
-        onClick={() =>
-          isSelectionMode ? handleToggleSelect(item.id) : setSelectedItem(item)
-        }
-      >
-        {/* Preview */}
-        <div ref={ref} className="aspect-square bg-muted relative">
-          {isSelectionMode && (
-            <div
-              className="absolute top-2 left-2 z-10"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Checkbox
-                checked={selectedIds.has(item.id)}
-                onCheckedChange={() => handleToggleSelect(item.id)}
-                className="bg-background"
-              />
-            </div>
-          )}
-          {shouldLoad &&
-          hasPreview &&
-          typeof firstOutput === "string" &&
-          firstOutput.match(/\.(jpg|jpeg|png|gif|webp)/i) ? (
-            <img
-              src={firstOutput}
-              alt="Preview"
-              className="w-full h-full object-cover"
-              loading="lazy"
-              decoding="async"
-            />
-          ) : shouldLoad &&
-            hasPreview &&
-            typeof firstOutput === "string" &&
-            firstOutput.match(/\.(mp4|webm|mov)/i) ? (
-            <VideoPreview src={firstOutput} enabled={shouldLoad} />
-          ) : shouldLoad &&
-            hasPreview &&
-            typeof firstOutput === "string" &&
-            firstOutput.match(/\.(mp3|wav|ogg|flac|aac|m4a|wma)/i) ? (
-            <div
-              className="w-full h-full flex items-center justify-center p-3"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <AudioPlayer src={firstOutput} compact />
-            </div>
-          ) : shouldLoad && hasPreview && typeof firstOutput === "object" ? (
-            <div className="w-full h-full flex flex-col items-center justify-center p-3 gap-1">
-              <FileJson className="h-6 w-6 text-muted-foreground shrink-0" />
-              <pre className="text-[10px] text-muted-foreground overflow-hidden text-ellipsis w-full text-center line-clamp-3">
-                {JSON.stringify(firstOutput, null, 0).slice(0, 100)}
-              </pre>
-            </div>
-          ) : shouldLoad &&
-            hasPreview &&
-            typeof firstOutput === "string" &&
-            !firstOutput.startsWith("http") ? (
-            <div className="w-full h-full flex flex-col items-center justify-center p-3 gap-1">
-              <FileText className="h-6 w-6 text-muted-foreground shrink-0" />
-              <p className="text-[10px] text-muted-foreground overflow-hidden text-ellipsis w-full text-center line-clamp-3">
-                {firstOutput.slice(0, 150)}
-              </p>
-            </div>
-          ) : shouldLoad &&
-            hasPreview &&
-            typeof firstOutput === "string" &&
-            firstOutput.startsWith("http") ? (
-            <div className="w-full h-full flex flex-col items-center justify-center p-3 gap-1">
-              <Link className="h-6 w-6 text-muted-foreground shrink-0" />
-              <p className="text-[10px] text-muted-foreground overflow-hidden text-ellipsis w-full text-center line-clamp-2 break-all">
-                {firstOutput}
-              </p>
-            </div>
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <PreviewIcon className="h-10 w-10 text-muted-foreground" />
-            </div>
-          )}
-          <div className="absolute top-1.5 right-1.5">
-            {getStatusBadge(item.status)}
-          </div>
-        </div>
-
-        <CardContent className="p-2.5">
-          <p className="text-sm font-medium truncate">{item.model}</p>
-          <p className="mt-0.5 text-xs text-muted-foreground truncate">
-            {formatDate(item.created_at)}
-          </p>
-          {item.execution_time && (
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              {(item.execution_time / 1000).toFixed(2)}s
-            </p>
-          )}
-        </CardContent>
-      </Card>
-    );
-  };
-
   // Show loading state while API key is being loaded from storage
   if (isLoadingApiKey || !hasAttemptedLoad) {
     return (
@@ -515,7 +619,7 @@ export function HistoryPage() {
   return (
     <div className="flex h-full flex-col overflow-hidden">
       {/* Header */}
-      <div className="page-header px-4 md:px-6 py-4 pt-14 md:pt-4">
+      <div className="page-header px-4 md:px-6 py-4 pt-14 md:pt-4 animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div className="flex flex-col gap-1.5 md:flex-row md:items-baseline md:gap-3">
             <h1 className="text-xl md:text-2xl font-bold tracking-tight flex items-center gap-2">
@@ -673,8 +777,17 @@ export function HistoryPage() {
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-              {items.map((item) => (
-                <HistoryCard key={item.id} item={item} />
+              {items.map((item, index) => (
+                <HistoryCard
+                  key={item.id}
+                  item={item}
+                  index={index}
+                  loadPreviews={loadPreviews}
+                  isSelectionMode={isSelectionMode}
+                  isSelected={selectedIds.has(item.id)}
+                  onToggleSelect={handleToggleSelect}
+                  onSelect={setSelectedItem}
+                />
               ))}
             </div>
           )}
@@ -755,13 +868,19 @@ export function HistoryPage() {
               {t("history.generationDetails")}
               {items.length > 1 && (
                 <span className="text-sm font-normal text-muted-foreground">
-                  ({items.findIndex((item) => item.id === selectedItem?.id) + 1}
+                  (
+                  {items.findIndex(
+                    (item) => item.id === deferredSelectedItem?.id,
+                  ) + 1}
                   /{items.length})
                 </span>
               )}
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              {deferredSelectedItem?.model ?? ""}
+            </DialogDescription>
           </DialogHeader>
-          {selectedItem && (
+          {deferredSelectedItem && (
             <div className="flex-1 overflow-y-auto space-y-4 relative">
               {/* Navigation buttons on sides */}
               {items.length > 1 && (
@@ -784,11 +903,24 @@ export function HistoryPage() {
                   </Button>
                 </>
               )}
-              <div className="flex justify-end">
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => handleOpenInPlayground(deferredSelectedItem)}
+                  disabled={isOpeningPlayground}
+                >
+                  {isOpeningPlayground ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Play className="h-4 w-4 mr-2" />
+                  )}
+                  {t("history.openInPlayground", "Open in Playground")}
+                </Button>
                 <Button
                   variant="destructive"
                   size="sm"
-                  onClick={() => setDeleteConfirmItem(selectedItem)}
+                  onClick={() => setDeleteConfirmItem(deferredSelectedItem)}
                   disabled={isDeleting}
                 >
                   {isDeleting ? (
@@ -800,53 +932,55 @@ export function HistoryPage() {
                 </Button>
               </div>
               {/* Preview using OutputDisplay */}
-              {selectedItem.outputs && selectedItem.outputs.length > 0 && (
-                <div className="h-[400px]">
-                  <OutputDisplay
-                    prediction={{
-                      id: selectedItem.id,
-                      model: selectedItem.model,
-                      status: selectedItem.status,
-                      outputs: selectedItem.outputs,
-                      has_nsfw_contents: selectedItem.has_nsfw_contents,
-                      timings: selectedItem.execution_time
-                        ? { inference: selectedItem.execution_time }
-                        : undefined,
-                    }}
-                    outputs={selectedItem.outputs}
-                    error={null}
-                    isLoading={false}
-                  />
-                </div>
-              )}
+              {deferredSelectedItem.outputs &&
+                deferredSelectedItem.outputs.length > 0 && (
+                  <div className="h-[400px]">
+                    <OutputDisplay
+                      prediction={{
+                        id: deferredSelectedItem.id,
+                        model: deferredSelectedItem.model,
+                        status: deferredSelectedItem.status,
+                        outputs: deferredSelectedItem.outputs,
+                        has_nsfw_contents:
+                          deferredSelectedItem.has_nsfw_contents,
+                        timings: deferredSelectedItem.execution_time
+                          ? { inference: deferredSelectedItem.execution_time }
+                          : undefined,
+                      }}
+                      outputs={deferredSelectedItem.outputs}
+                      error={null}
+                      isLoading={false}
+                    />
+                  </div>
+                )}
 
               {/* Details */}
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-muted-foreground">{t("history.model")}</p>
-                  <p className="font-medium">{selectedItem.model}</p>
+                  <p className="font-medium">{deferredSelectedItem.model}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">
                     {t("history.status.all").replace("All ", "")}
                   </p>
-                  <div>{getStatusBadge(selectedItem.status)}</div>
+                  <div>{getStatusBadge(deferredSelectedItem.status)}</div>
                 </div>
                 <div>
                   <p className="text-muted-foreground">
                     {t("history.created")}
                   </p>
                   <p className="font-medium">
-                    {formatDate(selectedItem.created_at)}
+                    {formatDate(deferredSelectedItem.created_at)}
                   </p>
                 </div>
-                {selectedItem.execution_time && (
+                {deferredSelectedItem.execution_time && (
                   <div>
                     <p className="text-muted-foreground">
                       {t("history.executionTime")}
                     </p>
                     <p className="font-medium">
-                      {(selectedItem.execution_time / 1000).toFixed(2)}s
+                      {(deferredSelectedItem.execution_time / 1000).toFixed(2)}s
                     </p>
                   </div>
                 )}
@@ -856,12 +990,12 @@ export function HistoryPage() {
                   </p>
                   <div className="flex items-center gap-2">
                     <code className="text-xs bg-muted px-2 py-1 rounded flex-1 truncate">
-                      {selectedItem.id}
+                      {deferredSelectedItem.id}
                     </code>
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => handleCopyId(selectedItem.id)}
+                      onClick={() => handleCopyId(deferredSelectedItem.id)}
                     >
                       {copiedId ? (
                         <Check className="h-4 w-4 text-green-500" />

@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useContext, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { PageResetContext } from "@/components/layout/PageResetContext";
 import { useTranslation } from "react-i18next";
+import { usePageActive } from "@/hooks/usePageActive";
 import { generateFreeToolFilename } from "@/stores/assetsStore";
 import {
   useFaceSwapperWorker,
@@ -74,6 +75,7 @@ export function FaceSwapperPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const isActive = usePageActive("/free-tools/face-swapper");
   const { resetPage } = useContext(PageResetContext);
   const sourceInputRef = useRef<HTMLInputElement>(null);
   const targetInputRef = useRef<HTMLInputElement>(null);
@@ -183,12 +185,13 @@ export function FaceSwapperPage() {
 
   // Listen for window resize to redraw face boxes
   useEffect(() => {
+    if (!isActive) return;
     const handleResize = () => {
       setResizeTrigger((prev) => prev + 1);
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [isActive]);
 
   const {
     initModels,
@@ -1075,7 +1078,7 @@ export function FaceSwapperPage() {
       <canvas ref={canvasRef} className="hidden" />
 
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-4 mb-6 animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both">
         <Button variant="ghost" size="icon" onClick={handleBack}>
           <ArrowLeft className="h-5 w-5" />
         </Button>

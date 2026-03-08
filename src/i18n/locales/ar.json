@@ -36,7 +36,9 @@
     "clearAll": "مسح الكل",
     "deselectAll": "إلغاء تحديد الكل",
     "add": "Add",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "showMore": "عرض المزيد",
+    "showLess": "عرض أقل"
   },
   "nav": {
     "home": "الرئيسية",
@@ -117,6 +119,7 @@
     "type": "النوع",
     "basePrice": "السعر الأساسي",
     "openInNewTab": "فتح في علامة تبويب جديدة",
+    "replaceCurrentTab": "استبدال علامة التبويب الحالية",
     "addToFavorites": "إضافة إلى المفضلة",
     "removeFromFavorites": "إزالة من المفضلة"
   },
@@ -262,7 +265,9 @@
       "less": "أقل"
     },
     "history": {
-      "title": "السجل"
+      "title": "السجل",
+      "openInNewTab": "فتح في علامة تبويب جديدة",
+      "useSettings": "استخدام هذه الإعدادات"
     }
   },
   "history": {
@@ -314,7 +319,9 @@
       "successDesc": "يمكنك استخدامه من صفحة القوالب",
       "error": "فشل حفظ القالب"
     },
-    "longPressHint": "اضغط مطولاً للتحديد"
+    "longPressHint": "اضغط مطولاً للتحديد",
+    "openInPlayground": "فتح في Playground",
+    "modelNotAvailable": "النموذج لم يعد متاحًا"
   },
   "templates": {
     "title": "القوالب",
@@ -1135,6 +1142,10 @@
     "hideRun": "إخفاء هذا التشغيل",
     "output": "الإخراج",
     "outputLowercase": "الإخراج",
+    "expandNode": "توسيع",
+    "collapseNode": "طي",
+    "collapseAll": "طي الكل",
+    "expandAll": "توسيع الكل",
     "invalidUrl": "URL غير صالح",
     "removeLast": "إزالة האחר",
     "enterField": "أدخل {{field}}...",
@@ -1156,6 +1167,7 @@
     "nodeDefs": {
       "ai-task/run": {
         "label": "WaveSpeed API",
+        "hint": "تشغيل أي نموذج ذكاء اصطناعي — صور وفيديو وصوت والمزيد",
         "emptyHint": "انقر على هذه العقدة، ثم اختر النموذج ←",
         "params": {
           "modelId": {
@@ -1165,6 +1177,7 @@
       },
       "input/media-upload": {
         "label": "تحميل",
+        "hint": "تحميل صورة أو فيديو أو ملف صوتي كمدخل للمسار",
         "inputs": {
           "media": {
             "label": "وسائط"
@@ -1178,6 +1191,7 @@
       },
       "input/text-input": {
         "label": "النص",
+        "hint": "أدخل نصاً أو أمراً لتمريره إلى العقد التالية",
         "params": {
           "text": {
             "label": "النص"
@@ -1186,6 +1200,7 @@
       },
       "output/preview": {
         "label": "معاينة",
+        "hint": "معاينة النتيجة مباشرة على اللوحة",
         "inputs": {
           "input": {
             "label": "رابط"
@@ -1209,6 +1224,7 @@
       },
       "output/file": {
         "label": "تصدير الملف",
+        "hint": "حفظ النتيجة في ملف محلي",
         "inputs": {
           "url": {
             "label": "رابط"
@@ -1236,25 +1252,32 @@
         }
       },
       "free-tool/image-enhancer": {
-        "label": "تحسين الصورة"
+        "label": "تحسين الصورة",
+        "hint": "تكبير وتحسين الصور (2×–4×) مجاناً"
       },
       "free-tool/background-remover": {
-        "label": "إزالة الخلفية"
+        "label": "إزالة الخلفية",
+        "hint": "إزالة خلفيات الصور تلقائياً مجاناً"
       },
       "free-tool/face-enhancer": {
-        "label": "محسن الوجوه"
+        "label": "محسن الوجوه",
+        "hint": "تحسين واستعادة الوجوه في الصور مجاناً"
       },
       "free-tool/video-enhancer": {
-        "label": "تحسين الفيديو"
+        "label": "تحسين الفيديو",
+        "hint": "تكبير وتحسين جودة الفيديو مجاناً"
       },
       "free-tool/face-swapper": {
-        "label": "مبدل الوجوه"
+        "label": "مبدل الوجوه",
+        "hint": "تبديل وجه من صورة إلى أخرى مجاناً"
       },
       "free-tool/image-eraser": {
-        "label": "ممحاة الصور"
+        "label": "ممحاة الصور",
+        "hint": "مسح الكائنات من الصور باستخدام قناع مجاناً"
       },
       "free-tool/segment-anything": {
         "label": "تقسيم أي شيء",
+        "hint": "إنشاء قناع لأي كائن في صورة مجاناً",
         "params": {
           "pointX": {
             "label": "النقطة X",
@@ -1270,19 +1293,32 @@
         }
       },
       "free-tool/video-converter": {
-        "label": "محول الفيديو"
+        "label": "محول الفيديو",
+        "hint": "تحويل صيغة أو ترميز أو دقة الفيديو مجاناً"
       },
       "free-tool/audio-converter": {
-        "label": "محول الصوت"
+        "label": "محول الصوت",
+        "hint": "تحويل الصوت بين MP3 وWAV وFLAC والمزيد مجاناً"
       },
       "free-tool/image-converter": {
-        "label": "محول الصور"
+        "label": "محول الصور",
+        "hint": "تحويل الصور بين PNG وJPG وWebP والمزيد مجاناً"
       },
       "free-tool/media-trimmer": {
-        "label": "مقص الوسائط"
+        "label": "مقص الوسائط",
+        "hint": "قص الفيديو أو الصوت إلى نطاق زمني محدد مجاناً"
       },
       "free-tool/media-merger": {
-        "label": "دامج الوسائط"
+        "label": "دامج الوسائط",
+        "hint": "دمج عدة مقاطع فيديو أو صوت في واحد مجاناً"
+      },
+      "processing/concat": {
+        "label": "دمج",
+        "hint": "دمج عدة قيم مفردة في مصفوفة واحدة (مثال: صور → صور[])"
+      },
+      "processing/select": {
+        "label": "اختيار",
+        "hint": "اختيار عنصر واحد من مصفوفة حسب الفهرس"
       }
     },
     "modelSelector": {
@@ -1392,6 +1428,10 @@
           "costEstimate": "تقدير تكلفة لحظي لكل تشغيل حتى تعرف السعر دائمًا قبل التنفيذ",
           "upstream": "وصّل مخرجات العقد السابقة (صور، نص) كمدخلات — ابنِ خطوط معالجة ذكاء اصطناعي متعددة الخطوات"
         }
+      },
+      "concat": {
+        "title": "عقدة Concat — دمج مخرجات متعددة",
+        "desc": "هل تحتاج لتمرير عدة صور إلى مدخل \"images\"؟ استخدم عقدة Concat:\n\n1. صِل مخرج image من كل عقدة سابقة بمدخلات Concat: value1، value2، value3، إلخ.\n2. صِل مخرج output من Concat (الآن مصفوفة) بمعامل images في العقدة التالية.\n\nمثال:\n[رفع A] → image → Concat → output (مصفوفة) → [مهمة AI].images\n[رفع B] → image ↗\n\nيعمل مع أي نوع مخرجات — صور، فيديو، نص — كلما احتجت لدمج عدة قيم فردية في مدخل مصفوفة واحد."
       },
       "canvas": {
         "title": "التفاعل مع اللوحة",

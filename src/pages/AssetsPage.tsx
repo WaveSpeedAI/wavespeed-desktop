@@ -1,6 +1,8 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { useAssetsStore } from "@/stores/assetsStore";
+import { usePageActive } from "@/hooks/usePageActive";
+import { useDeferredClose } from "@/hooks/useDeferredClose";
 import { formatBytes } from "@/types/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -178,8 +180,228 @@ function getAssetUrl(asset: AssetMetadata): string {
   return asset.originalUrl || "";
 }
 
+// ── Memoized AssetCard (prevents full-list remount on dialog open/close) ──
+
+interface AssetCardProps {
+  asset: AssetMetadata;
+  assetKey: string;
+  index: number;
+  loadPreviews: boolean;
+  isSelectionMode: boolean;
+  isSelected: boolean;
+  onToggleSelect: (id: string) => void;
+  onSelect: (asset: AssetMetadata) => void;
+  onOpenLocation: (asset: AssetMetadata) => void;
+  onDownload: (asset: AssetMetadata) => void;
+  onToggleFavorite: (asset: AssetMetadata) => void;
+  onManageTags: (asset: AssetMetadata) => void;
+  onDelete: (asset: AssetMetadata) => void;
+  onPreviewLoaded: (key: string) => void;
+}
+
+const AssetCard = memo(function AssetCard({
+  asset,
+  assetKey,
+  index,
+  loadPreviews,
+  isSelectionMode,
+  isSelected,
+  onToggleSelect,
+  onSelect,
+  onOpenLocation,
+  onDownload,
+  onToggleFavorite,
+  onManageTags,
+  onDelete,
+  onPreviewLoaded,
+}: AssetCardProps) {
+  const { t } = useTranslation();
+  const { ref, isInView } = useInView<HTMLDivElement>();
+  const assetUrl = getAssetUrl(asset);
+  const shouldLoad = loadPreviews && isInView;
+
+  useEffect(() => {
+    if (!loadPreviews || !isInView || !assetUrl) return;
+    onPreviewLoaded(assetKey);
+  }, [assetKey, assetUrl, isInView, loadPreviews, onPreviewLoaded]);
+
+  return (
+    <div
+      className={cn(
+        "group relative overflow-hidden rounded-xl border border-border/70 bg-card/85 shadow-sm transition-all hover:shadow-md animate-in fade-in slide-in-from-bottom-2 fill-mode-both",
+        isSelected && "ring-2 ring-primary",
+      )}
+      style={{ animationDelay: `${Math.min(index, 19) * 30}ms` }}
+    >
+      {/* Thumbnail */}
+      <div
+        ref={ref}
+        className="aspect-square bg-muted flex items-center justify-center cursor-pointer"
+        onClick={() =>
+          isSelectionMode ? onToggleSelect(asset.id) : onSelect(asset)
+        }
+      >
+        {asset.type === "image" && shouldLoad && assetUrl ? (
+          <img
+            src={assetUrl}
+            alt={asset.fileName}
+            className="w-full h-full object-cover"
+            loading="lazy"
+            decoding="async"
+          />
+        ) : asset.type === "video" && shouldLoad && assetUrl ? (
+          <VideoPreview src={assetUrl} enabled={shouldLoad} />
+        ) : (
+          <AssetTypeIcon
+            type={asset.type}
+            className="h-12 w-12 text-muted-foreground"
+          />
+        )}
+
+        {/* Selection checkbox overlay */}
+        {isSelectionMode && (
+          <div
+            className="absolute top-2 left-2"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={() => onToggleSelect(asset.id)}
+              className="bg-background"
+            />
+          </div>
+        )}
+
+        {/* Favorite star */}
+        {asset.favorite && (
+          <div className="absolute top-2 right-2">
+            <Star className="h-5 w-5 fill-yellow-400 text-yellow-400 drop-shadow-sm" />
+          </div>
+        )}
+
+        {/* Type badge */}
+        <Badge
+          variant="secondary"
+          className={cn(
+            "absolute text-xs",
+            isSelectionMode ? "top-9 left-2" : "top-2 left-2",
+          )}
+        >
+          <AssetTypeIcon type={asset.type} className="h-3 w-3 mr-1" />
+          {t(`assets.types.${asset.type}`)}
+        </Badge>
+      </div>
+
+      {/* Info */}
+      <div className="p-2">
+        <div className="flex items-start justify-between gap-1">
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium truncate" title={asset.fileName}>
+              {asset.fileName}
+            </p>
+            {asset.source === "workflow" && asset.workflowName ? (
+              <p
+                className="text-xs text-blue-400 truncate flex items-center gap-1"
+                title={`Workflow: ${asset.workflowName}`}
+              >
+                <GitBranch className="h-3 w-3 shrink-0" />
+                {asset.workflowName}
+              </p>
+            ) : (
+              <p
+                className="text-xs text-muted-foreground truncate"
+                title={asset.modelId}
+              >
+                {asset.modelId}
+              </p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              {formatDate(asset.createdAt)} · {formatBytes(asset.fileSize)}
+            </p>
+          </div>
+
+          {/* Actions */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 shrink-0 rounded-lg text-muted-foreground hover:text-foreground"
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onSelect(asset)}>
+                <Eye className="mr-2 h-4 w-4" />
+                {t("assets.preview")}
+              </DropdownMenuItem>
+              {isDesktopMode ? (
+                <DropdownMenuItem onClick={() => onOpenLocation(asset)}>
+                  <FolderOpen className="mr-2 h-4 w-4" />
+                  {t("assets.openLocation")}
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem onClick={() => onDownload(asset)}>
+                  <Download className="mr-2 h-4 w-4" />
+                  {t("common.download")}
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem onClick={() => onToggleFavorite(asset)}>
+                <Star
+                  className={cn(
+                    "mr-2 h-4 w-4",
+                    asset.favorite && "fill-yellow-400",
+                  )}
+                />
+                {asset.favorite ? t("assets.unfavorite") : t("assets.favorite")}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onManageTags(asset)}>
+                <Tag className="mr-2 h-4 w-4" />
+                {t("assets.manageTags")}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => onDelete(asset)}
+                className="text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                {t("common.delete")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        {/* Tags */}
+        {asset.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {asset.tags.slice(0, 3).map((tag) => (
+              <Badge
+                key={tag}
+                variant="outline"
+                className="rounded-md border-border/70 bg-background text-xs"
+              >
+                {tag}
+              </Badge>
+            ))}
+            {asset.tags.length > 3 && (
+              <Badge
+                variant="outline"
+                className="rounded-md border-border/70 bg-background text-xs"
+              >
+                +{asset.tags.length - 3}
+              </Badge>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+});
+
 export function AssetsPage() {
   const { t } = useTranslation();
+  const isActive = usePageActive("/assets");
   const {
     assets,
     isLoaded,
@@ -205,6 +427,7 @@ export function AssetsPage() {
 
   // Dialog state
   const [previewAsset, setPreviewAsset] = useState<AssetMetadata | null>(null);
+  const deferredPreviewAsset = useDeferredClose(previewAsset);
   const [deleteConfirmAsset, setDeleteConfirmAsset] =
     useState<AssetMetadata | null>(null);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
@@ -222,17 +445,9 @@ export function AssetsPage() {
 
   // Preview toggle
   const [loadPreviews, setLoadPreviews] = useState(true);
-  const [loadedPreviewKeys, setLoadedPreviewKeys] = useState<Set<string>>(
-    () => new Set(),
-  );
 
-  const markPreviewLoaded = useCallback((key: string) => {
-    setLoadedPreviewKeys((prev) => {
-      if (prev.has(key)) return prev;
-      const next = new Set(prev);
-      next.add(key);
-      return next;
-    });
+  const markPreviewLoaded = useCallback((_key: string) => {
+    // Placeholder — cards track their own visibility via useInView
   }, []);
 
   // Load assets on mount
@@ -292,11 +507,6 @@ export function AssetsPage() {
 
   const handleFavoritesFilterChange = useCallback((checked: boolean) => {
     setFilter((f) => ({ ...f, favoritesOnly: checked }));
-  }, []);
-
-  const handleClearFilters = useCallback(() => {
-    setFilter({});
-    setSearchQuery("");
   }, []);
 
   const handleToggleFavorite = useCallback(
@@ -464,7 +674,7 @@ export function AssetsPage() {
 
   // Keyboard navigation for preview dialog
   useEffect(() => {
-    if (!previewAsset) return;
+    if (!previewAsset || !isActive) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") {
         e.preventDefault();
@@ -476,204 +686,7 @@ export function AssetsPage() {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [previewAsset, navigateAsset]);
-
-  const AssetCard = ({
-    asset,
-    assetKey,
-  }: {
-    asset: AssetMetadata;
-    assetKey: string;
-  }) => {
-    const { ref, isInView } = useInView<HTMLDivElement>();
-    const assetUrl = getAssetUrl(asset);
-    const shouldLoad =
-      loadPreviews && (isInView || loadedPreviewKeys.has(assetKey));
-
-    useEffect(() => {
-      if (!loadPreviews || !isInView || !assetUrl) return;
-      markPreviewLoaded(assetKey);
-    }, [assetKey, assetUrl, isInView, loadPreviews, markPreviewLoaded]);
-
-    return (
-      <div
-        className={cn(
-          "group relative overflow-hidden rounded-xl border border-border/70 bg-card/85 shadow-sm transition-all hover:shadow-md",
-          selectedIds.has(asset.id) && "ring-2 ring-primary",
-        )}
-      >
-        {/* Thumbnail */}
-        <div
-          ref={ref}
-          className="aspect-square bg-muted flex items-center justify-center cursor-pointer"
-          onClick={() =>
-            isSelectionMode
-              ? handleToggleSelect(asset.id)
-              : setPreviewAsset(asset)
-          }
-        >
-          {asset.type === "image" && shouldLoad && assetUrl ? (
-            <img
-              src={assetUrl}
-              alt={asset.fileName}
-              className="w-full h-full object-cover"
-              loading="lazy"
-              decoding="async"
-            />
-          ) : asset.type === "video" && shouldLoad && assetUrl ? (
-            <VideoPreview src={assetUrl} enabled={shouldLoad} />
-          ) : (
-            <AssetTypeIcon
-              type={asset.type}
-              className="h-12 w-12 text-muted-foreground"
-            />
-          )}
-
-          {/* Selection checkbox overlay */}
-          {isSelectionMode && (
-            <div
-              className="absolute top-2 left-2"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Checkbox
-                checked={selectedIds.has(asset.id)}
-                onCheckedChange={() => handleToggleSelect(asset.id)}
-                className="bg-background"
-              />
-            </div>
-          )}
-
-          {/* Favorite star */}
-          {asset.favorite && (
-            <div className="absolute top-2 right-2">
-              <Star className="h-5 w-5 fill-yellow-400 text-yellow-400 drop-shadow-sm" />
-            </div>
-          )}
-
-          {/* Type badge */}
-          <Badge
-            variant="secondary"
-            className={cn(
-              "absolute text-xs",
-              isSelectionMode ? "top-9 left-2" : "top-2 left-2",
-            )}
-          >
-            <AssetTypeIcon type={asset.type} className="h-3 w-3 mr-1" />
-            {t(`assets.types.${asset.type}`)}
-          </Badge>
-        </div>
-
-        {/* Info */}
-        <div className="p-2">
-          <div className="flex items-start justify-between gap-1">
-            <div className="min-w-0 flex-1">
-              <p
-                className="text-sm font-medium truncate"
-                title={asset.fileName}
-              >
-                {asset.fileName}
-              </p>
-              {asset.source === "workflow" && asset.workflowName ? (
-                <p
-                  className="text-xs text-blue-400 truncate flex items-center gap-1"
-                  title={`Workflow: ${asset.workflowName}`}
-                >
-                  <GitBranch className="h-3 w-3 shrink-0" />
-                  {asset.workflowName}
-                </p>
-              ) : (
-                <p
-                  className="text-xs text-muted-foreground truncate"
-                  title={asset.modelId}
-                >
-                  {asset.modelId}
-                </p>
-              )}
-              <p className="text-xs text-muted-foreground">
-                {formatDate(asset.createdAt)} · {formatBytes(asset.fileSize)}
-              </p>
-            </div>
-
-            {/* Actions */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 shrink-0 rounded-lg text-muted-foreground hover:text-foreground"
-                >
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setPreviewAsset(asset)}>
-                  <Eye className="mr-2 h-4 w-4" />
-                  {t("assets.preview")}
-                </DropdownMenuItem>
-                {isDesktopMode ? (
-                  <DropdownMenuItem onClick={() => handleOpenLocation(asset)}>
-                    <FolderOpen className="mr-2 h-4 w-4" />
-                    {t("assets.openLocation")}
-                  </DropdownMenuItem>
-                ) : (
-                  <DropdownMenuItem onClick={() => handleDownload(asset)}>
-                    <Download className="mr-2 h-4 w-4" />
-                    {t("common.download")}
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem onClick={() => handleToggleFavorite(asset)}>
-                  <Star
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      asset.favorite && "fill-yellow-400",
-                    )}
-                  />
-                  {asset.favorite
-                    ? t("assets.unfavorite")
-                    : t("assets.favorite")}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTagDialogAsset(asset)}>
-                  <Tag className="mr-2 h-4 w-4" />
-                  {t("assets.manageTags")}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => setDeleteConfirmAsset(asset)}
-                  className="text-destructive"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  {t("common.delete")}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-
-          {/* Tags */}
-          {asset.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-2">
-              {asset.tags.slice(0, 3).map((tag) => (
-                <Badge
-                  key={tag}
-                  variant="outline"
-                  className="rounded-md border-border/70 bg-background text-xs"
-                >
-                  {tag}
-                </Badge>
-              ))}
-              {asset.tags.length > 3 && (
-                <Badge
-                  variant="outline"
-                  className="rounded-md border-border/70 bg-background text-xs"
-                >
-                  +{asset.tags.length - 3}
-                </Badge>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
+  }, [isActive, previewAsset, navigateAsset]);
 
   if (isLoading || !isLoaded) {
     return (
@@ -686,7 +699,7 @@ export function AssetsPage() {
   return (
     <div className="flex h-full flex-col pt-12 md:pt-0">
       {/* Header */}
-      <div className="page-header px-4 md:px-6 py-4 border-b border-border/70">
+      <div className="page-header px-4 md:px-6 py-4 border-b border-border/70 animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both">
         <div className="flex flex-col gap-1.5 md:flex-row md:items-baseline md:gap-3 mb-4">
           <h1 className="flex items-center gap-2 text-xl md:text-2xl font-bold tracking-tight">
             <FolderHeart className="h-5 w-5 text-primary" />
@@ -973,10 +986,26 @@ export function AssetsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4 p-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {paginatedAssets.map((asset) => {
+            {paginatedAssets.map((asset, index) => {
               const assetKey = asset.filePath || asset.originalUrl || asset.id;
               return (
-                <AssetCard key={assetKey} asset={asset} assetKey={assetKey} />
+                <AssetCard
+                  key={assetKey}
+                  asset={asset}
+                  assetKey={assetKey}
+                  index={index}
+                  loadPreviews={loadPreviews}
+                  isSelectionMode={isSelectionMode}
+                  isSelected={selectedIds.has(asset.id)}
+                  onToggleSelect={handleToggleSelect}
+                  onSelect={setPreviewAsset}
+                  onOpenLocation={handleOpenLocation}
+                  onDownload={handleDownload}
+                  onToggleFavorite={handleToggleFavorite}
+                  onManageTags={setTagDialogAsset}
+                  onDelete={setDeleteConfirmAsset}
+                  onPreviewLoaded={markPreviewLoaded}
+                />
               );
             })}
           </div>
@@ -1019,25 +1048,27 @@ export function AssetsPage() {
         <DialogContent className="max-w-4xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              {previewAsset?.fileName}
-              {paginatedAssets.length > 1 && previewAsset && (
+              {deferredPreviewAsset?.fileName}
+              {paginatedAssets.length > 1 && deferredPreviewAsset && (
                 <span className="text-sm font-normal text-muted-foreground">
                   (
-                  {paginatedAssets.findIndex((a) => a.id === previewAsset.id) +
-                    1}
+                  {paginatedAssets.findIndex(
+                    (a) => a.id === deferredPreviewAsset.id,
+                  ) + 1}
                   /{paginatedAssets.length})
                 </span>
               )}
             </DialogTitle>
             <DialogDescription>
-              {previewAsset?.modelId} ·{" "}
-              {previewAsset && formatDate(previewAsset.createdAt)}
-              {previewAsset?.source === "workflow" &&
-                previewAsset?.workflowName && (
+              {deferredPreviewAsset?.modelId} ·{" "}
+              {deferredPreviewAsset &&
+                formatDate(deferredPreviewAsset.createdAt)}
+              {deferredPreviewAsset?.source === "workflow" &&
+                deferredPreviewAsset?.workflowName && (
                   <>
                     {" "}
                     · <GitBranch className="inline h-3 w-3" />{" "}
-                    {previewAsset.workflowName}
+                    {deferredPreviewAsset.workflowName}
                   </>
                 )}
             </DialogDescription>
@@ -1064,31 +1095,31 @@ export function AssetsPage() {
                 </Button>
               </>
             )}
-            {previewAsset?.type === "image" && (
+            {deferredPreviewAsset?.type === "image" && (
               <img
-                src={getAssetUrl(previewAsset)}
-                alt={previewAsset.fileName}
+                src={getAssetUrl(deferredPreviewAsset)}
+                alt={deferredPreviewAsset.fileName}
                 className="max-w-full max-h-[60vh] mx-auto object-contain"
               />
             )}
-            {previewAsset?.type === "video" && (
+            {deferredPreviewAsset?.type === "video" && (
               <video
-                src={getAssetUrl(previewAsset)}
+                src={getAssetUrl(deferredPreviewAsset)}
                 controls
                 className="max-w-full max-h-[60vh] mx-auto"
               />
             )}
-            {previewAsset?.type === "audio" && (
+            {deferredPreviewAsset?.type === "audio" && (
               <div className="flex items-center justify-center p-8">
                 <audio
-                  src={getAssetUrl(previewAsset)}
+                  src={getAssetUrl(deferredPreviewAsset)}
                   controls
                   className="w-full max-w-md"
                 />
               </div>
             )}
-            {(previewAsset?.type === "text" ||
-              previewAsset?.type === "json") && (
+            {(deferredPreviewAsset?.type === "text" ||
+              deferredPreviewAsset?.type === "json") && (
               <div className="p-4 bg-muted rounded-lg text-sm">
                 <p className="text-muted-foreground">
                   {t("assets.textPreviewUnavailable")}
@@ -1100,7 +1131,10 @@ export function AssetsPage() {
             {isDesktopMode ? (
               <Button
                 variant="outline"
-                onClick={() => previewAsset && handleOpenLocation(previewAsset)}
+                onClick={() =>
+                  deferredPreviewAsset &&
+                  handleOpenLocation(deferredPreviewAsset)
+                }
               >
                 <FolderOpen className="mr-2 h-4 w-4" />
                 {t("assets.openLocation")}
@@ -1108,7 +1142,9 @@ export function AssetsPage() {
             ) : (
               <Button
                 variant="outline"
-                onClick={() => previewAsset && handleDownload(previewAsset)}
+                onClick={() =>
+                  deferredPreviewAsset && handleDownload(deferredPreviewAsset)
+                }
               >
                 <Download className="mr-2 h-4 w-4" />
                 {t("common.download")}
@@ -1116,15 +1152,18 @@ export function AssetsPage() {
             )}
             <Button
               variant="outline"
-              onClick={() => previewAsset && handleToggleFavorite(previewAsset)}
+              onClick={() =>
+                deferredPreviewAsset &&
+                handleToggleFavorite(deferredPreviewAsset)
+              }
             >
               <Star
                 className={cn(
                   "mr-2 h-4 w-4",
-                  previewAsset?.favorite && "fill-yellow-400",
+                  deferredPreviewAsset?.favorite && "fill-yellow-400",
                 )}
               />
-              {previewAsset?.favorite
+              {deferredPreviewAsset?.favorite
                 ? t("assets.unfavorite")
                 : t("assets.favorite")}
             </Button>

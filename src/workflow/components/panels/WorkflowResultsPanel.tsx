@@ -124,7 +124,9 @@ export function WorkflowResultsPanel() {
         role="separator"
         aria-orientation="vertical"
         onMouseDown={onResizeStart}
-        className={`absolute left-0 top-0 bottom-0 w-1 cursor-col-resize z-10 transition-colors ${dragging ? "bg-primary" : "hover:bg-primary/50"}`}
+        className={`absolute left-0 top-0 bottom-0 w-1 cursor-col-resize z-10 transition-colors ${
+          dragging ? "bg-primary" : "hover:bg-primary/50"
+        }`}
       />
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-border">

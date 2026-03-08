@@ -36,7 +36,9 @@
     "settings": "Einstellungen",
     "clearAll": "Alles löschen",
     "add": "Add",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "showMore": "Mehr anzeigen",
+    "showLess": "Weniger anzeigen"
   },
   "nav": {
     "home": "Startseite",
@@ -117,6 +119,7 @@
     "type": "Typ",
     "basePrice": "Grundpreis",
     "openInNewTab": "In neuem Tab öffnen",
+    "replaceCurrentTab": "Aktuellen Tab ersetzen",
     "addToFavorites": "Zu Favoriten hinzufügen",
     "removeFromFavorites": "Aus Favoriten entfernen"
   },
@@ -262,7 +265,9 @@
       "less": "Weniger"
     },
     "history": {
-      "title": "Verlauf"
+      "title": "Verlauf",
+      "openInNewTab": "In neuem Tab öffnen",
+      "useSettings": "Diese Einstellungen verwenden"
     }
   },
   "history": {
@@ -314,7 +319,9 @@
     "downloadCompleteDesc": "{{count}} Datei(en) heruntergeladen",
     "downloadFailed": "Download fehlgeschlagen",
     "downloadFailedDesc": "{{count}} Datei(en) konnten nicht heruntergeladen werden",
-    "longPressHint": "Lang drücken zum Auswählen"
+    "longPressHint": "Lang drücken zum Auswählen",
+    "openInPlayground": "Im Playground öffnen",
+    "modelNotAvailable": "Modell ist nicht mehr verfügbar"
   },
   "templates": {
     "title": "Vorlagen",
@@ -1136,6 +1143,10 @@
     "hideRun": "Diesen Lauf ausblenden",
     "output": "Ausgabe",
     "outputLowercase": "Ausgabe",
+    "expandNode": "Erweitern",
+    "collapseNode": "Einklappen",
+    "collapseAll": "Alle Einklappen",
+    "expandAll": "Alle Ausklappen",
     "invalidUrl": "Ungültige URL",
     "removeLast": "Letztes entfernen",
     "enterField": "{{field}} eingeben...",
@@ -1157,6 +1168,7 @@
     "nodeDefs": {
       "ai-task/run": {
         "label": "WaveSpeed API",
+        "hint": "Beliebiges KI-Modell ausführen — Bild, Video, Audio und mehr",
         "emptyHint": "Klicken Sie auf diesen Knoten, dann wählen Sie ein Modell →",
         "params": {
           "modelId": {
@@ -1166,6 +1178,7 @@
       },
       "input/media-upload": {
         "label": "Hochladen",
+        "hint": "Bild-, Video- oder Audiodatei als Pipeline-Eingabe hochladen",
         "inputs": {
           "media": {
             "label": "Medien"
@@ -1179,6 +1192,7 @@
       },
       "input/text-input": {
         "label": "Text",
+        "hint": "Text oder Prompt eingeben, um nachfolgende Knoten zu speisen",
         "params": {
           "text": {
             "label": "Text"
@@ -1187,6 +1201,7 @@
       },
       "output/preview": {
         "label": "Vorschau",
+        "hint": "Ergebnis direkt auf der Leinwand anzeigen",
         "inputs": {
           "input": {
             "label": "URL"
@@ -1210,6 +1225,7 @@
       },
       "output/file": {
         "label": "Datei exportieren",
+        "hint": "Ergebnis in einer lokalen Datei speichern",
         "inputs": {
           "url": {
             "label": "URL"
@@ -1237,25 +1253,32 @@
         }
       },
       "free-tool/image-enhancer": {
-        "label": "Bildverbesserung"
+        "label": "Bildverbesserung",
+        "hint": "Bilder kostenlos hochskalieren und schärfen (2×–4×)"
       },
       "free-tool/background-remover": {
-        "label": "Hintergrundentferner"
+        "label": "Hintergrundentferner",
+        "hint": "Bildhintergründe kostenlos automatisch entfernen"
       },
       "free-tool/face-enhancer": {
-        "label": "Gesichtsverbesserung"
+        "label": "Gesichtsverbesserung",
+        "hint": "Gesichter in Fotos kostenlos verbessern und restaurieren"
       },
       "free-tool/video-enhancer": {
-        "label": "Video-Verbesserung"
+        "label": "Video-Verbesserung",
+        "hint": "Videoqualität kostenlos hochskalieren und verbessern"
       },
       "free-tool/face-swapper": {
-        "label": "Gesichtstausch"
+        "label": "Gesichtstausch",
+        "hint": "Ein Gesicht von einem Bild kostenlos auf ein anderes übertragen"
       },
       "free-tool/image-eraser": {
-        "label": "Bildradierer"
+        "label": "Bildradierer",
+        "hint": "Objekte mit einer Maske kostenlos aus Bildern entfernen"
       },
       "free-tool/segment-anything": {
         "label": "Alles segmentieren",
+        "hint": "Kostenlos eine Maske für jedes Objekt in einem Bild erstellen",
         "params": {
           "pointX": {
             "label": "Punkt X",
@@ -1271,19 +1294,32 @@
         }
       },
       "free-tool/video-converter": {
-        "label": "Video-Konverter"
+        "label": "Video-Konverter",
+        "hint": "Videoformat, Codec oder Auflösung kostenlos konvertieren"
       },
       "free-tool/audio-converter": {
-        "label": "Audio-Konverter"
+        "label": "Audio-Konverter",
+        "hint": "Audio zwischen MP3, WAV, FLAC und mehr kostenlos konvertieren"
       },
       "free-tool/image-converter": {
-        "label": "Bild-Konverter"
+        "label": "Bild-Konverter",
+        "hint": "Bilder zwischen PNG, JPG, WebP und mehr kostenlos konvertieren"
       },
       "free-tool/media-trimmer": {
-        "label": "Medien-Trimmer"
+        "label": "Medien-Trimmer",
+        "hint": "Video oder Audio kostenlos auf einen bestimmten Zeitbereich zuschneiden"
       },
       "free-tool/media-merger": {
-        "label": "Medien-Zusammenführer"
+        "label": "Medien-Zusammenführer",
+        "hint": "Mehrere Video- oder Audioclips kostenlos zu einem zusammenführen"
+      },
+      "processing/concat": {
+        "label": "Verketten",
+        "hint": "Mehrere Einzelwerte zu einem Array zusammenfassen (z.B. Bilder → Bilder[])"
+      },
+      "processing/select": {
+        "label": "Auswählen",
+        "hint": "Ein Element aus einem Array per Index auswählen"
       }
     },
     "modelSelector": {
@@ -1364,6 +1400,10 @@
           "upstream": "Verbinden Sie Ausgaben vorgelagerter Knoten (Bilder, Text) als Eingaben — erstellen Sie mehrstufige AI-Pipelines"
         }
       },
+      "concat": {
+        "title": "Concat-Knoten — Mehrere Ausgaben zusammenführen",
+        "desc": "Müssen Sie mehrere Bilder in einen \"images\"-Eingang übergeben? Verwenden Sie den Concat-Knoten:\n\n1. Verbinden Sie die image-Ausgabe jedes vorgelagerten Knotens mit Concat's value1, value2, value3 usw.\n2. Verbinden Sie Concat's output (jetzt ein Array) mit dem images-Parameter des nachgelagerten Knotens.\n\nBeispiel:\n[Upload A] → image → Concat → output (Array) → [AI-Aufgabe].images\n[Upload B] → image ↗\n\nDies funktioniert für jeden Ausgabetyp — Bilder, Videos, Text — wann immer Sie mehrere Einzelwerte zu einem Array-Eingang kombinieren müssen."
+      },
       "canvas": {
         "title": "Leinwand-Interaktionen",
         "desc": "Die Leinwand ist Ihr Arbeitsbereich:\n• Ziehen Sie Knoten, um sie zu positionieren\n• Ziehen Sie von Ausgangsports zu Eingangsports, um Verbindungen zu erstellen\n• Klicken Sie auf einen Knoten, um ihn auszuwählen — Parameter werden im Knoten zur Bearbeitung erweitert\n• Rechtsklick für Kontextmenü (Kopieren, Einfügen, Löschen)\n• Scrollen zum Zoomen, Hintergrund ziehen zum Schwenken\n• Tastenkürzel: Ctrl+Z Rückgängig, Ctrl+C/V Kopieren/Einfügen, Delete zum Entfernen"
@@ -1374,7 +1414,7 @@
       },
       "run": {
         "title": "Workflow ausführen",
-        "desc": "Klicken Sie auf \u201ERun\u201C, um die gesamte Pipeline zu starten:\n• Legen Sie eine Ausführungsanzahl fest (×1 bis ×99) für Stapelverarbeitung\n• Jederzeit mit der Stopp-Schaltfläche abbrechen\n• Klicken Sie auf das Uhr-Symbol, um den Ausführungsmonitor für Echtzeit-Fortschritt zu öffnen\n• Jeder Knoten zeigt seinen Status: Warteschlange → Läuft → Fertig"
+        "desc": "Klicken Sie auf Run, um die gesamte Pipeline zu starten:\n• Legen Sie eine Ausführungsanzahl fest (×1 bis ×99) für Stapelverarbeitung\n• Jederzeit mit der Stopp-Schaltfläche abbrechen\n• Klicken Sie auf das Uhr-Symbol, um den Ausführungsmonitor für Echtzeit-Fortschritt zu öffnen\n• Jeder Knoten zeigt seinen Status: Warteschlange → Läuft → Fertig"
       },
       "moreMenu": {
         "title": "Speichern, Import & Export",

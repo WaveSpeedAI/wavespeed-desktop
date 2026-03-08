@@ -34,7 +34,6 @@ export function ResultPanel({
   batchTotalCount,
   batchQueue,
   onClearBatch,
-  batchPreviewInputs,
   historyIndex,
   historyLength,
   onNavigateHistory,
@@ -43,7 +42,7 @@ export function ResultPanel({
   const showBatchGrid = batchResults.length > 0 && historyIndex === null;
 
   return (
-    <div className="flex-1 min-w-0 overflow-auto p-5 md:p-6">
+    <div className="flex-1 min-w-0 overflow-auto p-5 md:p-6 animate-in fade-in duration-200 fill-mode-both">
       {showBatchGrid ? (
         <BatchOutputGrid
           results={batchResults}

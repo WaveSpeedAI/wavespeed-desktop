@@ -1,8 +1,5 @@
 import * as templateRepo from "../db/template.repo";
 
-const TEMPLATES_STORAGE_KEY = "wavespeed_templates";
-const MIGRATION_FLAG_KEY = "wavespeed_templates_migrated";
-
 interface LegacyTemplate {
   id: string;
   name: string;

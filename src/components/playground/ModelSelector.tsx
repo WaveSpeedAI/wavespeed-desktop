@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { Search, Check, X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fuzzySearch } from "@/lib/fuzzySearch";
-import { Label } from "@/components/ui/label";
 import type { Model } from "@/types/model";
 
 interface ModelSelectorProps {
@@ -169,11 +168,13 @@ export function ModelSelector({
         getModelFamily(a.model_id).localeCompare(getModelFamily(b.model_id)),
       );
     }
-    // Search against family name only (short, e.g. "google/nano-banana-pro")
-    return fuzzySearch(familyModels, debouncedSearch, (model) => [
+    // When searching, search all models (not just family representatives)
+    return fuzzySearch(models, debouncedSearch, (model) => [
       getModelFamily(model.model_id),
+      model.name || "",
+      model.model_id,
     ]).map((r) => r.item);
-  }, [familyModels, debouncedSearch]);
+  }, [models, familyModels, debouncedSearch]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -235,8 +236,8 @@ export function ModelSelector({
   return (
     <div ref={containerRef}>
       {/* Title — integrated into the card */}
-      <div className="rounded-lg border border-border/60 bg-card/50 p-3 space-y-2 mt-2">
-        <div className="text-[10px] font-medium text-muted-foreground/70 uppercase tracking-wider mb-1">
+      <div className="rounded-lg border border-border/60 bg-card/50 px-2 py-3 space-y-2 mt-2">
+        <div className="text-xs font-medium text-muted-foreground">
           {t("playground.modelSelector", "Model Selector")}
         </div>
         {/* Row 1: Breadcrumb / search trigger */}
@@ -251,21 +252,18 @@ export function ModelSelector({
             }}
             disabled={disabled}
             className={cn(
-              "flex h-10 w-full items-center gap-1 rounded-lg border border-input/80 bg-muted/40 px-3 text-sm transition-all",
+              "flex h-8 w-full items-center gap-1 rounded-md border border-input/80 bg-muted/40 px-2 text-xs transition-all",
               "hover:bg-muted/60",
               "disabled:cursor-not-allowed disabled:opacity-50",
               isOpen && "border-primary/50 ring-2 ring-primary/10",
             )}
           >
             {breadcrumb ? (
-              <span className="flex items-center gap-1 min-w-0 flex-1 text-left">
-                <span className="font-semibold text-foreground shrink-0">
-                  {formatSlug(breadcrumb.provider)}
-                </span>
-                <span className="text-muted-foreground shrink-0">/</span>
-                <span className="font-medium text-foreground truncate">
-                  {formatSlug(breadcrumb.familyName)}
-                </span>
+              <span
+                className="min-w-0 flex-1 text-left text-sm font-medium text-foreground truncate"
+                title={selectedModel?.name || value}
+              >
+                {selectedModel?.name || formatSlug(breadcrumb.familyName)}
               </span>
             ) : (
               <span className="text-muted-foreground flex-1 text-left">
@@ -305,43 +303,35 @@ export function ModelSelector({
                   </div>
                 ) : (
                   filteredModels.map((model) => {
-                    const family = getModelFamily(model.model_id);
                     const isSelected =
                       value &&
                       getBaseFamily(value) === getBaseFamily(model.model_id);
-                    const parts = family.split("/");
+                    const family = getModelFamily(model.model_id);
+                    const displayName =
+                      model.name || formatSlug(getFamilyName(model.model_id));
                     return (
                       <button
                         key={model.model_id}
                         type="button"
                         onClick={() => handleSelect(model.model_id)}
+                        title={model.model_id}
                         className={cn(
-                          "relative flex w-full cursor-pointer select-none items-center rounded-lg px-2.5 py-2 text-sm outline-none",
+                          "relative flex w-full cursor-pointer select-none items-center justify-between rounded-lg px-2 py-1.5 text-sm outline-none",
                           "hover:bg-accent hover:text-accent-foreground",
                           isSelected && "bg-primary/10 text-foreground",
                         )}
                       >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4 shrink-0",
-                            isSelected ? "opacity-100" : "opacity-0",
-                          )}
-                        />
-                        <span className="truncate">
-                          <span className="text-muted-foreground">
-                            {formatSlug(parts[0])}
+                        <span className="min-w-0 flex flex-col items-start">
+                          <span className="font-medium truncate max-w-full">
+                            {displayName}
                           </span>
-                          {parts[1] && (
-                            <>
-                              <span className="text-muted-foreground mx-1">
-                                /
-                              </span>
-                              <span className="font-medium">
-                                {formatSlug(parts[1])}
-                              </span>
-                            </>
-                          )}
+                          <span className="text-xs text-muted-foreground/60 truncate max-w-full">
+                            {family}
+                          </span>
                         </span>
+                        {isSelected && (
+                          <Check className="ml-2 h-3.5 w-3.5 shrink-0" />
+                        )}
                       </button>
                     );
                   })
@@ -365,7 +355,7 @@ export function ModelSelector({
                   setIsOpen(false);
                 }}
                 className={cn(
-                  "flex h-8 w-full items-center gap-1 rounded-lg border border-input/80 bg-muted/40 px-2.5 text-xs transition-all cursor-pointer",
+                  "flex h-8 w-full items-center gap-1 rounded-lg border border-input/80 bg-muted/40 px-2.5 text-sm transition-all cursor-pointer",
                   "hover:bg-muted/60",
                   variantOpen && "border-primary/50 ring-2 ring-primary/10",
                 )}
@@ -382,78 +372,48 @@ export function ModelSelector({
               </button>
 
               {variantOpen && (
-                <div className="absolute z-50 mt-1 w-full rounded-xl border border-border/80 bg-popover shadow-xl animate-in fade-in-0 zoom-in-95">
+                <div className="absolute z-50 mt-1 min-w-full w-max max-w-[280px] rounded-xl border border-border/80 bg-popover shadow-xl animate-in fade-in-0 zoom-in-95">
                   <div className="max-h-60 overflow-auto p-1">
-                    {variantsByType.length === 1
-                      ? familyVariants.map((variant) => (
+                    {variantsByType.map(([type, variants], idx) => (
+                      <div key={type}>
+                        {idx > 0 && (
+                          <div className="mx-2 my-1 border-t border-border/50" />
+                        )}
+                        <div className="px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/50">
+                          {formatType(type)}
+                        </div>
+                        {variants.map((variant) => (
                           <button
                             key={variant.model_id}
                             type="button"
+                            title={getVariantLabel(
+                              variant.model_id,
+                              currentBaseFamily,
+                            )}
                             onClick={() => {
                               onChange(variant.model_id);
                               setVariantOpen(false);
                             }}
                             className={cn(
-                              "relative flex w-full cursor-pointer select-none items-center rounded-lg px-2.5 py-1.5 text-xs outline-none",
+                              "relative flex w-full cursor-pointer select-none items-center justify-between rounded-lg px-2 py-1 text-sm outline-none",
                               "hover:bg-accent hover:text-accent-foreground",
                               variant.model_id === value &&
                                 "bg-primary/10 text-foreground font-medium",
                             )}
                           >
-                            <Check
-                              className={cn(
-                                "mr-2 h-3.5 w-3.5 shrink-0",
-                                variant.model_id === value
-                                  ? "opacity-100"
-                                  : "opacity-0",
-                              )}
-                            />
                             <span className="truncate">
                               {getVariantLabel(
                                 variant.model_id,
                                 currentBaseFamily,
                               )}
                             </span>
+                            {variant.model_id === value && (
+                              <Check className="ml-2 h-3.5 w-3.5 shrink-0" />
+                            )}
                           </button>
-                        ))
-                      : variantsByType.map(([type, variants]) => (
-                          <div key={type}>
-                            <div className="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-                              {formatType(type)}
-                            </div>
-                            {variants.map((variant) => (
-                              <button
-                                key={variant.model_id}
-                                type="button"
-                                onClick={() => {
-                                  onChange(variant.model_id);
-                                  setVariantOpen(false);
-                                }}
-                                className={cn(
-                                  "relative flex w-full cursor-pointer select-none items-center rounded-lg px-2.5 py-1.5 text-xs outline-none",
-                                  "hover:bg-accent hover:text-accent-foreground",
-                                  variant.model_id === value &&
-                                    "bg-primary/10 text-foreground font-medium",
-                                )}
-                              >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-3.5 w-3.5 shrink-0",
-                                    variant.model_id === value
-                                      ? "opacity-100"
-                                      : "opacity-0",
-                                  )}
-                                />
-                                <span className="truncate">
-                                  {getVariantLabel(
-                                    variant.model_id,
-                                    currentBaseFamily,
-                                  )}
-                                </span>
-                              </button>
-                            ))}
-                          </div>
                         ))}
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}

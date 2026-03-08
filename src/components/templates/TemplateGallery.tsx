@@ -10,7 +10,7 @@ import { Loader2, FolderOpen, ArrowUpDown } from "lucide-react";
 import type { Template, TemplateFilter } from "@/types/template";
 
 interface TemplateGalleryProps {
-  onUseTemplate: (template: Template) => void;
+  onUseTemplate: (template: Template, mode?: "new" | "replace") => void;
   onEditTemplate?: (template: Template) => void;
   onDeleteTemplate?: (template: Template) => void;
   onExportTemplate?: (template: Template) => void;

@@ -273,7 +273,7 @@ export function MediaTrimmerPage() {
       )}
 
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
+      <div className="flex items-center gap-4 mb-8 animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both">
         <Button variant="ghost" size="icon" onClick={handleBack}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -291,11 +291,12 @@ export function MediaTrimmerPage() {
       {!mediaFile && (
         <Card
           className={cn(
-            "border-2 border-dashed cursor-pointer transition-colors",
+            "border-2 border-dashed cursor-pointer transition-colors animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both",
             isDragging
               ? "border-primary bg-primary/5"
               : "border-muted-foreground/25 hover:border-primary/50",
           )}
+          style={{ animationDelay: "80ms" }}
           onClick={() => fileInputRef.current?.click()}
         >
           <CardContent className="flex flex-col items-center justify-center py-16">

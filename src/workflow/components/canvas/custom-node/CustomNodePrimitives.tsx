@@ -4,10 +4,9 @@
  * Row, LinkedBadge, ConnectedInputControl, LockIcon, UploadStatusBadge,
  * ToggleSwitch, NumberInput, FileBtn, Tip, SizeInput, Inline3DViewer
  */
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useExecutionStore } from "../../../stores/execution.store";
-import { useWorkflowStore } from "../../../stores/workflow.store";
 
 /* ══════════════════════════════════════════════════════════════════════
    Row — simple padding wrapper for parameter rows
@@ -157,51 +156,52 @@ export function ConnectedInputControl({
 
   const sourceNode = nodes.find((n) => n.id === edge.source);
   const sourceParams = sourceNode?.data?.params ?? {};
-  const latestResultUrl = lastResults[edge.source]?.[0]?.urls?.[0] ?? "";
+  const latestResultUrls = lastResults[edge.source]?.[0]?.urls ?? [];
 
-  const pickPreviewUrl = (): string => {
-    const isMediaLike = (u: string) =>
-      /^https?:\/\//i.test(u) ||
-      /^blob:/i.test(u) ||
-      /^local-asset:\/\//i.test(u) ||
-      /^data:/i.test(u);
+  const isMediaLike = (u: string) =>
+    /^https?:\/\//i.test(u) ||
+    /^blob:/i.test(u) ||
+    /^local-asset:\/\//i.test(u) ||
+    /^data:/i.test(u);
 
+  const pickPreviewUrls = (): string[] => {
     // Prefer actual execution results — this is the real output of the source node
-    if (latestResultUrl && isMediaLike(latestResultUrl)) return latestResultUrl;
+    const mediaUrls = latestResultUrls.filter((u) => u && isMediaLike(u));
+    if (mediaUrls.length > 0) return mediaUrls;
 
     // Only fall back to source params for input-type nodes (media-upload)
-    // that store their value directly in params. Do NOT use generic params
-    // like 'input'/'output' which are the source node's own inputs, not outputs.
     const uploadedUrl = String(sourceParams.uploadedUrl ?? "");
-    if (uploadedUrl && isMediaLike(uploadedUrl)) return uploadedUrl;
+    if (uploadedUrl && isMediaLike(uploadedUrl)) return [uploadedUrl];
 
-    return "";
+    return [];
   };
 
-  const previewUrl = pickPreviewUrl();
-  const detectSource = previewUrl
-    ? (/^local-asset:\/\//i.test(previewUrl)
+  const previewUrls = pickPreviewUrls();
+
+  const classifyMedia = (url: string) => {
+    const src = (
+      /^local-asset:\/\//i.test(url)
         ? (() => {
             try {
               return decodeURIComponent(
-                previewUrl.replace(/^local-asset:\/\//i, ""),
+                url.replace(/^local-asset:\/\//i, ""),
               ).toLowerCase();
             } catch {
-              return previewUrl.toLowerCase();
+              return url.toLowerCase();
             }
           })()
-        : previewUrl.toLowerCase()
-      ).split("?")[0]
-    : "";
-  const isImage =
-    /^data:image\//i.test(previewUrl) ||
-    /\.(jpg|jpeg|png|gif|webp|bmp|svg|avif)$/.test(detectSource);
-  const isVideo =
-    /^data:video\//i.test(previewUrl) ||
-    /\.(mp4|webm|mov|avi|mkv)$/.test(detectSource);
-  const isAudio =
-    /^data:audio\//i.test(previewUrl) ||
-    /\.(mp3|wav|ogg|flac|aac|m4a)$/.test(detectSource);
+        : url.toLowerCase()
+    ).split("?")[0];
+    return {
+      isImage:
+        /^data:image\//i.test(url) ||
+        /\.(jpg|jpeg|png|gif|webp|bmp|svg|avif)$/.test(src),
+      isVideo:
+        /^data:video\//i.test(url) || /\.(mp4|webm|mov|avi|mkv)$/.test(src),
+      isAudio:
+        /^data:audio\//i.test(url) || /\.(mp3|wav|ogg|flac|aac|m4a)$/.test(src),
+    };
+  };
 
   return (
     <div className="w-full space-y-2">
@@ -211,76 +211,90 @@ export function ConnectedInputControl({
         edges={edges}
         nodes={nodes}
       />
-      {showPreview && previewUrl && onPreview && (
+      {showPreview && previewUrls.length > 0 && onPreview && (
         <div
-          className="mt-1 flex items-center gap-1"
+          className="mt-1 flex items-center gap-1 flex-wrap"
           onClick={(e) => e.stopPropagation()}
         >
-          {isImage && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onPreview(previewUrl);
-              }}
-              className="relative rounded-md border border-[hsl(var(--border))] bg-muted/50 overflow-hidden h-16 w-16 flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-blue-500/40 transition-shadow"
-            >
-              <img
-                src={previewUrl}
-                alt=""
-                className="w-full h-full object-cover"
-              />
-            </button>
-          )}
-          {isVideo && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onPreview(previewUrl);
-              }}
-              className="relative rounded-md border border-[hsl(var(--border))] bg-muted/50 overflow-hidden h-16 w-16 flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-blue-500/40 transition-shadow"
-            >
-              <video
-                src={previewUrl}
-                className="w-full h-full object-cover"
-                muted
-                playsInline
-                onMouseEnter={(e) => e.currentTarget.play()}
-                onMouseLeave={(e) => {
-                  e.currentTarget.pause();
-                  e.currentTarget.currentTime = 0;
-                }}
-              />
-            </button>
-          )}
-          {isAudio && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onPreview(previewUrl);
-              }}
-              className="relative rounded-md border border-[hsl(var(--border))] bg-muted/50 overflow-hidden h-16 w-16 flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-blue-500/40 transition-shadow flex items-center justify-center"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-6 w-6 text-[hsl(var(--muted-foreground))]"
-              >
-                <path d="M9 18V5l12-2v13" />
-                <circle cx="6" cy="18" r="3" />
-                <circle cx="18" cy="16" r="3" />
-              </svg>
-            </button>
-          )}
+          {previewUrls.map((url, i) => {
+            const {
+              isImage: img,
+              isVideo: vid,
+              isAudio: aud,
+            } = classifyMedia(url);
+            if (img)
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onPreview(url);
+                  }}
+                  className="relative rounded-md border border-[hsl(var(--border))] bg-muted/50 overflow-hidden h-16 w-16 flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-blue-500/40 transition-shadow"
+                >
+                  <img
+                    src={url}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              );
+            if (vid)
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onPreview(url);
+                  }}
+                  className="relative rounded-md border border-[hsl(var(--border))] bg-muted/50 overflow-hidden h-16 w-16 flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-blue-500/40 transition-shadow"
+                >
+                  <video
+                    src={url}
+                    className="w-full h-full object-cover"
+                    muted
+                    playsInline
+                    onMouseEnter={(e) => e.currentTarget.play()}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.pause();
+                      e.currentTarget.currentTime = 0;
+                    }}
+                  />
+                </button>
+              );
+            if (aud)
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onPreview(url);
+                  }}
+                  className="relative rounded-md border border-[hsl(var(--border))] bg-muted/50 overflow-hidden h-16 w-16 flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-blue-500/40 transition-shadow flex items-center justify-center"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-6 w-6 text-[hsl(var(--muted-foreground))]"
+                  >
+                    <path d="M9 18V5l12-2v13" />
+                    <circle cx="6" cy="18" r="3" />
+                    <circle cx="18" cy="16" r="3" />
+                  </svg>
+                </button>
+              );
+            return null;
+          })}
         </div>
       )}
     </div>
@@ -338,10 +352,14 @@ export function ToggleSwitch({
         e.stopPropagation();
         onChange(!checked);
       }}
-      className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors cursor-pointer focus:outline-none ${checked ? "bg-blue-500" : "bg-[hsl(var(--muted))]"}`}
+      className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors cursor-pointer focus:outline-none ${
+        checked ? "bg-blue-500" : "bg-[hsl(var(--muted))]"
+      }`}
     >
       <span
-        className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform ${checked ? "translate-x-4" : "translate-x-0"}`}
+        className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform ${
+          checked ? "translate-x-4" : "translate-x-0"
+        }`}
       />
     </button>
   );
@@ -425,7 +443,11 @@ export function FileBtn({
 }) {
   return (
     <label
-      className={`flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-md border border-[hsl(var(--border))] cursor-pointer transition-colors ${uploading ? "bg-blue-500/25 animate-pulse" : "bg-blue-500/15 text-blue-400 hover:bg-blue-500/25"}`}
+      className={`flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-md border border-[hsl(var(--border))] cursor-pointer transition-colors ${
+        uploading
+          ? "bg-blue-500/25 animate-pulse"
+          : "bg-blue-500/15 text-blue-400 hover:bg-blue-500/25"
+      }`}
       onClick={(e) => e.stopPropagation()}
     >
       {uploading ? (

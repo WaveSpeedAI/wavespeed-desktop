@@ -21,11 +21,11 @@ type SourceFilter = "all" | "public" | "custom" | "favorites";
 
 interface TemplatePanelProps {
   onUseTemplate: (template: Template) => void;
+  onClose?: () => void;
 }
 
-export function TemplatePanel({ onUseTemplate }: TemplatePanelProps) {
+export function TemplatePanel({ onUseTemplate, onClose }: TemplatePanelProps) {
   const { t } = useTranslation();
-  const toggleTemplatePanel = useUIStore((s) => s.toggleTemplatePanel);
   const width = useUIStore((s) => s.sidebarWidth);
   const setSidebarWidth = useUIStore((s) => s.setSidebarWidth);
   const { toggleFavorite, useTemplate: incrementUseCount } = useTemplateStore();
@@ -118,7 +118,7 @@ export function TemplatePanel({ onUseTemplate }: TemplatePanelProps) {
       <div className="flex items-center justify-between px-3 py-2 border-b border-border">
         <span className="font-semibold text-xs">{t("templates.title")}</span>
         <button
-          onClick={toggleTemplatePanel}
+          onClick={onClose}
           className="text-muted-foreground hover:text-foreground text-xs px-1"
           title={t("common.close", "Close")}
         >

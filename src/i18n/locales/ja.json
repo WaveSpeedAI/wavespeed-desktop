@@ -36,7 +36,9 @@
     "settings": "設定",
     "clearAll": "すべてクリア",
     "add": "Add",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "showMore": "もっと見る",
+    "showLess": "閉じる"
   },
   "nav": {
     "home": "ホーム",
@@ -117,6 +119,7 @@
     "type": "タイプ",
     "basePrice": "基本価格",
     "openInNewTab": "新しいタブで開く",
+    "replaceCurrentTab": "現在のタブを置換",
     "addToFavorites": "お気に入りに追加",
     "removeFromFavorites": "お気に入りから削除"
   },
@@ -262,7 +265,9 @@
       "less": "閉じる"
     },
     "history": {
-      "title": "履歴"
+      "title": "履歴",
+      "openInNewTab": "新しいタブで開く",
+      "useSettings": "この設定を使用"
     }
   },
   "history": {
@@ -314,7 +319,9 @@
     "downloadCompleteDesc": "{{count}}件のファイルをダウンロードしました",
     "downloadFailed": "ダウンロード失敗",
     "downloadFailedDesc": "{{count}}件のファイルのダウンロードに失敗しました",
-    "longPressHint": "長押しで選択"
+    "longPressHint": "長押しで選択",
+    "openInPlayground": "Playgroundで開く",
+    "modelNotAvailable": "モデルは利用できません"
   },
   "templates": {
     "title": "テンプレート",
@@ -1096,6 +1103,10 @@
     "pointsLabel": "分割ポイント",
     "output": "出力",
     "outputLowercase": "出力",
+    "expandNode": "展開",
+    "collapseNode": "折りたたむ",
+    "collapseAll": "すべて折りたたむ",
+    "expandAll": "すべて展開",
     "invalidUrl": "無効な URL",
     "removeLast": "最後の項目を削除",
     "enterField": "{{field}} を入力...",
@@ -1124,6 +1135,7 @@
     "nodeDefs": {
       "ai-task/run": {
         "label": "WaveSpeed API",
+        "hint": "画像・動画・音声など、あらゆるAIモデルを実行",
         "emptyHint": "このノードをクリックし、モデルを選択 →",
         "params": {
           "modelId": {
@@ -1133,6 +1145,7 @@
       },
       "input/media-upload": {
         "label": "アップロード",
+        "hint": "画像・動画・音声ファイルをパイプラインの入力としてアップロード",
         "inputs": {
           "media": {
             "label": "メディア"
@@ -1146,6 +1159,7 @@
       },
       "input/text-input": {
         "label": "テキスト",
+        "hint": "テキストやプロンプトを入力して後続ノードに渡す",
         "params": {
           "text": {
             "label": "テキスト"
@@ -1154,6 +1168,7 @@
       },
       "output/preview": {
         "label": "プレビュー",
+        "hint": "キャンバス上で結果を直接プレビュー",
         "inputs": {
           "input": {
             "label": "URL"
@@ -1177,6 +1192,7 @@
       },
       "output/file": {
         "label": "ファイル書き出し",
+        "hint": "結果をローカルファイルに保存",
         "inputs": {
           "url": {
             "label": "URL"
@@ -1204,25 +1220,32 @@
         }
       },
       "free-tool/image-enhancer": {
-        "label": "画像強調"
+        "label": "画像強調",
+        "hint": "画像を無料で高解像度化・シャープ化（2×〜4×）"
       },
       "free-tool/background-remover": {
-        "label": "背景除去"
+        "label": "背景除去",
+        "hint": "画像の背景を無料で自動除去"
       },
       "free-tool/face-enhancer": {
-        "label": "顔補正"
+        "label": "顔補正",
+        "hint": "写真の顔を無料で補正・修復"
       },
       "free-tool/video-enhancer": {
-        "label": "動画強調"
+        "label": "動画強調",
+        "hint": "動画の画質を無料で向上"
       },
       "free-tool/face-swapper": {
-        "label": "フェイススワップ"
+        "label": "フェイススワップ",
+        "hint": "画像の顔を別の画像に無料で入れ替え"
       },
       "free-tool/image-eraser": {
-        "label": "画像消去"
+        "label": "画像消去",
+        "hint": "マスクを使って画像からオブジェクトを無料で消去"
       },
       "free-tool/segment-anything": {
         "label": "セグメントAnything",
+        "hint": "画像内の任意のオブジェクトのマスクを無料で生成",
         "params": {
           "pointX": {
             "label": "ポイント X",
@@ -1238,19 +1261,32 @@
         }
       },
       "free-tool/video-converter": {
-        "label": "動画変換"
+        "label": "動画変換",
+        "hint": "動画のフォーマット・コーデック・解像度を無料で変換"
       },
       "free-tool/audio-converter": {
-        "label": "音声変換"
+        "label": "音声変換",
+        "hint": "MP3・WAV・FLACなどの音声形式を無料で変換"
       },
       "free-tool/image-converter": {
-        "label": "画像変換"
+        "label": "画像変換",
+        "hint": "PNG・JPG・WebPなどの画像形式を無料で変換"
       },
       "free-tool/media-trimmer": {
-        "label": "メディアトリミング"
+        "label": "メディアトリミング",
+        "hint": "動画や音声を指定した時間範囲で無料でトリミング"
       },
       "free-tool/media-merger": {
-        "label": "メディア結合"
+        "label": "メディア結合",
+        "hint": "複数の動画や音声クリップを無料で1つに結合"
+      },
+      "processing/concat": {
+        "label": "結合",
+        "hint": "複数の単一値を1つの配列にまとめる（例: 画像 → 画像[]）"
+      },
+      "processing/select": {
+        "label": "選択",
+        "hint": "配列からインデックスで1つの項目を選択"
       }
     },
     "modelSelector": {
@@ -1330,6 +1366,10 @@
           "costEstimate": "実行ごとのリアルタイムコスト見積もりで、実行前に常に価格を確認できます",
           "upstream": "上流ノードの出力（画像、テキスト）を入力として接続 — マルチステップAIパイプラインを構築"
         }
+      },
+      "concat": {
+        "title": "Concat ノード — 複数の出力を結合",
+        "desc": "複数の画像を「images」入力に渡したい場合は、Concat ノードを使用します：\n\n1. 各上流ノードの image 出力を Concat の value1、value2、value3 などに接続\n2. Concat の output（配列）を下流ノードの images パラメータに接続\n\n例：\n[アップロード A] → image → Concat → output（配列）→ [AI タスク].images\n[アップロード B] → image ↗\n\n画像、動画、テキストなど、複数の単一値を1つの配列入力にまとめたい場合に使えます。"
       },
       "canvas": {
         "title": "キャンバス操作",

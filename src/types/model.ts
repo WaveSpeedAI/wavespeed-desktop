@@ -16,6 +16,8 @@ export interface SchemaProperty {
     type: string;
     minItems?: number;
     maxItems?: number;
+    properties?: Record<string, SchemaProperty>;
+    required?: string[];
   };
   minItems?: number;
   maxItems?: number;

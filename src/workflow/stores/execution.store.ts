@@ -332,11 +332,12 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
       ].slice(0, MAX_SESSIONS),
     }));
     // Collect existing result URLs so upstream nodes can feed the target node
-    const existingResults = new Map<string, string>();
+    // Use full urls array so concat/multi-output nodes preserve all values
+    const existingResults = new Map<string, string[]>();
     const lastResults = get().lastResults;
     for (const [nid, groups] of Object.entries(lastResults)) {
       if (groups && groups.length > 0 && groups[0].urls.length > 0) {
-        existingResults.set(nid, groups[0].urls[0]);
+        existingResults.set(nid, groups[0].urls);
       }
     }
 
@@ -448,11 +449,12 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
     }));
 
     // Collect existing result URLs so upstream nodes can feed downstream
-    const existingResults = new Map<string, string>();
+    // Use full urls array so concat/multi-output nodes preserve all values
+    const existingResults = new Map<string, string[]>();
     const lastResults = get().lastResults;
     for (const [nid, groups] of Object.entries(lastResults)) {
       if (groups && groups.length > 0 && groups[0].urls.length > 0) {
-        existingResults.set(nid, groups[0].urls[0]);
+        existingResults.set(nid, groups[0].urls);
       }
     }
 
@@ -511,6 +513,18 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
                 },
               };
             });
+            // Auto-save to My Assets
+            const node = browserNodes.find((n) => n.id === nid);
+            if (node) {
+              const wfName = importedWorkflowStore?.getState().workflowName;
+              autoSaveWorkflowResults(
+                nid,
+                node.data.nodeType,
+                urls,
+                node.data.params,
+                wfName,
+              );
+            }
           },
         },
         {

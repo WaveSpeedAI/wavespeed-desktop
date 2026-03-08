@@ -18,7 +18,7 @@ interface TemplatePickerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   templateType: "playground" | "workflow";
-  onUseTemplate: (template: Template) => void;
+  onUseTemplate: (template: Template, mode?: "new" | "replace") => void;
 }
 
 export function TemplatePickerDialog({
@@ -36,8 +36,8 @@ export function TemplatePickerDialog({
   );
 
   const handleUse = useCallback(
-    (template: Template) => {
-      onUseTemplate(template);
+    (template: Template, mode?: "new" | "replace") => {
+      onUseTemplate(template, mode);
       onOpenChange(false);
     },
     [onUseTemplate, onOpenChange],

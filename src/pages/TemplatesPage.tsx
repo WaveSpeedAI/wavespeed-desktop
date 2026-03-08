@@ -18,13 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/useToast";
-import {
-  Upload,
-  GitBranch,
-  PlayCircle,
-  LayoutTemplate,
-  FolderOpen,
-} from "lucide-react";
+import { Upload, GitBranch, PlayCircle, FolderOpen } from "lucide-react";
 import type { Template } from "@/types/template";
 
 export function TemplatesPage() {
@@ -56,17 +50,22 @@ export function TemplatesPage() {
     "playground",
   );
 
-  const handleUseTemplate = async (template: Template) => {
+  const handleUseTemplate = async (
+    template: Template,
+    mode?: "new" | "replace",
+  ) => {
     if (template.playgroundData) {
       // Increment use count
       await useTemplate(template.id);
       // Navigate to playground with the template's model
+      const modeParam = mode ? `&mode=${mode}` : "";
       navigate(
-        `/playground/${encodeURIComponent(template.playgroundData.modelId)}?template=${template.id}`,
+        `/playground/${encodeURIComponent(template.playgroundData.modelId)}?template=${template.id}${modeParam}`,
       );
     } else if (template.workflowData) {
       // Navigate to workflow editor with template
-      navigate(`/workflow?template=${template.id}`);
+      const modeParam = mode ? `&mode=${mode}` : "";
+      navigate(`/workflow?template=${template.id}${modeParam}`);
     }
   };
 
@@ -169,7 +168,7 @@ export function TemplatesPage() {
   return (
     <div className="h-full flex flex-col">
       {/* Header + Top Bar */}
-      <div className="px-4 md:px-6 py-4 pt-14 md:pt-4">
+      <div className="px-4 md:px-6 py-4 pt-14 md:pt-4 animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both">
         <h1 className="text-xl md:text-2xl font-bold tracking-tight mb-5 flex items-center gap-2">
           <FolderOpen className="h-5 w-5 text-primary" />
           {t("templates.title")}
@@ -217,7 +216,10 @@ export function TemplatesPage() {
         </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden border-t border-border/50">
+      <div
+        className="flex flex-1 overflow-hidden border-t border-border/50 animate-in fade-in duration-300 fill-mode-both"
+        style={{ animationDelay: "100ms" }}
+      >
         <TemplateBrowser
           templateType={templateType}
           onUseTemplate={handleUseTemplate}

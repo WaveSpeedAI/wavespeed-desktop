@@ -163,5 +163,5 @@ export function getWaveSpeedClient(): WaveSpeedMainClient {
 /** Reset cached clients (call when API keys change) */
 export function resetClients(): void {
   _wsClient = null;
-  _apiKey = null;
+  _apiKey = "";
 }

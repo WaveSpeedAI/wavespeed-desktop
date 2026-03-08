@@ -104,6 +104,7 @@ export interface CustomNodeBodyProps {
   inlinePreviewIs3D: boolean;
   resultsExpanded: boolean;
   setResultsExpanded: Dispatch<SetStateAction<boolean>>;
+  collapsed?: boolean;
 }
 
 export function CustomNodeBody(props: CustomNodeBodyProps) {
@@ -150,11 +151,217 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
     inlinePreviewIs3D,
     resultsExpanded,
     setResultsExpanded,
+    collapsed = false,
   } = props;
   const { t } = useTranslation();
 
+  /* ── Collapsed: only connected rows in same order as expanded ── */
+  if (collapsed) {
+    return (
+      <div className="px-1">
+        {data.nodeType === "input/media-upload" &&
+          inputDefs.map((inp) => {
+            const hid = `input-${inp.key}`;
+            if (!connectedSet.has(hid)) return null;
+            return (
+              <Row key={inp.key}>
+                <div className="flex items-center justify-between gap-2 w-full">
+                  <span className="text-xs whitespace-nowrap flex-shrink-0 text-green-400 font-semibold">
+                    <HandleAnchor id={hid} type="target" connected media />
+                    {localizeInputLabel(inp.key, inp.label)}
+                  </span>
+                  <ConnectedInputControl
+                    nodeId={id}
+                    handleId={hid}
+                    edges={edges}
+                    nodes={useWorkflowStore.getState().nodes}
+                    onPreview={openPreview}
+                  />
+                </div>
+              </Row>
+            );
+          })}
+        {isAITask && (
+          <div
+            className="nodrag px-3 mb-1"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ModelSelector
+              models={storeModels}
+              value={currentModelId || undefined}
+              onChange={(modelId) => {
+                const storeModel = getModelById(modelId);
+                if (!storeModel) return;
+                handleInlineSelectModel(convertDesktopModel(storeModel));
+              }}
+            />
+          </div>
+        )}
+        {isAITask &&
+          usePlaygroundForm &&
+          visibleFormFields.map((field) => {
+            const hid = `param-${field.name}`;
+            if (!connectedSet.has(hid)) return null;
+            const isMediaField =
+              field.type === "file" ||
+              field.type === "file-array" ||
+              /image|video|audio|mask/i.test(field.name);
+            return (
+              <Row key={field.name}>
+                <div className="flex flex-col gap-1 w-full">
+                  <div className="flex items-center">
+                    <span className="text-sm font-medium leading-none">
+                      <HandleAnchor
+                        id={hid}
+                        type="target"
+                        connected
+                        media={isMediaField}
+                      />
+                      {field.label || field.name}
+                      {field.required && (
+                        <span className="ml-0.5 text-destructive">*</span>
+                      )}
+                    </span>
+                  </div>
+                  {isMediaField ? (
+                    <ConnectedInputControl
+                      nodeId={id}
+                      handleId={hid}
+                      edges={edges}
+                      nodes={useWorkflowStore.getState().nodes}
+                      onPreview={openPreview}
+                    />
+                  ) : (
+                    <LinkedBadge
+                      nodeId={id}
+                      handleId={hid}
+                      edges={edges}
+                      nodes={useWorkflowStore.getState().nodes}
+                      onDisconnect={() => {
+                        const edge = edges.find(
+                          (e) => e.target === id && e.targetHandle === hid,
+                        );
+                        if (edge)
+                          useWorkflowStore.getState().removeEdge(edge.id);
+                      }}
+                    />
+                  )}
+                </div>
+              </Row>
+            );
+          })}
+        {isAITask &&
+          usePlaygroundForm &&
+          hiddenFormFields.map((field) => {
+            const hid = `param-${field.name}`;
+            if (!connectedSet.has(hid)) return null;
+            const isMediaField =
+              field.type === "file" ||
+              field.type === "file-array" ||
+              /image|video|audio|mask/i.test(field.name);
+            return (
+              <Row key={field.name}>
+                <div className="flex flex-col gap-1 w-full">
+                  <div className="flex items-center">
+                    <span className="text-sm font-medium leading-none">
+                      <HandleAnchor
+                        id={hid}
+                        type="target"
+                        connected
+                        media={isMediaField}
+                      />
+                      {field.label || field.name}
+                    </span>
+                  </div>
+                  {isMediaField ? (
+                    <ConnectedInputControl
+                      nodeId={id}
+                      handleId={hid}
+                      edges={edges}
+                      nodes={useWorkflowStore.getState().nodes}
+                      onPreview={openPreview}
+                    />
+                  ) : (
+                    <LinkedBadge
+                      nodeId={id}
+                      handleId={hid}
+                      edges={edges}
+                      nodes={useWorkflowStore.getState().nodes}
+                      onDisconnect={() => {
+                        const edge = edges.find(
+                          (e) => e.target === id && e.targetHandle === hid,
+                        );
+                        if (edge)
+                          useWorkflowStore.getState().removeEdge(edge.id);
+                      }}
+                    />
+                  )}
+                </div>
+              </Row>
+            );
+          })}
+        {data.nodeType !== "input/media-upload" &&
+          data.nodeType !== "input/text-input" &&
+          inputDefs.map((inp) => {
+            const hid = `input-${inp.key}`;
+            if (!connectedSet.has(hid)) return null;
+            return (
+              <Row key={inp.key}>
+                <div className="flex items-center justify-between gap-2 w-full">
+                  <span className="text-xs whitespace-nowrap flex-shrink-0 text-green-400 font-semibold">
+                    <HandleAnchor id={hid} type="target" connected media />
+                    {localizeInputLabel(inp.key, inp.label)}
+                    {inp.required && <span className="text-red-400"> *</span>}
+                  </span>
+                  <ConnectedInputControl
+                    nodeId={id}
+                    handleId={hid}
+                    edges={edges}
+                    nodes={useWorkflowStore.getState().nodes}
+                    onPreview={openPreview}
+                  />
+                </div>
+              </Row>
+            );
+          })}
+        {data.nodeType !== "input/media-upload" &&
+          data.nodeType !== "input/text-input" &&
+          paramDefs.map((p) => {
+            const hid = `param-${p.key}`;
+            const canConnect =
+              p.connectable !== false && p.dataType !== undefined;
+            if (!canConnect || !connectedSet.has(hid)) return null;
+            return (
+              <Row key={p.key}>
+                <div className="flex flex-col gap-1 w-full">
+                  <div className="flex items-center">
+                    <span className="text-sm font-medium leading-none">
+                      <HandleAnchor id={hid} type="target" connected />
+                      {localizeParamLabel(p.key, p.label)}
+                    </span>
+                  </div>
+                  <LinkedBadge
+                    nodeId={id}
+                    handleId={hid}
+                    edges={edges}
+                    nodes={useWorkflowStore.getState().nodes}
+                    onDisconnect={() => {
+                      const edge = edges.find(
+                        (e) => e.target === id && e.targetHandle === hid,
+                      );
+                      if (edge) useWorkflowStore.getState().removeEdge(edge.id);
+                    }}
+                  />
+                </div>
+              </Row>
+            );
+          })}
+      </div>
+    );
+  }
+
   return (
-    <div className="px-1 py-2 space-y-px">
+    <div className="px-1 space-y-px">
       {/* Free-tool ML model download hint */}
       {status === "idle" &&
         resultGroups.length === 0 &&

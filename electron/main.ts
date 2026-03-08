@@ -415,7 +415,7 @@ ipcMain.handle("update-titlebar-theme", (_, isDark: boolean) => {
   if (process.platform === "darwin" || !mainWindow) return;
   try {
     mainWindow.setTitleBarOverlay({
-      color: isDark ? "#080c16" : "#f6f7f9",
+      color: isDark ? "#080c16" : "#ffffff",
       symbolColor: isDark ? "#9ca3af" : "#6b7280",
       height: 32,
     });
@@ -520,10 +520,34 @@ ipcMain.handle(
       }
     }
 
-    // Download the file from http/https
+    // Download the file from http/https — write to .download temp file, rename on completion
+    const tempPath = result.filePath + ".download";
     return new Promise((resolve) => {
       const httpProtocol = url.startsWith("https") ? https : http;
-      const file = createWriteStream(result.filePath!);
+      const file = createWriteStream(tempPath);
+
+      const finalize = () => {
+        file.close();
+        try {
+          require("fs").renameSync(tempPath, result.filePath);
+          resolve({ success: true, filePath: result.filePath });
+        } catch (renameErr) {
+          resolve({
+            success: false,
+            error: (renameErr as Error).message,
+          });
+        }
+      };
+
+      const cleanup = (err: Error) => {
+        file.close();
+        try {
+          if (existsSync(tempPath)) unlinkSync(tempPath);
+        } catch {
+          /* best-effort cleanup */
+        }
+        resolve({ success: false, error: err.message });
+      };
 
       httpProtocol
         .get(url, (response) => {
@@ -536,28 +560,41 @@ ipcMain.handle(
                 : http;
               redirectProtocol
                 .get(redirectUrl, (redirectResponse) => {
+                  if (
+                    redirectResponse.statusCode &&
+                    (redirectResponse.statusCode < 200 ||
+                      redirectResponse.statusCode >= 300)
+                  ) {
+                    redirectResponse.resume();
+                    cleanup(
+                      new Error(
+                        `HTTP ${redirectResponse.statusCode} after redirect`,
+                      ),
+                    );
+                    return;
+                  }
                   redirectResponse.pipe(file);
-                  file.on("finish", () => {
-                    file.close();
-                    resolve({ success: true, filePath: result.filePath });
-                  });
+                  file.on("finish", finalize);
                 })
-                .on("error", (err) => {
-                  resolve({ success: false, error: err.message });
-                });
+                .on("error", cleanup);
               return;
             }
           }
 
+          // Reject non-2xx responses
+          if (
+            response.statusCode &&
+            (response.statusCode < 200 || response.statusCode >= 300)
+          ) {
+            response.resume();
+            cleanup(new Error(`HTTP ${response.statusCode}`));
+            return;
+          }
+
           response.pipe(file);
-          file.on("finish", () => {
-            file.close();
-            resolve({ success: true, filePath: result.filePath });
-          });
+          file.on("finish", finalize);
         })
-        .on("error", (err) => {
-          resolve({ success: false, error: err.message });
-        });
+        .on("error", cleanup);
     });
   },
 );
@@ -591,10 +628,35 @@ ipcMain.handle(
         return { success: false, error: "Invalid data URL" };
       }
 
-      // Download from http/https
+      // Download from http/https — write to .download temp file, rename on completion
+      const tempPath = filePath + ".download";
       return new Promise((resolve) => {
         const httpProtocol = url.startsWith("https") ? https : http;
-        const file = createWriteStream(filePath);
+        const file = createWriteStream(tempPath);
+
+        const finalize = () => {
+          file.close();
+          try {
+            require("fs").renameSync(tempPath, filePath);
+            resolve({ success: true, filePath });
+          } catch (renameErr) {
+            resolve({
+              success: false,
+              error: (renameErr as Error).message,
+            });
+          }
+        };
+
+        const cleanup = (err: Error) => {
+          file.close();
+          try {
+            if (existsSync(tempPath)) unlinkSync(tempPath);
+          } catch {
+            /* best-effort cleanup */
+          }
+          resolve({ success: false, error: err.message });
+        };
+
         httpProtocol
           .get(url, (response) => {
             if (response.statusCode === 301 || response.statusCode === 302) {
@@ -602,26 +664,35 @@ ipcMain.handle(
               if (redirectUrl) {
                 const rp = redirectUrl.startsWith("https") ? https : http;
                 rp.get(redirectUrl, (rr) => {
+                  if (
+                    rr.statusCode &&
+                    (rr.statusCode < 200 || rr.statusCode >= 300)
+                  ) {
+                    rr.resume();
+                    cleanup(new Error(`HTTP ${rr.statusCode} after redirect`));
+                    return;
+                  }
                   rr.pipe(file);
-                  file.on("finish", () => {
-                    file.close();
-                    resolve({ success: true, filePath });
-                  });
-                }).on("error", (err) =>
-                  resolve({ success: false, error: err.message }),
-                );
+                  file.on("finish", finalize);
+                }).on("error", cleanup);
                 return;
               }
             }
+
+            // Reject non-2xx responses
+            if (
+              response.statusCode &&
+              (response.statusCode < 200 || response.statusCode >= 300)
+            ) {
+              response.resume();
+              cleanup(new Error(`HTTP ${response.statusCode}`));
+              return;
+            }
+
             response.pipe(file);
-            file.on("finish", () => {
-              file.close();
-              resolve({ success: true, filePath });
-            });
+            file.on("finish", finalize);
           })
-          .on("error", (err) =>
-            resolve({ success: false, error: err.message }),
-          );
+          .on("error", cleanup);
       });
     } catch (err) {
       return { success: false, error: (err as Error).message };
@@ -734,10 +805,32 @@ ipcMain.handle(
       }
     }
 
-    // Download file from http/https
+    // Download file from http/https — write to .download temp file, rename on completion
+    const tempPath = filePath + ".download";
     return new Promise((resolve) => {
       const httpProtocol = url.startsWith("https") ? https : http;
-      const file = createWriteStream(filePath);
+      const file = createWriteStream(tempPath);
+
+      const finalize = () => {
+        file.close();
+        try {
+          require("fs").renameSync(tempPath, filePath);
+          const stats = statSync(filePath);
+          resolve({ success: true, filePath, fileSize: stats.size });
+        } catch (err) {
+          resolve({ success: false, error: (err as Error).message });
+        }
+      };
+
+      const cleanup = (err: Error) => {
+        file.close();
+        try {
+          if (existsSync(tempPath)) unlinkSync(tempPath);
+        } catch {
+          /* best-effort */
+        }
+        resolve({ success: false, error: err.message });
+      };
 
       const handleResponse = (response: http.IncomingMessage) => {
         // Handle redirects
@@ -752,26 +845,28 @@ ipcMain.handle(
                 handleResponse(redirectResponse);
               })
               .on("error", (err) => {
-                resolve({ success: false, error: err.message });
+                cleanup(err);
               });
             return;
           }
         }
 
+        // Reject non-2xx responses to avoid saving error pages as assets
+        if (
+          response.statusCode &&
+          (response.statusCode < 200 || response.statusCode >= 300)
+        ) {
+          response.resume(); // drain the response
+          cleanup(new Error(`HTTP ${response.statusCode} downloading asset`));
+          return;
+        }
+
         response.pipe(file);
-        file.on("finish", () => {
-          file.close();
-          try {
-            const stats = statSync(filePath);
-            resolve({ success: true, filePath, fileSize: stats.size });
-          } catch {
-            resolve({ success: true, filePath, fileSize: 0 });
-          }
-        });
+        file.on("finish", finalize);
       };
 
       httpProtocol.get(url, handleResponse).on("error", (err) => {
-        resolve({ success: false, error: err.message });
+        cleanup(err);
       });
     });
   },
@@ -1069,7 +1164,9 @@ ipcMain.handle("sd-extract-binary", (_, zipPath: string, destPath: string) => {
     const found = findBinary(tempExtractDir);
     if (!found) {
       throw new Error(
-        `Binary not found in extracted files. Looked for: ${possibleNames.join(", ")}`,
+        `Binary not found in extracted files. Looked for: ${possibleNames.join(
+          ", ",
+        )}`,
       );
     }
 

@@ -27,6 +27,8 @@ export async function generateImage(
     seed?: number;
     model?: ModelOption;
     phaseId?: string;
+    /** Base image URL for edit mode — will be passed as images[0] */
+    baseImageUrl?: string;
   },
 ): Promise<GenerationResult> {
   const model = options?.model ?? DEFAULT_MODELS.image;
@@ -40,6 +42,8 @@ export async function generateImage(
   }
 
   try {
+    const isEditModel = model.modelId.includes("/edit");
+
     const input: Record<string, unknown> = {
       prompt,
       ...model.defaultParams,
@@ -48,6 +52,12 @@ export async function generateImage(
       ...(options?.seed !== undefined && { seed: options.seed }),
     };
 
+    // Edit models require 'images' array with at least one base image URL
+    if (isEditModel && options?.baseImageUrl) {
+      input.images = [options.baseImageUrl];
+    }
+
+    taskId && activity.appendStream(taskId, `${isEditModel ? "编辑模式" : "生成模式"}...\n`);
     taskId && activity.appendStream(taskId, "提交生成请求...\n");
     const result = await apiClient.run(model.modelId, input);
 

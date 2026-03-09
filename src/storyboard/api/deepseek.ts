@@ -162,12 +162,94 @@ export async function chatCompletion(
 }
 
 /**
- * Parse JSON from LLM response, handling markdown code blocks.
+ * Parse JSON from LLM response, handling markdown code blocks and common LLM quirks.
+ * Attempts multiple repair strategies for malformed JSON.
  */
 export function parseJsonResponse<T>(raw: string): T {
   let cleaned = raw.trim();
+
+  // Strip markdown code fences
   if (cleaned.startsWith("```")) {
     cleaned = cleaned.replace(/^```(?:json)?\s*\n?/, "").replace(/\n?```\s*$/, "");
   }
-  return JSON.parse(cleaned) as T;
+
+  // Strip leading prose before first { or [
+  const firstBrace = cleaned.indexOf("{");
+  const firstBracket = cleaned.indexOf("[");
+  const jsonStart = firstBrace >= 0 && firstBracket >= 0
+    ? Math.min(firstBrace, firstBracket)
+    : Math.max(firstBrace, firstBracket);
+  if (jsonStart > 0) {
+    cleaned = cleaned.slice(jsonStart);
+  }
+
+  // Strip trailing prose after last } or ]
+  const lastBrace = cleaned.lastIndexOf("}");
+  const lastBracket = cleaned.lastIndexOf("]");
+  const jsonEnd = Math.max(lastBrace, lastBracket);
+  if (jsonEnd >= 0 && jsonEnd < cleaned.length - 1) {
+    cleaned = cleaned.slice(0, jsonEnd + 1);
+  }
+
+  // Attempt 1: direct parse
+  try {
+    return JSON.parse(cleaned) as T;
+  } catch (_e) {
+    // continue to repair
+  }
+
+  // Attempt 2: fix truncated strings — close any unterminated string, then close brackets
+  try {
+    let repaired = cleaned;
+
+    // If the string seems truncated mid-value, trim back to last complete entry
+    const inString = (repaired.split('"').length - 1) % 2 !== 0;
+    if (inString) {
+      // Odd number of quotes = unterminated string
+      // Find the last unmatched quote and close it
+      const lastQuote = repaired.lastIndexOf('"');
+      repaired = repaired.slice(0, lastQuote + 1);
+    }
+
+    // Close any open brackets/braces
+    const opens: string[] = [];
+    let inStr = false;
+    let escape = false;
+    for (const ch of repaired) {
+      if (escape) { escape = false; continue; }
+      if (ch === "\\") { escape = true; continue; }
+      if (ch === '"') { inStr = !inStr; continue; }
+      if (inStr) continue;
+      if (ch === "{") opens.push("}");
+      else if (ch === "[") opens.push("]");
+      else if (ch === "}" || ch === "]") opens.pop();
+    }
+
+    // Remove trailing comma before closing
+    repaired = repaired.replace(/,\s*$/, "");
+
+    // Append missing closers
+    while (opens.length > 0) {
+      repaired += opens.pop();
+    }
+
+    return JSON.parse(repaired) as T;
+  } catch (_e2) {
+    // continue to next attempt
+  }
+
+  // Attempt 3: aggressive — extract first complete JSON object
+  try {
+    const match = cleaned.match(/\{[\s\S]*\}/);
+    if (match) {
+      return JSON.parse(match[0]) as T;
+    }
+  } catch (_e3) {
+    // fall through
+  }
+
+  // All attempts failed — throw with context
+  throw new Error(
+    `Failed to parse JSON from LLM response. First 200 chars: ${cleaned.slice(0, 200)}...`,
+  );
 }

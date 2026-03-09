@@ -80,6 +80,37 @@ export interface GeneratedAssets {
   thumbnail: string | null;
 }
 
+/** Base frame request — describes what the first frame of this shot should look like */
+export interface BaseFrameRequest {
+  subject_names: string[];
+  pose_or_angle: string;
+  scene_context: string;
+}
+
+/** V5: Motion vector for a subject — drives mid-action keyframe generation */
+export interface SubjectMotion {
+  /** Subject name (must match character name) */
+  subject: string;
+  /** Mid-action description — the motion frozen at its midpoint */
+  mid_action: string;
+  /** Direction of motion */
+  direction: string;
+  /** Intensity 1-5 (1=subtle, 5=explosive) */
+  intensity: number;
+  /** Which mutable state to use (e.g. "battle-damaged torn") */
+  clothing_state?: string;
+  /** Expression state (e.g. "screaming rage") */
+  expression_state?: string;
+}
+
+/** V5: Environmental motion — fills visual tension in the frame */
+export interface EnvMotion {
+  /** Description of environmental dynamics */
+  description: string;
+  /** Direction of environmental motion */
+  direction: string;
+}
+
 export interface Shot {
   shot_id: string;
   project_id: string;
@@ -104,6 +135,12 @@ export interface Shot {
   generated_assets: GeneratedAssets;
   qc_score: number;
   qc_warnings: string[];
+  /** Lazy generation: what the first frame should look like (from Stage 3 LLM) */
+  base_frame_request?: BaseFrameRequest;
+  /** V5: Per-subject motion vectors */
+  subject_motions?: SubjectMotion[];
+  /** V5: Environmental motion */
+  env_motion?: EnvMotion;
   // Strategy fields (populated before generation)
   strategy?: ShotStrategy;
   user_strategy_override?: Partial<ShotStrategy>;
@@ -114,12 +151,18 @@ export interface Scene {
   project_id: string;
   name: string;
   description: string;
+  /** English visual prompt for scene image generation */
+  visual_prompt: string;
+  /** Negative prompt to avoid unwanted elements in scene */
+  visual_negative: string;
   lighting: string;
   weather: string;
   time_of_day: string;
   mood: string;
   anchor_image: string | null;
   version: number;
+  /** V5: Spatial perspective constraint for affine transforms */
+  perspective_hint?: string;
 }
 
 export interface DependencyEdge {

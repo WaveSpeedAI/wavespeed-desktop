@@ -18,9 +18,8 @@ export function LeftPanel() {
   if (!project) return null;
 
   return (
-    <div className="w-56 border-r bg-background/50 flex flex-col shrink-0">
-      <ScrollArea className="flex-1">
-        <div className="p-3 space-y-4">
+    <ScrollArea className="flex-1">
+      <div className="p-3 space-y-4">
           {/* Characters */}
           <section>
             <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 mb-2 flex items-center gap-1">
@@ -146,7 +145,6 @@ export function LeftPanel() {
           </section>
         </div>
       </ScrollArea>
-    </div>
   );
 }
 

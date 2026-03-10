@@ -783,6 +783,22 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
   },
 
   initListeners: () => {
-    // Execution is browser-only; state updates come from runAllInBrowser callbacks
+    // Listen for Electron execution events
+    if (window.workflowAPI) {
+      window.workflowAPI.on("execution:node-status", (args: any) => {
+        const { nodeId, status, errorMessage } = args;
+        useExecutionStore.getState().updateNodeStatus(nodeId, status, errorMessage);
+      });
+
+      window.workflowAPI.on("execution:progress", (args: any) => {
+        const { nodeId, progress, message } = args;
+        useExecutionStore.getState().updateProgress(nodeId, progress, message);
+      });
+
+      window.workflowAPI.on("execution:edge-status", (args: any) => {
+        const { edgeId, status } = args;
+        useExecutionStore.getState().updateEdgeStatus(edgeId, status);
+      });
+    }
   },
 }));

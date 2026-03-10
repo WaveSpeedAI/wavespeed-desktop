@@ -1187,7 +1187,7 @@ export function WorkflowPage() {
     }
   }, [modelsError]);
 
-  // Run All — browser execution only (in-process via runAllInBrowser)
+  // Run All — use Electron execution if available, fallback to browser
   const handleRunAll = async (times = 1) => {
     if (nodes.length === 0) return;
 
@@ -1263,10 +1263,53 @@ export function WorkflowPage() {
     const runTimes = Math.max(1, Math.min(99, Math.floor(times || 1)));
     runCancelRef.current = false;
     setIsBatchRunning(true);
+    
+    // Ensure workflow is saved before running (to get workflowId)
+    if (!workflowId) {
+      console.log("[WorkflowPage] No workflowId, saving workflow first...");
+      await saveWorkflow({ forRun: true });
+      // Get the workflowId after saving
+      const savedWorkflowId = useWorkflowStore.getState().workflowId;
+      console.log("[WorkflowPage] Workflow saved with ID:", savedWorkflowId);
+    }
+    
+    // Re-fetch workflowId after potential save
+    const currentWorkflowId = useWorkflowStore.getState().workflowId;
+    
+    // Check if workflow has a batch iterator node
+    const hasBatchIterator = nodes.some(n => n.data?.nodeType === "input/batch-iterator");
+    
     try {
-      for (let i = 0; i < runTimes; i++) {
-        if (runCancelRef.current) break;
-        await runAllInBrowser(browserNodes, browserEdges);
+      // Use Electron execution if available (supports batch iterator)
+      console.log("[WorkflowPage] Checking execution mode:", {
+        hasWorkflowAPI: !!window.workflowAPI,
+        workflowId: currentWorkflowId,
+        hasBatchIterator,
+        willUseElectron: !!(window.workflowAPI && currentWorkflowId)
+      });
+      
+      if (window.workflowAPI && currentWorkflowId) {
+        if (hasBatchIterator) {
+          console.log("[WorkflowPage] Using Electron BATCH execution with workflowId:", currentWorkflowId);
+          // Use batch execution mode to process all files automatically
+          for (let i = 0; i < runTimes; i++) {
+            if (runCancelRef.current) break;
+            await window.workflowAPI.invoke("execution:run-batch", { workflowId: currentWorkflowId });
+          }
+        } else {
+          console.log("[WorkflowPage] Using Electron execution with workflowId:", currentWorkflowId);
+          for (let i = 0; i < runTimes; i++) {
+            if (runCancelRef.current) break;
+            await window.workflowAPI.invoke("execution:run-all", { workflowId: currentWorkflowId });
+          }
+        }
+      } else {
+        console.log("[WorkflowPage] Using browser execution (fallback)");
+        // Fallback to browser execution
+        for (let i = 0; i < runTimes; i++) {
+          if (runCancelRef.current) break;
+          await runAllInBrowser(browserNodes, browserEdges);
+        }
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);

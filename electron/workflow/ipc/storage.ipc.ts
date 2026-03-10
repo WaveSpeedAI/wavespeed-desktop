@@ -13,6 +13,17 @@ function getStorage() {
 }
 
 export function registerStorageIpc(): void {
+  ipcMain.handle("storage:select-folder", async () => {
+    const result = await dialog.showOpenDialog({
+      title: "Select Folder",
+      properties: ["openDirectory", "createDirectory"],
+    });
+    if (result.canceled || result.filePaths.length === 0) {
+      return { canceled: true, path: null };
+    }
+    return { canceled: false, path: result.filePaths[0] };
+  });
+
   ipcMain.handle(
     "storage:get-workflow-snapshot",
     async (_event, args: { workflowId: string }) => {

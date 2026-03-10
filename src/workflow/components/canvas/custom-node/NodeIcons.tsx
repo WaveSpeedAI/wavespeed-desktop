@@ -22,6 +22,7 @@ import {
   Download,
   GitMerge,
   ListFilter,
+  FolderOpen,
   type LucideIcon,
 } from "lucide-react";
 
@@ -42,6 +43,7 @@ const NODE_ICON_MAP: Record<string, LucideIcon> = {
   // Input
   "input/media-upload": Upload,
   "input/text-input": Type,
+  "input/batch-iterator": FolderOpen,
   // AI Task
   "ai-task/run": Cpu,
   // Output

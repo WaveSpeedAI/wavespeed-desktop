@@ -18,6 +18,12 @@ import { getDatabase, persistDatabase } from "../db/connection";
 import { getFileStorageInstance } from "../utils/file-storage";
 import { saveWorkflowResultToAssets } from "../utils/save-to-assets";
 import { getWorkflowById } from "../db/workflow.repo";
+import {
+  getIterationState,
+  advanceIteration,
+  clearIterationState,
+  setIterationActive,
+} from "../db/iteration.repo";
 import type { NodeExecutionContext, NodeExecutionResult } from "../nodes/base";
 import type { NodeStatus } from "../../../src/workflow/types/execution";
 import type {
@@ -62,59 +68,24 @@ export class ExecutionEngine {
   ) {}
 
   /** Run all nodes in topological order. */
-  async runAll(workflowId: string): Promise<void> {
-    const nodes = getNodesByWorkflowId(workflowId);
-    const edges = getEdgesByWorkflowId(workflowId);
-    const nodeIds = nodes.map((n) => n.id);
-    const simpleEdges = edges.map((e) => ({
-      sourceNodeId: e.sourceNodeId,
-      targetNodeId: e.targetNodeId,
-    }));
-
-    // Cost estimate (for UI only) is done via cost:estimate IPC; we don't block runs on budget since actual API cost varies by inputs.
-    const levels = topologicalLevels(nodeIds, simpleEdges);
-    const nodeMap = new Map(nodes.map((n) => [n.id, n]));
-    const failedNodes = new Set<string>();
-
-    // Build upstream dependency map for quick lookup
-    const upstreamMap = new Map<string, string[]>();
-    for (const e of simpleEdges) {
-      const deps = upstreamMap.get(e.targetNodeId) ?? [];
-      deps.push(e.sourceNodeId);
-      upstreamMap.set(e.targetNodeId, deps);
+  async runAll(workflowId: string, batchMode = false): Promise<void> {
+    if (batchMode) {
+      await this.runBatchWorkflow(workflowId);
+      return;
     }
+    await this.runWorkflowOnce(workflowId);
+  }
 
-    for (const level of levels) {
-      // Stop the entire workflow if any node has failed
-      if (failedNodes.size > 0) break;
-      const batch = level.slice(0, MAX_PARALLEL_EXECUTIONS);
-      await Promise.all(
-        batch.map(async (nodeId) => {
-          // If another node in this batch failed, skip remaining
-          if (failedNodes.size > 0) return;
-          // Skip if any upstream node failed
-          const upstreams = upstreamMap.get(nodeId) ?? [];
-          if (upstreams.some((uid) => failedNodes.has(uid))) {
-            failedNodes.add(nodeId);
-            this.callbacks.onNodeStatus(
-              workflowId,
-              nodeId,
-              "error",
-              "Skipped: upstream node failed",
-            );
-            return;
-          }
-          const success = await this.executeNode(
-            workflowId,
-            nodeId,
-            nodeMap,
-            edges,
-            true,
-          );
-          if (!success) failedNodes.add(nodeId);
-        }),
-      );
-    }
+  /**
+   * Cancel batch execution.
+   */
+  cancelBatch(workflowId: string): void {
+    const key = `${workflowId}:batch`;
+    const controller = new AbortController();
+    controller.abort();
+    this.abortControllers.set(key, controller);
+    setIterationActive(workflowId, false);
+    console.log("[Executor] Batch execution cancellation requested");
   }
 
   /** Run a single node, resolving upstream inputs. Always skips cache (user explicitly re-runs). */
@@ -248,11 +219,18 @@ export class ExecutionEngine {
     if (!node) return false;
 
     const handler = this.registry.getHandler(node.nodeType);
+    console.log(`[Executor] Looking for handler for node type: ${node.nodeType}, found:`, !!handler);
     if (!handler) {
+      console.error(`[Executor] No handler found for: ${node.nodeType}`);
+      console.error(`[Executor] Available handlers:`, Array.from(this.registry['handlers'].keys()));
       throw new Error(`No handler for node type: ${node.nodeType}`);
     }
 
     const inputs = this.resolveInputs(nodeId, nodeMap, edges);
+    const substitutedParams = this.substituteIterationVariables(
+      node.params,
+      workflowId,
+    );
     console.log(
       `[Executor] Node ${nodeId} (${node.nodeType}) resolved inputs:`,
       JSON.stringify(inputs).slice(0, 200),
@@ -303,7 +281,7 @@ export class ExecutionEngine {
       const context: NodeExecutionContext = {
         nodeId,
         nodeType: node.nodeType,
-        params: node.params,
+        params: substitutedParams,
         inputs,
         workflowId,
         abortSignal: abortController.signal,
@@ -531,5 +509,158 @@ export class ExecutionEngine {
     }
 
     return inputs;
+  }
+
+  /**
+   * Substitute iteration template variables in node params.
+   * Replaces {{index}}, {{total}}, {{filename}} with current iteration values.
+   */
+  private substituteIterationVariables(
+    params: Record<string, unknown>,
+    workflowId: string,
+  ): Record<string, unknown> {
+    const state = getIterationState(workflowId);
+    if (!state) return params;
+
+    const substituted = { ...params };
+    const currentFile = state.iterationData[state.currentIndex] || "";
+    const filename = currentFile.split("/").pop() || "";
+
+    for (const [key, value] of Object.entries(substituted)) {
+      if (typeof value === "string") {
+        substituted[key] = value
+          .replace(/\{\{index\}\}/g, String(state.currentIndex))
+          .replace(/\{\{total\}\}/g, String(state.totalItems))
+          .replace(/\{\{filename\}\}/g, filename)
+          .replace(/\{\{current\}\}/g, String(state.currentIndex + 1));
+      }
+    }
+
+    return substituted;
+  }
+
+  /**
+   * Run workflow in batch mode - iterates through all items in a batch iterator node.
+   */
+  private async runBatchWorkflow(workflowId: string): Promise<void> {
+    const nodes = getNodesByWorkflowId(workflowId);
+    const batchIteratorNode = nodes.find(
+      (n) => n.nodeType === "input/batch-iterator",
+    );
+
+    if (!batchIteratorNode) {
+      console.warn(
+        "[Executor] Batch mode requested but no batch iterator node found. Running normally.",
+      );
+      await this.runWorkflowOnce(workflowId);
+      return;
+    }
+
+    let state = getIterationState(workflowId);
+
+    if (!state) {
+      console.log(
+        "[Executor] First batch run - initializing iteration state...",
+      );
+      await this.runWorkflowOnce(workflowId);
+      state = getIterationState(workflowId);
+      if (!state) {
+        console.warn(
+          "[Executor] Batch iterator did not initialize state. Stopping.",
+        );
+        return;
+      }
+    }
+
+    setIterationActive(workflowId, true);
+
+    console.log(
+      `[Executor] Starting batch execution: ${state.totalItems} items`,
+    );
+
+    while (true) {
+      state = getIterationState(workflowId);
+      if (!state || state.currentIndex >= state.totalItems) {
+        console.log("[Executor] Batch execution complete");
+        break;
+      }
+
+      if (this.abortControllers.has(`${workflowId}:batch`)) {
+        console.log("[Executor] Batch execution cancelled by user");
+        break;
+      }
+
+      console.log(
+        `[Executor] Batch processing item ${state.currentIndex + 1}/${state.totalItems}`,
+      );
+
+      try {
+        await this.runWorkflowOnce(workflowId);
+      } catch (error) {
+        console.error(
+          `[Executor] Error in batch iteration ${state.currentIndex}:`,
+          error,
+        );
+      }
+
+      const hasMore = advanceIteration(workflowId);
+      if (!hasMore) break;
+    }
+
+    clearIterationState(workflowId);
+    console.log("[Executor] Batch execution finished and state cleared");
+  }
+
+  /**
+   * Run workflow once (single execution of all nodes).
+   */
+  private async runWorkflowOnce(workflowId: string): Promise<void> {
+    const nodes = getNodesByWorkflowId(workflowId);
+    const edges = getEdgesByWorkflowId(workflowId);
+    const nodeIds = nodes.map((n) => n.id);
+    const simpleEdges = edges.map((e) => ({
+      sourceNodeId: e.sourceNodeId,
+      targetNodeId: e.targetNodeId,
+    }));
+
+    const levels = topologicalLevels(nodeIds, simpleEdges);
+    const nodeMap = new Map(nodes.map((n) => [n.id, n]));
+    const failedNodes = new Set<string>();
+
+    const upstreamMap = new Map<string, string[]>();
+    for (const e of simpleEdges) {
+      const deps = upstreamMap.get(e.targetNodeId) ?? [];
+      deps.push(e.sourceNodeId);
+      upstreamMap.set(e.targetNodeId, deps);
+    }
+
+    for (const level of levels) {
+      if (failedNodes.size > 0) break;
+      const batch = level.slice(0, MAX_PARALLEL_EXECUTIONS);
+      await Promise.all(
+        batch.map(async (nodeId) => {
+          if (failedNodes.size > 0) return;
+          const upstreams = upstreamMap.get(nodeId) ?? [];
+          if (upstreams.some((uid) => failedNodes.has(uid))) {
+            failedNodes.add(nodeId);
+            this.callbacks.onNodeStatus(
+              workflowId,
+              nodeId,
+              "error",
+              "Skipped: upstream node failed",
+            );
+            return;
+          }
+          const success = await this.executeNode(
+            workflowId,
+            nodeId,
+            nodeMap,
+            edges,
+            true,
+          );
+          if (!success) failedNodes.add(nodeId);
+        }),
+      );
+    }
   }
 }

@@ -57,6 +57,48 @@ export const textInputDef: NodeTypeDefinition = {
   ],
 };
 
+export const batchIteratorDef: NodeTypeDefinition = {
+  type: "input/batch-iterator",
+  category: "input",
+  label: "Batch Iterator",
+  inputs: [],
+  outputs: [
+    { key: "current", label: "Current Item", dataType: "url", required: true },
+    { key: "index", label: "Index", dataType: "text", required: true },
+    { key: "total", label: "Total", dataType: "text", required: true },
+    { key: "filename", label: "Filename", dataType: "text", required: true },
+  ],
+  params: [
+    {
+      key: "folderPath",
+      label: "Folder Path",
+      type: "string",
+      default: "",
+      connectable: false,
+      description: "Path to folder containing files to iterate through",
+    },
+    {
+      key: "filePattern",
+      label: "File Pattern",
+      type: "string",
+      default: "*.{jpg,jpeg,png,gif,webp,bmp,tiff}",
+      description: "Glob pattern for file matching (e.g., *.jpg or *.{png,jpg})",
+    },
+    {
+      key: "sortOrder",
+      label: "Sort Order",
+      type: "select",
+      default: "name-asc",
+      options: [
+        { label: "Name (A-Z)", value: "name-asc" },
+        { label: "Name (Z-A)", value: "name-desc" },
+        { label: "Date (Oldest)", value: "date-asc" },
+        { label: "Date (Newest)", value: "date-desc" },
+      ],
+    },
+  ],
+};
+
 // ─── AI Task ───────────────────────────────────────────────────────────────
 export const aiTaskDef: NodeTypeDefinition = {
   type: "ai-task/run",
@@ -521,6 +563,7 @@ export const selectDef: NodeTypeDefinition = {
 export const BROWSER_NODE_DEFINITIONS: NodeTypeDefinition[] = [
   mediaUploadDef,
   textInputDef,
+  batchIteratorDef,
   aiTaskDef,
   fileExportDef,
   previewDisplayDef,

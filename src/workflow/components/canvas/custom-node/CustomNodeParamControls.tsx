@@ -37,6 +37,7 @@ import {
   ToggleSwitch,
   NumberInput,
   FileBtn,
+  FolderBtn,
   SizeInput,
 } from "./CustomNodePrimitives";
 
@@ -315,6 +316,17 @@ export function ParamRow({
                   </TooltipContent>
                 </Tooltip>
               )}
+            </>
+          ) : schema.name === "folderPath" ? (
+            <>
+              <CompInput
+                type="text"
+                value={String(cur ?? "")}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder={schema.placeholder ?? schema.description ?? label}
+                className={`${inputCls} flex-1 text-right`}
+              />
+              <FolderBtn onFolder={(path) => onChange(path)} />
             </>
           ) : (
             <CompInput
@@ -872,6 +884,51 @@ export function DefParamControl({
     return wfId;
   }, [workflowId, saveWorkflow]);
 
+  if (nodeType === "input/batch-iterator" && param.key === "folderPath") {
+    const textVal = String(cur ?? "");
+    const handlePickDirectory = async () => {
+      try {
+        setSelectingDir(true);
+        const result = await window.electronAPI?.selectDirectory?.();
+        if (result?.success && result.path) onChange(result.path);
+      } catch (error) {
+        console.error("Select directory failed:", error);
+      } finally {
+        setSelectingDir(false);
+      }
+    };
+
+    return (
+      <div className="w-full max-w-[260px] space-y-1.5">
+        <div className="flex items-center gap-1.5">
+          <CompInput
+            type="text"
+            value={textVal}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={param.description ?? "Select folder"}
+            className={`${cls} flex-1`}
+            onClick={(e) => e.stopPropagation()}
+          />
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handlePickDirectory();
+            }}
+            title="Select folder"
+            className={`flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-md border border-[hsl(var(--border))] transition-colors ${
+              selectingDir
+                ? "bg-blue-500/25 animate-pulse text-blue-300"
+                : "bg-blue-500/15 text-blue-400 hover:bg-blue-500/25"
+            }`}
+          >
+            📂
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (nodeType === "output/file" && param.key === "outputDir") {
     const textVal = String(cur ?? "");
     const handlePickDirectory = async () => {
@@ -1099,6 +1156,7 @@ export function DefParamControl({
         onClick={(e) => e.stopPropagation()}
       />
     );
+  
   return (
     <CompInput
       type="text"

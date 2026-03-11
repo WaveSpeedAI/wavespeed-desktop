@@ -39,12 +39,16 @@ import type {
 } from "@/workflow/types/node-defs";
 import { fuzzySearch } from "@/lib/fuzzySearch";
 import { getNodeIcon } from "./custom-node/NodeIcons";
+import { useModelsStore } from "@/stores/modelsStore";
+import { getFormFieldsFromModel } from "@/lib/schemaToForm";
+import { formFieldsToModelParamSchema } from "../../lib/model-converter";
 import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
-import { ChevronsDownUp, ChevronsUpDown } from "lucide-react";
+import { ChevronsDownUp, ChevronsUpDown, Search, ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const CATEGORY_ORDER: NodeCategory[] = [
   "ai-task",
@@ -55,6 +59,16 @@ const CATEGORY_ORDER: NodeCategory[] = [
   "ai-generation",
   "control",
 ];
+
+const catDot: Record<string, string> = {
+  "ai-task": "bg-violet-500",
+  input: "bg-blue-500",
+  output: "bg-emerald-500",
+  processing: "bg-amber-500",
+  "free-tool": "bg-rose-500",
+  "ai-generation": "bg-violet-500",
+  control: "bg-cyan-500",
+};
 const RECENT_NODE_TYPES_KEY = "workflowRecentNodeTypes";
 const MAX_RECENT_NODE_TYPES = 8;
 
@@ -764,6 +778,100 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
     return sorted;
   }, [addNodeDisplayDefs, nodeDefs, recentNodeTypes]);
 
+  // ── Model search: when user types a query, also fuzzy-search WaveSpeed models ──
+  const storeModels = useModelsStore((s) => s.models);
+  const fetchModels = useModelsStore((s) => s.fetchModels);
+  useEffect(() => {
+    if (storeModels.length === 0) fetchModels();
+  }, [storeModels.length, fetchModels]);
+
+  const matchedModels = useMemo(() => {
+    const q = addNodeQuery.trim();
+    if (!q) return [];
+    return fuzzySearch(storeModels, q, (m) => [
+      m.name,
+      m.model_id,
+      m.type ?? "",
+    ])
+      .map((r) => r.item)
+      .slice(0, 12);
+  }, [addNodeQuery, storeModels]);
+
+  /** Add an ai-task/run node with a specific model pre-selected */
+  const addModelNode = useCallback(
+    (model: { model_id: string; name: string }) => {
+      if (!contextMenu) return;
+
+      const aiTaskDef = nodeDefs.find((d) => d.type === "ai-task/run");
+      const defaultParams: Record<string, unknown> = {};
+      if (aiTaskDef) {
+        for (const p of aiTaskDef.params) {
+          if (p.default !== undefined) defaultParams[p.key] = p.default;
+        }
+      }
+      defaultParams.modelId = model.model_id;
+
+      // Compute position (same logic as addNodeAtMenuPosition)
+      let position: { x: number; y: number };
+      const sideInfo = sideAddRef.current;
+      if (sideInfo) {
+        const sourceNode = nodes.find((n) => n.id === sideInfo.sourceNodeId);
+        if (sourceNode) {
+          const sourceEl = document.querySelector(
+            `.react-flow__node[data-id="${sideInfo.sourceNodeId}"]`,
+          ) as HTMLElement | null;
+          const sourceW = sourceEl?.offsetWidth ?? 380;
+          const GAP = 80;
+          if (sideInfo.side === "right") {
+            position = { x: sourceNode.position.x + sourceW + GAP, y: sourceNode.position.y };
+          } else {
+            position = { x: sourceNode.position.x - 380 - GAP, y: sourceNode.position.y };
+          }
+        } else {
+          position = projectMenuPosition(contextMenu.x, contextMenu.y);
+        }
+        sideAddRef.current = null;
+      } else {
+        position = projectMenuPosition(contextMenu.x, contextMenu.y);
+      }
+
+      // Build model input schema from the desktop model store
+      const desktopModel = useModelsStore.getState().models.find((m) => m.model_id === model.model_id);
+      let modelSchema: Array<{ name: string; default?: unknown }> = [];
+      if (desktopModel) {
+        modelSchema = formFieldsToModelParamSchema(getFormFieldsFromModel(desktopModel));
+      }
+
+      const newNodeId = addNode(
+        "ai-task/run",
+        position,
+        defaultParams,
+        model.name,
+        aiTaskDef?.params ?? [],
+        aiTaskDef?.inputs ?? [],
+        aiTaskDef?.outputs ?? [],
+      );
+
+      // After creation, set the model schema and label on the node data
+      const { updateNodeParams, updateNodeData } = useWorkflowStore.getState();
+      const nextParams: Record<string, unknown> = { ...defaultParams };
+      for (const p of modelSchema) {
+        if (p.default !== undefined) nextParams[p.name] = p.default;
+      }
+      nextParams.modelId = model.model_id;
+      updateNodeParams(newNodeId, nextParams);
+      updateNodeData(newNodeId, {
+        modelInputSchema: modelSchema,
+        label: model.name,
+      });
+
+      recordRecentNodeType("ai-task/run");
+      selectNode(newNodeId);
+      setContextMenu(null);
+    },
+    [addNode, contextMenu, nodes, nodeDefs, projectMenuPosition, recordRecentNodeType, selectNode],
+  );
+
   const getContextMenuItems = useCallback((): ContextMenuItem[] => {
     if (!contextMenu) return [];
 
@@ -1449,31 +1557,42 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
             x={contextMenu.x}
             y={contextMenu.y}
             onClose={() => setContextMenu(null)}
-            width={320}
+            width={280}
             estimatedHeight={420}
           >
-            <div className="w-[320px] max-h-[420px] flex flex-col">
-              <div className="px-3 py-2 border-b border-border">
-                <div className="text-xs font-semibold mb-1.5">
+            <div className="w-[280px] max-h-[420px] flex flex-col bg-background/95 backdrop-blur">
+              {/* ── header ── */}
+              <div className="flex items-center justify-between px-4 h-10 border-b border-border/70 shrink-0">
+                <span className="font-semibold text-[13px] text-foreground">
                   {t("workflow.addNode", "Add Node")}
-                </div>
-                <input
-                  autoFocus
-                  type="text"
-                  value={addNodeQuery}
-                  onChange={(e) => setAddNodeQuery(e.target.value)}
-                  placeholder={t(
-                    "workflow.searchNodesPlaceholder",
-                    "Search nodes...",
-                  )}
-                  className="w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1.5 text-xs text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50"
-                />
+                </span>
               </div>
-              <div className="overflow-y-auto py-1.5">
+
+              {/* ── search ── */}
+              <div className="px-3 py-2 shrink-0">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/60 pointer-events-none" />
+                  <input
+                    autoFocus
+                    type="text"
+                    value={addNodeQuery}
+                    onChange={(e) => setAddNodeQuery(e.target.value)}
+                    placeholder={t(
+                      "workflow.searchNodesPlaceholder",
+                      "Search nodes or models...",
+                    )}
+                    className="w-full h-8 rounded-lg border border-border/70 bg-muted/40 pl-8 pr-3 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* ── node list ── */}
+              <div className="flex-1 overflow-y-auto px-2 py-1">
                 {groupedAddNodeDefs.map(([category, defs]) => {
                   const isCollapsed = addNodeCollapsed[category] ?? false;
+                  const dot = catDot[category] ?? "bg-gray-400";
                   return (
-                    <div key={category} className="mb-1">
+                    <div key={category} className="mb-0.5">
                       <button
                         onClick={() =>
                           setAddNodeCollapsed((prev) => ({
@@ -1481,53 +1600,130 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
                             [category]: !isCollapsed,
                           }))
                         }
-                        className="w-full flex items-center gap-1.5 px-2.5 py-1 text-[10px] uppercase tracking-wide text-muted-foreground hover:text-foreground"
+                        className="w-full flex items-center gap-2 px-2 h-7 rounded-lg text-muted-foreground/80 hover:text-foreground hover:bg-muted/60 transition-colors"
                       >
-                        <span className="text-[9px]">
-                          {isCollapsed ? "▶" : "▼"}
-                        </span>
-                        <span>
+                        <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", dot)} />
+                        <span className="text-[11px] font-semibold uppercase tracking-wide">
                           {t(`workflow.nodeCategory.${category}`, category)}
                         </span>
-                        <span className="ml-auto text-[10px] opacity-70">
+                        <span className="ml-auto text-[10px] text-muted-foreground/50 tabular-nums mr-0.5">
                           {defs.length}
                         </span>
+                        <ChevronDown
+                          className={cn(
+                            "w-3 h-3 text-muted-foreground/40 transition-transform duration-200",
+                            isCollapsed && "-rotate-90",
+                          )}
+                        />
                       </button>
-                      {!isCollapsed &&
-                        defs.map((def) => {
-                          const DefIcon = getNodeIcon(def.type);
-                          return (
-                            <button
-                              key={def.type}
-                              onClick={() => addNodeAtMenuPosition(def)}
-                              className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-                              title={t(
-                                "workflow.dragOrClickToAdd",
-                                "Drag to canvas or click to add",
-                              )}
-                            >
-                              {DefIcon && (
-                                <div className="rounded-md bg-primary/10 p-1 flex-shrink-0">
-                                  <DefIcon className="w-3 h-3 text-primary" />
-                                </div>
-                              )}
-                              <span>
-                                {t(
-                                  `workflow.nodeDefs.${def.type}.label`,
-                                  def.label,
+                      {!isCollapsed && (
+                        <div className="py-0.5">
+                          {defs.map((def) => {
+                            const DefIcon = getNodeIcon(def.type);
+                            const hint = t(`workflow.nodeDefs.${def.type}.hint`, "");
+                            const isAiTask = def.category === "ai-task";
+                            return (
+                              <Tooltip key={def.type} delayDuration={0}>
+                                <TooltipTrigger asChild>
+                                  <div
+                                    onClick={() => addNodeAtMenuPosition(def)}
+                                    className={cn(
+                                      "flex items-center gap-2 h-8 px-2 rounded-lg cursor-pointer select-none",
+                                      "text-[12px] text-foreground/70 transition-colors duration-100",
+                                      "hover:bg-muted hover:text-foreground",
+                                    )}
+                                  >
+                                    {DefIcon && (
+                                      <div className="rounded-md bg-primary/10 p-1 flex-shrink-0">
+                                        <DefIcon className="w-3 h-3 text-primary" />
+                                      </div>
+                                    )}
+                                    <span className="truncate">
+                                      {t(
+                                        `workflow.nodeDefs.${def.type}.label`,
+                                        def.label,
+                                      )}
+                                    </span>
+                                    {isAiTask && (
+                                      <span className="ml-auto shrink-0 text-[9px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-500/10 px-1.5 py-0.5 rounded">
+                                        AI
+                                      </span>
+                                    )}
+                                  </div>
+                                </TooltipTrigger>
+                                {hint && (
+                                  <TooltipContent side="right" className="max-w-[220px] z-[1001]">
+                                    {hint}
+                                  </TooltipContent>
                                 )}
-                              </span>
-                            </button>
-                          );
-                        })}
+                              </Tooltip>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
-                {addNodeDisplayDefs.length === 0 && (
-                  <div className="px-3 py-4 text-xs text-muted-foreground text-center">
+
+                {/* ── Model search results ── */}
+                {matchedModels.length > 0 && (
+                  <div className="mb-0.5">
+                    <div className="w-full flex items-center gap-2 px-2 h-7 text-muted-foreground/80">
+                      <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", "bg-violet-500")} />
+                      <span className="text-[11px] font-semibold uppercase tracking-wide">
+                        WaveSpeed API
+                      </span>
+                      <span className="ml-auto text-[10px] text-muted-foreground/50 tabular-nums mr-0.5">
+                        {matchedModels.length}
+                      </span>
+                    </div>
+                    <div className="py-0.5">
+                      {matchedModels.map((model) => {
+                        const AIIcon = getNodeIcon("ai-task/run");
+                        return (
+                          <Tooltip key={model.model_id} delayDuration={0}>
+                            <TooltipTrigger asChild>
+                              <div
+                                onClick={() => addModelNode(model)}
+                                className={cn(
+                                  "flex items-center gap-2 h-8 px-2 rounded-lg cursor-pointer select-none",
+                                  "text-[12px] text-foreground/70 transition-colors duration-100",
+                                  "hover:bg-muted hover:text-foreground",
+                                )}
+                              >
+                                {AIIcon && (
+                                  <div className="rounded-md bg-primary/10 p-1 flex-shrink-0">
+                                    <AIIcon className="w-3 h-3 text-primary" />
+                                  </div>
+                                )}
+                                <span className="truncate">{model.name}</span>
+                                {model.base_price !== undefined && (
+                                  <span className="ml-auto shrink-0 text-[9px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                                    ${model.base_price.toFixed(4)}
+                                  </span>
+                                )}
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="right" className="max-w-[220px] z-[1001]">
+                              {model.name}
+                            </TooltipContent>
+                          </Tooltip>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {addNodeDisplayDefs.length === 0 && matchedModels.length === 0 && (
+                  <div className="px-3 py-6 text-xs text-muted-foreground/60 text-center">
                     {t("workflow.noNodesAvailable", "No nodes available")}
                   </div>
                 )}
+              </div>
+
+              {/* ── footer hint ── */}
+              <div className="px-4 py-2 border-t border-border/70 text-[10px] text-muted-foreground/40">
+                {t("workflow.dragOrClickToAdd", "Drag to canvas or click to add")}
               </div>
             </div>
           </ContextMenu>

@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { usePlaygroundStore } from "@/stores/playgroundStore";
 import { Switch } from "@/components/ui/switch";
@@ -9,7 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Play, Square, ChevronDown } from "lucide-react";
+import { Play, Square, ChevronDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BatchControlsProps {
@@ -54,6 +55,17 @@ export function BatchControls({
     setBatchConfig({ randomizeSeed: checked });
   };
 
+  // Delay abort button by 500ms to prevent accidental clicks
+  const [abortReady, setAbortReady] = useState(false);
+  useEffect(() => {
+    if (!isRunning) {
+      setAbortReady(false);
+      return;
+    }
+    const timer = setTimeout(() => setAbortReady(true), 500);
+    return () => clearTimeout(timer);
+  }, [isRunning]);
+
   const displayLabel =
     enabled && repeatCount > 1 ? `${runLabel} (${repeatCount})` : runLabel;
 
@@ -61,11 +73,21 @@ export function BatchControls({
     return (
       <div className="flex rounded-lg border border-transparent shadow-sm">
         <Button
-          className="flex-1 h-9 text-sm bg-red-600 hover:bg-red-700 text-white transition-colors shadow-none"
-          onClick={onAbort}
+          className={cn(
+            "flex-1 h-9 text-sm text-white transition-all duration-300 shadow-none",
+            abortReady
+              ? "bg-red-600 hover:bg-red-700 cursor-pointer"
+              : "bg-blue-600 cursor-default",
+          )}
+          onClick={abortReady ? onAbort : undefined}
+          disabled={!abortReady}
         >
-          <Square className="mr-2 h-3.5 w-3.5 fill-current" />
-          {runningLabel}
+          {abortReady ? (
+            <Square className="mr-2 h-3.5 w-3.5 fill-current" />
+          ) : (
+            <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+          )}
+          {abortReady ? runningLabel : t("playground.running")}
         </Button>
       </div>
     );

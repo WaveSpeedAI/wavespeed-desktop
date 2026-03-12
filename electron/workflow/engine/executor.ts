@@ -623,7 +623,21 @@ export class ExecutionEngine {
       targetNodeId: e.targetNodeId,
     }));
 
+    console.log("[Executor] Starting workflow execution");
+    console.log("[Executor] Total nodes:", nodeIds.length);
+    console.log("[Executor] Total edges:", edges.length);
+    console.log("[Executor] Nodes:", nodes.map(n => `${n.id.slice(0, 8)}... (${n.nodeType})`));
+
     const levels = topologicalLevels(nodeIds, simpleEdges);
+    console.log("[Executor] Topological levels:", levels.length);
+    levels.forEach((level, i) => {
+      const nodeTypes = level.map(id => {
+        const node = nodes.find(n => n.id === id);
+        return `${id.slice(0, 8)}... (${node?.nodeType})`;
+      });
+      console.log(`[Executor] Level ${i}:`, nodeTypes);
+    });
+
     const nodeMap = new Map(nodes.map((n) => [n.id, n]));
     const failedNodes = new Set<string>();
 
@@ -637,6 +651,7 @@ export class ExecutionEngine {
     for (const level of levels) {
       if (failedNodes.size > 0) break;
       const batch = level.slice(0, MAX_PARALLEL_EXECUTIONS);
+      console.log(`[Executor] Executing batch of ${batch.length} nodes`);
       await Promise.all(
         batch.map(async (nodeId) => {
           if (failedNodes.size > 0) return;
@@ -651,6 +666,8 @@ export class ExecutionEngine {
             );
             return;
           }
+          const node = nodeMap.get(nodeId);
+          console.log(`[Executor] Executing node: ${nodeId.slice(0, 8)}... (${node?.nodeType})`);
           const success = await this.executeNode(
             workflowId,
             nodeId,
@@ -658,9 +675,15 @@ export class ExecutionEngine {
             edges,
             true,
           );
-          if (!success) failedNodes.add(nodeId);
+          if (!success) {
+            console.log(`[Executor] Node failed: ${nodeId.slice(0, 8)}... (${node?.nodeType})`);
+            failedNodes.add(nodeId);
+          } else {
+            console.log(`[Executor] Node succeeded: ${nodeId.slice(0, 8)}... (${node?.nodeType})`);
+          }
         }),
       );
     }
+    console.log("[Executor] Workflow execution complete");
   }
 }

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import type { TouchEvent } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { usePlaygroundStore } from "@/stores/playgroundStore";
@@ -102,6 +103,22 @@ export function MobilePlaygroundPage() {
   const [calculatedPrice, setCalculatedPrice] = useState<number | null>(null);
   const [isPricingLoading, setIsPricingLoading] = useState(false);
   const pricingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleViewTabTouch = useCallback(
+    (view: ViewTab) => (event: TouchEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+      setActiveView(view);
+    },
+    [],
+  );
+
+  const handleNavigateTouch = useCallback(
+    (path: string) => (event: TouchEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+      navigate(path);
+    },
+    [navigate],
+  );
 
   // Load templates and prediction inputs on mount
   useEffect(() => {
@@ -408,15 +425,19 @@ export function MobilePlaygroundPage() {
       {/* Mobile Tab Switcher */}
       <div className="tab-bar">
         <button
+          type="button"
           className={cn("tab-item", activeView === "input" && "active")}
           onClick={() => setActiveView("input")}
+          onTouchEnd={handleViewTabTouch("input")}
         >
           <Settings2 className="h-4 w-4 inline-block mr-1.5" />
           Input
         </button>
         <button
+          type="button"
           className={cn("tab-item", activeView === "output" && "active")}
           onClick={() => setActiveView("output")}
+          onTouchEnd={handleViewTabTouch("output")}
         >
           <Image className="h-4 w-4 inline-block mr-1.5" />
           Output
@@ -427,13 +448,17 @@ export function MobilePlaygroundPage() {
         {/* Quick access - align with desktop */}
         <div className="flex items-center gap-1 px-2 shrink-0">
           <button
+            type="button"
             onClick={() => navigate("/models")}
+            onTouchEnd={handleNavigateTouch("/models")}
             className="h-7 w-7 inline-flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
           >
             <Compass className="h-4 w-4" />
           </button>
           <button
+            type="button"
             onClick={() => navigate("/templates")}
+            onTouchEnd={handleNavigateTouch("/templates")}
             className="h-7 w-7 inline-flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
           >
             <FolderOpen className="h-4 w-4" />

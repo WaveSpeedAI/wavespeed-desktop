@@ -1,7 +1,7 @@
 {
   "name": "wavespeed-mobile",
   "version": "0.8.2",
-  "description": "WaveSpeed Mobile Application for Android",
+  "description": "WaveSpeed Mobile Application for Android and iOS",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -13,8 +13,11 @@
     "test:coverage": "vitest run --coverage",
     "cap:sync": "cap sync",
     "cap:open:android": "cap open android",
+    "cap:open:ios": "cap open ios",
     "android": "npm run build && cap sync android && cap open android",
+    "ios": "npm run build && cap sync ios && cap open ios",
     "android:build": "npm run build && cap sync android",
+    "ios:sync": "npm run build && cap sync ios",
     "android:build:debug": "npm run android:build && cd android && gradlew assembleDebug",
     "android:build:release": "npm run android:build && cd android && gradlew assembleRelease",
     "android:build:bundle": "npm run android:build && cd android && gradlew bundleRelease"
@@ -27,6 +30,7 @@
     "@capacitor/camera": "^6.0.2",
     "@capacitor/core": "^6.2.0",
     "@capacitor/filesystem": "^6.0.2",
+    "@capacitor/ios": "^6.2.0",
     "@capacitor/keyboard": "^6.0.2",
     "@capacitor/preferences": "^6.0.2",
     "@capacitor/share": "^6.0.2",

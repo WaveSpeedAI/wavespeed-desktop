@@ -43,7 +43,13 @@ export class AITaskHandler extends BaseNodeHandler {
     const start = Date.now();
     const modelId = String(ctx.params.modelId ?? "");
 
+    console.log("[AI Task] Starting execution...");
+    console.log("[AI Task] Model ID:", modelId);
+    console.log("[AI Task] Inputs:", ctx.inputs);
+    console.log("[AI Task] Params:", ctx.params);
+
     if (!modelId) {
+      console.error("[AI Task] ERROR: No model selected");
       return {
         status: "error",
         outputs: {},
@@ -54,16 +60,22 @@ export class AITaskHandler extends BaseNodeHandler {
     }
 
     const apiParams = this.buildApiParams(ctx);
+    console.log("[AI Task] API Params:", apiParams);
+    
     // Upload any local-asset:// URLs to CDN before sending to API
     const resolvedParams = await this.uploadLocalAssets(apiParams);
+    console.log("[AI Task] Resolved Params (after upload):", resolvedParams);
+    
     ctx.onProgress(5, `Running ${modelId}...`);
 
     try {
+      console.log("[AI Task] Calling API...");
       const client = getWaveSpeedClient();
       // Use Desktop's apiClient.run() which handles submit + poll; pass abortSignal so Stop cancels in-flight request/polling
       const result = await client.run(modelId, resolvedParams, {
         signal: ctx.abortSignal,
       });
+      console.log("[AI Task] API call completed successfully");
 
       // Normalize first output to URL string (API may return string or { url: "..." })
       const firstOutput =

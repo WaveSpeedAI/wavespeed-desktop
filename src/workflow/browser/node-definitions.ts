@@ -523,6 +523,55 @@ export const mediaMergerDef: NodeTypeDefinition = {
   ],
 };
 
+export const videoFrameExtractorDef: NodeTypeDefinition = {
+  type: "free-tool/video-frame-extractor",
+  category: "free-tool",
+  label: "Video Frame Extractor",
+  inputs: [{ key: "input", label: "Video", dataType: "video", required: true }],
+  outputs: [
+    { key: "output", label: "Frame", dataType: "image", required: true },
+  ],
+  params: [
+    {
+      key: "position",
+      label: "Position",
+      type: "select",
+      default: "last",
+      dataType: "text",
+      connectable: false,
+      options: [
+        { label: "First Frame", value: "first" },
+        { label: "Last Frame", value: "last" },
+        { label: "Middle Frame", value: "middle" },
+        { label: "Specific Time", value: "time" },
+      ],
+    },
+    {
+      key: "timeSeconds",
+      label: "Time (seconds)",
+      type: "number",
+      default: 0,
+      dataType: "text",
+      connectable: false,
+      validation: { min: 0, step: 0.1 },
+      description: "Used when Position is 'Specific Time'",
+    },
+    {
+      key: "format",
+      label: "Format",
+      type: "select",
+      default: "png",
+      dataType: "text",
+      connectable: false,
+      options: [
+        { label: "PNG", value: "png" },
+        { label: "JPG", value: "jpg" },
+        { label: "WebP", value: "webp" },
+      ],
+    },
+  ],
+};
+
 // ─── Helper / processing ──────────────────────────────────────────────────
 /** Concatenate multiple values into one array. Connect any number of inputs; empty slots are skipped. */
 export const concatDef: NodeTypeDefinition = {
@@ -579,6 +628,7 @@ export const BROWSER_NODE_DEFINITIONS: NodeTypeDefinition[] = [
   imageConverterDef,
   mediaTrimmerDef,
   mediaMergerDef,
+  videoFrameExtractorDef,
   concatDef,
   selectDef,
 ];

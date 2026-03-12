@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { BottomNavigation } from "./BottomNavigation";
 import { MobileHeader } from "./MobileHeader";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
 import { useApiKeyStore } from "@/stores/apiKeyStore";
-import { Loader2 } from "lucide-react";
+import { Loader2, KeyRound, Home } from "lucide-react";
 import { VideoEnhancerPage } from "@/pages/VideoEnhancerPage";
 import { ImageEnhancerPage } from "@/pages/ImageEnhancerPage";
 import { BackgroundRemoverPage } from "@/pages/BackgroundRemoverPage";
@@ -22,6 +23,7 @@ import { WelcomePage } from "@/pages/WelcomePage";
 
 export function MobileLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Track which persistent pages have been visited (to delay initial mount)
   const [visitedPages, setVisitedPages] = useState<Set<string>>(new Set());
@@ -91,10 +93,42 @@ export function MobileLayout() {
   ];
   const isFreeToolsPage = freeToolsPaths.includes(location.pathname);
 
-  // Welcome page content for users without API key
+  const protectedPageLabels: Record<string, string> = {
+    "/models": "Model Browser",
+    "/playground": "Playground",
+    "/history": "History",
+  };
+
+  const currentProtectedLabel =
+    Object.entries(protectedPageLabels).find(([path]) =>
+      location.pathname === path || location.pathname.startsWith(path + "/"),
+    )?.[1] ?? "This section";
+
+  // Welcome page content for users without API key on the home route
   const welcomeContent = (
     <div className="h-full overflow-auto">
       <WelcomePage />
+    </div>
+  );
+
+  const lockedPageContent = (
+    <div className="flex h-full items-center justify-center p-6">
+      <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 text-center shadow-sm">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <KeyRound className="h-6 w-6" />
+        </div>
+        <h2 className="text-lg font-semibold">{currentProtectedLabel}</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Add and validate your WaveSpeed API key in Settings to use this page.
+        </p>
+        <div className="mt-5 flex flex-col gap-2">
+          <Button onClick={() => navigate("/settings")}>Open Settings</Button>
+          <Button variant="outline" onClick={() => navigate("/")}>
+            <Home className="mr-2 h-4 w-4" />
+            Back Home
+          </Button>
+        </div>
+      </div>
     </div>
   );
 
@@ -107,7 +141,7 @@ export function MobileLayout() {
         {/* Main content area */}
         <main className="flex-1 overflow-hidden pb-14">
           {requiresLogin ? (
-            welcomeContent
+            location.pathname === "/" ? welcomeContent : lockedPageContent
           ) : (
             <>
               {/* Regular routes via Outlet */}

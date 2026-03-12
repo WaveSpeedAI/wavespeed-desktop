@@ -613,9 +613,6 @@ function CustomNodeComponent({
     >
       {/* Invisible hover extension above the node so mouse can reach the toolbar */}
       <div className="absolute -top-10 left-0 right-0 h-10" />
-      {/* Invisible hover extensions on sides so mouse can reach the add-node buttons */}
-      <div className="absolute top-0 bottom-0 -left-10 w-10" />
-      <div className="absolute top-0 bottom-0 -right-10 w-10" />
 
       {/* ── Hover toolbar — floats above node ────────────────────── */}
       {hovered && (
@@ -935,64 +932,33 @@ function CustomNodeComponent({
         {t("workflow.outputLowercase", "output")}
       </div>
 
-      {/* ── Side "Add Node" buttons — visible on hover / selected ───── */}
+      {/* ── Side "Add Node" button — right side only, visible on hover / selected ───── */}
       {(hovered || selected) && (
-        <>
-          {/* Left side */}
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                className="nodrag nopan absolute top-1/2 -translate-y-1/2 z-40 flex items-center justify-center w-6 h-6 rounded-full shadow-lg backdrop-blur-sm bg-blue-500 text-white hover:bg-blue-600 hover:scale-110 transition-all duration-150"
-                style={{ left: -36 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                  window.dispatchEvent(
-                    new CustomEvent("workflow:open-add-node-menu", {
-                      detail: { x: rect.left, y: rect.top + rect.height / 2, sourceNodeId: id, side: "left" },
-                    }),
-                  );
-                }}
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="left">
-              {t("workflow.addNode", "Add Node")}
-            </TooltipContent>
-          </Tooltip>
-          {/* Right side */}
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                className="nodrag nopan absolute top-1/2 -translate-y-1/2 z-40 flex items-center justify-center w-6 h-6 rounded-full shadow-lg backdrop-blur-sm bg-blue-500 text-white hover:bg-blue-600 hover:scale-110 transition-all duration-150"
-                style={{ right: -36 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                  window.dispatchEvent(
-                    new CustomEvent("workflow:open-add-node-menu", {
-                      detail: { x: rect.right, y: rect.top + rect.height / 2, sourceNodeId: id, side: "right" },
-                    }),
-                  );
-                }}
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              {t("workflow.addNode", "Add Node")}
-            </TooltipContent>
-          </Tooltip>
-        </>
+        <Tooltip delayDuration={0}>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              className="nodrag nopan absolute top-1/2 -translate-y-1/2 -right-3 z-40 flex items-center justify-center w-6 h-6 rounded-full shadow-lg backdrop-blur-sm bg-blue-500 text-white hover:bg-blue-600 hover:scale-110 transition-all duration-150"
+              onClick={(e) => {
+                e.stopPropagation();
+                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                window.dispatchEvent(
+                  new CustomEvent("workflow:open-add-node-menu", {
+                    detail: { x: rect.right, y: rect.top + rect.height / 2, sourceNodeId: id, side: "right" },
+                  }),
+                );
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right">
+            {t("workflow.addNode", "Add Node")}
+          </TooltipContent>
+        </Tooltip>
       )}
     </div>
   );

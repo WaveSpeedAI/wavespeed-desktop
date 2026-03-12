@@ -1,0 +1,8 @@
+repos:
+  - repo: local
+    hooks:
+      - id: prettier
+        name: prettier
+        entry: npx prettier --check
+        language: system
+        types_or: [ts, tsx, css]

@@ -1120,12 +1120,11 @@ export function PlaygroundPage() {
                           handleTabClick(tab.id);
                         }}
                         title={
-                          tab.selectedModel?.name
-                            ? formatModelDisplay(tab.selectedModel.name)
-                            : t("playground.tabs.newTab")
+                          tab.selectedModel?.model_id ||
+                          t("playground.tabs.newTab")
                         }
                         className={cn(
-                          "group relative flex h-8 items-center gap-1.5 px-3 text-xs transition-colors cursor-pointer select-none min-w-[60px] max-w-[180px] hover:bg-primary/10 dark:hover:bg-muted/60",
+                          "group relative flex h-8 items-center gap-1.5 px-3 text-xs transition-colors cursor-pointer select-none min-w-[80px] max-w-[240px] hover:bg-primary/10 dark:hover:bg-muted/60",
                           dragTabId === tab.id && "opacity-40",
                           isActive
                             ? "bg-primary/15 dark:bg-primary/10 text-foreground font-medium"
@@ -1141,14 +1140,12 @@ export function PlaygroundPage() {
                           dropIndicator.side === "right" && (
                             <div className="absolute -right-px top-1 bottom-1 w-0.5 rounded-full bg-primary" />
                           )}
-                        {tab.isRunning ? (
+                        {tab.isRunning && (
                           <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
-                        ) : (
-                          <Sparkles className="h-3.5 w-3.5 shrink-0" />
                         )}
                         <span className="truncate flex-1">
-                          {tab.selectedModel?.name
-                            ? formatModelDisplay(tab.selectedModel.name)
+                          {tab.selectedModel?.model_id
+                            ? formatModelDisplay(tab.selectedModel.model_id)
                             : t("playground.tabs.newTab")}
                         </span>
                         <button

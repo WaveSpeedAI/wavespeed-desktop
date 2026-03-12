@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { Search, Check, X, ChevronDown } from "lucide-react";
+import { Search, Check, X, ChevronDown, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fuzzySearch } from "@/lib/fuzzySearch";
+import { useModelsStore } from "@/stores/modelsStore";
 import type { Model } from "@/types/model";
 
 interface ModelSelectorProps {
@@ -98,6 +99,7 @@ export function ModelSelector({
   disabled,
 }: ModelSelectorProps) {
   const { t } = useTranslation();
+  const isFavorite = useModelsStore((s) => s.isFavorite);
   const [isOpen, setIsOpen] = useState(false);
   const [variantOpen, setVariantOpen] = useState(false);
   const [localSearch, setLocalSearch] = useState("");
@@ -329,9 +331,8 @@ export function ModelSelector({
                         onClick={() => handleSelect(model.model_id)}
                         title={model.model_id}
                         className={cn(
-                          "relative flex w-full cursor-pointer select-none items-center justify-between rounded-lg px-2 py-1.5 text-sm outline-none",
+                          "relative flex w-full cursor-pointer select-none items-center rounded-lg px-2 py-1.5 text-sm outline-none",
                           "hover:bg-accent hover:text-accent-foreground",
-                          isSelected && "bg-primary/10 text-foreground",
                         )}
                       >
                         <span className="min-w-0 flex flex-col items-start">
@@ -342,8 +343,8 @@ export function ModelSelector({
                             {family}
                           </span>
                         </span>
-                        {isSelected && (
-                          <Check className="ml-2 h-3.5 w-3.5 shrink-0" />
+                        {isFavorite(model.model_id) && (
+                          <Star className="ml-auto h-3.5 w-3.5 shrink-0 fill-yellow-400 text-yellow-400" />
                         )}
                       </button>
                     );

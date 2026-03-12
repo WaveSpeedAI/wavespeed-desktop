@@ -1647,7 +1647,7 @@ export function WorkflowPage() {
                           y: e.clientY,
                         });
                       }}
-                      className={`group relative flex h-8 items-center gap-1.5 px-3 text-xs transition-all cursor-pointer select-none shrink-0 max-w-[160px] hover:bg-primary/10 dark:hover:bg-muted/60
+                      className={`group relative flex h-8 items-center gap-1.5 px-3 text-xs transition-all cursor-pointer select-none shrink-0 max-w-[240px] hover:bg-primary/10 dark:hover:bg-muted/60
                   ${dragTabId === tab.tabId ? "opacity-40" : ""}
                   ${
                     isActive

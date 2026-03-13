@@ -1349,6 +1349,14 @@
       "processing/select": {
         "label": "선택",
         "hint": "배열에서 인덱스로 항목 하나를 선택"
+      },
+      "control/iterator": {
+        "label": "반복기",
+        "hint": "입력을 반복 — 자식 노드를 N번 또는 배열 항목당 한 번 실행"
+      },
+      "input/directory-import": {
+        "label": "디렉토리 가져오기",
+        "hint": "로컬 폴더를 스캔하고 일치하는 미디어 파일을 배열로 가져오기"
       }
     },
     "modelSelector": {

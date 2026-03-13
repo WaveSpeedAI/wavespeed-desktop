@@ -1348,6 +1348,14 @@
       "processing/select": {
         "label": "Pilih",
         "hint": "Pilih satu item dari tatasusunan mengikut indeks"
+      },
+      "control/iterator": {
+        "label": "Iterator",
+        "hint": "Gelung melalui input — jalankan nod anak N kali atau sekali bagi setiap item tatasusunan"
+      },
+      "input/directory-import": {
+        "label": "Import Direktori",
+        "hint": "Imbas folder tempatan dan import fail media yang sepadan sebagai tatasusunan"
       }
     },
     "modelSelector": {

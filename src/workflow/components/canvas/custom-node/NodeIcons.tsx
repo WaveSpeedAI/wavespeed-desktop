@@ -23,6 +23,7 @@ import {
   GitMerge,
   ListFilter,
   FolderOpen,
+  Repeat,
   type LucideIcon,
 } from "lucide-react";
 
@@ -52,6 +53,8 @@ const NODE_ICON_MAP: Record<string, LucideIcon> = {
   // Processing
   "processing/concat": GitMerge,
   "processing/select": ListFilter,
+  // Control
+  "control/iterator": Repeat,
 };
 
 export function getNodeIcon(nodeType: string): LucideIcon | null {

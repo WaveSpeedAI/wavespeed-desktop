@@ -1313,6 +1313,14 @@
       "processing/select": {
         "label": "選擇",
         "hint": "按索引從陣列中取出一個元素"
+      },
+      "control/iterator": {
+        "label": "迭代器",
+        "hint": "循環執行子節點 — 固定 N 次或按陣列長度自動迭代"
+      },
+      "input/directory-import": {
+        "label": "目錄匯入",
+        "hint": "掃描本機資料夾，將符合的媒體檔案匯入為陣列"
       }
     },
     "modelSelector": {

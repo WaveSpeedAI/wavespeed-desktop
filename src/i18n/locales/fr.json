@@ -1349,6 +1349,14 @@
       "processing/select": {
         "label": "Sélectionner",
         "hint": "Choisir un élément d'un tableau par index"
+      },
+      "control/iterator": {
+        "label": "Itérateur",
+        "hint": "Boucler sur les entrées — exécuter les nœuds enfants N fois ou une fois par élément du tableau"
+      },
+      "input/directory-import": {
+        "label": "Importer un répertoire",
+        "hint": "Scanner un dossier local et importer les fichiers multimédias correspondants sous forme de tableau"
       }
     },
     "modelSelector": {

@@ -1348,6 +1348,14 @@
       "processing/select": {
         "label": "Pilih",
         "hint": "Pilih satu item dari array berdasarkan indeks"
+      },
+      "control/iterator": {
+        "label": "Iterator",
+        "hint": "Ulangi input — jalankan node anak N kali atau sekali per item array"
+      },
+      "input/directory-import": {
+        "label": "Impor Direktori",
+        "hint": "Pindai folder lokal dan impor file media yang cocok sebagai array"
       }
     },
     "modelSelector": {

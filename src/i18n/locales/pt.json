@@ -1348,6 +1348,14 @@
       "processing/select": {
         "label": "Selecionar",
         "hint": "Escolher um item de um array por índice"
+      },
+      "control/iterator": {
+        "label": "Iterador",
+        "hint": "Iterar sobre entradas — executar nós filhos N vezes ou uma vez por item do array"
+      },
+      "input/directory-import": {
+        "label": "Importar Diretório",
+        "hint": "Verificar uma pasta local e importar ficheiros multimédia correspondentes como array"
       }
     },
     "modelSelector": {

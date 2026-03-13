@@ -1386,6 +1386,14 @@
       "processing/select": {
         "label": "Select",
         "hint": "Pick one item from an array by index"
+      },
+      "control/iterator": {
+        "label": "Iterator",
+        "hint": "Loop over inputs — run child nodes N times or once per array item"
+      },
+      "input/directory-import": {
+        "label": "Directory Import",
+        "hint": "Scan a local folder and import matching media files as an array"
       }
     },
     "modelSelector": {

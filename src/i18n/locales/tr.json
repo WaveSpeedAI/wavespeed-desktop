@@ -1348,6 +1348,14 @@
       "processing/select": {
         "label": "Seç",
         "hint": "Bir diziden indekse göre bir öğe seçin"
+      },
+      "control/iterator": {
+        "label": "Yineleyici",
+        "hint": "Girdiler üzerinde döngü — alt düğümleri N kez veya dizi öğesi başına bir kez çalıştır"
+      },
+      "input/directory-import": {
+        "label": "Dizin İçe Aktar",
+        "hint": "Yerel klasörü tara ve eşleşen medya dosyalarını dizi olarak içe aktar"
       }
     },
     "modelSelector": {

@@ -1316,6 +1316,14 @@
       "processing/select": {
         "label": "選択",
         "hint": "配列からインデックスで1つの項目を選択"
+      },
+      "control/iterator": {
+        "label": "イテレーター",
+        "hint": "入力をループ — 子ノードをN回またはアレイ項目ごとに1回実行"
+      },
+      "input/directory-import": {
+        "label": "ディレクトリインポート",
+        "hint": "ローカルフォルダをスキャンし、一致するメディアファイルを配列としてインポート"
       }
     },
     "modelSelector": {

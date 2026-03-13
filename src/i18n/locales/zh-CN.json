@@ -1377,6 +1377,14 @@
       "processing/select": {
         "label": "选择",
         "hint": "按索引从数组中取出一个元素"
+      },
+      "control/iterator": {
+        "label": "迭代器",
+        "hint": "循环执行子节点 — 固定 N 次或按数组长度自动迭代"
+      },
+      "input/directory-import": {
+        "label": "目录导入",
+        "hint": "扫描本地文件夹，将匹配的媒体文件导入为数组"
       }
     },
     "modelSelector": {

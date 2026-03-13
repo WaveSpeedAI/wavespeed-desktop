@@ -1348,6 +1348,14 @@
       "processing/select": {
         "label": "Chọn",
         "hint": "Chọn một mục từ mảng theo chỉ mục"
+      },
+      "control/iterator": {
+        "label": "Bộ lặp",
+        "hint": "Lặp qua đầu vào — chạy nút con N lần hoặc một lần cho mỗi phần tử mảng"
+      },
+      "input/directory-import": {
+        "label": "Nhập thư mục",
+        "hint": "Quét thư mục cục bộ và nhập các tệp phương tiện phù hợp dưới dạng mảng"
       }
     },
     "modelSelector": {

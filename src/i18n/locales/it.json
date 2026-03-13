@@ -1348,6 +1348,14 @@
       "processing/select": {
         "label": "Seleziona",
         "hint": "Scegli un elemento da un array per indice"
+      },
+      "control/iterator": {
+        "label": "Iteratore",
+        "hint": "Ciclo sugli input — esegui i nodi figli N volte o una volta per elemento dell'array"
+      },
+      "input/directory-import": {
+        "label": "Importa directory",
+        "hint": "Scansiona una cartella locale e importa i file multimediali corrispondenti come array"
       }
     },
     "modelSelector": {

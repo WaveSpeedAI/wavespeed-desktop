@@ -109,9 +109,11 @@ export function SizeSelector({
   const [swapRotation, setSwapRotation] = useState(0);
 
   // Parse value into width/height
+  // Supports formats: "W*H" (e.g. "2048*2048"), single number string "2048", or number 2048
   useEffect(() => {
     if (value) {
-      const parts = value.split("*");
+      const str = String(value);
+      const parts = str.split("*");
       if (parts.length === 2) {
         const w = parseInt(parts[0], 10);
         const h = parseInt(parts[1], 10);
@@ -121,9 +123,20 @@ export function SizeSelector({
           setWidthInput(String(w));
           setHeightInput(String(h));
         }
+      } else if (parts.length === 1) {
+        // Single number: treat as both width and height (square)
+        const n = parseInt(parts[0], 10);
+        if (!isNaN(n) && n > 0) {
+          setWidth(n);
+          setHeight(n);
+          setWidthInput(String(n));
+          setHeightInput(String(n));
+          // Normalize to "W*H" format so the rest of the form stays consistent
+          onChange(`${n}*${n}`);
+        }
       }
     }
-  }, [value]);
+  }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const clamp = (n: number) => Math.min(max, Math.max(min, n));
 

@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "로딩 중...",
     "save": "저장",
@@ -40,7 +40,8 @@
     "showMore": "더 보기",
     "showLess": "접기",
     "show": "표시",
-    "hide": "숨기기"
+    "hide": "숨기기",
+    "customize": "커스터마이즈"
   },
   "nav": {
     "home": "홈",
@@ -1107,6 +1108,9 @@
     "exportFailed": "내보내기 실패",
     "estimated": "예상 비용",
     "fitView": "뷰 맞춤",
+    "toggleGrid": "그리드 전환",
+    "zoomIn": "확대",
+    "zoomOut": "축소",
     "autoLayout": "자동 정렬",
     "freeToolModelHint": "첫 실행 시 AI 모델이 자동 다운로드됩니다, 잠시 기다려 주세요",
     "more": "더보기",

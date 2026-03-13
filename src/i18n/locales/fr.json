@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "Chargement...",
     "save": "Enregistrer",
@@ -40,7 +40,8 @@
     "showMore": "Afficher plus",
     "showLess": "Afficher moins",
     "show": "Afficher",
-    "hide": "Masquer"
+    "hide": "Masquer",
+    "customize": "Personnaliser"
   },
   "nav": {
     "home": "Accueil",
@@ -1107,6 +1108,9 @@
     "exportFailed": "Échec de l'exportation",
     "estimated": "Coût estimé",
     "fitView": "Ajuster la vue",
+    "toggleGrid": "Afficher/masquer la grille",
+    "zoomIn": "Zoom avant",
+    "zoomOut": "Zoom arrière",
     "autoLayout": "Disposition automatique",
     "freeToolModelHint": "La première exécution téléchargera automatiquement le modèle IA, veuillez patienter",
     "more": "Plus",

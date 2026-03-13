@@ -170,9 +170,6 @@ export function HistoryDrawer({
         <div className="flex items-center gap-1.5">
           {history.length > 1 && (
             <>
-              <kbd className="hidden md:inline text-[9px] text-muted-foreground/40 font-mono px-1 py-0.5 rounded border border-border/40">
-                ← →
-              </kbd>
               <button
                 onClick={() => navigate("prev")}
                 className="flex items-center justify-center w-5 h-5 rounded bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"

@@ -40,7 +40,8 @@
     "showMore": "Show more",
     "showLess": "Show less",
     "show": "Show",
-    "hide": "Hide"
+    "hide": "Hide",
+    "customize": "Customize"
   },
   "nav": {
     "home": "Home",
@@ -1138,6 +1139,7 @@
     "exportFailed": "Export failed",
     "estimated": "Est.",
     "fitView": "Fit View",
+    "toggleGrid": "Toggle Grid",
     "zoomIn": "Zoom in",
     "zoomOut": "Zoom out",
     "autoLayout": "Auto Layout",

@@ -1,8 +1,8 @@
 /**
  * Run workflow in the browser (no Electron).
- * Uses apiClient for AI tasks and free-tool-runner for free-tool nodes.
+ * Uses workflowClient for AI tasks and free-tool-runner for free-tool nodes.
  */
-import { apiClient } from "@/api/client";
+import { workflowClient } from "@/api/client";
 import { topologicalLevels, type SimpleEdge } from "@/workflow/lib/topological";
 import {
   runImageEnhancer,
@@ -297,7 +297,7 @@ async function ensureCdnUrl(
     : url;
   const name = decoded.split(/[/\\]/).pop() || "upload";
   const file = new File([blob], name, { type: blob.type });
-  const cdnUrl = await apiClient.uploadFile(file, signal);
+  const cdnUrl = await workflowClient.uploadFile(file, signal);
   blobToCdnCache.set(url, cdnUrl);
   return cdnUrl;
 }
@@ -507,7 +507,7 @@ export async function executeWorkflowInBrowser(
             // Ensure all URLs are valid HTTP URLs (upload local-asset:// / blob: to CDN)
             const resolvedParams = await uploadLocalUrls(apiParams, signal);
             callbacks.onProgress(nodeId, 5, `Running ${modelId}...`);
-            const result = await apiClient.run(modelId, resolvedParams, {
+            const result = await workflowClient.run(modelId, resolvedParams, {
               signal,
             });
             const outputUrl =

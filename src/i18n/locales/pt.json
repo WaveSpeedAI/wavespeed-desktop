@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "Carregando...",
     "save": "Salvar",
@@ -40,7 +40,8 @@
     "showMore": "Mostrar mais",
     "showLess": "Mostrar menos",
     "show": "Mostrar",
-    "hide": "Ocultar"
+    "hide": "Ocultar",
+    "customize": "Personalizar"
   },
   "nav": {
     "home": "Início",
@@ -1106,6 +1107,9 @@
     "exportFailed": "Falha ao exportar",
     "estimated": "Custo estimado",
     "fitView": "Ajustar vista",
+    "toggleGrid": "Alternar grelha",
+    "zoomIn": "Ampliar",
+    "zoomOut": "Reduzir",
     "autoLayout": "Organizar automaticamente",
     "freeToolModelHint": "A primeira execução fará o download automático do modelo de IA, aguarde",
     "more": "Mais",

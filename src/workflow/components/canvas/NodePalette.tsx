@@ -13,6 +13,9 @@ import {
 import { useTranslation } from "react-i18next";
 import { useUIStore } from "../../stores/ui.store";
 import { useWorkflowStore } from "../../stores/workflow.store";
+import { useModelsStore } from "@/stores/modelsStore";
+import { getFormFieldsFromModel } from "@/lib/schemaToForm";
+import { formFieldsToModelParamSchema } from "../../lib/model-converter";
 import type { NodeTypeDefinition } from "@/workflow/types/node-defs";
 import { fuzzySearch } from "@/lib/fuzzySearch";
 import { Search, X, ChevronDown } from "lucide-react";
@@ -67,7 +70,27 @@ export function NodePalette({ definitions }: NodePaletteProps) {
   const [dragging, setDragging] = useState(false);
   const [query, setQuery] = useState("");
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [highlightIndex, setHighlightIndex] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Model search
+  const storeModels = useModelsStore((s) => s.models);
+  const fetchModels = useModelsStore((s) => s.fetchModels);
+  useEffect(() => {
+    if (storeModels.length === 0) fetchModels();
+  }, [storeModels.length, fetchModels]);
+
+  const matchedModels = useMemo(() => {
+    const q = query.trim();
+    if (!q) return [];
+    return fuzzySearch(storeModels, q, (m) => [
+      m.name,
+      m.model_id,
+      m.type ?? "",
+    ])
+      .map((r) => r.item)
+      .slice(0, 12);
+  }, [query, storeModels]);
 
   // Auto-focus search input when palette opens
   useEffect(() => {
@@ -108,6 +131,55 @@ export function NodePalette({ definitions }: NodePaletteProps) {
     [addNode, t, toggleNodePalette],
   );
 
+  const handleModelClick = useCallback(
+    (model: { model_id: string; name: string }) => {
+      const aiTaskDef = definitions.find((d) => d.type === "ai-task/run");
+      const defaultParams: Record<string, unknown> = {};
+      if (aiTaskDef) {
+        for (const p of aiTaskDef.params) {
+          if (p.default !== undefined) defaultParams[p.key] = p.default;
+        }
+      }
+      defaultParams.modelId = model.model_id;
+
+      const center = useUIStore.getState().getViewportCenter();
+      const x = center.x + (Math.random() - 0.5) * 60;
+      const y = center.y + (Math.random() - 0.5) * 60;
+
+      const desktopModel = useModelsStore.getState().models.find((m) => m.model_id === model.model_id);
+      let modelSchema: Array<{ name: string; default?: unknown }> = [];
+      if (desktopModel) {
+        modelSchema = formFieldsToModelParamSchema(getFormFieldsFromModel(desktopModel));
+      }
+
+      const newNodeId = addNode(
+        "ai-task/run",
+        { x, y },
+        defaultParams,
+        model.name,
+        aiTaskDef?.params ?? [],
+        aiTaskDef?.inputs ?? [],
+        aiTaskDef?.outputs ?? [],
+      );
+
+      const { updateNodeParams, updateNodeData } = useWorkflowStore.getState();
+      const nextParams: Record<string, unknown> = { ...defaultParams };
+      for (const p of modelSchema) {
+        if (p.default !== undefined) nextParams[p.name] = p.default;
+      }
+      nextParams.modelId = model.model_id;
+      updateNodeParams(newNodeId, nextParams);
+      updateNodeData(newNodeId, {
+        modelInputSchema: modelSchema,
+        label: model.name,
+      });
+
+      recordRecentNodeType("ai-task/run");
+      toggleNodePalette();
+    },
+    [addNode, definitions, toggleNodePalette],
+  );
+
   const categoryOrder = [
     "ai-task",
     "input",
@@ -145,6 +217,44 @@ export function NodePalette({ definitions }: NodePaletteProps) {
       return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
     });
   }, [displayDefs]);
+
+  // Flat list of all visible items for keyboard navigation
+  type PaletteItem = { kind: "def"; def: NodeTypeDefinition } | { kind: "model"; model: typeof storeModels[number] };
+  const flatItems = useMemo<PaletteItem[]>(() => {
+    const items: PaletteItem[] = [];
+    for (const [category, defs] of groupedDefs) {
+      if (collapsed[category]) continue;
+      for (const def of defs) items.push({ kind: "def", def });
+    }
+    for (const model of matchedModels) items.push({ kind: "model", model });
+    return items;
+  }, [groupedDefs, matchedModels, collapsed]);
+
+  // Reset highlight when search changes
+  useEffect(() => {
+    setHighlightIndex(0);
+  }, [query]);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setHighlightIndex((i) => (i < flatItems.length - 1 ? i + 1 : 0));
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setHighlightIndex((i) => (i > 0 ? i - 1 : flatItems.length - 1));
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (flatItems.length > 0) {
+          const idx = Math.min(highlightIndex, flatItems.length - 1);
+          const item = flatItems[idx];
+          if (item.kind === "def") handleClick(item.def);
+          else handleModelClick(item.model);
+        }
+      }
+    },
+    [flatItems, highlightIndex, handleClick, handleModelClick],
+  );
 
   const onResizeStart = useCallback(
     (e: React.MouseEvent) => {
@@ -196,14 +306,15 @@ export function NodePalette({ definitions }: NodePaletteProps) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && displayDefs.length > 0) {
-                e.preventDefault();
-                handleClick(displayDefs[0]);
+              if (e.key === "Escape") {
+                toggleNodePalette();
+                return;
               }
+              handleKeyDown(e);
             }}
             placeholder={t(
               "workflow.searchNodesPlaceholder",
-              "Search nodes...",
+              "Search nodes or models...",
             )}
             className="w-full h-8 rounded-lg border border-border/70 bg-muted/40 pl-8 pr-3 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all"
           />
@@ -212,102 +323,155 @@ export function NodePalette({ definitions }: NodePaletteProps) {
 
       {/* ── node list ── */}
       <div className="flex-1 overflow-y-auto px-2 py-1">
-        {groupedDefs.map(([category, defs]) => {
-          const isCollapsed = collapsed[category] ?? false;
-          const dot = catDot[category] ?? "bg-gray-400";
+        {(() => {
+          let flatIdx = 0;
           return (
-            <div key={category} className="mb-0.5">
-              {/* category header */}
-              <button
-                onClick={() =>
-                  setCollapsed((prev) => ({
-                    ...prev,
-                    [category]: !isCollapsed,
-                  }))
-                }
-                className="w-full flex items-center gap-2 px-2 h-7 rounded-lg text-muted-foreground/80 hover:text-foreground hover:bg-muted/60 transition-colors"
-              >
-                <span
-                  className={cn("w-1.5 h-1.5 rounded-full shrink-0", dot)}
-                />
-                <span className="text-[11px] font-semibold uppercase tracking-wide">
-                  {categoryLabel(category)}
-                </span>
-                <span className="ml-auto text-[10px] text-muted-foreground/50 tabular-nums mr-0.5">
-                  {defs.length}
-                </span>
-                <ChevronDown
-                  className={cn(
-                    "w-3 h-3 text-muted-foreground/40 transition-transform duration-200",
-                    isCollapsed && "-rotate-90",
-                  )}
-                />
-              </button>
-
-              {/* node items */}
-              {!isCollapsed && (
-                <div className="py-0.5">
-                  {defs.map((def) => {
-                    const isAiTask = def.category === "ai-task";
-                    const hint = t(`workflow.nodeDefs.${def.type}.hint`, "");
-                    return (
-                      <Tooltip key={def.type} delayDuration={0}>
-                        <TooltipTrigger asChild>
-                          <div
-                            data-guide-node={def.type}
-                            draggable
-                            onDragStart={(e) => onDragStart(e, def.type)}
-                            onClick={() => handleClick(def)}
-                            className={cn(
-                              "flex items-center gap-2 h-8 px-2 rounded-lg cursor-grab select-none",
-                              "text-[12px] text-foreground/70 transition-colors duration-100",
-                              "hover:bg-muted hover:text-foreground",
-                              "active:cursor-grabbing active:bg-muted/80",
-                            )}
-                          >
-                            {(() => {
-                              const Icon = getNodeIcon(def.type);
-                              return Icon ? (
-                                <div className="rounded-md bg-primary/10 p-1 flex-shrink-0">
-                                  <Icon className="w-3 h-3 text-primary" />
-                                </div>
-                              ) : null;
-                            })()}
-                            <span className="truncate">
-                              {t(
-                                `workflow.nodeDefs.${def.type}.label`,
-                                def.label,
-                              )}
-                            </span>
-                            {isAiTask && (
-                              <span className="ml-auto shrink-0 text-[9px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-500/10 px-1.5 py-0.5 rounded">
-                                AI
-                              </span>
-                            )}
-                          </div>
-                        </TooltipTrigger>
-                        {hint && (
-                          <TooltipContent
-                            side="right"
-                            className="max-w-[220px]"
-                          >
-                            {hint}
-                          </TooltipContent>
+            <>
+              {groupedDefs.map(([category, defs]) => {
+                const isCollapsed = collapsed[category] ?? false;
+                const dot = catDot[category] ?? "bg-gray-400";
+                return (
+                  <div key={category} className="mb-0.5">
+                    {/* category header */}
+                    <button
+                      onClick={() =>
+                        setCollapsed((prev) => ({
+                          ...prev,
+                          [category]: !isCollapsed,
+                        }))
+                      }
+                      className="w-full flex items-center gap-2 px-2 h-7 rounded-lg text-muted-foreground/80 hover:text-foreground hover:bg-muted/60 transition-colors"
+                    >
+                      <span
+                        className={cn("w-1.5 h-1.5 rounded-full shrink-0", dot)}
+                      />
+                      <span className="text-[11px] font-semibold uppercase tracking-wide">
+                        {categoryLabel(category)}
+                      </span>
+                      <span className="ml-auto text-[10px] text-muted-foreground/50 tabular-nums mr-0.5">
+                        {defs.length}
+                      </span>
+                      <ChevronDown
+                        className={cn(
+                          "w-3 h-3 text-muted-foreground/40 transition-transform duration-200",
+                          isCollapsed && "-rotate-90",
                         )}
-                      </Tooltip>
-                    );
-                  })}
+                      />
+                    </button>
+
+                    {/* node items */}
+                    {!isCollapsed && (
+                      <div className="py-0.5">
+                        {defs.map((def) => {
+                          const myIdx = flatIdx++;
+                          const isHighlighted = myIdx === highlightIndex;
+                          const isAiTask = def.category === "ai-task";
+                          const hint = t(`workflow.nodeDefs.${def.type}.hint`, "");
+                          return (
+                            <Tooltip key={def.type} delayDuration={0}>
+                              <TooltipTrigger asChild>
+                                <div
+                                  ref={(el) => { if (isHighlighted && el) el.scrollIntoView({ block: "nearest" }); }}
+                                  data-guide-node={def.type}
+                                  draggable
+                                  onDragStart={(e) => onDragStart(e, def.type)}
+                                  onClick={() => handleClick(def)}
+                                  onMouseEnter={() => setHighlightIndex(myIdx)}
+                                  className={cn(
+                                    "flex items-center gap-2 h-8 px-2 rounded-lg cursor-grab select-none",
+                                    "text-[12px] text-foreground/70 transition-colors duration-100",
+                                    isHighlighted ? "bg-accent text-accent-foreground" : "hover:bg-muted hover:text-foreground",
+                                    "active:cursor-grabbing active:bg-muted/80",
+                                  )}
+                                >
+                                  {(() => {
+                                    const Icon = getNodeIcon(def.type);
+                                    return Icon ? (
+                                      <div className="rounded-md bg-primary/10 p-1 flex-shrink-0">
+                                        <Icon className="w-3 h-3 text-primary" />
+                                      </div>
+                                    ) : null;
+                                  })()}
+                                  <span className="truncate">
+                                    {t(
+                                      `workflow.nodeDefs.${def.type}.label`,
+                                      def.label,
+                                    )}
+                                  </span>
+                                  {isAiTask && (
+                                    <span className="ml-auto shrink-0 text-[9px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-500/10 px-1.5 py-0.5 rounded">
+                                      AI
+                                    </span>
+                                  )}
+                                </div>
+                              </TooltipTrigger>
+                              {hint && (
+                                <TooltipContent
+                                  side="right"
+                                  className="max-w-[220px]"
+                                >
+                                  {hint}
+                                </TooltipContent>
+                              )}
+                            </Tooltip>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+
+              {/* ── Model search results ── */}
+              {matchedModels.length > 0 && (
+                <div className="mb-0.5">
+                  <div className="w-full flex items-center gap-2 px-2 h-7 text-muted-foreground/80">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide">
+                      MODELS
+                    </span>
+                  </div>
+                  <div className="py-0.5">
+                    {matchedModels.map((model) => {
+                      const myIdx = flatIdx++;
+                      const isHighlighted = myIdx === highlightIndex;
+                      const parts = model.model_id.split("/");
+                      const provider = parts[0] || "";
+                      const shortName = parts.slice(1).join("/") || model.model_id;
+                      return (
+                        <div
+                          key={model.model_id}
+                          ref={(el) => { if (isHighlighted && el) el.scrollIntoView({ block: "nearest" }); }}
+                          onClick={() => handleModelClick(model)}
+                          onMouseEnter={() => setHighlightIndex(myIdx)}
+                          title={model.model_id}
+                          className={cn(
+                            "flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer select-none",
+                            "transition-colors duration-100",
+                            isHighlighted ? "bg-primary/10" : "hover:bg-muted",
+                          )}
+                        >
+                          <div className="flex flex-col min-w-0 flex-1">
+                            <span className="text-[12px] font-semibold text-foreground truncate">{shortName}</span>
+                            <span className="text-[10px] text-muted-foreground/60 truncate">{provider}/</span>
+                          </div>
+                          <span className="shrink-0 text-[9px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-500/10 px-1.5 py-0.5 rounded">
+                            API
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
-            </div>
-          );
-        })}
 
-        {displayDefs.length === 0 && (
-          <div className="px-3 py-6 text-xs text-muted-foreground/60 text-center">
-            {t("workflow.noNodesAvailable", "No nodes available")}
-          </div>
-        )}
+              {displayDefs.length === 0 && matchedModels.length === 0 && (
+                <div className="px-3 py-6 text-xs text-muted-foreground/60 text-center">
+                  {t("workflow.noNodesAvailable", "No nodes available")}
+                </div>
+              )}
+            </>
+          );
+        })()}
       </div>
 
       {/* ── footer hint ── */}

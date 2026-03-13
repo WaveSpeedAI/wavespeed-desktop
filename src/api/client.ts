@@ -157,7 +157,7 @@ class WaveSpeedClient {
   private client: AxiosInstance;
   private apiKey: string = "";
 
-  constructor() {
+  constructor(clientName?: string) {
     this.client = axios.create({
       baseURL: BASE_URL,
       timeout: 60000, // 60 second timeout for connection and read
@@ -165,20 +165,23 @@ class WaveSpeedClient {
       maxContentLength: Infinity, // Allow large response content
       headers: {
         "Content-Type": "application/json",
-        "X-Client-Name": (() => {
-          const os = getOperatingSystem();
-          return os === "android" || os === "ios"
-            ? "wavespeed-mobile"
-            : "wavespeed-desktop";
-        })(),
+        "X-Client-Name":
+          clientName ??
+          (() => {
+            const os = getOperatingSystem();
+            return os === "android" || os === "ios"
+              ? "wavespeed-mobile"
+              : "wavespeed-desktop";
+          })(),
         "X-Client-Version": version,
         "X-Client-OS": getOperatingSystem(),
       },
     });
 
     this.client.interceptors.request.use((config) => {
-      if (this.apiKey) {
-        config.headers.Authorization = `Bearer ${this.apiKey}`;
+      const key = this.getApiKey();
+      if (key) {
+        config.headers.Authorization = `Bearer ${key}`;
       }
       return config;
     });
@@ -419,6 +422,7 @@ class WaveSpeedClient {
         page_size: pageSize,
         created_after: filters?.created_after || oneDayAgo.toISOString(),
         created_before: filters?.created_before || now.toISOString(),
+        include_inputs: true,
       };
 
       if (filters?.model) body.model = filters.model;
@@ -599,4 +603,17 @@ class WaveSpeedClient {
 }
 
 export const apiClient = new WaveSpeedClient();
+
+/** Dedicated client for workflow — reports as "wavespeed-desktop-workflow". API key auto-syncs from apiClient. */
+class WorkflowClient extends WaveSpeedClient {
+  constructor() {
+    super("wavespeed-desktop-workflow");
+  }
+  /** Always delegate to apiClient so key stays in sync automatically. */
+  override getApiKey(): string {
+    return apiClient.getApiKey();
+  }
+}
+export const workflowClient = new WorkflowClient();
+
 export default apiClient;

@@ -20,6 +20,7 @@ import { apiClient } from "@/api/client";
 import { useTemplateStore } from "@/stores/templateStore";
 import { usePredictionInputsStore } from "@/stores/predictionInputsStore";
 import { usePageActive } from "@/hooks/usePageActive";
+import { getDefaultValues } from "@/lib/schemaToForm";
 import { DynamicForm } from "@/components/playground/DynamicForm";
 import { ModelSelector } from "@/components/playground/ModelSelector";
 import { BatchControls } from "@/components/playground/BatchControls";
@@ -549,12 +550,27 @@ export function PlaygroundPage() {
 
   // When a tab is created with pendingFormValues (e.g. from History "Open in Playground")
   // and DynamicForm does NOT call onSetDefaults (same model, schema cached),
-  // apply pending values directly.
+  // apply pending values merged with schema defaults so all fields are populated.
   useEffect(() => {
-    if (!activeTab?.pendingFormValues) return;
+    const tab = getActiveTab();
+    if (!tab?.pendingFormValues) return;
     const pending = consumePendingFormValues();
     if (pending) {
-      setFormValues({ ...activeTab.formValues, ...pending });
+      // Read formFields from the store (may have been set by DynamicForm's effect)
+      const currentTab = getActiveTab();
+      const fields = currentTab?.formFields ?? [];
+      const defaults = fields.length > 0 ? getDefaultValues(fields) : {};
+      setFormValues({ ...defaults, ...currentTab?.formValues, ...pending });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTabId]);
+
+  // When a tab is created with pre-loaded outputs (e.g. from History/Assets "Customize"),
+  // auto-switch to the Result tab so the user sees the output immediately.
+  useEffect(() => {
+    if (activeTab?.outputs && activeTab.outputs.length > 0 && rightPanelTab !== "result") {
+      setRightPanelTab("result");
+      sessionStorage.setItem("pg_rightPanelTab", "result");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTabId]);

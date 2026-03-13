@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "Đang tải...",
     "save": "Lưu",
@@ -40,7 +40,8 @@
     "showMore": "Xem thêm",
     "showLess": "Thu gọn",
     "show": "Hiển thị",
-    "hide": "Ẩn"
+    "hide": "Ẩn",
+    "customize": "Tùy chỉnh"
   },
   "nav": {
     "home": "Trang chủ",
@@ -1106,6 +1107,9 @@
     "exportFailed": "Xuất thất bại",
     "estimated": "Chi phí ước tính",
     "fitView": "Vừa khung xem",
+    "toggleGrid": "Bật/tắt lưới",
+    "zoomIn": "Phóng to",
+    "zoomOut": "Thu nhỏ",
     "autoLayout": "Tự động sắp xếp",
     "freeToolModelHint": "Lần chạy đầu tiên sẽ tự động tải mô hình AI, vui lòng chờ",
     "more": "Thêm",

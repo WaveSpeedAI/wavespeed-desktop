@@ -34,7 +34,7 @@ import {
 } from "./ipc/ipc-client";
 import { useModelsStore } from "@/stores/modelsStore";
 import { useApiKeyStore } from "@/stores/apiKeyStore";
-import { apiClient } from "@/api/client";
+import { workflowClient } from "@/api/client";
 import { useTemplateStore } from "@/stores/templateStore";
 import {
   Tooltip,
@@ -237,6 +237,7 @@ export function WorkflowPage() {
   const [runCount, setRunCount] = useState(1);
   const [isBatchRunning, setIsBatchRunning] = useState(false);
   const runCancelRef = useRef(false);
+
   const normalizedPreviewSrc = useMemo(() => {
     if (!previewSrc) return "";
     if (/^local-asset:\/\//i.test(previewSrc)) {
@@ -513,7 +514,7 @@ export function WorkflowPage() {
   const wfTabListRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!wfTabListOpen) return;
-    const handler = (e: MouseEvent) => {
+    const handler = (e: PointerEvent) => {
       if (
         wfTabListRef.current &&
         !wfTabListRef.current.contains(e.target as Node)
@@ -521,8 +522,8 @@ export function WorkflowPage() {
         setWfTabListOpen(false);
       }
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    document.addEventListener("pointerdown", handler, true);
+    return () => document.removeEventListener("pointerdown", handler, true);
   }, [wfTabListOpen]);
 
   // Dynamic title width measurement — use ResizeObserver for reliable sizing across languages
@@ -1225,7 +1226,7 @@ export function WorkflowPage() {
         ...settingsForApi
       } = settings;
       try {
-        const optimized = await apiClient.optimizePrompt({
+        const optimized = await workflowClient.optimizePrompt({
           ...settingsForApi,
           text: sourceText,
         });

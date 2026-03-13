@@ -20,7 +20,7 @@ import React, {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { useModelsStore } from "@/stores/modelsStore";
-import { apiClient } from "@/api/client";
+import { workflowClient } from "@/api/client";
 import {
   schemaToFormFields,
   getDefaultValues,
@@ -201,7 +201,7 @@ export function WorkflowPromptOptimizer({
     setIsOptimizing(true);
     setError(null);
     try {
-      const result = await apiClient.optimizePrompt({
+      const result = await workflowClient.optimizePrompt({
         ...resolvedSettings,
         text: textToSend,
       });
@@ -227,7 +227,7 @@ export function WorkflowPromptOptimizer({
     setIsOptimizing(true);
     setError(null);
     try {
-      const result = await apiClient.optimizePrompt({
+      const result = await workflowClient.optimizePrompt({
         ...resolvedSettings,
         text: textToSend,
       });
@@ -750,7 +750,7 @@ function ImageOptimizeDialog({
       for (const [k, v] of Object.entries(values)) {
         if (v !== undefined && v !== null && v !== "") params[k] = v;
       }
-      const result = await apiClient.optimizePrompt(params);
+      const result = await workflowClient.optimizePrompt(params);
       onOptimized(result);
     } catch (err) {
       setError(

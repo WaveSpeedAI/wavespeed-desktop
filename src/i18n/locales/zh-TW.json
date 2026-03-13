@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "載入中...",
     "save": "儲存",
@@ -40,7 +40,8 @@
     "showMore": "顯示更多",
     "showLess": "收起",
     "show": "顯示",
-    "hide": "隱藏"
+    "hide": "隱藏",
+    "customize": "自訂"
   },
   "nav": {
     "home": "首頁",
@@ -1095,6 +1096,9 @@
     "runNode": "執行節點",
     "modelSelection": "模型選擇",
     "fitView": "適配視圖",
+    "toggleGrid": "切換網格",
+    "zoomIn": "放大",
+    "zoomOut": "縮小",
     "autoLayout": "整理佈局",
     "freeToolModelHint": "首次運行時將自動下載 AI 模型，請耐心等待",
     "more": "更多",

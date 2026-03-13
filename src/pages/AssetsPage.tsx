@@ -1,8 +1,14 @@
 import { useState, useEffect, useCallback, useMemo, useRef, memo } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { useAssetsStore } from "@/stores/assetsStore";
+import { usePlaygroundStore } from "@/stores/playgroundStore";
+import { useModelsStore } from "@/stores/modelsStore";
+import { usePredictionInputsStore } from "@/stores/predictionInputsStore";
+import { apiClient } from "@/api/client";
 import { usePageActive } from "@/hooks/usePageActive";
 import { useDeferredClose } from "@/hooks/useDeferredClose";
+import { normalizeApiInputsToFormValues } from "@/lib/schemaToForm";
 import { formatBytes } from "@/types/progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -197,6 +203,7 @@ interface AssetCardProps {
   onManageTags: (asset: AssetMetadata) => void;
   onDelete: (asset: AssetMetadata) => void;
   onPreviewLoaded: (key: string) => void;
+  onCustomize: (asset: AssetMetadata) => void;
 }
 
 const AssetCard = memo(function AssetCard({
@@ -214,6 +221,7 @@ const AssetCard = memo(function AssetCard({
   onManageTags,
   onDelete,
   onPreviewLoaded,
+  onCustomize,
 }: AssetCardProps) {
   const { t } = useTranslation();
   const { ref, isInView } = useInView<HTMLDivElement>();
@@ -272,24 +280,33 @@ const AssetCard = memo(function AssetCard({
           </div>
         )}
 
-        {/* Favorite star */}
-        {asset.favorite && (
-          <div className="absolute top-2 right-2">
-            <Star className="h-5 w-5 fill-yellow-400 text-yellow-400 drop-shadow-sm" />
+        {/* Type badge */}
+        {!isSelectionMode && (
+          <Badge
+            variant="secondary"
+            className="absolute top-2 left-2 text-xs"
+          >
+            <AssetTypeIcon type={asset.type} className="h-3 w-3 mr-1" />
+            {t(`assets.types.${asset.type}`)}
+          </Badge>
+        )}
+        {/* Quick actions — top right */}
+        {!isSelectionMode && (
+          <div className="absolute top-2 right-2 flex gap-1.5 z-10">
+            <button
+              onClick={(e) => { e.stopPropagation(); onToggleFavorite(asset); }}
+              className={cn(
+                "flex items-center justify-center w-6 h-6 rounded-md backdrop-blur-sm transition-colors",
+                asset.favorite
+                  ? "bg-yellow-500/80 text-white hover:bg-yellow-500"
+                  : "bg-black/60 text-white hover:bg-black/80"
+              )}
+              title={asset.favorite ? t("assets.unfavorite") : t("assets.favorite")}
+            >
+              <Star className={cn("h-3 w-3", asset.favorite && "fill-current")} />
+            </button>
           </div>
         )}
-
-        {/* Type badge */}
-        <Badge
-          variant="secondary"
-          className={cn(
-            "absolute text-xs",
-            isSelectionMode ? "top-9 left-2" : "top-2 left-2",
-          )}
-        >
-          <AssetTypeIcon type={asset.type} className="h-3 w-3 mr-1" />
-          {t(`assets.types.${asset.type}`)}
-        </Badge>
       </div>
 
       {/* Info */}
@@ -332,9 +349,9 @@ const AssetCard = memo(function AssetCard({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onSelect(asset)}>
-                <Eye className="mr-2 h-4 w-4" />
-                {t("assets.preview")}
+              <DropdownMenuItem onClick={() => onCustomize(asset)}>
+                <Sparkles className="mr-2 h-4 w-4" />
+                {t("common.customize", "Customize")}
               </DropdownMenuItem>
               {isDesktopMode ? (
                 <DropdownMenuItem onClick={() => onOpenLocation(asset)}>
@@ -401,7 +418,11 @@ const AssetCard = memo(function AssetCard({
 
 export function AssetsPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const isActive = usePageActive("/assets");
+  const { createTab, findFormValuesByPredictionId } = usePlaygroundStore();
+  const { getModelById } = useModelsStore();
+  const { get: getLocalInputs, load: loadPredictionInputs, isLoaded: inputsLoaded } = usePredictionInputsStore();
   const {
     assets,
     isLoaded,
@@ -415,6 +436,7 @@ export function AssetsPage() {
     getAllModels,
     openAssetLocation,
   } = useAssetsStore();
+  const [isOpeningPlayground, setIsOpeningPlayground] = useState(false);
 
   // Filter state
   const [filter, setFilter] = useState<AssetsFilter>({});
@@ -605,6 +627,80 @@ export function AssetsPage() {
       document.body.removeChild(link);
     },
     [openAssetLocation],
+  );
+
+  // Load prediction inputs on mount
+  useEffect(() => {
+    if (!inputsLoaded) loadPredictionInputs();
+  }, [inputsLoaded, loadPredictionInputs]);
+
+  const handleCustomize = useCallback(
+    async (asset: AssetMetadata) => {
+      const model = getModelById(asset.modelId);
+      if (!model) {
+        toast({
+          title: t("common.error"),
+          description: t("history.modelNotAvailable", "Model is no longer available"),
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Build output from asset URL for display in Playground
+      const assetUrl = asset.originalUrl || (asset.filePath ? `local-asset://${encodeURIComponent(asset.filePath)}` : "");
+      const initialOutputs = assetUrl ? [assetUrl] : [];
+      const predictionResult = assetUrl ? {
+        id: asset.predictionId || asset.id,
+        model: asset.modelId,
+        status: "completed" as const,
+        outputs: initialOutputs,
+      } : null;
+
+      // Try local storage first
+      if (asset.predictionId) {
+        const localEntry = getLocalInputs(asset.predictionId);
+        if (localEntry?.inputs && Object.keys(localEntry.inputs).length > 0) {
+          createTab(model, localEntry.inputs, initialOutputs, predictionResult);
+          setPreviewAsset(null);
+          navigate(`/playground/${encodeURIComponent(asset.modelId)}`);
+          return;
+        }
+
+        // Check Playground tabs' generationHistory
+        const historyFormValues = findFormValuesByPredictionId(asset.predictionId);
+        if (historyFormValues) {
+          createTab(model, historyFormValues, initialOutputs, predictionResult);
+          setPreviewAsset(null);
+          navigate(`/playground/${encodeURIComponent(asset.modelId)}`);
+          return;
+        }
+      }
+
+      // Fallback: try API
+      if (asset.predictionId) {
+        setIsOpeningPlayground(true);
+        try {
+          const details = await apiClient.getPredictionDetails(asset.predictionId);
+          const apiInput = (details as any).input || (details as any).inputs || {};
+          // Use API outputs if available, otherwise use asset URL
+          const apiOutputs = details.outputs && details.outputs.length > 0 ? details.outputs : initialOutputs;
+          createTab(model, Object.keys(apiInput).length > 0 ? normalizeApiInputsToFormValues(apiInput) : undefined, apiOutputs, predictionResult);
+          setPreviewAsset(null);
+          navigate(`/playground/${encodeURIComponent(asset.modelId)}`);
+        } catch {
+          createTab(model, undefined, initialOutputs, predictionResult);
+          setPreviewAsset(null);
+          navigate(`/playground/${encodeURIComponent(asset.modelId)}`);
+        } finally {
+          setIsOpeningPlayground(false);
+        }
+      } else {
+        createTab(model, undefined, initialOutputs, predictionResult);
+        setPreviewAsset(null);
+        navigate(`/playground/${encodeURIComponent(asset.modelId)}`);
+      }
+    },
+    [getModelById, getLocalInputs, findFormValuesByPredictionId, createTab, navigate, t],
   );
 
   const handleSelectAll = useCallback(() => {
@@ -1005,6 +1101,7 @@ export function AssetsPage() {
                   onManageTags={setTagDialogAsset}
                   onDelete={setDeleteConfirmAsset}
                   onPreviewLoaded={markPreviewLoaded}
+                  onCustomize={handleCustomize}
                 />
               );
             })}
@@ -1128,6 +1225,22 @@ export function AssetsPage() {
             )}
           </div>
           <DialogFooter>
+            {deferredPreviewAsset?.modelId && (
+              <Button
+                variant="default"
+                onClick={() =>
+                  deferredPreviewAsset && handleCustomize(deferredPreviewAsset)
+                }
+                disabled={isOpeningPlayground}
+              >
+                {isOpeningPlayground ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Sparkles className="mr-2 h-4 w-4" />
+                )}
+                {t("common.customize", "Customize")}
+              </Button>
+            )}
             {isDesktopMode ? (
               <Button
                 variant="outline"

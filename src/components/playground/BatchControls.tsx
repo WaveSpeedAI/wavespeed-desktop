@@ -38,6 +38,17 @@ export function BatchControls({
   const { getActiveTab, setBatchConfig } = usePlaygroundStore();
   const activeTab = getActiveTab();
 
+  // Delay abort button by 500ms to prevent accidental clicks
+  const [abortReady, setAbortReady] = useState(false);
+  useEffect(() => {
+    if (!isRunning) {
+      setAbortReady(false);
+      return;
+    }
+    const timer = setTimeout(() => setAbortReady(true), 500);
+    return () => clearTimeout(timer);
+  }, [isRunning]);
+
   if (!activeTab) return null;
 
   const { batchConfig } = activeTab;

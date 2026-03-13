@@ -115,7 +115,10 @@ export function getWaveSpeedClient(): WaveSpeedMainClient {
 
         const pollRes = await withAbort(
           fetch(`${BASE_URL}/api/v3/predictions/${requestId}/result`, {
-            headers: { Authorization: `Bearer ${apiKey}` },
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              "X-Client-Name": "wavespeed-desktop-workflow",
+            },
             ...(signal && { signal }),
           }),
         );
@@ -143,6 +146,7 @@ export function getWaveSpeedClient(): WaveSpeedMainClient {
         method: "POST",
         headers: {
           Authorization: `Bearer ${apiKey}`,
+          "X-Client-Name": "wavespeed-desktop-workflow",
         },
         body: formData,
       });

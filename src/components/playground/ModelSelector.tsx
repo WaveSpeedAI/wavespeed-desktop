@@ -104,6 +104,7 @@ export function ModelSelector({
   const [variantOpen, setVariantOpen] = useState(false);
   const [localSearch, setLocalSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [highlightIndex, setHighlightIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const variantRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -153,6 +154,11 @@ export function ModelSelector({
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, [localSearch]);
+
+  // Reset highlight when search results change
+  useEffect(() => {
+    setHighlightIndex(0);
+  }, [debouncedSearch]);
 
   // Unique families: one representative model per base family
   const familyModels = useMemo(() => {
@@ -221,14 +227,24 @@ export function ModelSelector({
         setIsOpen(false);
         setLocalSearch("");
         setDebouncedSearch("");
-      } else if (e.key === "Enter" && filteredModels.length > 0) {
-        onChange(filteredModels[0].model_id);
-        setIsOpen(false);
-        setLocalSearch("");
-        setDebouncedSearch("");
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setHighlightIndex((i) => (i < filteredModels.length - 1 ? i + 1 : 0));
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setHighlightIndex((i) => (i > 0 ? i - 1 : filteredModels.length - 1));
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (filteredModels.length > 0) {
+          const idx = Math.min(highlightIndex, filteredModels.length - 1);
+          onChange(filteredModels[idx].model_id);
+          setIsOpen(false);
+          setLocalSearch("");
+          setDebouncedSearch("");
+        }
       }
     },
-    [filteredModels, onChange],
+    [filteredModels, highlightIndex, onChange],
   );
 
   const handleSelect = useCallback(
@@ -316,10 +332,11 @@ export function ModelSelector({
                     {t("models.noResults")}
                   </div>
                 ) : (
-                  filteredModels.map((model) => {
+                  filteredModels.map((model, idx) => {
                     const isSelected =
                       value &&
                       getBaseFamily(value) === getBaseFamily(model.model_id);
+                    const isHighlighted = idx === highlightIndex;
                     const family = getModelFamily(model.model_id);
                     const displayName =
                       model.name || formatSlug(getFamilyName(model.model_id));
@@ -327,12 +344,19 @@ export function ModelSelector({
                       <button
                         key={model.model_id}
                         type="button"
+                        ref={(el) => {
+                          if (isHighlighted && el) {
+                            el.scrollIntoView({ block: "nearest" });
+                          }
+                        }}
                         data-selected={isSelected || undefined}
                         onClick={() => handleSelect(model.model_id)}
+                        onMouseEnter={() => setHighlightIndex(idx)}
                         title={model.model_id}
                         className={cn(
                           "relative flex w-full cursor-pointer select-none items-center rounded-lg px-2 py-1.5 text-sm outline-none",
                           "hover:bg-accent hover:text-accent-foreground",
+                          isHighlighted && "bg-accent text-accent-foreground",
                         )}
                       >
                         <span className="min-w-0 flex flex-col items-start">

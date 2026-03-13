@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "Memuat...",
     "save": "Simpan",
@@ -40,7 +40,8 @@
     "showMore": "Tampilkan lebih",
     "showLess": "Tampilkan sedikit",
     "show": "Tampilkan",
-    "hide": "Sembunyikan"
+    "hide": "Sembunyikan",
+    "customize": "Sesuaikan"
   },
   "nav": {
     "home": "Beranda",
@@ -1106,6 +1107,9 @@
     "exportFailed": "Gagal mengekspor",
     "estimated": "Perkiraan biaya",
     "fitView": "Sesuaikan tampilan",
+    "toggleGrid": "Tampilkan/sembunyikan grid",
+    "zoomIn": "Perbesar",
+    "zoomOut": "Perkecil",
     "autoLayout": "Tata letak otomatis",
     "freeToolModelHint": "Eksekusi pertama akan mengunduh model AI secara otomatis, harap tunggu",
     "more": "Lainnya",

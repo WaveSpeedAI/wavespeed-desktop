@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "Laden...",
     "save": "Speichern",
@@ -40,7 +40,8 @@
     "showMore": "Mehr anzeigen",
     "showLess": "Weniger anzeigen",
     "show": "Anzeigen",
-    "hide": "Ausblenden"
+    "hide": "Ausblenden",
+    "customize": "Anpassen"
   },
   "nav": {
     "home": "Startseite",
@@ -1107,6 +1108,9 @@
     "exportFailed": "Export fehlgeschlagen",
     "estimated": "Kosten",
     "fitView": "Ansicht anpassen",
+    "toggleGrid": "Raster umschalten",
+    "zoomIn": "Vergrößern",
+    "zoomOut": "Verkleinern",
     "autoLayout": "Automatisches Layout",
     "freeToolModelHint": "Beim ersten Ausführen wird das KI-Modell automatisch heruntergeladen, bitte warten",
     "more": "Mehr",

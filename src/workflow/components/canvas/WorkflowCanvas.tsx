@@ -21,6 +21,7 @@ import ReactFlow, {
   type Connection,
   type ReactFlowInstance,
   type Node,
+  type Edge,
   type NodeChange,
   type OnSelectionChangeParams,
 } from "reactflow";
@@ -38,12 +39,16 @@ import type {
 } from "@/workflow/types/node-defs";
 import { fuzzySearch } from "@/lib/fuzzySearch";
 import { getNodeIcon } from "./custom-node/NodeIcons";
+import { useModelsStore } from "@/stores/modelsStore";
+import { getFormFieldsFromModel } from "@/lib/schemaToForm";
+import { formFieldsToModelParamSchema } from "../../lib/model-converter";
 import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
-import { ChevronsDownUp, ChevronsUpDown } from "lucide-react";
+import { ChevronsDownUp, ChevronsUpDown, Search, ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const CATEGORY_ORDER: NodeCategory[] = [
   "ai-task",
@@ -54,6 +59,16 @@ const CATEGORY_ORDER: NodeCategory[] = [
   "ai-generation",
   "control",
 ];
+
+const catDot: Record<string, string> = {
+  "ai-task": "bg-violet-500",
+  input: "bg-blue-500",
+  output: "bg-emerald-500",
+  processing: "bg-amber-500",
+  "free-tool": "bg-rose-500",
+  "ai-generation": "bg-violet-500",
+  control: "bg-cyan-500",
+};
 const RECENT_NODE_TYPES_KEY = "workflowRecentNodeTypes";
 const MAX_RECENT_NODE_TYPES = 8;
 
@@ -330,6 +345,7 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
     onNodesChange,
     onEdgesChange,
     addEdge,
+    updateEdge: updateEdgeInStore,
     addNode,
     removeNode,
     removeNodes,
@@ -353,7 +369,11 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
     nodeId?: string;
     edgeId?: string;
   } | null>(null);
+  // When the add-node menu is opened from a node's side button, store placement info
+  const sideAddRef = useRef<{ sourceNodeId: string; side: "left" | "right" } | null>(null);
   const [addNodeQuery, setAddNodeQuery] = useState("");
+  const [addNodeHighlightIndex, setAddNodeHighlightIndex] = useState(0);
+  const addNodeListRef = useRef<HTMLDivElement>(null);
   const [addNodeCollapsed, setAddNodeCollapsed] = useState<
     Record<string, boolean>
   >({});
@@ -387,8 +407,9 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
           ? event.metaKey
           : event.ctrlKey;
 
-      // Ctrl+A: select all nodes — works even when input is focused
+      // Ctrl+A: select all nodes — but let inputs handle their own select-all
       if (ctrlOrCmd && event.key === "a") {
+        if (isInputFocused) return; // let the browser select text in the input
         event.preventDefault();
         // Update our store
         selectNodes(nodes.map((n) => n.id));
@@ -548,6 +569,53 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
     (connection: Connection) => addEdge(connection),
     [addEdge],
   );
+
+  // Edge reconnection: drag an existing edge endpoint to a different handle
+  const edgeUpdateSuccessful = useRef(true);
+  const onEdgeUpdateStart = useCallback(() => {
+    edgeUpdateSuccessful.current = false;
+  }, []);
+  const onEdgeUpdate = useCallback(
+    (oldEdge: Edge, newConnection: Connection) => {
+      edgeUpdateSuccessful.current = true;
+      updateEdgeInStore(oldEdge, newConnection);
+      // After reconnection the node UI changes (connected params show badges
+      // instead of form controls), which moves handle DOM positions internally
+      // even though the node's outer size may stay the same. React Flow only
+      // re-measures handles via ResizeObserver when the outer size changes.
+      // Workaround: after the DOM settles, force React Flow to re-measure by
+      // dispatching dimension changes for affected nodes.
+      requestAnimationFrame(() => {
+        const affectedNodeIds = new Set<string>();
+        if (oldEdge.source) affectedNodeIds.add(oldEdge.source);
+        if (oldEdge.target) affectedNodeIds.add(oldEdge.target);
+        if (newConnection.source) affectedNodeIds.add(newConnection.source);
+        if (newConnection.target) affectedNodeIds.add(newConnection.target);
+        // Nudge each affected node's width by ±1px to trigger ResizeObserver,
+        // then restore it on the next frame.
+        for (const nid of affectedNodeIds) {
+          const el = document.querySelector(
+            `.react-flow__node[data-id="${nid}"]`,
+          ) as HTMLElement | null;
+          if (el) {
+            const origWidth = el.style.width;
+            el.style.width = `${el.offsetWidth + 1}px`;
+            requestAnimationFrame(() => {
+              el.style.width = origWidth;
+            });
+          }
+        }
+      });
+    },
+    [updateEdgeInStore],
+  );
+  const onEdgeUpdateEnd = useCallback(
+    (_: MouseEvent | TouchEvent, _edge: Edge) => {
+      // If the drag didn't land on a valid handle, snap back — do NOT delete the edge
+      edgeUpdateSuccessful.current = true;
+    },
+    [],
+  );
   const onNodeClick = useCallback(
     (_: React.MouseEvent, node: { id: string }) => selectNode(node.id),
     [selectNode],
@@ -599,6 +667,7 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
 
   const openAddNodeMenu = useCallback((x: number, y: number) => {
     setAddNodeQuery("");
+    setAddNodeHighlightIndex(0);
     setContextMenu({ x, y, type: "addNode" });
   }, []);
 
@@ -615,7 +684,6 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
   const addNodeAtMenuPosition = useCallback(
     (def: NodeTypeDefinition) => {
       if (!contextMenu) return;
-      const position = projectMenuPosition(contextMenu.x, contextMenu.y);
       const defaultParams: Record<string, unknown> = {};
       for (const p of def.params) {
         if (p.default !== undefined) defaultParams[p.key] = p.default;
@@ -624,6 +692,39 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
         `workflow.nodeDefs.${def.type}.label`,
         def.label,
       );
+
+      // If opened from a node's side button, place the new node beside the source node
+      let position: { x: number; y: number };
+      const sideInfo = sideAddRef.current;
+      if (sideInfo) {
+        const sourceNode = nodes.find((n) => n.id === sideInfo.sourceNodeId);
+        if (sourceNode) {
+          const sourceEl = document.querySelector(
+            `.react-flow__node[data-id="${sideInfo.sourceNodeId}"]`,
+          ) as HTMLElement | null;
+          const sourceW = sourceEl?.offsetWidth ?? 380;
+          const GAP = 80;
+          if (sideInfo.side === "right") {
+            position = {
+              x: sourceNode.position.x + sourceW + GAP,
+              y: sourceNode.position.y,
+            };
+          } else {
+            // Place to the left; estimate new node width as default
+            const newNodeW = (defaultParams.__nodeWidth as number) ?? 380;
+            position = {
+              x: sourceNode.position.x - newNodeW - GAP,
+              y: sourceNode.position.y,
+            };
+          }
+        } else {
+          position = projectMenuPosition(contextMenu.x, contextMenu.y);
+        }
+        sideAddRef.current = null;
+      } else {
+        position = projectMenuPosition(contextMenu.x, contextMenu.y);
+      }
+
       addNode(
         def.type,
         position,
@@ -636,7 +737,7 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
       recordRecentNodeType(def.type);
       setContextMenu(null);
     },
-    [addNode, contextMenu, projectMenuPosition, t, recordRecentNodeType],
+    [addNode, contextMenu, nodes, projectMenuPosition, t, recordRecentNodeType],
   );
 
   const addNodeDisplayDefs = useMemo(() => {
@@ -680,6 +781,142 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
     }
     return sorted;
   }, [addNodeDisplayDefs, nodeDefs, recentNodeTypes]);
+
+  // ── Model search: when user types a query, also fuzzy-search WaveSpeed models ──
+  const storeModels = useModelsStore((s) => s.models);
+  const fetchModels = useModelsStore((s) => s.fetchModels);
+  useEffect(() => {
+    if (storeModels.length === 0) fetchModels();
+  }, [storeModels.length, fetchModels]);
+
+  const matchedModels = useMemo(() => {
+    const q = addNodeQuery.trim();
+    if (!q) return [];
+    return fuzzySearch(storeModels, q, (m) => [
+      m.name,
+      m.model_id,
+      m.type ?? "",
+    ])
+      .map((r) => r.item)
+      .slice(0, 12);
+  }, [addNodeQuery, storeModels]);
+
+  // Flat list of all selectable items for keyboard navigation in add-node menu
+  type AddNodeItem = { kind: "def"; def: NodeTypeDefinition } | { kind: "model"; model: typeof storeModels[number] };
+  const addNodeFlatItems = useMemo<AddNodeItem[]>(() => {
+    const items: AddNodeItem[] = [];
+    for (const [category, defs] of groupedAddNodeDefs) {
+      if (addNodeCollapsed[category]) continue;
+      for (const def of defs) items.push({ kind: "def", def });
+    }
+    for (const model of matchedModels) items.push({ kind: "model", model });
+    return items;
+  }, [groupedAddNodeDefs, matchedModels, addNodeCollapsed]);
+
+  // Reset highlight when search changes
+  useEffect(() => {
+    setAddNodeHighlightIndex(0);
+  }, [addNodeQuery]);
+
+  /** Add an ai-task/run node with a specific model pre-selected */
+  const addModelNode = useCallback(
+    (model: { model_id: string; name: string }) => {
+      if (!contextMenu) return;
+
+      const aiTaskDef = nodeDefs.find((d) => d.type === "ai-task/run");
+      const defaultParams: Record<string, unknown> = {};
+      if (aiTaskDef) {
+        for (const p of aiTaskDef.params) {
+          if (p.default !== undefined) defaultParams[p.key] = p.default;
+        }
+      }
+      defaultParams.modelId = model.model_id;
+
+      // Compute position (same logic as addNodeAtMenuPosition)
+      let position: { x: number; y: number };
+      const sideInfo = sideAddRef.current;
+      if (sideInfo) {
+        const sourceNode = nodes.find((n) => n.id === sideInfo.sourceNodeId);
+        if (sourceNode) {
+          const sourceEl = document.querySelector(
+            `.react-flow__node[data-id="${sideInfo.sourceNodeId}"]`,
+          ) as HTMLElement | null;
+          const sourceW = sourceEl?.offsetWidth ?? 380;
+          const GAP = 80;
+          if (sideInfo.side === "right") {
+            position = { x: sourceNode.position.x + sourceW + GAP, y: sourceNode.position.y };
+          } else {
+            position = { x: sourceNode.position.x - 380 - GAP, y: sourceNode.position.y };
+          }
+        } else {
+          position = projectMenuPosition(contextMenu.x, contextMenu.y);
+        }
+        sideAddRef.current = null;
+      } else {
+        position = projectMenuPosition(contextMenu.x, contextMenu.y);
+      }
+
+      // Build model input schema from the desktop model store
+      const desktopModel = useModelsStore.getState().models.find((m) => m.model_id === model.model_id);
+      let modelSchema: Array<{ name: string; default?: unknown }> = [];
+      if (desktopModel) {
+        modelSchema = formFieldsToModelParamSchema(getFormFieldsFromModel(desktopModel));
+      }
+
+      const newNodeId = addNode(
+        "ai-task/run",
+        position,
+        defaultParams,
+        model.name,
+        aiTaskDef?.params ?? [],
+        aiTaskDef?.inputs ?? [],
+        aiTaskDef?.outputs ?? [],
+      );
+
+      // After creation, set the model schema and label on the node data
+      const { updateNodeParams, updateNodeData } = useWorkflowStore.getState();
+      const nextParams: Record<string, unknown> = { ...defaultParams };
+      for (const p of modelSchema) {
+        if (p.default !== undefined) nextParams[p.name] = p.default;
+      }
+      nextParams.modelId = model.model_id;
+      updateNodeParams(newNodeId, nextParams);
+      updateNodeData(newNodeId, {
+        modelInputSchema: modelSchema,
+        label: model.name,
+      });
+
+      recordRecentNodeType("ai-task/run");
+      selectNode(newNodeId);
+      setContextMenu(null);
+    },
+    [addNode, contextMenu, nodes, nodeDefs, projectMenuPosition, recordRecentNodeType, selectNode],
+  );
+
+  const handleAddNodeKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setContextMenu(null);
+        return;
+      }
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setAddNodeHighlightIndex((i) => (i < addNodeFlatItems.length - 1 ? i + 1 : 0));
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setAddNodeHighlightIndex((i) => (i > 0 ? i - 1 : addNodeFlatItems.length - 1));
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (addNodeFlatItems.length > 0) {
+          const idx = Math.min(addNodeHighlightIndex, addNodeFlatItems.length - 1);
+          const item = addNodeFlatItems[idx];
+          if (item.kind === "def") addNodeAtMenuPosition(item.def);
+          else addModelNode(item.model);
+        }
+      }
+    },
+    [addNodeFlatItems, addNodeHighlightIndex, addNodeAtMenuPosition, addModelNode],
+  );
 
   const getContextMenuItems = useCallback((): ContextMenuItem[] => {
     if (!contextMenu) return [];
@@ -905,35 +1142,127 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
   const onDrop = useCallback(
     (event: DragEvent) => {
       event.preventDefault();
+      if (!reactFlowInstance.current || !reactFlowWrapper.current) return;
+
       const nodeType = event.dataTransfer.getData(
         "application/reactflow-nodetype",
       );
-      if (!nodeType || !reactFlowInstance.current || !reactFlowWrapper.current)
+
+      // --- Drop from node palette (existing behaviour) ---
+      if (nodeType) {
+        const bounds = reactFlowWrapper.current.getBoundingClientRect();
+        const position = reactFlowInstance.current.project({
+          x: event.clientX - bounds.left,
+          y: event.clientY - bounds.top,
+        });
+        const def = nodeDefs.find((d) => d.type === nodeType);
+        const defaultParams: Record<string, unknown> = {};
+        if (def) {
+          for (const p of def.params) {
+            if (p.default !== undefined) defaultParams[p.key] = p.default;
+          }
+        }
+        const newNodeId = addNode(
+          nodeType,
+          position,
+          defaultParams,
+          def ? t(`workflow.nodeDefs.${def.type}.label`, def.label) : nodeType,
+          def?.params ?? [],
+          def?.inputs ?? [],
+          def?.outputs ?? [],
+        );
+        recordRecentNodeType(nodeType);
+        selectNode(newNodeId);
         return;
+      }
+
+      // --- Drop media file from OS onto empty canvas → auto-create upload node ---
+      const file = event.dataTransfer.files?.[0];
+      if (!file) return;
+
+      // Only handle media files (image / video / audio)
+      const isMedia =
+        file.type.startsWith("image/") ||
+        file.type.startsWith("video/") ||
+        file.type.startsWith("audio/");
+      if (!isMedia) return;
+
+      // If the drop landed on an existing node, let the node handle it (don't interfere)
+      const target = event.target as HTMLElement;
+      if (target.closest(".react-flow__node")) return;
+
       const bounds = reactFlowWrapper.current.getBoundingClientRect();
       const position = reactFlowInstance.current.project({
         x: event.clientX - bounds.left,
         y: event.clientY - bounds.top,
       });
-      const def = nodeDefs.find((d) => d.type === nodeType);
+
+      const uploadDef = nodeDefs.find((d) => d.type === "input/media-upload");
       const defaultParams: Record<string, unknown> = {};
-      if (def) {
-        for (const p of def.params) {
+      if (uploadDef) {
+        for (const p of uploadDef.params) {
           if (p.default !== undefined) defaultParams[p.key] = p.default;
         }
       }
+
       const newNodeId = addNode(
-        nodeType,
+        "input/media-upload",
         position,
         defaultParams,
-        def ? t(`workflow.nodeDefs.${def.type}.label`, def.label) : nodeType,
-        def?.params ?? [],
-        def?.inputs ?? [],
-        def?.outputs ?? [],
+        uploadDef
+          ? t(`workflow.nodeDefs.${uploadDef.type}.label`, uploadDef.label)
+          : "Upload",
+        uploadDef?.params ?? [],
+        uploadDef?.inputs ?? [],
+        uploadDef?.outputs ?? [],
       );
-      recordRecentNodeType(nodeType);
-      // Auto-select the newly dropped node so the right config panel opens
+      recordRecentNodeType("input/media-upload");
       selectNode(newNodeId);
+
+      // Upload the file and update the newly created node's params
+      const detectMediaType = (name: string): string => {
+        const ext = name.split(".").pop()?.toLowerCase() ?? "";
+        if (["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg"].includes(ext))
+          return "image";
+        if (["mp4", "mov", "webm", "avi", "mkv"].includes(ext)) return "video";
+        if (["mp3", "wav", "ogg", "m4a", "flac", "aac"].includes(ext))
+          return "audio";
+        return "file";
+      };
+
+      const mediaType = detectMediaType(file.name);
+      const { updateNodeParams } = useWorkflowStore.getState();
+
+      // Show local preview immediately
+      const blobUrl = URL.createObjectURL(file);
+      updateNodeParams(newNodeId, {
+        ...defaultParams,
+        uploadedUrl: blobUrl,
+        fileName: file.name,
+        mediaType,
+      });
+
+      // Upload to CDN in background
+      import("@/api/client").then(({ apiClient }) => {
+        apiClient
+          .uploadFile(file)
+          .then((url) => {
+            URL.revokeObjectURL(blobUrl);
+            const current =
+              useWorkflowStore.getState().nodes.find((n) => n.id === newNodeId)
+                ?.data?.params ?? {};
+            updateNodeParams(newNodeId, {
+              ...current,
+              uploadedUrl: url,
+              fileName: file.name,
+              mediaType,
+            });
+          })
+          .catch((err) => {
+            console.error("Auto-upload failed:", err);
+            // Keep the blob preview so user can see what they dropped
+          });
+      });
     },
     [addNode, nodeDefs, recordRecentNodeType, selectNode, t],
   );
@@ -950,6 +1279,28 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
     window.addEventListener("workflow:fit-view", handleFitView);
     return () => window.removeEventListener("workflow:fit-view", handleFitView);
   }, []);
+
+  // Listen for "add node" button clicks from CustomNode side buttons
+  useEffect(() => {
+    const handleOpenAddNodeMenu = (e: Event) => {
+      const { x, y, sourceNodeId, side } = (e as CustomEvent).detail;
+      if (sourceNodeId && side) {
+        sideAddRef.current = { sourceNodeId, side };
+      } else {
+        sideAddRef.current = null;
+      }
+      openAddNodeMenu(x, y);
+    };
+    window.addEventListener(
+      "workflow:open-add-node-menu",
+      handleOpenAddNodeMenu,
+    );
+    return () =>
+      window.removeEventListener(
+        "workflow:open-add-node-menu",
+        handleOpenAddNodeMenu,
+      );
+  }, [openAddNodeMenu]);
 
   // Capture-phase wheel: when target is a text field or scrollable element (or inside one), scroll it and prevent React Flow from zooming
   useEffect(() => {
@@ -1189,6 +1540,9 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onEdgeUpdate={onEdgeUpdate}
+          onEdgeUpdateStart={onEdgeUpdateStart}
+          onEdgeUpdateEnd={onEdgeUpdateEnd}
           onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
           onSelectionChange={onSelectionChange}
@@ -1213,6 +1567,8 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
           }}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
+          edgesUpdatable
+          reconnectRadius={6}
           selectionOnDrag={interactionMode === "select"}
           selectionMode={SelectionMode.Partial}
           multiSelectionKeyCode="Shift"
@@ -1247,85 +1603,178 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
             x={contextMenu.x}
             y={contextMenu.y}
             onClose={() => setContextMenu(null)}
-            width={320}
+            width={280}
             estimatedHeight={420}
           >
-            <div className="w-[320px] max-h-[420px] flex flex-col">
-              <div className="px-3 py-2 border-b border-border">
-                <div className="text-xs font-semibold mb-1.5">
+            <div className="w-[280px] max-h-[420px] flex flex-col bg-background/95 backdrop-blur">
+              {/* ── header ── */}
+              <div className="flex items-center justify-between px-4 h-10 border-b border-border/70 shrink-0">
+                <span className="font-semibold text-[13px] text-foreground">
                   {t("workflow.addNode", "Add Node")}
-                </div>
-                <input
-                  autoFocus
-                  type="text"
-                  value={addNodeQuery}
-                  onChange={(e) => setAddNodeQuery(e.target.value)}
-                  placeholder={t(
-                    "workflow.searchNodesPlaceholder",
-                    "Search nodes...",
-                  )}
-                  className="w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1.5 text-xs text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50"
-                />
+                </span>
               </div>
-              <div className="overflow-y-auto py-1.5">
-                {groupedAddNodeDefs.map(([category, defs]) => {
-                  const isCollapsed = addNodeCollapsed[category] ?? false;
+
+              {/* ── search ── */}
+              <div className="px-3 py-2 shrink-0">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/60 pointer-events-none" />
+                  <input
+                    autoFocus
+                    type="text"
+                    value={addNodeQuery}
+                    onChange={(e) => setAddNodeQuery(e.target.value)}
+                    onKeyDown={handleAddNodeKeyDown}
+                    placeholder={t(
+                      "workflow.searchNodesPlaceholder",
+                      "Search nodes or models...",
+                    )}
+                    className="w-full h-8 rounded-lg border border-border/70 bg-muted/40 pl-8 pr-3 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* ── node list ── */}
+              <div ref={addNodeListRef} className="flex-1 overflow-y-auto px-2 py-1">
+                {(() => {
+                  let flatIdx = 0;
                   return (
-                    <div key={category} className="mb-1">
-                      <button
-                        onClick={() =>
-                          setAddNodeCollapsed((prev) => ({
-                            ...prev,
-                            [category]: !isCollapsed,
-                          }))
-                        }
-                        className="w-full flex items-center gap-1.5 px-2.5 py-1 text-[10px] uppercase tracking-wide text-muted-foreground hover:text-foreground"
-                      >
-                        <span className="text-[9px]">
-                          {isCollapsed ? "▶" : "▼"}
-                        </span>
-                        <span>
-                          {t(`workflow.nodeCategory.${category}`, category)}
-                        </span>
-                        <span className="ml-auto text-[10px] opacity-70">
-                          {defs.length}
-                        </span>
-                      </button>
-                      {!isCollapsed &&
-                        defs.map((def) => {
-                          const DefIcon = getNodeIcon(def.type);
-                          return (
+                    <>
+                      {groupedAddNodeDefs.map(([category, defs]) => {
+                        const isCollapsed = addNodeCollapsed[category] ?? false;
+                        const dot = catDot[category] ?? "bg-gray-400";
+                        return (
+                          <div key={category} className="mb-0.5">
                             <button
-                              key={def.type}
-                              onClick={() => addNodeAtMenuPosition(def)}
-                              className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-                              title={t(
-                                "workflow.dragOrClickToAdd",
-                                "Drag to canvas or click to add",
-                              )}
+                              onClick={() =>
+                                setAddNodeCollapsed((prev) => ({
+                                  ...prev,
+                                  [category]: !isCollapsed,
+                                }))
+                              }
+                              className="w-full flex items-center gap-2 px-2 h-7 rounded-lg text-muted-foreground/80 hover:text-foreground hover:bg-muted/60 transition-colors"
                             >
-                              {DefIcon && (
-                                <div className="rounded-md bg-primary/10 p-1 flex-shrink-0">
-                                  <DefIcon className="w-3 h-3 text-primary" />
-                                </div>
-                              )}
-                              <span>
-                                {t(
-                                  `workflow.nodeDefs.${def.type}.label`,
-                                  def.label,
-                                )}
+                              <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", dot)} />
+                              <span className="text-[11px] font-semibold uppercase tracking-wide">
+                                {t(`workflow.nodeCategory.${category}`, category)}
                               </span>
+                              <span className="ml-auto text-[10px] text-muted-foreground/50 tabular-nums mr-0.5">
+                                {defs.length}
+                              </span>
+                              <ChevronDown
+                                className={cn(
+                                  "w-3 h-3 text-muted-foreground/40 transition-transform duration-200",
+                                  isCollapsed && "-rotate-90",
+                                )}
+                              />
                             </button>
-                          );
-                        })}
-                    </div>
+                            {!isCollapsed && (
+                              <div className="py-0.5">
+                                {defs.map((def) => {
+                                  const myIdx = flatIdx++;
+                                  const isHighlighted = myIdx === addNodeHighlightIndex;
+                                  const DefIcon = getNodeIcon(def.type);
+                                  const hint = t(`workflow.nodeDefs.${def.type}.hint`, "");
+                                  const isAiTask = def.category === "ai-task";
+                                  return (
+                                    <Tooltip key={def.type} delayDuration={0}>
+                                      <TooltipTrigger asChild>
+                                        <div
+                                          ref={(el) => { if (isHighlighted && el) el.scrollIntoView({ block: "nearest" }); }}
+                                          onClick={() => addNodeAtMenuPosition(def)}
+                                          onMouseEnter={() => setAddNodeHighlightIndex(myIdx)}
+                                          className={cn(
+                                            "flex items-center gap-2 h-8 px-2 rounded-lg cursor-pointer select-none",
+                                            "text-[12px] text-foreground/70 transition-colors duration-100",
+                                            isHighlighted ? "bg-accent text-accent-foreground" : "hover:bg-muted hover:text-foreground",
+                                          )}
+                                        >
+                                          {DefIcon && (
+                                            <div className="rounded-md bg-primary/10 p-1 flex-shrink-0">
+                                              <DefIcon className="w-3 h-3 text-primary" />
+                                            </div>
+                                          )}
+                                          <span className="truncate">
+                                            {t(
+                                              `workflow.nodeDefs.${def.type}.label`,
+                                              def.label,
+                                            )}
+                                          </span>
+                                          {isAiTask && (
+                                            <span className="ml-auto shrink-0 text-[9px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-500/10 px-1.5 py-0.5 rounded">
+                                              AI
+                                            </span>
+                                          )}
+                                        </div>
+                                      </TooltipTrigger>
+                                      {hint && (
+                                        <TooltipContent side="right" className="max-w-[220px] z-[1001]">
+                                          {hint}
+                                        </TooltipContent>
+                                      )}
+                                    </Tooltip>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+
+                      {/* ── Model search results ── */}
+                      {matchedModels.length > 0 && (
+                        <div className="mb-0.5">
+                          <div className="w-full flex items-center gap-2 px-2 h-7 text-muted-foreground/80">
+                            <span className="text-[11px] font-semibold uppercase tracking-wide">
+                              MODELS
+                            </span>
+                          </div>
+                          <div className="py-0.5">
+                            {matchedModels.map((model) => {
+                              const myIdx = flatIdx++;
+                              const isHighlighted = myIdx === addNodeHighlightIndex;
+                              const parts = model.model_id.split("/");
+                              const provider = parts[0] || "";
+                              const shortName = parts.slice(1).join("/") || model.model_id;
+                              return (
+                                <div
+                                  key={model.model_id}
+                                  ref={(el) => { if (isHighlighted && el) el.scrollIntoView({ block: "nearest" }); }}
+                                  onClick={() => addModelNode(model)}
+                                  onMouseEnter={() => setAddNodeHighlightIndex(myIdx)}
+                                  title={model.model_id}
+                                  className={cn(
+                                    "flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer select-none",
+                                    "transition-colors duration-100",
+                                    isHighlighted ? "bg-primary/10" : "hover:bg-muted",
+                                  )}
+                                >
+                                  <div className="flex flex-col min-w-0 flex-1">
+                                    <span className="text-[12px] font-semibold text-foreground truncate">{shortName}</span>
+                                    <span className="text-[10px] text-muted-foreground/60 truncate">{provider}/</span>
+                                  </div>
+                                  <span className="shrink-0 text-[9px] font-semibold text-violet-600 dark:text-violet-400 bg-violet-500/10 px-1.5 py-0.5 rounded">
+                                    API
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {addNodeDisplayDefs.length === 0 && matchedModels.length === 0 && (
+                        <div className="px-3 py-6 text-xs text-muted-foreground/60 text-center">
+                          {t("workflow.noNodesAvailable", "No nodes available")}
+                        </div>
+                      )}
+                    </>
                   );
-                })}
-                {addNodeDisplayDefs.length === 0 && (
-                  <div className="px-3 py-4 text-xs text-muted-foreground text-center">
-                    {t("workflow.noNodesAvailable", "No nodes available")}
-                  </div>
-                )}
+                })()}
+              </div>
+
+              {/* ── footer hint ── */}
+              <div className="px-4 py-2 border-t border-border/70 text-[10px] text-muted-foreground/40">
+                {t("workflow.dragOrClickToAdd", "Drag to canvas or click to add")}
               </div>
             </div>
           </ContextMenu>

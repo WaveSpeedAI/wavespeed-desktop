@@ -190,17 +190,17 @@ npm run dev
 
 ### Scripts
 
-| Script                 | Description                              |
-| ---------------------- | ---------------------------------------- |
-| `npm run dev`          | Start development server with hot reload |
-| `npx vite`             | Start web-only dev server (no Electron)  |
-| `npm run build`        | Build the application                    |
-| `npm run build:win`    | Build for Windows                        |
-| `npm run build:mac`    | Build for macOS                          |
-| `npm run build:linux`  | Build for Linux                          |
-| `npm run build:all`    | Build for all platforms                  |
-| `npm run format`       | Format code with Prettier                |
-| `npm run format:check` | Check code formatting                    |
+| Script                | Description                              |
+| --------------------- | ---------------------------------------- |
+| `npm run dev`         | Start development server with hot reload |
+| `npx vite`            | Start web-only dev server (no Electron)  |
+| `npm run build`       | Build the application                    |
+| `npm run build:win`   | Build for Windows                        |
+| `npm run build:mac`   | Build for macOS                          |
+| `npm run build:linux` | Build for Linux                          |
+| `npm run build:all`   | Build for all platforms                  |
+| `npm run format`      | Format code with Prettier                |
+| `npm run format:check`| Check code formatting                    |
 
 ### Mobile Development
 

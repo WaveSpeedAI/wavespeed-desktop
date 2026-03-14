@@ -42,7 +42,7 @@ The iOS app brings the full WaveSpeed experience to iPhone and iPad, with the sa
 - History, My Assets, templates, and auto-save
 - 18 languages, dark/light theme, iOS 13.0+
 
-https://github.com/user-attachments/assets/ios.MP4
+https://github.com/user-attachments/assets/f7b444b6-c3ac-4c01-871d-7a8db0376890
 
 ## [Creative Studio](https://wavespeed.ai/studio)
 

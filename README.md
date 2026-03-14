@@ -1,6 +1,6 @@
 # WaveSpeed
 
-Open-source, cross-platform application for running 100+ AI models — image generation, video generation, face swap, digital human, motion control, and more. Includes a visual workflow editor for building AI pipelines and 12 free creative tools. Available for **Windows**, **macOS**, **Linux**, and **Android**.
+Open-source, cross-platform application for running 100+ AI models — image generation, video generation, face swap, digital human, motion control, and more. Includes a visual workflow editor for building AI pipelines and 12 free creative tools. Available for **Windows**, **macOS**, **Linux**, **Android**, and **iOS**.
 
 [![GitHub Release](https://img.shields.io/github/v/release/WaveSpeedAI/wavespeed-desktop?style=flat-square&label=Latest)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest)
 [![License](https://img.shields.io/github/license/WaveSpeedAI/wavespeed-desktop?style=flat-square)](LICENSE)
@@ -11,6 +11,7 @@ Open-source, cross-platform application for running 100+ AI models — image gen
 [![macOS Apple Silicon](https://img.shields.io/badge/macOS_Silicon-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Desktop-mac-arm64.dmg)
 [![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Desktop-linux-x86_64.AppImage)
 [![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Mobile.apk)
+[![iOS](https://img.shields.io/badge/iOS-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-iOS.ipa)
 
 ![Playground Screenshot](https://github.com/user-attachments/assets/7bd45689-5b24-40ab-9495-2296533e3b5a)
 
@@ -29,6 +30,19 @@ The Android app shares the same React codebase as the desktop version, giving yo
   <img src="https://github.com/user-attachments/assets/dafa6699-35ed-4da2-b6eb-4da818e2c846" alt="WaveSpeed Android - Free Tools" width="300" />
   <img src="https://github.com/user-attachments/assets/d392a9d0-2a44-480b-9195-d23a850a1946" alt="WaveSpeed Android - Playground" width="300" />
 </p>
+
+## iOS App
+
+The iOS app brings the full WaveSpeed experience to iPhone and iPad, with the same React codebase powering seamless access to AI models, creative tools, and workflow capabilities.
+
+- Full AI Playground with multi-tab support and all input types including camera capture
+- Featured Models with smart variant switching
+- Model browser with search, filter, and sort
+- Creative Studio tools (face enhancement, background removal, image eraser, segment anything, media conversion)
+- History, My Assets, templates, and auto-save
+- 18 languages, dark/light theme, iOS 13.0+
+
+https://github.com/user-attachments/assets/ios.MP4
 
 ## [Creative Studio](https://wavespeed.ai/studio)
 
@@ -102,7 +116,7 @@ Node-based pipeline builder for designing and executing complex AI workflows. Ch
 - **Theme Support**: Auto (system), dark, and light theme options
 - **Multi-Language**: Support for 18 languages including English, Chinese, Japanese, Korean, and more
 - **Auto Updates**: Automatic update checking with stable and nightly channels
-- **Cross-Platform**: Available for Windows, macOS, Linux, and Android
+- **Cross-Platform**: Available for Windows, macOS, Linux, Android, and iOS
 
 ## Installation
 
@@ -118,6 +132,7 @@ Node-based pipeline builder for designing and executing complex AI workflows. Ch
 #### Mobile
 
 [![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Mobile.apk)
+[![iOS](https://img.shields.io/badge/iOS-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-iOS.ipa)
 
 Or browse all releases on the [Releases](https://github.com/WaveSpeedAI/wavespeed-desktop/releases) page.
 
@@ -155,6 +170,16 @@ Or browse all releases on the [Releases](https://github.com/WaveSpeedAI/wavespee
 3. If prompted about "Unknown sources", allow installation from this source
 4. Install and launch the app
 5. Requires Android 5.0 (API 21) or higher
+</details>
+
+<details>
+<summary><b>iOS</b></summary>
+
+1. Download the `.ipa` file
+2. Install using AltStore, Sideloadly, or your preferred sideloading method
+3. Trust the developer certificate in Settings > General > VPN & Device Management
+4. Launch the app from your home screen
+5. Requires iOS 13.0 or higher
 </details>
 
 ### Nightly Builds

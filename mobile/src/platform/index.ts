@@ -11,9 +11,82 @@ import { Share } from "@capacitor/share";
 import { App } from "@capacitor/app";
 import { CapacitorHttp } from "@capacitor/core";
 import { Capacitor } from "@capacitor/core";
+import { MediaSaver } from "@mobile/plugins/mediaSaver";
 
 // Check if running in native Capacitor environment
 const isNative = Capacitor.isNativePlatform();
+const isIOS = Capacitor.getPlatform() === "ios";
+
+function extensionFromContentType(contentType?: string): string | null {
+  if (!contentType) return null;
+  const normalized = contentType.toLowerCase().split(";")[0].trim();
+  const mapping: Record<string, string> = {
+    "image/jpeg": "jpg",
+    "image/jpg": "jpg",
+    "image/png": "png",
+    "image/gif": "gif",
+    "image/webp": "webp",
+    "image/heic": "heic",
+    "image/heif": "heif",
+    "video/mp4": "mp4",
+    "video/quicktime": "mov",
+    "video/webm": "webm",
+    "audio/mpeg": "mp3",
+    "audio/mp3": "mp3",
+    "audio/wav": "wav",
+    "audio/x-wav": "wav",
+    "audio/webm": "webm",
+    "application/json": "json",
+    "text/plain": "txt",
+  };
+  return mapping[normalized] ?? null;
+}
+
+function withPreferredExtension(
+  filename: string,
+  extension?: string | null,
+): string {
+  if (!extension) return filename.split("?")[0];
+  const cleanName = filename.split("?")[0];
+  if (/\.[a-zA-Z0-9]+$/.test(cleanName)) {
+    return cleanName.replace(/\.[a-zA-Z0-9]+$/, `.${extension}`);
+  }
+  return `${cleanName}.${extension}`;
+}
+
+async function shareSavedFile(fileUri: string, filename: string): Promise<boolean> {
+  try {
+    const { value } = await Share.canShare();
+    if (!value) return false;
+
+    try {
+      await Share.share({
+        title: filename,
+        files: [fileUri],
+      });
+      return true;
+    } catch {
+      await Share.share({
+        title: filename,
+        url: fileUri,
+      });
+      return true;
+    }
+  } catch (error) {
+    console.warn("iOS share after download failed:", error);
+    return false;
+  }
+}
+
+async function saveToIosPhotos(fileUri: string): Promise<boolean> {
+  try {
+    const result = await MediaSaver.saveToPhotos({ path: fileUri });
+    return !!result.saved;
+  } catch (error) {
+    console.warn("Save to Photos failed:", error);
+    return false;
+  }
+}
 
 // Types
 export type AssetType = "image" | "video" | "audio" | "text";
@@ -50,7 +123,13 @@ export interface DeleteAssetsBulkResult {
 export interface DownloadResult {
   success: boolean;
   filePath?: string;
+  destination?: "photos" | "share" | "appStorage";
   error?: string;
+}
+
+export interface DownloadOptions {
+  assetType?: AssetType;
+  preferredExtension?: string;
 }
 
 export interface AppSettings {
@@ -99,7 +178,11 @@ export interface PlatformService {
   getDefaultAssetsDirectory(): Promise<string>;
 
   // Download/Share
-  downloadFile(url: string, filename: string): Promise<DownloadResult>;
+  downloadFile(
+    url: string,
+    filename: string,
+    options?: DownloadOptions,
+  ): Promise<DownloadResult>;
   shareAsset(filePath: string): Promise<void>;
 
   // External links
@@ -255,7 +338,11 @@ class CapacitorPlatformService implements PlatformService {
   }
 
   // Download/Share
-  async downloadFile(url: string, filename: string): Promise<DownloadResult> {
+  async downloadFile(
+    url: string,
+    filename: string,
+    options?: DownloadOptions,
+  ): Promise<DownloadResult> {
     // In native mode, use CapacitorHttp to bypass CORS and Filesystem to save
     if (isNative) {
       try {
@@ -268,6 +355,24 @@ class CapacitorPlatformService implements PlatformService {
         if (response.status !== 200) {
           return { success: false, error: `HTTP ${response.status}` };
         }
+
+        const contentType =
+          response.headers?.["content-type"] ||
+          response.headers?.["Content-Type"];
+        const assetTypeDefaults: Partial<Record<AssetType, string>> = {
+          image: "png",
+          video: "mp4",
+          audio: "mp3",
+          text: "txt",
+        };
+        const resolvedFilename = withPreferredExtension(
+          filename,
+          options?.preferredExtension ||
+            extensionFromContentType(contentType) ||
+            (options?.assetType
+              ? assetTypeDefaults[options.assetType]
+              : null),
+        );
 
         // The response.data is already base64 when responseType is 'blob'
         const base64 = response.data as string;
@@ -284,15 +389,37 @@ class CapacitorPlatformService implements PlatformService {
           // Directory might already exist
         }
 
-        const filePath = `${directory}/${filename}`;
+        const filePath = `${directory}/${resolvedFilename}`;
 
-        await Filesystem.writeFile({
+        const writeResult = await Filesystem.writeFile({
           path: filePath,
           data: base64,
           directory: Directory.Documents,
         });
 
-        return { success: true, filePath };
+        let destination: DownloadResult["destination"] = "appStorage";
+
+        if (isIOS) {
+          const fileUri =
+            writeResult.uri ||
+            (
+              await Filesystem.getUri({
+                path: filePath,
+                directory: Directory.Documents,
+              })
+            ).uri;
+          const savedToPhotos = await saveToIosPhotos(fileUri);
+          if (!savedToPhotos) {
+            const shared = await shareSavedFile(fileUri, resolvedFilename);
+            if (shared) {
+              destination = "share";
+            }
+          } else {
+            destination = "photos";
+          }
+        }
+
+        return { success: true, filePath, destination };
       } catch (error) {
         return { success: false, error: (error as Error).message };
       }
@@ -315,11 +442,11 @@ class CapacitorPlatformService implements PlatformService {
       // Clean up blob URL after a short delay
       setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
 
-      return { success: true, filePath: filename };
+      return { success: true, filePath: filename, destination: "appStorage" };
     } catch (error) {
       // Final fallback: open in new tab
       window.open(url, "_blank");
-      return { success: true, filePath: url };
+      return { success: true, filePath: url, destination: "share" };
     }
   }
 

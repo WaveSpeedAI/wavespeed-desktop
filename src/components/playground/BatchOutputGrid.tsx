@@ -25,6 +25,7 @@ import {
 import { toast } from "@/hooks/useToast";
 import { cn } from "@/lib/utils";
 import type { BatchResult, BatchQueueItem } from "@/types/batch";
+import { getPlatformService } from "@mobile/platform";
 
 // Check if running in Capacitor native environment
 const isCapacitorNative = () => {
@@ -36,57 +37,17 @@ const isCapacitorNative = () => {
   }
 };
 
-// Mobile download helper using Capacitor
-const mobileDownload = async (
-  url: string,
-  filename: string,
-): Promise<{ success: boolean; error?: string }> => {
-  try {
-    // Dynamic imports for Capacitor modules (vite-ignore to prevent desktop build errors)
-    const { CapacitorHttp } = await import(
-      // @ts-expect-error -- Capacitor only available in mobile builds
-      /* @vite-ignore */ "@capacitor/core"
-    );
-    const { Filesystem, Directory } = await import(
-      // @ts-expect-error -- Capacitor only available in mobile builds
-      /* @vite-ignore */ "@capacitor/filesystem"
-    );
-
-    // Fetch file using CapacitorHttp (bypasses CORS)
-    const response = await CapacitorHttp.get({
-      url,
-      responseType: "blob",
-    });
-
-    if (response.status !== 200) {
-      return { success: false, error: `HTTP ${response.status}` };
-    }
-
-    // Create Downloads directory
-    const directory = "Downloads";
-    try {
-      await Filesystem.mkdir({
-        path: directory,
-        directory: Directory.Documents,
-        recursive: true,
-      });
-    } catch {
-      // Directory might already exist
-    }
-
-    // Save file
-    const filePath = `${directory}/${filename}`;
-    await Filesystem.writeFile({
-      path: filePath,
-      data: response.data as string,
-      directory: Directory.Documents,
-    });
-
-    return { success: true };
-  } catch (error) {
-    return { success: false, error: (error as Error).message };
+function getMobileDownloadToastDescription(
+  destination?: "photos" | "share" | "appStorage",
+): string {
+  if (destination === "photos") {
+    return "Saved to Photos";
   }
-};
+  if (destination === "share") {
+    return "Choose Save Image, Save Video, or Save to Files.";
+  }
+  return "Saved to app storage";
+}
 
 interface BatchOutputGridProps {
   results: BatchResult[];
@@ -292,11 +253,11 @@ export function BatchOutputGrid({
 
     // Use Capacitor if available (mobile native)
     if (isCapacitorNative()) {
-      const result = await mobileDownload(url, filename);
+      const result = await getPlatformService().downloadFile(url, filename);
       if (result.success) {
         toast({
           title: t("common.success"),
-          description: t("freeTools.downloadSuccess"),
+          description: getMobileDownloadToastDescription(result.destination),
         });
       } else {
         console.error("Mobile download failed:", result.error);

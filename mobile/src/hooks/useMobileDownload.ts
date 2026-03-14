@@ -7,8 +7,44 @@ import { Capacitor } from "@capacitor/core";
 import { Share } from "@capacitor/share";
 import { useToast } from "@/hooks/useToast";
 import { useTranslation } from "react-i18next";
+import { MediaSaver } from "@mobile/plugins/mediaSaver";
 
 const isNative = Capacitor.isNativePlatform();
+const isIOS = Capacitor.getPlatform() === "ios";
+
+async function shareSavedFile(fileUri: string, filename: string): Promise<boolean> {
+  try {
+    const { value } = await Share.canShare();
+    if (!value) return false;
+
+    try {
+      await Share.share({
+        title: filename,
+        files: [fileUri],
+      });
+      return true;
+    } catch {
+      await Share.share({
+        title: filename,
+        url: fileUri,
+      });
+      return true;
+    }
+  } catch (error) {
+    console.warn("Share failed:", error);
+    return false;
+  }
+}
+
+async function saveToIosPhotos(fileUri: string): Promise<boolean> {
+  try {
+    const result = await MediaSaver.saveToPhotos({ path: fileUri });
+    return !!result.saved;
+  } catch (error) {
+    console.warn("Save to Photos failed:", error);
+    return false;
+  }
+}
 
 export function useMobileDownload() {
   const { toast } = useToast();
@@ -63,32 +99,41 @@ export function useMobileDownload() {
 
           const filePath = `${directory}/${filename}`;
 
-          await Filesystem.writeFile({
+          const writeResult = await Filesystem.writeFile({
             path: filePath,
             data: base64Data,
             directory: Directory.Documents,
           });
 
+          let sharedToSystem = false;
+
+          // On iOS, immediately hand the saved file to the system share sheet so
+          // the user can save to Photos or Files.
+          if (shareAfter || isIOS) {
+            const fileUri =
+              writeResult.uri ||
+              (
+                await Filesystem.getUri({
+                  path: filePath,
+                  directory: Directory.Documents,
+                })
+              ).uri;
+            sharedToSystem = isIOS
+              ? (await saveToIosPhotos(fileUri)) ||
+                (await shareSavedFile(fileUri, filename))
+              : await shareSavedFile(fileUri, filename);
+          }
+
           if (showToast) {
             toast({
               title: t("common.success"),
-              description: t("freeTools.downloadSuccess"),
+              description: sharedToSystem
+                ? t(
+                    "freeTools.downloadSuccessIos",
+                    "Saved. Choose Save Image, Save Video, or Save to Files.",
+                  )
+                : t("freeTools.downloadSuccess"),
             });
-          }
-
-          // Optionally share the file
-          if (shareAfter) {
-            try {
-              const fileUri = await Filesystem.getUri({
-                path: filePath,
-                directory: Directory.Documents,
-              });
-              await Share.share({
-                url: fileUri.uri,
-              });
-            } catch (shareError) {
-              console.warn("Share failed:", shareError);
-            }
           }
 
           return { success: true, filePath };

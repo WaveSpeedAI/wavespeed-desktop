@@ -25,6 +25,20 @@ export function registerExecutionIpc(): void {
   );
 
   ipcMain.handle(
+    "execution:run-batch",
+    async (_event, args: { workflowId: string }) => {
+      await getEngine().runAll(args.workflowId, true);
+    },
+  );
+
+  ipcMain.handle(
+    "execution:cancel-batch",
+    async (_event, args: { workflowId: string }) => {
+      getEngine().cancelBatch(args.workflowId);
+    },
+  );
+
+  ipcMain.handle(
     "execution:run-node",
     async (_event, args: { workflowId: string; nodeId: string }) => {
       await getEngine().runNode(args.workflowId, args.nodeId);

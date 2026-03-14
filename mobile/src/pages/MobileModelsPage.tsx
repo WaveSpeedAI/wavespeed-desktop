@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import type { TouchEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useModelsStore } from "@/stores/modelsStore";
@@ -17,6 +18,14 @@ export function MobileModelsPage() {
   const { createTab } = usePlaygroundStore();
   const [activeTab, setActiveTab] = useState<ModelsTab>("featured");
 
+  const handleTabTouch = useCallback(
+    (tab: ModelsTab) => (event: TouchEvent<HTMLButtonElement>) => {
+      event.preventDefault();
+      setActiveTab(tab);
+    },
+    [],
+  );
+
   const handleSelectModel = useCallback(
     (modelId: string) => {
       const model = models.find((m) => m.model_id === modelId);
@@ -33,15 +42,19 @@ export function MobileModelsPage() {
       {/* Tab bar */}
       <div className="tab-bar">
         <button
+          type="button"
           className={cn("tab-item", activeTab === "featured" && "active")}
           onClick={() => setActiveTab("featured")}
+          onTouchEnd={handleTabTouch("featured")}
         >
           <Compass className="h-4 w-4 inline-block mr-1.5" />
           {t("playground.rightPanel.featuredModels", "Featured Models")}
         </button>
         <button
+          type="button"
           className={cn("tab-item", activeTab === "all" && "active")}
           onClick={() => setActiveTab("all")}
+          onTouchEnd={handleTabTouch("all")}
         >
           <Layers className="h-4 w-4 inline-block mr-1.5" />
           {t("playground.rightPanel.models", "All Models")}

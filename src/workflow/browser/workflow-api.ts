@@ -20,6 +20,8 @@ const listeners = new Map<string, Set<(args: unknown) => void>>();
 async function handleInvoke(channel: string, args?: unknown): Promise<unknown> {
   switch (channel) {
     case "registry:get-all":
+      console.log("[Browser API] registry:get-all called, returning", BROWSER_NODE_DEFINITIONS.length, "definitions");
+      console.log("[Browser API] Node types:", BROWSER_NODE_DEFINITIONS.map(d => d.type));
       return BROWSER_NODE_DEFINITIONS;
 
     case "workflow:create": {

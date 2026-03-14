@@ -501,6 +501,57 @@ export function FileBtn({
 }
 
 /* ══════════════════════════════════════════════════════════════════════
+   FolderBtn — folder selection button
+   ══════════════════════════════════════════════════════════════════════ */
+
+export function FolderBtn({
+  onFolder,
+}: {
+  onFolder: (path: string) => void;
+}) {
+  const handleClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    console.log("[FolderBtn] Button clicked");
+    try {
+      console.log("[FolderBtn] Invoking storage:select-folder...");
+      const result = (await window.workflowAPI.invoke(
+        "storage:select-folder",
+      )) as { canceled: boolean; path: string | null };
+      console.log("[FolderBtn] Result:", result);
+      if (!result.canceled && result.path) {
+        console.log("[FolderBtn] Setting path:", result.path);
+        onFolder(result.path);
+      }
+    } catch (error) {
+      console.error("[FolderBtn] Failed to select folder:", error);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-md border border-[hsl(var(--border))] bg-blue-500/15 text-blue-400 hover:bg-blue-500/25 cursor-pointer transition-colors"
+      onClick={handleClick}
+      title="Browse for folder"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+      </svg>
+    </button>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════
    Tip — hover tooltip for descriptions
    ══════════════════════════════════════════════════════════════════════ */
 

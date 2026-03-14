@@ -1,0 +1,89 @@
+{
+  "name": "Batch Process Images",
+  "i18nKey": "batchProcessImages",
+  "description": "Process multiple images from a folder using AI with automatic iteration",
+  "tags": ["batch", "images", "processing", "automation"],
+  "category": "batch-processing",
+  "author": "WaveSpeed",
+  "thumbnail": "",
+  "graphDefinition": {
+    "nodes": [
+      {
+        "id": "d2f8ba54-67e3-48b8-858c-d672e4f15069",
+        "workflowId": "d538233c-fbd9-407f-8dca-1527f0e21bfd",
+        "nodeType": "input/batch-iterator",
+        "position": {
+          "x": -150,
+          "y": -1077
+        },
+        "params": {
+          "folderPath": "",
+          "filePattern": "*.{jpg,jpeg,png,gif,webp,bmp,tiff}",
+          "sortOrder": "name-asc",
+          "__meta": {
+            "label": "Batch Iterator",
+            "modelInputSchema": []
+          }
+        },
+        "currentOutputId": null
+      },
+      {
+        "id": "node-1773172138870-i68h16",
+        "workflowId": "d538233c-fbd9-407f-8dca-1527f0e21bfd",
+        "nodeType": "ai-task/run",
+        "position": {
+          "x": 274,
+          "y": -1092
+        },
+        "params": {
+          "modelId": "bytedance/seedream-v4.5/edit-sequential",
+          "max_images": 1,
+          "prompt": "Make the subject look angry",
+          "__meta": {
+            "label": "bytedance/seedream-v4.5/edit-sequential",
+            "modelInputSchema": []
+          }
+        },
+        "currentOutputId": null
+      },
+      {
+        "id": "c2ed1968-e14f-49f8-8d9c-1d1944a7ca52",
+        "workflowId": "d538233c-fbd9-407f-8dca-1527f0e21bfd",
+        "nodeType": "output/file",
+        "position": {
+          "x": 688,
+          "y": -769
+        },
+        "params": {
+          "outputDir": "",
+          "filename": "output",
+          "format": "auto",
+          "__meta": {
+            "label": "File Export",
+            "modelInputSchema": []
+          }
+        },
+        "currentOutputId": null
+      }
+    ],
+    "edges": [
+      {
+        "id": "0101f7d9-7ef3-4702-a04b-8ee078ea0140",
+        "workflowId": "d538233c-fbd9-407f-8dca-1527f0e21bfd",
+        "sourceNodeId": "d2f8ba54-67e3-48b8-858c-d672e4f15069",
+        "sourceOutputKey": "output",
+        "targetNodeId": "node-1773172138870-i68h16",
+        "targetInputKey": "param-images"
+      },
+      {
+        "id": "2a181fec-3bc7-400b-8c6c-e0005d6184ae",
+        "workflowId": "d538233c-fbd9-407f-8dca-1527f0e21bfd",
+        "sourceNodeId": "node-1773172138870-i68h16",
+        "sourceOutputKey": "output",
+        "targetNodeId": "c2ed1968-e14f-49f8-8d9c-1d1944a7ca52",
+        "targetInputKey": "input-url"
+      }
+    ]
+  },
+  "savedAt": "2026-03-10T21:41:00.000Z"
+}

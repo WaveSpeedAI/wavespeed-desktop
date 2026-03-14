@@ -96,6 +96,7 @@ export function paramDefToFormFieldConfig(
   nodeType?: string,
 ): FormFieldConfig | null {
   if (nodeType === "output/file" && p.key === "outputDir") return null;
+  if (nodeType === "input/batch-iterator" && p.key === "folderPath") return null;
   const typeMap = {
     string: "text" as const,
     number: "number" as const,

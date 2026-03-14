@@ -57,6 +57,48 @@ export const textInputDef: NodeTypeDefinition = {
   ],
 };
 
+export const batchIteratorDef: NodeTypeDefinition = {
+  type: "input/batch-iterator",
+  category: "input",
+  label: "Batch Iterator",
+  inputs: [],
+  outputs: [
+    { key: "current", label: "Current Item", dataType: "url", required: true },
+    { key: "index", label: "Index", dataType: "text", required: true },
+    { key: "total", label: "Total", dataType: "text", required: true },
+    { key: "filename", label: "Filename", dataType: "text", required: true },
+  ],
+  params: [
+    {
+      key: "folderPath",
+      label: "Folder Path",
+      type: "string",
+      default: "",
+      connectable: false,
+      description: "Path to folder containing files to iterate through",
+    },
+    {
+      key: "filePattern",
+      label: "File Pattern",
+      type: "string",
+      default: "*.{jpg,jpeg,png,gif,webp,bmp,tiff}",
+      description: "Glob pattern for file matching (e.g., *.jpg or *.{png,jpg})",
+    },
+    {
+      key: "sortOrder",
+      label: "Sort Order",
+      type: "select",
+      default: "name-asc",
+      options: [
+        { label: "Name (A-Z)", value: "name-asc" },
+        { label: "Name (Z-A)", value: "name-desc" },
+        { label: "Date (Oldest)", value: "date-asc" },
+        { label: "Date (Newest)", value: "date-desc" },
+      ],
+    },
+  ],
+};
+
 // ─── AI Task ───────────────────────────────────────────────────────────────
 export const aiTaskDef: NodeTypeDefinition = {
   type: "ai-task/run",
@@ -481,6 +523,55 @@ export const mediaMergerDef: NodeTypeDefinition = {
   ],
 };
 
+export const videoFrameExtractorDef: NodeTypeDefinition = {
+  type: "free-tool/video-frame-extractor",
+  category: "free-tool",
+  label: "Video Frame Extractor",
+  inputs: [{ key: "input", label: "Video", dataType: "video", required: true }],
+  outputs: [
+    { key: "output", label: "Frame", dataType: "image", required: true },
+  ],
+  params: [
+    {
+      key: "position",
+      label: "Position",
+      type: "select",
+      default: "last",
+      dataType: "text",
+      connectable: false,
+      options: [
+        { label: "First Frame", value: "first" },
+        { label: "Last Frame", value: "last" },
+        { label: "Middle Frame", value: "middle" },
+        { label: "Specific Time", value: "time" },
+      ],
+    },
+    {
+      key: "timeSeconds",
+      label: "Time (seconds)",
+      type: "number",
+      default: 0,
+      dataType: "text",
+      connectable: false,
+      validation: { min: 0, step: 0.1 },
+      description: "Used when Position is 'Specific Time'",
+    },
+    {
+      key: "format",
+      label: "Format",
+      type: "select",
+      default: "png",
+      dataType: "text",
+      connectable: false,
+      options: [
+        { label: "PNG", value: "png" },
+        { label: "JPG", value: "jpg" },
+        { label: "WebP", value: "webp" },
+      ],
+    },
+  ],
+};
+
 // ─── Helper / processing ──────────────────────────────────────────────────
 /** Concatenate multiple values into one array. Connect any number of inputs; empty slots are skipped. */
 export const concatDef: NodeTypeDefinition = {
@@ -521,6 +612,7 @@ export const selectDef: NodeTypeDefinition = {
 export const BROWSER_NODE_DEFINITIONS: NodeTypeDefinition[] = [
   mediaUploadDef,
   textInputDef,
+  batchIteratorDef,
   aiTaskDef,
   fileExportDef,
   previewDisplayDef,
@@ -536,6 +628,7 @@ export const BROWSER_NODE_DEFINITIONS: NodeTypeDefinition[] = [
   imageConverterDef,
   mediaTrimmerDef,
   mediaMergerDef,
+  videoFrameExtractorDef,
   concatDef,
   selectDef,
 ];

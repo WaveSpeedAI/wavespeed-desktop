@@ -10,3 +10,5 @@ export * from "./node.repo";
 export * from "./edge.repo";
 export * from "./execution.repo";
 export * from "./budget.repo";
+export * from "./template.repo";
+export * from "./iteration.repo";

@@ -94,6 +94,16 @@ export function initializeSchema(db: SqlJsDatabase): void {
     workflow_data TEXT
   )`);
 
+  db.run(`CREATE TABLE IF NOT EXISTS workflow_iterations (
+    workflow_id TEXT PRIMARY KEY REFERENCES workflows(id) ON DELETE CASCADE,
+    current_index INTEGER NOT NULL DEFAULT 0,
+    total_items INTEGER NOT NULL DEFAULT 0,
+    iteration_data TEXT NOT NULL,
+    is_active INTEGER NOT NULL DEFAULT 0 CHECK (is_active IN (0, 1)),
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`);
+
   // Indexes
   db.run(
     "CREATE INDEX IF NOT EXISTS idx_wf_nodes_workflow ON nodes(workflow_id)",
@@ -134,6 +144,9 @@ export function initializeSchema(db: SqlJsDatabase): void {
   );
   db.run(
     "CREATE INDEX IF NOT EXISTS idx_templates_use_count ON templates(use_count DESC)",
+  );
+  db.run(
+    "CREATE INDEX IF NOT EXISTS idx_workflow_iterations_active ON workflow_iterations(is_active)",
   );
 
   // Default config
@@ -195,6 +208,31 @@ export function runMigrations(db: SqlJsDatabase): void {
         );
 
         db.run("INSERT INTO schema_version (version) VALUES (2)");
+      },
+    },
+    // Migration 3: Add workflow_iterations table for batch processing
+    {
+      version: 3,
+      apply: (db: SqlJsDatabase) => {
+        console.log(
+          "[Schema] Applying migration 3: Add workflow_iterations table",
+        );
+
+        db.run(`CREATE TABLE IF NOT EXISTS workflow_iterations (
+          workflow_id TEXT PRIMARY KEY REFERENCES workflows(id) ON DELETE CASCADE,
+          current_index INTEGER NOT NULL DEFAULT 0,
+          total_items INTEGER NOT NULL DEFAULT 0,
+          iteration_data TEXT NOT NULL,
+          is_active INTEGER NOT NULL DEFAULT 0 CHECK (is_active IN (0, 1)),
+          created_at TEXT NOT NULL DEFAULT (datetime('now')),
+          updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        )`);
+
+        db.run(
+          "CREATE INDEX IF NOT EXISTS idx_workflow_iterations_active ON workflow_iterations(is_active)",
+        );
+
+        db.run("INSERT INTO schema_version (version) VALUES (3)");
       },
     },
   ];

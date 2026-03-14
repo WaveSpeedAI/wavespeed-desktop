@@ -63,7 +63,12 @@ export class FileExportHandler extends BaseNodeHandler {
     );
     const format = String(ctx.params.format ?? "auto");
 
+    console.log("[File Export] Starting export...");
+    console.log("[File Export] URL:", url);
+    console.log("[File Export] Output Dir:", outputDir);
+
     if (!url) {
+      console.error("[File Export] ERROR: No URL provided");
       return {
         status: "error",
         outputs: {},
@@ -82,7 +87,9 @@ export class FileExportHandler extends BaseNodeHandler {
     const uniqueName = `${filenamePrefix}_${randomUUID()}`;
     const fullPath = path.join(resolvedOutputDir, `${uniqueName}.${ext}`);
 
+    console.log("[File Export] Saving to:", fullPath);
     await saveToPath(url, fullPath);
+    console.log("[File Export] Successfully saved!");
 
     return {
       status: "success",

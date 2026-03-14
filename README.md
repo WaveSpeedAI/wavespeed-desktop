@@ -76,6 +76,7 @@ Node-based pipeline builder for designing and executing complex AI workflows. Ch
 - **Model Browser**: Browse and search available AI models with fuzzy search, sortable by popularity, name, price, or type
 - **Favorites**: Star your favorite models for quick access with a dedicated filter
 - **Multi-Tab Playground**: Run predictions with multiple models simultaneously in separate tabs
+- **Abort Execution**: Cancel running predictions with a smooth abort button (0.5s safety delay)
 - **Batch Processing**: Run the same prediction multiple times (2-16) with auto-randomized seeds for variations
 - **Dynamic Forms**: Auto-generated forms from model schemas with validation
 - **Mask Drawing**: Interactive canvas-based mask editor for models that accept mask inputs, with brush, eraser, and bucket fill tools
@@ -108,10 +109,10 @@ Node-based pipeline builder for designing and executing complex AI workflows. Ch
 - **Multi-Phase Progress**: Compact progress bars with phase indicators, real-time status, and ETA for all Free Tools
 - **History**: View your recent predictions (last 24 hours) with detailed view, download, and copy prediction ID
 - **My Assets**: Save, browse, and manage generated outputs (images, videos, audio) with tags, favorites, and search
-- **Auto-Save**: Automatically save generated outputs to your local assets folder (enabled by default)
+- **Auto-Save**: Automatically save generated outputs to your local assets folder (enabled by default) with error reporting
 - **File Upload**: Support for image, video, and audio file inputs with drag & drop
 - **Media Capture**: Built-in camera capture, video recording with audio waveform, and audio recording
-- **View Documentation**: Quick access to model documentation from the playground
+- **View Documentation**: Quick access to model webpage and documentation from the titlebar (context-aware links when a model is selected)
 - **Account Balance**: View your current WaveSpeed account balance in Settings with one-click refresh
 - **Theme Support**: Auto (system), dark, and light theme options
 - **Multi-Language**: Support for 18 languages including English, Chinese, Japanese, Korean, and more
@@ -205,21 +206,26 @@ cd wavespeed-desktop
 # Install dependencies
 npm install
 
+# Install pre-commit hooks (requires pre-commit: pip install pre-commit)
+pre-commit install
+
 # Start development server
 npm run dev
 ```
 
 ### Scripts
 
-| Script                | Description                              |
-| --------------------- | ---------------------------------------- |
-| `npm run dev`         | Start development server with hot reload |
-| `npx vite`            | Start web-only dev server (no Electron)  |
-| `npm run build`       | Build the application                    |
-| `npm run build:win`   | Build for Windows                        |
-| `npm run build:mac`   | Build for macOS                          |
-| `npm run build:linux` | Build for Linux                          |
-| `npm run build:all`   | Build for all platforms                  |
+| Script                 | Description                              |
+| ---------------------- | ---------------------------------------- |
+| `npm run dev`          | Start development server with hot reload |
+| `npx vite`             | Start web-only dev server (no Electron)  |
+| `npm run build`        | Build the application                    |
+| `npm run build:win`    | Build for Windows                        |
+| `npm run build:mac`    | Build for macOS                          |
+| `npm run build:linux`  | Build for Linux                          |
+| `npm run build:all`    | Build for all platforms                  |
+| `npm run format`       | Format code with Prettier                |
+| `npm run format:check` | Check code formatting                    |
 
 ### Mobile Development
 

@@ -8,6 +8,7 @@ import { useModelsStore } from "@/stores/modelsStore";
 import { usePredictionInputsStore } from "@/stores/predictionInputsStore";
 import { usePageActive } from "@/hooks/usePageActive";
 import { useDeferredClose } from "@/hooks/useDeferredClose";
+import { normalizeApiInputsToFormValues } from "@/lib/schemaToForm";
 import type { HistoryItem } from "@/types/prediction";
 import { OutputDisplay } from "@/components/playground/OutputDisplay";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
@@ -60,7 +68,8 @@ import {
   Trash2,
   CheckSquare,
   History,
-  Play,
+  Sparkles,
+  MoreVertical,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AudioPlayer } from "@/components/shared/AudioPlayer";
@@ -175,6 +184,8 @@ interface HistoryCardProps {
   isSelected: boolean;
   onToggleSelect: (id: string) => void;
   onSelect: (item: HistoryItem) => void;
+  onCustomize: (item: HistoryItem) => void;
+  onDelete: (item: HistoryItem) => void;
 }
 
 const HistoryCard = memo(function HistoryCard({
@@ -185,6 +196,8 @@ const HistoryCard = memo(function HistoryCard({
   isSelected,
   onToggleSelect,
   onSelect,
+  onCustomize,
+  onDelete,
 }: HistoryCardProps) {
   const { t } = useTranslation();
   const { ref, isInView } = useInView<HTMLDivElement>();
@@ -215,7 +228,7 @@ const HistoryCard = memo(function HistoryCard({
   return (
     <Card
       className={cn(
-        "overflow-hidden cursor-pointer rounded-xl border border-border/70 bg-card/80 shadow-sm hover:shadow-md transition-all animate-in fade-in slide-in-from-bottom-2 fill-mode-both",
+        "group overflow-hidden cursor-pointer rounded-xl border border-border/70 bg-card/80 shadow-sm hover:shadow-md transition-all animate-in fade-in slide-in-from-bottom-2 fill-mode-both",
         isSelected && "ring-2 ring-primary",
       )}
       style={{ animationDelay: `${Math.min(index, 19) * 30}ms` }}
@@ -295,21 +308,78 @@ const HistoryCard = memo(function HistoryCard({
             <PreviewIcon className="h-10 w-10 text-muted-foreground" />
           </div>
         )}
-        <div className="absolute top-1.5 right-1.5">
+        <div className="absolute bottom-1.5 right-1.5">
           {getStatusBadge(item.status)}
         </div>
+
+        {/* Always-visible quick actions — top right */}
+        {!isSelectionMode && item.status === "completed" && (
+          <div className="absolute top-2 right-2 flex gap-1.5 z-10">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onCustomize(item);
+              }}
+              className="flex items-center gap-1 px-2 py-1 rounded-md bg-black/60 backdrop-blur-sm text-white text-[10px] font-medium hover:bg-primary transition-colors"
+              title={t("history.openInPlayground", "Open in Playground")}
+            >
+              <Sparkles className="h-3 w-3" />
+              {t("common.customize", "Customize")}
+            </button>
+          </div>
+        )}
       </div>
 
       <CardContent className="p-2.5">
-        <p className="text-sm font-medium truncate">{item.model}</p>
-        <p className="mt-0.5 text-xs text-muted-foreground truncate">
-          {formatDate(item.created_at)}
-        </p>
-        {item.execution_time && (
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {(item.execution_time / 1000).toFixed(2)}s
-          </p>
-        )}
+        <div className="flex items-start justify-between gap-1">
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium truncate">{item.model}</p>
+            <p className="mt-0.5 text-xs text-muted-foreground truncate">
+              {formatDate(item.created_at)}
+            </p>
+            {item.execution_time && (
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {(item.execution_time / 1000).toFixed(2)}s
+              </p>
+            )}
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 shrink-0 rounded-lg text-muted-foreground hover:text-foreground"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {item.status === "completed" && (
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onCustomize(item);
+                  }}
+                >
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  {t("common.customize", "Customize")}
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(item);
+                }}
+                className="text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                {t("common.delete")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </CardContent>
     </Card>
   );
@@ -325,7 +395,7 @@ export function HistoryPage() {
     loadApiKey,
     hasAttemptedLoad,
   } = useApiKeyStore();
-  const { createTab } = usePlaygroundStore();
+  const { createTab, findFormValuesByPredictionId } = usePlaygroundStore();
   const { getModelById } = useModelsStore();
   const {
     get: getLocalInputs,
@@ -371,16 +441,55 @@ export function HistoryPage() {
         return;
       }
 
+      // Build a synthetic PredictionResult for output display
+      const predictionResult = {
+        id: item.id,
+        model: item.model,
+        status: item.status as any,
+        outputs: item.outputs,
+        has_nsfw_contents: item.has_nsfw_contents,
+        timings: item.execution_time
+          ? { inference: item.execution_time }
+          : undefined,
+      };
+
       // Try local storage first (saved from previous Playground runs)
       const localEntry = getLocalInputs(item.id);
       if (localEntry?.inputs && Object.keys(localEntry.inputs).length > 0) {
-        createTab(model, localEntry.inputs);
+        createTab(model, localEntry.inputs, item.outputs, predictionResult);
         setSelectedItem(null);
         navigate(`/playground/${encodeURIComponent(item.model)}`);
         return;
       }
 
-      // Fallback: try API
+      // Check Playground tabs' generationHistory (Recent Generations store formValues)
+      const historyFormValues = findFormValuesByPredictionId(item.id);
+      if (historyFormValues) {
+        createTab(model, historyFormValues, item.outputs, predictionResult);
+        setSelectedItem(null);
+        navigate(`/playground/${encodeURIComponent(item.model)}`);
+        return;
+      }
+
+      // Check if the history item itself carries inputs from the API list response
+      const itemInputs = item.inputs || item.input;
+      if (
+        itemInputs &&
+        typeof itemInputs === "object" &&
+        Object.keys(itemInputs).length > 0
+      ) {
+        createTab(
+          model,
+          normalizeApiInputsToFormValues(itemInputs as Record<string, unknown>),
+          item.outputs,
+          predictionResult,
+        );
+        setSelectedItem(null);
+        navigate(`/playground/${encodeURIComponent(item.model)}`);
+        return;
+      }
+
+      // Fallback: fetch prediction details from API
       setIsOpeningPlayground(true);
       try {
         const details = await apiClient.getPredictionDetails(item.id);
@@ -388,19 +497,30 @@ export function HistoryPage() {
           (details as any).input || (details as any).inputs || {};
         createTab(
           model,
-          Object.keys(apiInput).length > 0 ? apiInput : undefined,
+          Object.keys(apiInput).length > 0
+            ? normalizeApiInputsToFormValues(apiInput)
+            : undefined,
+          item.outputs,
+          predictionResult,
         );
         setSelectedItem(null);
         navigate(`/playground/${encodeURIComponent(item.model)}`);
       } catch {
-        createTab(model);
+        createTab(model, undefined, item.outputs, predictionResult);
         setSelectedItem(null);
         navigate(`/playground/${encodeURIComponent(item.model)}`);
       } finally {
         setIsOpeningPlayground(false);
       }
     },
-    [getModelById, getLocalInputs, createTab, navigate, t],
+    [
+      getModelById,
+      getLocalInputs,
+      findFormValuesByPredictionId,
+      createTab,
+      navigate,
+      t,
+    ],
   );
 
   // Navigate to previous/next history item (with loop support)
@@ -787,6 +907,8 @@ export function HistoryPage() {
                   isSelected={selectedIds.has(item.id)}
                   onToggleSelect={handleToggleSelect}
                   onSelect={setSelectedItem}
+                  onCustomize={handleOpenInPlayground}
+                  onDelete={setDeleteConfirmItem}
                 />
               ))}
             </div>
@@ -913,9 +1035,9 @@ export function HistoryPage() {
                   {isOpeningPlayground ? (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   ) : (
-                    <Play className="h-4 w-4 mr-2" />
+                    <Sparkles className="h-4 w-4 mr-2" />
                   )}
-                  {t("history.openInPlayground", "Open in Playground")}
+                  {t("common.customize", "Customize")}
                 </Button>
                 <Button
                   variant="destructive"

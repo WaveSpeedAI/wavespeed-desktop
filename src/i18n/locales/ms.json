@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "Memuatkan...",
     "save": "Simpan",
@@ -40,7 +40,8 @@
     "showMore": "Tunjuk lagi",
     "showLess": "Tunjuk kurang",
     "show": "Tunjuk",
-    "hide": "Sembunyikan"
+    "hide": "Sembunyikan",
+    "customize": "Sesuaikan"
   },
   "nav": {
     "home": "Laman Utama",
@@ -133,6 +134,7 @@
     "selectModelPrompt": "Pilih model untuk mengkonfigurasi parameter",
     "run": "Jalankan",
     "running": "Sedang berjalan...",
+    "abort": "Batalkan",
     "stop": "Hentikan",
     "parameters": "Parameter",
     "output": "Output",
@@ -1105,6 +1107,9 @@
     "exportFailed": "Gagal mengeksport",
     "estimated": "Anggaran kos",
     "fitView": "Sesuaikan pandangan",
+    "toggleGrid": "Togol grid",
+    "zoomIn": "Zum masuk",
+    "zoomOut": "Zum keluar",
     "autoLayout": "Susun atur automatik",
     "freeToolModelHint": "Larian pertama akan memuat turun model AI secara automatik, sila tunggu",
     "more": "Lagi",

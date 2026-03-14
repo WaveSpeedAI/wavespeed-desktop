@@ -10,8 +10,7 @@ import type { NodeTypeDefinition } from "../../../../src/workflow/types/node-def
 import { getFileStorageInstance } from "../../utils/file-storage";
 import * as path from "path";
 import * as fs from "fs";
-import https from "https";
-import http from "http";
+import { net } from "electron";
 import { randomUUID } from "crypto";
 
 export const fileExportDef: NodeTypeDefinition = {
@@ -149,44 +148,13 @@ async function saveToPath(source: string, destPath: string): Promise<void> {
   throw new Error("Unsupported export source URL");
 }
 
-function downloadToFile(url: string, destPath: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const client = url.startsWith("https://") ? https : http;
-    const out = fs.createWriteStream(destPath);
-    client
-      .get(url, (res) => {
-        // Follow redirects
-        if (
-          res.statusCode &&
-          res.statusCode >= 300 &&
-          res.statusCode < 400 &&
-          res.headers.location
-        ) {
-          out.close();
-          fs.rmSync(destPath, { force: true });
-          downloadToFile(res.headers.location, destPath)
-            .then(resolve)
-            .catch(reject);
-          return;
-        }
-        if (res.statusCode && res.statusCode >= 400) {
-          out.close();
-          fs.rmSync(destPath, { force: true });
-          reject(new Error(`Download failed: HTTP ${res.statusCode}`));
-          return;
-        }
-        res.pipe(out);
-        out.on("finish", () => {
-          out.close();
-          resolve();
-        });
-      })
-      .on("error", (error) => {
-        out.close();
-        fs.rmSync(destPath, { force: true });
-        reject(error);
-      });
-  });
+async function downloadToFile(url: string, destPath: string): Promise<void> {
+  const response = await net.fetch(url);
+  if (!response.ok) {
+    throw new Error(`Download failed: HTTP ${response.status}`);
+  }
+  const buffer = Buffer.from(await response.arrayBuffer());
+  fs.writeFileSync(destPath, buffer);
 }
 
 function sanitizeFilename(name: string): string {

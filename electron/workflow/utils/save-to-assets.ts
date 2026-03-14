@@ -4,19 +4,18 @@
  * Reuses the same assets directory and metadata infrastructure as the
  * Playground's auto-save feature, so workflow outputs appear in My Assets.
  */
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, net } from "electron";
 import {
   existsSync,
   mkdirSync,
   copyFileSync,
   statSync,
-  createWriteStream,
   readFileSync,
   writeFileSync,
+  unlinkSync,
+  renameSync,
 } from "fs";
 import { join, extname } from "path";
-import https from "https";
-import http from "http";
 
 /* ─── Settings / metadata paths (mirrors electron/main.ts) ─────────── */
 
@@ -116,56 +115,24 @@ function guessExt(url: string): string {
   return ".png";
 }
 
-/** Download a remote URL to a local file path. Uses .download temp file, renames on completion. */
-function downloadToFile(url: string, destPath: string): Promise<boolean> {
+/** Download a remote URL to a local file path using Electron net.fetch (respects system proxy). */
+async function downloadToFile(url: string, destPath: string): Promise<boolean> {
   const tempPath = destPath + ".download";
-  return new Promise((resolve) => {
-    const proto = url.startsWith("https") ? https : http;
-    const file = createWriteStream(tempPath);
-
-    const finalize = () => {
-      file.close();
-      try {
-        require("fs").renameSync(tempPath, destPath);
-        resolve(true);
-      } catch {
-        resolve(false);
-      }
-    };
-
-    const cleanup = () => {
-      file.close();
-      try {
-        if (existsSync(tempPath)) require("fs").unlinkSync(tempPath);
-      } catch {
-        /* best-effort */
-      }
-      resolve(false);
-    };
-
-    const handleResponse = (response: http.IncomingMessage) => {
-      if (response.statusCode === 301 || response.statusCode === 302) {
-        const loc = response.headers.location;
-        if (loc) {
-          const rp = loc.startsWith("https") ? https : http;
-          rp.get(loc, handleResponse).on("error", cleanup);
-          return;
-        }
-      }
-      // Reject non-2xx responses to avoid saving error pages as assets
-      if (
-        response.statusCode &&
-        (response.statusCode < 200 || response.statusCode >= 300)
-      ) {
-        response.resume();
-        cleanup();
-        return;
-      }
-      response.pipe(file);
-      file.on("finish", finalize);
-    };
-    proto.get(url, handleResponse).on("error", cleanup);
-  });
+  try {
+    const response = await net.fetch(url);
+    if (!response.ok) return false;
+    const buffer = Buffer.from(await response.arrayBuffer());
+    writeFileSync(tempPath, buffer);
+    renameSync(tempPath, destPath);
+    return true;
+  } catch {
+    try {
+      if (existsSync(tempPath)) unlinkSync(tempPath);
+    } catch {
+      /* best-effort */
+    }
+    return false;
+  }
 }
 
 /* ─── Public API ───────────────────────────────────────────────────── */

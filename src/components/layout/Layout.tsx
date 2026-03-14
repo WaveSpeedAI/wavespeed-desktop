@@ -24,6 +24,7 @@ import {
 import { ToastAction } from "@/components/ui/toast";
 import { toast } from "@/hooks/useToast";
 import { useApiKeyStore } from "@/stores/apiKeyStore";
+import { usePlaygroundStore } from "@/stores/playgroundStore";
 import { apiClient } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -180,6 +181,14 @@ export function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
   const hasShownUpdateToast = useRef(false);
+
+  // Get current playground model for dynamic titlebar links
+  const playgroundModelId = usePlaygroundStore(
+    (s) => s.getActiveTab()?.selectedModel?.model_id,
+  );
+  const isOnPlayground =
+    location.pathname === "/playground" ||
+    location.pathname.startsWith("/playground/");
 
   // Register free-tool IPC listener globally (must be always mounted for workflow execution)
   useFreeToolListener();
@@ -453,7 +462,7 @@ export function Layout() {
                   <AppLogo className="h-5 w-5 shrink-0" />
                 </div>
               )}
-              {/* Global WebPage & Docs buttons */}
+              {/* Global WebPage & Documentation buttons */}
               <div
                 className={
                   /mac/i.test(navigator.platform)
@@ -464,7 +473,11 @@ export function Layout() {
                 <Tooltip delayDuration={0}>
                   <TooltipTrigger asChild>
                     <a
-                      href="https://wavespeed.ai/dashboard"
+                      href={
+                        isOnPlayground && playgroundModelId
+                          ? `https://wavespeed.ai/models/${playgroundModelId}`
+                          : "https://wavespeed.ai/dashboard"
+                      }
                       target="_blank"
                       rel="noopener noreferrer"
                       className={
@@ -483,7 +496,11 @@ export function Layout() {
                 <Tooltip delayDuration={0}>
                   <TooltipTrigger asChild>
                     <a
-                      href="https://wavespeed.ai/docs"
+                      href={
+                        isOnPlayground && playgroundModelId
+                          ? `https://wavespeed.ai/docs/docs-api/${playgroundModelId.split("/")[0]}/${playgroundModelId.replace(/\//g, "-")}`
+                          : "https://wavespeed.ai/docs"
+                      }
                       target="_blank"
                       rel="noopener noreferrer"
                       className={
@@ -496,7 +513,7 @@ export function Layout() {
                     </a>
                   </TooltipTrigger>
                   <TooltipContent side="bottom">
-                    {t("playground.docs", "Docs")}
+                    {t("playground.docs", "Documentation")}
                   </TooltipContent>
                 </Tooltip>
               </div>

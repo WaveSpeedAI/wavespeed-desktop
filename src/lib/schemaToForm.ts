@@ -405,7 +405,18 @@ export function getDefaultValues(
       continue;
     }
     if (field.default !== undefined) {
-      defaults[field.name] = field.default;
+      // Normalize size defaults: ensure "W*H" format (API schema may provide a single number)
+      if (field.type === "size") {
+        const raw = String(field.default);
+        if (!raw.includes("*")) {
+          const n = parseInt(raw, 10);
+          defaults[field.name] = !isNaN(n) ? `${n}*${n}` : field.default;
+        } else {
+          defaults[field.name] = field.default;
+        }
+      } else {
+        defaults[field.name] = field.default;
+      }
     } else if (field.type === "boolean") {
       defaults[field.name] = false;
     } else if (field.type === "file-array") {
@@ -680,4 +691,28 @@ export function getFormFieldsFromModel(model: Model): FormFieldConfig[] {
     requestSchema.required ?? [],
     requestSchema["x-order-properties"],
   );
+}
+
+/**
+ * Normalize raw API inputs to match the form value format expected by the Playground.
+ * Specifically handles the "size" field which the API may return as a single number
+ * (e.g. 2048 or "2048") but the form expects "W*H" format (e.g. "2048*2048").
+ */
+export function normalizeApiInputsToFormValues(
+  inputs: Record<string, unknown>,
+): Record<string, unknown> {
+  const normalized = { ...inputs };
+
+  // Normalize "size" field: single number → "W*H" format
+  if (normalized.size !== undefined) {
+    const raw = String(normalized.size);
+    if (!raw.includes("*")) {
+      const n = parseInt(raw, 10);
+      if (!isNaN(n) && n > 0) {
+        normalized.size = `${n}*${n}`;
+      }
+    }
+  }
+
+  return normalized;
 }

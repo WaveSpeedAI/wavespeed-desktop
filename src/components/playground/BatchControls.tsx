@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { usePlaygroundStore } from "@/stores/playgroundStore";
 import { Switch } from "@/components/ui/switch";
@@ -9,7 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Play, Loader2, ChevronDown } from "lucide-react";
+import { Play, Square, ChevronDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BatchControlsProps {
@@ -17,6 +18,7 @@ interface BatchControlsProps {
   isRunning?: boolean;
   isUploading?: boolean;
   onRun: () => void;
+  onAbort: () => void;
   runLabel: string;
   runningLabel: string;
   price?: string;
@@ -27,6 +29,7 @@ export function BatchControls({
   isRunning,
   isUploading,
   onRun,
+  onAbort,
   runLabel,
   runningLabel,
   price,
@@ -34,6 +37,17 @@ export function BatchControls({
   const { t } = useTranslation();
   const { getActiveTab, setBatchConfig } = usePlaygroundStore();
   const activeTab = getActiveTab();
+
+  // Delay abort button by 500ms to prevent accidental clicks
+  const [abortReady, setAbortReady] = useState(false);
+  useEffect(() => {
+    if (!isRunning) {
+      setAbortReady(false);
+      return;
+    }
+    const timer = setTimeout(() => setAbortReady(true), 500);
+    return () => clearTimeout(timer);
+  }, [isRunning]);
 
   if (!activeTab) return null;
 
@@ -55,6 +69,30 @@ export function BatchControls({
   const displayLabel =
     enabled && repeatCount > 1 ? `${runLabel} (${repeatCount})` : runLabel;
 
+  if (isRunning) {
+    return (
+      <div className="flex rounded-lg border border-transparent shadow-sm">
+        <Button
+          className={cn(
+            "flex-1 h-9 text-sm text-white transition-all duration-300 shadow-none",
+            abortReady
+              ? "bg-red-600 hover:bg-red-700 cursor-pointer"
+              : "bg-blue-600 cursor-default",
+          )}
+          onClick={abortReady ? onAbort : undefined}
+          disabled={!abortReady}
+        >
+          {abortReady ? (
+            <Square className="mr-2 h-3.5 w-3.5 fill-current" />
+          ) : (
+            <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+          )}
+          {abortReady ? runningLabel : t("playground.running")}
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex rounded-lg border border-transparent shadow-sm">
       {/* Main Run Button */}
@@ -64,27 +102,18 @@ export function BatchControls({
           "rounded-r-none border-r border-r-white/20 shadow-none",
         )}
         onClick={onRun}
-        disabled={disabled || isRunning || isUploading}
+        disabled={disabled || isUploading}
         title={isUploading ? t("playground.capture.uploading") : undefined}
       >
-        {isRunning ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            {runningLabel}
-          </>
-        ) : (
-          <>
-            <Play className="mr-2 h-4 w-4" />
-            {displayLabel}
-            {price && (
-              <span className="ml-1.5 text-xs opacity-70">
-                $
-                {enabled && repeatCount > 1
-                  ? (parseFloat(price) * repeatCount).toFixed(4)
-                  : price}
-              </span>
-            )}
-          </>
+        <Play className="mr-2 h-4 w-4" />
+        {displayLabel}
+        {price && (
+          <span className="ml-1.5 text-xs opacity-70">
+            $
+            {enabled && repeatCount > 1
+              ? (parseFloat(price) * repeatCount).toFixed(4)
+              : price}
+          </span>
         )}
       </Button>
 
@@ -96,7 +125,7 @@ export function BatchControls({
               "bg-blue-600 hover:bg-blue-700 text-white transition-colors",
               "rounded-l-none px-1.5 h-9 shadow-none",
             )}
-            disabled={disabled || isRunning || isUploading}
+            disabled={disabled || isUploading}
           >
             <ChevronDown className="h-4 w-4" />
           </Button>

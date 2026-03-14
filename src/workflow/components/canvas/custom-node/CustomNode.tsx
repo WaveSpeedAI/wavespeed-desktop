@@ -20,7 +20,7 @@ import { Handle, Position, useReactFlow, type NodeProps } from "reactflow";
 import { useExecutionStore } from "../../../stores/execution.store";
 import { useWorkflowStore } from "../../../stores/workflow.store";
 import { useUIStore } from "../../../stores/ui.store";
-import { apiClient } from "@/api/client";
+import { workflowClient } from "@/api/client";
 import { useModelsStore } from "@/stores/modelsStore";
 import { getFormFieldsFromModel } from "@/lib/schemaToForm";
 import { formFieldsToModelParamSchema } from "../../../lib/model-converter";
@@ -28,6 +28,11 @@ import type { NodeStatus } from "@/workflow/types/execution";
 import type { WaveSpeedModel } from "@/workflow/types/node-defs";
 import type { FormFieldConfig } from "@/lib/schemaToForm";
 
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import {
   type CustomNodeData,
@@ -547,7 +552,7 @@ function CustomNodeComponent({
     } = settings;
 
     try {
-      const optimized = await apiClient.optimizePrompt({
+      const optimized = await workflowClient.optimizePrompt({
         ...settingsForApi,
         text: sourceText,
       });
@@ -926,6 +931,50 @@ function CustomNodeComponent({
       <div className="absolute top-[15px] right-5 text-[10px] font-medium text-primary/60 select-none">
         {t("workflow.outputLowercase", "output")}
       </div>
+
+      {/* ── Side "Add Node" button — right side only, visible on hover / selected ───── */}
+      {(hovered || selected) && (
+        <Tooltip delayDuration={0}>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              className="nodrag nopan absolute top-1/2 -translate-y-1/2 -right-3 z-40 flex items-center justify-center w-6 h-6 rounded-full shadow-lg backdrop-blur-sm bg-blue-500 text-white hover:bg-blue-600 hover:scale-110 transition-all duration-150"
+              onClick={(e) => {
+                e.stopPropagation();
+                const rect = (
+                  e.currentTarget as HTMLElement
+                ).getBoundingClientRect();
+                window.dispatchEvent(
+                  new CustomEvent("workflow:open-add-node-menu", {
+                    detail: {
+                      x: rect.right,
+                      y: rect.top + rect.height / 2,
+                      sourceNodeId: id,
+                      side: "right",
+                    },
+                  }),
+                );
+              }}
+            >
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              >
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right">
+            {t("workflow.addNode", "Add Node")}
+          </TooltipContent>
+        </Tooltip>
+      )}
     </div>
   );
 }

@@ -1,7 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import http from "http";
-import https from "https";
+import { net } from "electron";
 import { spawn } from "child_process";
 import { getFileStorageInstance } from "../../../utils/file-storage";
 
@@ -46,46 +45,13 @@ function tempFilePath(
   );
 }
 
-function downloadToFile(url: string, filePath: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const proto = url.startsWith("https://") ? https : http;
-    const file = fs.createWriteStream(filePath);
-    const req = proto.get(url, (res) => {
-      if (
-        res.statusCode &&
-        res.statusCode >= 300 &&
-        res.statusCode < 400 &&
-        res.headers.location
-      ) {
-        file.close();
-        try {
-          if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-        } catch {
-          // ignore
-        }
-        downloadToFile(res.headers.location, filePath)
-          .then(resolve)
-          .catch(reject);
-        return;
-      }
-      if (res.statusCode && res.statusCode >= 400) {
-        file.close();
-        reject(new Error(`Failed to download file: HTTP ${res.statusCode}`));
-        return;
-      }
-      res.pipe(file);
-      file.on("finish", () => {
-        file.close();
-        resolve();
-      });
-      file.on("error", (err) => {
-        file.close();
-        reject(err);
-      });
-    });
-
-    req.on("error", reject);
-  });
+async function downloadToFile(url: string, filePath: string): Promise<void> {
+  const response = await net.fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to download file: HTTP ${response.status}`);
+  }
+  const buffer = Buffer.from(await response.arrayBuffer());
+  fs.writeFileSync(filePath, buffer);
 }
 
 export async function resolveInputToLocalFile(

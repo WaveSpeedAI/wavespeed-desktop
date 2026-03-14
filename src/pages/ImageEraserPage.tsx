@@ -1074,7 +1074,9 @@ export function ImageEraserPage() {
                     <ZoomOut className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Zoom Out</TooltipContent>
+                <TooltipContent>
+                  {t("workflow.zoomOut", "Zoom Out")}
+                </TooltipContent>
               </Tooltip>
 
               <span className="text-xs text-muted-foreground w-12 text-center">
@@ -1092,7 +1094,9 @@ export function ImageEraserPage() {
                     <ZoomIn className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Zoom In</TooltipContent>
+                <TooltipContent>
+                  {t("workflow.zoomIn", "Zoom In")}
+                </TooltipContent>
               </Tooltip>
 
               <Tooltip>

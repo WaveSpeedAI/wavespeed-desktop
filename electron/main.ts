@@ -15,23 +15,58 @@ import {
   readFileSync,
   writeFileSync,
   mkdirSync,
-  createWriteStream,
   unlinkSync,
   statSync,
   readdirSync,
   copyFileSync,
+  renameSync,
 } from "fs";
 import { readdir, stat } from "fs/promises";
 import AdmZip from "adm-zip";
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
 import { autoUpdater, UpdateInfo } from "electron-updater";
 import { spawn, execSync } from "child_process";
-import https from "https";
-import http from "http";
+// NOTE: Use downloadToFile() (net.fetch) instead of http/https for downloads.
+// net.fetch uses Chromium's network stack and respects system proxy settings.
 import { pathToFileURL } from "url";
 import { SDGenerator } from "./lib/sdGenerator";
 import log from "electron-log";
 import { initWorkflowModule, closeWorkflowDatabase } from "./workflow";
+
+/**
+ * Download a URL to a local file using Electron's net.fetch (Chromium network stack).
+ * Respects system proxy settings. Writes to a temp file first, then renames.
+ */
+async function downloadToFile(
+  url: string,
+  destPath: string,
+): Promise<
+  | { success: true; filePath: string; fileSize: number }
+  | { success: false; error: string }
+> {
+  const tempPath = destPath + ".download";
+  try {
+    const response = await net.fetch(url);
+    if (!response.ok) {
+      return {
+        success: false,
+        error: `HTTP ${response.status} downloading file`,
+      };
+    }
+    const buffer = Buffer.from(await response.arrayBuffer());
+    writeFileSync(tempPath, buffer);
+    renameSync(tempPath, destPath);
+    const stats = statSync(destPath);
+    return { success: true, filePath: destPath, fileSize: stats.size };
+  } catch (err) {
+    try {
+      if (existsSync(tempPath)) unlinkSync(tempPath);
+    } catch {
+      /* best-effort */
+    }
+    return { success: false, error: (err as Error).message };
+  }
+}
 
 // Suppress Chromium's noisy ffmpeg pixel format warnings (harmless, caused by video thumbnail decoding)
 // These come from GPU/renderer processes' stderr and cannot be disabled via command-line switches.
@@ -520,82 +555,7 @@ ipcMain.handle(
       }
     }
 
-    // Download the file from http/https — write to .download temp file, rename on completion
-    const tempPath = result.filePath + ".download";
-    return new Promise((resolve) => {
-      const httpProtocol = url.startsWith("https") ? https : http;
-      const file = createWriteStream(tempPath);
-
-      const finalize = () => {
-        file.close();
-        try {
-          require("fs").renameSync(tempPath, result.filePath);
-          resolve({ success: true, filePath: result.filePath });
-        } catch (renameErr) {
-          resolve({
-            success: false,
-            error: (renameErr as Error).message,
-          });
-        }
-      };
-
-      const cleanup = (err: Error) => {
-        file.close();
-        try {
-          if (existsSync(tempPath)) unlinkSync(tempPath);
-        } catch {
-          /* best-effort cleanup */
-        }
-        resolve({ success: false, error: err.message });
-      };
-
-      httpProtocol
-        .get(url, (response) => {
-          // Handle redirects
-          if (response.statusCode === 301 || response.statusCode === 302) {
-            const redirectUrl = response.headers.location;
-            if (redirectUrl) {
-              const redirectProtocol = redirectUrl.startsWith("https")
-                ? https
-                : http;
-              redirectProtocol
-                .get(redirectUrl, (redirectResponse) => {
-                  if (
-                    redirectResponse.statusCode &&
-                    (redirectResponse.statusCode < 200 ||
-                      redirectResponse.statusCode >= 300)
-                  ) {
-                    redirectResponse.resume();
-                    cleanup(
-                      new Error(
-                        `HTTP ${redirectResponse.statusCode} after redirect`,
-                      ),
-                    );
-                    return;
-                  }
-                  redirectResponse.pipe(file);
-                  file.on("finish", finalize);
-                })
-                .on("error", cleanup);
-              return;
-            }
-          }
-
-          // Reject non-2xx responses
-          if (
-            response.statusCode &&
-            (response.statusCode < 200 || response.statusCode >= 300)
-          ) {
-            response.resume();
-            cleanup(new Error(`HTTP ${response.statusCode}`));
-            return;
-          }
-
-          response.pipe(file);
-          file.on("finish", finalize);
-        })
-        .on("error", cleanup);
-    });
+    return downloadToFile(url, result.filePath);
   },
 );
 
@@ -628,72 +588,7 @@ ipcMain.handle(
         return { success: false, error: "Invalid data URL" };
       }
 
-      // Download from http/https — write to .download temp file, rename on completion
-      const tempPath = filePath + ".download";
-      return new Promise((resolve) => {
-        const httpProtocol = url.startsWith("https") ? https : http;
-        const file = createWriteStream(tempPath);
-
-        const finalize = () => {
-          file.close();
-          try {
-            require("fs").renameSync(tempPath, filePath);
-            resolve({ success: true, filePath });
-          } catch (renameErr) {
-            resolve({
-              success: false,
-              error: (renameErr as Error).message,
-            });
-          }
-        };
-
-        const cleanup = (err: Error) => {
-          file.close();
-          try {
-            if (existsSync(tempPath)) unlinkSync(tempPath);
-          } catch {
-            /* best-effort cleanup */
-          }
-          resolve({ success: false, error: err.message });
-        };
-
-        httpProtocol
-          .get(url, (response) => {
-            if (response.statusCode === 301 || response.statusCode === 302) {
-              const redirectUrl = response.headers.location;
-              if (redirectUrl) {
-                const rp = redirectUrl.startsWith("https") ? https : http;
-                rp.get(redirectUrl, (rr) => {
-                  if (
-                    rr.statusCode &&
-                    (rr.statusCode < 200 || rr.statusCode >= 300)
-                  ) {
-                    rr.resume();
-                    cleanup(new Error(`HTTP ${rr.statusCode} after redirect`));
-                    return;
-                  }
-                  rr.pipe(file);
-                  file.on("finish", finalize);
-                }).on("error", cleanup);
-                return;
-              }
-            }
-
-            // Reject non-2xx responses
-            if (
-              response.statusCode &&
-              (response.statusCode < 200 || response.statusCode >= 300)
-            ) {
-              response.resume();
-              cleanup(new Error(`HTTP ${response.statusCode}`));
-              return;
-            }
-
-            response.pipe(file);
-            file.on("finish", finalize);
-          })
-          .on("error", cleanup);
-      });
+      return downloadToFile(url, filePath);
     } catch (err) {
       return { success: false, error: (err as Error).message };
     }
@@ -805,70 +700,7 @@ ipcMain.handle(
       }
     }
 
-    // Download file from http/https — write to .download temp file, rename on completion
-    const tempPath = filePath + ".download";
-    return new Promise((resolve) => {
-      const httpProtocol = url.startsWith("https") ? https : http;
-      const file = createWriteStream(tempPath);
-
-      const finalize = () => {
-        file.close();
-        try {
-          require("fs").renameSync(tempPath, filePath);
-          const stats = statSync(filePath);
-          resolve({ success: true, filePath, fileSize: stats.size });
-        } catch (err) {
-          resolve({ success: false, error: (err as Error).message });
-        }
-      };
-
-      const cleanup = (err: Error) => {
-        file.close();
-        try {
-          if (existsSync(tempPath)) unlinkSync(tempPath);
-        } catch {
-          /* best-effort */
-        }
-        resolve({ success: false, error: err.message });
-      };
-
-      const handleResponse = (response: http.IncomingMessage) => {
-        // Handle redirects
-        if (response.statusCode === 301 || response.statusCode === 302) {
-          const redirectUrl = response.headers.location;
-          if (redirectUrl) {
-            const redirectProtocol = redirectUrl.startsWith("https")
-              ? https
-              : http;
-            redirectProtocol
-              .get(redirectUrl, (redirectResponse) => {
-                handleResponse(redirectResponse);
-              })
-              .on("error", (err) => {
-                cleanup(err);
-              });
-            return;
-          }
-        }
-
-        // Reject non-2xx responses to avoid saving error pages as assets
-        if (
-          response.statusCode &&
-          (response.statusCode < 200 || response.statusCode >= 300)
-        ) {
-          response.resume(); // drain the response
-          cleanup(new Error(`HTTP ${response.statusCode} downloading asset`));
-          return;
-        }
-
-        response.pipe(file);
-        file.on("finish", finalize);
-      };
-
-      httpProtocol.get(url, handleResponse).on("error", (err) => {
-        cleanup(err);
-      });
-    });
+    return downloadToFile(url, filePath);
   },
 );
 
@@ -1375,7 +1207,7 @@ ipcMain.handle("sd-extract-binary", (_, zipPath: string, destPath: string) => {
 let mainWindow: BrowserWindow | null = null;
 
 // Configure auto-updater
-autoUpdater.autoDownload = true;
+autoUpdater.autoDownload = false;
 autoUpdater.autoInstallOnAppQuit = true;
 
 function sendUpdateStatus(status: string, data?: Record<string, unknown>) {

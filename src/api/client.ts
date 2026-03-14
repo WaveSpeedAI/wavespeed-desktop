@@ -157,7 +157,7 @@ class WaveSpeedClient {
   private client: AxiosInstance;
   private apiKey: string = "";
 
-  constructor() {
+  constructor(clientName?: string) {
     this.client = axios.create({
       baseURL: BASE_URL,
       timeout: 60000, // 60 second timeout for connection and read
@@ -165,20 +165,23 @@ class WaveSpeedClient {
       maxContentLength: Infinity, // Allow large response content
       headers: {
         "Content-Type": "application/json",
-        "X-Client-Name": (() => {
-          const os = getOperatingSystem();
-          return os === "android" || os === "ios"
-            ? "wavespeed-mobile"
-            : "wavespeed-desktop";
-        })(),
+        "X-Client-Name":
+          clientName ??
+          (() => {
+            const os = getOperatingSystem();
+            return os === "android" || os === "ios"
+              ? "wavespeed-mobile"
+              : "wavespeed-desktop";
+          })(),
         "X-Client-Version": version,
         "X-Client-OS": getOperatingSystem(),
       },
     });
 
     this.client.interceptors.request.use((config) => {
-      if (this.apiKey) {
-        config.headers.Authorization = `Bearer ${this.apiKey}`;
+      const key = this.getApiKey();
+      if (key) {
+        config.headers.Authorization = `Bearer ${key}`;
       }
       return config;
     });
@@ -342,10 +345,9 @@ class WaveSpeedClient {
       throw new Error("No request ID in response");
     }
 
-    // Poll for result with retry on connection errors
+    // Poll for result with unlimited retry on connection errors
     const startTime = Date.now();
     let consecutiveErrors = 0;
-    const MAX_CONSECUTIVE_ERRORS = 10;
     while (true) {
       throwIfAborted();
       if (Date.now() - startTime > timeout) {
@@ -367,20 +369,15 @@ class WaveSpeedClient {
         }
       } catch (error) {
         if (signal?.aborted) throw new DOMException("Cancelled", "AbortError");
-        // Retry with exponential backoff on connection errors
+        // Retry with exponential backoff on connection errors (unlimited retries)
         if (this.isConnectionError(error)) {
           consecutiveErrors++;
-          if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
-            throw new Error(
-              `Polling failed after ${MAX_CONSECUTIVE_ERRORS} consecutive connection errors`,
-            );
-          }
           const backoff = Math.min(
             1000 * Math.pow(2, consecutiveErrors - 1),
             10000,
           );
           console.warn(
-            `Connection error during polling (${consecutiveErrors}/${MAX_CONSECUTIVE_ERRORS}), retrying in ${backoff}ms...`,
+            `Connection error during polling (attempt ${consecutiveErrors}), retrying in ${backoff}ms...`,
             error,
           );
           await new Promise((resolve) => setTimeout(resolve, backoff));
@@ -425,6 +422,7 @@ class WaveSpeedClient {
         page_size: pageSize,
         created_after: filters?.created_after || oneDayAgo.toISOString(),
         created_before: filters?.created_before || now.toISOString(),
+        include_inputs: true,
       };
 
       if (filters?.model) body.model = filters.model;
@@ -605,4 +603,17 @@ class WaveSpeedClient {
 }
 
 export const apiClient = new WaveSpeedClient();
+
+/** Dedicated client for workflow — reports as "wavespeed-desktop-workflow". API key auto-syncs from apiClient. */
+class WorkflowClient extends WaveSpeedClient {
+  constructor() {
+    super("wavespeed-desktop-workflow");
+  }
+  /** Always delegate to apiClient so key stays in sync automatically. */
+  override getApiKey(): string {
+    return apiClient.getApiKey();
+  }
+}
+export const workflowClient = new WorkflowClient();
+
 export default apiClient;

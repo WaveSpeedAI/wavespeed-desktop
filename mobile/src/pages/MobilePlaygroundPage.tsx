@@ -8,6 +8,7 @@ import { useApiKeyStore } from "@/stores/apiKeyStore";
 import { useTemplateStore } from "@/stores/templateStore";
 import { usePredictionInputsStore } from "@mobile/stores/predictionInputsStore";
 import { apiClient } from "@/api/client";
+import { getDefaultValues } from "@/lib/schemaToForm";
 import { DynamicForm } from "@/components/playground/DynamicForm";
 import { OutputDisplay } from "@/components/playground/OutputDisplay";
 import { BatchControls } from "@/components/playground/BatchControls";
@@ -287,10 +288,14 @@ export function MobilePlaygroundPage() {
 
   // When a tab is created with pendingFormValues and DynamicForm doesn't call onSetDefaults
   useEffect(() => {
-    if (!activeTab?.pendingFormValues) return;
+    const tab = getActiveTab();
+    if (!tab?.pendingFormValues) return;
     const pending = consumePendingFormValues();
     if (pending) {
-      setFormValues({ ...activeTab.formValues, ...pending });
+      const currentTab = getActiveTab();
+      const fields = currentTab?.formFields ?? [];
+      const defaults = fields.length > 0 ? getDefaultValues(fields) : {};
+      setFormValues({ ...defaults, ...currentTab?.formValues, ...pending });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTabId]);

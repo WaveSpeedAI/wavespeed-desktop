@@ -20,6 +20,7 @@ import { apiClient } from "@/api/client";
 import { useTemplateStore } from "@/stores/templateStore";
 import { usePredictionInputsStore } from "@/stores/predictionInputsStore";
 import { usePageActive } from "@/hooks/usePageActive";
+import { getDefaultValues } from "@/lib/schemaToForm";
 import { DynamicForm } from "@/components/playground/DynamicForm";
 import { ModelSelector } from "@/components/playground/ModelSelector";
 import { BatchControls } from "@/components/playground/BatchControls";
@@ -58,16 +59,6 @@ import {
 type RightPanelTab = "result" | "featured" | "templates";
 
 /** Format raw model name/id for display. e.g. "google/nano-banana-pro/text-to-image" → "Google / Nano Banana Pro" */
-function formatModelDisplay(name: string): string {
-  const parts = name.split("/");
-  const fmt = (s: string) =>
-    s
-      .split("-")
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(" ");
-  if (parts.length >= 2) return `${fmt(parts[0])} / ${fmt(parts[1])}`;
-  return fmt(parts[0]);
-}
 
 const isCapacitorNative = () => {
   try {
@@ -120,6 +111,7 @@ export function PlaygroundPage() {
     resetForm,
     runPrediction,
     runBatch,
+    abortRun,
     clearBatchResults,
     generateBatchInputs,
     setUploading,
@@ -558,12 +550,31 @@ export function PlaygroundPage() {
 
   // When a tab is created with pendingFormValues (e.g. from History "Open in Playground")
   // and DynamicForm does NOT call onSetDefaults (same model, schema cached),
-  // apply pending values directly.
+  // apply pending values merged with schema defaults so all fields are populated.
   useEffect(() => {
-    if (!activeTab?.pendingFormValues) return;
+    const tab = getActiveTab();
+    if (!tab?.pendingFormValues) return;
     const pending = consumePendingFormValues();
     if (pending) {
-      setFormValues({ ...activeTab.formValues, ...pending });
+      // Read formFields from the store (may have been set by DynamicForm's effect)
+      const currentTab = getActiveTab();
+      const fields = currentTab?.formFields ?? [];
+      const defaults = fields.length > 0 ? getDefaultValues(fields) : {};
+      setFormValues({ ...defaults, ...currentTab?.formValues, ...pending });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTabId]);
+
+  // When a tab is created with pre-loaded outputs (e.g. from History/Assets "Customize"),
+  // auto-switch to the Result tab so the user sees the output immediately.
+  useEffect(() => {
+    if (
+      activeTab?.outputs &&
+      activeTab.outputs.length > 0 &&
+      rightPanelTab !== "result"
+    ) {
+      setRightPanelTab("result");
+      sessionStorage.setItem("pg_rightPanelTab", "result");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTabId]);
@@ -917,11 +928,12 @@ export function PlaygroundPage() {
                     isRunning={activeTab?.isRunning ?? false}
                     isUploading={(activeTab?.uploadingCount ?? 0) > 0}
                     onRun={handleRun}
+                    onAbort={abortRun}
                     runLabel={t("playground.run")}
                     runningLabel={
                       activeTab?.batchState?.isRunning
-                        ? `${t("playground.running")} (${activeTab.batchState.queue.length})`
-                        : t("playground.running")
+                        ? `${t("playground.abort", "Abort")} (${activeTab.batchState.queue.length})`
+                        : t("playground.abort", "Abort")
                     }
                     price={
                       isPricingLoading
@@ -1002,9 +1014,8 @@ export function PlaygroundPage() {
                           <div
                             key={tab.id}
                             title={
-                              tab.selectedModel?.name
-                                ? formatModelDisplay(tab.selectedModel.name)
-                                : t("playground.tabs.newTab")
+                              tab.selectedModel?.model_id ||
+                              t("playground.tabs.newTab")
                             }
                             onClick={() => {
                               handleTabClick(tab.id);
@@ -1024,9 +1035,8 @@ export function PlaygroundPage() {
                             )}
                             <div className="flex-1 min-w-0">
                               <div className="truncate font-medium">
-                                {tab.selectedModel?.name
-                                  ? formatModelDisplay(tab.selectedModel.name)
-                                  : t("playground.tabs.newTab")}
+                                {tab.selectedModel?.model_id ||
+                                  t("playground.tabs.newTab")}
                               </div>
                               <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-0.5">
                                 {tab.selectedModel?.type && (
@@ -1102,12 +1112,11 @@ export function PlaygroundPage() {
                           handleTabClick(tab.id);
                         }}
                         title={
-                          tab.selectedModel?.name
-                            ? formatModelDisplay(tab.selectedModel.name)
-                            : t("playground.tabs.newTab")
+                          tab.selectedModel?.model_id ||
+                          t("playground.tabs.newTab")
                         }
                         className={cn(
-                          "group relative flex h-8 items-center gap-1.5 px-3 text-xs transition-colors cursor-pointer select-none min-w-[60px] max-w-[180px] hover:bg-primary/10 dark:hover:bg-muted/60",
+                          "group relative flex h-8 items-center gap-1.5 px-3 text-xs transition-colors cursor-pointer select-none min-w-[80px] max-w-[240px] hover:bg-primary/10 dark:hover:bg-muted/60",
                           dragTabId === tab.id && "opacity-40",
                           isActive
                             ? "bg-primary/15 dark:bg-primary/10 text-foreground font-medium"
@@ -1123,15 +1132,12 @@ export function PlaygroundPage() {
                           dropIndicator.side === "right" && (
                             <div className="absolute -right-px top-1 bottom-1 w-0.5 rounded-full bg-primary" />
                           )}
-                        {tab.isRunning ? (
+                        {tab.isRunning && (
                           <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
-                        ) : (
-                          <Sparkles className="h-3.5 w-3.5 shrink-0" />
                         )}
                         <span className="truncate flex-1">
-                          {tab.selectedModel?.name
-                            ? formatModelDisplay(tab.selectedModel.name)
-                            : t("playground.tabs.newTab")}
+                          {tab.selectedModel?.model_id ||
+                            t("playground.tabs.newTab")}
                         </span>
                         <button
                           onClick={(e) => handleCloseTab(e, tab.id)}

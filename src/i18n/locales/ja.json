@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "読み込み中...",
     "save": "保存",
@@ -40,7 +40,8 @@
     "showMore": "もっと見る",
     "showLess": "閉じる",
     "show": "表示",
-    "hide": "非表示"
+    "hide": "非表示",
+    "customize": "カスタマイズ"
   },
   "nav": {
     "home": "ホーム",
@@ -133,6 +134,7 @@
     "selectModelPrompt": "パラメータを設定するにはモデルを選択してください",
     "run": "実行",
     "running": "実行中...",
+    "abort": "中止",
     "stop": "停止",
     "parameters": "パラメータ",
     "output": "出力",
@@ -1097,6 +1099,9 @@
     "runNode": "ノード実行",
     "modelSelection": "モデル選択",
     "fitView": "ビューに合わせる",
+    "toggleGrid": "グリッド切替",
+    "zoomIn": "ズームイン",
+    "zoomOut": "ズームアウト",
     "autoLayout": "自動整列",
     "freeToolModelHint": "初回実行時にAIモデルを自動ダウンロードします、しばらくお待ちください",
     "more": "その他",

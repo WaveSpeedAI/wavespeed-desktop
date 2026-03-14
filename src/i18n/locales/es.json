@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "Cargando...",
     "save": "Guardar",
@@ -40,7 +40,8 @@
     "showMore": "Mostrar más",
     "showLess": "Mostrar menos",
     "show": "Mostrar",
-    "hide": "Ocultar"
+    "hide": "Ocultar",
+    "customize": "Personalizar"
   },
   "nav": {
     "home": "Inicio",
@@ -133,6 +134,7 @@
     "selectModelPrompt": "Selecciona un modelo para configurar parámetros",
     "run": "Ejecutar",
     "running": "Ejecutando...",
+    "abort": "Cancelar",
     "stop": "Detener",
     "parameters": "Parámetros",
     "output": "Salida",
@@ -1105,6 +1107,9 @@
     "exportFailed": "Error al exportar",
     "estimated": "Coste estimado",
     "fitView": "Ajustar vista",
+    "toggleGrid": "Alternar cuadrícula",
+    "zoomIn": "Acercar",
+    "zoomOut": "Alejar",
     "autoLayout": "Disposición automática",
     "freeToolModelHint": "La primera ejecución descargará automáticamente el modelo de IA, por favor espere",
     "more": "Más",

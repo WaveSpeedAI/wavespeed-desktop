@@ -541,3 +541,41 @@
 .settings-stagger > :is(.mt-6, [class*="Card"]):nth-child(n + 6) {
   animation: field-enter 0.3s cubic-bezier(0.4, 0, 0.2, 1) 250ms both;
 }
+
+/* ── React Flow edge reconnection handles ─────────────────────────── */
+/* reconnectRadius = 6 (matches HANDLE_SIZE / 2).
+   EdgeAnchor cx is shifted by shiftX: source(Right) → +6, target(Left) → -6.
+   But getHandlePosition returns the edge of the handle box, not its center:
+     Right → x + width  (right edge)    handle center = sourceX - 6
+     Left  → x          (left edge)     handle center = targetX + 6
+   So EdgeAnchor cx ends up 12px away from handle center in both cases.
+   We translate back to center the circle on the handle dot. */
+.react-flow__edgeupdater {
+  cursor: move;
+  pointer-events: all;
+  fill: transparent;
+  stroke: transparent;
+  transition:
+    fill 150ms ease,
+    stroke 150ms ease,
+    r 150ms ease;
+}
+.react-flow__edgeupdater-source {
+  transform: translateX(-12px);
+}
+.react-flow__edgeupdater-target {
+  transform: translateX(12px);
+}
+.react-flow__edge:hover .react-flow__edgeupdater,
+.react-flow__edge.selected .react-flow__edgeupdater {
+  r: 24;
+  fill: hsl(var(--primary) / 0.2);
+  stroke: hsl(var(--primary) / 0.5);
+  stroke-width: 1.5;
+}
+.react-flow__edgeupdater:hover {
+  r: 28;
+  fill: hsl(var(--primary) / 0.35);
+  stroke: hsl(var(--primary));
+  stroke-width: 2;
+}

@@ -1,4 +1,4 @@
-{
+﻿{
   "common": {
     "loading": "Yükleniyor...",
     "save": "Kaydet",
@@ -40,7 +40,8 @@
     "showMore": "Daha fazla göster",
     "showLess": "Daha az göster",
     "show": "Göster",
-    "hide": "Gizle"
+    "hide": "Gizle",
+    "customize": "Özelleştir"
   },
   "nav": {
     "home": "Ana Sayfa",
@@ -133,6 +134,7 @@
     "selectModelPrompt": "Parametreleri yapılandırmak için bir model seçin",
     "run": "Çalıştır",
     "running": "Çalışıyor...",
+    "abort": "İptal",
     "stop": "Durdur",
     "parameters": "Parametreler",
     "output": "Çıktı",
@@ -1105,6 +1107,9 @@
     "exportFailed": "Dışa aktarma başarısız",
     "estimated": "Tahmini maliyet",
     "fitView": "Görünüme sığdır",
+    "toggleGrid": "Izgarayı aç/kapat",
+    "zoomIn": "Yakınlaştır",
+    "zoomOut": "Uzaklaştır",
     "autoLayout": "Otomatik düzenle",
     "freeToolModelHint": "İlk çalıştırmada AI modeli otomatik indirilecek, lütfen bekleyin",
     "more": "Daha fazla",

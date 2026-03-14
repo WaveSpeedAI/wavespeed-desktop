@@ -268,6 +268,7 @@ export interface WorkflowState {
   removeNodes: (nodeIds: string[]) => void;
   duplicateNode: (nodeId: string) => string;
   addEdge: (connection: Connection) => void;
+  updateEdge: (oldEdge: ReactFlowEdge, newConnection: Connection) => void;
   removeEdge: (edgeId: string) => void;
   removeEdgesByIds: (edgeIds: string[]) => void;
   updateNodeParams: (nodeId: string, params: Record<string, unknown>) => void;
@@ -454,6 +455,81 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         canUndo: true,
         canRedo: false,
       }));
+    }
+    setTimeout(() => {
+      const state = get();
+      if (state.workflowId) state.saveWorkflow().catch(console.error);
+    }, 100);
+  },
+
+  updateEdge: (oldEdge, newConnection) => {
+    if (!newConnection.source || !newConnection.target) return;
+    if (newConnection.source === newConnection.target) return;
+    const newSource = newConnection.source;
+    const newTarget = newConnection.target;
+    const { nodes, edges } = get();
+    const sourceHandle = newConnection.sourceHandle ?? "output";
+    const targetHandle = newConnection.targetHandle ?? "input";
+    // Guard: no duplicate connections
+    const duplicate = edges.some(
+      (e) =>
+        e.id !== oldEdge.id &&
+        e.source === newSource &&
+        e.target === newTarget &&
+        e.sourceHandle === sourceHandle &&
+        e.targetHandle === targetHandle,
+    );
+    if (duplicate) return;
+    // Guard: target handle can only have one incoming connection (except from the same edge being updated)
+    const existingToTarget = edges.some(
+      (e) =>
+        e.id !== oldEdge.id &&
+        e.target === newTarget &&
+        e.targetHandle === targetHandle,
+    );
+    if (existingToTarget) {
+      // Replace the conflicting edge
+      const filtered = edges.filter(
+        (e) =>
+          e.id !== oldEdge.id &&
+          !(e.target === newTarget && e.targetHandle === targetHandle),
+      );
+      pushUndo({ nodes, edges });
+      set({
+        edges: [
+          ...filtered,
+          {
+            id: oldEdge.id,
+            source: newSource,
+            target: newTarget,
+            sourceHandle,
+            targetHandle,
+            type: "custom",
+          },
+        ],
+        isDirty: true,
+        canUndo: true,
+        canRedo: false,
+      });
+    } else {
+      pushUndo({ nodes, edges });
+      set({
+        edges: edges.map((e) =>
+          e.id === oldEdge.id
+            ? {
+                id: e.id,
+                source: newSource,
+                target: newTarget,
+                sourceHandle,
+                targetHandle,
+                type: "custom",
+              }
+            : e,
+        ),
+        isDirty: true,
+        canUndo: true,
+        canRedo: false,
+      });
     }
     setTimeout(() => {
       const state = get();

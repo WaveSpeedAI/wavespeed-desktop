@@ -28,6 +28,9 @@ export interface HistoryItem {
   created_at: string;
   execution_time?: number;
   has_nsfw_contents?: boolean[];
+  // API may return inputs alongside history items
+  inputs?: Record<string, unknown>;
+  input?: Record<string, unknown>;
 }
 
 export interface HistoryResponse {

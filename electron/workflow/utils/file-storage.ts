@@ -13,11 +13,9 @@
  *
  * workflow.db sits at the root level.
  */
-import { app } from "electron";
+import { app, net } from "electron";
 import * as path from "path";
 import * as fs from "fs";
-import https from "https";
-import http from "http";
 import type { GraphDefinition } from "../../../src/workflow/types/workflow";
 
 const ROOT_DIR_NAME = "workflow-data";
@@ -269,41 +267,13 @@ export class FileStorageService {
     return filePath;
   }
 
-  private downloadFile(url: string, dest: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const proto = url.startsWith("https") ? https : http;
-      const file = fs.createWriteStream(dest);
-      proto
-        .get(url, (response) => {
-          // Follow redirects
-          if (
-            response.statusCode &&
-            response.statusCode >= 300 &&
-            response.statusCode < 400 &&
-            response.headers.location
-          ) {
-            file.close();
-            fs.unlinkSync(dest);
-            this.downloadFile(response.headers.location, dest)
-              .then(resolve)
-              .catch(reject);
-            return;
-          }
-          response.pipe(file);
-          file.on("finish", () => {
-            file.close();
-            resolve();
-          });
-          file.on("error", (err) => {
-            fs.unlinkSync(dest);
-            reject(err);
-          });
-        })
-        .on("error", (err) => {
-          fs.unlinkSync(dest);
-          reject(err);
-        });
-    });
+  private async downloadFile(url: string, dest: string): Promise<void> {
+    const response = await net.fetch(url);
+    if (!response.ok) {
+      throw new Error(`Download failed: HTTP ${response.status}`);
+    }
+    const buffer = Buffer.from(await response.arrayBuffer());
+    fs.writeFileSync(dest, buffer);
   }
 
   /* ─── User uploads ──────────────────────────────────────────── */

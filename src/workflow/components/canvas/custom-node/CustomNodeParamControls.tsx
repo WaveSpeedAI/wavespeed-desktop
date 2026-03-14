@@ -5,7 +5,7 @@
  */
 import { useState, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { apiClient } from "@/api/client";
+import { workflowClient } from "@/api/client";
 import { useWorkflowStore } from "../../../stores/workflow.store";
 import { Paintbrush, Dices } from "lucide-react";
 import { MaskEditor } from "@/components/playground/MaskEditor";
@@ -409,7 +409,7 @@ export function MediaRow({
     setUploadState("uploading");
     setUploadError("");
     try {
-      const url = await apiClient.uploadFile(file);
+      const url = await workflowClient.uploadFile(file);
       cb(url);
       setUploadState("success");
       setTimeout(() => setUploadState("idle"), 2000);

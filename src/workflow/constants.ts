@@ -1,7 +1,6 @@
 /**
  * Shared constants for workflow module.
  */
-
 import type { NodeStatus, EdgeStatus } from "./types/execution";
 
 /** Top status bar color */
@@ -38,9 +37,12 @@ export const DEFAULT_BUDGET = {
 export const MAX_RETRIES = 3;
 export const RETRY_BACKOFF_BASE_MS = 1000;
 export const MAX_PARALLEL_EXECUTIONS = 5;
+
 export const DB_FILENAME = "workflow.db";
 export const ARTIFACTS_DIR = "workflow-data";
+
 export const WAVESPEED_API_BASE = "https://api.wavespeed.ai";
+
 export const TASK_TIMEOUT_MS = 30 * 60 * 1000;
 export const TASK_POLL_INTERVAL_MS = 3000;
 export const MODEL_CACHE_TTL_MS = 24 * 60 * 60 * 1000;

@@ -40,7 +40,8 @@
     "showMore": "展开更多",
     "showLess": "收起",
     "show": "显示",
-    "hide": "隐藏"
+    "hide": "隐藏",
+    "customize": "自定义"
   },
   "nav": {
     "home": "首页",
@@ -135,6 +136,7 @@
     "selectModelPrompt": "选择一个模型以配置参数",
     "run": "运行",
     "running": "运行中...",
+    "abort": "中止",
     "stop": "停止",
     "parameters": "参数",
     "output": "输出",
@@ -1130,6 +1132,9 @@
     "exportFailed": "导出失败",
     "estimated": "预估",
     "fitView": "适配视图",
+    "toggleGrid": "切换网格",
+    "zoomIn": "放大",
+    "zoomOut": "缩小",
     "autoLayout": "整理布局",
     "freeToolModelHint": "首次运行时将自动下载 AI 模型，请耐心等待",
     "more": "更多",

@@ -215,6 +215,8 @@ npm run build:all    # Build for all platforms
 - Use `cn()` utility for conditional classNames
 - Store state in Zustand stores, not in components
 - API client timeout is 60 seconds
+- Pre-commit hook runs `npx prettier --check` on ts/tsx/css files (configured via `.pre-commit-config.yaml`)
+- Run `pre-commit install` after cloning to enable the hook
 
 ## Testing API Key
 
@@ -330,3 +332,14 @@ The app converts API schema properties to form fields using `src/lib/schemaToFor
 - Face Swapper uses 10% padding for face cropping (configurable in worker)
 - Face Swapper models are cached in browser Cache API after first download from Hugging Face
 - OutputDisplay limits image/video upscaling to 2x natural size to prevent pixelation on small outputs
+- API client uses unlimited retry on connection errors during polling with 10s max backoff (no MAX_CONSECUTIVE_ERRORS limit)
+- All Electron main-process downloads use `net.fetch()` (not Node.js http/https) to respect system proxy settings
+- Abort button in playground: appears after 0.5s delay (blue spinner → red abort transition via `abortReady` state in BatchControls); AbortController stored in module-level Map in playgroundStore
+- Auto-save shows error toast when save fails (tracks savedCount/failedCount in OutputDisplay)
+- Model selector scrolls to the currently selected model when opened (via `data-selected` attribute + `scrollIntoView`)
+- Model selector shows filled yellow star icon for favorite models (uses `isFavorite` from modelsStore)
+- Titlebar WebPage/Documentation links are dynamic: when on playground with a model selected, WebPage links to `https://wavespeed.ai/models/{model_id}`, Documentation links to `https://wavespeed.ai/docs/docs-api/{owner}/{model_id_with_dashes}`
+- History drawer (recent generations) expand/collapse state is persisted in localStorage key `historyDrawerExpanded`
+- Sidebar collapse state is persisted in localStorage key `sidebarCollapsed`
+- Playground tabs display raw model_id (no formatting), wider max-width (240px)
+- Workflow tabs wider max-width (240px)

@@ -6,7 +6,7 @@
  */
 import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { apiClient } from "@/api/client";
+import { workflowClient } from "@/api/client";
 import { WorkflowPromptOptimizer } from "../WorkflowPromptOptimizer";
 import { CompInput } from "../composition-input";
 import { FormField } from "@/components/playground/FormField";
@@ -59,7 +59,7 @@ export function MediaUploadBody({
       mediaType: localMediaType,
     });
     try {
-      const url = await apiClient.uploadFile(file);
+      const url = await workflowClient.uploadFile(file);
       // Revoke blob URL and replace with CDN URL
       URL.revokeObjectURL(blobUrl);
       onBatchChange({
@@ -457,7 +457,7 @@ export function TextInputBody({
         lastManualOptimizedText: _manual,
         ...settingsForApi
       } = optimizerSettings;
-      const optimized = await apiClient.optimizePrompt({
+      const optimized = await workflowClient.optimizePrompt({
         ...settingsForApi,
         text,
       });

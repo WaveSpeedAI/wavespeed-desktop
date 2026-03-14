@@ -40,7 +40,8 @@
     "showMore": "Show more",
     "showLess": "Show less",
     "show": "Show",
-    "hide": "Hide"
+    "hide": "Hide",
+    "customize": "Customize"
   },
   "nav": {
     "home": "Home",
@@ -135,6 +136,7 @@
     "selectModelPrompt": "Select a model to configure parameters",
     "run": "Run",
     "running": "Running...",
+    "abort": "Abort",
     "stop": "Stop",
     "parameters": "Parameters",
     "output": "Output",
@@ -151,7 +153,7 @@
     "savedAs": "Saved as \"{{name}}\"",
     "resetForm": "Reset form",
     "webPage": "WebPage",
-    "docs": "Docs",
+    "docs": "Documentation",
     "noTabs": "No playground tabs open",
     "openSessions": "Open Sessions",
     "workspace": "Workspace",
@@ -1138,6 +1140,7 @@
     "exportFailed": "Export failed",
     "estimated": "Est.",
     "fitView": "Fit View",
+    "toggleGrid": "Toggle Grid",
     "zoomIn": "Zoom in",
     "zoomOut": "Zoom out",
     "autoLayout": "Auto Layout",

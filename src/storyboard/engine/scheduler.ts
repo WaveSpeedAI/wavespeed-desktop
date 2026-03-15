@@ -16,6 +16,7 @@ import type {
 import { useAgentActivityStore } from "../stores/agent-activity.store";
 import { generateImage, generateVideo } from "../models/generation-client";
 import { IMAGE_EDIT_MODEL, VIDEO_I2V_MODEL } from "../models/model-config";
+import type { Character } from "../types";
 
 const MAX_CONCURRENCY = 3;
 
@@ -23,6 +24,8 @@ const MAX_CONCURRENCY = 3;
 
 export interface ExecutionContext {
   assets: Map<string, string>;
+  /** Character anchor reference images: characterId → imageUrl */
+  characterAnchors: Map<string, string>;
   phaseId: string;
   onShotComplete?: (shotId: string, videoUrl: string) => void;
   onShotFailed?: (shotId: string, error: string) => void;
@@ -178,14 +181,43 @@ export async function executePlan(
     onShotComplete?: (shotId: string, videoUrl: string) => void;
     onShotFailed?: (shotId: string, error: string) => void;
   },
+  characters?: Character[],
 ): Promise<ExecutionResult> {
   const activity = useAgentActivityStore.getState();
   const ctx: ExecutionContext = {
     assets: new Map(),
+    characterAnchors: new Map(),
     phaseId,
     onShotComplete: callbacks?.onShotComplete,
     onShotFailed: callbacks?.onShotFailed,
   };
+
+  // ── Phase 0: Anchor Generation (character reference images) ──
+  if (characters && characters.length > 0) {
+    const anchorPhaseId = activity.startPhase("Anchor Generation");
+    const anchorTaskId = activity.startTask(anchorPhaseId, "asset", "Asset Agent: generating character reference images");
+    activity.appendStream(anchorTaskId, `Generating anchors for ${characters.length} characters...\n`);
+
+    const anchorTasks = characters
+      .filter((c) => c.visual_anchor?.anchor_prompt)
+      .map((c) => async () => {
+        try {
+          const result = await generateImage(c.visual_anchor!.anchor_prompt, {
+            imageSize: "1024x1024",
+            seed: 42,
+            phaseId: anchorPhaseId,
+          });
+          ctx.characterAnchors.set(c.character_id, result.outputUrl);
+          activity.appendStream(anchorTaskId, `✅ ${c.name} anchor ready\n`);
+        } catch (err: any) {
+          activity.appendStream(anchorTaskId, `⚠ ${c.name} anchor failed: ${err.message}\n`);
+        }
+      });
+
+    await runWithConcurrency(anchorTasks, MAX_CONCURRENCY);
+    activity.completeTask(anchorTaskId, `${ctx.characterAnchors.size} anchors generated`);
+    activity.completePhase(anchorPhaseId);
+  }
 
   // ── Phase 1: Asset Generation (all parallel) ──
   const kfPhaseId = activity.startPhase("Asset Generation");

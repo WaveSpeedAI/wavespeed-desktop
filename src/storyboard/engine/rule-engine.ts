@@ -1,18 +1,19 @@
 /**
- * Rule Engine (Stage 4) — V5: CV & AI Hybrid Computation Pipeline.
+ * Rule Engine (Stage 4) — V6: CV & AI Hybrid Computation Pipeline.
  * Pure code, zero LLM calls.
  *
- * Architecture:
- * 1. State-aware lazy generation with cache reuse
- * 2. Multi-character collage with perspective-aware placement
- * 3. Adaptive denoising strength based on image analytics
- * 4. Mid-action keyframe generation (off-balance poses)
- * 5. Motion-vector-enriched video prompts
+ * V6 enhancements:
+ * - DID global prefix injected into all prompts
+ * - Focal length → perspective keywords in prompt assembly
+ * - Lighting intent → prompt keywords
+ * - Director Rules Validator integration point
  */
 import type {
   Shot, Scene, Character,
   SubjectMotion,
 } from "../types";
+import type { DirectorIntent } from "../types/director-intent";
+import { buildDIDPrefix, focalLengthToKeywords, compositionToKeywords, lightingToKeywords } from "./prompt-builder";
 
 /* ── Constants ─────────────────────────────────────────── */
 
@@ -154,14 +155,17 @@ function calculateDenoising(
 
 /**
  * Assemble a single-subject reference image prompt.
- * Uses immutable_traits + selected mutable_states + mid_action from motion vector.
- * The subject is generated ALONE on a neutral background for clean cutout.
+ * V6: Includes DID global prefix for visual consistency.
  */
 function assembleSubjectPrompt(
   char: Character,
   motion: SubjectMotion | undefined,
+  didPrefix?: string,
 ): string {
   const parts: string[] = [];
+
+  // V6: DID global prefix
+  if (didPrefix) parts.push(didPrefix);
 
   // Immutable core
   if (char.immutable_traits?.core_visual) {
@@ -193,26 +197,41 @@ function assembleSubjectPrompt(
     parts.push(char.immutable_traits.art_style);
   }
 
-  // Clean background for cutout
-  parts.push("plain white background, full body, isolated subject");
+  // Clean background for cutout — enhanced with lighting note for better compositing
+  parts.push("plain white background, full body visible, isolated subject, even studio lighting, clean edges for compositing");
 
   return parts.join(", ");
 }
 
 /**
  * Assemble the full keyframe prompt for single-subject shots (no collage needed).
- * Combines subject + scene + motion into one generation prompt.
+ * V6: Includes DID prefix + focal length + composition + lighting keywords.
  */
 function assembleDirectKeyframePrompt(
   shot: Shot,
   imagePrompt: string,
   characters: Character[],
   scenes: Scene[],
+  didPrefix?: string,
 ): string {
   const bfr = shot.base_frame_request;
   if (!bfr?.pose_or_angle) return imagePrompt;
 
   const parts: string[] = [];
+
+  // V6: DID global prefix
+  if (didPrefix) parts.push(didPrefix);
+
+  // V6: Focal length keywords
+  if (shot.focal_length_intent) {
+    parts.push(focalLengthToKeywords(shot.focal_length_intent.equivalent_mm, shot.focal_length_intent.depth_of_field));
+  }
+
+  // V6: Composition keywords
+  if (shot.composition) {
+    parts.push(compositionToKeywords(shot.composition.rule, shot.composition.subject_placement));
+  }
+
   const shotChars = characters.filter((c) => shot.character_ids.includes(c.character_id));
 
   // Subject visuals with motion state
@@ -241,23 +260,41 @@ function assembleDirectKeyframePrompt(
   if (scene?.visual_prompt) parts.push(scene.visual_prompt);
   if (scene?.perspective_hint) parts.push(scene.perspective_hint);
 
+  // V6: Lighting intent keywords
+  if (shot.lighting_intent) {
+    parts.push(lightingToKeywords(shot.lighting_intent.style, shot.lighting_intent.motivation));
+  }
+
   // Environmental motion (frozen)
   if (shot.env_motion?.description) {
     parts.push(shot.env_motion.description + " frozen mid-air");
   }
 
-  // Shot framing
+  // Shot framing with atmospheric cues
   const framingHints: Record<string, string> = {
-    wide: "wide shot, full scene visible",
-    medium: "medium shot, waist up",
-    close_up: "close up shot",
-    extreme_close_up: "extreme close up, macro detail",
-    over_shoulder: "over the shoulder shot",
-    pov: "first person point of view",
-    aerial: "aerial view, bird's eye",
+    wide: "wide shot, full scene visible, atmospheric depth layers",
+    medium: "medium shot, waist up, environmental context visible",
+    close_up: "close up shot, fine detail visible, skin texture",
+    extreme_close_up: "extreme close up, macro detail, surface texture prominent",
+    over_shoulder: "over the shoulder shot, depth separation between foreground and background",
+    pov: "first person point of view, immersive perspective",
+    aerial: "aerial view, bird's eye, atmospheric haze between layers",
   };
   const framing = framingHints[shot.shot_type];
   if (framing) parts.push(framing);
+
+  // Emotion-driven atmospheric modifier
+  const emotionAtmosphere: Record<string, string> = {
+    tense: "taut atmosphere, sharp contrasts",
+    joyful: "warm luminous atmosphere, soft highlights",
+    melancholy: "muted tones, diffused light, gentle grain",
+    explosive: "high energy, motion blur traces, particle effects",
+    mysterious: "obscured details, volumetric fog, partial shadows",
+    romantic: "soft glow, warm diffusion, lens flare hints",
+    horror: "desaturated, harsh shadows, unnatural angles",
+  };
+  const emotionMod = emotionAtmosphere[shot.emotion_tag];
+  if (emotionMod) parts.push(emotionMod);
 
   return parts.join(", ");
 }
@@ -279,6 +316,7 @@ function buildShotPlan(
   characters: Character[],
   scenes: Scene[],
   allShots: Shot[],
+  didPrefix?: string,
 ): ShotExecutionPlan {
   const steps: ExecutionStep[] = [];
   const shotChars = characters.filter((c) => shot.character_ids.includes(c.character_id));
@@ -309,7 +347,7 @@ function buildShotPlan(
 
       steps.push({
         step_type: "generate_image",
-        prompt: assembleSubjectPrompt(char, motion),
+        prompt: assembleSubjectPrompt(char, motion, didPrefix),
         negative_prompt: `${DEFAULT_NEGATIVE_PROMPT}, ${char.visual_negative || ""}, background, scenery`,
         output_key: sKey,
         image_size: "1280x720",
@@ -356,7 +394,7 @@ function buildShotPlan(
 
   } else {
     // ── SINGLE/ZERO SUBJECT: direct keyframe generation ──
-    const directPrompt = assembleDirectKeyframePrompt(shot, prompts.image_prompt, characters, scenes);
+    const directPrompt = assembleDirectKeyframePrompt(shot, prompts.image_prompt, characters, scenes, didPrefix);
 
     steps.push({
       step_type: shotChars.length === 0 ? "generate_scene" : "generate_image",
@@ -469,15 +507,17 @@ export function buildExecutionPlan(
   promptMap: Map<string, ShotPrompts>,
   characters: Character[],
   scenes: Scene[],
+  did?: DirectorIntent,
 ): FullExecutionPlan {
   const sortedShots = [...shots].sort((a, b) => a.sequence_number - b.sequence_number);
+  const didPrefix = buildDIDPrefix(did);
 
   const shot_plans = sortedShots.map((shot) => {
     const prompts = promptMap.get(shot.shot_id) ?? {
       image_prompt: shot.generation_prompt || shot.action_description,
       video_prompt: shot.action_description,
     };
-    return buildShotPlan(shot, prompts, characters, scenes, shots);
+    return buildShotPlan(shot, prompts, characters, scenes, shots, didPrefix);
   });
 
   // Extract all image generation steps as parallelizable asset_steps

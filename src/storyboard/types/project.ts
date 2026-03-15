@@ -62,6 +62,14 @@ export interface MutableStates {
   pose_class: string[];  // e.g. ["standing neutral", "fighting stance", "mid-air leap"]
 }
 
+/** V6: Visual anchor for reference image generation */
+export interface VisualAnchor {
+  /** Fixed reference pose for generating the canonical reference image */
+  reference_pose: string;
+  /** Prompt optimized specifically for generating the reference image (white bg, standard lighting) */
+  anchor_prompt: string;
+}
+
 export interface Character {
   character_id: string;
   project_id: string;
@@ -82,4 +90,10 @@ export interface Character {
   immutable_traits?: ImmutableTraits;
   /** V5: Mutable state pool — pre-defined visual variations */
   mutable_states?: MutableStates;
+  /** V6: Visual anchor for reference image generation */
+  visual_anchor?: VisualAnchor;
+  /** V6: Face framing recommendation (e.g. "85mm+ for close-ups") */
+  face_framing_note?: string;
+  /** V6: Default screen direction for 180-degree line management */
+  screen_direction_default?: "enters_from_left" | "enters_from_right";
 }

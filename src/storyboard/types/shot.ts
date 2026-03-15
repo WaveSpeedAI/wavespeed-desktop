@@ -60,7 +60,10 @@ export type TransitionType =
   | "fade"
   | "dissolve"
   | "wipe"
-  | "match_cut";
+  | "match_cut"
+  | "whip_pan"
+  | "dip_to_black"
+  | "sound_bridge";
 
 export type GenerationStatus =
   | "pending"
@@ -111,6 +114,88 @@ export interface EnvMotion {
   direction: string;
 }
 
+/* ── V6: Cinematography Types ──────────────────────────── */
+
+export type CompositionRule =
+  | "rule_of_thirds"
+  | "center"
+  | "diagonal"
+  | "symmetry"
+  | "frame_within_frame"
+  | "golden_ratio";
+
+export type SubjectPlacement =
+  | "left_third"
+  | "right_third"
+  | "center"
+  | "bottom_third"
+  | "top_third"
+  | "full_frame";
+
+export type LightDirection =
+  | "screen_left"
+  | "screen_right"
+  | "top"
+  | "back"
+  | "bottom"
+  | "front";
+
+export type LightStyle =
+  | "rembrandt"
+  | "silhouette"
+  | "flat"
+  | "chiaroscuro"
+  | "motivated_practical";
+
+export type RhythmRole =
+  | "establishing"
+  | "building"
+  | "peak"
+  | "release"
+  | "breathing";
+
+export interface FocalLengthIntent {
+  equivalent_mm: number;
+  purpose: string;
+  depth_of_field: "shallow" | "moderate" | "deep";
+}
+
+export interface ShotComposition {
+  rule: CompositionRule;
+  subject_placement: SubjectPlacement;
+  leading_lines: string | null;
+  negative_space: string | null;
+}
+
+export interface ScreenDirection {
+  subject_facing: "left" | "right";
+  movement_direction: "left_to_right" | "right_to_left" | "toward_camera" | "away";
+}
+
+export interface SpatialContinuity {
+  /** Which side of the 180-degree line the camera is on */
+  camera_side: "A" | "B";
+  /** Angle delta from previous shot in degrees (for 30-degree rule) */
+  angle_delta_from_prev: number | null;
+  /** What the subject is looking at (for eyeline match) */
+  eyeline_target: string | null;
+}
+
+export interface TransitionDetail {
+  type: TransitionType;
+  /** Match element for match_cut (e.g. "blood droplet → rain drop") */
+  match_element: string | null;
+  /** Visual bridge description for cross-scene transitions */
+  visual_bridge: string | null;
+}
+
+export interface LightingIntent {
+  key_light_direction: LightDirection;
+  style: LightStyle;
+  /** What motivates the light (e.g. "lantern on left wall") */
+  motivation: string;
+}
+
 export interface Shot {
   shot_id: string;
   project_id: string;
@@ -144,6 +229,24 @@ export interface Shot {
   // Strategy fields (populated before generation)
   strategy?: ShotStrategy;
   user_strategy_override?: Partial<ShotStrategy>;
+
+  // ── V6: Cinematography fields ──
+  /** Focal length intent — lens choice with purpose */
+  focal_length_intent?: FocalLengthIntent;
+  /** Composition rule and subject placement */
+  composition?: ShotComposition;
+  /** Role in the rhythm/pacing curve */
+  rhythm_role?: RhythmRole;
+  /** Index into DID.emotional_arc.beats */
+  emotional_beat_index?: number;
+  /** Screen direction for 180-degree line management */
+  screen_direction?: ScreenDirection;
+  /** Spatial continuity constraints */
+  spatial_continuity?: SpatialContinuity;
+  /** Rich transition detail (replaces simple transition_to_next for rendering) */
+  transition_detail?: TransitionDetail;
+  /** Per-shot lighting intent */
+  lighting_intent?: LightingIntent;
 }
 
 export interface Scene {
@@ -163,6 +266,18 @@ export interface Scene {
   version: number;
   /** V5: Spatial perspective constraint for affine transforms */
   perspective_hint?: string;
+
+  // ── V6: Visual continuity fields ──
+  /** Color temperature — must align with DID.visual_identity.color_palette */
+  color_temperature?: "warm" | "neutral" | "cool";
+  /** Primary light source position and type */
+  dominant_light_source?: string;
+  /** Weather continuity marker (prevents rain in some shots, sun in others) */
+  weather_continuity?: string;
+  /** Visual hint for how this scene ends (for cross-scene bridging) */
+  exit_visual_hint?: string;
+  /** Visual hint for how this scene opens (for cross-scene bridging) */
+  entry_visual_hint?: string;
 }
 
 export interface DependencyEdge {

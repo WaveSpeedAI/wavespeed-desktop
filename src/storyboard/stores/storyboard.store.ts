@@ -24,6 +24,8 @@ import {
   generateSceneCards,
   generateShotSequence,
   translatePrompts,
+  generateDirectorIntent,
+  composeFinalPrompt,
 } from "../agents/pipeline";
 import { modifyShotStreaming } from "../agents/story-agent";
 import { setDeepSeekApiKey, setDeepSeekBaseUrl, setDeepSeekModel } from "../api/deepseek";
@@ -31,8 +33,11 @@ import { useAgentActivityStore } from "./agent-activity.store";
 import { DEFAULT_MODELS, type ModelCategory, type ModelOption } from "../models/model-config";
 import { ffmpegMerge } from "@/workflow/browser/ffmpeg-helpers";
 import type { CharacterStatus } from "../types";
+import type { DirectorIntent } from "../types/director-intent";
+import type { FinalVideoPrompt } from "../engine/final-prompt-composer";
 import { buildExecutionPlan, type ShotPrompts } from "../engine/rule-engine";
 import { executePlan } from "../engine/scheduler";
+import { validateDirectorRules } from "../engine/director-validator";
 
 export interface ChatMessage {
   id: string;
@@ -52,6 +57,10 @@ interface StoryboardState {
   edges: DependencyEdge[];
   editHistory: EditHistoryEntry[];
   chatMessages: ChatMessage[];
+  /** V6: Director's Intent Document — global constraint anchor */
+  directorIntent: DirectorIntent | null;
+  /** V6: Final composed video prompt from Stage 3.75 */
+  finalVideoPrompt: FinalVideoPrompt | null;
 
   // UI state
   selectedShotId: string | null;
@@ -110,8 +119,14 @@ const defaultAudioProfile: AudioProfile = {
 
 /**
  * Extract target duration from user prompt.
- * Supports: "20s", "20 seconds", "2min", "1.5 minutes", and CJK equivalents
- * Falls back to 30s for short-form hints, 60s otherwise.
+ * Supports: "20s", "20 seconds", "2min", "1.5 minutes", and CJK equivalents.
+ * Duration is SACRED — user intent takes absolute priority.
+ *
+ * Fallback heuristics (only when user doesn't specify):
+ * - Short-form keywords → 10s
+ * - Medium-form keywords → 30s
+ * - Long-form keywords → 60s
+ * - Default → 14s
  */
 function extractDuration(prompt: string): number {
   // Match seconds patterns (including CJK)
@@ -122,8 +137,22 @@ function extractDuration(prompt: string): number {
   const minMatch = prompt.match(/(\d+(?:\.\d+)?)\s*(?:分钟|min(?:utes?)?|mins?)\b/i);
   if (minMatch) return Math.max(4, Math.min(600, parseFloat(minMatch[1]) * 60));
 
-  // Heuristic: short video keywords -> 14s, otherwise 14s (default changed from 60s)
-  if (/短视频|短片|short|brief|快速/i.test(prompt)) return 14;
+  // Match bare numbers followed by duration context (e.g. "做一个20的视频")
+  const bareNumMatch = prompt.match(/(\d+(?:\.\d+)?)\s*(?:的视频|的片子|video)/i);
+  if (bareNumMatch) {
+    const val = parseFloat(bareNumMatch[1]);
+    // If > 4, treat as seconds; if <= 4, treat as minutes
+    if (val > 4) return Math.max(4, Math.min(600, val));
+    return Math.max(4, Math.min(600, val * 60));
+  }
+
+  // Heuristic: short video keywords → 10s
+  if (/短视频|短片|short|brief|快速|片段|clip/i.test(prompt)) return 10;
+  // Heuristic: long video keywords → 60s
+  if (/长视频|长片|long|完整|full|电影|movie|film/i.test(prompt)) return 60;
+  // Heuristic: medium keywords → 30s
+  if (/中等|medium|trailer|预告|宣传/i.test(prompt)) return 30;
+
   return 14;
 }
 
@@ -161,6 +190,8 @@ export const useStoryboardStore = create<StoryboardState>((set, get) => ({
   edges: [],
   editHistory: [],
   chatMessages: [],
+  directorIntent: null,
+  finalVideoPrompt: null,
   selectedShotId: null,
   selectedCharacterId: null,
   selectedSceneId: null,
@@ -269,27 +300,52 @@ export const useStoryboardStore = create<StoryboardState>((set, get) => ({
           base_frame_request: s.base_frame_request ?? { subject_names: charNames, pose_or_angle: s.action_description, scene_context: "" },
           subject_motions: s.subject_motions ?? undefined,
           env_motion: s.env_motion ?? undefined,
+          // V6 cinematography fields
+          focal_length_intent: s.focal_length_intent ?? undefined,
+          composition: s.composition ?? undefined,
+          rhythm_role: s.rhythm_role ?? undefined,
+          emotional_beat_index: s.emotional_beat_index ?? undefined,
+          screen_direction: s.screen_direction ?? undefined,
+          spatial_continuity: s.spatial_continuity ?? undefined,
+          transition_detail: s.transition_detail ?? undefined,
+          lighting_intent: s.lighting_intent ?? undefined,
         };
       });
 
       const promptPhaseId = activityStore.startPhase("Prompt Translation");
-      const promptDrafts = await translatePrompts(shotDrafts, charDrafts, sceneDrafts, promptPhaseId);
+      const promptDrafts = await translatePrompts(shotDrafts, charDrafts, sceneDrafts, state.directorIntent ?? {} as DirectorIntent, promptPhaseId);
       activityStore.completePhase(promptPhaseId);
 
+      // ── Stage 3.75: Final Prompt Composer ──
+      const composerPhaseId = activityStore.startPhase("Final Prompt Composer");
+      const finalPrompt = await composeFinalPrompt(
+        shotDrafts, promptDrafts, sceneDrafts,
+        state.directorIntent ?? undefined,
+        state.project?.target_duration ?? 14,
+        composerPhaseId,
+      );
+      activityStore.completePhase(composerPhaseId);
+      set({ finalVideoPrompt: finalPrompt });
+
       // Build prompt map: shot_id -> { image_prompt, video_prompt }
+      // V7: Each shot's video_prompt is now a complete 3-tier structured prompt
+      // composed by the Final Prompt Composer (Tier1 global + Tier2 segment + Tier3 micro-beats)
+      // The per-shot LLM-translated video_prompt is embedded within the micro-beats
       const promptMap = new Map<string, ShotPrompts>();
       for (const shot of pendingShots) {
         const draft = promptDrafts.find((p) => p.shot_sequence === shot.sequence_number);
         if (draft) {
+          // Use the 3-tier structured prompt if available, fallback to prefix + raw prompt
+          const structuredPrompt = finalPrompt.perShotPrompts?.get(shot.sequence_number);
           promptMap.set(shot.shot_id, {
             image_prompt: draft.image_prompt,
-            video_prompt: draft.video_prompt,
+            video_prompt: structuredPrompt || (finalPrompt.prefix + "\n" + draft.video_prompt),
           });
         }
       }
 
       // ── Stage 4: Rule Engine (pure code) ──
-      const plan = buildExecutionPlan(pendingShots, promptMap, state.characters, state.scenes);
+      const plan = buildExecutionPlan(pendingShots, promptMap, state.characters, state.scenes, state.directorIntent ?? undefined);
 
       // ── Stage 5: Execution ──
       const execPhaseId = activityStore.startPhase("Execution");
@@ -322,7 +378,7 @@ export const useStoryboardStore = create<StoryboardState>((set, get) => ({
             ),
           }));
         },
-      });
+      }, state.characters);
       activityStore.completePhase(execPhaseId);
 
       // ── Summary ──
@@ -476,10 +532,21 @@ export const useStoryboardStore = create<StoryboardState>((set, get) => ({
       // Override duration if router extracted a specific one
       const duration = intent.duration || targetDuration;
 
+      // ── Stage 0.5: Director's Intent Document ──
+      append(`\n🎬 正在构建导演意图文档...\n`);
+      const didPhaseId = activityStore.startPhase("Director's Intent");
+      const did = await generateDirectorIntent(intent, routerResult.normalized_brief, didPhaseId);
+      // Inject target_duration into DID — sacred constraint
+      did.target_duration = duration;
+      activityStore.completePhase(didPhaseId);
+      append(`  · 情绪弧线: ${did.emotional_arc.structure}\n`);
+      append(`  · 视觉风格: ${did.visual_identity.art_style_anchor.slice(0, 60)}...\n`);
+      append(`  · 节奏策略: ${did.rhythm_blueprint.pacing_strategy}\n`);
+
       // ── Stage 1: Character Cards ──
       append(`\n🎭 正在设计 ${intent.characters.length} 个角色...\n`);
       const charPhaseId = activityStore.startPhase("Character Design");
-      const characterDrafts = await generateCharacterCards(intent, charPhaseId);
+      const characterDrafts = await generateCharacterCards(intent, did, charPhaseId);
       activityStore.completePhase(charPhaseId);
       for (const c of characterDrafts) {
         append(`  · ${c.name} — ${c.personality}\n`);
@@ -488,7 +555,7 @@ export const useStoryboardStore = create<StoryboardState>((set, get) => ({
       // ── Stage 2: Scene Cards (serial dependency on Stage 1) ──
       append(`\n🏞 正在构建场景...\n`);
       const scenePhaseId = activityStore.startPhase("Scene Design");
-      const sceneDrafts = await generateSceneCards(intent, characterDrafts, scenePhaseId);
+      const sceneDrafts = await generateSceneCards(intent, characterDrafts, did, scenePhaseId);
       activityStore.completePhase(scenePhaseId);
 
       // Map drafts to domain entities
@@ -507,6 +574,9 @@ export const useStoryboardStore = create<StoryboardState>((set, get) => ({
         version: 1,
         immutable_traits: c.immutable_traits ?? undefined,
         mutable_states: c.mutable_states ?? undefined,
+        visual_anchor: c.visual_anchor ?? undefined,
+        face_framing_note: c.face_framing_note ?? undefined,
+        screen_direction_default: c.screen_direction_default ?? undefined,
       }));
 
       const scenes: Scene[] = sceneDrafts.map((s) => ({
@@ -523,6 +593,11 @@ export const useStoryboardStore = create<StoryboardState>((set, get) => ({
         anchor_image: null,
         version: 1,
         perspective_hint: s.perspective_hint ?? undefined,
+        color_temperature: s.color_temperature ?? undefined,
+        dominant_light_source: s.dominant_light_source ?? undefined,
+        weather_continuity: s.weather_continuity ?? undefined,
+        exit_visual_hint: s.exit_visual_hint ?? undefined,
+        entry_visual_hint: s.entry_visual_hint ?? undefined,
       }));
 
       // ── Parallel: Stage 2.5 (asset gen) || Stage 3 (shot sequence) ──
@@ -530,7 +605,7 @@ export const useStoryboardStore = create<StoryboardState>((set, get) => ({
       // Stage 3 runs now to get the shot sequence.
       append(`\n🎬 正在编排分镜序列...\n`);
       const shotPhaseId = activityStore.startPhase("Shot Sequence");
-      const shotResult = await generateShotSequence(intent, characterDrafts, sceneDrafts, shotPhaseId);
+      const shotResult = await generateShotSequence(intent, characterDrafts, sceneDrafts, did, shotPhaseId);
       activityStore.completePhase(shotPhaseId);
 
       // Map shot drafts to domain entities
@@ -554,7 +629,7 @@ export const useStoryboardStore = create<StoryboardState>((set, get) => ({
         emotion_tag: s.emotion_tag ?? "neutral",
         generation_prompt: "",
         negative_prompt: "",
-        transition_to_next: s.transition_to_next ?? "cut",
+        transition_to_next: s.transition_detail?.type ?? s.transition_to_next ?? "cut",
         is_key_shot: s.is_key_shot ?? false,
         dependencies: [],
         generation_status: "pending" as GenerationStatus,
@@ -568,6 +643,15 @@ export const useStoryboardStore = create<StoryboardState>((set, get) => ({
         base_frame_request: s.base_frame_request ?? undefined,
         subject_motions: s.subject_motions ?? undefined,
         env_motion: s.env_motion ?? undefined,
+        // V6 fields
+        focal_length_intent: s.focal_length_intent ?? undefined,
+        composition: s.composition ?? undefined,
+        rhythm_role: s.rhythm_role ?? undefined,
+        emotional_beat_index: s.emotional_beat_index ?? undefined,
+        screen_direction: s.screen_direction ?? undefined,
+        spatial_continuity: s.spatial_continuity ?? undefined,
+        transition_detail: s.transition_detail ?? undefined,
+        lighting_intent: s.lighting_intent ?? undefined,
       }));
 
       const edges = buildDependencyEdges(shots);
@@ -577,6 +661,13 @@ export const useStoryboardStore = create<StoryboardState>((set, get) => ({
 
       const totalDuration = shots.reduce((sum, s) => sum + s.duration, 0);
       const warnings = shotResult.warnings || [];
+
+      // ── V6: Director Rules Validation ──
+      const validation = validateDirectorRules(shots, scenes, did);
+      if (validation.warnings.length > 0) {
+        const dirWarnings = validation.warnings.map((w) => `[${w.code}] ${w.message}`);
+        warnings.push(...dirWarnings);
+      }
 
       // Finalize the streaming progress message
       append(`\n✅ 故事板就绪: ${characters.length} 角色 · ${scenes.length} 场景 · ${shots.length} 镜头 · ~${totalDuration}s`);
@@ -592,6 +683,7 @@ export const useStoryboardStore = create<StoryboardState>((set, get) => ({
         scenes,
         shots,
         edges,
+        directorIntent: did,
         isAgentWorking: false,
       });
     } catch (err: any) {
@@ -829,7 +921,7 @@ export const useStoryboardStore = create<StoryboardState>((set, get) => ({
     useAgentActivityStore.getState().reset();
     set({
       project: null, characters: [], scenes: [], shots: [], edges: [],
-      editHistory: [], chatMessages: [], selectedShotId: null,
+      editHistory: [], chatMessages: [], directorIntent: null, finalVideoPrompt: null, selectedShotId: null,
       selectedCharacterId: null, selectedSceneId: null,
       isAgentWorking: false, error: null,
       assembledVideoUrl: null, isAssembling: false, assembleError: null,

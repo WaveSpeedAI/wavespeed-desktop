@@ -1,5 +1,9 @@
 /**
  * SQLite database schema definitions and migrations (sql.js version).
+ *
+ * Uses named migrations instead of sequential version numbers to avoid
+ * conflicts when multiple branches define migrations independently.
+ * Each migration has a unique string ID and an idempotent apply function.
  */
 
 import type { Database as SqlJsDatabase } from "sql.js";
@@ -7,9 +11,87 @@ import type { Database as SqlJsDatabase } from "sql.js";
 const DEFAULT_PER_EXECUTION_LIMIT = 10.0;
 const DEFAULT_DAILY_LIMIT = 100.0;
 
+/** Map old numeric versions to the named migration IDs they correspond to. */
+const LEGACY_VERSION_MAP: Record<number, string[]> = {
+  1: ["001_initial_schema"],
+  2: ["001_initial_schema", "002_add_templates"],
+  3: ["001_initial_schema", "002_add_templates"],
+};
+
+interface NamedMigration {
+  id: string;
+  apply: (db: SqlJsDatabase) => void;
+}
+
+/**
+ * All migrations in order. Each `apply` MUST be idempotent so that
+ * re-running a migration on a database that already has the change
+ * is safe (e.g. use IF NOT EXISTS, check columns before ALTER).
+ */
+const migrations: NamedMigration[] = [
+  {
+    id: "001_initial_schema",
+    apply: (_db: SqlJsDatabase) => {
+      // Handled by initializeSchema — listed here for completeness.
+    },
+  },
+  {
+    id: "002_add_templates",
+    apply: (db: SqlJsDatabase) => {
+      console.log("[Schema] Applying migration: 002_add_templates");
+      db.run(`CREATE TABLE IF NOT EXISTS templates (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT,
+        tags TEXT,
+        type TEXT NOT NULL CHECK (type IN ('public', 'custom')),
+        template_type TEXT NOT NULL CHECK (template_type IN ('playground', 'workflow')),
+        is_favorite INTEGER NOT NULL DEFAULT 0 CHECK (is_favorite IN (0, 1)),
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+        author TEXT,
+        use_count INTEGER NOT NULL DEFAULT 0,
+        thumbnail TEXT,
+        playground_data TEXT,
+        workflow_data TEXT
+      )`);
+
+      db.run(
+        "CREATE INDEX IF NOT EXISTS idx_templates_type ON templates(type)",
+      );
+      db.run(
+        "CREATE INDEX IF NOT EXISTS idx_templates_template_type ON templates(template_type)",
+      );
+      db.run(
+        "CREATE INDEX IF NOT EXISTS idx_templates_favorite ON templates(is_favorite)",
+      );
+      db.run(
+        "CREATE INDEX IF NOT EXISTS idx_templates_created ON templates(created_at DESC)",
+      );
+      db.run(
+        "CREATE INDEX IF NOT EXISTS idx_templates_use_count ON templates(use_count DESC)",
+      );
+    },
+  },
+  {
+    id: "003_add_search_text",
+    apply: (db: SqlJsDatabase) => {
+      console.log("[Schema] Applying migration: 003_add_search_text");
+      const cols = db.exec("PRAGMA table_info(templates)");
+      const hasColumn = cols[0]?.values?.some(
+        (row) => row[1] === "search_text",
+      );
+      if (!hasColumn) {
+        db.run("ALTER TABLE templates ADD COLUMN search_text TEXT");
+      }
+    },
+  },
+];
+
 export function initializeSchema(db: SqlJsDatabase): void {
-  db.run(`CREATE TABLE IF NOT EXISTS schema_version (
-    version INTEGER PRIMARY KEY,
+  // Use the new named migrations table from the start
+  db.run(`CREATE TABLE IF NOT EXISTS schema_migrations (
+    id TEXT PRIMARY KEY,
     applied_at TEXT NOT NULL DEFAULT (datetime('now'))
   )`);
 
@@ -91,7 +173,8 @@ export function initializeSchema(db: SqlJsDatabase): void {
     use_count INTEGER NOT NULL DEFAULT 0,
     thumbnail TEXT,
     playground_data TEXT,
-    workflow_data TEXT
+    workflow_data TEXT,
+    search_text TEXT
   )`);
 
   // Indexes
@@ -144,64 +227,73 @@ export function initializeSchema(db: SqlJsDatabase): void {
   db.run(
     "INSERT OR IGNORE INTO api_keys (id, wavespeed_key, llm_key) VALUES (1, NULL, NULL)",
   );
-  db.run("INSERT OR IGNORE INTO schema_version (version) VALUES (1)");
+
+  // Mark all migrations as applied for a fresh database
+  for (const m of migrations) {
+    db.run("INSERT OR IGNORE INTO schema_migrations (id) VALUES (?)", [m.id]);
+  }
 }
 
 export function runMigrations(db: SqlJsDatabase): void {
-  const result = db.exec("SELECT MAX(version) as version FROM schema_version");
-  const currentVersion = (result[0]?.values?.[0]?.[0] as number) ?? 0;
+  // --- Step 1: Detect and upgrade from legacy numeric schema_version ---
+  const tables = db.exec(
+    "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('schema_version', 'schema_migrations')",
+  );
+  const tableNames = tables[0]?.values?.map((r) => r[0] as string) ?? [];
+  const hasLegacyTable = tableNames.includes("schema_version");
+  const hasNewTable = tableNames.includes("schema_migrations");
 
-  const migrations: Array<{
-    version: number;
-    apply: (db: SqlJsDatabase) => void;
-  }> = [
-    // Migration 2: Add templates table
-    {
-      version: 2,
-      apply: (db: SqlJsDatabase) => {
-        console.log("[Schema] Applying migration 2: Add templates table");
+  if (hasLegacyTable && !hasNewTable) {
+    // Migrate from old numeric system to named migrations
+    console.log(
+      "[Schema] Upgrading from legacy schema_version to named migrations",
+    );
 
-        db.run(`CREATE TABLE IF NOT EXISTS templates (
-          id TEXT PRIMARY KEY,
-          name TEXT NOT NULL,
-          description TEXT,
-          tags TEXT,
-          type TEXT NOT NULL CHECK (type IN ('public', 'custom')),
-          template_type TEXT NOT NULL CHECK (template_type IN ('playground', 'workflow')),
-          is_favorite INTEGER NOT NULL DEFAULT 0 CHECK (is_favorite IN (0, 1)),
-          created_at TEXT NOT NULL DEFAULT (datetime('now')),
-          updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-          author TEXT,
-          use_count INTEGER NOT NULL DEFAULT 0,
-          thumbnail TEXT,
-          playground_data TEXT,
-          workflow_data TEXT
-        )`);
+    const result = db.exec(
+      "SELECT MAX(version) as version FROM schema_version",
+    );
+    const legacyVersion = (result[0]?.values?.[0]?.[0] as number) ?? 0;
 
-        db.run(
-          "CREATE INDEX IF NOT EXISTS idx_templates_type ON templates(type)",
-        );
-        db.run(
-          "CREATE INDEX IF NOT EXISTS idx_templates_template_type ON templates(template_type)",
-        );
-        db.run(
-          "CREATE INDEX IF NOT EXISTS idx_templates_favorite ON templates(is_favorite)",
-        );
-        db.run(
-          "CREATE INDEX IF NOT EXISTS idx_templates_created ON templates(created_at DESC)",
-        );
-        db.run(
-          "CREATE INDEX IF NOT EXISTS idx_templates_use_count ON templates(use_count DESC)",
-        );
+    // Create the new table
+    db.run(`CREATE TABLE IF NOT EXISTS schema_migrations (
+      id TEXT PRIMARY KEY,
+      applied_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )`);
 
-        db.run("INSERT INTO schema_version (version) VALUES (2)");
-      },
-    },
-  ];
+    // Map old version number to known migration IDs
+    const knownApplied = LEGACY_VERSION_MAP[legacyVersion] ?? [
+      "001_initial_schema",
+    ];
+    for (const id of knownApplied) {
+      db.run("INSERT OR IGNORE INTO schema_migrations (id) VALUES (?)", [id]);
+    }
+
+    // Drop the old table
+    db.run("DROP TABLE IF EXISTS schema_version");
+  }
+
+  if (!hasLegacyTable && !hasNewTable) {
+    // No migration tracking at all — treat as version 1 (initial schema exists)
+    db.run(`CREATE TABLE IF NOT EXISTS schema_migrations (
+      id TEXT PRIMARY KEY,
+      applied_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )`);
+    db.run("INSERT OR IGNORE INTO schema_migrations (id) VALUES (?)", [
+      "001_initial_schema",
+    ]);
+  }
+
+  // --- Step 2: Run any missing migrations ---
+  const applied = db.exec("SELECT id FROM schema_migrations");
+  const appliedSet = new Set(
+    applied[0]?.values?.map((r) => r[0] as string) ?? [],
+  );
 
   for (const m of migrations) {
-    if (m.version > currentVersion) {
+    if (!appliedSet.has(m.id)) {
+      console.log(`[Schema] Running migration: ${m.id}`);
       m.apply(db);
+      db.run("INSERT INTO schema_migrations (id) VALUES (?)", [m.id]);
     }
   }
 }

@@ -4,6 +4,17 @@ import { Badge } from "@/components/ui/badge";
 import type { Model } from "@/types/model";
 
 const FEATURED_MODEL_FAMILIES = [
+  // ── Top row: poster cards (3:4) ──
+  {
+    name: "Nano Banana 2",
+    provider: "google",
+    description: "Next-gen text-to-image with improved quality and speed",
+    poster:
+      "https://static.wavespeed.ai/models/google/nano-banana-2/text-to-image/1772126604028089269_JhJR3cly.png",
+    primaryVariant: "google/nano-banana-2/text-to-image",
+    tags: ["Text-to-Image"],
+    ratio: "poster" as const,
+  },
   {
     name: "Nano Banana Pro",
     provider: "google",
@@ -15,26 +26,6 @@ const FEATURED_MODEL_FAMILIES = [
     ratio: "poster" as const,
   },
   {
-    name: "InfiniteTalk",
-    provider: "wavespeed-ai",
-    description: "Natural talking-head video from a single portrait photo",
-    poster:
-      "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1766575571686877852_Sckigeck.png",
-    primaryVariant: "wavespeed-ai/infinitetalk",
-    tags: ["Talking Head"],
-    ratio: "poster" as const,
-  },
-  {
-    name: "Wan Spicy",
-    provider: "wavespeed-ai",
-    description: "Artistic video generation with painterly, soft-toned visuals",
-    poster:
-      "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1766298334453523753_f975da96.png",
-    primaryVariant: "wavespeed-ai/wan-2.2-spicy/image-to-video",
-    tags: ["Artistic", "Soft", "Paint"],
-    ratio: "poster" as const,
-  },
-  {
     name: "Seedream 4.5",
     provider: "bytedance",
     description:
@@ -43,27 +34,27 @@ const FEATURED_MODEL_FAMILIES = [
       "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1764761216479761378_Yy864da9.png",
     primaryVariant: "bytedance/seedream-v4.5",
     tags: ["Photorealistic", "High Detail"],
-    isNew: true,
+    ratio: "poster" as const,
+  },
+  // ── Bottom row: square cards (1:1) ──
+  {
+    name: "Wan Spicy",
+    provider: "wavespeed-ai",
+    description: "Artistic video generation with painterly, soft-toned visuals",
+    poster:
+      "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1766298334453523753_f975da96.png",
+    primaryVariant: "wavespeed-ai/wan-2.2-spicy/image-to-video",
+    tags: ["Artistic", "Soft", "Paint"],
     ratio: "square" as const,
   },
   {
-    name: "Seedance 1.5 Pro",
-    provider: "bytedance",
-    description: "Cinematic video creation with breathtaking sci-fi aesthetics",
+    name: "InfiniteTalk",
+    provider: "wavespeed-ai",
+    description: "Natural talking-head video from a single portrait photo",
     poster:
-      "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1766494048998434655_qEMLsAI0.png",
-    primaryVariant: "bytedance/seedance-v1.5-pro/image-to-video",
-    tags: ["Sci-Fi", "Neon", "Future"],
-    ratio: "square" as const,
-  },
-  {
-    name: "Kling 2.6 Motion Control",
-    provider: "kwaivgi",
-    description: "Precise camera & motion-guided video generation",
-    poster:
-      "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1766519115490596160_Smusqomu.png",
-    primaryVariant: "kwaivgi/kling-v2.6-pro/motion-control",
-    tags: ["Motion", "Control"],
+      "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1766575571686877852_Sckigeck.png",
+    primaryVariant: "wavespeed-ai/infinitetalk",
+    tags: ["Talking Head"],
     ratio: "square" as const,
   },
   {
@@ -74,6 +65,16 @@ const FEATURED_MODEL_FAMILIES = [
       "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1758433474532574441_SkTQLIEA.jpeg",
     primaryVariant: "wavespeed-ai/wan-2.2/animate",
     tags: ["Animation"],
+    ratio: "square" as const,
+  },
+  {
+    name: "Kling 2.6 Motion Control",
+    provider: "kwaivgi",
+    description: "Precise camera & motion-guided video generation",
+    poster:
+      "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1766519115490596160_Smusqomu.png",
+    primaryVariant: "kwaivgi/kling-v2.6-pro/motion-control",
+    tags: ["Motion", "Control"],
     ratio: "square" as const,
   },
 ];

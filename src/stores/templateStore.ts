@@ -66,7 +66,11 @@ function applyFilter(
       (t) =>
         t.name.toLowerCase().includes(q) ||
         (t.description ?? "").toLowerCase().includes(q) ||
-        (t.tags ?? []).some((tag) => tag.toLowerCase().includes(q)),
+        (t.tags ?? []).some((tag) => tag.toLowerCase().includes(q)) ||
+        (t.playgroundData?.modelId ?? "").toLowerCase().includes(q) ||
+        (t.playgroundData?.modelName ?? "").toLowerCase().includes(q) ||
+        (t.workflowData?.category ?? "").toLowerCase().includes(q) ||
+        (t._searchText ?? "").toLowerCase().includes(q),
     );
   }
   if (filter.sortBy === "useCount")
@@ -219,6 +223,15 @@ async function browserTemplateInvoke<T = unknown>(
       }
       return undefined as T;
     }
+    case "template:queryNames": {
+      const { templateType: tType } = (args ?? {}) as { templateType?: string };
+      let names = templates.map((t) => t.name);
+      if (tType)
+        names = templates
+          .filter((t) => t.templateType === tType)
+          .map((t) => t.name);
+      return [...new Set(names)] as T;
+    }
     case "template:export": {
       const { ids } = (args ?? {}) as { ids?: string[] };
       const list = ids
@@ -234,32 +247,82 @@ async function browserTemplateInvoke<T = unknown>(
     case "template:import": {
       const { data, mode } = (args ?? {}) as {
         data: TemplateExport;
-        mode: "merge" | "replace";
+        mode: "merge" | "replace" | "rename";
       };
       if (!data?.templates || !Array.isArray(data.templates))
         throw new Error("Invalid import data");
-      let next = mode === "replace" ? [] : [...templates];
-      const existingKeys = new Set(
-        next.map((t) => `${t.templateType}:${t.name}`),
-      );
+
+      let next: Template[];
+      let replaced = 0;
+
+      if (mode === "replace") {
+        // Replace: delete existing custom templates that have the same name+type as imports
+        const importedTypes = new Set(
+          data.templates.map((t) => t.templateType),
+        );
+        const importNamesByType: Record<string, Set<string>> = {};
+        for (const t of data.templates) {
+          if (!importNamesByType[t.templateType])
+            importNamesByType[t.templateType] = new Set();
+          importNamesByType[t.templateType].add(t.name);
+        }
+        next = templates.filter((t) => {
+          if (t.type !== "custom" || !importedTypes.has(t.templateType))
+            return true;
+          const names = importNamesByType[t.templateType];
+          if (names?.has(t.name)) {
+            replaced++;
+            return false;
+          }
+          return true;
+        });
+      } else {
+        next = [...templates];
+      }
+
+      // Build live name sets per type
+      const namesByType: Record<string, Set<string>> = {};
+      for (const t of next) {
+        if (!namesByType[t.templateType])
+          namesByType[t.templateType] = new Set();
+        namesByType[t.templateType].add(t.name);
+      }
+
       let imported = 0;
+      let skipped = 0;
       for (const t of data.templates) {
-        const key = `${t.templateType}:${t.name}`;
-        if (existingKeys.has(key)) continue;
+        const typeNames = namesByType[t.templateType] ?? new Set();
+        let finalName = t.name;
+
+        if (typeNames.has(t.name)) {
+          if (mode === "merge") {
+            skipped++;
+            continue;
+          }
+          if (mode === "rename") {
+            let counter = 2;
+            while (typeNames.has(`${t.name} (${counter})`)) counter++;
+            finalName = `${t.name} (${counter})`;
+          }
+        }
+
         const id = `custom-${Date.now()}-${imported}-${Math.random().toString(36).slice(2, 9)}`;
         next.push({
           ...t,
           id,
+          name: finalName,
           type: "custom",
           createdAt: now,
           updatedAt: now,
           useCount: 0,
         });
-        existingKeys.add(key);
+        typeNames.add(finalName);
+        if (!namesByType[t.templateType])
+          namesByType[t.templateType] = typeNames;
         imported++;
       }
       writeTemplatesToStorage(next);
-      return { imported, skipped: data.templates.length - imported } as T;
+      return { imported, skipped, replaced } as T;
     }
     default:
       throw new Error(`Unknown template channel: ${channel}`);
@@ -288,7 +351,10 @@ interface TemplateState {
   // CRUD operations
   loadTemplates: (filter?: TemplateFilter) => Promise<void>;
   createTemplate: (input: CreateTemplateInput) => Promise<Template>;
-  updateTemplate: (id: string, updates: Partial<Template>) => Promise<void>;
+  updateTemplate: (
+    id: string,
+    updates: Partial<Template>,
+  ) => Promise<Partial<Template>>;
   deleteTemplate: (id: string) => Promise<void>;
   deleteTemplates: (ids: string[]) => Promise<void>;
 
@@ -297,11 +363,31 @@ interface TemplateState {
   useTemplate: (id: string) => Promise<void>;
 
   // Import/Export
-  exportTemplates: (ids?: string[]) => Promise<void>;
+  exportTemplates: (ids?: string[], exportAll?: boolean) => Promise<void>;
+  exportSingleTemplate: (
+    id: string,
+    defaultName: string,
+  ) => Promise<{ success: boolean; canceled?: boolean }>;
+  exportBatchTemplates: (
+    ids: string[],
+  ) => Promise<{ success: boolean; count?: number; canceled?: boolean }>;
+  exportMergedTemplates: (
+    ids: string[],
+    defaultName: string,
+  ) => Promise<{ success: boolean; canceled?: boolean }>;
   importTemplates: (
     file: File,
-    mode: "merge" | "replace",
-  ) => Promise<{ imported: number; skipped: number }>;
+    mode: "merge" | "replace" | "rename",
+  ) => Promise<{ imported: number; skipped: number; replaced: number }>;
+  pickAndImportTemplates: (mode: "merge" | "replace" | "rename") => Promise<{
+    imported: number;
+    skipped: number;
+    replaced: number;
+    canceled?: boolean;
+  }>;
+
+  // Query existing names for uniqueness checks
+  queryTemplateNames: (templateType?: string) => Promise<string[]>;
 
   // Filters
   currentFilter: TemplateFilter;
@@ -370,10 +456,26 @@ export const useTemplateStore = create<TemplateState>((set, get) => ({
   createTemplate: async (input: CreateTemplateInput) => {
     set({ isLoading: true, error: null });
     try {
-      const template = await invokeTemplateIpc<Template>(
-        "template:create",
-        input,
-      );
+      // Auto-rename if name already exists for this templateType
+      let finalName = input.name;
+      try {
+        const existingNames = await get().queryTemplateNames(
+          input.templateType,
+        );
+        const nameSet = new Set(existingNames);
+        if (nameSet.has(finalName)) {
+          let counter = 2;
+          while (nameSet.has(`${input.name} (${counter})`)) counter++;
+          finalName = `${input.name} (${counter})`;
+        }
+      } catch {
+        // If queryNames fails (e.g. IPC not available), proceed with original name
+      }
+
+      const template = await invokeTemplateIpc<Template>("template:create", {
+        ...input,
+        name: finalName,
+      });
       set((state) => ({
         templates: [template, ...state.templates],
         isLoading: false,
@@ -386,6 +488,29 @@ export const useTemplateStore = create<TemplateState>((set, get) => ({
   },
 
   updateTemplate: async (id: string, updates: Partial<Template>) => {
+    // If renaming, auto-rename to avoid conflicts
+    if (updates.name) {
+      const current = get().templates.find((t) => t.id === id);
+      if (current) {
+        try {
+          const existingNames = await get().queryTemplateNames(
+            current.templateType,
+          );
+          const nameSet = new Set(existingNames);
+          nameSet.delete(current.name);
+          let finalName = updates.name;
+          if (nameSet.has(finalName)) {
+            let counter = 2;
+            while (nameSet.has(`${updates.name} (${counter})`)) counter++;
+            finalName = `${updates.name} (${counter})`;
+          }
+          updates = { ...updates, name: finalName };
+        } catch {
+          // If queryNames fails, proceed with original name
+        }
+      }
+    }
+
     // Optimistic update
     set((state) => ({
       templates: state.templates.map((t) =>
@@ -397,6 +522,7 @@ export const useTemplateStore = create<TemplateState>((set, get) => ({
 
     try {
       await invokeTemplateIpc("template:update", { id, updates });
+      return updates;
     } catch (error) {
       // Revert on error
       await get().loadTemplates(get().currentFilter);
@@ -467,16 +593,31 @@ export const useTemplateStore = create<TemplateState>((set, get) => ({
     }
   },
 
-  exportTemplates: async (ids?: string[]) => {
+  exportTemplates: async (ids?: string[], exportAll?: boolean) => {
     try {
-      const data = await invokeTemplateIpc("template:export", { ids });
+      const data = await invokeTemplateIpc<TemplateExport>("template:export", {
+        ids,
+      });
       const blob = new Blob([JSON.stringify(data, null, 2)], {
         type: "application/json",
       });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `templates-${new Date().toISOString().split("T")[0]}.json`;
+      const now = new Date();
+      const ts = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}_${String(now.getHours()).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}${String(now.getSeconds()).padStart(2, "0")}`;
+      const tpls = data.templates ?? [];
+      const types = new Set(tpls.map((t: Template) => t.templateType));
+      const typePrefix = types.size === 1 ? [...types][0] : "mixed";
+      let namePrefix: string;
+      if (tpls.length === 1) {
+        namePrefix = tpls[0].name.replace(/[^a-zA-Z0-9\u4e00-\u9fff_-]/g, "_");
+      } else if (exportAll) {
+        namePrefix = `export_all_${tpls.length}`;
+      } else {
+        namePrefix = `export_${tpls.length}`;
+      }
+      a.download = `${typePrefix}_${namePrefix}_${ts}.json`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (error) {
@@ -485,7 +626,49 @@ export const useTemplateStore = create<TemplateState>((set, get) => ({
     }
   },
 
-  importTemplates: async (file: File, mode: "merge" | "replace") => {
+  exportSingleTemplate: async (id: string, defaultName: string) => {
+    try {
+      const result = await invokeTemplateIpc<{
+        success: boolean;
+        filePath?: string;
+        canceled?: boolean;
+      }>("template:exportSingle", { id, defaultName });
+      return result;
+    } catch (error) {
+      set({ error: (error as Error).message });
+      throw error;
+    }
+  },
+
+  exportBatchTemplates: async (ids: string[]) => {
+    try {
+      const result = await invokeTemplateIpc<{
+        success: boolean;
+        count?: number;
+        folderPath?: string;
+        canceled?: boolean;
+      }>("template:exportBatch", { ids });
+      return result;
+    } catch (error) {
+      set({ error: (error as Error).message });
+      throw error;
+    }
+  },
+
+  exportMergedTemplates: async (ids: string[], defaultName: string) => {
+    try {
+      const result = await invokeTemplateIpc<{
+        success: boolean;
+        filePath?: string;
+        canceled?: boolean;
+      }>("template:exportMerged", { ids, defaultName });
+      return result;
+    } catch (error) {
+      set({ error: (error as Error).message });
+      throw error;
+    }
+  },
+  importTemplates: async (file: File, mode: "merge" | "replace" | "rename") => {
     set({ isLoading: true, error: null });
     try {
       const text = await file.text();
@@ -493,6 +676,7 @@ export const useTemplateStore = create<TemplateState>((set, get) => ({
       const result = await invokeTemplateIpc<{
         imported: number;
         skipped: number;
+        replaced: number;
       }>("template:import", { data, mode });
       await get().loadTemplates(get().currentFilter);
       set({ isLoading: false });
@@ -501,6 +685,52 @@ export const useTemplateStore = create<TemplateState>((set, get) => ({
       set({ error: (error as Error).message, isLoading: false });
       throw error;
     }
+  },
+
+  pickAndImportTemplates: async (mode: "merge" | "replace" | "rename") => {
+    try {
+      const pickResult = await invokeTemplateIpc<{
+        canceled: boolean;
+        templates?: TemplateExport[];
+      }>("template:importPick");
+
+      if (pickResult.canceled || !pickResult.templates?.length) {
+        return { imported: 0, skipped: 0, replaced: 0, canceled: true };
+      }
+
+      set({ isLoading: true, error: null });
+
+      // Merge all templates from all selected files into one import
+      const allTemplates: Template[] = [];
+      for (const data of pickResult.templates) {
+        if (data.templates) {
+          allTemplates.push(...data.templates);
+        }
+      }
+
+      const mergedData: TemplateExport = {
+        version: "1.0",
+        exportedAt: new Date().toISOString(),
+        templates: allTemplates,
+      };
+
+      const result = await invokeTemplateIpc<{
+        imported: number;
+        skipped: number;
+        replaced: number;
+      }>("template:import", { data: mergedData, mode });
+
+      await get().loadTemplates(get().currentFilter);
+      set({ isLoading: false });
+      return result;
+    } catch (error) {
+      set({ error: (error as Error).message, isLoading: false });
+      throw error;
+    }
+  },
+
+  queryTemplateNames: async (templateType?: string) => {
+    return invokeTemplateIpc<string[]>("template:queryNames", { templateType });
   },
 
   setFilter: (filter: TemplateFilter) => {

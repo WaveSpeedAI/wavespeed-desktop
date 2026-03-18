@@ -15,7 +15,11 @@ import {
 } from "reactflow";
 import { v4 as uuid } from "uuid";
 import { workflowIpc, registryIpc } from "../ipc/ipc-client";
-import type { WorkflowNode, WorkflowEdge, ExposedParam } from "@/workflow/types/workflow";
+import type {
+  WorkflowNode,
+  WorkflowEdge,
+  ExposedParam,
+} from "@/workflow/types/workflow";
 import type { PortDefinition } from "@/workflow/types/node-defs";
 import { wouldCreateCycleInSubWorkflow } from "@/workflow/lib/cycle-detection";
 
@@ -48,25 +52,35 @@ function purgeExposedParamsForChildren(
     let dirty = false;
 
     for (const direction of ["input", "output"] as const) {
-      const paramListKey = direction === "input" ? "exposedInputs" : "exposedOutputs";
-      const defKey = direction === "input" ? "inputDefinitions" : "outputDefinitions";
+      const paramListKey =
+        direction === "input" ? "exposedInputs" : "exposedOutputs";
+      const defKey =
+        direction === "input" ? "inputDefinitions" : "outputDefinitions";
 
       const currentList: ExposedParam[] = (() => {
         try {
           const raw = params[paramListKey];
-          return typeof raw === "string" ? JSON.parse(raw) : Array.isArray(raw) ? raw : [];
+          return typeof raw === "string"
+            ? JSON.parse(raw)
+            : Array.isArray(raw)
+              ? raw
+              : [];
         } catch {
           return [];
         }
       })();
 
-      const filtered = currentList.filter((p) => !removedChildIds.has(p.subNodeId));
+      const filtered = currentList.filter(
+        (p) => !removedChildIds.has(p.subNodeId),
+      );
       if (filtered.length === currentList.length) continue; // nothing to remove
       dirty = true;
 
       // Keys to remove
       const removedKeys = new Set(
-        currentList.filter((p) => removedChildIds.has(p.subNodeId)).map((p) => p.namespacedKey),
+        currentList
+          .filter((p) => removedChildIds.has(p.subNodeId))
+          .map((p) => p.namespacedKey),
       );
 
       // Remove port definitions
@@ -90,11 +104,15 @@ function purgeExposedParamsForChildren(
       updatedEdges = updatedEdges.filter((e) => {
         if (autoEdgeIds.has(e.id)) return false;
         if (direction === "input") {
-          if (e.target === iter.id && extHandleIds.has(e.targetHandle ?? "")) return false;
-          if (e.source === iter.id && intHandleIds.has(e.sourceHandle ?? "")) return false;
+          if (e.target === iter.id && extHandleIds.has(e.targetHandle ?? ""))
+            return false;
+          if (e.source === iter.id && intHandleIds.has(e.sourceHandle ?? ""))
+            return false;
         } else {
-          if (e.source === iter.id && extHandleIds.has(e.sourceHandle ?? "")) return false;
-          if (e.target === iter.id && intHandleIds.has(e.targetHandle ?? "")) return false;
+          if (e.source === iter.id && extHandleIds.has(e.sourceHandle ?? ""))
+            return false;
+          if (e.target === iter.id && intHandleIds.has(e.targetHandle ?? ""))
+            return false;
         }
         return true;
       });
@@ -106,7 +124,10 @@ function purgeExposedParamsForChildren(
           ...n,
           data: {
             ...n.data,
-            params: { ...n.data.params, [paramListKey]: JSON.stringify(filtered) },
+            params: {
+              ...n.data.params,
+              [paramListKey]: JSON.stringify(filtered),
+            },
             [defKey]: filteredDefs,
           },
         };
@@ -116,7 +137,9 @@ function purgeExposedParamsForChildren(
     // Also clean up childNodeIds
     if (dirty) {
       const currentChildIds: string[] = iter.data.childNodeIds ?? [];
-      const filteredChildIds = currentChildIds.filter((id: string) => !removedChildIds.has(id));
+      const filteredChildIds = currentChildIds.filter(
+        (id: string) => !removedChildIds.has(id),
+      );
       if (filteredChildIds.length !== currentChildIds.length) {
         updatedNodes = updatedNodes.map((n) => {
           if (n.id !== iter.id) return n;
@@ -400,8 +423,26 @@ export interface WorkflowState {
   releaseNode: (iteratorId: string, childId: string) => void;
   updateBoundingBox: (iteratorId: string) => void;
   exposeParam: (iteratorId: string, param: ExposedParam) => void;
-  unexposeParam: (iteratorId: string, namespacedKey: string, direction: "input" | "output") => void;
-  syncExposedParamsOnModelSwitch: (childNodeId: string, newLabel: string, newInputParamKeys: string[]) => void;
+  unexposeParam: (
+    iteratorId: string,
+    namespacedKey: string,
+    direction: "input" | "output",
+  ) => void;
+  updateExposedParamAlias: (
+    iteratorId: string,
+    namespacedKey: string,
+    direction: "input" | "output",
+    alias: string,
+  ) => void;
+  syncExposedParamsOnModelSwitch: (
+    childNodeId: string,
+    newLabel: string,
+    newInputParamKeys: string[],
+  ) => void;
+  importWorkflowIntoGroup: (
+    groupId: string,
+    sourceWorkflowId: string,
+  ) => Promise<void>;
   reset: () => void;
 }
 
@@ -439,6 +480,61 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         outputDefinitions: outputDefs,
       },
     };
+
+    // For HTTP Trigger: build dynamic outputDefinitions from default outputFields param
+    if (
+      type === "trigger/http" &&
+      outputDefs.length === 0 &&
+      defaultParams.outputFields
+    ) {
+      try {
+        const raw = defaultParams.outputFields;
+        const fields: Array<{ key: string; label: string; type: string }> =
+          typeof raw === "string"
+            ? JSON.parse(raw)
+            : Array.isArray(raw)
+              ? raw
+              : [];
+        if (fields.length > 0) {
+          newNode.data.outputDefinitions = fields.map((f) => ({
+            key: f.key,
+            label: f.label || f.key,
+            dataType: f.type || "any",
+            required: true,
+          }));
+        }
+      } catch {
+        /* keep empty */
+      }
+    }
+
+    // For HTTP Response: build dynamic inputDefinitions from default responseFields param
+    if (
+      type === "output/http-response" &&
+      inputDefs.length === 0 &&
+      defaultParams.responseFields
+    ) {
+      try {
+        const raw = defaultParams.responseFields;
+        const fields: Array<{ key: string; label: string; type: string }> =
+          typeof raw === "string"
+            ? JSON.parse(raw)
+            : Array.isArray(raw)
+              ? raw
+              : [];
+        if (fields.length > 0) {
+          newNode.data.inputDefinitions = fields.map((f) => ({
+            key: f.key,
+            label: f.label || f.key,
+            dataType: f.type || "any",
+            required: false,
+          }));
+        }
+      } catch {
+        /* keep empty */
+      }
+    }
+
     set((state) => ({
       nodes: [...state.nodes, newNode],
       isDirty: true,
@@ -757,9 +853,73 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
   updateNodeParams: (nodeId, params) => {
     const { nodes, edges } = get();
     pushUndoDebounced({ nodes, edges });
+
+    // Dynamic port sync for HTTP Trigger and HTTP Response nodes
+    let extraData: Record<string, unknown> | null = null;
+    const node = nodes.find((n) => n.id === nodeId);
+
+    if (
+      node?.data?.nodeType === "trigger/http" &&
+      params.outputFields !== undefined
+    ) {
+      try {
+        const raw = params.outputFields;
+        const fields: Array<{ key: string; label: string; type: string }> =
+          typeof raw === "string"
+            ? JSON.parse(raw)
+            : Array.isArray(raw)
+              ? raw
+              : [];
+        extraData = {
+          outputDefinitions: fields.map((f) => ({
+            key: f.key,
+            label: f.label || f.key,
+            dataType: f.type || "any",
+            required: true,
+          })),
+        };
+      } catch {
+        /* invalid JSON — leave unchanged */
+      }
+    }
+
+    if (
+      node?.data?.nodeType === "output/http-response" &&
+      params.responseFields !== undefined
+    ) {
+      try {
+        const raw = params.responseFields;
+        const fields: Array<{ key: string; label: string; type: string }> =
+          typeof raw === "string"
+            ? JSON.parse(raw)
+            : Array.isArray(raw)
+              ? raw
+              : [];
+        extraData = {
+          inputDefinitions: fields.map((f) => ({
+            key: f.key,
+            label: f.label || f.key,
+            dataType: f.type || "any",
+            required: true,
+          })),
+        };
+      } catch {
+        /* invalid JSON — leave unchanged */
+      }
+    }
+
     set((state) => ({
       nodes: state.nodes.map((n) =>
-        n.id === nodeId ? { ...n, data: { ...n.data, params } } : n,
+        n.id === nodeId
+          ? {
+              ...n,
+              data: {
+                ...n.data,
+                params,
+                ...(extraData ?? {}),
+              },
+            }
+          : n,
       ),
       isDirty: true,
       canUndo: true,
@@ -767,8 +927,6 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     }));
 
     // If this node is a child of an Iterator, recalculate the bounding box
-    // so the Iterator auto-expands when child node size changes
-    const node = nodes.find((n) => n.id === nodeId);
     if (node?.parentNode) {
       get().updateBoundingBox(node.parentNode);
     }
@@ -935,6 +1093,50 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       const { __meta: _, ...cleanParams } = n.params as Record<string, unknown>;
 
       const isIterator = n.nodeType === "control/iterator";
+      // Rebuild dynamic port definitions for HTTP Trigger / HTTP Response
+      let inputDefs = def?.inputs ?? [];
+      let outputDefs = def?.outputs ?? [];
+
+      if (n.nodeType === "trigger/http" && cleanParams.outputFields) {
+        try {
+          const raw = cleanParams.outputFields;
+          const fields: Array<{ key: string; label: string; type: string }> =
+            typeof raw === "string"
+              ? JSON.parse(raw)
+              : Array.isArray(raw)
+                ? raw
+                : [];
+          outputDefs = fields.map((f) => ({
+            key: f.key,
+            label: f.label || f.key,
+            dataType: f.type || "any",
+            required: true,
+          }));
+        } catch {
+          /* keep static defs */
+        }
+      }
+
+      if (n.nodeType === "output/http-response" && cleanParams.responseFields) {
+        try {
+          const raw = cleanParams.responseFields;
+          const fields: Array<{ key: string; label: string; type: string }> =
+            typeof raw === "string"
+              ? JSON.parse(raw)
+              : Array.isArray(raw)
+                ? raw
+                : [];
+          inputDefs = fields.map((f) => ({
+            key: f.key,
+            label: f.label || f.key,
+            dataType: f.type || "any",
+            required: true,
+          }));
+        } catch {
+          /* keep static defs */
+        }
+      }
+
       const rfNode: ReactFlowNode = {
         id: n.id,
         type: isIterator ? "control/iterator" : "custom",
@@ -945,8 +1147,8 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
           label,
           modelInputSchema: modelInputSchema ?? [],
           paramDefinitions: def?.params ?? [],
-          inputDefinitions: def?.inputs ?? [],
-          outputDefinitions: def?.outputs ?? [],
+          inputDefinitions: inputDefs,
+          outputDefinitions: outputDefs,
           ...(isIterator
             ? { childNodeIds: iteratorChildMap.get(n.id) ?? [] }
             : {}),
@@ -956,7 +1158,6 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       // Restore parent-child relationship for sub-nodes
       if (n.parentNodeId) {
         rfNode.parentNode = n.parentNodeId;
-        rfNode.extent = "parent" as const;
       }
 
       return rfNode;
@@ -978,9 +1179,65 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       isDirty: false,
     });
 
+    // Exit subgraph editing when loading a different workflow
+    try {
+      const { useUIStore } = await import("./ui.store");
+      useUIStore.getState().exitGroupEdit();
+    } catch {
+      /* ignore */
+    }
+
     // Recalculate bounding boxes for all iterator nodes
     for (const iteratorId of iteratorChildMap.keys()) {
       get().updateBoundingBox(iteratorId);
+    }
+
+    // Clamp child nodes within their parent iterator bounds after load
+    {
+      const currentNodes = get().nodes;
+      const clampUpdates: Array<{
+        nodeId: string;
+        pos: { x: number; y: number };
+      }> = [];
+      for (const iteratorId of iteratorChildMap.keys()) {
+        const itNode = currentNodes.find((n) => n.id === iteratorId);
+        if (!itNode) continue;
+        const itW =
+          (itNode.data?.params?.__nodeWidth as number) ?? MIN_ITERATOR_WIDTH;
+        const itH =
+          (itNode.data?.params?.__nodeHeight as number) ?? MIN_ITERATOR_HEIGHT;
+        const children = currentNodes.filter(
+          (n) => n.parentNode === iteratorId,
+        );
+        for (const child of children) {
+          const cw = (child.data?.params?.__nodeWidth as number) ?? 300;
+          const ch = (child.data?.params?.__nodeHeight as number) ?? 80;
+          const minX = CHILD_PADDING;
+          const maxX = Math.max(minX, itW - cw - CHILD_PADDING);
+          const minY = CHILD_PADDING + 40; // 40 = title bar
+          const maxY = Math.max(minY, itH - ch - CHILD_PADDING - 40);
+          const cx = Math.min(Math.max(child.position.x, minX), maxX);
+          const cy = Math.min(Math.max(child.position.y, minY), maxY);
+          if (cx !== child.position.x || cy !== child.position.y) {
+            clampUpdates.push({ nodeId: child.id, pos: { x: cx, y: cy } });
+          }
+        }
+      }
+      if (clampUpdates.length > 0) {
+        set((state) => ({
+          nodes: state.nodes.map((n) => {
+            const upd = clampUpdates.find((u) => u.nodeId === n.id);
+            return upd ? { ...n, position: upd.pos } : n;
+          }),
+        }));
+      }
+    }
+
+    // Notify canvas to restore viewport
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("workflow:loaded", { detail: { workflowId: wf.id } }),
+      );
     }
 
     // Restore previous execution results for all nodes
@@ -1053,8 +1310,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     };
 
     // Update childNodeIds in iterator data
-    const currentChildIds: string[] =
-      iteratorNode.data.childNodeIds ?? [];
+    const currentChildIds: string[] = iteratorNode.data.childNodeIds ?? [];
     const updatedChildIds = currentChildIds.includes(childId)
       ? currentChildIds
       : [...currentChildIds, childId];
@@ -1066,7 +1322,6 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
             ...n,
             position: relativePosition,
             parentNode: iteratorId,
-            extent: "parent" as const,
             data: { ...n.data },
           };
         }
@@ -1103,7 +1358,11 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     pushUndo({ nodes, edges });
 
     // Purge exposed params for this child from the iterator
-    const purged = purgeExposedParamsForChildren(new Set([childId]), nodes, edges);
+    const purged = purgeExposedParamsForChildren(
+      new Set([childId]),
+      nodes,
+      edges,
+    );
 
     // Convert child position back to absolute coordinates
     const absolutePosition = {
@@ -1141,8 +1400,10 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
 
     const children = nodes.filter((n) => n.parentNode === iteratorId);
     const currentParams = iteratorNode.data.params ?? {};
-    const currentW = (currentParams.__nodeWidth as number) ?? MIN_ITERATOR_WIDTH;
-    const currentH = (currentParams.__nodeHeight as number) ?? MIN_ITERATOR_HEIGHT;
+    const currentW =
+      (currentParams.__nodeWidth as number) ?? MIN_ITERATOR_WIDTH;
+    const currentH =
+      (currentParams.__nodeHeight as number) ?? MIN_ITERATOR_HEIGHT;
 
     // Only expand — never shrink. If children fit inside the current size, do nothing.
     let requiredWidth = MIN_ITERATOR_WIDTH;
@@ -1156,9 +1417,13 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         // Use DOM measurement for height when available (child nodes auto-size vertically)
         let ch = (child.data?.params?.__nodeHeight as number) ?? 80;
         try {
-          const el = document.querySelector(`[data-id="${child.id}"]`) as HTMLElement | null;
+          const el = document.querySelector(
+            `[data-id="${child.id}"]`,
+          ) as HTMLElement | null;
           if (el) ch = Math.max(ch, el.offsetHeight);
-        } catch { /* ignore DOM errors */ }
+        } catch {
+          /* ignore DOM errors */
+        }
         const right = child.position.x + cw + CHILD_PADDING;
         const bottom = child.position.y + ch + CHILD_PADDING;
         if (right > maxRight) maxRight = right;
@@ -1205,8 +1470,10 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     pushUndo({ nodes, edges });
 
     const params = iteratorNode.data.params ?? {};
-    const paramListKey = param.direction === "input" ? "exposedInputs" : "exposedOutputs";
-    const defKey = param.direction === "input" ? "inputDefinitions" : "outputDefinitions";
+    const paramListKey =
+      param.direction === "input" ? "exposedInputs" : "exposedOutputs";
+    const defKey =
+      param.direction === "input" ? "inputDefinitions" : "outputDefinitions";
 
     // Parse existing exposed params
     const currentList: ExposedParam[] = (() => {
@@ -1219,7 +1486,12 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     })();
 
     // Don't add duplicates
-    if (currentList.some((p: ExposedParam) => p.namespacedKey === param.namespacedKey)) return;
+    if (
+      currentList.some(
+        (p: ExposedParam) => p.namespacedKey === param.namespacedKey,
+      )
+    )
+      return;
 
     const updatedList = [...currentList, param];
 
@@ -1228,13 +1500,13 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       .split("_")
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(" ");
-    // Shorten the node label for display (e.g. "bytedance/seedream-v3" → "seedream-v3")
+    // Use the subNodeLabel passed from the picker (may include #N numbering for duplicates)
     const shortNodeLabel = param.subNodeLabel.includes("/")
       ? param.subNodeLabel.split("/").pop()!
       : param.subNodeLabel;
     const newPort: PortDefinition = {
       key: param.namespacedKey,
-      label: `${readableParam} · ${shortNodeLabel}`,
+      label: param.alias || `${readableParam} · ${shortNodeLabel}`,
       dataType: param.dataType,
       required: false,
     };
@@ -1251,9 +1523,14 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       // The child node's input handle is either `input-{key}` or `param-{key}`
       // For ai-task model schema fields, the handle is `param-{key}`
       const childNode = nodes.find((n) => n.id === param.subNodeId);
-      const childInputDefs = (childNode?.data?.inputDefinitions ?? []) as PortDefinition[];
-      const hasInputPort = childInputDefs.some((d: PortDefinition) => d.key === param.paramKey);
-      const targetHandle = hasInputPort ? `input-${param.paramKey}` : `param-${param.paramKey}`;
+      const childInputDefs = (childNode?.data?.inputDefinitions ??
+        []) as PortDefinition[];
+      const hasInputPort = childInputDefs.some(
+        (d: PortDefinition) => d.key === param.paramKey,
+      );
+      const targetHandle = hasInputPort
+        ? `input-${param.paramKey}`
+        : `param-${param.paramKey}`;
 
       autoEdge = {
         id: autoEdgeId,
@@ -1310,8 +1587,10 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     pushUndo({ nodes, edges });
 
     const params = iteratorNode.data.params ?? {};
-    const paramListKey = direction === "input" ? "exposedInputs" : "exposedOutputs";
-    const defKey = direction === "input" ? "inputDefinitions" : "outputDefinitions";
+    const paramListKey =
+      direction === "input" ? "exposedInputs" : "exposedOutputs";
+    const defKey =
+      direction === "input" ? "inputDefinitions" : "outputDefinitions";
 
     // Parse existing exposed params and remove the matching entry
     const currentList: ExposedParam[] = (() => {
@@ -1334,12 +1613,14 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     );
 
     // Remove any connected edges to/from both external and internal handles
-    const extHandleId = direction === "input"
-      ? `input-${namespacedKey}`
-      : `output-${namespacedKey}`;
-    const intHandleId = direction === "input"
-      ? `input-inner-${namespacedKey}`
-      : `output-inner-${namespacedKey}`;
+    const extHandleId =
+      direction === "input"
+        ? `input-${namespacedKey}`
+        : `output-${namespacedKey}`;
+    const intHandleId =
+      direction === "input"
+        ? `input-inner-${namespacedKey}`
+        : `output-inner-${namespacedKey}`;
     const autoEdgeId = `iter-auto-${iteratorId}-${namespacedKey}`;
 
     const edgeIdsToRemove = new Set<string>();
@@ -1348,14 +1629,18 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     for (const e of edges) {
       if (direction === "input") {
         // External edges connecting to the external target handle
-        if (e.target === iteratorId && e.targetHandle === extHandleId) edgeIdsToRemove.add(e.id);
+        if (e.target === iteratorId && e.targetHandle === extHandleId)
+          edgeIdsToRemove.add(e.id);
         // Internal edges from the inner source handle
-        if (e.source === iteratorId && e.sourceHandle === intHandleId) edgeIdsToRemove.add(e.id);
+        if (e.source === iteratorId && e.sourceHandle === intHandleId)
+          edgeIdsToRemove.add(e.id);
       } else {
         // External edges from the external source handle
-        if (e.source === iteratorId && e.sourceHandle === extHandleId) edgeIdsToRemove.add(e.id);
+        if (e.source === iteratorId && e.sourceHandle === extHandleId)
+          edgeIdsToRemove.add(e.id);
         // Internal edges to the inner target handle
-        if (e.target === iteratorId && e.targetHandle === intHandleId) edgeIdsToRemove.add(e.id);
+        if (e.target === iteratorId && e.targetHandle === intHandleId)
+          edgeIdsToRemove.add(e.id);
       }
     }
 
@@ -1376,12 +1661,59 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         }
         return n;
       }),
-      edges: edgeIdsToRemove.size > 0
-        ? state.edges.filter((e) => !edgeIdsToRemove.has(e.id))
-        : state.edges,
+      edges:
+        edgeIdsToRemove.size > 0
+          ? state.edges.filter((e) => !edgeIdsToRemove.has(e.id))
+          : state.edges,
       isDirty: true,
       canUndo: true,
       canRedo: false,
+    }));
+  },
+
+  updateExposedParamAlias: (iteratorId, namespacedKey, direction, alias) => {
+    const { nodes } = get();
+    const iteratorNode = nodes.find((n) => n.id === iteratorId);
+    if (!iteratorNode) return;
+
+    const paramListKey =
+      direction === "input" ? "exposedInputs" : "exposedOutputs";
+    const currentList: ExposedParam[] = (() => {
+      try {
+        const raw = iteratorNode.data.params?.[paramListKey];
+        return typeof raw === "string"
+          ? JSON.parse(raw)
+          : Array.isArray(raw)
+            ? raw
+            : [];
+      } catch {
+        return [];
+      }
+    })();
+
+    const updatedList = currentList.map((p: ExposedParam) =>
+      p.namespacedKey === namespacedKey
+        ? { ...p, alias: alias || undefined }
+        : p,
+    );
+
+    set((state) => ({
+      nodes: state.nodes.map((n) => {
+        if (n.id === iteratorId) {
+          return {
+            ...n,
+            data: {
+              ...n.data,
+              params: {
+                ...n.data.params,
+                [paramListKey]: JSON.stringify(updatedList),
+              },
+            },
+          };
+        }
+        return n;
+      }),
+      isDirty: true,
     }));
   },
 
@@ -1395,14 +1727,19 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
    * 4. Output always exists (key="output") → keep it, update label with new model name
    * 5. Multiple child nodes in same iterator → only affect the switched node's params
    */
-  syncExposedParamsOnModelSwitch: (childNodeId, newLabel, newInputParamKeys) => {
+  syncExposedParamsOnModelSwitch: (
+    childNodeId,
+    newLabel,
+    newInputParamKeys,
+  ) => {
     const { nodes, edges } = get();
     const childNode = nodes.find((n) => n.id === childNodeId);
     if (!childNode?.parentNode) return; // not inside an iterator
 
     const iteratorId = childNode.parentNode;
     const iteratorNode = nodes.find((n) => n.id === iteratorId);
-    if (!iteratorNode || iteratorNode.data.nodeType !== "control/iterator") return;
+    if (!iteratorNode || iteratorNode.data.nodeType !== "control/iterator")
+      return;
 
     const params = iteratorNode.data.params ?? {};
     const newInputKeySet = new Set(newInputParamKeys);
@@ -1411,14 +1748,22 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     let dirty = false;
 
     for (const direction of ["input", "output"] as const) {
-      const paramListKey = direction === "input" ? "exposedInputs" : "exposedOutputs";
-      const defKey = direction === "input" ? "inputDefinitions" : "outputDefinitions";
+      const paramListKey =
+        direction === "input" ? "exposedInputs" : "exposedOutputs";
+      const defKey =
+        direction === "input" ? "inputDefinitions" : "outputDefinitions";
 
       const currentList: ExposedParam[] = (() => {
         try {
           const raw = params[paramListKey];
-          return typeof raw === "string" ? JSON.parse(raw) : Array.isArray(raw) ? raw : [];
-        } catch { return []; }
+          return typeof raw === "string"
+            ? JSON.parse(raw)
+            : Array.isArray(raw)
+              ? raw
+              : [];
+        } catch {
+          return [];
+        }
       })();
 
       // Only process params belonging to this child node
@@ -1437,7 +1782,11 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
           // Param still valid → update label and namespacedKey
           const oldNk = ep.namespacedKey;
           const newNk = `${newLabel}.${ep.paramKey}`;
-          const updated: ExposedParam = { ...ep, subNodeLabel: newLabel, namespacedKey: newNk };
+          const updated: ExposedParam = {
+            ...ep,
+            subNodeLabel: newLabel,
+            namespacedKey: newNk,
+          };
           kept.push(updated);
 
           if (oldNk !== newNk) {
@@ -1447,24 +1796,44 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
             updatedEdges = updatedEdges.map((e) => {
               if (e.id === oldAutoId) {
                 if (direction === "input") {
-                  return { ...e, id: newAutoId, sourceHandle: `input-inner-${newNk}` };
+                  return {
+                    ...e,
+                    id: newAutoId,
+                    sourceHandle: `input-inner-${newNk}`,
+                  };
                 } else {
-                  return { ...e, id: newAutoId, targetHandle: `output-inner-${newNk}` };
+                  return {
+                    ...e,
+                    id: newAutoId,
+                    targetHandle: `output-inner-${newNk}`,
+                  };
                 }
               }
               // Update external edges referencing old handle IDs
               if (direction === "input") {
-                if (e.target === iteratorId && e.targetHandle === `input-${oldNk}`) {
+                if (
+                  e.target === iteratorId &&
+                  e.targetHandle === `input-${oldNk}`
+                ) {
                   return { ...e, targetHandle: `input-${newNk}` };
                 }
-                if (e.source === iteratorId && e.sourceHandle === `input-inner-${oldNk}`) {
+                if (
+                  e.source === iteratorId &&
+                  e.sourceHandle === `input-inner-${oldNk}`
+                ) {
                   return { ...e, sourceHandle: `input-inner-${newNk}` };
                 }
               } else {
-                if (e.source === iteratorId && e.sourceHandle === `output-${oldNk}`) {
+                if (
+                  e.source === iteratorId &&
+                  e.sourceHandle === `output-${oldNk}`
+                ) {
                   return { ...e, sourceHandle: `output-${newNk}` };
                 }
-                if (e.target === iteratorId && e.targetHandle === `output-inner-${oldNk}`) {
+                if (
+                  e.target === iteratorId &&
+                  e.targetHandle === `output-inner-${oldNk}`
+                ) {
                   return { ...e, targetHandle: `output-inner-${newNk}` };
                 }
               }
@@ -1491,11 +1860,27 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         updatedEdges = updatedEdges.filter((e) => {
           if (removeAutoIds.has(e.id)) return false;
           if (direction === "input") {
-            if (e.target === iteratorId && removeHandles.has(e.targetHandle ?? "")) return false;
-            if (e.source === iteratorId && removeHandles.has(e.sourceHandle ?? "")) return false;
+            if (
+              e.target === iteratorId &&
+              removeHandles.has(e.targetHandle ?? "")
+            )
+              return false;
+            if (
+              e.source === iteratorId &&
+              removeHandles.has(e.sourceHandle ?? "")
+            )
+              return false;
           } else {
-            if (e.source === iteratorId && removeHandles.has(e.sourceHandle ?? "")) return false;
-            if (e.target === iteratorId && removeHandles.has(e.targetHandle ?? "")) return false;
+            if (
+              e.source === iteratorId &&
+              removeHandles.has(e.sourceHandle ?? "")
+            )
+              return false;
+            if (
+              e.target === iteratorId &&
+              removeHandles.has(e.targetHandle ?? "")
+            )
+              return false;
           }
           return true;
         });
@@ -1504,11 +1889,23 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
       const updatedList = [...others, ...kept];
       const currentDefs: PortDefinition[] = iteratorNode.data[defKey] ?? [];
       // Rebuild defs: keep others' defs, rebuild this child's defs from kept params
-      const otherDefs = currentDefs.filter((d) => !mine.some((m) => m.namespacedKey === d.key));
+      const otherDefs = currentDefs.filter(
+        (d) => !mine.some((m) => m.namespacedKey === d.key),
+      );
       const keptDefs = kept.map((ep): PortDefinition => {
-        const readableParam = ep.paramKey.split("_").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
-        const shortLabel = ep.subNodeLabel.includes("/") ? ep.subNodeLabel.split("/").pop()! : ep.subNodeLabel;
-        return { key: ep.namespacedKey, label: `${readableParam} · ${shortLabel}`, dataType: ep.dataType, required: false };
+        const readableParam = ep.paramKey
+          .split("_")
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(" ");
+        const shortLabel = ep.subNodeLabel.includes("/")
+          ? ep.subNodeLabel.split("/").pop()!
+          : ep.subNodeLabel;
+        return {
+          key: ep.namespacedKey,
+          label: `${readableParam} · ${shortLabel}`,
+          dataType: ep.dataType,
+          required: false,
+        };
       });
 
       updatedNodes = updatedNodes.map((n) => {
@@ -1517,7 +1914,10 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
           ...n,
           data: {
             ...n.data,
-            params: { ...n.data.params, [paramListKey]: JSON.stringify(updatedList) },
+            params: {
+              ...n.data.params,
+              [paramListKey]: JSON.stringify(updatedList),
+            },
             [defKey]: [...otherDefs, ...keptDefs],
           },
         };
@@ -1527,6 +1927,201 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
 
     if (dirty) {
       set({ nodes: updatedNodes, edges: updatedEdges, isDirty: true });
+    }
+  },
+
+  importWorkflowIntoGroup: async (groupId, sourceWorkflowId) => {
+    const { nodes, edges } = get();
+    const groupNode = nodes.find((n) => n.id === groupId);
+    if (!groupNode) return;
+
+    // Load source workflow
+    const srcWf = await workflowIpc.load(sourceWorkflowId);
+    const srcNodes = srcWf.graphDefinition.nodes;
+    const srcEdges = srcWf.graphDefinition.edges;
+    if (srcNodes.length === 0) return;
+
+    pushUndo({ nodes, edges });
+
+    // Build old→new ID mapping for cloned nodes
+    const idMap = new Map<string, string>();
+    for (const sn of srcNodes) {
+      idMap.set(sn.id, uuid());
+    }
+
+    // Fetch node type definitions for label/param/port restoration
+    let defMap = new Map<
+      string,
+      {
+        params: unknown[];
+        inputs: unknown[];
+        outputs: unknown[];
+        label: string;
+      }
+    >();
+    try {
+      const defs = await registryIpc.getAll();
+      defMap = new Map(
+        defs.map((d) => [
+          d.type,
+          {
+            params: d.params ?? [],
+            inputs: d.inputs ?? [],
+            outputs: d.outputs ?? [],
+            label: d.label ?? d.type,
+          },
+        ]),
+      );
+    } catch {
+      /* fallback */
+    }
+
+    // Clone nodes — skip nodes that are children of iterators within the source
+    // (they'll be handled when their parent iterator is cloned)
+    const clonedRfNodes: ReactFlowNode[] = [];
+    for (const sn of srcNodes) {
+      const newId = idMap.get(sn.id)!;
+      const meta = (sn.params as Record<string, unknown>).__meta as
+        | Record<string, unknown>
+        | undefined;
+      const def = defMap.get(sn.nodeType);
+      const label = (meta?.label as string) || (def ? def.label : sn.nodeType);
+      const { __meta: _, ...cleanParams } = sn.params as Record<
+        string,
+        unknown
+      >;
+      const isIterator = sn.nodeType === "control/iterator";
+
+      // If this node has a parent within the source workflow, map it
+      const srcParent = sn.parentNodeId;
+      const newParent = srcParent ? idMap.get(srcParent) : undefined;
+
+      const rfNode: ReactFlowNode = {
+        id: newId,
+        type: isIterator ? "control/iterator" : "custom",
+        position: sn.position,
+        data: {
+          nodeType: sn.nodeType,
+          params: cleanParams,
+          label,
+          modelInputSchema: meta?.modelInputSchema ?? [],
+          paramDefinitions: def?.params ?? [],
+          inputDefinitions: def?.inputs ?? [],
+          outputDefinitions: def?.outputs ?? [],
+          ...(isIterator ? { childNodeIds: [] as string[] } : {}),
+        },
+      };
+
+      // If this node was a child of an iterator in the source, keep that relationship
+      if (newParent) {
+        rfNode.parentNode = newParent;
+      }
+
+      clonedRfNodes.push(rfNode);
+    }
+
+    // Rebuild childNodeIds for cloned iterators
+    for (const sn of srcNodes) {
+      if (sn.parentNodeId && idMap.has(sn.parentNodeId)) {
+        const parentNewId = idMap.get(sn.parentNodeId)!;
+        const parentNode = clonedRfNodes.find((n) => n.id === parentNewId);
+        if (parentNode?.data?.childNodeIds) {
+          parentNode.data.childNodeIds.push(idMap.get(sn.id)!);
+        }
+      }
+    }
+
+    // Remap exposed params in cloned iterator nodes
+    for (const cn of clonedRfNodes) {
+      if (cn.data.nodeType !== "control/iterator") continue;
+      for (const paramKey of ["exposedInputs", "exposedOutputs"] as const) {
+        try {
+          const raw = cn.data.params[paramKey];
+          const list: ExposedParam[] =
+            typeof raw === "string"
+              ? JSON.parse(raw)
+              : Array.isArray(raw)
+                ? raw
+                : [];
+          if (list.length === 0) continue;
+          const remapped = list.map((ep) => ({
+            ...ep,
+            subNodeId: idMap.get(ep.subNodeId) ?? ep.subNodeId,
+          }));
+          cn.data.params[paramKey] = JSON.stringify(remapped);
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+
+    // Clone edges — remap source/target IDs
+    const clonedEdges: ReactFlowEdge[] = srcEdges
+      .filter((e) => idMap.has(e.sourceNodeId) && idMap.has(e.targetNodeId))
+      .map((e) => ({
+        id: uuid(),
+        source: idMap.get(e.sourceNodeId)!,
+        target: idMap.get(e.targetNodeId)!,
+        sourceHandle: e.sourceOutputKey,
+        targetHandle: e.targetInputKey,
+        type: "custom",
+        ...(e.isInternal ? { data: { isInternal: true } } : {}),
+      }));
+
+    // Now adopt all top-level cloned nodes into the group
+    // (nodes that already have a parent within the source stay nested)
+    const topLevelCloned = clonedRfNodes.filter((n) => !n.parentNode);
+
+    // Compute offset so cloned nodes are positioned relative to group
+    // Place them starting at a reasonable internal position
+    const startX = 60;
+    const startY = 80;
+    // Find bounding box of top-level source nodes to compute offset
+    let minX = Infinity,
+      minY = Infinity;
+    for (const n of topLevelCloned) {
+      if (n.position.x < minX) minX = n.position.x;
+      if (n.position.y < minY) minY = n.position.y;
+    }
+    const offsetX = startX - minX;
+    const offsetY = startY - minY;
+
+    // Apply offset and set parentNode for top-level nodes
+    for (const n of topLevelCloned) {
+      n.position = { x: n.position.x + offsetX, y: n.position.y + offsetY };
+      n.parentNode = groupId;
+    }
+
+    // Also offset nested children (children of iterators within the source keep their relative positions)
+
+    // Build updated childNodeIds for the group
+    const existingChildIds: string[] = groupNode.data.childNodeIds ?? [];
+    const newChildIds = [
+      ...existingChildIds,
+      ...topLevelCloned.map((n) => n.id),
+    ];
+
+    set((state) => ({
+      nodes: [
+        ...state.nodes.map((n) =>
+          n.id === groupId
+            ? { ...n, data: { ...n.data, childNodeIds: newChildIds } }
+            : n,
+        ),
+        ...clonedRfNodes,
+      ],
+      edges: [...state.edges, ...clonedEdges],
+      isDirty: true,
+      canUndo: true,
+      canRedo: false,
+    }));
+
+    // Auto-save
+    const wfId = get().workflowId;
+    if (wfId) {
+      setTimeout(() => {
+        get().saveWorkflow().catch(console.error);
+      }, 100);
     }
   },
 

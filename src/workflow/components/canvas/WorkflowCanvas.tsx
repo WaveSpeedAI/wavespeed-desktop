@@ -23,6 +23,7 @@ import ReactFlow, {
   type Node,
   type Edge,
   type NodeChange,
+  type EdgeChange,
   type OnSelectionChangeParams,
 } from "reactflow";
 import "reactflow/dist/style.css";
@@ -32,13 +33,15 @@ import { useUIStore } from "../../stores/ui.store";
 import { CustomNode } from "./CustomNode";
 import { CustomEdge } from "./CustomEdge";
 import { AnnotationNode } from "./AnnotationNode";
-import IteratorNodeContainer from "./iterator-node/IteratorNodeContainer";
-import { useIteratorAdoption } from "../../hooks/useIteratorAdoption";
+import GroupNodeContainer from "./group-node/GroupNodeContainer";
+import { GroupIONode } from "./group-node/GroupIONode";
+import { useGroupAdoption } from "../../hooks/useGroupAdoption";
 import { ContextMenu, type ContextMenuItem } from "./ContextMenu";
 import type {
   NodeTypeDefinition,
   NodeCategory,
 } from "@/workflow/types/node-defs";
+import type { ExposedParam } from "@/workflow/types/workflow";
 import { fuzzySearch } from "@/lib/fuzzySearch";
 import { getNodeIcon } from "./custom-node/NodeIcons";
 import { useModelsStore } from "@/stores/modelsStore";
@@ -55,16 +58,19 @@ import {
   Search,
   ChevronDown,
 } from "lucide-react";
+import { toast } from "@/hooks/useToast";
 import { cn } from "@/lib/utils";
+import { SubgraphBreadcrumb } from "./SubgraphBreadcrumb";
+import { SubgraphToolbar } from "./SubgraphToolbar";
 
 const CATEGORY_ORDER: NodeCategory[] = [
   "ai-task",
   "input",
   "output",
   "processing",
+  "control",
   "free-tool",
   "ai-generation",
-  "control",
 ];
 
 const catDot: Record<string, string> = {
@@ -101,7 +107,12 @@ function saveRecentNodeTypes(types: string[]) {
   }
 }
 
-const nodeTypes = { custom: CustomNode, annotation: AnnotationNode, "control/iterator": IteratorNodeContainer };
+const nodeTypes = {
+  custom: CustomNode,
+  annotation: AnnotationNode,
+  "control/iterator": GroupNodeContainer,
+  "group-io": GroupIONode,
+};
 const edgeTypes = { custom: CustomEdge };
 
 /** Zoom in/out and fit view controls, positioned on the right of the canvas. */
@@ -367,6 +378,11 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
   const interactionMode = useUIStore((s) => s.interactionMode);
   const setInteractionMode = useUIStore((s) => s.setInteractionMode);
   const showGrid = useUIStore((s) => s.showGrid);
+  const editingGroupId = useUIStore((s) => s.editingGroupId);
+  // Track ReactFlow viewport for pinning IO nodes to screen edges
+  const [rfVpX, setRfVpX] = useState(0);
+  const [rfVpY, setRfVpY] = useState(0);
+  const [rfVpZoom, setRfVpZoom] = useState(1);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
   const [contextMenu, setContextMenu] = useState<{
@@ -407,16 +423,204 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
     handleNodesChangeForAdoption,
     handleNodeCreated,
     handleNodesDeleted,
-  } = useIteratorAdoption();
+  } = useGroupAdoption();
 
   /** Wrapped onNodesChange that also triggers iterator adoption detection */
   const onNodesChangeWithAdoption = useCallback(
     (changes: NodeChange[]) => {
-      onNodesChange(changes);
-      handleNodesChangeForAdoption(changes);
+      // Filter out changes for virtual Group IO nodes (they don't exist in the store)
+      const realChanges = changes.filter((c) => {
+        const id = (c as any).id;
+        return !id || !String(id).startsWith("__group-");
+      });
+      if (realChanges.length > 0) {
+        onNodesChange(realChanges);
+      }
+      handleNodesChangeForAdoption(realChanges);
     },
     [onNodesChange, handleNodesChangeForAdoption],
   );
+
+  /** Wrapped onEdgesChange that filters out virtual IO edge changes */
+  const onEdgesChangeFiltered = useCallback(
+    (changes: EdgeChange[]) => {
+      const realChanges = changes.filter((c) => {
+        const id = (c as any).id;
+        return !id || !String(id).startsWith("__io-");
+      });
+      if (realChanges.length > 0) {
+        onEdgesChange(realChanges);
+      }
+    },
+    [onEdgesChange],
+  );
+
+  /* ── Subgraph filtering: when editing a Group, show only its children ── */
+  const displayNodes = useMemo(() => {
+    if (!editingGroupId) {
+      // Main view: hide children of all groups (they're inside subgraphs)
+      return nodes.map((n) => (n.parentNode ? { ...n, hidden: true } : n));
+    }
+    // Subgraph view: show only children of the editing group, as top-level nodes
+    const childNodes: Node[] = nodes
+      .filter((n) => n.parentNode === editingGroupId)
+      .map((n) => ({
+        ...n,
+        parentNode: undefined,
+        position: { ...n.position },
+      }));
+
+    // Inject virtual Group Input / Group Output proxy nodes pinned to screen edges
+    const groupNode = nodes.find((n) => n.id === editingGroupId);
+    if (!groupNode) return childNodes;
+
+    const parseExposed = (key: string): ExposedParam[] => {
+      try {
+        const raw = groupNode.data?.params?.[key];
+        return typeof raw === "string"
+          ? JSON.parse(raw)
+          : Array.isArray(raw)
+            ? raw
+            : [];
+      } catch {
+        return [];
+      }
+    };
+    const exposedInputs = parseExposed("exposedInputs");
+    const exposedOutputs = parseExposed("exposedOutputs");
+
+    // Convert screen pixel position to flow coordinates so IO nodes stay
+    // pinned to the left/right edges of the visible viewport.
+    const el = reactFlowWrapper.current;
+    const wrapperW = el ? el.clientWidth : 1200;
+    const wrapperH = el ? el.clientHeight : 800;
+    const { x: vpX, y: vpY, zoom } = { x: rfVpX, y: rfVpY, zoom: rfVpZoom };
+    const screenToFlowX = (sx: number) => (-vpX + sx) / zoom;
+    const screenToFlowY = (sy: number) => (-vpY + sy) / zoom;
+
+    const inputIOHeight = exposedInputs.length * 32 + 68;
+    const outputIOHeight = exposedOutputs.length * 32 + 68;
+
+    // Pin to screen edges with margin, vertically centered
+    const MARGIN = 50;
+    const result: Node[] = [...childNodes];
+    if (exposedInputs.length > 0) {
+      result.push({
+        id: `__group-input-${editingGroupId}`,
+        type: "group-io",
+        position: {
+          x: screenToFlowX(MARGIN),
+          y: screenToFlowY(wrapperH / 2 - inputIOHeight / 2),
+        },
+        data: {
+          direction: "input",
+          exposedParams: exposedInputs,
+          groupId: editingGroupId,
+        },
+        selectable: false,
+        draggable: false,
+        connectable: false,
+        deletable: false,
+      });
+    }
+    if (exposedOutputs.length > 0) {
+      result.push({
+        id: `__group-output-${editingGroupId}`,
+        type: "group-io",
+        position: {
+          x: screenToFlowX(wrapperW - MARGIN - 150),
+          y: screenToFlowY(wrapperH / 2 - outputIOHeight / 2),
+        },
+        data: {
+          direction: "output",
+          exposedParams: exposedOutputs,
+          groupId: editingGroupId,
+        },
+        selectable: false,
+        draggable: false,
+        connectable: false,
+        deletable: false,
+      });
+    }
+
+    return result;
+  }, [nodes, editingGroupId, rfVpX, rfVpY, rfVpZoom]);
+
+  const displayEdges = useMemo(() => {
+    if (!editingGroupId) return edges;
+    const childIds = new Set(
+      nodes.filter((n) => n.parentNode === editingGroupId).map((n) => n.id),
+    );
+
+    // Regular edges between children
+    const childEdges = edges.filter(
+      (e) => childIds.has(e.source) && childIds.has(e.target),
+    );
+
+    // Remap auto-edges from Group capsule inner handles to virtual IO nodes
+    const groupNode = nodes.find((n) => n.id === editingGroupId);
+    if (!groupNode) return childEdges;
+
+    const parseExposed = (key: string): ExposedParam[] => {
+      try {
+        const raw = groupNode.data?.params?.[key];
+        return typeof raw === "string"
+          ? JSON.parse(raw)
+          : Array.isArray(raw)
+            ? raw
+            : [];
+      } catch {
+        return [];
+      }
+    };
+    const exposedInputs = parseExposed("exposedInputs");
+    const exposedOutputs = parseExposed("exposedOutputs");
+
+    const ioEdges: typeof edges = [];
+    const inputProxyId = `__group-input-${editingGroupId}`;
+    const outputProxyId = `__group-output-${editingGroupId}`;
+
+    // For each auto-edge from Group inner handle → child, remap to virtual IO node
+    for (const e of edges) {
+      if (!e.data?.isInternal) continue;
+      // Input auto-edges: source=groupId, sourceHandle=input-inner-{nk} → target=child
+      if (
+        e.source === editingGroupId &&
+        e.sourceHandle?.startsWith("input-inner-") &&
+        childIds.has(e.target)
+      ) {
+        const nk = e.sourceHandle.replace("input-inner-", "");
+        if (exposedInputs.some((ep) => ep.namespacedKey === nk)) {
+          ioEdges.push({
+            ...e,
+            id: `__io-${e.id}`,
+            source: inputProxyId,
+            sourceHandle: `group-io-${nk}`,
+            type: "custom",
+          });
+        }
+      }
+      // Output auto-edges: source=child → target=groupId, targetHandle=output-inner-{nk}
+      if (
+        e.target === editingGroupId &&
+        e.targetHandle?.startsWith("output-inner-") &&
+        childIds.has(e.source)
+      ) {
+        const nk = e.targetHandle.replace("output-inner-", "");
+        if (exposedOutputs.some((ep) => ep.namespacedKey === nk)) {
+          ioEdges.push({
+            ...e,
+            id: `__io-${e.id}`,
+            target: outputProxyId,
+            targetHandle: `group-io-${nk}`,
+            type: "custom",
+          });
+        }
+      }
+    }
+
+    return [...childEdges, ...ioEdges];
+  }, [edges, nodes, editingGroupId]);
 
   /** Wrapped removeNode that releases child from iterator before deletion */
   const removeNodeWithRelease = useCallback(
@@ -522,6 +726,11 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
         event.preventDefault();
         const current = useUIStore.getState().interactionMode;
         setInteractionMode(current === "select" ? "hand" : "select");
+      }
+      // `/` — toggle Node Palette (add node panel)
+      if (event.key === "/") {
+        event.preventDefault();
+        useUIStore.getState().toggleNodePalette();
       }
       if (ctrlOrCmd && event.key === "v") {
         event.preventDefault();
@@ -666,6 +875,12 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
     (_: React.MouseEvent, node: { id: string }) => selectNode(node.id),
     [selectNode],
   );
+
+  const onNodeDoubleClick = useCallback((_: React.MouseEvent, node: Node) => {
+    if (node.type === "control/iterator") {
+      useUIStore.getState().enterGroupEdit(node.id);
+    }
+  }, []);
   const onPaneClick = useCallback(() => {
     selectNode(null);
     setContextMenu(null);
@@ -755,17 +970,32 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
           ) as HTMLElement | null;
           const sourceW = sourceEl?.offsetWidth ?? 380;
           const GAP = 80;
+
+          // If source node is inside an iterator, its position is relative to the parent.
+          // Convert to absolute coordinates so the new node is placed correctly.
+          let absX = sourceNode.position.x;
+          let absY = sourceNode.position.y;
+          if (sourceNode.parentNode) {
+            const parentNode = nodes.find(
+              (n) => n.id === sourceNode.parentNode,
+            );
+            if (parentNode) {
+              absX += parentNode.position.x;
+              absY += parentNode.position.y;
+            }
+          }
+
           if (sideInfo.side === "right") {
             position = {
-              x: sourceNode.position.x + sourceW + GAP,
-              y: sourceNode.position.y,
+              x: absX + sourceW + GAP,
+              y: absY,
             };
           } else {
             // Place to the left; estimate new node width as default
             const newNodeW = (defaultParams.__nodeWidth as number) ?? 380;
             position = {
-              x: sourceNode.position.x - newNodeW - GAP,
-              y: sourceNode.position.y,
+              x: absX - newNodeW - GAP,
+              y: absY,
             };
           }
         } else {
@@ -791,15 +1021,25 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
       // If pendingIteratorParentId is set (e.g. from child node "+" button),
       // adopt the new node into the iterator
       const pendingItId = useUIStore.getState().pendingIteratorParentId;
-      if (pendingItId) {
+      const editGroupId = useUIStore.getState().editingGroupId;
+      const adoptParent = pendingItId || editGroupId;
+      if (adoptParent) {
         const { adoptNode } = useWorkflowStore.getState();
-        adoptNode(pendingItId, newNodeId);
-        useUIStore.getState().setPendingIteratorParentId(null);
+        adoptNode(adoptParent, newNodeId);
+        if (pendingItId) useUIStore.getState().setPendingIteratorParentId(null);
       }
 
       setContextMenu(null);
     },
-    [addNode, contextMenu, nodes, projectMenuPosition, t, recordRecentNodeType, handleNodeCreated],
+    [
+      addNode,
+      contextMenu,
+      nodes,
+      projectMenuPosition,
+      t,
+      recordRecentNodeType,
+      handleNodeCreated,
+    ],
   );
 
   const addNodeDisplayDefs = useMemo(() => {
@@ -965,10 +1205,12 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
 
       // If pendingIteratorParentId is set, adopt the new node into the iterator
       const pendingItId = useUIStore.getState().pendingIteratorParentId;
-      if (pendingItId) {
+      const editGroupId = useUIStore.getState().editingGroupId;
+      const adoptParent = pendingItId || editGroupId;
+      if (adoptParent) {
         const { adoptNode: adopt } = useWorkflowStore.getState();
-        adopt(pendingItId, newNodeId);
-        useUIStore.getState().setPendingIteratorParentId(null);
+        adopt(adoptParent, newNodeId);
+        if (pendingItId) useUIStore.getState().setPendingIteratorParentId(null);
       }
 
       selectNode(newNodeId);
@@ -1256,26 +1498,40 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
 
       // --- Drop from node palette (existing behaviour) ---
       if (nodeType) {
+        // Only one trigger node per workflow
+        if (nodeType.startsWith("trigger/")) {
+          const existingTrigger = useWorkflowStore
+            .getState()
+            .nodes.find(
+              (n) =>
+                n.type?.startsWith("trigger/") ||
+                n.data?.nodeType?.startsWith("trigger/"),
+            );
+          if (existingTrigger) {
+            toast({
+              title: t(
+                "workflow.triggerLimitTitle",
+                "Only one trigger allowed",
+              ),
+              description: t(
+                "workflow.triggerLimitDesc",
+                "A workflow can only have one trigger node. Remove the existing trigger first.",
+              ),
+              variant: "destructive",
+            });
+            return;
+          }
+        }
+
         const bounds = reactFlowWrapper.current.getBoundingClientRect();
         const position = reactFlowInstance.current.project({
           x: event.clientX - bounds.left,
           y: event.clientY - bounds.top,
         });
 
-        // Reject drop if it lands inside an iterator boundary (external nodes can't enter)
-        if (nodeType !== "control/iterator") {
-          const iteratorNodes = useWorkflowStore.getState().nodes.filter((n) => n.type === "control/iterator");
-          for (const it of iteratorNodes) {
-            const itX = it.position.x;
-            const itY = it.position.y;
-            const itW = (it.data?.params?.__nodeWidth as number) ?? 600;
-            const itH = (it.data?.params?.__nodeHeight as number) ?? 400;
-            if (position.x >= itX && position.x <= itX + itW && position.y >= itY && position.y <= itY + itH) {
-              // Don't allow drop inside iterator — user must use the internal Add Node button
-              return;
-            }
-          }
-        }
+        // If dropping inside an iterator, adopt the new node into it
+        // DISABLED: nodes should only be added to groups via subgraph editing mode
+        // Skip this check when in subgraph editing mode (children shown as top-level)
 
         const def = nodeDefs.find((d) => d.type === nodeType);
         const defaultParams: Record<string, unknown> = {};
@@ -1300,6 +1556,12 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
         );
         recordRecentNodeType(nodeType);
         handleNodeCreated(newNodeId);
+        // If in subgraph editing mode, adopt the node into the group
+        if (useUIStore.getState().editingGroupId) {
+          useWorkflowStore
+            .getState()
+            .adoptNode(useUIStore.getState().editingGroupId!, newNodeId);
+        }
         selectNode(newNodeId);
         return;
       }
@@ -1409,6 +1671,59 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
     return () => window.removeEventListener("workflow:fit-view", handleFitView);
   }, []);
 
+  // FitView when entering/exiting subgraph editing mode
+  useEffect(() => {
+    // Delay to let displayNodes update and render (including virtual IO nodes)
+    const timer = setTimeout(() => {
+      reactFlowInstance.current?.fitView({
+        padding: 0.3,
+        duration: 300,
+        minZoom: 0.5,
+        maxZoom: 1.2,
+        includeHiddenNodes: false,
+      });
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [editingGroupId]);
+
+  // Restore saved viewport when a workflow is loaded
+  useEffect(() => {
+    const handleWorkflowLoaded = (e: Event) => {
+      const wfId = (e as CustomEvent).detail?.workflowId;
+      if (!wfId || !reactFlowInstance.current) return;
+      try {
+        const raw = localStorage.getItem(`wf_viewport_${wfId}`);
+        if (raw) {
+          const vp = JSON.parse(raw);
+          if (
+            typeof vp.x === "number" &&
+            typeof vp.y === "number" &&
+            typeof vp.zoom === "number"
+          ) {
+            setTimeout(() => {
+              reactFlowInstance.current?.setViewport(vp, { duration: 0 });
+            }, 50);
+            return;
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+      // No saved viewport — fit to content
+      setTimeout(() => {
+        reactFlowInstance.current?.fitView({
+          padding: 0.2,
+          duration: 0,
+          minZoom: 0.05,
+          maxZoom: 1.5,
+        });
+      }, 50);
+    };
+    window.addEventListener("workflow:loaded", handleWorkflowLoaded);
+    return () =>
+      window.removeEventListener("workflow:loaded", handleWorkflowLoaded);
+  }, []);
+
   // Listen for "add node" button clicks from CustomNode side buttons
   useEffect(() => {
     const handleOpenAddNodeMenu = (e: Event) => {
@@ -1417,9 +1732,13 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
         sideAddRef.current = { sourceNodeId, side };
         // If the source node is inside an iterator, set pendingIteratorParentId
         // so the new node is also created inside the same iterator
-        const sourceNode = useWorkflowStore.getState().nodes.find((n) => n.id === sourceNodeId);
+        const sourceNode = useWorkflowStore
+          .getState()
+          .nodes.find((n) => n.id === sourceNodeId);
         if (sourceNode?.parentNode) {
-          useUIStore.getState().setPendingIteratorParentId(sourceNode.parentNode);
+          useUIStore
+            .getState()
+            .setPendingIteratorParentId(sourceNode.parentNode);
         }
       } else {
         sideAddRef.current = null;
@@ -1504,22 +1823,35 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
       } = useWorkflowStore.getState();
       if (currentNodes.length === 0) return;
 
+      // ── Separate top-level nodes from group children ──
+      const topLevelNodes = currentNodes.filter((n) => !n.parentNode);
+      const childNodesByParent = new Map<string, typeof currentNodes>();
+      for (const n of currentNodes) {
+        if (n.parentNode) {
+          const arr = childNodesByParent.get(n.parentNode) ?? [];
+          arr.push(n);
+          childNodesByParent.set(n.parentNode, arr);
+        }
+      }
+
+      // Only use top-level nodes for the DAG layout
+      // Filter edges to only include connections between top-level nodes
+      const topLevelIds = new Set(topLevelNodes.map((n) => n.id));
+      const topLevelEdges = currentEdges.filter(
+        (e) => topLevelIds.has(e.source) && topLevelIds.has(e.target),
+      );
+
       // ── Measure actual node sizes from DOM ──
-      // Also check which nodes have execution results (expanded results make nodes taller)
       const executionResults = useExecutionStore.getState().lastResults;
       const nodeSize = new Map<string, { w: number; h: number }>();
-      // Extra height to reserve for nodes whose results panel may not yet be
-      // reflected in the DOM (e.g. results exist but panel is collapsed).
       const RESULTS_RESERVE = 260;
-      for (const n of currentNodes) {
+      for (const n of topLevelNodes) {
         const el = document.querySelector(
           `[data-id="${n.id}"]`,
         ) as HTMLElement | null;
         const hasResults = (executionResults[n.id] ?? []).length > 0;
         if (el) {
           const measuredH = el.offsetHeight;
-          // If the node has results but measured height is small, the results
-          // panel is likely collapsed — reserve space for when it expands.
           const h =
             hasResults && measuredH < 300
               ? measuredH + RESULTS_RESERVE
@@ -1531,14 +1863,14 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
         }
       }
 
-      // ── Build adjacency ──
+      // ── Build adjacency (top-level only) ──
       const outgoing = new Map<string, string[]>();
       const incoming = new Map<string, string[]>();
-      for (const n of currentNodes) {
+      for (const n of topLevelNodes) {
         outgoing.set(n.id, []);
         incoming.set(n.id, []);
       }
-      for (const e of currentEdges) {
+      for (const e of topLevelEdges) {
         outgoing.get(e.source)?.push(e.target);
         incoming.get(e.target)?.push(e.source);
       }
@@ -1559,7 +1891,7 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
         layer.set(id, depth);
         return depth;
       }
-      for (const n of currentNodes) assignLayer(n.id);
+      for (const n of topLevelNodes) assignLayer(n.id);
 
       // ── Group by layer ──
       const layers = new Map<number, string[]>();
@@ -1572,16 +1904,12 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
       const sortedLayerKeys = [...layers.keys()].sort((a, b) => a - b);
 
       // ── Barycenter ordering to minimize edge crossings ──
-      // For each layer (except the first), sort nodes by the average Y position
-      // of their connected nodes in the previous layer.
-      // Run multiple passes for better results.
       const nodeOrder = new Map<string, number>();
-      // Initialize order by original position (top to bottom)
       for (const l of sortedLayerKeys) {
         const ids = layers.get(l)!;
         ids.sort((a, b) => {
-          const na = currentNodes.find((n) => n.id === a);
-          const nb = currentNodes.find((n) => n.id === b);
+          const na = topLevelNodes.find((n) => n.id === a);
+          const nb = topLevelNodes.find((n) => n.id === b);
           return (na?.position?.y ?? 0) - (nb?.position?.y ?? 0);
         });
         ids.forEach((id, i) => nodeOrder.set(id, i));
@@ -1627,11 +1955,10 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
         currentX += maxW + H_GAP;
       }
 
-      // ── Position nodes: center each column vertically ──
+      // ── Position top-level nodes: center each column vertically ──
       const changes: NodeChange[] = [];
       for (const l of sortedLayerKeys) {
         const ids = layers.get(l)!;
-        // Calculate total height of this column
         const heights = ids.map((id) => nodeSize.get(id)?.h ?? 250);
         const totalHeight =
           heights.reduce((sum, h) => sum + h, 0) + (ids.length - 1) * V_GAP;
@@ -1650,6 +1977,142 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
         });
       }
       applyChanges(changes);
+
+      // ── Re-arrange children inside their parent groups ──
+      // Perform a mini left-to-right DAG layout within each group
+      const TITLE_BAR_H = 40;
+      const CLAMP_PAD = 20;
+      const CHILD_H_GAP = 80;
+      const CHILD_V_GAP = 30;
+      const childChanges: NodeChange[] = [];
+
+      for (const [parentId, children] of childNodesByParent) {
+        const parentNode = currentNodes.find((n) => n.id === parentId);
+        if (!parentNode) continue;
+        let pw = (parentNode.data?.params?.__nodeWidth as number) ?? 600;
+        let ph = (parentNode.data?.params?.__nodeHeight as number) ?? 400;
+
+        // Measure child sizes from DOM
+        const childSize = new Map<string, { w: number; h: number }>();
+        for (const c of children) {
+          const el = document.querySelector(
+            `[data-id="${c.id}"]`,
+          ) as HTMLElement | null;
+          if (el) {
+            childSize.set(c.id, { w: el.offsetWidth, h: el.offsetHeight });
+          } else {
+            const w = (c.data?.params?.__nodeWidth as number) ?? 300;
+            childSize.set(c.id, { w, h: 250 });
+          }
+        }
+
+        const childIds = new Set(children.map((c) => c.id));
+
+        // Build internal adjacency (edges between children of this group)
+        const childOutgoing = new Map<string, string[]>();
+        const childIncoming = new Map<string, string[]>();
+        for (const c of children) {
+          childOutgoing.set(c.id, []);
+          childIncoming.set(c.id, []);
+        }
+        for (const e of currentEdges) {
+          if (childIds.has(e.source) && childIds.has(e.target)) {
+            childOutgoing.get(e.source)?.push(e.target);
+            childIncoming.get(e.target)?.push(e.source);
+          }
+        }
+
+        // Assign layers via longest-path
+        const cLayer = new Map<string, number>();
+        const cVisited = new Set<string>();
+        function assignChildLayer(cid: string): number {
+          if (cLayer.has(cid)) return cLayer.get(cid)!;
+          if (cVisited.has(cid)) return 0;
+          cVisited.add(cid);
+          const parents = childIncoming.get(cid) ?? [];
+          const depth =
+            parents.length === 0
+              ? 0
+              : Math.max(...parents.map((p) => assignChildLayer(p) + 1));
+          cLayer.set(cid, depth);
+          return depth;
+        }
+        for (const c of children) assignChildLayer(c.id);
+
+        // Group by layer
+        const cLayers = new Map<number, string[]>();
+        for (const [cid, l] of cLayer) {
+          if (!cLayers.has(l)) cLayers.set(l, []);
+          cLayers.get(l)!.push(cid);
+        }
+        const cSortedKeys = [...cLayers.keys()].sort((a, b) => a - b);
+
+        // Sort within each layer by original Y position
+        for (const l of cSortedKeys) {
+          const ids = cLayers.get(l)!;
+          ids.sort((a, b) => {
+            const na = children.find((c) => c.id === a);
+            const nb = children.find((c) => c.id === b);
+            return (na?.position?.y ?? 0) - (nb?.position?.y ?? 0);
+          });
+        }
+
+        // Compute column X positions
+        const colX = new Map<number, number>();
+        let cx = CLAMP_PAD;
+        for (const l of cSortedKeys) {
+          colX.set(l, cx);
+          const ids = cLayers.get(l)!;
+          const maxW = Math.max(
+            ...ids.map((cid) => childSize.get(cid)?.w ?? 300),
+          );
+          cx += maxW + CHILD_H_GAP;
+        }
+        const totalW = cx - CHILD_H_GAP + CLAMP_PAD;
+
+        // Position children within each column
+        let maxBottom = 0;
+        for (const l of cSortedKeys) {
+          const ids = cLayers.get(l)!;
+          const heights = ids.map((cid) => childSize.get(cid)?.h ?? 250);
+          let cy = TITLE_BAR_H + CLAMP_PAD;
+          ids.forEach((cid, i) => {
+            childChanges.push({
+              type: "position",
+              id: cid,
+              position: { x: colX.get(l) ?? CLAMP_PAD, y: cy },
+            } as NodeChange);
+            cy += heights[i] + CHILD_V_GAP;
+          });
+          maxBottom = Math.max(maxBottom, cy - CHILD_V_GAP + CLAMP_PAD);
+        }
+
+        // Expand group if children overflow
+        let needsUpdate = false;
+        if (totalW > pw) {
+          pw = totalW;
+          needsUpdate = true;
+        }
+        if (maxBottom > ph) {
+          ph = maxBottom;
+          needsUpdate = true;
+        }
+        if (needsUpdate) {
+          useWorkflowStore.getState().updateNodeParams(parentId, {
+            ...parentNode.data.params,
+            __nodeWidth: pw,
+            __nodeHeight: ph,
+          });
+        }
+      }
+      if (childChanges.length > 0) {
+        applyChanges(childChanges);
+      }
+
+      // Update bounding boxes for all groups
+      for (const parentId of childNodesByParent.keys()) {
+        useWorkflowStore.getState().updateBoundingBox(parentId);
+      }
 
       // Fit view after layout
       setTimeout(() => {
@@ -1670,15 +2133,16 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
     <ReactFlowProvider>
       <div ref={reactFlowWrapper} className="flex-1 h-full relative">
         <ReactFlow
-          nodes={nodes}
-          edges={edges}
+          nodes={displayNodes}
+          edges={displayEdges}
           onNodesChange={onNodesChangeWithAdoption}
-          onEdgesChange={onEdgesChange}
+          onEdgesChange={onEdgesChangeFiltered}
           onConnect={onConnect}
           onEdgeUpdate={onEdgeUpdate}
           onEdgeUpdateStart={onEdgeUpdateStart}
           onEdgeUpdateEnd={onEdgeUpdateEnd}
           onNodeClick={onNodeClick}
+          onNodeDoubleClick={onNodeDoubleClick}
           onPaneClick={onPaneClick}
           onSelectionChange={onSelectionChange}
           onNodeContextMenu={onNodeContextMenu}
@@ -1699,6 +2163,79 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
                 y: (-vp.y + h / 2) / vp.zoom,
               };
             });
+            // Restore saved viewport for this workflow
+            const wfId = useWorkflowStore.getState().workflowId;
+            if (wfId) {
+              try {
+                const raw = localStorage.getItem(`wf_viewport_${wfId}`);
+                if (raw) {
+                  const vp = JSON.parse(raw);
+                  if (
+                    typeof vp.x === "number" &&
+                    typeof vp.y === "number" &&
+                    typeof vp.zoom === "number"
+                  ) {
+                    instance.setViewport(vp, { duration: 0 });
+                  }
+                } else {
+                  instance.fitView({
+                    padding: 0.2,
+                    duration: 0,
+                    minZoom: 0.05,
+                    maxZoom: 1.5,
+                  });
+                }
+              } catch {
+                instance.fitView({
+                  padding: 0.2,
+                  duration: 0,
+                  minZoom: 0.05,
+                  maxZoom: 1.5,
+                });
+              }
+            } else {
+              instance.fitView({
+                padding: 0.2,
+                duration: 0,
+                minZoom: 0.05,
+                maxZoom: 1.5,
+              });
+            }
+            // Initialize viewport state for IO node pinning
+            const initVp = instance.getViewport();
+            setRfVpX(initVp.x);
+            setRfVpY(initVp.y);
+            setRfVpZoom(initVp.zoom);
+          }}
+          onMove={(_event, viewport) => {
+            if (editingGroupId && viewport) {
+              setRfVpX(viewport.x);
+              setRfVpY(viewport.y);
+              setRfVpZoom(viewport.zoom);
+            }
+          }}
+          onMoveEnd={(_event, viewport) => {
+            const wfId = useWorkflowStore.getState().workflowId;
+            if (wfId && viewport) {
+              try {
+                localStorage.setItem(
+                  `wf_viewport_${wfId}`,
+                  JSON.stringify({
+                    x: viewport.x,
+                    y: viewport.y,
+                    zoom: viewport.zoom,
+                  }),
+                );
+              } catch {
+                /* ignore */
+              }
+            }
+            // Also update viewport state for IO node pinning
+            if (viewport) {
+              setRfVpX(viewport.x);
+              setRfVpY(viewport.y);
+              setRfVpZoom(viewport.zoom);
+            }
           }}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
@@ -1712,7 +2249,6 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
           deleteKeyCode={null}
           minZoom={0.05}
           maxZoom={2.5}
-          fitView
           className="bg-background"
         >
           {showGrid && (
@@ -1724,6 +2260,8 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
             />
           )}
         </ReactFlow>
+        <SubgraphBreadcrumb />
+        <SubgraphToolbar />
         <CanvasZoomControls />
         {contextMenu && contextMenu.type !== "addNode" && (
           <ContextMenu

@@ -60,7 +60,9 @@ function CustomNodeComponent({
   const edges = useWorkflowStore((s) => s.edges);
   const updateNodeParams = useWorkflowStore((s) => s.updateNodeParams);
   const updateNodeData = useWorkflowStore((s) => s.updateNodeData);
-  const syncExposedParamsOnModelSwitch = useWorkflowStore((s) => s.syncExposedParamsOnModelSwitch);
+  const syncExposedParamsOnModelSwitch = useWorkflowStore(
+    (s) => s.syncExposedParamsOnModelSwitch,
+  );
   const workflowId = useWorkflowStore((s) => s.workflowId);
   const isDirty = useWorkflowStore((s) => s.isDirty);
   const { runNode, cancelNode, retryNode } = useExecutionStore();
@@ -430,7 +432,9 @@ function CustomNodeComponent({
   // Detect if this node is inside an Iterator container
   const parentIteratorId = useMemo(() => {
     const thisNode = allNodes.find((n) => n.id === id);
-    return (thisNode as { parentNode?: string } | undefined)?.parentNode ?? null;
+    return (
+      (thisNode as { parentNode?: string } | undefined)?.parentNode ?? null
+    );
   }, [allNodes, id]);
   const isInsideIterator = !!parentIteratorId;
 
@@ -738,7 +742,9 @@ function CustomNodeComponent({
             className={`w-2 h-2 rounded-full flex-shrink-0
           ${
             running
-              ? (isInsideIterator ? "bg-cyan-500 animate-pulse" : "bg-blue-500 animate-pulse")
+              ? isInsideIterator
+                ? "bg-cyan-500 animate-pulse"
+                : "bg-blue-500 animate-pulse"
               : status === "confirmed"
                 ? "bg-green-500"
                 : status === "error"
@@ -941,17 +947,76 @@ function CustomNodeComponent({
         )}
       </div>
 
-      {/* ── Output handle — placed on outer div so React Flow positions it correctly ───── */}
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="output"
-        style={{ ...handleRight(), top: 22 }}
-        title={t("workflow.output", "Output")}
-      />
-      <div className="absolute top-[15px] right-5 text-[10px] font-medium text-primary/60 select-none">
-        {t("workflow.outputLowercase", "output")}
-      </div>
+      {/* ── Output handles — one per outputDefinition, or single default ───── */}
+      {(() => {
+        // HTTP Response has no outputs
+        if (data.nodeType === "output/http-response") return null;
+        // HTTP Trigger: handles are rendered inline by DynamicFieldsEditor
+        if (data.nodeType === "trigger/http") return null;
+
+        const outputDefs = (data.outputDefinitions ?? []) as Array<{
+          key: string;
+          label?: string;
+        }>;
+        if (outputDefs.length > 1) {
+          // Multiple output ports (e.g. HTTP Trigger with dynamic mappings)
+          return outputDefs.map((def, idx) => {
+            const spacing = 30;
+            const startY = 22;
+            const y = startY + idx * spacing;
+            return (
+              <div key={def.key}>
+                <Handle
+                  type="source"
+                  position={Position.Right}
+                  id={def.key}
+                  style={{ ...handleRight(), top: y }}
+                  title={def.label ?? def.key}
+                />
+                <div
+                  className="absolute right-5 text-[10px] font-medium text-primary/60 select-none"
+                  style={{ top: y - 7 }}
+                >
+                  {def.label ?? def.key}
+                </div>
+              </div>
+            );
+          });
+        }
+        if (outputDefs.length === 1) {
+          // Single dynamic output port — use its key/label
+          const def = outputDefs[0];
+          return (
+            <>
+              <Handle
+                type="source"
+                position={Position.Right}
+                id={def.key}
+                style={{ ...handleRight(), top: 22 }}
+                title={def.label ?? def.key}
+              />
+              <div className="absolute top-[15px] right-5 text-[10px] font-medium text-primary/60 select-none">
+                {def.label ?? def.key}
+              </div>
+            </>
+          );
+        }
+        // Default: single output handle
+        return (
+          <>
+            <Handle
+              type="source"
+              position={Position.Right}
+              id="output"
+              style={{ ...handleRight(), top: 22 }}
+              title={t("workflow.output", "Output")}
+            />
+            <div className="absolute top-[15px] right-5 text-[10px] font-medium text-primary/60 select-none">
+              {t("workflow.outputLowercase", "output")}
+            </div>
+          </>
+        );
+      })()}
 
       {/* ── Side "Add Node" button — right side only, visible on hover / selected ───── */}
       {(hovered || selected) && (
@@ -959,9 +1024,12 @@ function CustomNodeComponent({
           <TooltipTrigger asChild>
             <button
               type="button"
-              className={`nodrag nopan absolute top-1/2 -translate-y-1/2 -right-3 z-40 flex items-center justify-center w-6 h-6 rounded-full shadow-lg backdrop-blur-sm text-white hover:scale-110 transition-all duration-150 ${
-                isInsideIterator ? "bg-cyan-500 hover:bg-cyan-600" : "bg-blue-500 hover:bg-blue-600"
+              className={`nodrag nopan absolute z-40 flex items-center justify-center w-6 h-6 rounded-full shadow-lg backdrop-blur-sm text-white hover:scale-110 transition-all duration-150 ${
+                isInsideIterator
+                  ? "bg-cyan-500 hover:bg-cyan-600"
+                  : "bg-blue-500 hover:bg-blue-600"
               }`}
+              style={{ top: "35%", right: -12 }}
               onClick={(e) => {
                 e.stopPropagation();
                 const rect = (

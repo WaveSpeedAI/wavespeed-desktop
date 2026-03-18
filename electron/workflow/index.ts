@@ -27,6 +27,8 @@ import { registerUploadIpc } from "./ipc/upload.ipc";
 import { registerSettingsIpc } from "./ipc/settings.ipc";
 import { registerFreeToolIpc } from "./ipc/free-tool.ipc";
 import { registerTemplateIpc } from "./ipc/template.ipc";
+import { registerHttpServerIpc } from "./ipc/http-server.ipc";
+import { setHttpServerEngine } from "./services/http-server";
 import { migrateTemplatesFromLocalStorage } from "./services/template-migration";
 import { initializeDefaultTemplates } from "./services/template-init";
 
@@ -79,6 +81,7 @@ export async function initWorkflowModule(): Promise<void> {
 
   // 5. Wire up singletons
   setExecutionEngine(engine);
+  setHttpServerEngine(engine);
   setCostDeps(costService, nodeRegistry);
   setMarkDownstreamStale((workflowId, nodeId) =>
     engine.markDownstreamStale(workflowId, nodeId),
@@ -94,6 +97,7 @@ export async function initWorkflowModule(): Promise<void> {
   registerSettingsIpc();
   registerFreeToolIpc();
   registerTemplateIpc();
+  registerHttpServerIpc();
 
   // 7. Migrate templates from localStorage (if needed)
   try {

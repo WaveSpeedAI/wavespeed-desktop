@@ -1154,6 +1154,27 @@
     "zoomOut": "Zoom out",
     "autoLayout": "Auto Layout",
     "freeToolModelHint": "First run will auto-download the AI model, please wait",
+    "triggerHint": "This trigger will repeatedly run the downstream workflow each time it fires",
+    "dropToAddToGroup": "Release to add to Group",
+    "dropToRemoveFromGroup": "Release to remove from Group",
+    "editSubgraph": "Edit Subgraph",
+    "mainWorkflow": "Main Workflow",
+    "exitSubgraph": "Exit subgraph (ESC)",
+    "editingSubgraph": "Editing subgraph",
+    "childNodesCount": "{{count}} child node(s)",
+    "groupInput": "Group Input",
+    "groupOutput": "Group Output",
+    "noExposedPorts": "No exposed ports",
+    "doubleClickToRename": "Double-click to rename",
+    "clickToSetAlias": "Click to set display name",
+    "setAlias": "Set display name...",
+    "aliasPlaceholder": "Display name on main graph...",
+    "mappedAs": "Mapped as:",
+    "group": "Group",
+    "importWorkflow": "Import Workflow",
+    "importWorkflowAsSubgraph": "Import Workflow as Subgraph",
+    "noWorkflowsToImport": "No other workflows available",
+    "nodeCountLabel": "{{count}} nodes",
     "more": "More",
     "previousImage": "Previous image",
     "nextImage": "Next image",
@@ -1171,6 +1192,9 @@
     "open": "Open",
     "paste": "Paste",
     "addNode": "Add Node",
+    "addDownstreamNode": "Add Downstream Node",
+    "triggerLimitTitle": "Only one trigger allowed",
+    "triggerLimitDesc": "A workflow can only have one trigger node. Remove the existing trigger first.",
     "addNote": "Add Note",
     "note": "Note",
     "deleteConnection": "Delete Connection",
@@ -1220,6 +1244,11 @@
     "hideRun": "Hide this run",
     "output": "Output",
     "outputLowercase": "output",
+    "httpTriggerFields": "API Input Fields",
+    "httpResponseFields": "API Response Fields",
+    "addField": "Add",
+    "noFieldsHint": "No fields defined. Click Add to create one.",
+    "statusCode": "Status Code",
     "expandNode": "Expand",
     "collapseNode": "Collapse",
     "collapseAll": "Collapse All",
@@ -1235,6 +1264,7 @@
     "noNodesAvailable": "No nodes available",
     "nodeCategory": {
       "recent": "Recent",
+      "trigger": "Trigger",
       "input": "Input",
       "ai-task": "AI Model",
       "free-tool": "Free Tools",
@@ -1243,6 +1273,14 @@
       "control": "Control"
     },
     "nodeDefs": {
+      "trigger/directory": {
+        "label": "Directory",
+        "hint": "Scan a local folder — workflow runs once per file"
+      },
+      "trigger/http": {
+        "label": "HTTP Trigger",
+        "hint": "Expose this workflow as an HTTP API — define input fields that callers provide"
+      },
       "ai-task/run": {
         "label": "WaveSpeed API",
         "hint": "Run any AI model on the platform — image, video, audio, and more",
@@ -1329,6 +1367,10 @@
           }
         }
       },
+      "output/http-response": {
+        "label": "HTTP Response",
+        "hint": "Define what this workflow returns to HTTP callers"
+      },
       "free-tool/image-enhancer": {
         "label": "Image Enhancer",
         "hint": "Upscale and sharpen images (2×–4×) for free"
@@ -1399,8 +1441,12 @@
         "hint": "Pick one item from an array by index"
       },
       "control/iterator": {
-        "label": "Iterator",
-        "hint": "Loop over inputs — run child nodes N times or once per array item"
+        "label": "Group",
+        "hint": "Group nodes into a sub-workflow for organization"
+      },
+      "control/group": {
+        "label": "Group",
+        "hint": "Group nodes into a sub-workflow for organization"
       },
       "input/directory-import": {
         "label": "Directory Import",

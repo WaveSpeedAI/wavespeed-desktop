@@ -158,7 +158,22 @@ export function ResultsPanel({
     if (metaUrls && Array.isArray(metaUrls) && metaUrls.length > 0) {
       return metaUrls.filter((u) => u && typeof u === "string");
     }
-    return rec.resultPath ? [rec.resultPath] : [];
+    if (rec.resultPath) return [rec.resultPath];
+    // Fallback for nodes that produce structured data (e.g. HTTP Response):
+    // render non-internal metadata fields as a JSON text block
+    if (meta) {
+      const display: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(meta)) {
+        if (!k.startsWith("__") && v !== undefined && v !== null && v !== "") {
+          display[k] = v;
+        }
+      }
+      if (Object.keys(display).length > 0) {
+        const text = JSON.stringify(display, null, 2);
+        return [`data:text/plain;charset=utf-8,${encodeURIComponent(text)}`];
+      }
+    }
+    return [];
   };
 
   const panelImageUrls = displayRecords

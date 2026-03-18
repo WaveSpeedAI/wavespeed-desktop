@@ -286,7 +286,9 @@ export function duplicateWorkflow(sourceId: string): Workflow {
       id: nodeIdMap.get(n.id)!,
       workflowId: newWf.id,
       currentOutputId: null,
-      parentNodeId: n.parentNodeId ? (nodeIdMap.get(n.parentNodeId) ?? null) : null,
+      parentNodeId: n.parentNodeId
+        ? (nodeIdMap.get(n.parentNodeId) ?? null)
+        : null,
     }),
   );
 

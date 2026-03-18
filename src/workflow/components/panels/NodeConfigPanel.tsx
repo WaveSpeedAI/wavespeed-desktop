@@ -99,17 +99,20 @@ export function NodeConfigPanel({
   // Iterator self-config: show port management when the Iterator itself is selected
   if (isIterator) {
     return (
-      <div className={embeddedInNode ? "p-2 overflow-hidden w-full min-w-0 flex flex-col flex-1 min-h-0" : "p-3 overflow-hidden w-full min-w-0 flex flex-col flex-1"}>
+      <div
+        className={
+          embeddedInNode
+            ? "p-2 overflow-hidden w-full min-w-0 flex flex-col flex-1 min-h-0"
+            : "p-3 overflow-hidden w-full min-w-0 flex flex-col flex-1"
+        }
+      >
         {!embeddedInNode && (
           <h3 className="text-sm font-semibold mb-3 flex-shrink-0">
             {t("workflow.iteratorConfig", "Iterator Configuration")}
           </h3>
         )}
         <div className="flex-1 overflow-y-auto scrollbar-auto-hide">
-          <IteratorSelfConfig
-            iteratorNode={node}
-            allNodes={nodes}
-          />
+          <IteratorSelfConfig iteratorNode={node} allNodes={nodes} />
         </div>
       </div>
     );
@@ -179,7 +182,10 @@ function ExposeParamControls({
   const unexposeParam = useWorkflowStore((s) => s.unexposeParam);
 
   const subNodeLabel = String(node.data.label ?? node.id);
-  const iteratorParams = (parentIterator.data.params ?? {}) as Record<string, unknown>;
+  const iteratorParams = (parentIterator.data.params ?? {}) as Record<
+    string,
+    unknown
+  >;
 
   // Parse currently exposed inputs/outputs from the parent iterator
   const exposedInputs: ExposedParam[] = useMemo(() => {
@@ -204,8 +210,10 @@ function ExposeParamControls({
   const visibleParamDefs = paramDefs.filter((d) => !d.key.startsWith("__"));
 
   // Get input/output port definitions from the node data
-  const inputDefs: PortDefinition[] = (node.data.inputDefinitions as PortDefinition[] | undefined) ?? [];
-  const outputDefs: PortDefinition[] = (node.data.outputDefinitions as PortDefinition[] | undefined) ?? [];
+  const inputDefs: PortDefinition[] =
+    (node.data.inputDefinitions as PortDefinition[] | undefined) ?? [];
+  const outputDefs: PortDefinition[] =
+    (node.data.outputDefinitions as PortDefinition[] | undefined) ?? [];
 
   const isExposed = (paramKey: string, direction: "input" | "output") => {
     const nk = `${subNodeLabel}.${paramKey}`;
@@ -215,7 +223,11 @@ function ExposeParamControls({
 
   const getNamespacedKey = (paramKey: string) => `${subNodeLabel}.${paramKey}`;
 
-  const handleExpose = (paramKey: string, direction: "input" | "output", dataType: string) => {
+  const handleExpose = (
+    paramKey: string,
+    direction: "input" | "output",
+    dataType: string,
+  ) => {
     const param: ExposedParam = {
       subNodeId: node.id,
       subNodeLabel,
@@ -232,7 +244,9 @@ function ExposeParamControls({
   };
 
   const hasExposableItems =
-    visibleParamDefs.length > 0 || inputDefs.length > 0 || outputDefs.length > 0;
+    visibleParamDefs.length > 0 ||
+    inputDefs.length > 0 ||
+    outputDefs.length > 0;
 
   if (!hasExposableItems) return null;
 
@@ -258,7 +272,9 @@ function ExposeParamControls({
                 direction="input"
                 exposed={exposed}
                 namespacedKey={getNamespacedKey(def.key)}
-                onExpose={() => handleExpose(def.key, "input", def.dataType ?? "any")}
+                onExpose={() =>
+                  handleExpose(def.key, "input", def.dataType ?? "any")
+                }
                 onUnexpose={() => handleUnexpose(def.key, "input")}
               />
             );
@@ -380,13 +396,20 @@ function IteratorSelfConfig({
   allNodes,
 }: {
   iteratorNode: { id: string; data: Record<string, unknown> };
-  allNodes: Array<{ id: string; data: Record<string, unknown>; parentNode?: string }>;
+  allNodes: Array<{
+    id: string;
+    data: Record<string, unknown>;
+    parentNode?: string;
+  }>;
 }) {
   const { t } = useTranslation();
   const unexposeParam = useWorkflowStore((s) => s.unexposeParam);
   const updateNodeParams = useWorkflowStore((s) => s.updateNodeParams);
 
-  const iteratorParams = (iteratorNode.data.params ?? {}) as Record<string, unknown>;
+  const iteratorParams = (iteratorNode.data.params ?? {}) as Record<
+    string,
+    unknown
+  >;
   const iterationCount = Number(iteratorParams.iterationCount ?? 1);
 
   // Find child nodes
@@ -397,14 +420,18 @@ function IteratorSelfConfig({
     try {
       const raw = iteratorParams.exposedInputs;
       return typeof raw === "string" ? JSON.parse(raw) : [];
-    } catch { return []; }
+    } catch {
+      return [];
+    }
   }, [iteratorParams.exposedInputs]);
 
   const exposedOutputs: ExposedParam[] = useMemo(() => {
     try {
       const raw = iteratorParams.exposedOutputs;
       return typeof raw === "string" ? JSON.parse(raw) : [];
-    } catch { return []; }
+    } catch {
+      return [];
+    }
   }, [iteratorParams.exposedOutputs]);
 
   return (
@@ -420,7 +447,10 @@ function IteratorSelfConfig({
           value={iterationCount}
           onChange={(e) => {
             const val = Math.max(1, Math.floor(Number(e.target.value) || 1));
-            updateNodeParams(iteratorNode.id, { ...iteratorParams, iterationCount: val });
+            updateNodeParams(iteratorNode.id, {
+              ...iteratorParams,
+              iterationCount: val,
+            });
           }}
           className="w-full rounded border border-input bg-background px-2 py-1.5 text-xs"
         />
@@ -433,14 +463,22 @@ function IteratorSelfConfig({
         </div>
         {childNodes.length === 0 ? (
           <div className="text-[11px] text-muted-foreground/60 italic">
-            {t("workflow.noChildNodes", "No child nodes. Drag nodes into the Iterator or use the Add Node button.")}
+            {t(
+              "workflow.noChildNodes",
+              "No child nodes. Drag nodes into the Iterator or use the Add Node button.",
+            )}
           </div>
         ) : (
           <div className="space-y-1">
             {childNodes.map((child) => (
-              <div key={child.id} className="flex items-center gap-2 px-2 py-1 rounded bg-muted/50 text-[11px]">
+              <div
+                key={child.id}
+                className="flex items-center gap-2 px-2 py-1 rounded bg-muted/50 text-[11px]"
+              >
                 <span className="w-1.5 h-1.5 rounded-full bg-primary/40 flex-shrink-0" />
-                <span className="truncate">{String(child.data.label ?? child.data.nodeType ?? child.id)}</span>
+                <span className="truncate">
+                  {String(child.data.label ?? child.data.nodeType ?? child.id)}
+                </span>
               </div>
             ))}
           </div>
@@ -450,19 +488,28 @@ function IteratorSelfConfig({
       {/* Exposed inputs */}
       <div>
         <div className="text-xs text-muted-foreground mb-1">
-          {t("workflow.exposedInputs", "Exposed Inputs")} ({exposedInputs.length})
+          {t("workflow.exposedInputs", "Exposed Inputs")} (
+          {exposedInputs.length})
         </div>
         {exposedInputs.length === 0 ? (
           <div className="text-[11px] text-muted-foreground/60 italic">
-            {t("workflow.noExposedInputs", "Select a child node to expose its parameters as Iterator inputs.")}
+            {t(
+              "workflow.noExposedInputs",
+              "Select a child node to expose its parameters as Iterator inputs.",
+            )}
           </div>
         ) : (
           <div className="space-y-1">
             {exposedInputs.map((ep) => (
-              <div key={ep.namespacedKey} className="flex items-center justify-between gap-2 px-2 py-1 rounded bg-muted/50 text-[11px]">
+              <div
+                key={ep.namespacedKey}
+                className="flex items-center justify-between gap-2 px-2 py-1 rounded bg-muted/50 text-[11px]"
+              >
                 <span className="truncate">{ep.namespacedKey}</span>
                 <button
-                  onClick={() => unexposeParam(iteratorNode.id, ep.namespacedKey, "input")}
+                  onClick={() =>
+                    unexposeParam(iteratorNode.id, ep.namespacedKey, "input")
+                  }
                   className="flex-shrink-0 text-[10px] text-destructive hover:text-destructive/80"
                 >
                   ✕
@@ -476,19 +523,28 @@ function IteratorSelfConfig({
       {/* Exposed outputs */}
       <div>
         <div className="text-xs text-muted-foreground mb-1">
-          {t("workflow.exposedOutputs", "Exposed Outputs")} ({exposedOutputs.length})
+          {t("workflow.exposedOutputs", "Exposed Outputs")} (
+          {exposedOutputs.length})
         </div>
         {exposedOutputs.length === 0 ? (
           <div className="text-[11px] text-muted-foreground/60 italic">
-            {t("workflow.noExposedOutputs", "Select a child node to expose its outputs as Iterator outputs.")}
+            {t(
+              "workflow.noExposedOutputs",
+              "Select a child node to expose its outputs as Iterator outputs.",
+            )}
           </div>
         ) : (
           <div className="space-y-1">
             {exposedOutputs.map((ep) => (
-              <div key={ep.namespacedKey} className="flex items-center justify-between gap-2 px-2 py-1 rounded bg-muted/50 text-[11px]">
+              <div
+                key={ep.namespacedKey}
+                className="flex items-center justify-between gap-2 px-2 py-1 rounded bg-muted/50 text-[11px]"
+              >
                 <span className="truncate">{ep.namespacedKey}</span>
                 <button
-                  onClick={() => unexposeParam(iteratorNode.id, ep.namespacedKey, "output")}
+                  onClick={() =>
+                    unexposeParam(iteratorNode.id, ep.namespacedKey, "output")
+                  }
                   className="flex-shrink-0 text-[10px] text-destructive hover:text-destructive/80"
                 >
                   ✕
@@ -502,7 +558,10 @@ function IteratorSelfConfig({
       {/* Hint */}
       {childNodes.length > 0 && (
         <div className="text-[10px] text-muted-foreground/50 leading-relaxed border-t border-border pt-3">
-          {t("workflow.iteratorHint", "Tip: Click on a child node inside the Iterator to expose/unexpose its parameters and outputs.")}
+          {t(
+            "workflow.iteratorHint",
+            "Tip: Click on a child node inside the Iterator to expose/unexpose its parameters and outputs.",
+          )}
         </div>
       )}
     </div>

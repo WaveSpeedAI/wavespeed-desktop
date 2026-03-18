@@ -31,6 +31,9 @@ const MAX_SESSIONS = 20;
 /** AbortController for the current in-browser run; Stop calls abort() on it. */
 let browserRunAbortController: AbortController | null = null;
 
+/** Track whether we started an HTTP server so cancelAll can stop it. */
+let httpServerListening = false;
+
 function isAbortError(e: unknown): boolean {
   return (
     (e instanceof DOMException && e.name === "AbortError") ||
@@ -218,6 +221,88 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
       ].slice(0, MAX_SESSIONS),
     }));
 
+    // ── HTTP Trigger: start server and wait for requests instead of executing ──
+    const httpTriggerNode = nodes.find(
+      (n) => n.data.nodeType === "trigger/http",
+    );
+    if (httpTriggerNode) {
+      const wapi = (window as unknown as Record<string, unknown>)
+        .workflowAPI as
+        | { invoke: (ch: string, args?: unknown) => Promise<unknown> }
+        | undefined;
+      if (!wapi) {
+        get().updateNodeStatus(
+          httpTriggerNode.id,
+          "error",
+          "HTTP Trigger requires the desktop app.",
+        );
+        set((s) => ({
+          runSessions: s.runSessions.map((rs) =>
+            rs.id === sessionId ? { ...rs, status: "error" as const } : rs,
+          ),
+        }));
+        return;
+      }
+
+      // Save workflow first so the backend can load it
+      let savedWorkflowId: string | null = null;
+      try {
+        const { useWorkflowStore: wfs } = await import("./workflow.store");
+        await wfs.getState().saveWorkflow();
+        savedWorkflowId = wfs.getState().workflowId;
+      } catch {
+        /* user may cancel naming — continue anyway if workflowId exists */
+      }
+      // Get workflowId (may have been set before or after save)
+      if (!savedWorkflowId) {
+        const { useWorkflowStore: wfs2 } = await import("./workflow.store");
+        savedWorkflowId = wfs2.getState().workflowId;
+      }
+      if (!savedWorkflowId) {
+        get().updateNodeStatus(
+          httpTriggerNode.id,
+          "error",
+          "Please save the workflow first before starting the HTTP server.",
+        );
+        set((s) => ({
+          runSessions: s.runSessions.map((rs) =>
+            rs.id === sessionId ? { ...rs, status: "error" as const } : rs,
+          ),
+        }));
+        return;
+      }
+
+      const port = Number(httpTriggerNode.data.params?.port) || 3100;
+      try {
+        const status = (await wapi.invoke("http-server:start", {
+          port,
+          workflowId: savedWorkflowId,
+        })) as {
+          running: boolean;
+          port: number | null;
+          url: string | null;
+        };
+        if (!status.running) throw new Error("Server failed to start");
+        httpServerListening = true;
+        get().updateNodeStatus(httpTriggerNode.id, "running");
+        get().updateProgress(
+          httpTriggerNode.id,
+          0,
+          `Listening on http://localhost:${status.port} — POST / to trigger`,
+        );
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        get().updateNodeStatus(httpTriggerNode.id, "error", msg);
+        set((s) => ({
+          runSessions: s.runSessions.map((rs) =>
+            rs.id === sessionId ? { ...rs, status: "error" as const } : rs,
+          ),
+        }));
+      }
+      // Don't finish the session — it stays "running" until user clicks Stop
+      return;
+    }
+
     const controller = new AbortController();
     browserRunAbortController = controller;
     try {
@@ -284,7 +369,10 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
 
   runNodeInBrowser: async (nodes, edges, nodeId) => {
     const targetNode = nodes.find((n) => n.id === nodeId);
-    const targetLabel = (targetNode?.data?.label as string) || targetNode?.data?.nodeType || nodeId.slice(0, 8);
+    const targetLabel =
+      (targetNode?.data?.label as string) ||
+      targetNode?.data?.nodeType ||
+      nodeId.slice(0, 8);
     set({ _lastRunType: "single", _lastRunNodeLabel: targetLabel });
     const upstream = new Set<string>([nodeId]);
     const reverse = new Map<string, string[]>();
@@ -576,6 +664,19 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
     if (browserRunAbortController) {
       browserRunAbortController.abort();
     }
+    // Stop HTTP server if it was started by an HTTP Trigger run
+    if (httpServerListening) {
+      httpServerListening = false;
+      try {
+        const wapi = (window as unknown as Record<string, unknown>)
+          .workflowAPI as
+          | { invoke: (ch: string, args?: unknown) => Promise<unknown> }
+          | undefined;
+        await wapi?.invoke("http-server:stop");
+      } catch {
+        /* best effort */
+      }
+    }
     set((s) => ({
       runSessions: s.runSessions.map((rs) =>
         rs.workflowId === workflowId && rs.status === "running"
@@ -583,6 +684,21 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
           : rs,
       ),
     }));
+    // Reset all node statuses to idle
+    const currentStatuses = get().nodeStatuses;
+    const resetStatuses: Record<string, NodeStatus> = {};
+    for (const nid of Object.keys(currentStatuses)) {
+      if (currentStatuses[nid] === "running") {
+        resetStatuses[nid] = "idle";
+      }
+    }
+    if (Object.keys(resetStatuses).length > 0) {
+      set((s) => ({
+        nodeStatuses: { ...s.nodeStatuses, ...resetStatuses },
+        activeExecutions: new Set(),
+        progressMap: {},
+      }));
+    }
   },
 
   updateNodeStatus: (nodeId, status, errorMessage) => {

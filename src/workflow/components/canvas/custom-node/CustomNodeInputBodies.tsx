@@ -752,7 +752,11 @@ export function TextInputBody({
    DirectoryImportBody
    ══════════════════════════════════════════════════════════════════════ */
 
-const MEDIA_TYPE_OPTIONS: Array<{ value: string; label: string; exts: string }> = [
+const MEDIA_TYPE_OPTIONS: Array<{
+  value: string;
+  label: string;
+  exts: string;
+}> = [
   { value: "image", label: "Images", exts: ".jpg .png .webp .gif .bmp .svg" },
   { value: "video", label: "Videos", exts: ".mp4 .webm .mov .avi .mkv" },
   { value: "audio", label: "Audio", exts: ".mp3 .wav .flac .m4a .ogg" },
@@ -760,12 +764,26 @@ const MEDIA_TYPE_OPTIONS: Array<{ value: string; label: string; exts: string }> 
 ];
 
 const MEDIA_EXTS: Record<string, string[]> = {
-  image: [".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp", ".tiff", ".svg", ".avif"],
+  image: [
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".webp",
+    ".gif",
+    ".bmp",
+    ".tiff",
+    ".svg",
+    ".avif",
+  ],
   video: [".mp4", ".webm", ".mov", ".avi", ".mkv", ".flv", ".wmv", ".m4v"],
   audio: [".mp3", ".wav", ".flac", ".m4a", ".ogg", ".aac", ".wma"],
   all: [],
 };
-MEDIA_EXTS.all = [...MEDIA_EXTS.image, ...MEDIA_EXTS.video, ...MEDIA_EXTS.audio];
+MEDIA_EXTS.all = [
+  ...MEDIA_EXTS.image,
+  ...MEDIA_EXTS.video,
+  ...MEDIA_EXTS.audio,
+];
 
 export function DirectoryImportBody({
   params,
@@ -778,7 +796,9 @@ export function DirectoryImportBody({
   const dirPath = String(params.directoryPath ?? "");
   const mediaType = String(params.mediaType ?? "image");
   const [files, setFiles] = useState<string[]>(
-    Array.isArray(params.__cachedFiles) ? (params.__cachedFiles as string[]) : [],
+    Array.isArray(params.__cachedFiles)
+      ? (params.__cachedFiles as string[])
+      : [],
   );
   const [scanning, setScanning] = useState(false);
 
@@ -803,10 +823,15 @@ export function DirectoryImportBody({
     setScanning(true);
     try {
       const api = (window as unknown as Record<string, unknown>).electronAPI as
-        | { scanDirectory?: (path: string, exts: string[]) => Promise<string[]> }
+        | {
+            scanDirectory?: (path: string, exts: string[]) => Promise<string[]>;
+          }
         | undefined;
       if (api?.scanDirectory) {
-        const result = await api.scanDirectory(dir, MEDIA_EXTS[type] ?? MEDIA_EXTS.all);
+        const result = await api.scanDirectory(
+          dir,
+          MEDIA_EXTS[type] ?? MEDIA_EXTS.all,
+        );
         setFiles(result);
         // Batch all updates in a single call so the store merges them atomically
         const updates: Record<string, unknown> = {
@@ -850,8 +875,13 @@ export function DirectoryImportBody({
                 onParamChange({ directoryPath: e.target.value });
                 setFiles([]);
               }}
-              onBlur={() => { if (dirPath) scanDir(dirPath, mediaType); }}
-              placeholder={t("workflow.directoryImport.enterPath", "Path or browse...")}
+              onBlur={() => {
+                if (dirPath) scanDir(dirPath, mediaType);
+              }}
+              placeholder={t(
+                "workflow.directoryImport.enterPath",
+                "Path or browse...",
+              )}
               className={`${inputCls} flex-1 min-w-0`}
               onClick={(e) => e.stopPropagation()}
             />
@@ -897,15 +927,32 @@ export function DirectoryImportBody({
           <span className="text-xs text-[hsl(var(--foreground))]">
             {scanning ? (
               <span className="flex items-center gap-1.5 text-[hsl(var(--muted-foreground))] animate-pulse">
-                <svg className="animate-spin w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10" strokeDasharray="60" strokeDashoffset="20" />
+                <svg
+                  className="animate-spin w-3 h-3"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    strokeDasharray="60"
+                    strokeDashoffset="20"
+                  />
                 </svg>
                 {t("workflow.directoryImport.scanning", "Scanning...")}
               </span>
             ) : dirPath && files.length > 0 ? (
-              <span className="text-green-500">{files.length} {t("workflow.directoryImport.filesFound", "file(s) matched")}</span>
+              <span className="text-green-500">
+                {files.length}{" "}
+                {t("workflow.directoryImport.filesFound", "file(s) matched")}
+              </span>
             ) : dirPath ? (
-              <span className="text-[hsl(var(--muted-foreground))]">{t("workflow.directoryImport.noFiles", "No matching files")}</span>
+              <span className="text-[hsl(var(--muted-foreground))]">
+                {t("workflow.directoryImport.noFiles", "No matching files")}
+              </span>
             ) : (
               <span className="text-[hsl(var(--muted-foreground))]">—</span>
             )}

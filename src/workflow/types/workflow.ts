@@ -49,4 +49,5 @@ export interface ExposedParam {
   namespacedKey: string;
   direction: "input" | "output";
   dataType: PortDataType;
+  alias?: string;
 }

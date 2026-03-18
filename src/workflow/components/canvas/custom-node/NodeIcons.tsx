@@ -24,6 +24,9 @@ import {
   ListFilter,
   FolderOpen,
   Repeat,
+  FolderSearch,
+  Globe,
+  Send,
   type LucideIcon,
 } from "lucide-react";
 
@@ -55,6 +58,11 @@ const NODE_ICON_MAP: Record<string, LucideIcon> = {
   "processing/select": ListFilter,
   // Control
   "control/iterator": Repeat,
+  // Trigger
+  "trigger/directory": FolderSearch,
+  "trigger/http": Globe,
+  // Output
+  "output/http-response": Send,
 };
 
 export function getNodeIcon(nodeType: string): LucideIcon | null {

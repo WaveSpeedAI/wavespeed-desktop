@@ -40,6 +40,7 @@ export interface ParamDefinition {
 }
 
 export type NodeCategory =
+  | "trigger"
   | "input"
   | "ai-task"
   | "ai-generation"

@@ -1147,6 +1147,27 @@
     "zoomOut": "缩小",
     "autoLayout": "整理布局",
     "freeToolModelHint": "首次运行时将自动下载 AI 模型，请耐心等待",
+    "triggerHint": "此触发器每次触发时都会重复运行下游工作流",
+    "dropToAddToGroup": "松开以添加到 Group",
+    "dropToRemoveFromGroup": "松开以从 Group 移出",
+    "editSubgraph": "编辑子图",
+    "mainWorkflow": "主工作流",
+    "exitSubgraph": "退出子图 (ESC)",
+    "editingSubgraph": "正在编辑子图",
+    "childNodesCount": "{{count}} 个子节点",
+    "groupInput": "组输入",
+    "groupOutput": "组输出",
+    "noExposedPorts": "暂无暴露端口",
+    "doubleClickToRename": "双击重命名",
+    "clickToSetAlias": "点击设置显示名称",
+    "setAlias": "设置显示名称...",
+    "aliasPlaceholder": "主图上的显示名称...",
+    "mappedAs": "映射为：",
+    "group": "分组",
+    "importWorkflow": "导入工作流",
+    "importWorkflowAsSubgraph": "导入工作流为子图",
+    "noWorkflowsToImport": "没有其他可导入的工作流",
+    "nodeCountLabel": "{{count}} 个节点",
     "more": "更多",
     "previousImage": "上一张图片",
     "nextImage": "下一张图片",
@@ -1162,6 +1183,9 @@
     "open": "打开",
     "paste": "粘贴",
     "addNode": "添加节点",
+    "addDownstreamNode": "添加下游节点",
+    "triggerLimitTitle": "只允许一个触发器",
+    "triggerLimitDesc": "每个工作流只能有一个触发器节点，请先删除现有的触发器。",
     "addNote": "添加备注",
     "note": "备注",
     "deleteConnection": "删除连接",
@@ -1211,6 +1235,11 @@
     "hideRun": "隐藏本次运行",
     "output": "输出",
     "outputLowercase": "输出",
+    "httpTriggerFields": "API 输入字段",
+    "httpResponseFields": "API 响应字段",
+    "addField": "添加",
+    "noFieldsHint": "暂无字段，点击添加创建。",
+    "statusCode": "状态码",
     "expandNode": "展开",
     "collapseNode": "收起",
     "collapseAll": "全部收起",
@@ -1226,6 +1255,7 @@
     "noNodesAvailable": "暂无可用节点",
     "nodeCategory": {
       "recent": "最近使用",
+      "trigger": "触发器",
       "input": "输入",
       "ai-task": "AI 任务",
       "free-tool": "免费工具",
@@ -1234,6 +1264,14 @@
       "control": "控制"
     },
     "nodeDefs": {
+      "trigger/directory": {
+        "label": "目录触发",
+        "hint": "扫描本地文件夹，每个文件执行一次工作流"
+      },
+      "trigger/http": {
+        "label": "HTTP 触发",
+        "hint": "将工作流发布为 HTTP API，定义调用方需要提供的输入字段"
+      },
       "ai-task/run": {
         "label": "WaveSpeed API",
         "hint": "运行平台上的任意 AI 模型——图像、视频、音频等",
@@ -1320,6 +1358,10 @@
           }
         }
       },
+      "output/http-response": {
+        "label": "HTTP 响应",
+        "hint": "定义工作流通过 HTTP 返回的内容"
+      },
       "free-tool/image-enhancer": {
         "label": "图片增强",
         "hint": "免费放大和锐化图片（2×–4×）"
@@ -1390,8 +1432,12 @@
         "hint": "按索引从数组中取出一个元素"
       },
       "control/iterator": {
-        "label": "迭代器",
-        "hint": "循环执行子节点 — 固定 N 次或按数组长度自动迭代"
+        "label": "分组",
+        "hint": "将节点分组为子工作流，便于组织管理"
+      },
+      "control/group": {
+        "label": "分组",
+        "hint": "将节点分组为子工作流，便于组织管理"
       },
       "input/directory-import": {
         "label": "目录导入",

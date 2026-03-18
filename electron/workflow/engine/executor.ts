@@ -19,6 +19,7 @@ import { getFileStorageInstance } from "../utils/file-storage";
 import { saveWorkflowResultToAssets } from "../utils/save-to-assets";
 import { getWorkflowById } from "../db/workflow.repo";
 import type { NodeExecutionContext, NodeExecutionResult } from "../nodes/base";
+import { isTriggerHandler } from "../nodes/trigger/base";
 import type { NodeStatus } from "../../../src/workflow/types/execution";
 import type {
   WorkflowNode,
@@ -61,26 +62,117 @@ export class ExecutionEngine {
     private callbacks: ExecutionCallbacks,
   ) {}
 
-  /** Run all nodes in topological order. */
-  async runAll(workflowId: string): Promise<void> {
+  /** Run all nodes in topological order. Detects trigger nodes for batch execution.
+   *  Returns collected HTTP response data if an HTTP Response node exists. */
+  async runAll(
+    workflowId: string,
+    triggerValue?: Record<string, unknown>,
+  ): Promise<Record<string, unknown> | void> {
     const allNodes = getNodesByWorkflowId(workflowId);
     const allEdges = getEdgesByWorkflowId(workflowId);
 
-    // Exclude child nodes (they are executed internally by their parent Iterator handler)
+    // Exclude child nodes (executed internally by their parent Group handler)
     const nodes = allNodes.filter((n) => !n.parentNodeId);
-    // Exclude internal edges (edges between sub-nodes inside an Iterator)
+    // Exclude internal edges (edges between sub-nodes inside a Group)
     const edges = allEdges.filter((e) => !e.isInternal);
 
+    // If triggerValue is provided (from HTTP server), inject it into the HTTP Trigger node
+    const httpTriggerNode = nodes.find((n) => n.nodeType === "trigger/http");
+    if (triggerValue && httpTriggerNode) {
+      httpTriggerNode.params = {
+        ...httpTriggerNode.params,
+        __triggerValue: triggerValue,
+      };
+    }
+
+    // Detect batch trigger node (e.g. directory trigger)
+    const triggerNode = nodes.find(
+      (n) => n.nodeType.startsWith("trigger/") && n.nodeType !== "trigger/http",
+    );
+    const triggerHandler = triggerNode
+      ? this.registry.getHandler(triggerNode.nodeType)
+      : undefined;
+
+    if (
+      triggerNode &&
+      triggerHandler &&
+      isTriggerHandler(triggerHandler) &&
+      triggerHandler.triggerMode === "batch" &&
+      triggerHandler.getItems
+    ) {
+      // Batch execution: get all items, run workflow once per item
+      const items = await triggerHandler.getItems(triggerNode.params);
+      console.log(
+        `[Executor] Batch trigger: ${items.length} items from ${triggerNode.nodeType}`,
+      );
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        this.callbacks.onProgress(
+          workflowId,
+          triggerNode.id,
+          ((i + 1) / items.length) * 100,
+          `Processing ${item.label ?? `item ${i + 1}`} (${i + 1}/${items.length})`,
+        );
+
+        const originalParams = { ...triggerNode.params };
+        triggerNode.params = {
+          ...triggerNode.params,
+          __triggerValue: item.value,
+        };
+
+        try {
+          await this.runWorkflowOnce(workflowId, nodes, edges);
+        } finally {
+          triggerNode.params = originalParams;
+        }
+      }
+      return;
+    }
+
+    // Single execution
+    const failures = await this.runWorkflowOnce(workflowId, nodes, edges);
+
+    // Collect HTTP Response node result if present
+    const httpResponse = this.collectHttpResponse(nodes);
+    if (httpResponse) return httpResponse;
+
+    // If there were failures and no HTTP Response was collected, return error info
+    if (failures.length > 0) {
+      const firstReal = failures.find((f) => !f.error.startsWith("Skipped"));
+      const errMsg = firstReal?.error ?? failures[0].error;
+      return {
+        statusCode: 500,
+        body: {
+          error_msg: errMsg,
+        },
+      };
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Execute the workflow graph once in topological order.
+   * Extracted from the old runAll so it can be called in a loop for batch triggers.
+   * Returns an array of { nodeId, nodeType, error } for any failed nodes.
+   */
+  private async runWorkflowOnce(
+    workflowId: string,
+    nodes: WorkflowNode[],
+    edges: WorkflowEdge[],
+  ): Promise<Array<{ nodeId: string; nodeType: string; error: string }>> {
     const nodeIds = nodes.map((n) => n.id);
     const simpleEdges = edges.map((e) => ({
       sourceNodeId: e.sourceNodeId,
       targetNodeId: e.targetNodeId,
     }));
 
-    // Cost estimate (for UI only) is done via cost:estimate IPC; we don't block runs on budget since actual API cost varies by inputs.
     const levels = topologicalLevels(nodeIds, simpleEdges);
     const nodeMap = new Map(nodes.map((n) => [n.id, n]));
     const failedNodes = new Set<string>();
+    const failures: Array<{ nodeId: string; nodeType: string; error: string }> =
+      [];
 
     // Build upstream dependency map for quick lookup
     const upstreamMap = new Map<string, string[]>();
@@ -91,17 +183,20 @@ export class ExecutionEngine {
     }
 
     for (const level of levels) {
-      // Stop the entire workflow if any node has failed
       if (failedNodes.size > 0) break;
       const batch = level.slice(0, MAX_PARALLEL_EXECUTIONS);
       await Promise.all(
         batch.map(async (nodeId) => {
-          // If another node in this batch failed, skip remaining
           if (failedNodes.size > 0) return;
-          // Skip if any upstream node failed
           const upstreams = upstreamMap.get(nodeId) ?? [];
           if (upstreams.some((uid) => failedNodes.has(uid))) {
             failedNodes.add(nodeId);
+            const node = nodeMap.get(nodeId);
+            failures.push({
+              nodeId,
+              nodeType: node?.nodeType ?? "unknown",
+              error: "Skipped: upstream node failed",
+            });
             this.callbacks.onNodeStatus(
               workflowId,
               nodeId,
@@ -117,10 +212,66 @@ export class ExecutionEngine {
             edges,
             true,
           );
-          if (!success) failedNodes.add(nodeId);
+          if (!success) {
+            failedNodes.add(nodeId);
+            const node = nodeMap.get(nodeId);
+            // Retrieve error message from the latest execution
+            const errMsg = node?.currentOutputId
+              ? (() => {
+                  const exec = getExecutionById(node.currentOutputId);
+                  if (!exec?.resultMetadata) return "Execution failed";
+                  const meta =
+                    typeof exec.resultMetadata === "string"
+                      ? JSON.parse(exec.resultMetadata)
+                      : exec.resultMetadata;
+                  return (meta.error as string) ?? "Execution failed";
+                })()
+              : "Execution failed";
+            failures.push({
+              nodeId,
+              nodeType: node?.nodeType ?? "unknown",
+              error: errMsg,
+            });
+          }
         }),
       );
     }
+
+    return failures;
+  }
+
+  /**
+   * After workflow execution, find the HTTP Response node and extract its result.
+   * Returns the response body or undefined if no HTTP Response node exists.
+   */
+  private collectHttpResponse(
+    nodes: WorkflowNode[],
+  ): Record<string, unknown> | undefined {
+    const responseNode = nodes.find(
+      (n) => n.nodeType === "output/http-response",
+    );
+    console.log(
+      `[Executor] collectHttpResponse: responseNode=${responseNode?.id}, currentOutputId=${responseNode?.currentOutputId}`,
+    );
+    if (!responseNode?.currentOutputId) return undefined;
+
+    const execution = getExecutionById(responseNode.currentOutputId);
+    console.log(
+      `[Executor] collectHttpResponse: execution status=${execution?.status}, hasMeta=${!!execution?.resultMetadata}`,
+    );
+    if (!execution?.resultMetadata) return undefined;
+
+    const meta =
+      typeof execution.resultMetadata === "string"
+        ? JSON.parse(execution.resultMetadata)
+        : execution.resultMetadata;
+
+    console.log(
+      `[Executor] collectHttpResponse: meta keys=${Object.keys(meta).join(",")}`,
+    );
+
+    const body = meta.__httpResponseBody ?? meta;
+    return { statusCode: 200, body };
   }
 
   /** Run a single node, resolving upstream inputs. Always skips cache (user explicitly re-runs). */
@@ -517,6 +668,17 @@ export class ExecutionEngine {
             ? JSON.parse(execution.resultMetadata)
             : execution.resultMetadata;
         outputValue = meta[edge.sourceOutputKey];
+        // Debug: log when resolving from a group/iterator node
+        if (sourceNode.nodeType === "control/iterator") {
+          console.log(
+            `[Executor] resolveInputs from group: sourceOutputKey="${edge.sourceOutputKey}", meta keys=`,
+            Object.keys(meta),
+            "value=",
+            outputValue !== undefined
+              ? String(outputValue).slice(0, 100)
+              : "undefined",
+          );
+        }
         // Fallback: if not found by handle key, try 'resultUrl' (common pattern)
         if (outputValue === undefined) outputValue = meta.resultUrl;
       }

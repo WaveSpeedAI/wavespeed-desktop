@@ -17,7 +17,9 @@ function hasCycle(nodeIds: string[], edges: SimpleEdge[]): boolean {
   for (const id of nodeIds) adj.set(id, []);
   for (const e of edges) adj.get(e.sourceNodeId)?.push(e.targetNodeId);
 
-  const WHITE = 0, GRAY = 1, BLACK = 2;
+  const WHITE = 0,
+    GRAY = 1,
+    BLACK = 2;
   const color = new Map<string, number>();
   for (const id of nodeIds) color.set(id, WHITE);
 

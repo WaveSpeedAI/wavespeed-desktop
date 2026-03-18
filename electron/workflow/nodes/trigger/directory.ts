@@ -1,9 +1,10 @@
 /**
- * Directory Import node — scans a local directory for media files
- * and outputs an array of file URLs.
+ * Directory Trigger — scans a local directory for media files.
+ * Batch trigger: the engine executes the workflow once per file.
  *
- * Designed to feed into an Iterator (auto mode) for batch processing.
- * Output is always an array of local-asset:// URLs.
+ * Unlike the old directory-import node which output an array,
+ * this trigger produces one item per file. Each workflow execution
+ * receives a single local-asset:// URL.
  */
 import {
   BaseNodeHandler,
@@ -11,8 +12,9 @@ import {
   type NodeExecutionResult,
 } from "../base";
 import type { NodeTypeDefinition } from "../../../../src/workflow/types/node-defs";
-import { readdirSync, statSync, existsSync } from "fs";
-import { join, extname } from "path";
+import type { TriggerHandler, TriggerMode, BatchItem } from "./base";
+import { readdirSync, existsSync } from "fs";
+import { join, extname, basename } from "path";
 
 const MEDIA_EXTENSIONS: Record<string, string[]> = {
   image: [
@@ -29,7 +31,7 @@ const MEDIA_EXTENSIONS: Record<string, string[]> = {
   ],
   video: [".mp4", ".webm", ".mov", ".avi", ".mkv", ".flv", ".wmv", ".m4v"],
   audio: [".mp3", ".wav", ".flac", ".m4a", ".ogg", ".aac", ".wma"],
-  all: [], // populated at runtime from all above
+  all: [],
 };
 MEDIA_EXTENSIONS.all = [
   ...MEDIA_EXTENSIONS.image,
@@ -37,12 +39,12 @@ MEDIA_EXTENSIONS.all = [
   ...MEDIA_EXTENSIONS.audio,
 ];
 
-export const directoryImportDef: NodeTypeDefinition = {
-  type: "input/directory-import",
-  category: "input",
+export const directoryTriggerDef: NodeTypeDefinition = {
+  type: "trigger/directory",
+  category: "trigger",
   label: "Directory",
   inputs: [],
-  outputs: [{ key: "output", label: "Files", dataType: "any", required: true }],
+  outputs: [{ key: "output", label: "File", dataType: "url", required: true }],
   params: [
     {
       key: "directoryPath",
@@ -69,58 +71,69 @@ export const directoryImportDef: NodeTypeDefinition = {
   ],
 };
 
-export class DirectoryImportHandler extends BaseNodeHandler {
+export class DirectoryTriggerHandler
+  extends BaseNodeHandler
+  implements TriggerHandler
+{
+  readonly triggerMode: TriggerMode = "batch";
+
   constructor() {
-    super(directoryImportDef);
+    super(directoryTriggerDef);
   }
 
-  async execute(ctx: NodeExecutionContext): Promise<NodeExecutionResult> {
-    const start = Date.now();
-    const dirPath = String(ctx.params.directoryPath ?? "").trim();
-    const mediaType = String(ctx.params.mediaType ?? "image");
+  /**
+   * Return all files in the directory as batch items.
+   * Each item is a single local-asset:// URL.
+   */
+  async getItems(params: Record<string, unknown>): Promise<BatchItem[]> {
+    const dirPath = String(params.directoryPath ?? "").trim();
+    const mediaType = String(params.mediaType ?? "image");
 
-    if (!dirPath) {
-      return {
-        status: "error",
-        outputs: {},
-        durationMs: Date.now() - start,
-        cost: 0,
-        error: "No directory selected. Please choose a directory.",
-      };
-    }
-
-    if (!existsSync(dirPath)) {
-      return {
-        status: "error",
-        outputs: {},
-        durationMs: Date.now() - start,
-        cost: 0,
-        error: `Directory not found: ${dirPath}`,
-      };
-    }
+    if (!dirPath || !existsSync(dirPath)) return [];
 
     const allowedExts = new Set(
       MEDIA_EXTENSIONS[mediaType] ?? MEDIA_EXTENSIONS.all,
     );
     const files = scanDirectory(dirPath, allowedExts);
-    files.sort(); // deterministic order
+    files.sort();
 
-    // Convert to local-asset:// URLs
-    const urls = files.map((f) => `local-asset://${encodeURIComponent(f)}`);
+    return files.map((filePath) => ({
+      id: filePath,
+      value: `local-asset://${encodeURIComponent(filePath)}`,
+      label: basename(filePath),
+    }));
+  }
 
-    ctx.onProgress(100, `Found ${urls.length} file(s)`);
+  /**
+   * Execute for a single file. When called by the engine in batch mode,
+   * ctx.params.__triggerValue contains the current item's value.
+   */
+  async execute(ctx: NodeExecutionContext): Promise<NodeExecutionResult> {
+    const start = Date.now();
+
+    // In batch mode, the engine injects the current item value
+    const triggerValue = ctx.params.__triggerValue as string | undefined;
+    const url = triggerValue ?? "";
+
+    if (!url) {
+      return {
+        status: "error",
+        outputs: {},
+        durationMs: Date.now() - start,
+        cost: 0,
+        error: "No file provided.",
+      };
+    }
 
     return {
       status: "success",
-      outputs: { output: urls },
-      resultPath: urls[0] ?? "",
+      outputs: { output: url },
+      resultPath: url,
       resultMetadata: {
-        output: urls,
-        resultUrl: urls[0] ?? "",
-        resultUrls: urls,
-        fileCount: urls.length,
-        directory: dirPath,
-        mediaType,
+        output: url,
+        resultUrl: url,
+        resultUrls: [url],
+        mediaType: ctx.params.mediaType ?? "image",
       },
       durationMs: Date.now() - start,
       cost: 0,

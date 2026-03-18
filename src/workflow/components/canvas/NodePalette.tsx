@@ -26,6 +26,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
+import { toast } from "@/hooks/useToast";
 
 /* ── category colour dots ─────────────────────────────────── */
 const catDot: Record<string, string> = {
@@ -107,7 +108,31 @@ export function NodePalette({ definitions }: NodePaletteProps) {
     (def: NodeTypeDefinition) => {
       // Don't allow creating iterators inside iterators
       const pendingParentId = useUIStore.getState().pendingIteratorParentId;
-      if (pendingParentId && def.type === "control/iterator") return;
+      const editGroupId = useUIStore.getState().editingGroupId;
+      const adoptParent = pendingParentId || editGroupId;
+      if (adoptParent && def.type === "control/iterator") return;
+
+      // Only one trigger node per workflow
+      if (def.category === "trigger") {
+        const existingTrigger = useWorkflowStore
+          .getState()
+          .nodes.find(
+            (n) =>
+              n.type?.startsWith("trigger/") ||
+              n.data?.nodeType?.startsWith("trigger/"),
+          );
+        if (existingTrigger) {
+          toast({
+            title: t("workflow.triggerLimitTitle", "Only one trigger allowed"),
+            description: t(
+              "workflow.triggerLimitDesc",
+              "A workflow can only have one trigger node. Remove the existing trigger first.",
+            ),
+            variant: "destructive",
+          });
+          return;
+        }
+      }
 
       const defaultParams: Record<string, unknown> = {};
       for (const p of def.params) {
@@ -116,12 +141,15 @@ export function NodePalette({ definitions }: NodePaletteProps) {
 
       let x: number, y: number;
 
-      if (pendingParentId) {
+      if (adoptParent) {
         // Creating inside an Iterator — compute absolute position in the internal canvas area
-        const iteratorNode = useWorkflowStore.getState().nodes.find((n) => n.id === pendingParentId);
+        const iteratorNode = useWorkflowStore
+          .getState()
+          .nodes.find((n) => n.id === adoptParent);
         if (iteratorNode) {
           const itW = (iteratorNode.data?.params?.__nodeWidth as number) ?? 600;
-          const itH = (iteratorNode.data?.params?.__nodeHeight as number) ?? 400;
+          const itH =
+            (iteratorNode.data?.params?.__nodeHeight as number) ?? 400;
           const childW = (defaultParams.__nodeWidth as number) ?? 300;
           // Account for port strips — width depends on whether ports are exposed
           const inputDefs = iteratorNode.data?.inputDefinitions ?? [];
@@ -130,7 +158,10 @@ export function NodePalette({ definitions }: NodePaletteProps) {
           const rightStrip = (outputDefs as unknown[]).length > 0 ? 140 : 24;
           const internalW = itW - leftStrip - rightStrip;
           // Center the child in the internal canvas area
-          x = iteratorNode.position.x + leftStrip + Math.max(10, (internalW - childW) / 2);
+          x =
+            iteratorNode.position.x +
+            leftStrip +
+            Math.max(10, (internalW - childW) / 2);
           y = iteratorNode.position.y + Math.max(60, itH / 2 - 40);
         } else {
           const center = useUIStore.getState().getViewportCenter();
@@ -160,9 +191,10 @@ export function NodePalette({ definitions }: NodePaletteProps) {
 
       // If creating inside an Iterator, adopt immediately
       // adoptNode converts absolute position to relative and sets parentNode + extent
-      if (pendingParentId) {
-        useWorkflowStore.getState().adoptNode(pendingParentId, newNodeId);
-        useUIStore.getState().setPendingIteratorParentId(null);
+      if (adoptParent) {
+        useWorkflowStore.getState().adoptNode(adoptParent, newNodeId);
+        if (pendingParentId)
+          useUIStore.getState().setPendingIteratorParentId(null);
       }
 
       recordRecentNodeType(def.type);
@@ -174,6 +206,9 @@ export function NodePalette({ definitions }: NodePaletteProps) {
 
   const handleModelClick = useCallback(
     (model: { model_id: string; name: string }) => {
+      const pendingParentId = useUIStore.getState().pendingIteratorParentId;
+      const editGroupId = useUIStore.getState().editingGroupId;
+      const adoptParent = pendingParentId || editGroupId;
       const aiTaskDef = definitions.find((d) => d.type === "ai-task/run");
       const defaultParams: Record<string, unknown> = {};
       if (aiTaskDef) {
@@ -183,9 +218,37 @@ export function NodePalette({ definitions }: NodePaletteProps) {
       }
       defaultParams.modelId = model.model_id;
 
-      const center = useUIStore.getState().getViewportCenter();
-      const x = center.x + (Math.random() - 0.5) * 60;
-      const y = center.y + (Math.random() - 0.5) * 60;
+      let x: number, y: number;
+
+      if (adoptParent) {
+        const iteratorNode = useWorkflowStore
+          .getState()
+          .nodes.find((n) => n.id === adoptParent);
+        if (iteratorNode) {
+          const itW = (iteratorNode.data?.params?.__nodeWidth as number) ?? 600;
+          const itH =
+            (iteratorNode.data?.params?.__nodeHeight as number) ?? 400;
+          const childW = (defaultParams.__nodeWidth as number) ?? 300;
+          const inputDefs = iteratorNode.data?.inputDefinitions ?? [];
+          const outputDefs = iteratorNode.data?.outputDefinitions ?? [];
+          const leftStrip = (inputDefs as unknown[]).length > 0 ? 140 : 24;
+          const rightStrip = (outputDefs as unknown[]).length > 0 ? 140 : 24;
+          const internalW = itW - leftStrip - rightStrip;
+          x =
+            iteratorNode.position.x +
+            leftStrip +
+            Math.max(10, (internalW - childW) / 2);
+          y = iteratorNode.position.y + Math.max(60, itH / 2 - 40);
+        } else {
+          const center = useUIStore.getState().getViewportCenter();
+          x = center.x + (Math.random() - 0.5) * 60;
+          y = center.y + (Math.random() - 0.5) * 60;
+        }
+      } else {
+        const center = useUIStore.getState().getViewportCenter();
+        x = center.x + (Math.random() - 0.5) * 60;
+        y = center.y + (Math.random() - 0.5) * 60;
+      }
 
       const desktopModel = useModelsStore
         .getState()
@@ -219,6 +282,13 @@ export function NodePalette({ definitions }: NodePaletteProps) {
         label: model.name,
       });
 
+      // If creating inside an Iterator, adopt immediately
+      if (adoptParent) {
+        useWorkflowStore.getState().adoptNode(adoptParent, newNodeId);
+        if (pendingParentId)
+          useUIStore.getState().setPendingIteratorParentId(null);
+      }
+
       recordRecentNodeType("ai-task/run");
       toggleNodePalette();
     },
@@ -226,12 +296,13 @@ export function NodePalette({ definitions }: NodePaletteProps) {
   );
 
   const categoryOrder = [
+    "trigger",
     "ai-task",
     "input",
     "output",
     "processing",
-    "free-tool",
     "control",
+    "free-tool",
   ];
   const categoryLabel = useCallback(
     (cat: string) => t(`workflow.nodeCategory.${cat}`, cat),
@@ -241,7 +312,8 @@ export function NodePalette({ definitions }: NodePaletteProps) {
   const displayDefs = useMemo(() => {
     let defs = definitions;
     // When creating inside an Iterator, filter out the iterator type (no nesting)
-    if (pendingIteratorParentId) {
+    const editGroupId = useUIStore.getState().editingGroupId;
+    if (pendingIteratorParentId || editGroupId) {
       defs = defs.filter((d) => d.type !== "control/iterator");
     }
     const q = query.trim();
@@ -352,9 +424,19 @@ export function NodePalette({ definitions }: NodePaletteProps) {
       {/* ── iterator context banner ── */}
       {pendingIteratorParentId && (
         <div className="px-3 py-1.5 bg-cyan-500/10 border-b border-cyan-500/20 flex items-center gap-1.5">
-          <svg className="w-3.5 h-3.5 text-cyan-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="17 1 21 5 17 9" /><path d="M3 11V9a4 4 0 0 1 4-4h14" />
-            <polyline points="7 23 3 19 7 15" /><path d="M21 13v2a4 4 0 0 1-4 4H3" />
+          <svg
+            className="w-3.5 h-3.5 text-cyan-500 flex-shrink-0"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="17 1 21 5 17 9" />
+            <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+            <polyline points="7 23 3 19 7 15" />
+            <path d="M21 13v2a4 4 0 0 1-4 4H3" />
           </svg>
           <span className="text-[11px] text-cyan-400 font-medium">
             {t("workflow.addingInsideIterator", "Adding inside Iterator")}

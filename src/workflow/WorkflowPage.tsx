@@ -383,6 +383,8 @@ export function WorkflowPage() {
         >["edges"],
         isDirty: target.isDirty,
       });
+      // Exit subgraph editing when switching tabs
+      useUIStore.getState().exitGroupEdit();
       setActiveTabId(tabId);
     },
     [activeTabId, tabs, saveCurrentTabSnapshot],
@@ -422,6 +424,8 @@ export function WorkflowPage() {
       edges,
       isDirty: false,
     });
+    // Exit subgraph editing when creating a new tab
+    useUIStore.getState().exitGroupEdit();
     setActiveTabId(newTabId);
     // Auto-scroll to show the newly created tab
     requestAnimationFrame(() => {
@@ -1049,7 +1053,8 @@ export function WorkflowPage() {
   useEffect(() => {
     if (prevWasRunning.current && !wasRunning && !isRunning) {
       const hasError = Object.values(nodeStatuses).some((s) => s === "error");
-      const nodeName = lastRunType === "single" && lastRunNodeLabel ? lastRunNodeLabel : null;
+      const nodeName =
+        lastRunType === "single" && lastRunNodeLabel ? lastRunNodeLabel : null;
       setExecToast({
         type: hasError ? "error" : "success",
         msg: hasError
@@ -1858,7 +1863,7 @@ export function WorkflowPage() {
                     className="h-7 w-7 rounded-lg flex items-center justify-center bg-red-900/60 text-red-300 hover:bg-red-800/70 transition-colors"
                     onClick={() => {
                       runCancelRef.current = true;
-                      if (workflowId) cancelAll(workflowId);
+                      cancelAll(workflowId || "browser");
                     }}
                   >
                     <svg

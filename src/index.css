@@ -423,6 +423,20 @@
   animation: pulse-subtle 1.8s ease-in-out infinite;
 }
 
+/* Group drop-target breathe animation */
+@keyframes group-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.004);
+  }
+}
+.animate-group-breathe {
+  animation: group-breathe 0.8s ease-in-out infinite;
+}
+
 /* Carousel slide animations for results panel */
 @keyframes carousel-slide-left {
   from {

@@ -78,7 +78,9 @@ const migrations: NamedMigration[] = [
     apply: (db: SqlJsDatabase) => {
       console.log("[Schema] Applying migration: 003_add_search_text");
       const cols = db.exec("PRAGMA table_info(templates)");
-      const hasColumn = cols[0]?.values?.some((row) => row[1] === "search_text");
+      const hasColumn = cols[0]?.values?.some(
+        (row) => row[1] === "search_text",
+      );
       if (!hasColumn) {
         db.run("ALTER TABLE templates ADD COLUMN search_text TEXT");
       }
@@ -90,17 +92,29 @@ const migrations: NamedMigration[] = [
       console.log("[Schema] Applying migration: 004_add_iterator_support");
       // Add parent_node_id to nodes
       const nodeCols = db.exec("PRAGMA table_info(nodes)");
-      const hasParentNodeId = nodeCols[0]?.values?.some((row) => row[1] === "parent_node_id");
+      const hasParentNodeId = nodeCols[0]?.values?.some(
+        (row) => row[1] === "parent_node_id",
+      );
       if (!hasParentNodeId) {
-        db.run("ALTER TABLE nodes ADD COLUMN parent_node_id TEXT REFERENCES nodes(id) ON DELETE SET NULL");
-        db.run("CREATE INDEX IF NOT EXISTS idx_nodes_parent ON nodes(parent_node_id)");
+        db.run(
+          "ALTER TABLE nodes ADD COLUMN parent_node_id TEXT REFERENCES nodes(id) ON DELETE SET NULL",
+        );
+        db.run(
+          "CREATE INDEX IF NOT EXISTS idx_nodes_parent ON nodes(parent_node_id)",
+        );
       }
       // Add is_internal to edges
       const edgeCols = db.exec("PRAGMA table_info(edges)");
-      const hasIsInternal = edgeCols[0]?.values?.some((row) => row[1] === "is_internal");
+      const hasIsInternal = edgeCols[0]?.values?.some(
+        (row) => row[1] === "is_internal",
+      );
       if (!hasIsInternal) {
-        db.run("ALTER TABLE edges ADD COLUMN is_internal INTEGER NOT NULL DEFAULT 0 CHECK (is_internal IN (0, 1))");
-        db.run("CREATE INDEX IF NOT EXISTS idx_edges_internal ON edges(is_internal)");
+        db.run(
+          "ALTER TABLE edges ADD COLUMN is_internal INTEGER NOT NULL DEFAULT 0 CHECK (is_internal IN (0, 1))",
+        );
+        db.run(
+          "CREATE INDEX IF NOT EXISTS idx_edges_internal ON edges(is_internal)",
+        );
       }
     },
   },
@@ -225,9 +239,7 @@ export function initializeSchema(db: SqlJsDatabase): void {
   db.run(
     "CREATE INDEX IF NOT EXISTS idx_nodes_parent ON nodes(parent_node_id)",
   );
-  db.run(
-    "CREATE INDEX IF NOT EXISTS idx_edges_internal ON edges(is_internal)",
-  );
+  db.run("CREATE INDEX IF NOT EXISTS idx_edges_internal ON edges(is_internal)");
   db.run(
     "CREATE INDEX IF NOT EXISTS idx_wf_daily_spend_date ON daily_spend(date)",
   );
@@ -271,9 +283,13 @@ export function runMigrations(db: SqlJsDatabase): void {
 
   if (hasLegacyTable && !hasNewTable) {
     // Migrate from old numeric system to named migrations
-    console.log("[Schema] Upgrading from legacy schema_version to named migrations");
+    console.log(
+      "[Schema] Upgrading from legacy schema_version to named migrations",
+    );
 
-    const result = db.exec("SELECT MAX(version) as version FROM schema_version");
+    const result = db.exec(
+      "SELECT MAX(version) as version FROM schema_version",
+    );
     const legacyVersion = (result[0]?.values?.[0]?.[0] as number) ?? 0;
 
     // Create the new table
@@ -283,7 +299,9 @@ export function runMigrations(db: SqlJsDatabase): void {
     )`);
 
     // Map old version number to known migration IDs
-    const knownApplied = LEGACY_VERSION_MAP[legacyVersion] ?? ["001_initial_schema"];
+    const knownApplied = LEGACY_VERSION_MAP[legacyVersion] ?? [
+      "001_initial_schema",
+    ];
     for (const id of knownApplied) {
       db.run("INSERT OR IGNORE INTO schema_migrations (id) VALUES (?)", [id]);
     }

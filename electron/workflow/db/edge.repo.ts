@@ -53,4 +53,3 @@ export function getInternalEdges(workflowId: string): WorkflowEdge[] {
   if (!result.length) return [];
   return result[0].values.map(rowToEdge);
 }
-

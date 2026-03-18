@@ -113,8 +113,7 @@ export function buildOuterDAGView(
 
   // Start with edges that don't touch any child node at all
   const edges: SimpleEdge[] = allEdges.filter(
-    (e) =>
-      !allChildIds.has(e.sourceNodeId) && !allChildIds.has(e.targetNodeId),
+    (e) => !allChildIds.has(e.sourceNodeId) && !allChildIds.has(e.targetNodeId),
   );
 
   // Add remapped external edges for each iterator

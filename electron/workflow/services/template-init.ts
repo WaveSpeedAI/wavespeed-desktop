@@ -53,16 +53,15 @@ export function initializeDefaultTemplates(): void {
  */
 function cleanupOldPublicTemplates(): void {
   try {
-    const fileNames = new Set(fileTemplates.map((t) => t.name));
+    // Remove ALL old public workflow templates from DB — they are now file-based
     const dbPublic = templateRepo.queryTemplates({
       type: "public",
       templateType: "workflow",
     });
-    const toDelete = dbPublic.filter((t) => fileNames.has(t.name));
-    if (toDelete.length > 0) {
-      templateRepo.deleteTemplates(toDelete.map((t) => t.id));
+    if (dbPublic.length > 0) {
+      templateRepo.deleteTemplates(dbPublic.map((t) => t.id));
       console.log(
-        `[TemplateInit] Cleaned up ${toDelete.length} old public templates from DB: [${toDelete.map((t) => t.name).join(", ")}]`,
+        `[TemplateInit] Cleaned up ${dbPublic.length} old public templates from DB: [${dbPublic.map((t) => t.name).join(", ")}]`,
       );
     }
   } catch (error) {

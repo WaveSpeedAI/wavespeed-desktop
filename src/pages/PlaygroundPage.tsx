@@ -459,23 +459,42 @@ export function PlaygroundPage() {
   const handleSaveTemplate = async (data: TemplateFormData) => {
     if (!activeTab?.selectedModel) return;
 
-    await createTemplate({
-      name: data.name,
-      description: data.description || null,
-      tags: data.tags,
-      thumbnail: data.thumbnail || null,
-      type: "custom",
-      templateType: "playground",
-      playgroundData: {
-        modelId: activeTab.selectedModel.model_id,
-        modelName: activeTab.selectedModel.name,
-        values: activeTab.formValues,
-      },
-    });
-    toast({
-      title: t("playground.templateSaved"),
-      description: t("playground.savedAs", { name: data.name }),
-    });
+    try {
+      const template = await createTemplate({
+        name: data.name,
+        description: data.description || null,
+        tags: data.tags,
+        thumbnail: data.thumbnail || null,
+        type: "custom",
+        templateType: "playground",
+        playgroundData: {
+          modelId: activeTab.selectedModel.model_id,
+          modelName: activeTab.selectedModel.name,
+          values: activeTab.formValues,
+        },
+      });
+      const savedName = template.name;
+      if (savedName !== data.name) {
+        toast({
+          title: t("playground.templateSaved"),
+          description: t("templates.autoRenamed", {
+            original: data.name,
+            renamed: savedName,
+          }),
+        });
+      } else {
+        toast({
+          title: t("playground.templateSaved"),
+          description: t("playground.savedAs", { name: savedName }),
+        });
+      }
+    } catch (err) {
+      toast({
+        title: t("common.error"),
+        description: err instanceof Error ? err.message : t("common.error"),
+        variant: "destructive",
+      });
+    }
   };
 
   // Create tab when navigating to playground with a specific model (only on initial load)

@@ -1371,9 +1371,8 @@ export function WorkflowPage() {
   const [showSaveTemplateDialog, setShowSaveTemplateDialog] = useState(false);
 
   const handleSaveAsTemplate = useCallback(() => {
-    if (!workflowId) return;
     setShowSaveTemplateDialog(true);
-  }, [workflowId]);
+  }, []);
 
   const handleSaveTemplateConfirm = useCallback(
     async (
@@ -1403,7 +1402,7 @@ export function WorkflowPage() {
           new Set(nodes.map((n) => n.data.nodeType)),
         );
 
-        await createTemplate({
+        const template = await createTemplate({
           name: data.name,
           description: data.description || null,
           tags: data.tags,
@@ -1418,10 +1417,20 @@ export function WorkflowPage() {
             useCases: [],
           },
         });
-        showIoToast(
-          "success",
-          t("workflow.templateSaved", "Saved as template"),
-        );
+        if (template.name !== data.name) {
+          showIoToast(
+            "success",
+            t("templates.autoRenamed", {
+              original: data.name,
+              renamed: template.name,
+            }),
+          );
+        } else {
+          showIoToast(
+            "success",
+            t("workflow.templateSaved", "Saved as template"),
+          );
+        }
       } catch (err) {
         console.error("Save template failed:", err);
         showIoToast(
@@ -1990,7 +1999,6 @@ export function WorkflowPage() {
             <div className="h-px bg-border" />
             {/* More menu (Import / Export / Save) */}
             <MoreMenu
-              workflowId={workflowId}
               onImport={handleImport}
               onExport={handleExport}
               onSave={handleSave}
@@ -2664,7 +2672,6 @@ function MonitorToggleBtn() {
 
 /* ── More Menu — collapsed Import / Export / Save ──────────────────── */
 function MoreMenu({
-  workflowId,
   onImport,
   onExport,
   onSave,
@@ -2673,7 +2680,6 @@ function MoreMenu({
   "data-guide": dataGuide,
   position = "top",
 }: {
-  workflowId: string | null;
   onImport: () => void;
   onExport: () => void;
   onSave: () => void;
@@ -2807,31 +2813,29 @@ function MoreMenu({
               </svg>
               {t("workflow.export", "Export")}
             </button>
-            {workflowId && (
-              <button
-                onClick={() => {
-                  onSaveAsTemplate();
-                  setOpen(false);
-                }}
-                className="w-full px-3 py-1.5 text-xs text-left hover:bg-[hsl(var(--accent))] transition-colors flex items-center gap-2"
+            <button
+              onClick={() => {
+                onSaveAsTemplate();
+                setOpen(false);
+              }}
+              className="w-full px-3 py-1.5 text-xs text-left hover:bg-[hsl(var(--accent))] transition-colors flex items-center gap-2"
+            >
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                  <polyline points="17 21 17 13 7 13 7 21" />
-                  <polyline points="7 3 7 8 15 8" />
-                </svg>
-                {t("workflow.saveAsTemplate", "Save as Template")}
-              </button>
-            )}
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                <polyline points="17 21 17 13 7 13 7 21" />
+                <polyline points="7 3 7 8 15 8" />
+              </svg>
+              {t("workflow.saveAsTemplate", "Save as Template")}
+            </button>
             <button
               onClick={() => {
                 onSave();

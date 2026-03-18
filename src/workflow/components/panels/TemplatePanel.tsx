@@ -1,23 +1,13 @@
 /**
  * TemplatePanel — left sidebar panel for browsing workflow templates.
- * Matches the design of NodePalette and WorkflowList.
+ * Simple list view, no category grouping.
  */
 import { useEffect, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useUIStore } from "../../stores/ui.store";
 import { useTemplateStore } from "@/stores/templateStore";
-import {
-  Heart,
-  Flame,
-  BarChart3,
-  Play,
-  Sparkles,
-  Workflow,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Search, Download, FolderOpen } from "lucide-react";
 import type { Template, TemplateFilter } from "@/types/template";
-
-type SourceFilter = "all" | "public" | "custom" | "favorites";
 
 interface TemplatePanelProps {
   onUseTemplate: (template: Template) => void;
@@ -28,13 +18,12 @@ export function TemplatePanel({ onUseTemplate, onClose }: TemplatePanelProps) {
   const { t } = useTranslation();
   const width = useUIStore((s) => s.sidebarWidth);
   const setSidebarWidth = useUIStore((s) => s.setSidebarWidth);
-  const { toggleFavorite, useTemplate: incrementUseCount } = useTemplateStore();
+  const { useTemplate: incrementUseCount, exportTemplates } =
+    useTemplateStore();
 
   const [templates, setTemplates] = useState<Template[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [query, setQuery] = useState("");
-  const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
-  const [sortBy, setSortBy] = useState<"updatedAt" | "useCount">("updatedAt");
   const [dragging, setDragging] = useState(false);
 
   const loadTemplates = useCallback(async () => {
@@ -43,14 +32,6 @@ export function TemplatePanel({ onUseTemplate, onClose }: TemplatePanelProps) {
       const filter: TemplateFilter = {
         templateType: "workflow",
         search: query || undefined,
-        sortBy,
-        type:
-          sourceFilter === "public"
-            ? "public"
-            : sourceFilter === "custom"
-              ? "custom"
-              : undefined,
-        isFavorite: sourceFilter === "favorites" ? true : undefined,
       };
       const result = await (window.workflowAPI?.invoke?.(
         "template:query",
@@ -62,7 +43,7 @@ export function TemplatePanel({ onUseTemplate, onClose }: TemplatePanelProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [query, sortBy, sourceFilter]);
+  }, [query]);
 
   useEffect(() => {
     loadTemplates();
@@ -73,13 +54,12 @@ export function TemplatePanel({ onUseTemplate, onClose }: TemplatePanelProps) {
     onUseTemplate(template);
   };
 
-  const handleToggleFavorite = async (template: Template) => {
-    await toggleFavorite(template.id);
-    setTemplates((prev) =>
-      prev.map((t) =>
-        t.id === template.id ? { ...t, isFavorite: !t.isFavorite } : t,
-      ),
-    );
+  const handleExport = async (template: Template) => {
+    try {
+      await exportTemplates([template.id]);
+    } catch {
+      // silent
+    }
   };
 
   const onResizeStart = useCallback(
@@ -102,12 +82,10 @@ export function TemplatePanel({ onUseTemplate, onClose }: TemplatePanelProps) {
     [width, setSidebarWidth],
   );
 
-  const sourceOptions: { key: SourceFilter; label: string }[] = [
-    { key: "all", label: t("templates.allSources") },
-    { key: "public", label: t("templates.public") },
-    { key: "custom", label: t("templates.myTemplates") },
-    { key: "favorites", label: "★" },
-  ];
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}`;
+  };
 
   return (
     <div
@@ -120,7 +98,7 @@ export function TemplatePanel({ onUseTemplate, onClose }: TemplatePanelProps) {
         <button
           onClick={onClose}
           className="text-muted-foreground hover:text-foreground text-xs px-1"
-          title={t("common.close", "Close")}
+          title={t("common.close")}
         >
           ✕
         </button>
@@ -128,45 +106,16 @@ export function TemplatePanel({ onUseTemplate, onClose }: TemplatePanelProps) {
 
       {/* Search */}
       <div className="px-2.5 py-2 border-b border-border">
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t("templates.searchPlaceholder", "Search templates...")}
-          className="w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1.5 text-xs text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50"
-        />
-      </div>
-
-      {/* Source filter pills */}
-      <div className="px-2.5 py-1.5 border-b border-border flex items-center gap-1 flex-wrap">
-        {sourceOptions.map((opt) => (
-          <button
-            key={opt.key}
-            onClick={() => setSourceFilter(opt.key)}
-            className={cn(
-              "px-2 py-0.5 text-[10px] rounded-full border transition-colors",
-              sourceFilter === opt.key
-                ? "bg-primary/15 border-primary/30 text-primary"
-                : "border-transparent text-muted-foreground hover:text-foreground hover:bg-accent",
-            )}
-          >
-            {opt.label}
-          </button>
-        ))}
-        {/* Sort toggle */}
-        <button
-          onClick={() =>
-            setSortBy((s) => (s === "updatedAt" ? "useCount" : "updatedAt"))
-          }
-          className="ml-auto px-1.5 py-0.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
-          title={
-            sortBy === "updatedAt"
-              ? t("templates.newest")
-              : t("templates.mostUsed")
-          }
-        >
-          {sortBy === "updatedAt" ? "⏰" : "🔥"}
-        </button>
+        <div className="relative">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t("templates.searchPlaceholder")}
+            className="w-full pl-7 pr-2 py-1.5 rounded-md border border-border bg-background text-xs focus:outline-none focus:ring-1 focus:ring-primary/50"
+          />
+        </div>
       </div>
 
       {/* Template list */}
@@ -178,8 +127,9 @@ export function TemplatePanel({ onUseTemplate, onClose }: TemplatePanelProps) {
         )}
 
         {!isLoading && templates.length === 0 && (
-          <div className="px-3 py-8 text-xs text-muted-foreground text-center">
-            {t("templates.noTemplates")}
+          <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
+            <FolderOpen className="h-8 w-8 mb-2 opacity-40" />
+            <p className="text-xs">{t("templates.noTemplates")}</p>
           </div>
         )}
 
@@ -190,77 +140,31 @@ export function TemplatePanel({ onUseTemplate, onClose }: TemplatePanelProps) {
                   defaultValue: template.name,
                 })
               : template.name;
-            const tDesc =
-              template.i18nKey && template.description
-                ? t(`presetTemplates.${template.i18nKey}.description`, {
-                    defaultValue: template.description,
-                  })
-                : template.description;
             return (
               <div
                 key={template.id}
-                className="group mx-1.5 mb-0.5 rounded-md hover:bg-accent transition-colors"
+                onClick={() => handleUse(template)}
+                className="group flex items-center gap-2 mx-1.5 mb-1 px-2.5 py-2 rounded-md border border-border/30 hover:bg-primary/5 hover:border-primary/30 transition-colors cursor-pointer"
               >
-                <div className="flex items-start gap-2 px-2.5 py-2">
-                  {/* Icon */}
-                  <div className="w-8 h-8 flex-shrink-0 rounded bg-muted/50 flex items-center justify-center mt-0.5">
-                    {template.templateType === "playground" ? (
-                      <Sparkles className="h-4 w-4 text-muted-foreground/60" />
-                    ) : (
-                      <Workflow className="h-4 w-4 text-muted-foreground/60" />
-                    )}
-                  </div>
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs font-medium truncate">
-                        {tName}
-                      </span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleToggleFavorite(template);
-                        }}
-                        className={cn(
-                          "p-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity",
-                          template.isFavorite
-                            ? "text-red-500 opacity-100"
-                            : "text-muted-foreground hover:text-red-500",
-                        )}
-                      >
-                        <Heart
-                          className={cn(
-                            "h-3 w-3",
-                            template.isFavorite && "fill-current",
-                          )}
-                        />
-                      </button>
-                    </div>
-                    {tDesc && (
-                      <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">
-                        {tDesc}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-0.5">
-                      <span className="flex items-center gap-0.5">
-                        <Flame className="h-2.5 w-2.5" />
-                        {template.useCount}
-                      </span>
-                      {template.workflowData && (
-                        <span className="flex items-center gap-0.5">
-                          <BarChart3 className="h-2.5 w-2.5" />
-                          {template.workflowData.nodeCount}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  {/* Use button */}
+                <div className="flex-1 min-w-0">
+                  <span className="text-xs font-medium truncate block group-hover:text-primary transition-colors">
+                    {tName}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">
+                    {t("templates.lastUpdated")}:{" "}
+                    {formatDate(template.updatedAt)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-0.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
-                    onClick={() => handleUse(template)}
-                    className="self-center flex-shrink-0 h-6 px-2 rounded text-[10px] font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-1 opacity-0 group-hover:opacity-100"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleExport(template);
+                    }}
+                    className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                    title={t("templates.export")}
                   >
-                    <Play className="h-2.5 w-2.5" />
-                    {t("templates.use")}
+                    <Download className="h-3.5 w-3.5" />
                   </button>
                 </div>
               </div>

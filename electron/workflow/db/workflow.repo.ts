@@ -155,8 +155,23 @@ export function updateWorkflow(
   try {
     db.run("DELETE FROM nodes WHERE workflow_id = ?", [id]);
     db.run("DELETE FROM edges WHERE workflow_id = ?", [id]);
-    for (const node of graphDefinition.nodes) {
-      // Insert with NULL first (safe), then restore outputId
+
+    // Deduplicate by id — guards against React Flow state containing
+    // duplicate entries after undo/paste/rapid operations.
+    const seenNodeIds = new Set<string>();
+    const uniqueNodes = graphDefinition.nodes.filter((n) => {
+      if (seenNodeIds.has(n.id)) return false;
+      seenNodeIds.add(n.id);
+      return true;
+    });
+    const seenEdgeIds = new Set<string>();
+    const uniqueEdges = graphDefinition.edges.filter((e) => {
+      if (seenEdgeIds.has(e.id)) return false;
+      seenEdgeIds.add(e.id);
+      return true;
+    });
+
+    for (const node of uniqueNodes) {
       db.run(
         `INSERT INTO nodes (id, workflow_id, node_type, position_x, position_y, params, current_output_id) VALUES (?, ?, ?, ?, ?, ?, NULL)`,
         [
@@ -169,7 +184,7 @@ export function updateWorkflow(
         ],
       );
     }
-    for (const edge of graphDefinition.edges) {
+    for (const edge of uniqueEdges) {
       db.run(
         `INSERT INTO edges (id, workflow_id, source_node_id, source_output_key, target_node_id, target_input_key) VALUES (?, ?, ?, ?, ?, ?)`,
         [
@@ -183,7 +198,7 @@ export function updateWorkflow(
       );
     }
     // Restore currentOutputId where the execution record still exists
-    for (const node of graphDefinition.nodes) {
+    for (const node of uniqueNodes) {
       const outputId =
         node.currentOutputId ?? existingOutputIds.get(node.id) ?? null;
       if (outputId) {

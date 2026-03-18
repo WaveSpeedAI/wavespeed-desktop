@@ -28,8 +28,8 @@ export function createTemplate(input: CreateTemplateInput): Template {
     `INSERT INTO templates (
       id, name, description, tags, type, template_type, is_favorite,
       created_at, updated_at, author, use_count, thumbnail,
-      playground_data, workflow_data
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      playground_data, workflow_data, search_text
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       input.name,
@@ -45,6 +45,7 @@ export function createTemplate(input: CreateTemplateInput): Template {
       input.thumbnail || null,
       playgroundData,
       workflowData,
+      input._searchText || null,
     ],
   );
 
@@ -57,7 +58,7 @@ export function getTemplateById(id: string): Template | null {
   const result = db.exec(
     `SELECT id, name, description, tags, type, template_type, is_favorite,
             created_at, updated_at, author, use_count, thumbnail,
-            playground_data, workflow_data
+            playground_data, workflow_data, search_text
      FROM templates WHERE id = ?`,
     [id],
   );
@@ -87,14 +88,23 @@ export function queryTemplates(filter?: TemplateFilter): Template[] {
   }
 
   if (filter?.category && filter.templateType === "workflow") {
-    conditions.push("json_extract(workflow_data, '$.category') = ?");
-    params.push(filter.category);
+    conditions.push("workflow_data LIKE ?");
+    params.push(`%"category":"${filter.category}"%`);
   }
 
   if (filter?.search) {
     const searchPattern = `%${filter.search}%`;
-    conditions.push("(name LIKE ? OR description LIKE ? OR tags LIKE ?)");
-    params.push(searchPattern, searchPattern, searchPattern);
+    conditions.push(
+      "(name LIKE ? OR description LIKE ? OR tags LIKE ? OR playground_data LIKE ? OR workflow_data LIKE ? OR search_text LIKE ?)",
+    );
+    params.push(
+      searchPattern,
+      searchPattern,
+      searchPattern,
+      searchPattern,
+      searchPattern,
+      searchPattern,
+    );
   }
 
   const whereClause =
@@ -106,7 +116,7 @@ export function queryTemplates(filter?: TemplateFilter): Template[] {
 
   const query = `SELECT id, name, description, tags, type, template_type, is_favorite,
                         created_at, updated_at, author, use_count, thumbnail,
-                        playground_data, workflow_data
+                        playground_data, workflow_data, search_text
                  FROM templates ${whereClause} ${orderBy}`;
   const result = db.exec(query, params);
 
@@ -192,6 +202,19 @@ export function deleteTemplates(ids: string[]): void {
   persistDatabase();
 }
 
+export function queryTemplateNames(templateType?: string): string[] {
+  const db = getDatabase();
+  let query = "SELECT name FROM templates";
+  const params: any[] = [];
+  if (templateType) {
+    query += " WHERE template_type = ?";
+    params.push(templateType);
+  }
+  const result = db.exec(query, params);
+  if (!result.length) return [];
+  return result[0].values.map((row: any[]) => row[0] as string);
+}
+
 function rowToTemplate(row: any[]): Template {
   const tags = row[3] ? JSON.parse(row[3] as string) : [];
   const playgroundData = row[12] ? JSON.parse(row[12] as string) : null;
@@ -212,5 +235,6 @@ function rowToTemplate(row: any[]): Template {
     thumbnail: row[11] as string | null,
     playgroundData,
     workflowData,
+    _searchText: (row[14] as string) || undefined,
   };
 }

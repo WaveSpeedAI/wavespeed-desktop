@@ -1,66 +1,56 @@
 /**
- * Main storyboard store — manages project, characters, scenes, shots, and agent state.
- * Uses streaming agents with real-time activity reporting.
+ * Main storyboard store v3.0 — two-convergence pipeline.
+ *
+ * State machine: IDLE → INTENT → PLANNING → PREVIEW → GENERATING → COMPLETE
+ *
+ * First convergence (PREVIEW): all keyframes → Animatic → user confirms
+ * Second convergence (COMPLETE): all videos → assembled final video
  */
 import { create } from "zustand";
 import { v4 as uuid } from "uuid";
 import type {
-  Project,
-  ProjectMode,
-  ProjectStatus,
-  Character,
-  Scene,
-  Shot,
-  DependencyEdge,
-  EditHistoryEntry,
-  StyleProfile,
-  AudioProfile,
-  GenerationStatus,
-} from "../types";
+  Project, ProjectStatus, DurationType,
+  SuperDID, Character, Scene,
+} from "../types/project";
+import type {
+  Shot, Beat, DependencyEdge,
+} from "../types/shot";
 import {
-  routeInput,
-  routerToIntent,
-  generateCharacterCards,
-  generateSceneCards,
-  generateShotSequence,
-  translatePrompts,
-  generateDirectorIntent,
-  composeFinalPrompt,
+  callSuperDID, callWorldPack, callShotPack,
+  type CharacterDraft, type SceneDraft, type ShotDraft, type BeatDraft,
 } from "../agents/pipeline";
-import { modifyShotStreaming } from "../agents/story-agent";
 import { setDeepSeekApiKey, setDeepSeekBaseUrl, setDeepSeekModel } from "../api/deepseek";
 import { useAgentActivityStore } from "./agent-activity.store";
-import { DEFAULT_MODELS, type ModelCategory, type ModelOption } from "../models/model-config";
+import { DEFAULT_MODELS, clampDuration, type ModelCategory, type ModelOption } from "../models/model-config";
+import { buildFirstFramePrompt, buildI2VPrompt, buildNegativePrompt } from "../engine/prompt-builder";
+import { routeAllShots, buildDependencyEdges } from "../engine/execution-router";
+import { validateShotSequence } from "../engine/validator";
+import { generateAllFirstFrames, generateAllVideos } from "../engine/scheduler";
+import { generateImage } from "../models/generation-client";
 import { ffmpegMerge } from "@/workflow/browser/ffmpeg-helpers";
-import type { CharacterStatus } from "../types";
-import type { DirectorIntent } from "../types/director-intent";
-import type { FinalVideoPrompt } from "../engine/final-prompt-composer";
-import { buildExecutionPlan, type ShotPrompts } from "../engine/rule-engine";
-import { executePlan } from "../engine/scheduler";
-import { validateDirectorRules } from "../engine/director-validator";
+
+/* ── Chat Message ──────────────────────────────────────── */
 
 export interface ChatMessage {
   id: string;
   role: "user" | "assistant" | "system";
   content: string;
   timestamp: number;
-  /** If true, content is still being streamed (show typing indicator) */
   isStreaming?: boolean;
 }
 
+/* ── State Interface ───────────────────────────────────── */
+
 interface StoryboardState {
-  // Project
+  // Core data
   project: Project | null;
+  superDID: SuperDID | null;
   characters: Character[];
   scenes: Scene[];
   shots: Shot[];
+  beats: Beat[];
   edges: DependencyEdge[];
-  editHistory: EditHistoryEntry[];
   chatMessages: ChatMessage[];
-  /** V6: Director's Intent Document — global constraint anchor */
-  directorIntent: DirectorIntent | null;
-  /** V6: Final composed video prompt from Stage 3.75 */
-  finalVideoPrompt: FinalVideoPrompt | null;
 
   // UI state
   selectedShotId: string | null;
@@ -74,12 +64,14 @@ interface StoryboardState {
   isAssembling: boolean;
   assembleError: string | null;
 
+  // Animatic state
+  animaticReady: boolean;
+  firstFrameUrls: Map<string, string>;
+
   // Model selection
   selectedModels: Record<ModelCategory, ModelOption>;
 
   // Actions
-  initProject: (name: string, mode: ProjectMode, prompt: string) => Promise<void>;
-  setApiKey: (key: string) => void;
   setLlmConfig: (config: { apiKey?: string; baseUrl?: string; model?: string }) => void;
   setModel: (category: ModelCategory, model: ModelOption) => void;
   selectShot: (id: string | null) => void;
@@ -91,120 +83,179 @@ interface StoryboardState {
   updateScene: (sceneId: string, updates: Partial<Scene>) => void;
   appendToMessage: (messageId: string, chunk: string) => void;
   finalizeMessage: (messageId: string) => void;
-  regenerateShot: (shotId: string) => void;
-  markDirty: (shotIds: string[]) => void;
-  deleteShotById: (shotId: string) => void;
-  insertShotAfter: (afterShotId: string, description: string) => Promise<void>;
-  reorderShot: (shotId: string, newIndex: number) => void;
-  setProjectStatus: (status: ProjectStatus) => void;
+  regenerateFirstFrame: (shotId: string) => Promise<void>;
+  confirmAnimatic: () => Promise<void>;
   startGeneration: () => Promise<void>;
   assembleAllShots: () => Promise<void>;
-  toggleMode: () => void;
-  computeDirtyPropagation: (changedEntityType: string, entityId: string) => string[];
+  setProjectStatus: (status: ProjectStatus) => void;
+  deleteShotById: (shotId: string) => void;
+  reorderShot: (shotId: string, newIndex: number) => void;
   reset: () => void;
 }
 
-const defaultStyleProfile: StyleProfile = {
-  visual_style: "",
-  color_tone: "",
-  aspect_ratio: "16:9",
-  reference_images: [],
-};
+/* ── Duration Extraction ───────────────────────────────── */
 
-const defaultAudioProfile: AudioProfile = {
-  bgm_style: "",
-  narration_voice: null,
-  sfx_density: "normal",
-};
-
-/**
- * Extract target duration from user prompt.
- * Supports: "20s", "20 seconds", "2min", "1.5 minutes", and CJK equivalents.
- * Duration is SACRED — user intent takes absolute priority.
- *
- * Fallback heuristics (only when user doesn't specify):
- * - Short-form keywords → 10s
- * - Medium-form keywords → 30s
- * - Long-form keywords → 60s
- * - Default → 14s
- */
 function extractDuration(prompt: string): number {
-  // Match seconds patterns (including CJK)
   const secMatch = prompt.match(/(\d+(?:\.\d+)?)\s*(?:s|秒|seconds?|sec)\b/i);
-  if (secMatch) return Math.max(4, Math.min(600, parseFloat(secMatch[1])));
+  if (secMatch) return Math.max(4, Math.min(120, parseFloat(secMatch[1])));
 
-  // Match minutes patterns (including CJK)
   const minMatch = prompt.match(/(\d+(?:\.\d+)?)\s*(?:分钟|min(?:utes?)?|mins?)\b/i);
-  if (minMatch) return Math.max(4, Math.min(600, parseFloat(minMatch[1]) * 60));
+  if (minMatch) return Math.max(4, Math.min(120, parseFloat(minMatch[1]) * 60));
 
-  // Match bare numbers followed by duration context (e.g. "做一个20的视频")
-  const bareNumMatch = prompt.match(/(\d+(?:\.\d+)?)\s*(?:的视频|的片子|video)/i);
-  if (bareNumMatch) {
-    const val = parseFloat(bareNumMatch[1]);
-    // If > 4, treat as seconds; if <= 4, treat as minutes
-    if (val > 4) return Math.max(4, Math.min(600, val));
-    return Math.max(4, Math.min(600, val * 60));
-  }
-
-  // Heuristic: short video keywords → 10s
-  if (/短视频|短片|short|brief|快速|片段|clip/i.test(prompt)) return 10;
-  // Heuristic: long video keywords → 60s
-  if (/长视频|长片|long|完整|full|电影|movie|film/i.test(prompt)) return 60;
-  // Heuristic: medium keywords → 30s
-  if (/中等|medium|trailer|预告|宣传/i.test(prompt)) return 30;
+  if (/短视频|短片|short|brief|clip/i.test(prompt)) return 15;
+  if (/长视频|长片|long|完整|full|电影|movie/i.test(prompt)) return 90;
+  if (/中等|medium|trailer|预告|宣传/i.test(prompt)) return 45;
 
   return 14;
 }
 
-function buildDependencyEdges(shots: Shot[]): DependencyEdge[] {
-  const edges: DependencyEdge[] = [];
-  const sorted = [...shots].sort((a, b) => a.sequence_number - b.sequence_number);
-  for (let i = 1; i < sorted.length; i++) {
-    const prev = sorted[i - 1];
-    const curr = sorted[i];
-    const strategy = curr.strategy;
-
-    if (strategy) {
-      // Strategy-aware edges
-      if (strategy.use_frame_chain) {
-        edges.push({ from: prev.shot_id, to: curr.shot_id, type: "frame_chain" });
-      }
-      // Always add narrative order for adjacent shots
-      edges.push({ from: prev.shot_id, to: curr.shot_id, type: "narrative_order" });
-    } else {
-      // Fallback: old behavior
-      if (prev.scene_id === curr.scene_id) {
-        edges.push({ from: prev.shot_id, to: curr.shot_id, type: "frame_chain" });
-      }
-      edges.push({ from: prev.shot_id, to: curr.shot_id, type: "narrative_order" });
-    }
-  }
-  return edges;
+function classifyDuration(seconds: number): DurationType {
+  if (seconds <= 15) return "micro";
+  if (seconds <= 45) return "short";
+  if (seconds <= 90) return "medium";
+  return "full";
 }
 
-export const useStoryboardStore = create<StoryboardState>((set, get) => ({
-  project: null,
-  characters: [],
-  scenes: [],
-  shots: [],
-  edges: [],
-  editHistory: [],
-  chatMessages: [],
-  directorIntent: null,
-  finalVideoPrompt: null,
-  selectedShotId: null,
-  selectedCharacterId: null,
-  selectedSceneId: null,
+/* ── Draft → Domain Entity Mappers ─────────────────────── */
+
+function mapCharacterDraft(draft: CharacterDraft, projectId: string): Character {
+  return {
+    character_id: uuid(),
+    project_id: projectId,
+    name: draft.name,
+    role: draft.role,
+    immutable_traits: draft.immutable_traits,
+    mutable_states: draft.mutable_states.map((s) => ({
+      state_id: s.state_id,
+      name: s.name,
+      description: s.description,
+    })),
+    turnaround_prompt: draft.turnaround_prompt,
+    turnaround_image: null,
+    cropped_views: { front: null, three_quarter: null, side: null },
+    state_images: new Map(),
+  };
+}
+
+function mapSceneDraft(draft: SceneDraft, projectId: string): Scene {
+  return {
+    scene_id: uuid(),
+    project_id: projectId,
+    name: draft.name,
+    environment_description: draft.environment_description,
+    dominant_colors: draft.dominant_colors,
+    key_light_mood: draft.key_light_mood,
+    landmark_objects: draft.landmark_objects,
+    geometry_hint: draft.geometry_hint,
+    weather_state: draft.weather_state,
+    reference_prompt: draft.reference_prompt,
+    master_frame: null,
+  };
+}
+
+function mapShotDraft(
+  draft: ShotDraft,
+  projectId: string,
+  charIdMap: Map<string, string>,
+  sceneIdMap: Map<string, string>,
+  beatIdMap: Map<string, string>,
+  index: number,
+): Shot {
+  return {
+    shot_id: uuid(),
+    project_id: projectId,
+    beat_id: beatIdMap.get(draft.beat_id) ?? "",
+    scene_id: sceneIdMap.get(draft.scene_id) ?? "",
+    sequence_number: index + 1,
+    duration_seconds: draft.is_atmosphere ? draft.duration_seconds : clampDuration(draft.duration_seconds),
+    narrative_value: draft.narrative_value,
+    is_atmosphere: draft.is_atmosphere,
+    composition: {
+      scale: draft.composition.scale as any,
+      framing: draft.composition.framing as any,
+      camera_angle: draft.composition.camera_angle as any,
+    },
+    subjects: (draft.subjects || []).map((s) => ({
+      character_id: charIdMap.get(s.character_id) ?? s.character_id,
+      state_id: s.state_id,
+      action: s.action,
+      screen_position: s.screen_position as any,
+      face_visibility: s.face_visibility as any,
+    })),
+    camera_motion: {
+      type: draft.camera_motion.type as any,
+      intensity: draft.camera_motion.intensity,
+    },
+    transition_in: draft.transition_in as any,
+    transition_out: draft.transition_out as any,
+    continuity: {
+      carry_over_subject: draft.continuity.carry_over_subject
+        ? (charIdMap.get(draft.continuity.carry_over_subject) ?? draft.continuity.carry_over_subject)
+        : null,
+      screen_direction_match: draft.continuity.screen_direction_match,
+      motion_direction: draft.continuity.motion_direction as any,
+    },
+    mood_keywords: draft.mood_keywords || [],
+    visual_poetry: draft.visual_poetry || "",
+    tension_moment: draft.tension_moment || "",
+    scene_type: null,
+    execution_plan: null,
+    first_frame_prompt: "",
+    i2v_prompt: "",
+    negative_prompt: "",
+    generation_status: "pending",
+    generated_assets: {
+      first_frame: null,
+      end_frame: null,
+      video_url: null,
+      video_versions: [],
+      thumbnail: null,
+    },
+    qc_warnings: [],
+  };
+}
+
+function mapBeatDraft(draft: BeatDraft): Beat {
+  const newId = uuid();
+  return {
+    beat_id: newId,
+    type: draft.type as any,
+    time_range: draft.time_range,
+    audience_feeling: draft.audience_feeling,
+    shot_ids: draft.shot_ids, // Will be remapped after shots are created
+  };
+}
+
+/* ── Initial State ─────────────────────────────────────── */
+
+const INITIAL_STATE = {
+  project: null as Project | null,
+  superDID: null as SuperDID | null,
+  characters: [] as Character[],
+  scenes: [] as Scene[],
+  shots: [] as Shot[],
+  beats: [] as Beat[],
+  edges: [] as DependencyEdge[],
+  chatMessages: [] as ChatMessage[],
+  selectedShotId: null as string | null,
+  selectedCharacterId: null as string | null,
+  selectedSceneId: null as string | null,
   isAgentWorking: false,
-  error: null,
-
-  assembledVideoUrl: null,
+  error: null as string | null,
+  assembledVideoUrl: null as string | null,
   isAssembling: false,
-  assembleError: null,
+  assembleError: null as string | null,
+  animaticReady: false,
+  firstFrameUrls: new Map<string, string>(),
+  selectedModels: { ...DEFAULT_MODELS } as Record<ModelCategory, ModelOption>,
+};
 
-  selectedModels: { ...DEFAULT_MODELS },
+/* ── Store ─────────────────────────────────────────────── */
 
-  setApiKey: (key: string) => setDeepSeekApiKey(key),
+export const useStoryboardStore = create<StoryboardState>((set, get) => ({
+  ...INITIAL_STATE,
+
+  /* ── Config ──────────────────────────────────────────── */
 
   setLlmConfig: (config) => {
     if (config.apiKey) setDeepSeekApiKey(config.apiKey);
@@ -212,676 +263,116 @@ export const useStoryboardStore = create<StoryboardState>((set, get) => ({
     if (config.model) setDeepSeekModel(config.model);
   },
 
-  setModel: (category, model) =>
-    set((s) => ({
-      selectedModels: { ...s.selectedModels, [category]: model },
-    })),
+  setModel: (category, model) => {
+    set((s) => ({ selectedModels: { ...s.selectedModels, [category]: model } }));
+  },
+
+  /* ── Selection ───────────────────────────────────────── */
 
   selectShot: (id) => set({ selectedShotId: id, selectedCharacterId: null, selectedSceneId: null }),
   selectCharacter: (id) => set({ selectedCharacterId: id, selectedShotId: null, selectedSceneId: null }),
   selectScene: (id) => set({ selectedSceneId: id, selectedShotId: null, selectedCharacterId: null }),
 
-  setProjectStatus: (status) =>
-    set((s) => s.project ? { project: { ...s.project, status, updated_at: Date.now() } } : {}),
+  /* ── Chat helpers ────────────────────────────────────── */
 
-  toggleMode: () =>
-    set((s) => {
-      if (!s.project) return {};
-      const newMode: ProjectMode = s.project.mode === "lite" ? "pro" : "lite";
-      return { project: { ...s.project, mode: newMode, updated_at: Date.now() } };
-    }),
-
-  startGeneration: async () => {
-    const state = get();
-    if (!state.project) return;
-
-    const pendingShots = state.shots
-      .filter((s) => s.generation_status === "pending" || s.generation_status === "dirty")
-      .sort((a, b) => a.sequence_number - b.sequence_number);
-
-    if (pendingShots.length === 0) return;
-
-    set({
-      isAgentWorking: true,
-      project: { ...state.project, status: "generating", updated_at: Date.now() },
-      assembledVideoUrl: null,
-      assembleError: null,
-      chatMessages: [
-        ...state.chatMessages,
-        { id: uuid(), role: "assistant", content: `Generating ${pendingShots.length} shots...`, timestamp: Date.now() },
-      ],
-    });
-
-    const activityStore = useAgentActivityStore.getState();
-
-    try {
-      // ── Stage 3.5: Prompt Translation ──
-      // Build draft representations for the prompt translator
-      const charDrafts = state.characters.map((c) => ({
-        name: c.name,
-        visual_prompt: c.visual_description,
-        visual_negative: c.visual_negative || "",
-        personality: c.personality,
-        fighting_style: c.fighting_style || "",
-        role_in_story: c.role_in_story,
-        immutable_traits: c.immutable_traits ?? undefined,
-        mutable_states: c.mutable_states ?? undefined,
-      }));
-      const sceneDrafts = state.scenes.map((s) => ({
-        name: s.name,
-        visual_prompt: s.visual_prompt || s.description,
-        visual_negative: s.visual_negative || "",
-        lighting: s.lighting,
-        weather: s.weather,
-        time_of_day: s.time_of_day,
-        mood: s.mood,
-        perspective_hint: s.perspective_hint ?? undefined,
-      }));
-      const shotDrafts = pendingShots.map((s) => {
-        const scene = state.scenes.find((sc) => sc.scene_id === s.scene_id);
-        const charNames = state.characters
-          .filter((c) => s.character_ids.includes(c.character_id))
-          .map((c) => c.name);
-        return {
-          sequence_number: s.sequence_number,
-          act_number: s.act_number,
-          scene_name: scene?.name ?? "",
-          character_names: charNames,
-          shot_type: s.shot_type,
-          camera_movement: s.camera_movement,
-          duration: s.duration,
-          dialogue: s.dialogue,
-          dialogue_character: s.dialogue_character,
-          narration: s.narration,
-          action_description: s.action_description,
-          emotion_tag: s.emotion_tag,
-          transition_to_next: s.transition_to_next,
-          is_key_shot: s.is_key_shot,
-          base_frame_request: s.base_frame_request ?? { subject_names: charNames, pose_or_angle: s.action_description, scene_context: "" },
-          subject_motions: s.subject_motions ?? undefined,
-          env_motion: s.env_motion ?? undefined,
-          // V6 cinematography fields
-          focal_length_intent: s.focal_length_intent ?? undefined,
-          composition: s.composition ?? undefined,
-          rhythm_role: s.rhythm_role ?? undefined,
-          emotional_beat_index: s.emotional_beat_index ?? undefined,
-          screen_direction: s.screen_direction ?? undefined,
-          spatial_continuity: s.spatial_continuity ?? undefined,
-          transition_detail: s.transition_detail ?? undefined,
-          lighting_intent: s.lighting_intent ?? undefined,
-        };
-      });
-
-      const promptPhaseId = activityStore.startPhase("Prompt Translation");
-      const promptDrafts = await translatePrompts(shotDrafts, charDrafts, sceneDrafts, state.directorIntent ?? {} as DirectorIntent, promptPhaseId);
-      activityStore.completePhase(promptPhaseId);
-
-      // ── Stage 3.75: Final Prompt Composer ──
-      const composerPhaseId = activityStore.startPhase("Final Prompt Composer");
-      const finalPrompt = await composeFinalPrompt(
-        shotDrafts, promptDrafts, sceneDrafts,
-        state.directorIntent ?? undefined,
-        state.project?.target_duration ?? 14,
-        composerPhaseId,
-      );
-      activityStore.completePhase(composerPhaseId);
-      set({ finalVideoPrompt: finalPrompt });
-
-      // Build prompt map: shot_id -> { image_prompt, video_prompt }
-      // V7: Each shot's video_prompt is now a complete 3-tier structured prompt
-      // composed by the Final Prompt Composer (Tier1 global + Tier2 segment + Tier3 micro-beats)
-      // The per-shot LLM-translated video_prompt is embedded within the micro-beats
-      const promptMap = new Map<string, ShotPrompts>();
-      for (const shot of pendingShots) {
-        const draft = promptDrafts.find((p) => p.shot_sequence === shot.sequence_number);
-        if (draft) {
-          // Use the 3-tier structured prompt if available, fallback to prefix + raw prompt
-          const structuredPrompt = finalPrompt.perShotPrompts?.get(shot.sequence_number);
-          promptMap.set(shot.shot_id, {
-            image_prompt: draft.image_prompt,
-            video_prompt: structuredPrompt || (finalPrompt.prefix + "\n" + draft.video_prompt),
-          });
-        }
-      }
-
-      // ── Stage 4: Rule Engine (pure code) ──
-      const plan = buildExecutionPlan(pendingShots, promptMap, state.characters, state.scenes, state.directorIntent ?? undefined);
-
-      // ── Stage 5: Execution ──
-      const execPhaseId = activityStore.startPhase("Execution");
-      const result = await executePlan(plan, execPhaseId, {
-        onShotComplete: (shotId, videoUrl) => {
-          set((s) => ({
-            shots: s.shots.map((sh) =>
-              sh.shot_id === shotId
-                ? {
-                    ...sh,
-                    generation_status: "done" as GenerationStatus,
-                    generated_assets: {
-                      ...sh.generated_assets,
-                      video_path: videoUrl,
-                      video_versions: [...sh.generated_assets.video_versions, videoUrl],
-                      thumbnail: videoUrl,
-                      last_frame_path: videoUrl,
-                    },
-                  }
-                : sh,
-            ),
-          }));
-        },
-        onShotFailed: (shotId, error) => {
-          set((s) => ({
-            shots: s.shots.map((sh) =>
-              sh.shot_id === shotId
-                ? { ...sh, generation_status: "failed" as GenerationStatus, qc_warnings: [...sh.qc_warnings, error] }
-                : sh,
-            ),
-          }));
-        },
-      }, state.characters);
-      activityStore.completePhase(execPhaseId);
-
-      // ── Summary ──
-      const finalStatus: ProjectStatus = result.failed === 0 ? "done" : "ready";
-      const summary = result.failed === 0
-        ? `All ${result.success} shots generated successfully. Click preview to watch, or export.`
-        : `${result.success} shots succeeded, ${result.failed} failed. Click retry on failed shots.`;
-
-      set((s) => ({
-        isAgentWorking: false,
-        project: s.project ? { ...s.project, status: finalStatus, updated_at: Date.now() } : null,
-        chatMessages: [
-          ...s.chatMessages,
-          { id: uuid(), role: "assistant", content: summary, timestamp: Date.now() },
-        ],
-      }));
-
-      // Auto-assemble if all shots succeeded
-      if (result.failed === 0 && result.success >= 2) {
-        await get().assembleAllShots();
-      }
-    } catch (err: any) {
-      set((s) => ({
-        isAgentWorking: false,
-        project: s.project ? { ...s.project, status: "ready", updated_at: Date.now() } : null,
-        chatMessages: [
-          ...s.chatMessages,
-          { id: uuid(), role: "system", content: `Generation failed: ${err.message}`, timestamp: Date.now() },
-        ],
-      }));
-    }
-  },
-
-  assembleAllShots: async () => {
-    const state = get();
-    const doneShots = state.shots
-      .filter((s) => s.generation_status === "done" && s.generated_assets.video_path)
-      .sort((a, b) => a.sequence_number - b.sequence_number);
-
-    if (doneShots.length < 2) {
-      set({ assembleError: "Need at least 2 completed shots to assemble" });
-      return;
-    }
-
-    if (state.assembledVideoUrl) {
-      URL.revokeObjectURL(state.assembledVideoUrl);
-    }
-
-    set({ isAssembling: true, assembleError: null, assembledVideoUrl: null });
-
-    const activityStore = useAgentActivityStore.getState();
-    const phaseId = activityStore.startPhase("Video Assembly");
-    const taskId = activityStore.startTask(phaseId, "production", "Production Agent: assembling final video");
-    activityStore.appendStream(taskId, `Concatenating ${doneShots.length} shots...\n`);
-
-    try {
-      const videoUrls = doneShots.map((s) => s.generated_assets.video_path!);
-      activityStore.appendStream(taskId, "Running FFmpeg merge...\n");
-      const blobUrl = await ffmpegMerge(videoUrls, "mp4");
-      activityStore.appendStream(taskId, "Merge complete\n");
-      activityStore.completeTask(taskId, "Final video assembled");
-      activityStore.completePhase(phaseId);
-
-      set({
-        assembledVideoUrl: blobUrl,
-        isAssembling: false,
-        project: state.project ? { ...state.project, status: "done", updated_at: Date.now() } : null,
-        chatMessages: [
-          ...get().chatMessages,
-          { id: uuid(), role: "assistant", content: "Final video assembled. Click preview to watch and export.", timestamp: Date.now() },
-        ],
-      });
-    } catch (err: any) {
-      activityStore.failTask(taskId, err.message);
-      activityStore.completePhase(phaseId);
-      set({
-        isAssembling: false,
-        assembleError: err.message,
-        chatMessages: [
-          ...get().chatMessages,
-          { id: uuid(), role: "system", content: `Assembly failed: ${err.message}`, timestamp: Date.now() },
-        ],
-      });
-    }
-  },
-
-  initProject: async (name, mode, prompt) => {
-    const projectId = uuid();
-    const targetDuration = extractDuration(prompt);
-    const project: Project = {
-      project_id: projectId,
-      name,
-      mode,
-      status: "creating",
-      style_profile: defaultStyleProfile,
-      audio_profile: defaultAudioProfile,
-      target_duration: targetDuration,
-      created_at: Date.now(),
-      updated_at: Date.now(),
-    };
-
-    const activityStore = useAgentActivityStore.getState();
-    activityStore.reset();
-
-    set({
-      project,
-      isAgentWorking: true,
-      chatMessages: [
-        { id: uuid(), role: "user", content: prompt, timestamp: Date.now() },
-      ],
-      error: null,
-    });
-
-    // Create a streaming progress message
-    const progressMsgId = uuid();
-    set((s) => ({
-      chatMessages: [
-        ...s.chatMessages,
-        { id: progressMsgId, role: "assistant", content: "", isStreaming: true, timestamp: Date.now() },
-      ],
-    }));
-    const append = (text: string) => get().appendToMessage(progressMsgId, text);
-
-    try {
-      // ── Stage 0: Super Router (merged -1 + 0, single LLM call) ──
-      append("🧭 正在分析你的创意...\n");
-      const routerPhaseId = activityStore.startPhase("Input Routing");
-      const routerResult = await routeInput(prompt, routerPhaseId);
-      activityStore.completePhase(routerPhaseId);
-
-      // If clarification needed (unclear/reject), ask user and stop
-      if (routerResult.needs_clarification && routerResult.clarification_question) {
-        // Replace the streaming message with the clarification question
-        set((s) => ({
-          isAgentWorking: false,
-          project: { ...project, status: "idle" },
-          chatMessages: s.chatMessages.map((m) =>
-            m.id === progressMsgId
-              ? { ...m, content: routerResult.clarification_question!, isStreaming: false }
-              : m,
-          ),
-        }));
-        return;
-      }
-
-      append(`✅ 意图识别完成: ${routerResult.confidence === "high" ? "高置信度" : routerResult.confidence === "medium" ? "中置信度" : "低置信度"}\n`);
-
-      // Adapt router result to IntentResult for downstream stages
-      const intent = routerToIntent(routerResult, targetDuration);
-
-      // Override duration if router extracted a specific one
-      const duration = intent.duration || targetDuration;
-
-      // ── Stage 0.5: Director's Intent Document ──
-      append(`\n🎬 正在构建导演意图文档...\n`);
-      const didPhaseId = activityStore.startPhase("Director's Intent");
-      const did = await generateDirectorIntent(intent, routerResult.normalized_brief, didPhaseId);
-      // Inject target_duration into DID — sacred constraint
-      did.target_duration = duration;
-      activityStore.completePhase(didPhaseId);
-      append(`  · 情绪弧线: ${did.emotional_arc.structure}\n`);
-      append(`  · 视觉风格: ${did.visual_identity.art_style_anchor.slice(0, 60)}...\n`);
-      append(`  · 节奏策略: ${did.rhythm_blueprint.pacing_strategy}\n`);
-
-      // ── Stage 1: Character Cards ──
-      append(`\n🎭 正在设计 ${intent.characters.length} 个角色...\n`);
-      const charPhaseId = activityStore.startPhase("Character Design");
-      const characterDrafts = await generateCharacterCards(intent, did, charPhaseId);
-      activityStore.completePhase(charPhaseId);
-      for (const c of characterDrafts) {
-        append(`  · ${c.name} — ${c.personality}\n`);
-      }
-
-      // ── Stage 2: Scene Cards (serial dependency on Stage 1) ──
-      append(`\n🏞 正在构建场景...\n`);
-      const scenePhaseId = activityStore.startPhase("Scene Design");
-      const sceneDrafts = await generateSceneCards(intent, characterDrafts, did, scenePhaseId);
-      activityStore.completePhase(scenePhaseId);
-
-      // Map drafts to domain entities
-      const characters: Character[] = characterDrafts.map((c) => ({
-        character_id: uuid(),
-        project_id: projectId,
-        name: c.name,
-        visual_description: c.visual_prompt,
-        visual_negative: c.visual_negative || "",
-        personality: c.personality,
-        role_in_story: c.role_in_story,
-        fighting_style: c.fighting_style || "",
-        voice_id: null,
-        anchor_images: { front: null, side: null, full_body: null, battle: null },
-        status: "alive" as CharacterStatus,
-        version: 1,
-        immutable_traits: c.immutable_traits ?? undefined,
-        mutable_states: c.mutable_states ?? undefined,
-        visual_anchor: c.visual_anchor ?? undefined,
-        face_framing_note: c.face_framing_note ?? undefined,
-        screen_direction_default: c.screen_direction_default ?? undefined,
-      }));
-
-      const scenes: Scene[] = sceneDrafts.map((s) => ({
-        scene_id: uuid(),
-        project_id: projectId,
-        name: s.name,
-        description: s.visual_prompt,
-        visual_prompt: s.visual_prompt,
-        visual_negative: s.visual_negative || "",
-        lighting: s.lighting,
-        weather: s.weather,
-        time_of_day: s.time_of_day,
-        mood: s.mood,
-        anchor_image: null,
-        version: 1,
-        perspective_hint: s.perspective_hint ?? undefined,
-        color_temperature: s.color_temperature ?? undefined,
-        dominant_light_source: s.dominant_light_source ?? undefined,
-        weather_continuity: s.weather_continuity ?? undefined,
-        exit_visual_hint: s.exit_visual_hint ?? undefined,
-        entry_visual_hint: s.entry_visual_hint ?? undefined,
-      }));
-
-      // ── Parallel: Stage 2.5 (asset gen) || Stage 3 (shot sequence) ──
-      // Asset generation happens during startGeneration, not here.
-      // Stage 3 runs now to get the shot sequence.
-      append(`\n🎬 正在编排分镜序列...\n`);
-      const shotPhaseId = activityStore.startPhase("Shot Sequence");
-      const shotResult = await generateShotSequence(intent, characterDrafts, sceneDrafts, did, shotPhaseId);
-      activityStore.completePhase(shotPhaseId);
-
-      // Map shot drafts to domain entities
-      const charMap = new Map(characters.map((c) => [c.name, c.character_id]));
-      const sceneMap = new Map(scenes.map((s) => [s.name, s.scene_id]));
-
-      const shots: Shot[] = (shotResult.shots || []).map((s: any, i: number) => ({
-        shot_id: uuid(),
-        project_id: projectId,
-        sequence_number: s.sequence_number ?? i + 1,
-        act_number: s.act_number ?? 1,
-        scene_id: sceneMap.get(s.scene_name) ?? scenes[0]?.scene_id ?? "",
-        character_ids: (s.character_names || []).map((n: string) => charMap.get(n) ?? "").filter(Boolean),
-        shot_type: s.shot_type ?? "medium",
-        camera_movement: s.camera_movement ?? "static",
-        duration: s.duration ?? 6,
-        dialogue: s.dialogue ?? null,
-        dialogue_character: s.dialogue_character ? (charMap.get(s.dialogue_character) ?? null) : null,
-        narration: s.narration ?? null,
-        action_description: s.action_description ?? "",
-        emotion_tag: s.emotion_tag ?? "neutral",
-        generation_prompt: "",
-        negative_prompt: "",
-        transition_to_next: s.transition_detail?.type ?? s.transition_to_next ?? "cut",
-        is_key_shot: s.is_key_shot ?? false,
-        dependencies: [],
-        generation_status: "pending" as GenerationStatus,
-        generated_assets: {
-          video_path: null, video_versions: [], selected_version: 0,
-          dialogue_audio: null, narration_audio: null, sfx_audio: null,
-          last_frame_path: null, thumbnail: null,
-        },
-        qc_score: 0,
-        qc_warnings: [],
-        base_frame_request: s.base_frame_request ?? undefined,
-        subject_motions: s.subject_motions ?? undefined,
-        env_motion: s.env_motion ?? undefined,
-        // V6 fields
-        focal_length_intent: s.focal_length_intent ?? undefined,
-        composition: s.composition ?? undefined,
-        rhythm_role: s.rhythm_role ?? undefined,
-        emotional_beat_index: s.emotional_beat_index ?? undefined,
-        screen_direction: s.screen_direction ?? undefined,
-        spatial_continuity: s.spatial_continuity ?? undefined,
-        transition_detail: s.transition_detail ?? undefined,
-        lighting_intent: s.lighting_intent ?? undefined,
-      }));
-
-      const edges = buildDependencyEdges(shots);
-      for (const shot of shots) {
-        shot.dependencies = edges.filter((e) => e.to === shot.shot_id).map((e) => e.from);
-      }
-
-      const totalDuration = shots.reduce((sum, s) => sum + s.duration, 0);
-      const warnings = shotResult.warnings || [];
-
-      // ── V6: Director Rules Validation ──
-      const validation = validateDirectorRules(shots, scenes, did);
-      if (validation.warnings.length > 0) {
-        const dirWarnings = validation.warnings.map((w) => `[${w.code}] ${w.message}`);
-        warnings.push(...dirWarnings);
-      }
-
-      // Finalize the streaming progress message
-      append(`\n✅ 故事板就绪: ${characters.length} 角色 · ${scenes.length} 场景 · ${shots.length} 镜头 · ~${totalDuration}s`);
-      if (warnings.length > 0) {
-        append(`\n⚠ ${warnings.join(", ")}`);
-      }
-      append(`\n\n点击「生成」开始渲染视频。`);
-      get().finalizeMessage(progressMsgId);
-
-      set({
-        project: { ...project, target_duration: duration, status: "ready", updated_at: Date.now() },
-        characters,
-        scenes,
-        shots,
-        edges,
-        directorIntent: did,
-        isAgentWorking: false,
-      });
-    } catch (err: any) {
-      // Finalize the streaming message with error
-      set((s) => ({
-        isAgentWorking: false,
-        error: err.message || "Pipeline failed",
-        project: { ...project, status: "idle" },
-        chatMessages: s.chatMessages.map((m) =>
-          m.id === progressMsgId
-            ? { ...m, content: m.content + `\n\n❌ 出错了: ${err.message}`, isStreaming: false }
-            : m,
-        ),
-      }));
-    }
-  },
-
-  sendMessage: async (message) => {
-    const state = get();
-    const newMsg: ChatMessage = { id: uuid(), role: "user", content: message, timestamp: Date.now() };
-    set({ chatMessages: [...state.chatMessages, newMsg] });
-
-    if (!state.project) {
-      await get().initProject("New Project", "lite", message);
-      return;
-    }
-
-    set({ isAgentWorking: true });
-    const activityStore = useAgentActivityStore.getState();
-    const phaseId = activityStore.startPhase("User Command");
-
-    try {
-      // Super Router: single call to classify + normalize + extract
-      const routerResult = await routeInput(message, phaseId);
-
-      // If clarification needed (unclear/reject), ask and stop
-      if (routerResult.needs_clarification && routerResult.clarification_question) {
-        activityStore.completePhase(phaseId);
-        set({
-          isAgentWorking: false,
-          chatMessages: [
-            ...get().chatMessages,
-            { id: uuid(), role: "assistant", content: routerResult.clarification_question, timestamp: Date.now() },
-          ],
-        });
-        return;
-      }
-
-      if (routerResult.intent === "create") {
-        // New project creation from existing project context
-        activityStore.completePhase(phaseId);
-        await get().initProject("New Project", "lite", message);
-        return;
-      }
-
-      if (routerResult.intent === "modify") {
-        // Modification — use legacy intent parser for shot-level routing
-        const parseUserIntentStreaming = (await import("../agents/story-agent")).parseUserIntentStreaming;
-        const legacyIntent = await parseUserIntentStreaming(message, {
-          shotCount: state.shots.length,
-          characterNames: state.characters.map((c) => c.name),
-          sceneNames: state.scenes.map((s) => s.name),
-        }, phaseId);
-
-        if (legacyIntent.type === "modify_shot" && legacyIntent.target_name) {
-          const shotNum = parseInt(legacyIntent.target_name);
-          const targetShot = !isNaN(shotNum)
-            ? state.shots.find((s) => s.sequence_number === shotNum)
-            : state.shots.find((s) => s.action_description.includes(legacyIntent.target_name!));
-
-          if (targetShot) {
-            const scene = state.scenes.find((s) => s.scene_id === targetShot.scene_id);
-            const chars = state.characters.filter((c) => targetShot.character_ids.includes(c.character_id));
-            const updates = await modifyShotStreaming(targetShot, legacyIntent.details || message, chars, scene!, phaseId);
-            get().updateShot(targetShot.shot_id, { ...updates, generation_status: "dirty" });
-            set({
-              chatMessages: [...get().chatMessages, { id: uuid(), role: "assistant", content: `Modified shot #${targetShot.sequence_number}`, timestamp: Date.now() }],
-            });
-          }
-        } else if (legacyIntent.type === "generate") {
-          await get().startGeneration();
-        } else {
-          set({
-            chatMessages: [...get().chatMessages, { id: uuid(), role: "assistant", content: `Got it. ${legacyIntent.details || ""}`, timestamp: Date.now() }],
-          });
-        }
-      } else {
-        // Unclear intent — just acknowledge
-        set({
-          chatMessages: [...get().chatMessages, { id: uuid(), role: "assistant", content: `Got it. ${routerResult.normalized_brief}`, timestamp: Date.now() }],
-        });
-      }
-
-      activityStore.completePhase(phaseId);
-    } catch (err: any) {
-      activityStore.completePhase(phaseId);
-      set({
-        chatMessages: [...get().chatMessages, { id: uuid(), role: "system", content: `Error: ${err.message}`, timestamp: Date.now() }],
-      });
-    } finally {
-      set({ isAgentWorking: false });
-    }
-  },
-
-  updateShot: (shotId, updates) =>
-    set((s) => ({
-      shots: s.shots.map((shot) =>
-        shot.shot_id === shotId ? { ...shot, ...updates, generation_status: updates.generation_status ?? "dirty" } : shot,
-      ),
-    })),
-
-  updateCharacter: (charId, updates) =>
-    set((s) => ({
-      characters: s.characters.map((c) =>
-        c.character_id === charId ? { ...c, ...updates, version: c.version + 1 } : c,
-      ),
-    })),
-
-  updateScene: (sceneId, updates) =>
-    set((s) => ({
-      scenes: s.scenes.map((sc) =>
-        sc.scene_id === sceneId ? { ...sc, ...updates, version: sc.version + 1 } : sc,
-      ),
-    })),
-
-  appendToMessage: (messageId, chunk) =>
+  appendToMessage: (messageId, chunk) => {
     set((s) => ({
       chatMessages: s.chatMessages.map((m) =>
         m.id === messageId ? { ...m, content: m.content + chunk } : m,
       ),
-    })),
+    }));
+  },
 
-  finalizeMessage: (messageId) =>
+  finalizeMessage: (messageId) => {
     set((s) => ({
       chatMessages: s.chatMessages.map((m) =>
         m.id === messageId ? { ...m, isStreaming: false } : m,
       ),
-    })),
-
-  regenerateShot: (shotId) =>
-    set((s) => ({
-      shots: s.shots.map((shot) =>
-        shot.shot_id === shotId ? { ...shot, generation_status: "pending" as GenerationStatus } : shot,
-      ),
-    })),
-
-  markDirty: (shotIds) =>
-    set((s) => ({
-      shots: s.shots.map((shot) =>
-        shotIds.includes(shot.shot_id) ? { ...shot, generation_status: "dirty" as GenerationStatus } : shot,
-      ),
-    })),
-
-  deleteShotById: (shotId) =>
-    set((s) => {
-      const remaining = s.shots.filter((sh) => sh.shot_id !== shotId);
-      const sorted = remaining.sort((a, b) => a.sequence_number - b.sequence_number);
-      sorted.forEach((sh, i) => { sh.sequence_number = i + 1; });
-      return { shots: sorted, edges: buildDependencyEdges(sorted), selectedShotId: null };
-    }),
-
-  insertShotAfter: async (afterShotId, description) => {
-    const s = get();
-    const afterShot = s.shots.find((sh) => sh.shot_id === afterShotId);
-    if (!afterShot) return;
-
-    const newShot: Shot = {
-      shot_id: uuid(),
-      project_id: s.project?.project_id ?? "",
-      sequence_number: afterShot.sequence_number + 0.5,
-      act_number: afterShot.act_number,
-      scene_id: afterShot.scene_id,
-      character_ids: [],
-      shot_type: "medium",
-      camera_movement: "static",
-      duration: 6,
-      dialogue: null,
-      dialogue_character: null,
-      narration: null,
-      action_description: description,
-      emotion_tag: "neutral",
-      generation_prompt: "",
-      negative_prompt: "",
-      transition_to_next: "cut",
-      is_key_shot: false,
-      dependencies: [],
-      generation_status: "pending",
-      generated_assets: { video_path: null, video_versions: [], selected_version: 0, dialogue_audio: null, narration_audio: null, sfx_audio: null, last_frame_path: null, thumbnail: null },
-      qc_score: 0,
-      qc_warnings: [],
-    };
-
-    const allShots = [...s.shots, newShot].sort((a, b) => a.sequence_number - b.sequence_number);
-    allShots.forEach((sh, i) => { sh.sequence_number = i + 1; });
-    set({ shots: allShots, edges: buildDependencyEdges(allShots) });
+    }));
   },
 
-  reorderShot: (shotId, newIndex) =>
+  /* ── Status ──────────────────────────────────────────── */
+
+  setProjectStatus: (status) => {
+    set((s) => s.project ? { project: { ...s.project, status, updated_at: Date.now() } } : {});
+  },
+
+  /* ── sendMessage — main entry point ──────────────────── */
+
+  sendMessage: async (message: string) => {
+    const state = get();
+    if (state.isAgentWorking) return;
+
+    // Add user message
+    const userMsg: ChatMessage = {
+      id: uuid(), role: "user", content: message, timestamp: Date.now(),
+    };
+    set((s) => ({ chatMessages: [...s.chatMessages, userMsg] }));
+
+    // Add streaming assistant placeholder
+    const assistantMsgId = uuid();
+    set((s) => ({
+      chatMessages: [...s.chatMessages, {
+        id: assistantMsgId, role: "assistant", content: "", timestamp: Date.now(), isStreaming: true,
+      }],
+      isAgentWorking: true,
+      error: null,
+    }));
+
+    const phaseId = useAgentActivityStore.getState().startPhase("storyboard-pipeline");
+
+    try {
+      if (!state.project) {
+        // ── First message: full pipeline (Call 1 → 2 → 3) ──
+        await runFullPipeline(message, assistantMsgId, phaseId);
+      } else {
+        // ── Subsequent messages: route through Super DID ──
+        await runFollowUp(message, assistantMsgId, phaseId);
+      }
+    } catch (err: any) {
+      set({ error: err.message });
+      get().appendToMessage(assistantMsgId, `\n\n❌ 错误: ${err.message}`);
+    } finally {
+      get().finalizeMessage(assistantMsgId);
+      set({ isAgentWorking: false });
+      useAgentActivityStore.getState().completePhase(phaseId);
+    }
+  },
+
+  /* ── CRUD ────────────────────────────────────────────── */
+
+  updateShot: (shotId, updates) => {
+    set((s) => ({
+      shots: s.shots.map((sh) => sh.shot_id === shotId ? { ...sh, ...updates } : sh),
+    }));
+  },
+
+  updateCharacter: (charId, updates) => {
+    set((s) => ({
+      characters: s.characters.map((c) => c.character_id === charId ? { ...c, ...updates } : c),
+    }));
+  },
+
+  updateScene: (sceneId, updates) => {
+    set((s) => ({
+      scenes: s.scenes.map((sc) => sc.scene_id === sceneId ? { ...sc, ...updates } : sc),
+    }));
+  },
+
+  deleteShotById: (shotId) => {
+    set((s) => {
+      const remaining = s.shots.filter((sh) => sh.shot_id !== shotId);
+      // Re-sequence
+      const sorted = [...remaining].sort((a, b) => a.sequence_number - b.sequence_number);
+      sorted.forEach((sh, i) => { sh.sequence_number = i + 1; });
+      return {
+        shots: sorted,
+        selectedShotId: s.selectedShotId === shotId ? null : s.selectedShotId,
+      };
+    });
+  },
+
+  reorderShot: (shotId, newIndex) => {
     set((s) => {
       const shots = [...s.shots].sort((a, b) => a.sequence_number - b.sequence_number);
       const idx = shots.findIndex((sh) => sh.shot_id === shotId);
@@ -889,43 +380,425 @@ export const useStoryboardStore = create<StoryboardState>((set, get) => ({
       const [moved] = shots.splice(idx, 1);
       shots.splice(newIndex, 0, moved);
       shots.forEach((sh, i) => { sh.sequence_number = i + 1; });
-      return { shots, edges: buildDependencyEdges(shots) };
-    }),
-
-  computeDirtyPropagation: (changedEntityType, entityId) => {
-    const s = get();
-    const dirtyIds: string[] = [];
-    if (changedEntityType === "character") {
-      s.shots.forEach((shot) => { if (shot.character_ids.includes(entityId)) dirtyIds.push(shot.shot_id); });
-    } else if (changedEntityType === "scene") {
-      s.shots.forEach((shot) => { if (shot.scene_id === entityId) dirtyIds.push(shot.shot_id); });
-    } else if (changedEntityType === "global_style") {
-      s.shots.forEach((shot) => dirtyIds.push(shot.shot_id));
-    } else if (changedEntityType === "shot") {
-      const downstream = new Set<string>();
-      const queue = [entityId];
-      while (queue.length > 0) {
-        const current = queue.shift()!;
-        s.edges.filter((e) => e.from === current && e.type === "frame_chain").forEach((e) => {
-          if (!downstream.has(e.to)) { downstream.add(e.to); queue.push(e.to); }
-        });
-      }
-      downstream.forEach((id) => dirtyIds.push(id));
-    }
-    return dirtyIds;
-  },
-
-  reset: () => {
-    const state = get();
-    if (state.assembledVideoUrl) URL.revokeObjectURL(state.assembledVideoUrl);
-    useAgentActivityStore.getState().reset();
-    set({
-      project: null, characters: [], scenes: [], shots: [], edges: [],
-      editHistory: [], chatMessages: [], directorIntent: null, finalVideoPrompt: null, selectedShotId: null,
-      selectedCharacterId: null, selectedSceneId: null,
-      isAgentWorking: false, error: null,
-      assembledVideoUrl: null, isAssembling: false, assembleError: null,
-      selectedModels: { ...DEFAULT_MODELS },
+      return { shots };
     });
   },
+
+  /* ── Regenerate single first frame ───────────────────── */
+
+  regenerateFirstFrame: async (shotId) => {
+    const state = get();
+    const shot = state.shots.find((s) => s.shot_id === shotId);
+    if (!shot || !state.superDID) return;
+
+    set((s) => ({
+      shots: s.shots.map((sh) =>
+        sh.shot_id === shotId ? { ...sh, generation_status: "generating" as const } : sh,
+      ),
+    }));
+
+    const phaseId = useAgentActivityStore.getState().startPhase("regenerate-frame");
+    try {
+      const scene = state.scenes.find((sc) => sc.scene_id === shot.scene_id);
+      const prompt = buildFirstFramePrompt(shot, state.characters, scene, state.superDID);
+      const negative = buildNegativePrompt(shot, state.characters);
+
+      const refImages: string[] = [];
+      for (const subj of shot.subjects) {
+        const char = state.characters.find((c) => c.character_id === subj.character_id);
+        if (char?.cropped_views.three_quarter) refImages.push(char.cropped_views.three_quarter);
+        else if (char?.turnaround_image) refImages.push(char.turnaround_image);
+      }
+      if (scene?.master_frame) refImages.push(scene.master_frame);
+
+      const result = await generateImage(prompt, {
+        negativePrompt: negative,
+        imageSize: "1280x720",
+        seed: Math.floor(Math.random() * 10000),
+        phaseId,
+        referenceImages: refImages.length > 0 ? refImages : undefined,
+      });
+
+      set((s) => ({
+        shots: s.shots.map((sh) =>
+          sh.shot_id === shotId
+            ? {
+                ...sh,
+                generation_status: "done" as const,
+                generated_assets: { ...sh.generated_assets, first_frame: result.outputUrl },
+              }
+            : sh,
+        ),
+        firstFrameUrls: new Map(s.firstFrameUrls).set(shotId, result.outputUrl),
+      }));
+    } catch (err: any) {
+      set((s) => ({
+        shots: s.shots.map((sh) =>
+          sh.shot_id === shotId ? { ...sh, generation_status: "failed" as const } : sh,
+        ),
+        error: err.message,
+      }));
+    } finally {
+      useAgentActivityStore.getState().completePhase(phaseId);
+    }
+  },
+
+  /* ── Confirm Animatic → start video generation ───────── */
+
+  confirmAnimatic: async () => {
+    const state = get();
+    if (!state.project || state.project.status !== "preview") return;
+
+    // Snapshot for rollback
+    const snapshotId = uuid();
+    set((s) => ({
+      project: s.project ? { ...s.project, status: "generating" as const, preview_snapshot_id: snapshotId } : null,
+    }));
+
+    // Start video generation
+    await get().startGeneration();
+  },
+
+  /* ── Start Generation (Phase C: videos) ──────────────── */
+
+  startGeneration: async () => {
+    const state = get();
+    if (!state.superDID) return;
+
+    set({ isAgentWorking: true });
+    const phaseId = useAgentActivityStore.getState().startPhase("video-generation");
+
+    try {
+      const result = await generateAllVideos(
+        state.shots,
+        state.characters,
+        state.scenes,
+        state.superDID,
+        state.firstFrameUrls,
+        phaseId,
+        {
+          onVideoReady: (shotId, videoUrl) => {
+            set((s) => ({
+              shots: s.shots.map((sh) =>
+                sh.shot_id === shotId
+                  ? {
+                      ...sh,
+                      generation_status: "done" as const,
+                      generated_assets: { ...sh.generated_assets, video_url: videoUrl },
+                    }
+                  : sh,
+              ),
+            }));
+          },
+          onShotFailed: (shotId, error) => {
+            set((s) => ({
+              shots: s.shots.map((sh) =>
+                sh.shot_id === shotId
+                  ? { ...sh, generation_status: "failed" as const, qc_warnings: [...sh.qc_warnings, error] }
+                  : sh,
+              ),
+            }));
+          },
+          onDegraded: (shotId, level) => {
+            set((s) => ({
+              shots: s.shots.map((sh) =>
+                sh.shot_id === shotId
+                  ? { ...sh, qc_warnings: [...sh.qc_warnings, `降级: ${level}`] }
+                  : sh,
+              ),
+            }));
+          },
+        },
+      );
+
+      const allDone = result.success + result.failed === state.shots.length;
+      if (allDone) {
+        set((s) => ({
+          project: s.project ? { ...s.project, status: "complete" as const } : null,
+        }));
+
+        // Auto-assemble all shot videos into final video
+        if (result.success >= 2) {
+          await get().assembleAllShots();
+        }
+      }
+    } catch (err: any) {
+      set({ error: err.message });
+    } finally {
+      set({ isAgentWorking: false });
+      useAgentActivityStore.getState().completePhase(phaseId);
+    }
+  },
+
+  /* ── Assemble all shot videos into final video ───────── */
+
+  assembleAllShots: async () => {
+    const state = get();
+    const videoUrls = state.shots
+      .filter((s) => s.generated_assets.video_url)
+      .sort((a, b) => a.sequence_number - b.sequence_number)
+      .map((s) => s.generated_assets.video_url!);
+
+    if (videoUrls.length < 2) return;
+
+    set({ isAssembling: true, assembleError: null });
+    try {
+      const merged = await ffmpegMerge(videoUrls, "mp4");
+      set({ assembledVideoUrl: merged, isAssembling: false });
+    } catch (err: any) {
+      set({ assembleError: err.message, isAssembling: false });
+    }
+  },
+
+  /* ── Reset ───────────────────────────────────────────── */
+
+  reset: () => set({ ...INITIAL_STATE, firstFrameUrls: new Map() }),
 }));
+
+/* ── Full Pipeline (first message) ─────────────────────── */
+
+async function runFullPipeline(
+  message: string,
+  assistantMsgId: string,
+  phaseId: string,
+) {
+  const { appendToMessage } = useStoryboardStore.getState();
+
+  // ── Call 1: Super DID ──
+  appendToMessage(assistantMsgId, "🎬 正在解析你的创意...\n");
+  const did = await callSuperDID(message, phaseId);
+
+  const duration = did.target_duration;
+  const durationType = did.duration_type;
+
+  // Create project
+  const projectId = uuid();
+  const project: Project = {
+    project_id: projectId,
+    name: did.premise.slice(0, 30),
+    status: "planning",
+    duration_type: durationType,
+    target_duration: duration,
+    created_at: Date.now(),
+    updated_at: Date.now(),
+    preview_snapshot_id: null,
+  };
+
+  useStoryboardStore.setState({ project, superDID: did });
+  appendToMessage(assistantMsgId,
+    `✅ 导演视觉确立: ${did.premise}\n📐 ${durationType} · ${duration}s · ${did.character_count} 角色 · ${did.scene_count} 场景\n\n`);
+
+  // ── Call 2: World Pack ──
+  appendToMessage(assistantMsgId, "🌍 正在构建世界观...\n");
+  const world = await callWorldPack(did, message, phaseId);
+
+  // Map drafts to domain entities
+  const charIdMap = new Map<string, string>();
+  const characters = world.characters.map((draft) => {
+    const char = mapCharacterDraft(draft, projectId);
+    charIdMap.set(draft.id, char.character_id);
+    return char;
+  });
+
+  const sceneIdMap = new Map<string, string>();
+  const scenes = world.scenes.map((draft) => {
+    const scene = mapSceneDraft(draft, projectId);
+    sceneIdMap.set(draft.id, scene.scene_id);
+    return scene;
+  });
+
+  useStoryboardStore.setState({ characters, scenes });
+  appendToMessage(assistantMsgId,
+    `✅ ${characters.length} 角色 + ${scenes.length} 场景就绪\n\n`);
+
+  // ── Start asset generation in parallel with Call 3 ──
+  appendToMessage(assistantMsgId, "🖼 开始生成角色参考图和场景母图...\n");
+  const assetPromise = generateCharacterAndSceneAssets(characters, scenes, did, phaseId);
+
+  // ── Call 3: Shot Pack ──
+  appendToMessage(assistantMsgId, "🎞 正在设计分镜序列...\n");
+  const shotPack = await callShotPack(did, world, phaseId);
+
+  // Map beats
+  const beatIdMap = new Map<string, string>();
+  const beats = shotPack.beats.map((draft) => {
+    const beat = mapBeatDraft(draft);
+    beatIdMap.set(draft.beat_id, beat.beat_id);
+    return beat;
+  });
+
+  // Map shots
+  const shots = shotPack.shots.map((draft, i) =>
+    mapShotDraft(draft, projectId, charIdMap, sceneIdMap, beatIdMap, i),
+  );
+
+  // Remap beat.shot_ids to new shot IDs
+  const oldToNewShotId = new Map<string, string>();
+  shotPack.shots.forEach((draft, i) => {
+    oldToNewShotId.set(draft.shot_id, shots[i].shot_id);
+  });
+  for (const beat of beats) {
+    beat.shot_ids = beat.shot_ids.map((oldId) => oldToNewShotId.get(oldId) ?? oldId);
+  }
+
+  // ── Prompt Translation (pure code) ──
+  for (const shot of shots) {
+    const scene = scenes.find((sc) => sc.scene_id === shot.scene_id);
+    shot.first_frame_prompt = buildFirstFramePrompt(shot, characters, scene, did);
+    shot.i2v_prompt = buildI2VPrompt(shot, characters, scene, did);
+    shot.negative_prompt = buildNegativePrompt(shot, characters);
+  }
+
+  // ── Execution Routing (pure code) ──
+  const routedShots = routeAllShots(shots);
+  const edges = buildDependencyEdges(routedShots);
+
+  // ── Validation ──
+  const validation = validateShotSequence(routedShots, beats, did);
+  if (validation.warnings.length > 0) {
+    const warnText = validation.warnings
+      .map((w) => `${w.severity === "error" ? "❌" : "⚠"} ${w.message}`)
+      .join("\n");
+    appendToMessage(assistantMsgId, `\n📋 验证结果:\n${warnText}\n`);
+  }
+
+  useStoryboardStore.setState({ shots: routedShots, beats, edges });
+  appendToMessage(assistantMsgId,
+    `✅ ${routedShots.length} 个分镜就绪 · ${beats.length} 个节拍\n\n`);
+
+  // ── Wait for asset generation ──
+  appendToMessage(assistantMsgId, "⏳ 等待参考图生成完成...\n");
+  const { updatedChars, updatedScenes } = await assetPromise;
+  useStoryboardStore.setState({ characters: updatedChars, scenes: updatedScenes });
+
+  // ── Phase B: Generate first frames ──
+  appendToMessage(assistantMsgId, "🖼 正在生成所有首帧 (Animatic)...\n");
+  const firstFrameUrls = await generateAllFirstFrames(
+    routedShots, updatedChars, updatedScenes, did, phaseId,
+    {
+      onFirstFrameReady: (shotId, url) => {
+        useStoryboardStore.setState((s) => ({
+          shots: s.shots.map((sh) =>
+            sh.shot_id === shotId
+              ? { ...sh, generated_assets: { ...sh.generated_assets, first_frame: url } }
+              : sh,
+          ),
+        }));
+      },
+    },
+  );
+
+  useStoryboardStore.setState({
+    firstFrameUrls,
+    animaticReady: true,
+    project: { ...useStoryboardStore.getState().project!, status: "preview" },
+  });
+
+  appendToMessage(assistantMsgId,
+    `\n🎬 Animatic 就绪! ${firstFrameUrls.size}/${routedShots.length} 首帧已生成。\n` +
+    `请检查分镜序列，确认后点击「开始生成视频」。`,
+  );
+}
+
+/* ── Follow-up message handler ─────────────────────────── */
+
+async function runFollowUp(
+  message: string,
+  assistantMsgId: string,
+  phaseId: string,
+) {
+  const state = useStoryboardStore.getState();
+  const { appendToMessage } = state;
+
+  // Route through Super DID to understand intent
+  appendToMessage(assistantMsgId, "🤔 正在理解你的修改意图...\n");
+  const did = await callSuperDID(message, phaseId);
+
+  // Update Super DID
+  useStoryboardStore.setState({ superDID: did });
+  appendToMessage(assistantMsgId, `✅ 已更新导演视觉\n`);
+
+  // Re-run World Pack if character/scene count changed
+  const currentState = useStoryboardStore.getState();
+  if (did.character_count !== currentState.characters.length ||
+      did.scene_count !== currentState.scenes.length) {
+    appendToMessage(assistantMsgId, "🌍 角色/场景数量变化，重新构建...\n");
+    const world = await callWorldPack(did, message, phaseId);
+
+    const projectId = currentState.project!.project_id;
+    const charIdMap = new Map<string, string>();
+    const characters = world.characters.map((draft) => {
+      const char = mapCharacterDraft(draft, projectId);
+      charIdMap.set(draft.id, char.character_id);
+      return char;
+    });
+    const sceneIdMap = new Map<string, string>();
+    const scenes = world.scenes.map((draft) => {
+      const scene = mapSceneDraft(draft, projectId);
+      sceneIdMap.set(draft.id, scene.scene_id);
+      return scene;
+    });
+
+    useStoryboardStore.setState({ characters, scenes });
+    appendToMessage(assistantMsgId, `✅ ${characters.length} 角色 + ${scenes.length} 场景\n`);
+  }
+
+  appendToMessage(assistantMsgId, "\n修改已应用。如需重新生成分镜，请描述具体需求。");
+}
+
+/* ── Asset Generation (parallel with Call 3) ───────────── */
+
+async function generateCharacterAndSceneAssets(
+  characters: Character[],
+  scenes: Scene[],
+  did: SuperDID,
+  phaseId: string,
+): Promise<{ updatedChars: Character[]; updatedScenes: Scene[] }> {
+  const updatedChars = [...characters];
+  const updatedScenes = [...scenes];
+
+  // Generate character turnaround sheets
+  const charTasks = updatedChars.map((char, i) => async () => {
+    try {
+      const result = await generateImage(char.turnaround_prompt, {
+        imageSize: "1280x720",
+        seed: 42,
+        phaseId,
+      });
+      updatedChars[i] = {
+        ...updatedChars[i],
+        turnaround_image: result.outputUrl,
+        cropped_views: {
+          front: result.outputUrl,       // TODO: actual cropping
+          three_quarter: result.outputUrl,
+          side: result.outputUrl,
+        },
+      };
+    } catch { /* continue — degraded but not fatal */ }
+  });
+
+  // Generate scene master frames
+  const sceneTasks = updatedScenes.map((scene, i) => async () => {
+    try {
+      const prompt = `${did.cinematic_identity.global_prompt_prefix}, ${scene.reference_prompt}`;
+      const result = await generateImage(prompt, {
+        imageSize: "1280x720",
+        seed: 42,
+        phaseId,
+      });
+      updatedScenes[i] = { ...updatedScenes[i], master_frame: result.outputUrl };
+    } catch { /* continue */ }
+  });
+
+  // Run all in parallel (max 3 concurrent)
+  const allTasks = [...charTasks, ...sceneTasks];
+  const executing = new Set<Promise<void>>();
+  for (const task of allTasks) {
+    const p = task().then(() => { executing.delete(p); });
+    executing.add(p);
+    if (executing.size >= 3) await Promise.race(executing);
+  }
+  await Promise.all(executing);
+
+  return { updatedChars, updatedScenes };
+}

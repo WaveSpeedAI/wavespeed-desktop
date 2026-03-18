@@ -1,8 +1,11 @@
 /**
- * Generation client — wraps the existing WaveSpeed apiClient
- * for video/image/TTS generation in the storyboard system.
+ * Generation client v3.0 — wraps WaveSpeed API for the two-convergence pipeline.
  *
- * Uses the same submit+poll pattern as the playground.
+ * Key changes from v2:
+ * - Reference image support (turnaround sheet as identity anchor, weight 0.7-0.8)
+ * - Scene master as style reference (weight 0.5-0.6)
+ * - Duration parameter passed to i2v model
+ * - Simplified: no collage/edit steps (handled by direct multi-char generation or reference)
  */
 import { apiClient } from "@/api/client";
 import { DEFAULT_MODELS, VIDEO_I2V_MODEL, type ModelOption } from "./model-config";
@@ -17,7 +20,7 @@ export interface GenerationResult {
 
 /**
  * Generate an image using the WaveSpeed API.
- * Used for character reference images and scene concept art.
+ * Supports reference images for identity consistency.
  */
 export async function generateImage(
   prompt: string,
@@ -27,8 +30,10 @@ export async function generateImage(
     seed?: number;
     model?: ModelOption;
     phaseId?: string;
-    /** Base image URL for edit mode — will be passed as images[0] */
-    baseImageUrl?: string;
+    /** Reference images for consistency (turnaround sheet, scene master) */
+    referenceImages?: string[];
+    /** Reference weight (0.5-0.8, default 0.7) */
+    referenceWeight?: number;
   },
 ): Promise<GenerationResult> {
   const model = options?.model ?? DEFAULT_MODELS.image;
@@ -36,14 +41,15 @@ export async function generateImage(
   let taskId: string | undefined;
 
   if (options?.phaseId) {
-    taskId = activity.startTask(options.phaseId, "asset", `🖼 资产Agent: 生成图片`);
+    taskId = activity.startTask(options.phaseId, "asset", "🖼 生成图片");
     activity.appendStream(taskId, `模型: ${model.name}\n`);
-    activity.appendStream(taskId, `Prompt: ${prompt.slice(0, 100)}...\n`);
+    activity.appendStream(taskId, `Prompt: ${prompt.slice(0, 80)}...\n`);
+    if (options.referenceImages?.length) {
+      activity.appendStream(taskId, `参考图: ${options.referenceImages.length} 张\n`);
+    }
   }
 
   try {
-    const isEditModel = model.modelId.includes("/edit");
-
     const input: Record<string, unknown> = {
       prompt,
       ...model.defaultParams,
@@ -52,12 +58,12 @@ export async function generateImage(
       ...(options?.seed !== undefined && { seed: options.seed }),
     };
 
-    // Edit models require 'images' array with at least one base image URL
-    if (isEditModel && options?.baseImageUrl) {
-      input.images = [options.baseImageUrl];
+    // Reference images for consistency
+    if (options?.referenceImages && options.referenceImages.length > 0) {
+      input.reference_images = options.referenceImages;
+      input.reference_weight = options.referenceWeight ?? 0.7;
     }
 
-    taskId && activity.appendStream(taskId, `${isEditModel ? "编辑模式" : "生成模式"}...\n`);
     taskId && activity.appendStream(taskId, "提交生成请求...\n");
     const result = await apiClient.run(model.modelId, input);
 
@@ -71,8 +77,7 @@ export async function generateImage(
 
     if (taskId) {
       activity.appendStream(taskId, `✅ 生成完成\n`);
-      activity.appendStream(taskId, `输出: ${outputUrl.slice(0, 80)}...\n`);
-      activity.completeTask(taskId, `图片已生成`);
+      activity.completeTask(taskId, "图片已生成");
     }
 
     return {
@@ -82,29 +87,27 @@ export async function generateImage(
       inferenceTime: result.timings?.inference,
     };
   } catch (err: any) {
-    if (taskId) {
-      activity.failTask(taskId, err.message);
-    }
+    if (taskId) activity.failTask(taskId, err.message);
     throw err;
   }
 }
 
 /**
  * Generate a video using the WaveSpeed API.
- * Used for shot video generation.
+ * Duration is explicitly passed so the model knows how long to generate.
  */
 export async function generateVideo(
   prompt: string,
   options?: {
-    imageUrl?: string;     // reference image for i2v
+    imageUrl?: string;       // first frame for i2v
+    endFrameUrl?: string;    // end frame for P2 path
     negativePrompt?: string;
-    duration?: number;     // target duration in seconds (4-12 for Seedance)
+    duration?: number;       // target duration in seconds
     seed?: number;
     model?: ModelOption;
     phaseId?: string;
   },
 ): Promise<GenerationResult> {
-  // Use i2v model if we have a reference image, otherwise t2v
   const model = options?.imageUrl
     ? (options?.model ?? VIDEO_I2V_MODEL)
     : (options?.model ?? DEFAULT_MODELS.video);
@@ -113,10 +116,11 @@ export async function generateVideo(
   let taskId: string | undefined;
 
   if (options?.phaseId) {
-    taskId = activity.startTask(options.phaseId, "production", `🎬 生成Agent: 生成视频`);
+    taskId = activity.startTask(options.phaseId, "production", "🎬 生成视频");
     activity.appendStream(taskId, `模型: ${model.name}\n`);
     activity.appendStream(taskId, `模式: ${options?.imageUrl ? "图生视频" : "文生视频"}\n`);
-    activity.appendStream(taskId, `Prompt: ${prompt.slice(0, 100)}...\n`);
+    activity.appendStream(taskId, `时长: ${options?.duration ?? "默认"}s\n`);
+    activity.appendStream(taskId, `Prompt: ${prompt.slice(0, 80)}...\n`);
   }
 
   try {
@@ -126,12 +130,11 @@ export async function generateVideo(
       ...(options?.negativePrompt && { negative_prompt: options.negativePrompt }),
       ...(options?.seed !== undefined && { seed: options.seed }),
       ...(options?.imageUrl && { image: options.imageUrl }),
+      ...(options?.endFrameUrl && { end_image: options.endFrameUrl }),
       ...(options?.duration !== undefined && { duration: options.duration }),
     };
 
-    taskId && activity.appendStream(taskId, `时长: ${options?.duration ?? "默认"}s\n`);
     taskId && activity.appendStream(taskId, "提交生成请求...\n");
-
     const result = await apiClient.run(model.modelId, input);
 
     const outputs = (result.outputs || []).map((o: unknown) =>
@@ -144,11 +147,10 @@ export async function generateVideo(
 
     if (taskId) {
       activity.appendStream(taskId, `✅ 视频生成完成\n`);
-      activity.appendStream(taskId, `输出: ${outputUrl.slice(0, 80)}...\n`);
       if (result.timings?.inference) {
         activity.appendStream(taskId, `推理耗时: ${result.timings.inference.toFixed(1)}s\n`);
       }
-      activity.completeTask(taskId, `视频已生成`);
+      activity.completeTask(taskId, "视频已生成");
     }
 
     return {
@@ -158,9 +160,7 @@ export async function generateVideo(
       inferenceTime: result.timings?.inference,
     };
   } catch (err: any) {
-    if (taskId) {
-      activity.failTask(taskId, err.message);
-    }
+    if (taskId) activity.failTask(taskId, err.message);
     throw err;
   }
 }

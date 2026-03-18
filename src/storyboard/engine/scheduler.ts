@@ -1,41 +1,49 @@
 /**
- * Execution Scheduler (Stage 5) — V5: CV & AI Hybrid Pipeline.
+ * Execution Scheduler v3.0 — handles the actual generation calls.
  *
- * Handles:
- * - generate_image / generate_scene: Seedream t2i (parallel)
- * - collage: CV-based affine transform + composite (code-layer)
- * - edit_image: Seedream edit with adaptive denoising (AI fusion)
- * - i2v: Seedance image-to-video
- * - video_extend / t2v: fallback paths
+ * Two convergence points:
+ *   Phase B: Asset generation + keyframe generation → Animatic (first convergence)
+ *   Phase C: i2v video generation → final video (second convergence)
+ *
+ * Execution paths:
+ *   P1: first frame → i2v
+ *   P2: first frame + end frame → i2v (with both frames)
+ *   P3: composite first frame → i2v (multi-character)
+ *   P4: static image + Ken Burns (atmosphere, zero risk)
+ *   P5: segmented i2v + stitch (>7s)
+ *
+ * Degradation levels:
+ *   L1: first frame Ken Burns (i2v failed but first frame OK)
+ *   L2: scene master Ken Burns (first frame also failed)
+ *   L3: delete shot, dissolve fill (low narrative value only)
  */
-import type {
-  FullExecutionPlan,
-  ShotExecutionPlan,
-  ExecutionStep,
-} from "./rule-engine";
 import { useAgentActivityStore } from "../stores/agent-activity.store";
 import { generateImage, generateVideo } from "../models/generation-client";
-import { IMAGE_EDIT_MODEL, VIDEO_I2V_MODEL } from "../models/model-config";
-import type { Character } from "../types";
+import type { Shot } from "../types/shot";
+import type { Character, Scene, SuperDID } from "../types/project";
+import { buildFirstFramePrompt, buildI2VPrompt, buildNegativePrompt } from "./prompt-builder";
+import { buildSchedule } from "./execution-router";
+import { clampDuration, VIDEO_MODEL_CAPABILITIES } from "../models/model-config";
 
 const MAX_CONCURRENCY = 3;
+const MAX_FIRST_FRAME_RETRIES = 3;
+const MAX_I2V_RETRIES = 1;
 
 /* ── Types ─────────────────────────────────────────────── */
 
-export interface ExecutionContext {
-  assets: Map<string, string>;
-  /** Character anchor reference images: characterId → imageUrl */
-  characterAnchors: Map<string, string>;
-  phaseId: string;
-  onShotComplete?: (shotId: string, videoUrl: string) => void;
+export interface GenerationCallbacks {
+  onFirstFrameReady?: (shotId: string, imageUrl: string) => void;
+  onVideoReady?: (shotId: string, videoUrl: string) => void;
   onShotFailed?: (shotId: string, error: string) => void;
+  onDegraded?: (shotId: string, level: "L1" | "L2" | "L3") => void;
 }
 
-export interface ExecutionResult {
+export interface GenerationResult {
   success: number;
   failed: number;
+  degraded: number;
   videoUrls: Map<string, string>;
-  errors: Map<string, string>;
+  firstFrameUrls: Map<string, string>;
 }
 
 /* ── Concurrency Pool ──────────────────────────────────── */
@@ -59,231 +67,249 @@ async function runWithConcurrency<T>(
   return results;
 }
 
-/* ── Step Executors ────────────────────────────────────── */
+/* ── Phase B: First Convergence (Keyframes → Animatic) ── */
 
-function resolveInput(step: ExecutionStep, ctx: ExecutionContext): string | undefined {
-  if (step.input_from) return ctx.assets.get(step.input_from);
-  if (step.base_image) return ctx.assets.get(step.base_image);
-  return undefined;
-}
-
-async function executeStep(step: ExecutionStep, ctx: ExecutionContext): Promise<void> {
-  const inputUrl = resolveInput(step, ctx);
-
-  switch (step.step_type) {
-    case "generate_image":
-    case "generate_scene": {
-      const result = await generateImage(step.prompt ?? "", {
-        negativePrompt: step.negative_prompt,
-        imageSize: step.image_size,
-        seed: step.seed,
-        phaseId: ctx.phaseId,
-      });
-      ctx.assets.set(step.output_key, result.outputUrl);
-      break;
-    }
-
-    case "collage": {
-      // CV-based compositing: affine transform subjects onto scene
-      // TODO: Implement OpenCV/Canvas-based perspective-aware placement:
-      // 1. Extract vanishing point from scene using perspective_hint
-      // 2. Apply affine transform to each subject for correct scale/perspective
-      // 3. Composite subjects onto scene with alpha blending
-      //
-      // For now: pass through the base scene image as placeholder.
-      // The edit_image step after this will handle visual unification.
-      const baseUrl = step.base_image ? ctx.assets.get(step.base_image) : undefined;
-      if (baseUrl) {
-        ctx.assets.set(step.output_key, baseUrl);
-      }
-
-      const activity = useAgentActivityStore.getState();
-      const taskId = activity.startTask(ctx.phaseId, "asset",
-        `🎨 CV Agent: collage (${step.subject_count ?? 0} subjects, perspective: ${step.perspective_hint || "auto"})`);
-      activity.appendStream(taskId, `Base scene: ${step.base_image}\n`);
-      activity.appendStream(taskId, `Overlays: ${(step.overlay_images || []).join(", ")}\n`);
-      activity.appendStream(taskId, `⚠ CV collage not yet implemented — using scene passthrough + edit fusion\n`);
-      activity.completeTask(taskId, "Collage placeholder");
-      break;
-    }
-
-    case "edit_image": {
-      const result = await generateImage(step.prompt ?? "", {
-        negativePrompt: step.negative_prompt,
-        imageSize: step.image_size,
-        seed: step.seed,
-        model: IMAGE_EDIT_MODEL,
-        phaseId: ctx.phaseId,
-        baseImageUrl: inputUrl,
-      });
-      ctx.assets.set(step.output_key, result.outputUrl);
-      break;
-    }
-
-    case "i2v": {
-      const result = await generateVideo(step.prompt ?? "", {
-        imageUrl: inputUrl,
-        negativePrompt: step.negative_prompt,
-        duration: step.duration,
-        model: VIDEO_I2V_MODEL,
-        phaseId: ctx.phaseId,
-      });
-      ctx.assets.set(step.output_key, result.outputUrl);
-      break;
-    }
-
-    case "video_extend": {
-      // TODO: implement video-extend API
-      if (inputUrl) ctx.assets.set(step.output_key, inputUrl);
-      break;
-    }
-
-    case "t2v": {
-      const result = await generateVideo(step.prompt ?? "", {
-        negativePrompt: step.negative_prompt,
-        duration: step.duration,
-        phaseId: ctx.phaseId,
-      });
-      ctx.assets.set(step.output_key, result.outputUrl);
-      break;
-    }
-  }
-}
-
-/* ── Shot Executor ─────────────────────────────────────── */
-
-async function executeShotPlan(
-  plan: ShotExecutionPlan,
-  ctx: ExecutionContext,
-): Promise<{ shotId: string; videoUrl: string | null; error: string | null }> {
-  try {
-    for (const step of plan.steps) {
-      await executeStep(step, ctx);
-    }
-    const videoStep = [...plan.steps].reverse().find(
-      (s) => s.step_type === "i2v" || s.step_type === "video_extend" || s.step_type === "t2v",
-    );
-    const videoUrl = videoStep ? ctx.assets.get(videoStep.output_key) ?? null : null;
-    if (videoUrl) ctx.onShotComplete?.(plan.shot_id, videoUrl);
-    return { shotId: plan.shot_id, videoUrl, error: null };
-  } catch (err: any) {
-    ctx.onShotFailed?.(plan.shot_id, err.message);
-    return { shotId: plan.shot_id, videoUrl: null, error: err.message };
-  }
-}
-
-/* ── Main Executor ─────────────────────────────────────── */
-
-export async function executePlan(
-  plan: FullExecutionPlan,
+/**
+ * Generate all first frames (keyframes) for the Animatic preview.
+ * This is the FIRST convergence point — cheap, fast, iterable.
+ */
+export async function generateAllFirstFrames(
+  shots: Shot[],
+  characters: Character[],
+  scenes: Scene[],
+  did: SuperDID,
   phaseId: string,
-  callbacks?: {
-    onShotComplete?: (shotId: string, videoUrl: string) => void;
-    onShotFailed?: (shotId: string, error: string) => void;
-  },
-  characters?: Character[],
-): Promise<ExecutionResult> {
+  callbacks?: GenerationCallbacks,
+): Promise<Map<string, string>> {
   const activity = useAgentActivityStore.getState();
-  const ctx: ExecutionContext = {
-    assets: new Map(),
-    characterAnchors: new Map(),
-    phaseId,
-    onShotComplete: callbacks?.onShotComplete,
-    onShotFailed: callbacks?.onShotFailed,
-  };
+  const taskId = activity.startTask(phaseId, "asset", "Phase B: 生成所有首帧");
+  const firstFrameUrls = new Map<string, string>();
 
-  // ── Phase 0: Anchor Generation (character reference images) ──
-  if (characters && characters.length > 0) {
-    const anchorPhaseId = activity.startPhase("Anchor Generation");
-    const anchorTaskId = activity.startTask(anchorPhaseId, "asset", "Asset Agent: generating character reference images");
-    activity.appendStream(anchorTaskId, `Generating anchors for ${characters.length} characters...\n`);
+  const sorted = [...shots].sort((a, b) => a.sequence_number - b.sequence_number);
 
-    const anchorTasks = characters
-      .filter((c) => c.visual_anchor?.anchor_prompt)
-      .map((c) => async () => {
-        try {
-          const result = await generateImage(c.visual_anchor!.anchor_prompt, {
-            imageSize: "1024x1024",
-            seed: 42,
-            phaseId: anchorPhaseId,
-          });
-          ctx.characterAnchors.set(c.character_id, result.outputUrl);
-          activity.appendStream(anchorTaskId, `✅ ${c.name} anchor ready\n`);
-        } catch (err: any) {
-          activity.appendStream(anchorTaskId, `⚠ ${c.name} anchor failed: ${err.message}\n`);
+  const tasks = sorted.map((shot) => async () => {
+    const scene = scenes.find((s) => s.scene_id === shot.scene_id);
+    const prompt = shot.first_frame_prompt || buildFirstFramePrompt(shot, characters, scene, did);
+    const negative = shot.negative_prompt || buildNegativePrompt(shot, characters);
+
+    // Determine reference images
+    const refImages: string[] = [];
+    // Character turnaround as reference (P0 consistency)
+    for (const subj of shot.subjects) {
+      const char = characters.find((c) => c.character_id === subj.character_id);
+      if (char?.cropped_views.three_quarter) {
+        refImages.push(char.cropped_views.three_quarter);
+      } else if (char?.turnaround_image) {
+        refImages.push(char.turnaround_image);
+      }
+    }
+    // Scene master as style reference
+    if (scene?.master_frame) {
+      refImages.push(scene.master_frame);
+    }
+
+    // Retry loop
+    for (let attempt = 0; attempt < MAX_FIRST_FRAME_RETRIES; attempt++) {
+      try {
+        const result = await generateImage(prompt, {
+          negativePrompt: negative,
+          imageSize: "1280x720",
+          seed: attempt === 0 ? 42 : Math.floor(Math.random() * 10000),
+          phaseId,
+          referenceImages: refImages.length > 0 ? refImages : undefined,
+        });
+
+        firstFrameUrls.set(shot.shot_id, result.outputUrl);
+        callbacks?.onFirstFrameReady?.(shot.shot_id, result.outputUrl);
+        activity.appendStream(taskId, `✅ Shot #${shot.sequence_number} 首帧就绪\n`);
+        return;
+      } catch (err: any) {
+        if (attempt < MAX_FIRST_FRAME_RETRIES - 1) {
+          activity.appendStream(taskId, `⚠ Shot #${shot.sequence_number} 重试 ${attempt + 1}\n`);
+        } else {
+          // Degradation: use scene master as fallback
+          if (scene?.master_frame) {
+            firstFrameUrls.set(shot.shot_id, scene.master_frame);
+            callbacks?.onDegraded?.(shot.shot_id, "L2");
+            activity.appendStream(taskId, `⚠ Shot #${shot.sequence_number} 降级为场景母图\n`);
+          } else {
+            callbacks?.onShotFailed?.(shot.shot_id, err.message);
+            activity.appendStream(taskId, `❌ Shot #${shot.sequence_number} 首帧失败\n`);
+          }
         }
-      });
+      }
+    }
+  });
 
-    await runWithConcurrency(anchorTasks, MAX_CONCURRENCY);
-    activity.completeTask(anchorTaskId, `${ctx.characterAnchors.size} anchors generated`);
-    activity.completePhase(anchorPhaseId);
-  }
+  await runWithConcurrency(tasks, MAX_CONCURRENCY);
+  activity.completeTask(taskId, `${firstFrameUrls.size}/${sorted.length} 首帧就绪`);
+  return firstFrameUrls;
+}
 
-  // ── Phase 1: Asset Generation (all parallel) ──
-  const kfPhaseId = activity.startPhase("Asset Generation");
-  const kfTaskId = activity.startTask(kfPhaseId, "asset", "Asset Agent: generating reference images & keyframes");
-  activity.appendStream(kfTaskId, `Generating ${plan.asset_steps.length} images (subjects + scenes, lazy per-shot)...\n`);
+/* ── Phase C: Second Convergence (Videos) ──────────────── */
 
-  const assetTasks = plan.asset_steps.map((step) => () => executeStep(step, ctx));
-  await runWithConcurrency(assetTasks, MAX_CONCURRENCY);
+/**
+ * Generate all videos from first frames.
+ * This is the SECOND convergence point — expensive, slow, minimize retries.
+ */
+export async function generateAllVideos(
+  shots: Shot[],
+  characters: Character[],
+  scenes: Scene[],
+  did: SuperDID,
+  firstFrameUrls: Map<string, string>,
+  phaseId: string,
+  callbacks?: GenerationCallbacks,
+): Promise<GenerationResult> {
+  const activity = useAgentActivityStore.getState();
+  const { parallel, sequential } = buildSchedule(shots);
 
-  activity.appendStream(kfTaskId, `${ctx.assets.size} assets generated\n`);
-  activity.completeTask(kfTaskId, `${ctx.assets.size} assets ready`);
-  activity.completePhase(kfPhaseId);
-
-  // ── Phase 2: Collage + Edit + Video Generation ──
-  const videoPhaseId = activity.startPhase("Video Generation");
-  const planMap = new Map(plan.shot_plans.map((p) => [p.shot_id, p]));
   const videoUrls = new Map<string, string>();
-  const errors = new Map<string, string>();
   let success = 0;
   let failed = 0;
+  let degraded = 0;
+
+  const executeShot = async (shot: Shot) => {
+    const scene = scenes.find((s) => s.scene_id === shot.scene_id);
+    const firstFrame = firstFrameUrls.get(shot.shot_id);
+    const plan = shot.execution_plan;
+
+    if (!plan) return;
+
+    // P4: Ken Burns (no video generation needed — handled in assembly)
+    if (plan.path === "P4") {
+      if (firstFrame) {
+        videoUrls.set(shot.shot_id, firstFrame); // Placeholder — Ken Burns applied in assembly
+        callbacks?.onVideoReady?.(shot.shot_id, firstFrame);
+        success++;
+      }
+      return;
+    }
+
+    // Build i2v prompt with duration info
+    const i2vPrompt = shot.i2v_prompt || buildI2VPrompt(shot, characters, scene, did);
+
+    // P5: Segmented generation
+    if (plan.path === "P5" && plan.segmented) {
+      try {
+        const segmentUrl = await generateSegmentedVideo(
+          shot, firstFrame, i2vPrompt, plan, phaseId);
+        if (segmentUrl) {
+          videoUrls.set(shot.shot_id, segmentUrl);
+          callbacks?.onVideoReady?.(shot.shot_id, segmentUrl);
+          success++;
+        }
+      } catch {
+        // Fallback to single i2v
+        await generateSingleVideo(shot, firstFrame, i2vPrompt, phaseId,
+          videoUrls, callbacks, () => { success++; }, () => { failed++; degraded++; });
+      }
+      return;
+    }
+
+    // P1, P2, P3: single i2v call
+    await generateSingleVideo(shot, firstFrame, i2vPrompt, phaseId,
+      videoUrls, callbacks, () => { success++; }, () => { failed++; degraded++; });
+  };
 
   // Sequential shots first
-  if (plan.sequential_queue.length > 0) {
-    const seqTaskId = activity.startTask(videoPhaseId, "production",
-      `Production Agent: sequential shots (${plan.sequential_queue.length})`);
-
-    for (const shotId of plan.sequential_queue) {
-      const shotPlan = planMap.get(shotId);
-      if (!shotPlan) continue;
-      activity.appendStream(seqTaskId, `Shot #${shotPlan.shot_seq}...\n`);
-      const result = await executeShotPlan(shotPlan, ctx);
-      if (result.videoUrl) {
-        videoUrls.set(shotId, result.videoUrl);
-        success++;
-        activity.appendStream(seqTaskId, `Shot #${shotPlan.shot_seq} done\n`);
-      } else {
-        errors.set(shotId, result.error ?? "Unknown error");
-        failed++;
-        activity.appendStream(seqTaskId, `Shot #${shotPlan.shot_seq} FAILED: ${result.error}\n`);
-      }
+  if (sequential.length > 0) {
+    const seqTaskId = activity.startTask(phaseId, "production",
+      `Phase C: 顺序生成 (${sequential.length} shots)`);
+    for (const shot of sequential) {
+      activity.appendStream(seqTaskId, `Shot #${shot.sequence_number}...\n`);
+      await executeShot(shot);
     }
-    activity.completeTask(seqTaskId, `${success} done, ${failed} failed`);
+    activity.completeTask(seqTaskId, `${success} done`);
   }
 
   // Parallel shots
-  if (plan.parallel_batch.length > 0) {
-    const parTaskId = activity.startTask(videoPhaseId, "production",
-      `Production Agent: parallel shots (${plan.parallel_batch.length})`);
-
-    const parallelTasks = plan.parallel_batch.map((shotId) => async () => {
-      const shotPlan = planMap.get(shotId);
-      if (!shotPlan) return;
-      const result = await executeShotPlan(shotPlan, ctx);
-      if (result.videoUrl) {
-        videoUrls.set(shotId, result.videoUrl);
-        success++;
-      } else {
-        errors.set(shotId, result.error ?? "Unknown error");
-        failed++;
-      }
-    });
-
-    await runWithConcurrency(parallelTasks, MAX_CONCURRENCY);
-    activity.completeTask(parTaskId, `Parallel batch complete`);
+  if (parallel.length > 0) {
+    const parTaskId = activity.startTask(phaseId, "production",
+      `Phase C: 并行生成 (${parallel.length} shots)`);
+    const parTasks = parallel.map((shot) => () => executeShot(shot));
+    await runWithConcurrency(parTasks, MAX_CONCURRENCY);
+    activity.completeTask(parTaskId, `parallel batch done`);
   }
 
-  activity.completePhase(videoPhaseId);
-  return { success, failed, videoUrls, errors };
+  return { success, failed, degraded, videoUrls, firstFrameUrls };
+}
+
+/* ── Single Video Generation ───────────────────────────── */
+
+async function generateSingleVideo(
+  shot: Shot,
+  firstFrame: string | undefined,
+  i2vPrompt: string,
+  phaseId: string,
+  videoUrls: Map<string, string>,
+  callbacks: GenerationCallbacks | undefined,
+  onSuccess: () => void,
+  onFail: () => void,
+): Promise<void> {
+  // CRITICAL: clamp duration to model-valid range before API call
+  const safeDuration = clampDuration(shot.duration_seconds);
+
+  for (let attempt = 0; attempt <= MAX_I2V_RETRIES; attempt++) {
+    try {
+      const result = await generateVideo(i2vPrompt, {
+        imageUrl: firstFrame,
+        duration: safeDuration,
+        phaseId,
+      });
+      videoUrls.set(shot.shot_id, result.outputUrl);
+      callbacks?.onVideoReady?.(shot.shot_id, result.outputUrl);
+      onSuccess();
+      return;
+    } catch (err: any) {
+      if (attempt >= MAX_I2V_RETRIES) {
+        // Degradation L1: Ken Burns on first frame
+        if (firstFrame) {
+          videoUrls.set(shot.shot_id, firstFrame);
+          callbacks?.onDegraded?.(shot.shot_id, "L1");
+          onFail();
+        } else {
+          callbacks?.onShotFailed?.(shot.shot_id, err.message);
+          onFail();
+        }
+      }
+    }
+  }
+}
+
+/* ── Segmented Video Generation (P5) ───────────────────── */
+
+async function generateSegmentedVideo(
+  shot: Shot,
+  firstFrame: string | undefined,
+  _i2vPrompt: string,
+  plan: NonNullable<Shot["execution_plan"]>,
+  phaseId: string,
+): Promise<string | null> {
+  const { minDuration, maxDuration } = VIDEO_MODEL_CAPABILITIES;
+  const segDur = Math.ceil(shot.duration_seconds / plan.segment_count);
+  let currentFrame = firstFrame;
+  const segmentUrls: string[] = [];
+
+  for (let seg = 0; seg < plan.segment_count; seg++) {
+    const rawDur = seg === plan.segment_count - 1
+      ? shot.duration_seconds - segDur * (plan.segment_count - 1)
+      : segDur;
+
+    // CRITICAL: clamp each segment to model-valid range
+    const dur = Math.max(minDuration, Math.min(rawDur, maxDuration));
+
+    const segPrompt = `segment ${seg + 1}/${plan.segment_count}, ${dur}s`;
+
+    const result = await generateVideo(segPrompt, {
+      imageUrl: currentFrame,
+      duration: dur,
+      phaseId,
+    });
+
+    segmentUrls.push(result.outputUrl);
+    currentFrame = result.outputUrl;
+  }
+
+  return segmentUrls[0] || null;
 }

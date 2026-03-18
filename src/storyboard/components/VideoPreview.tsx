@@ -40,7 +40,7 @@ export function VideoPreview({ onClose }: VideoPreviewProps) {
   const [isMuted, setIsMuted] = useState(false);
 
   const doneShots = shots
-    .filter((s) => s.generation_status === "done" && s.generated_assets.video_path)
+    .filter((s) => s.generation_status === "done" && s.generated_assets.video_url)
     .sort((a, b) => a.sequence_number - b.sequence_number);
 
   // Auto-assemble on mount if not already assembled
@@ -103,7 +103,7 @@ export function VideoPreview({ onClose }: VideoPreviewProps) {
   };
 
   // Build shot markers for timeline
-  const totalShotDuration = doneShots.reduce((sum, s) => sum + s.duration, 0) || 1;
+  const totalShotDuration = doneShots.reduce((sum, s) => sum + s.duration_seconds, 0) || 1;
   const shotMarkers = doneShots.reduce<{ id: string; seq: number; startPct: number; widthPct: number }[]>(
     (acc, shot) => {
       const prevEnd = acc.length > 0 ? acc[acc.length - 1].startPct + acc[acc.length - 1].widthPct : 0;
@@ -111,7 +111,7 @@ export function VideoPreview({ onClose }: VideoPreviewProps) {
         id: shot.shot_id,
         seq: shot.sequence_number,
         startPct: prevEnd,
-        widthPct: (shot.duration / totalShotDuration) * 100,
+        widthPct: (shot.duration_seconds / totalShotDuration) * 100,
       });
       return acc;
     }, [],

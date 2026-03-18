@@ -1,298 +1,190 @@
 /**
- * Shot (镜头) — the core entity of the storyboard system.
+ * Shot & Beat types for AI Director System v3.0.
+ *
+ * Key design decisions:
+ * - No precise cinematography params (model can't execute 85mm / key light 45°)
+ * - Camera motion as intensity 1-5, not specific movement names
+ * - Prompt token budget system instead of free-form prompts
+ * - Duration-aware i2v prompt segmentation
  */
 
-/**
- * Strategy types for generation routing:
- * A1 = same-scene continuous action (frame chain)
- * A2 = same-scene angle change (no frame chain)
- * B  = same-scene long shot (segmented with frame chain)
- * C  = cross-scene short (fully independent)
- * D  = cross-scene long (first segment independent, rest chained)
- */
-export type StrategyType = "A1" | "A2" | "B" | "C" | "D";
+/* ── Beat (narrative rhythm unit) ──────────────────────── */
 
-export interface ShotStrategy {
-  strategy_type: StrategyType;
-  use_frame_chain: boolean;
-  frame_chain_source: string | null; // previous shot's last_frame_path
-  character_refs: string[];          // character anchor image paths
-  scene_ref: string | null;          // scene anchor image path
-  style_ref: string | null;          // global style reference (future: style embedding)
-  segments: number;                  // >1 for B/D types
-  correction_interval: number;       // every N segments do a correction pass
-  is_scene_anchor_shot: boolean;     // first shot in scene → writes anchor_image
-  parallel_eligible: boolean;        // C and A2 can run in parallel
+export interface Beat {
+  beat_id: string;
+  type: "hook" | "setup" | "build" | "complication" | "midpoint" | "escalation" | "climax" | "release" | "payoff";
+  /** Time range within the full video, e.g. "0:00-0:08" */
+  time_range: string;
+  /** What the audience should feel */
+  audience_feeling: string;
+  shot_ids: string[];
 }
 
-export type ShotType =
-  | "wide"
-  | "medium"
-  | "close_up"
-  | "extreme_close_up"
-  | "over_shoulder"
-  | "pov"
-  | "aerial";
+/* ── Scene Adjacency Type ──────────────────────────────── */
 
-export type CameraMovement =
+/**
+ * A = same scene, continuous action (frame chain)
+ * B = different scene (cross-scene transition)
+ * C = same scene, big angle/scale change (independent)
+ */
+export type SceneType = "A" | "B" | "C";
+
+/* ── Execution Path ────────────────────────────────────── */
+
+/**
+ * P1 = first frame → i2v (default, most shots)
+ * P2 = first frame + end frame → i2v (clear start/end state, ≤6s)
+ * P3 = composite first frame → i2v (3+ characters forced, 2 char fallback)
+ * P4 = static image + Ken Burns (atmosphere/establishing, zero risk)
+ * P5 = segmented i2v + stitch (>7s with internal rhythm change)
+ */
+export type ExecutionPath = "P1" | "P2" | "P3" | "P4" | "P5";
+
+/* ── Shot Subject ──────────────────────────────────────── */
+
+export interface ShotSubject {
+  character_id: string;
+  state_id: string;           // which mutable_state to use
+  /** ≤15 tokens */
+  action: string;
+  screen_position: "left" | "center" | "right" | "background";
+  face_visibility: "full" | "partial" | "hidden";
+}
+
+/* ── Shot Composition ──────────────────────────────────── */
+
+export type ShotScale = "ECU" | "CU" | "MCU" | "MS" | "MLS" | "LS" | "ELS";
+export type Framing = "center" | "rule_of_thirds_left" | "rule_of_thirds_right" | "symmetry" | "over_shoulder";
+export type CameraAngle = "eye_level" | "low_angle" | "high_angle" | "birds_eye" | "dutch";
+
+export interface ShotComposition {
+  scale: ShotScale;
+  framing: Framing;
+  camera_angle: CameraAngle;
+}
+
+/* ── Camera Motion ─────────────────────────────────────── */
+
+export type CameraMotionType =
   | "static"
-  | "pan_left"
-  | "pan_right"
-  | "tilt_up"
-  | "tilt_down"
+  | "pan"
+  | "tilt"
   | "dolly_in"
   | "dolly_out"
   | "tracking"
+  | "crane"
   | "handheld";
 
-export type EmotionTag =
-  | "tense"
-  | "joyful"
-  | "melancholy"
-  | "neutral"
-  | "explosive"
-  | "mysterious"
-  | "romantic"
-  | "horror";
+export interface CameraMotion {
+  type: CameraMotionType;
+  /** 1-5: 1=subtle, 5=explosive */
+  intensity: number;
+}
 
-export type TransitionType =
-  | "cut"
-  | "fade"
-  | "dissolve"
-  | "wipe"
-  | "match_cut"
-  | "whip_pan"
-  | "dip_to_black"
-  | "sound_bridge";
+/* ── Transition ────────────────────────────────────────── */
+
+export type TransitionType = "cut" | "dissolve" | "crossfade" | "fade" | "wipe" | "match_cut";
+
+/* ── Continuity ────────────────────────────────────────── */
+
+export interface ShotContinuity {
+  /** Character carried over from previous shot */
+  carry_over_subject: string | null;
+  /** Screen direction match with previous shot */
+  screen_direction_match: boolean;
+  /** Motion direction continuity */
+  motion_direction: "left_to_right" | "right_to_left" | "toward" | "away" | "static" | null;
+}
+
+/* ── Generation Status ─────────────────────────────────── */
 
 export type GenerationStatus =
-  | "pending"
-  | "generating"
-  | "done"
-  | "failed"
-  | "dirty";
+  | "pending"       // not yet generated
+  | "generating"    // currently generating
+  | "done"          // successfully generated
+  | "failed"        // generation failed
+  | "dirty";        // needs regeneration (upstream changed)
+
+/* ── Generated Assets ──────────────────────────────────── */
 
 export interface GeneratedAssets {
-  video_path: string | null;
+  /** First frame (keyframe) image URL */
+  first_frame: string | null;
+  /** End frame image URL (for P2 path) */
+  end_frame: string | null;
+  /** Generated video URL */
+  video_url: string | null;
+  /** Video versions for A/B selection */
   video_versions: string[];
-  selected_version: number;
-  dialogue_audio: string | null;
-  narration_audio: string | null;
-  sfx_audio: string | null;
-  last_frame_path: string | null;
+  /** Thumbnail for UI display */
   thumbnail: string | null;
 }
 
-/** Base frame request — describes what the first frame of this shot should look like */
-export interface BaseFrameRequest {
-  subject_names: string[];
-  pose_or_angle: string;
-  scene_context: string;
+/* ── Shot Execution Plan ───────────────────────────────── */
+
+export interface ShotExecutionPlan {
+  path: ExecutionPath;
+  need_end_frame: boolean;
+  need_composite: boolean;
+  segmented: boolean;
+  segment_count: number;
+  /** Max safe duration for single i2v call */
+  safe_max_duration: number;
+  fallback_path: ExecutionPath;
 }
 
-/** V5: Motion vector for a subject — drives mid-action keyframe generation */
-export interface SubjectMotion {
-  /** Subject name (must match character name) */
-  subject: string;
-  /** Mid-action description — the motion frozen at its midpoint */
-  mid_action: string;
-  /** Direction of motion */
-  direction: string;
-  /** Intensity 1-5 (1=subtle, 5=explosive) */
-  intensity: number;
-  /** Which mutable state to use (e.g. "battle-damaged torn") */
-  clothing_state?: string;
-  /** Expression state (e.g. "screaming rage") */
-  expression_state?: string;
-}
-
-/** V5: Environmental motion — fills visual tension in the frame */
-export interface EnvMotion {
-  /** Description of environmental dynamics */
-  description: string;
-  /** Direction of environmental motion */
-  direction: string;
-}
-
-/* ── V6: Cinematography Types ──────────────────────────── */
-
-export type CompositionRule =
-  | "rule_of_thirds"
-  | "center"
-  | "diagonal"
-  | "symmetry"
-  | "frame_within_frame"
-  | "golden_ratio";
-
-export type SubjectPlacement =
-  | "left_third"
-  | "right_third"
-  | "center"
-  | "bottom_third"
-  | "top_third"
-  | "full_frame";
-
-export type LightDirection =
-  | "screen_left"
-  | "screen_right"
-  | "top"
-  | "back"
-  | "bottom"
-  | "front";
-
-export type LightStyle =
-  | "rembrandt"
-  | "silhouette"
-  | "flat"
-  | "chiaroscuro"
-  | "motivated_practical";
-
-export type RhythmRole =
-  | "establishing"
-  | "building"
-  | "peak"
-  | "release"
-  | "breathing";
-
-export interface FocalLengthIntent {
-  equivalent_mm: number;
-  purpose: string;
-  depth_of_field: "shallow" | "moderate" | "deep";
-}
-
-export interface ShotComposition {
-  rule: CompositionRule;
-  subject_placement: SubjectPlacement;
-  leading_lines: string | null;
-  negative_space: string | null;
-}
-
-export interface ScreenDirection {
-  subject_facing: "left" | "right";
-  movement_direction: "left_to_right" | "right_to_left" | "toward_camera" | "away";
-}
-
-export interface SpatialContinuity {
-  /** Which side of the 180-degree line the camera is on */
-  camera_side: "A" | "B";
-  /** Angle delta from previous shot in degrees (for 30-degree rule) */
-  angle_delta_from_prev: number | null;
-  /** What the subject is looking at (for eyeline match) */
-  eyeline_target: string | null;
-}
-
-export interface TransitionDetail {
-  type: TransitionType;
-  /** Match element for match_cut (e.g. "blood droplet → rain drop") */
-  match_element: string | null;
-  /** Visual bridge description for cross-scene transitions */
-  visual_bridge: string | null;
-}
-
-export interface LightingIntent {
-  key_light_direction: LightDirection;
-  style: LightStyle;
-  /** What motivates the light (e.g. "lantern on left wall") */
-  motivation: string;
-}
+/* ── Shot ──────────────────────────────────────────────── */
 
 export interface Shot {
   shot_id: string;
   project_id: string;
-  sequence_number: number;
-  act_number: number;
+  beat_id: string;
   scene_id: string;
-  character_ids: string[];
-  shot_type: ShotType;
-  camera_movement: CameraMovement;
-  duration: number; // 4-12 seconds
-  dialogue: string | null;
-  dialogue_character: string | null;
-  narration: string | null;
-  action_description: string;
-  emotion_tag: EmotionTag;
-  generation_prompt: string;
+  sequence_number: number;
+  /** Duration in seconds (MUST be within model range: 4-12s for i2v, unconstrained for P4/atmosphere) */
+  duration_seconds: number;
+  /** Narrative importance */
+  narrative_value: "high" | "medium" | "low";
+  /** Is this an atmosphere/breathing shot (no characters) */
+  is_atmosphere: boolean;
+
+  composition: ShotComposition;
+  subjects: ShotSubject[];
+  camera_motion: CameraMotion;
+
+  transition_in: TransitionType;
+  transition_out: TransitionType;
+  continuity: ShotContinuity;
+
+  /** Mood keywords for prompt assembly */
+  mood_keywords: string[];
+  /** ≤30 tokens, cinematic description for prompt polish */
+  visual_poetry: string;
+  /** ≤15 tokens, the most tense moment in this shot (for first frame) */
+  tension_moment: string;
+
+  // ── Computed by engine (not LLM) ──
+  scene_type: SceneType | null;
+  execution_plan: ShotExecutionPlan | null;
+
+  // ── Prompt Translation output ──
+  /** Assembled execution prompt for first frame generation */
+  first_frame_prompt: string;
+  /** Assembled execution prompt for i2v generation (with time segments) */
+  i2v_prompt: string;
+  /** Negative prompt */
   negative_prompt: string;
-  transition_to_next: TransitionType;
-  is_key_shot: boolean;
-  dependencies: string[]; // shot_ids
+
+  // ── Generation state ──
   generation_status: GenerationStatus;
   generated_assets: GeneratedAssets;
-  qc_score: number;
   qc_warnings: string[];
-  /** Lazy generation: what the first frame should look like (from Stage 3 LLM) */
-  base_frame_request?: BaseFrameRequest;
-  /** V5: Per-subject motion vectors */
-  subject_motions?: SubjectMotion[];
-  /** V5: Environmental motion */
-  env_motion?: EnvMotion;
-  // Strategy fields (populated before generation)
-  strategy?: ShotStrategy;
-  user_strategy_override?: Partial<ShotStrategy>;
-
-  // ── V6: Cinematography fields ──
-  /** Focal length intent — lens choice with purpose */
-  focal_length_intent?: FocalLengthIntent;
-  /** Composition rule and subject placement */
-  composition?: ShotComposition;
-  /** Role in the rhythm/pacing curve */
-  rhythm_role?: RhythmRole;
-  /** Index into DID.emotional_arc.beats */
-  emotional_beat_index?: number;
-  /** Screen direction for 180-degree line management */
-  screen_direction?: ScreenDirection;
-  /** Spatial continuity constraints */
-  spatial_continuity?: SpatialContinuity;
-  /** Rich transition detail (replaces simple transition_to_next for rendering) */
-  transition_detail?: TransitionDetail;
-  /** Per-shot lighting intent */
-  lighting_intent?: LightingIntent;
 }
 
-export interface Scene {
-  scene_id: string;
-  project_id: string;
-  name: string;
-  description: string;
-  /** English visual prompt for scene image generation */
-  visual_prompt: string;
-  /** Negative prompt to avoid unwanted elements in scene */
-  visual_negative: string;
-  lighting: string;
-  weather: string;
-  time_of_day: string;
-  mood: string;
-  anchor_image: string | null;
-  version: number;
-  /** V5: Spatial perspective constraint for affine transforms */
-  perspective_hint?: string;
-
-  // ── V6: Visual continuity fields ──
-  /** Color temperature — must align with DID.visual_identity.color_palette */
-  color_temperature?: "warm" | "neutral" | "cool";
-  /** Primary light source position and type */
-  dominant_light_source?: string;
-  /** Weather continuity marker (prevents rain in some shots, sun in others) */
-  weather_continuity?: string;
-  /** Visual hint for how this scene ends (for cross-scene bridging) */
-  exit_visual_hint?: string;
-  /** Visual hint for how this scene opens (for cross-scene bridging) */
-  entry_visual_hint?: string;
-}
+/* ── Dependency Edge ───────────────────────────────────── */
 
 export interface DependencyEdge {
   from: string;
   to: string;
   type: "frame_chain" | "narrative_order";
-}
-
-export interface EditHistoryEntry {
-  edit_id: string;
-  project_id: string;
-  timestamp: number;
-  action_type: string;
-  target_entity: string;
-  before_state: unknown;
-  after_state: unknown;
-  dirty_propagation: string[];
 }

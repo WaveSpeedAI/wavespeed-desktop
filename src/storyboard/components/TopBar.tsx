@@ -1,5 +1,5 @@
 /**
- * Top bar — project info, mode toggle, generation controls, export, settings.
+ * Top bar — project info, generation controls, export, settings (v3.0).
  */
 import { useStoryboardStore } from "../stores/storyboard.store";
 import { Button } from "@/components/ui/button";
@@ -7,46 +7,42 @@ import { Download, RotateCcw, Clapperboard, Play, Loader2, CheckCircle2, Film } 
 import { ModelSettings } from "./ModelSettings";
 import { LlmSettings } from "./LlmSettings";
 import { cn } from "@/lib/utils";
+import type { ProjectStatus } from "../types/project";
 
-const STATUS_LABELS: Record<string, { text: string; color: string }> = {
-  idle: { text: "空闲", color: "text-muted-foreground" },
-  creating: { text: "创建中", color: "text-primary" },
-  ready: { text: "就绪", color: "text-emerald-500 dark:text-emerald-400" },
-  generating: { text: "生成中", color: "text-primary" },
-  assembling: { text: "组装中", color: "text-violet-500 dark:text-violet-400" },
-  done: { text: "完成", color: "text-emerald-500 dark:text-emerald-400" },
+const STATUS_LABELS: Record<ProjectStatus, { text: string; color: string }> = {
+  idle:       { text: "空闲", color: "text-muted-foreground" },
+  intent:     { text: "理解意图", color: "text-primary" },
+  planning:   { text: "规划中", color: "text-primary" },
+  preview:    { text: "Animatic 就绪", color: "text-emerald-500 dark:text-emerald-400" },
+  generating: { text: "生成中", color: "text-violet-500 dark:text-violet-400" },
+  complete:   { text: "完成", color: "text-emerald-500 dark:text-emerald-400" },
 };
 
 export function TopBar({ onPreview }: { onPreview?: () => void }) {
   const project = useStoryboardStore((s) => s.project);
-  const toggleMode = useStoryboardStore((s) => s.toggleMode);
   const reset = useStoryboardStore((s) => s.reset);
-  const startGeneration = useStoryboardStore((s) => s.startGeneration);
+  const confirmAnimatic = useStoryboardStore((s) => s.confirmAnimatic);
   const shots = useStoryboardStore((s) => s.shots);
   const isAgentWorking = useStoryboardStore((s) => s.isAgentWorking);
   const selectedModels = useStoryboardStore((s) => s.selectedModels);
   const setModel = useStoryboardStore((s) => s.setModel);
   const assembledVideoUrl = useStoryboardStore((s) => s.assembledVideoUrl);
   const isAssembling = useStoryboardStore((s) => s.isAssembling);
+  const animaticReady = useStoryboardStore((s) => s.animaticReady);
 
-  const pendingCount = shots.filter(
-    (s) => s.generation_status === "pending" || s.generation_status === "dirty",
-  ).length;
   const doneCount = shots.filter((s) => s.generation_status === "done").length;
-  const totalDuration = shots.reduce((sum, s) => sum + s.duration, 0);
+  const totalDuration = shots.reduce((sum, s) => sum + s.duration_seconds, 0);
   const statusInfo = STATUS_LABELS[project?.status || "idle"] || STATUS_LABELS.idle;
   const allDone = shots.length > 0 && doneCount === shots.length;
 
   const handleExport = () => {
-    // Collect all generated video URLs
     const videoUrls = shots
-      .filter((s) => s.generated_assets.video_path)
+      .filter((s) => s.generated_assets.video_url)
       .sort((a, b) => a.sequence_number - b.sequence_number)
-      .map((s) => s.generated_assets.video_path!);
+      .map((s) => s.generated_assets.video_url!);
 
     if (videoUrls.length === 0) return;
 
-    // Download each video
     videoUrls.forEach((url, i) => {
       const a = document.createElement("a");
       a.href = url;
@@ -70,12 +66,12 @@ export function TopBar({ onPreview }: { onPreview?: () => void }) {
         {project && (
           <>
             <div className="flex items-center gap-1.5">
-              {project.status === "done" ? (
+              {project.status === "complete" ? (
                 <CheckCircle2 className="h-3 w-3 text-emerald-500" />
               ) : (
                 <div className={cn("h-1.5 w-1.5 rounded-full",
-                  project.status === "generating" || project.status === "creating" ? "bg-primary animate-pulse" :
-                  project.status === "ready" ? "bg-emerald-500" : "bg-muted-foreground/40"
+                  project.status === "generating" || project.status === "planning" ? "bg-primary animate-pulse" :
+                  project.status === "preview" ? "bg-emerald-500" : "bg-muted-foreground/40"
                 )} />
               )}
               <span className={cn("text-[10px] font-medium", statusInfo.color)}>
@@ -84,7 +80,7 @@ export function TopBar({ onPreview }: { onPreview?: () => void }) {
             </div>
             {shots.length > 0 && (
               <span className="text-[10px] text-muted-foreground font-mono">
-                {shots.length} 镜头 · {totalDuration}s
+                {shots.length} 镜头 · {totalDuration.toFixed(1)}s
               </span>
             )}
           </>
@@ -98,20 +94,12 @@ export function TopBar({ onPreview }: { onPreview?: () => void }) {
 
         {project && (
           <>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 text-[10px] px-2"
-              onClick={toggleMode}
-            >
-              {project.mode === "lite" ? "轻模式" : "专业模式"}
-            </Button>
-
-            {pendingCount > 0 && (
+            {/* Confirm Animatic → start video generation */}
+            {animaticReady && project.status === "preview" && (
               <Button
                 size="sm"
                 className="h-7 text-[10px] px-3 gap-1.5"
-                onClick={() => startGeneration()}
+                onClick={() => confirmAnimatic()}
                 disabled={isAgentWorking}
               >
                 {isAgentWorking ? (
@@ -119,7 +107,7 @@ export function TopBar({ onPreview }: { onPreview?: () => void }) {
                 ) : (
                   <Play className="h-3 w-3" />
                 )}
-                生成 {pendingCount} 镜头
+                确认并生成视频
               </Button>
             )}
 

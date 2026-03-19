@@ -53,6 +53,7 @@ interface ModelsState {
   favorites: Set<string>;
   showFavoritesOnly: boolean;
   hasFetched: boolean;
+  typeFiltersOpen: boolean;
   fetchModels: (force?: boolean) => Promise<void>;
   setSearchQuery: (query: string) => void;
   setSelectedType: (type: string | null) => void;
@@ -62,6 +63,7 @@ interface ModelsState {
   toggleFavorite: (modelId: string) => void;
   isFavorite: (modelId: string) => boolean;
   setShowFavoritesOnly: (show: boolean) => void;
+  setTypeFiltersOpen: (open: boolean) => void;
   getFilteredModels: () => Model[];
   getModelById: (modelId: string) => Model | undefined;
 }
@@ -77,6 +79,7 @@ export const useModelsStore = create<ModelsState>((set, get) => ({
   favorites: loadFavorites(),
   showFavoritesOnly: false,
   hasFetched: false,
+  typeFiltersOpen: true,
 
   fetchModels: async (force = false) => {
     if (get().hasFetched && !force) return;
@@ -138,6 +141,10 @@ export const useModelsStore = create<ModelsState>((set, get) => ({
 
   setShowFavoritesOnly: (show: boolean) => {
     set({ showFavoritesOnly: show });
+  },
+
+  setTypeFiltersOpen: (open: boolean) => {
+    set({ typeFiltersOpen: open });
   },
 
   getFilteredModels: () => {

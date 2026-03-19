@@ -31,8 +31,8 @@ import {
   X,
   ArrowDownNarrowWide,
   ArrowUpNarrowWide,
+  ChevronRight,
   ChevronDown,
-  ChevronUp,
   RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -261,14 +261,12 @@ export function ExplorePanel({
 }: ExplorePanelProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { models, toggleFavorite, isFavorite, fetchModels } = useModelsStore();
+  const { models, toggleFavorite, isFavorite, fetchModels, selectedType: typeFilter, setSelectedType: setTypeFilter, typeFiltersOpen, setTypeFiltersOpen } = useModelsStore();
   const { createTab } = usePlaygroundStore();
-  const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("popularity");
   const [sortAsc, setSortAsc] = useState(false);
-  const [typeFiltersOpen, setTypeFiltersOpen] = useState(false); // type filter row collapsed by default
 
   // Local search state with debounce
   const [searchInput, setSearchInput] = useState("");
@@ -507,23 +505,23 @@ export function ExplorePanel({
         className="flex-1 overflow-y-auto overflow-x-hidden"
       >
         <div className="px-4 pb-6 pt-3">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-            {showFavoritesOnly
-              ? t("playground.explore.favorites", "Favorites")
-              : search
-                ? t("playground.explore.searchResults", "{{count}} results", {
-                    count: filteredModels.length,
-                  })
-                : t("playground.explore.allModels", "All Models")}
-          </h3>
-          <div className="mb-2">
+          <div className="flex items-center gap-6 mb-4">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {showFavoritesOnly
+                ? t("playground.explore.favorites", "Favorites")
+                : search
+                  ? t("playground.explore.searchResults", "{{count}} results", {
+                      count: filteredModels.length,
+                    })
+                  : t("playground.explore.allModels", "All Models")}
+            </h3>
             {!typeFiltersOpen ? (
               <button
                 type="button"
                 onClick={() => setTypeFiltersOpen(true)}
-                className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+                className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground px-2.5 py-1 rounded-md border border-gray-400 dark:border-gray-500 bg-muted hover:bg-muted/80 shadow-sm transition-all animate-in fade-in zoom-in-95 duration-150"
               >
-                <ChevronDown className="h-3 w-3" />
+                <ChevronRight className="h-3 w-3" />
                 {t("playground.explore.filterByType", "Filter by type")}
                 {typeFilter && (
                   <span
@@ -537,47 +535,47 @@ export function ExplorePanel({
                 )}
               </button>
             ) : (
-              <>
-                <div className="flex gap-1 flex-wrap items-center mb-1">
-                  <button
-                    onClick={() => setTypeFilter(null)}
-                    className={cn(
-                      "text-[11px] px-2 py-0.5 rounded-md font-medium transition-colors whitespace-nowrap",
-                      !typeFilter
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground hover:text-foreground",
-                    )}
-                  >
-                    {t("playground.explore.all", "All")}
-                  </button>
-                  {allTypes.map((type) => (
-                    <button
-                      key={type}
-                      onClick={() =>
-                        setTypeFilter(typeFilter === type ? null : type)
-                      }
-                      className={cn(
-                        "text-[11px] px-2 py-0.5 rounded-md font-medium transition-colors whitespace-nowrap",
-                        typeFilter === type
-                          ? "ring-1 ring-current " + getTypeColor(type)
-                          : getTypeColor(type) + " hover:opacity-80",
-                      )}
-                    >
-                      {type}
-                    </button>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => setTypeFiltersOpen(false)}
-                    className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground ml-1"
-                  >
-                    <ChevronUp className="h-3 w-3" />
-                    {t("common.hide", "Hide")}
-                  </button>
-                </div>
-              </>
+              <button
+                type="button"
+                onClick={() => setTypeFiltersOpen(false)}
+                className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground px-2.5 py-1 rounded-md border border-gray-400 dark:border-gray-500 bg-muted hover:bg-muted/80 shadow-sm transition-all animate-in fade-in zoom-in-95 duration-150"
+              >
+                <ChevronDown className="h-3 w-3" />
+                {t("common.hide", "Hide")}
+              </button>
             )}
           </div>
+          {typeFiltersOpen && (
+            <div className="flex gap-1 flex-wrap items-center mb-4 animate-in fade-in slide-in-from-top-1 duration-200">
+              <button
+                onClick={() => setTypeFilter(null)}
+                className={cn(
+                  "text-[11px] px-2 py-0.5 rounded-md font-medium transition-colors whitespace-nowrap",
+                  !typeFilter
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {t("playground.explore.all", "All")}
+              </button>
+              {allTypes.map((type) => (
+                <button
+                  key={type}
+                  onClick={() =>
+                    setTypeFilter(typeFilter === type ? null : type)
+                  }
+                  className={cn(
+                    "text-[11px] px-2 py-0.5 rounded-md font-medium transition-colors whitespace-nowrap",
+                    typeFilter === type
+                      ? "ring-1 ring-current " + getTypeColor(type)
+                      : getTypeColor(type) + " hover:opacity-80",
+                  )}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+          )}
 
           {filteredModels.length === 0 ? (
             <div className="py-12 text-center text-sm text-muted-foreground">

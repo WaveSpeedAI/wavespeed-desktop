@@ -6,7 +6,7 @@ import { useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useUIStore } from "../../stores/ui.store";
 import { useWorkflowStore } from "../../stores/workflow.store";
-import { ChevronRight, X } from "lucide-react";
+import { ChevronRight, ArrowLeft } from "lucide-react";
 
 export function SubgraphBreadcrumb() {
   const { t } = useTranslation();
@@ -66,10 +66,11 @@ export function SubgraphBreadcrumb() {
       </span>
       <button
         onClick={handleExitClick}
-        className="ml-2 p-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+        className="ml-2 px-2.5 py-1 rounded-md bg-cyan-500 hover:bg-cyan-600 text-white transition-colors flex items-center gap-1 shadow-sm"
         title={t("workflow.exitSubgraph", "Exit subgraph (ESC)")}
       >
-        <X className="w-3.5 h-3.5" />
+        <ArrowLeft className="w-3.5 h-3.5" />
+        <span className="text-[11px] font-medium">{t("workflow.back", "Back")}</span>
       </button>
     </div>
   );

@@ -493,12 +493,19 @@ export async function executeWorkflowInBrowser(
     options?.continueFromNodeId &&
     allNodeIds.includes(options.continueFromNodeId)
   ) {
+    // If the target node is a child of a group, redirect to the parent group
+    let effectiveContinueId = options.continueFromNodeId;
+    const continueTarget = nodes.find((n) => n.id === effectiveContinueId);
+    if (continueTarget?.parentNode) {
+      effectiveContinueId = continueTarget.parentNode;
+    }
+
     // Run the target node + all downstream; include upstream in the graph but skip executing them
     const downstream = downstreamNodeIds(
-      options.continueFromNodeId,
+      effectiveContinueId,
       simpleEdges,
     );
-    const upstream = upstreamNodeIds(options.continueFromNodeId, simpleEdges);
+    const upstream = upstreamNodeIds(effectiveContinueId, simpleEdges);
     // The subgraph is upstream ∪ downstream so edges resolve correctly
     const subset = new Set([...upstream, ...downstream]);
     nodeIds = allNodeIds.filter((id) => subset.has(id));
@@ -512,7 +519,15 @@ export async function executeWorkflowInBrowser(
     options?.runOnlyNodeId &&
     allNodeIds.includes(options.runOnlyNodeId)
   ) {
-    const subset = upstreamNodeIds(options.runOnlyNodeId, simpleEdges);
+    // If the target node is a child of a group, redirect execution to the
+    // parent group node so the group handler runs all child nodes properly.
+    let effectiveRunNodeId = options.runOnlyNodeId;
+    const targetNode = nodes.find((n) => n.id === effectiveRunNodeId);
+    if (targetNode?.parentNode) {
+      effectiveRunNodeId = targetNode.parentNode;
+    }
+
+    const subset = upstreamNodeIds(effectiveRunNodeId, simpleEdges);
     nodeIds = allNodeIds.filter((id) => subset.has(id));
     filteredNodes = nodes.filter((n) => subset.has(n.id));
     filteredEdges = edges.filter(
@@ -520,7 +535,7 @@ export async function executeWorkflowInBrowser(
     );
     // Only execute the target node itself; upstream nodes reuse existing results
     skipNodeIds = new Set(
-      [...subset].filter((id) => id !== options.runOnlyNodeId),
+      [...subset].filter((id) => id !== effectiveRunNodeId),
     );
   } else {
     nodeIds = allNodeIds;

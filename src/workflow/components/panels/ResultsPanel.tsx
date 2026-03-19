@@ -65,12 +65,14 @@ export function ResultsPanel({
   const [stackIndex, setStackIndex] = useState(0);
   /** Track slide direction for animation */
   const prevIndexRef = useRef(0);
+  const slideKeyRef = useRef(0);
   const slideDirection =
     stackIndex > prevIndexRef.current
       ? "left"
       : stackIndex < prevIndexRef.current
         ? "right"
         : "none";
+  if (slideDirection !== "none") slideKeyRef.current += 1;
   useEffect(() => {
     prevIndexRef.current = stackIndex;
   }, [stackIndex]);
@@ -386,7 +388,16 @@ export function ResultsPanel({
                 (u) => getOutputItemType(u) === "text",
               );
               return isTextResult ? (
-                <div className="px-1 py-1.5">
+                <div
+                  key={`${clampedIndex}-${slideKeyRef.current}`}
+                  className="px-1 py-1.5"
+                  style={{
+                    animation:
+                      slideDirection !== "none"
+                        ? `carousel-slide-${slideDirection} 0.25s ease-out`
+                        : undefined,
+                  }}
+                >
                   {currentUrls.map((url, ui) => (
                     <StackedResultItem
                       key={ui}
@@ -426,7 +437,7 @@ export function ResultsPanel({
 
                     {/* Center image(s) — animated slide */}
                     <div
-                      key={clampedIndex}
+                      key={`${clampedIndex}-${slideKeyRef.current}`}
                       className="relative z-10 flex gap-2 flex-wrap justify-center"
                       style={{
                         animation:
@@ -485,7 +496,7 @@ export function ResultsPanel({
 
           {/* Navigation — only show when multiple results */}
           {total > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-1">
+            <div className="relative flex items-center justify-center mt-1 select-none">
               <button
                 onClick={() => setStackIndex((i) => Math.max(0, i - 1))}
                 disabled={clampedIndex === 0}
@@ -493,7 +504,7 @@ export function ResultsPanel({
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
               </button>
-              <span className="text-[10px] text-muted-foreground tabular-nums min-w-[40px] text-center">
+              <span className="text-[10px] text-muted-foreground tabular-nums min-w-[40px] text-center mx-1">
                 {clampedIndex + 1} / {total}
               </span>
               <button
@@ -503,13 +514,13 @@ export function ResultsPanel({
               >
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
-              {/* Select as Output */}
+              {/* Select as Output — follows pagination visually but doesn't affect centering */}
               {total > 1 && currentRec.status === "success" && (
                 <button
                   onClick={() => {
                     handleSelectAsOutput(clampedIndex);
                   }}
-                  className={`ml-1 flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-medium transition-colors ${
+                  className={`absolute left-[calc(50%+3.5rem)] flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-medium transition-colors whitespace-nowrap ${
                     selectedOutputIndex === clampedIndex
                       ? "bg-green-500/20 text-green-400"
                       : "bg-blue-500/10 text-blue-400 hover:bg-blue-500/20"

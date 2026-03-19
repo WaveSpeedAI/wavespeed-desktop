@@ -1834,7 +1834,7 @@ export function WorkflowPage() {
                 <TooltipContent side="bottom">
                   {nodes.length === 0
                     ? t("workflow.addNodesToRun", "Add nodes to run")
-                    : t("workflow.runWorkflow", "Run")}
+                    : t("workflow.runWorkflowHint", "Run Workflow")}
                 </TooltipContent>
               </Tooltip>
               {/* Run count */}

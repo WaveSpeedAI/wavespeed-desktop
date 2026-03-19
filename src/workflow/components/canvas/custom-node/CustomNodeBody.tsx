@@ -1262,19 +1262,37 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
 
           if (fieldConfig) {
             if (!canConnect) {
+              // Compact inline layout for file export's filename & format
+              const inlineParam = data.nodeType === "output/file" && (p.key === "filename" || p.key === "format");
               return (
                 <div
                   key={p.key}
                   className="px-3 py-1 nodrag"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <FormField
-                    field={fieldConfig}
-                    value={formValues[p.key]}
-                    onChange={(v) => setParam(p.key, v)}
-                    formValues={formValues}
-                    onUploadFile={handleCdnUpload}
-                  />
+                  {inlineParam ? (
+                    <div className="flex items-center gap-4">
+                      <Label className="text-xs flex-shrink-0 w-[110px]">{fieldConfig.label}</Label>
+                      <div className="flex-1 min-w-0 [&_input]:h-7 [&_input]:text-xs [&_button[role=combobox]]:h-7 [&_button[role=combobox]]:text-xs">
+                        <FormField
+                          field={fieldConfig}
+                          value={formValues[p.key]}
+                          onChange={(v) => setParam(p.key, v)}
+                          formValues={formValues}
+                          onUploadFile={handleCdnUpload}
+                          hideLabel
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <FormField
+                      field={fieldConfig}
+                      value={formValues[p.key]}
+                      onChange={(v) => setParam(p.key, v)}
+                      formValues={formValues}
+                      onUploadFile={handleCdnUpload}
+                    />
+                  )}
                 </div>
               );
             }
@@ -1324,6 +1342,26 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
           }
 
           if (!canConnect) {
+            // Output Directory: stack label above control so hint text has full width
+            if (data.nodeType === "output/file" && p.key === "outputDir") {
+              return (
+                <div key={p.key} className="px-3 py-1">
+                  <div className="flex items-center gap-2 w-full">
+                    <span className="text-xs text-[hsl(var(--muted-foreground))] flex-shrink-0">
+                      {localizeParamLabel(p.key, p.label)}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <DefParamControl
+                        nodeId={id}
+                        param={p}
+                        value={data.params[p.key]}
+                        onChange={(v) => setParam(p.key, v)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            }
             return (
               <div key={p.key} className="px-3 py-1">
                 <div className="flex items-center justify-between gap-2 w-full">

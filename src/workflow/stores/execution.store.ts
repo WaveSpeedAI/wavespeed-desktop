@@ -379,14 +379,22 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
       targetNode?.data?.nodeType ||
       nodeId.slice(0, 8);
     set({ _lastRunType: "single", _lastRunNodeLabel: targetLabel });
-    const upstream = new Set<string>([nodeId]);
+
+    // If the target node is inside a group, we need to include the parent
+    // group node and its upstream so the group handler can execute properly.
+    const parentGroupId = (targetNode as { parentNode?: string } | undefined)?.parentNode;
+    const effectiveRootId = parentGroupId ?? nodeId;
+
+    const upstream = new Set<string>([effectiveRootId]);
+    // Also include the original child node so it appears in the session
+    if (parentGroupId) upstream.add(nodeId);
     const reverse = new Map<string, string[]>();
     for (const e of edges) {
       const list = reverse.get(e.target) ?? [];
       list.push(e.source);
       reverse.set(e.target, list);
     }
-    let queue = [nodeId];
+    let queue = [effectiveRootId];
     while (queue.length > 0) {
       const next: string[] = [];
       for (const id of queue) {
@@ -398,6 +406,15 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
         }
       }
       queue = next;
+    }
+    // Also include sibling child nodes of the same group so the group handler
+    // can execute the full sub-workflow
+    if (parentGroupId) {
+      for (const n of nodes) {
+        if ((n as { parentNode?: string }).parentNode === parentGroupId) {
+          upstream.add(n.id);
+        }
+      }
     }
     const nodeIds = nodes.map((n) => n.id).filter((id) => upstream.has(id));
     const nodeLabels: Record<string, string> = {};

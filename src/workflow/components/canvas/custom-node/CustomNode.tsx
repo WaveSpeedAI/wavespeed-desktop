@@ -82,6 +82,7 @@ function CustomNodeComponent({
   const savedHeight =
     (data.params.__nodeHeight as number | undefined) ?? undefined;
   const nodeRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const [resizing, setResizing] = useState(false);
   const { getViewport, setNodes } = useReactFlow();
   const shortId = id.slice(0, 8);
@@ -138,7 +139,8 @@ function CustomNodeComponent({
       e.stopPropagation();
       e.preventDefault();
       const el = nodeRef.current;
-      if (!el) return;
+      const wrapper = wrapperRef.current;
+      if (!el || !wrapper) return;
       setResizing(true);
 
       const startX = e.clientX;
@@ -159,14 +161,14 @@ function CustomNodeComponent({
         if (xDir === -1 || yDir === -1) {
           const tx = xDir === -1 ? dx : 0;
           const ty = yDir === -1 ? dy : 0;
-          el.style.transform = `translate(${tx}px, ${ty}px)`;
+          wrapper.style.transform = `translate(${tx}px, ${ty}px)`;
         }
       };
 
       const onUp = (ev: MouseEvent) => {
         document.removeEventListener("mousemove", onMove);
         document.removeEventListener("mouseup", onUp);
-        el.style.transform = "";
+        wrapper.style.transform = "";
         el.style.width = "";
         el.style.minHeight = "";
         setResizing(false);
@@ -652,6 +654,7 @@ function CustomNodeComponent({
 
   return (
     <div
+      ref={wrapperRef}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => {
         setHovered(false);
@@ -685,41 +688,53 @@ function CustomNodeComponent({
             <>
               {/* Split Run button: main area runs, chevron opens count picker */}
               <div className="relative flex items-stretch">
-                <button
-                  onClick={onRun}
-                  className="flex items-center gap-1 pl-3 pr-2 rounded-l-full text-[11px] font-medium shadow-lg backdrop-blur-sm bg-blue-500 text-white hover:bg-blue-600 transition-all whitespace-nowrap h-[30px]"
-                  title={t("workflow.runNode", "Run Node")}
-                >
-                  <svg
-                    width="10"
-                    height="10"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <polygon points="6,3 20,12 6,21" />
-                  </svg>{" "}
-                  {t("workflow.run", "Run")}
-                  {runCount > 1 && (
-                    <span className="text-[9px] opacity-80">×{runCount}</span>
-                  )}
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowRunCountPicker((v) => !v);
-                  }}
-                  className="flex items-center justify-center w-[24px] rounded-r-full shadow-lg backdrop-blur-sm bg-blue-600 text-white hover:bg-blue-700 transition-all border-l border-white/20 h-[30px]"
-                  title={t("workflow.runCount", "Run count")}
-                >
-                  <svg
-                    width="8"
-                    height="8"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <polygon points="4,8 12,18 20,8" />
-                  </svg>
-                </button>
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={onRun}
+                      className="flex items-center gap-1 pl-3 pr-2 rounded-l-full text-[11px] font-medium shadow-lg backdrop-blur-sm bg-blue-600 text-white hover:bg-blue-700 transition-all whitespace-nowrap h-[30px]"
+                    >
+                      <svg
+                        width="10"
+                        height="10"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <polygon points="6,3 20,12 6,21" />
+                      </svg>{" "}
+                      {t("workflow.run", "Run")}
+                      {runCount > 1 && (
+                        <span className="text-[9px] opacity-80">×{runCount}</span>
+                      )}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    {t("workflow.runNode", "Run Node")}
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowRunCountPicker((v) => !v);
+                      }}
+                      className="flex items-center justify-center w-[24px] rounded-r-full shadow-lg backdrop-blur-sm bg-blue-600 text-white hover:bg-blue-700 transition-all border-l border-white/20 h-[30px]"
+                    >
+                      <svg
+                        width="8"
+                        height="8"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <polygon points="4,8 12,18 20,8" />
+                      </svg>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    {t("workflow.runCount", "Run count")}
+                  </TooltipContent>
+                </Tooltip>
                 {showRunCountPicker && (
                   <div className="absolute top-full mt-1 left-1/2 -translate-x-1/2 bg-[hsl(var(--popover))] border border-[hsl(var(--border))] rounded-lg shadow-xl p-1 flex gap-0.5 z-50">
                     {[1, 2, 3, 4, 5, 8, 10].map((n) => (
@@ -742,43 +757,55 @@ function CustomNodeComponent({
                   </div>
                 )}
               </div>
-              <button
-                onClick={onRunFromHere}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium shadow-lg backdrop-blur-sm bg-green-600 text-white hover:bg-green-700 transition-all whitespace-nowrap"
-                title={t("workflow.continueFrom", "Continue From")}
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <polygon points="4,4 14,12 4,20" />
-                  <polygon points="12,4 22,12 12,20" />
-                </svg>{" "}
-                {t("workflow.runFromHere", "Run from here")}
-              </button>
-              <button
-                onClick={onDelete}
-                className="flex items-center justify-center w-8 h-8 rounded-full shadow-lg backdrop-blur-sm bg-[hsl(var(--muted))] text-muted-foreground hover:bg-red-500/20 hover:text-red-400 transition-all"
-                title={t("workflow.delete", "Delete")}
-              >
-                <svg
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="3 6 5 6 21 6" />
-                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                  <line x1="10" y1="11" x2="10" y2="17" />
-                  <line x1="14" y1="11" x2="14" y2="17" />
-                </svg>
-              </button>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={onRunFromHere}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium shadow-lg backdrop-blur-sm bg-green-600 text-white hover:bg-green-700 transition-all whitespace-nowrap"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <polygon points="4,4 14,12 4,20" />
+                      <polygon points="12,4 22,12 12,20" />
+                    </svg>{" "}
+                    {t("workflow.runFromHere", "Run from here")}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  {t("workflow.continueFrom", "Continue From")}
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={onDelete}
+                    className="flex items-center justify-center w-8 h-8 rounded-full shadow-lg backdrop-blur-sm bg-[hsl(var(--muted))] text-muted-foreground hover:bg-red-500/20 hover:text-red-400 transition-all"
+                  >
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                      <line x1="10" y1="11" x2="10" y2="17" />
+                      <line x1="14" y1="11" x2="14" y2="17" />
+                    </svg>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="bg-red-500 text-white">
+                  {t("workflow.delete", "Delete")}
+                </TooltipContent>
+              </Tooltip>
             </>
           )}
         </div>
@@ -792,27 +819,27 @@ function CustomNodeComponent({
           bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))]
           border-2
           ${resizing ? "" : "transition-all duration-300"}
-          ${running ? (isInsideIterator ? "border-cyan-500 animate-pulse-subtle" : "border-blue-500 animate-pulse-subtle") : ""}
-          ${!running && selected ? (isInsideIterator ? "border-cyan-500 shadow-[0_0_20px_rgba(6,182,212,.25)] ring-1 ring-cyan-500/30" : "border-blue-500 shadow-[0_0_20px_rgba(96,165,250,.25)] ring-1 ring-blue-500/30") : ""}
+          ${running ? (isInsideIterator ? "border-blue-500 animate-pulse-subtle" : "border-blue-500 animate-pulse-subtle") : ""}
+          ${!running && selected ? (isInsideIterator ? "border-blue-500 shadow-[0_0_20px_rgba(96,165,250,.25)] ring-1 ring-blue-500/30" : "border-blue-500 shadow-[0_0_20px_rgba(96,165,250,.25)] ring-1 ring-blue-500/30") : ""}
           ${!running && !selected && status === "confirmed" ? "border-green-500/70" : ""}
           ${!running && !selected && status === "unconfirmed" ? "border-orange-500/70" : ""}
           ${!running && !selected && status === "error" ? "border-red-500/70" : ""}
           ${!running && !selected && status === "idle" ? (hovered ? "border-[hsl(var(--border))] shadow-lg" : "border-[hsl(var(--border))] shadow-md") : ""}
-          ${isInsideIterator && !running && !selected && status === "idle" ? "ring-1 ring-cyan-500/20" : ""}
+          ${isInsideIterator && !running && !selected && status === "idle" ? "ring-1 ring-blue-500/20" : ""}
         `}
         style={{ width: savedWidth, minHeight: savedHeight, fontSize: 13 }}
       >
         {/* ── Title bar ──────────── */}
         <div
           className={`flex items-center gap-1.5 px-3 py-2 select-none
-        ${running ? (isInsideIterator ? "bg-cyan-500/10" : "bg-blue-500/10") : status === "confirmed" ? "bg-green-500/8" : status === "error" ? "bg-red-500/8" : ""}`}
+        ${running ? (isInsideIterator ? "bg-blue-500/10" : "bg-blue-500/10") : status === "confirmed" ? "bg-green-500/8" : status === "error" ? "bg-red-500/8" : ""}`}
         >
           <span
             className={`w-2 h-2 rounded-full flex-shrink-0
           ${
             running
               ? isInsideIterator
-                ? "bg-cyan-500 animate-pulse"
+                ? "bg-blue-500 animate-pulse"
                 : "bg-blue-500 animate-pulse"
               : status === "confirmed"
                 ? "bg-green-500"
@@ -1095,7 +1122,7 @@ function CustomNodeComponent({
               type="button"
               className={`nodrag nopan absolute z-40 flex items-center justify-center w-6 h-6 rounded-full shadow-lg backdrop-blur-sm text-white hover:scale-110 transition-all duration-150 ${
                 isInsideIterator
-                  ? "bg-cyan-500 hover:bg-cyan-600"
+                  ? "bg-blue-500 hover:bg-blue-600"
                   : "bg-blue-500 hover:bg-blue-600"
               }`}
               style={

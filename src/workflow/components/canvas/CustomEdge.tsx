@@ -79,7 +79,7 @@ export function CustomEdge({
         onMouseLeave={() => setIsHovered(false)}
         style={{ cursor: "pointer" }}
       />
-      {(isHovered || selected) && (
+      {(isHovered || selected) && !id.startsWith("__io-") && (
         <EdgeLabelRenderer>
           <div
             onMouseEnter={() => setIsHovered(true)}

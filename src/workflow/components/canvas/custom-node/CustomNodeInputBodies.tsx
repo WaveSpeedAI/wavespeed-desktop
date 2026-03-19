@@ -966,7 +966,9 @@ export function DirectoryImportBody({
                 {t("workflow.directoryImport.noFiles", "No matching files")}
               </span>
             ) : (
-              <span className="text-muted-foreground">—</span>
+              <span className="text-muted-foreground text-xs italic">
+                {t("workflow.directoryImport.awaitingDirectory", "Awaiting directory")}
+              </span>
             )}
           </span>
         </div>

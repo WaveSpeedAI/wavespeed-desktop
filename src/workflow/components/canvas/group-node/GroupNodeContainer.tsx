@@ -52,11 +52,7 @@ const MIN_ITERATOR_WIDTH = 600;
 const MIN_ITERATOR_HEIGHT = 400;
 const CHILD_PADDING = 40;
 const TITLE_BAR_HEIGHT = 40;
-const CAPSULE_HEIGHT = 28;
-const CAPSULE_GAP = 6;
-const CAPSULE_TOP_OFFSET = TITLE_BAR_HEIGHT + 12;
-const HANDLE_DOT = 10;
-const CAPSULE_LABEL_WIDTH = 110; // fixed width for capsule label area
+const HANDLE_DOT = 12;
 
 /* ── types ─────────────────────────────────────────────────────────── */
 
@@ -131,8 +127,6 @@ function IteratorNodeContainerComponent({
   const shortId = id.slice(0, 8);
 
   const inputDefs = useMemo(() => {
-    // Reconstruct from exposedInputs params (source of truth) to be resilient
-    // against data.inputDefinitions being reset by other state updates
     try {
       const raw = data.params?.exposedInputs;
       const list: ExposedParam[] =
@@ -141,33 +135,21 @@ function IteratorNodeContainerComponent({
           : Array.isArray(raw)
             ? raw
             : [];
-      return list.map((ep): PortDefinition => {
-        if (ep.alias) {
-          return {
-            key: ep.namespacedKey,
-            label: ep.alias,
-            dataType: ep.dataType,
-            required: false,
-          };
-        }
+      return list.map((ep): PortDefinition & { _ep: ExposedParam } => {
         const readableParam = ep.paramKey
           .split("_")
           .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
           .join(" ");
-        // Use node label (or short ID) for disambiguation
-        const nodeLabel = ep.subNodeLabel || ep.subNodeId.slice(0, 6);
-        const shortLabel = nodeLabel.includes("/")
-          ? nodeLabel.split("/").pop()!
-          : nodeLabel;
         return {
           key: ep.namespacedKey,
-          label: `${readableParam} · ${shortLabel}`,
+          label: ep.alias || readableParam,
           dataType: ep.dataType,
           required: false,
+          _ep: ep,
         };
       });
     } catch {
-      return data.inputDefinitions ?? [];
+      return (data.inputDefinitions ?? []).map((d) => ({ ...d, _ep: undefined as unknown as ExposedParam }));
     }
   }, [data.params?.exposedInputs, data.inputDefinitions]);
 
@@ -180,32 +162,21 @@ function IteratorNodeContainerComponent({
           : Array.isArray(raw)
             ? raw
             : [];
-      return list.map((ep): PortDefinition => {
-        if (ep.alias) {
-          return {
-            key: ep.namespacedKey,
-            label: ep.alias,
-            dataType: ep.dataType,
-            required: false,
-          };
-        }
+      return list.map((ep): PortDefinition & { _ep: ExposedParam } => {
         const readableParam = ep.paramKey
           .split("_")
           .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
           .join(" ");
-        const nodeLabel = ep.subNodeLabel || ep.subNodeId.slice(0, 6);
-        const shortLabel = nodeLabel.includes("/")
-          ? nodeLabel.split("/").pop()!
-          : nodeLabel;
         return {
           key: ep.namespacedKey,
-          label: `${readableParam} · ${shortLabel}`,
+          label: ep.alias || readableParam,
           dataType: ep.dataType,
           required: false,
+          _ep: ep,
         };
       });
     } catch {
-      return data.outputDefinitions ?? [];
+      return (data.outputDefinitions ?? []).map((d) => ({ ...d, _ep: undefined as unknown as ExposedParam }));
     }
   }, [data.params?.exposedOutputs, data.outputDefinitions]);
   const childNodeIds = data.childNodeIds ?? [];
@@ -250,7 +221,6 @@ function IteratorNodeContainerComponent({
 
   /* ── Effective size ─────────────────────────────────────────────── */
   const COMPACT_WIDTH = 320;
-  const maxCapsules = Math.max(inputDefs.length, outputDefs.length);
 
   /* ── Sync child hidden state with collapsed ────────────────────── */
   useEffect(() => {
@@ -324,29 +294,12 @@ function IteratorNodeContainerComponent({
     setEditingName(false);
   }, []);
 
-  /* ── Capsule vertical position ─────────────────────────────────── */
-  const getCapsuleTop = (index: number) =>
-    CAPSULE_TOP_OFFSET + index * (CAPSULE_HEIGHT + CAPSULE_GAP);
-
-  /* ── Exposed param lookup — maps namespacedKey → ExposedParam for tooltip info ── */
-  const exposedParamMap = useMemo(() => {
-    const map = new Map<string, ExposedParam>();
-    for (const key of ["exposedInputs", "exposedOutputs"] as const) {
-      try {
-        const raw = data.params?.[key];
-        const list: ExposedParam[] =
-          typeof raw === "string"
-            ? JSON.parse(raw)
-            : Array.isArray(raw)
-              ? raw
-              : [];
-        for (const ep of list) map.set(ep.namespacedKey, ep);
-      } catch {
-        /* ignore */
-      }
-    }
-    return map;
-  }, [data.params]);
+  /* ── Capsule layout constants ──────────────────────────────────── */
+  const CAPSULE_H = 26;
+  const CAPSULE_GAP = 10;
+  const CAPSULE_TOP = TITLE_BAR_HEIGHT + 8;
+  const getCapsuleCenter = (index: number) =>
+    CAPSULE_TOP + index * (CAPSULE_H + CAPSULE_GAP) + CAPSULE_H / 2;
 
   /* ── Check if a handle has a connected edge ────────────────────── */
   const isHandleConnected = useCallback(
@@ -397,56 +350,70 @@ function IteratorNodeContainerComponent({
             </button>
           ) : (
             <>
-              <button
-                onClick={onRun}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium shadow-lg backdrop-blur-sm bg-blue-500 text-white hover:bg-blue-600 transition-all whitespace-nowrap"
-              >
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <polygon points="6,3 20,12 6,21" />
-                </svg>
-                {t("workflow.run", "Run")}
-              </button>
-              <button
-                onClick={onRunFromHere}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium shadow-lg backdrop-blur-sm bg-green-600 text-white hover:bg-green-700 transition-all whitespace-nowrap"
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <polygon points="4,4 14,12 4,20" />
-                  <polygon points="12,4 22,12 12,20" />
-                </svg>
-                {t("workflow.runFromHere", "Run from here")}
-              </button>
-              <button
-                onClick={onDelete}
-                className="flex items-center justify-center w-8 h-8 rounded-full shadow-lg backdrop-blur-sm bg-[hsl(var(--muted))] text-muted-foreground hover:bg-red-500/20 hover:text-red-400 transition-all"
-                title={t("workflow.delete", "Delete")}
-              >
-                <svg
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="3 6 5 6 21 6" />
-                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                  <line x1="10" y1="11" x2="10" y2="17" />
-                  <line x1="14" y1="11" x2="14" y2="17" />
-                </svg>
-              </button>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={onRun}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium shadow-lg backdrop-blur-sm bg-blue-500 text-white hover:bg-blue-600 transition-all whitespace-nowrap"
+                  >
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <polygon points="6,3 20,12 6,21" />
+                    </svg>
+                    {t("workflow.run", "Run")}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top">{t("workflow.runNode", "Run Node")}</TooltipContent>
+              </Tooltip>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={onRunFromHere}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium shadow-lg backdrop-blur-sm bg-green-600 text-white hover:bg-green-700 transition-all whitespace-nowrap"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <polygon points="4,4 14,12 4,20" />
+                      <polygon points="12,4 22,12 12,20" />
+                    </svg>
+                    {t("workflow.runFromHere", "Run from here")}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top">{t("workflow.continueFrom", "Continue From")}</TooltipContent>
+              </Tooltip>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={onDelete}
+                    className="flex items-center justify-center w-8 h-8 rounded-full shadow-lg backdrop-blur-sm bg-[hsl(var(--muted))] text-muted-foreground hover:bg-red-500/20 hover:text-red-400 transition-all"
+                  >
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                      <line x1="10" y1="11" x2="10" y2="17" />
+                      <line x1="14" y1="11" x2="14" y2="17" />
+                    </svg>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="bg-red-500 text-white">{t("workflow.delete", "Delete")}</TooltipContent>
+              </Tooltip>
             </>
           )}
         </div>
@@ -534,7 +501,7 @@ function IteratorNodeContainerComponent({
             />
           ) : (
             <span
-              className="font-semibold text-[13px] truncate cursor-text"
+              className="font-semibold text-[13px] flex-shrink-0 cursor-text"
               onDoubleClick={(e) => {
                 e.stopPropagation();
                 startEditingName();
@@ -550,6 +517,15 @@ function IteratorNodeContainerComponent({
           <span className="text-[10px] text-[hsl(var(--muted-foreground))] opacity-50 font-mono flex-shrink-0">
             {shortId}
           </span>
+          {/* Child count — inline after shortId, nudged down slightly */}
+          {hasChildren && (
+            <span className="flex items-center gap-1 text-[9px] text-cyan-500 bg-cyan-500/10 border border-cyan-500/20 rounded-full px-1.5 py-0.5 flex-shrink-0 relative top-[3px] ml-9">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
+              </svg>
+              {childNodeIds.length} child nodes
+            </span>
+          )}
           {/* Drop target capsule tag */}
           {isAdoptTarget && (
             <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-500/20 text-blue-400 border border-blue-400/30 animate-pulse">
@@ -591,6 +567,7 @@ function IteratorNodeContainerComponent({
             </span>
           )}
           <div className="flex-1" />
+          {/* Child count badge — top right */}
         </div>
 
         {/* ── Running progress bar ───────────────────────────── */}
@@ -672,46 +649,55 @@ function IteratorNodeContainerComponent({
           </div>
         )}
 
-        {/* ── Compact body: child summary + action buttons ── */}
-        {!collapsed && (
-          <div
-            className="px-2.5 py-1.5 flex flex-col gap-1"
-            style={{
-              marginTop:
-                maxCapsules > 0
-                  ? maxCapsules * (CAPSULE_HEIGHT + CAPSULE_GAP) + 4
-                  : 0,
-            }}
-          >
-            {/* Child count summary */}
-            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-cyan-500/60"
-              >
-                <rect x="3" y="3" width="7" height="7" />
-                <rect x="14" y="3" width="7" height="7" />
-                <rect x="3" y="14" width="7" height="7" />
-                <rect x="14" y="14" width="7" height="7" />
-              </svg>
-              <span>
-                {hasChildren
-                  ? t("workflow.childNodesCount", "{{count}} child node(s)", {
-                      count: childNodeIds.length,
-                    })
-                  : t("workflow.iteratorEmpty", "No child nodes yet")}
-              </span>
+        {/* ── Capsule param pills ── */}
+        {!collapsed && (inputDefs.length > 0 || outputDefs.length > 0) && (
+          <div className="relative px-3 pt-2 pb-1" style={{ minHeight: Math.max(inputDefs.length, outputDefs.length) * (CAPSULE_H + CAPSULE_GAP) + 8 }}>
+            {/* Input capsules — left aligned */}
+            <div className="flex flex-col gap-2.5" style={{ width: "45%" }}>
+              {inputDefs.map((inp) => {
+                const ep = inp._ep;
+                const tooltip = ep
+                  ? `${ep.paramKey.split("_").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")} — ${ep.subNodeLabel || ep.subNodeId.slice(0, 8)}${ep.dataType ? ` (${ep.dataType})` : ""}`
+                  : inp.label;
+                return (
+                  <Tooltip key={`cap-in-${inp.key}`} delayDuration={0}>
+                    <TooltipTrigger asChild>
+                      <div className="nodrag nopan flex items-center h-[26px] px-2.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-[11px] text-cyan-700 dark:text-cyan-300 font-medium truncate cursor-pointer hover:bg-cyan-500/20 transition-colors">
+                        {inp.label}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="text-xs bg-cyan-500 text-white">{tooltip}</TooltipContent>
+                  </Tooltip>
+                );
+              })}
             </div>
+            {/* Output capsules — right aligned, absolutely positioned */}
+            <div className="absolute top-2 right-3 flex flex-col gap-2.5 items-end" style={{ width: "45%" }}>
+              {outputDefs.map((out) => {
+                const ep = out._ep;
+                const tooltip = ep
+                  ? `${ep.paramKey.split("_").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")} — ${ep.subNodeLabel || ep.subNodeId.slice(0, 8)}${ep.dataType ? ` (${ep.dataType})` : ""}`
+                  : out.label;
+                return (
+                  <Tooltip key={`cap-out-${out.key}`} delayDuration={0}>
+                    <TooltipTrigger asChild>
+                      <div className="nodrag nopan flex items-center h-[26px] px-2.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-700 dark:text-emerald-300 font-medium truncate cursor-pointer hover:bg-emerald-500/20 transition-colors">
+                        {out.label}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="text-xs bg-emerald-500 text-white">{tooltip}</TooltipContent>
+                  </Tooltip>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
+        {/* ── Compact body: action buttons ── */}
+        {!collapsed && (
+          <div className="px-2.5 py-2 flex flex-col gap-1.5">
             {/* Action buttons */}
-            <div className="flex gap-1">
+            <div className="flex gap-2.5">
               <Button
                 variant="outline"
                 size="sm"
@@ -719,7 +705,7 @@ function IteratorNodeContainerComponent({
                   e.stopPropagation();
                   useUIStore.getState().enterGroupEdit(id);
                 }}
-                className="nodrag nopan flex-1 h-7 text-[10px] gap-1 bg-cyan-500/10 text-cyan-400 border-cyan-500/20 hover:bg-cyan-500/20 hover:border-cyan-500/40"
+                className="nodrag nopan flex-1 h-7 text-[10px] gap-1 bg-cyan-500 text-white border-cyan-500 hover:bg-cyan-600 hover:border-cyan-700 hover:text-white shadow-sm"
               >
                 <Pencil className="w-2.5 h-2.5" />
                 {t("workflow.editSubgraph", "Edit Subgraph")}
@@ -731,7 +717,7 @@ function IteratorNodeContainerComponent({
                   e.stopPropagation();
                   setShowImportDialog(true);
                 }}
-                className="nodrag nopan flex-1 h-7 text-[10px] gap-1"
+                className="nodrag nopan flex-1 h-7 text-[10px] gap-1 bg-muted text-muted-foreground border-border hover:bg-muted-foreground/15 hover:text-foreground hover:border-muted-foreground/30"
               >
                 <FolderInput className="w-2.5 h-2.5" />
                 {t("workflow.importWorkflow", "Import Workflow")}
@@ -760,23 +746,15 @@ function IteratorNodeContainerComponent({
         {/* Resize handles removed — compact view doesn't need resizing */}
       </div>
 
-      {/* ── LEFT SIDE: exposed input capsules ──────────────────── */}
+      {/* ── LEFT SIDE: input handles ──────────────────── */}
       {!collapsed &&
         inputDefs.map((port, i) => {
-          const top = getCapsuleTop(i);
+          const centerY = getCapsuleCenter(i);
           const extHandleId = `input-${port.key}`;
           const intHandleId = `input-inner-${port.key}`;
           const extConnected = isHandleConnected(extHandleId, "target");
-          const ep = exposedParamMap.get(port.key);
-          const tooltipText = ep
-            ? `${ep.paramKey
-                .split("_")
-                .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
-                .join(" ")} — ${ep.subNodeLabel}`
-            : port.label;
           return (
-            <React.Fragment key={`cap-in-${port.key}`}>
-              {/* External target handle — on the left border */}
+            <React.Fragment key={`handle-in-${port.key}`}>
               <Handle
                 type="target"
                 position={Position.Left}
@@ -784,47 +762,19 @@ function IteratorNodeContainerComponent({
                 style={{
                   ...dotStyle(extConnected),
                   position: "absolute",
-                  top: top + CAPSULE_HEIGHT / 2,
+                  top: centerY,
                   left: -HANDLE_DOT / 2,
                   transform: "translateY(-50%)",
                 }}
               />
-              {/* Capsule label */}
-              <Tooltip delayDuration={200}>
-                <TooltipTrigger asChild>
-                  <div
-                    className="absolute pointer-events-auto flex items-center"
-                    style={{
-                      top: top,
-                      left: HANDLE_DOT,
-                      width: CAPSULE_LABEL_WIDTH,
-                      height: CAPSULE_HEIGHT,
-                      zIndex: 45,
-                    }}
-                  >
-                    <div
-                      className="rounded-full bg-[hsl(var(--card))] border border-cyan-500/40 px-2.5 flex items-center w-full"
-                      style={{ height: CAPSULE_HEIGHT - 4 }}
-                    >
-                      <span className="text-[11px] text-foreground font-medium whitespace-nowrap select-none truncate">
-                        {port.label}
-                      </span>
-                    </div>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="text-xs">
-                  {tooltipText}
-                </TooltipContent>
-              </Tooltip>
-              {/* Internal source handle — hidden but kept for auto-edge wiring */}
               <Handle
                 type="source"
                 position={Position.Right}
                 id={intHandleId}
                 style={{
                   position: "absolute",
-                  top: top + CAPSULE_HEIGHT / 2,
-                  left: HANDLE_DOT + CAPSULE_LABEL_WIDTH + 4,
+                  top: centerY,
+                  left: COMPACT_WIDTH / 2,
                   transform: "translateY(-50%)",
                   width: 1,
                   height: 1,
@@ -836,35 +786,23 @@ function IteratorNodeContainerComponent({
           );
         })}
 
-      {/* ── RIGHT SIDE: exposed output capsules ──────────────────── */}
+      {/* ── RIGHT SIDE: output handles ──────────────────── */}
       {!collapsed &&
         outputDefs.map((port, i) => {
-          const top = getCapsuleTop(i);
+          const centerY = getCapsuleCenter(i);
           const intHandleId = `output-inner-${port.key}`;
           const extHandleId = `output-${port.key}`;
           const extConnected = isHandleConnected(extHandleId, "source");
-          const ep = exposedParamMap.get(port.key);
-          const tooltipText = ep
-            ? `${ep.paramKey
-                .split("_")
-                .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
-                .join(" ")} — ${ep.subNodeLabel}`
-            : port.label;
-          // Compute left-based positions so ReactFlow handle lookup is reliable
-          const capsuleLabelLeft =
-            COMPACT_WIDTH - HANDLE_DOT - CAPSULE_LABEL_WIDTH;
-          const extHandleLeft = COMPACT_WIDTH - HANDLE_DOT / 2;
           return (
-            <React.Fragment key={`cap-out-${port.key}`}>
-              {/* Internal target handle — hidden but kept for auto-edge wiring */}
+            <React.Fragment key={`handle-out-${port.key}`}>
               <Handle
                 type="target"
                 position={Position.Left}
                 id={intHandleId}
                 style={{
                   position: "absolute",
-                  top: top + CAPSULE_HEIGHT / 2,
-                  left: capsuleLabelLeft - HANDLE_DOT - 4,
+                  top: centerY,
+                  left: COMPACT_WIDTH / 2,
                   transform: "translateY(-50%)",
                   width: 1,
                   height: 1,
@@ -872,34 +810,6 @@ function IteratorNodeContainerComponent({
                   pointerEvents: "none",
                 }}
               />
-              {/* Capsule label */}
-              <Tooltip delayDuration={200}>
-                <TooltipTrigger asChild>
-                  <div
-                    className="absolute pointer-events-auto flex items-center justify-end"
-                    style={{
-                      top: top,
-                      left: capsuleLabelLeft,
-                      width: CAPSULE_LABEL_WIDTH,
-                      height: CAPSULE_HEIGHT,
-                      zIndex: 45,
-                    }}
-                  >
-                    <div
-                      className="rounded-full bg-[hsl(var(--card))] border border-cyan-500/40 px-2.5 flex items-center justify-end w-full"
-                      style={{ height: CAPSULE_HEIGHT - 4 }}
-                    >
-                      <span className="text-[11px] text-foreground font-medium whitespace-nowrap select-none truncate text-right">
-                        {port.label}
-                      </span>
-                    </div>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="text-xs">
-                  {tooltipText}
-                </TooltipContent>
-              </Tooltip>
-              {/* External source handle — on the right border */}
               <Handle
                 type="source"
                 position={Position.Right}
@@ -907,8 +817,8 @@ function IteratorNodeContainerComponent({
                 style={{
                   ...dotStyle(extConnected, "output"),
                   position: "absolute",
-                  top: top + CAPSULE_HEIGHT / 2,
-                  left: extHandleLeft,
+                  top: centerY,
+                  left: COMPACT_WIDTH - HANDLE_DOT / 2,
                   transform: "translateY(-50%)",
                 }}
               />

@@ -309,11 +309,12 @@ export function NodePalette({ definitions }: NodePaletteProps) {
     [t],
   );
 
+  const editingGroupId = useUIStore((s) => s.editingGroupId);
+
   const displayDefs = useMemo(() => {
     let defs = definitions;
-    // When creating inside an Iterator, filter out the iterator type (no nesting)
-    const editGroupId = useUIStore.getState().editingGroupId;
-    if (pendingIteratorParentId || editGroupId) {
+    // When inside a Group subgraph, filter out the iterator type (no nesting allowed)
+    if (pendingIteratorParentId || editingGroupId) {
       defs = defs.filter((d) => d.type !== "control/iterator");
     }
     const q = query.trim();
@@ -324,7 +325,7 @@ export function NodePalette({ definitions }: NodePaletteProps) {
       t(`workflow.nodeDefs.${def.type}.label`, def.label),
       def.category,
     ]).map((r) => r.item);
-  }, [definitions, query, t, pendingIteratorParentId]);
+  }, [definitions, query, t, pendingIteratorParentId, editingGroupId]);
 
   const groupedDefs = useMemo(() => {
     const groups = new Map<string, NodeTypeDefinition[]>();

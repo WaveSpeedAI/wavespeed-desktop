@@ -901,7 +901,7 @@ export function DefParamControl({
     };
 
     return (
-      <div className="w-full max-w-[260px] space-y-1.5">
+      <div className="w-full space-y-1">
         <div className="flex items-center gap-1.5">
           <CompInput
             type="text"

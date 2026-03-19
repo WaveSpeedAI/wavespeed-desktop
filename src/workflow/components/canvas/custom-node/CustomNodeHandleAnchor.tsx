@@ -100,7 +100,9 @@ export function HandleAnchor({
     if (type === "target") {
       setOffset((cardRect.left - anchorRect.left) / zoom - HANDLE_SIZE / 2);
     } else {
-      setOffset((anchorRect.right - cardRect.right) / zoom + HANDLE_SIZE / 2);
+      setOffset(
+        (anchorRect.right - cardRect.right) / zoom - HANDLE_SIZE / 2 + 1,
+      );
     }
   });
 

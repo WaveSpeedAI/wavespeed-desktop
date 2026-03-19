@@ -22,6 +22,12 @@ export interface CustomNodeData {
 
 /* ── constants ───────────────────────────────────────────────────────── */
 
+/** Shared form-control class names — reuse across all node types for consistent styling. */
+export const inputCls =
+  "w-full rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1.5 text-xs text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500 placeholder:text-[hsl(var(--muted-foreground))]";
+export const selectCls =
+  "rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1.5 text-xs text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50";
+
 export const HANDLE_SIZE = 12;
 export const ACCENT = "hsl(var(--primary))";
 export const ACCENT_MEDIA = "hsl(142 71% 45%)";

@@ -294,12 +294,7 @@ export function ResultsPanel({
     if (displayRecords.length === 0) {
       return (
         <div className="flex flex-col min-h-0 flex-1">
-          <div className="flex justify-between items-center px-2 pt-1.5 pb-1">
-            <h3 className="font-semibold text-xs">
-              {t("workflow.results", "Results")} (0)
-            </h3>
-          </div>
-          <p className="text-muted-foreground text-xs py-4 text-center">
+          <p className="text-muted-foreground text-xs py-3 text-center">
             {t("workflow.noExecutions", "No executions yet")}
           </p>
         </div>

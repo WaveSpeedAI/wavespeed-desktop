@@ -116,13 +116,17 @@ export const Sidebar = memo(function Sidebar({
     };
     const handleFocus = () => {
       if (!blurredRef.current) return;
-      // Keep suppressed — will be re-enabled by mousemove
+      // Keep suppressed — will be re-enabled by mousemove after a short grace period
+      // The delay prevents tooltips from flashing when the OS synthesizes a
+      // mousemove event immediately upon window focus (common in Electron).
       const onMove = () => {
         blurredRef.current = false;
         setTooltipReady(true);
         window.removeEventListener("mousemove", onMove);
       };
-      window.addEventListener("mousemove", onMove, { once: true });
+      setTimeout(() => {
+        window.addEventListener("mousemove", onMove, { once: true });
+      }, 150);
     };
     window.addEventListener("blur", handleBlur);
     window.addEventListener("focus", handleFocus);

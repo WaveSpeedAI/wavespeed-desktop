@@ -4,10 +4,23 @@
  *
  * Each field has: key (field name, also used as label) and type (data type).
  * When renderHandle is provided, a ReactFlow handle is rendered inline with each row.
+ *
+ * Uses the same shadcn/ui components (Input, Select, Button, Label) as
+ * the WaveSpeed API node (FormField) for visual consistency.
  */
 import { useCallback, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { PortDataType } from "@/workflow/types/node-defs";
 
 export interface FieldConfig {
@@ -65,7 +78,6 @@ export function DynamicFieldsEditor({
         fields.map((f, i) => {
           if (i !== index) return f;
           const updated = { ...f, ...patch };
-          // Keep label in sync with key
           if (patch.key !== undefined) updated.label = patch.key;
           return updated;
         }),
@@ -79,65 +91,76 @@ export function DynamicFieldsEditor({
       ? t("workflow.httpTriggerFields", "API Input Fields")
       : t("workflow.httpResponseFields", "API Response Fields");
 
+  const options =
+    direction === "input" ? RESPONSE_TYPE_OPTIONS : TYPE_OPTIONS;
+
   return (
     <div
       className="px-3 py-2 space-y-2 nodrag"
       onClick={(e) => e.stopPropagation()}
     >
       <div className="flex items-center gap-2">
-        <span className="text-[11px] font-medium text-muted-foreground">
-          {dirLabel}
-        </span>
-        <button
-          type="button"
+        <Label className="text-xs text-muted-foreground flex-shrink-0">{dirLabel}</Label>
+        <div className="flex-1" />
+        <div
+          role="button"
+          tabIndex={0}
           onClick={addField}
-          className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") addField(); }}
+          className="border-2 border-dashed rounded-lg px-4 py-1.5 cursor-pointer transition-all duration-200 flex items-center justify-center gap-1.5 hover:border-primary/50 hover:bg-muted/30 hover:shadow-sm min-h-[34px]"
         >
-          <Plus className="w-3 h-3" />
-          {t("workflow.addField", "Add")}
-        </button>
+          <Plus className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground">
+            {t("workflow.addField", "Add")}
+          </span>
+        </div>
       </div>
       {fields.length === 0 && (
-        <div className="text-[10px] text-muted-foreground/60 text-center py-2">
+        <p className="text-xs text-muted-foreground text-center py-2">
           {t(
             "workflow.noFieldsHint",
             "No fields defined. Click Add to create one.",
           )}
-        </div>
+        </p>
       )}
       {fields.map((field, idx) => (
         <div key={idx} className="flex items-center gap-1.5">
-          <input
+          <Input
             type="text"
             value={field.key}
             onChange={(e) =>
               updateField(idx, { key: e.target.value.replace(/\s/g, "_") })
             }
             placeholder="field name"
-            className="flex-1 min-w-0 px-2 py-1 rounded border border-border bg-background text-[11px] focus:outline-none focus:ring-1 focus:ring-primary/50"
+            className="flex-1 min-w-0 h-8 text-xs"
           />
-          <select
+          <Select
             value={field.type}
-            onChange={(e) =>
-              updateField(idx, { type: e.target.value as PortDataType })
+            onValueChange={(v) =>
+              updateField(idx, { type: v as PortDataType })
             }
-            className="w-16 px-1 py-1 rounded border border-border bg-background text-[11px] focus:outline-none focus:ring-1 focus:ring-primary/50"
           >
-            {(direction === "input" ? RESPONSE_TYPE_OPTIONS : TYPE_OPTIONS).map(
-              (opt) => (
-                <option key={opt.value} value={opt.value}>
+            <SelectTrigger className="w-[80px] h-8 text-xs flex-shrink-0">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {options.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
                   {opt.label}
-                </option>
-              ),
-            )}
-          </select>
-          <button
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {renderHandle && <div className="w-2" />}
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={() => removeField(idx)}
-            className="p-1 rounded text-muted-foreground/40 hover:text-red-400 hover:bg-red-500/10 transition-colors flex-shrink-0"
+            className="h-8 w-8 flex-shrink-0 text-muted-foreground hover:text-destructive"
           >
-            <Trash2 className="w-3 h-3" />
-          </button>
+            <Trash2 className="w-3.5 h-3.5" />
+          </Button>
           {renderHandle && renderHandle(field.key)}
         </div>
       ))}

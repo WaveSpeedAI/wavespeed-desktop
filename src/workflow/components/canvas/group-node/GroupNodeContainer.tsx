@@ -44,6 +44,7 @@ import {
 } from "@/components/ui/tooltip";
 import { ChevronDown, ChevronUp, Pencil, FolderInput } from "lucide-react";
 import { ImportWorkflowDialog } from "../ImportWorkflowDialog";
+import { Button } from "@/components/ui/button";
 
 /* ── constants ─────────────────────────────────────────────────────── */
 
@@ -71,12 +72,20 @@ export interface IteratorNodeData {
 
 /* ── Capsule handle style helpers ──────────────────────────────────── */
 
-const dotStyle = (connected: boolean): React.CSSProperties => ({
+const dotStyle = (
+  connected: boolean,
+  side: "input" | "output" = "input",
+): React.CSSProperties => ({
   width: HANDLE_DOT,
   height: HANDLE_DOT,
   borderRadius: "50%",
-  border: "2px solid hsl(var(--primary))",
-  background: connected ? "hsl(var(--primary))" : "hsl(var(--card))",
+  border: "2px solid hsl(188 95% 43%)",
+  background:
+    side === "output"
+      ? "hsl(188 95% 43%)"
+      : connected
+        ? "hsl(188 95% 43%)"
+        : "hsl(var(--card))",
   minWidth: HANDLE_DOT,
   minHeight: HANDLE_DOT,
   position: "relative" as const,
@@ -703,30 +712,30 @@ function IteratorNodeContainerComponent({
 
             {/* Action buttons */}
             <div className="flex gap-1">
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
                   useUIStore.getState().enterGroupEdit(id);
                 }}
-                className="nodrag nopan flex-1 flex items-center justify-center gap-1 py-1 rounded-md text-[10px] font-medium
-                  bg-cyan-500/10 text-cyan-400 border border-cyan-500/20
-                  hover:bg-cyan-500/20 hover:border-cyan-500/40 transition-all cursor-pointer"
+                className="nodrag nopan flex-1 h-7 text-[10px] gap-1 bg-cyan-500/10 text-cyan-400 border-cyan-500/20 hover:bg-cyan-500/20 hover:border-cyan-500/40"
               >
                 <Pencil className="w-2.5 h-2.5" />
                 {t("workflow.editSubgraph", "Edit Subgraph")}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowImportDialog(true);
                 }}
-                className="nodrag nopan flex-1 flex items-center justify-center gap-1 py-1 rounded-md text-[10px] font-medium
-                  bg-muted/40 text-muted-foreground border border-border/50
-                  hover:bg-muted/60 hover:text-foreground hover:border-border transition-all cursor-pointer"
+                className="nodrag nopan flex-1 h-7 text-[10px] gap-1"
               >
                 <FolderInput className="w-2.5 h-2.5" />
                 {t("workflow.importWorkflow", "Import Workflow")}
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -896,7 +905,7 @@ function IteratorNodeContainerComponent({
                 position={Position.Right}
                 id={extHandleId}
                 style={{
-                  ...dotStyle(extConnected),
+                  ...dotStyle(extConnected, "output"),
                   position: "absolute",
                   top: top + CAPSULE_HEIGHT / 2,
                   left: extHandleLeft,
@@ -915,9 +924,8 @@ function IteratorNodeContainerComponent({
               type="button"
               className="nodrag nopan absolute z-40 flex items-center justify-center w-6 h-6 rounded-full shadow-lg backdrop-blur-sm bg-cyan-500 text-white hover:bg-cyan-600 hover:scale-110 transition-all duration-150"
               style={{
-                top: TITLE_BAR_HEIGHT / 2,
+                top: 15,
                 right: -12,
-                transform: "translateY(-50%)",
               }}
               onClick={(e) => {
                 e.stopPropagation();

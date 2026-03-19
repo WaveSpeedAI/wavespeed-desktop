@@ -29,6 +29,8 @@ import { ModelSelector } from "@/components/playground/ModelSelector";
 import type { FormFieldConfig } from "@/lib/schemaToForm";
 import type { Model } from "@/types/model";
 import { workflowClient } from "@/api/client";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 import {
   type CustomNodeData,
@@ -530,14 +532,14 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[11px] text-muted-foreground">
+              <Label className="text-xs text-muted-foreground">
                 {t("workflow.port", "Port")}
-              </span>
-              <input
+              </Label>
+              <Input
                 type="number"
                 value={Number(data.params.port ?? 3100)}
                 onChange={(e) => setParam("port", Number(e.target.value))}
-                className="w-20 px-2 py-1 rounded border border-border bg-background text-[11px] text-right focus:outline-none focus:ring-1 focus:ring-primary/50"
+                className="w-20 h-8 text-xs text-right"
               />
             </div>
           </div>
@@ -1427,11 +1429,11 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
 
       {/* Results — at bottom of card, collapsed by default */}
       {data.nodeType !== "annotation" && (
-        <div className="nodrag nowheel min-h-0 flex flex-col flex-1 mt-2 border-t border-border/50 pt-2 select-text">
+        <div className="nodrag nowheel min-h-0 flex flex-col flex-1 mt-2 border-t border-border/50 py-2 select-text">
           <button
             type="button"
             onClick={() => setResultsExpanded((prev) => !prev)}
-            className="flex items-center gap-1.5 w-full text-left py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-1.5 w-full text-left text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
             {resultsExpanded ? (
               <ChevronDown className="w-3.5 h-3.5 shrink-0" />

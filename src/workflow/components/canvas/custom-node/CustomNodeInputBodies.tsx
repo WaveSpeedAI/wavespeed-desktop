@@ -10,6 +10,16 @@ import { workflowClient } from "@/api/client";
 import { WorkflowPromptOptimizer } from "../WorkflowPromptOptimizer";
 import { CompInput } from "../composition-input";
 import { FormField } from "@/components/playground/FormField";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 /* ══════════════════════════════════════════════════════════════════════
    MediaUploadBody
@@ -856,19 +866,16 @@ export function DirectoryImportBody({
     if (dirPath) scanDir(dirPath, mediaType);
   }, [mediaType]);
 
-  const inputCls =
-    "rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--background))] px-2 py-1.5 text-xs text-[hsl(var(--foreground))] focus:outline-none focus:ring-1 focus:ring-blue-500/50";
-
   return (
     <div className="nodrag nopan" onClick={(e) => e.stopPropagation()}>
       {/* Row 1: Directory */}
       <div className="min-h-[32px] px-3 py-1">
         <div className="flex items-center justify-between gap-2 w-full">
-          <span className="text-xs text-[hsl(var(--muted-foreground))] flex-shrink-0">
+          <Label className="text-xs text-muted-foreground flex-shrink-0">
             {t("workflow.directoryImport.directory", "Directory")}
-          </span>
+          </Label>
           <div className="flex items-center gap-1.5 flex-1 min-w-0 max-w-[200px]">
-            <CompInput
+            <Input
               type="text"
               value={dirPath}
               onChange={(e) => {
@@ -882,17 +889,19 @@ export function DirectoryImportBody({
                 "workflow.directoryImport.enterPath",
                 "Path or browse...",
               )}
-              className={`${inputCls} flex-1 min-w-0`}
+              className="flex-1 min-w-0 h-8 text-xs"
               onClick={(e) => e.stopPropagation()}
             />
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="icon"
               onClick={handlePickDirectory}
               title={t("workflow.directoryImport.browse", "Browse")}
-              className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-md border border-[hsl(var(--border))] bg-blue-500/15 text-blue-400 hover:bg-blue-500/25 transition-colors"
+              className="h-8 w-8 flex-shrink-0"
             >
               📂
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -900,33 +909,36 @@ export function DirectoryImportBody({
       {/* Row 2: File Type */}
       <div className="min-h-[32px] px-3 py-1">
         <div className="flex items-center justify-between gap-2 w-full">
-          <span className="text-xs text-[hsl(var(--muted-foreground))] flex-shrink-0">
+          <Label className="text-xs text-muted-foreground flex-shrink-0">
             {t("workflow.directoryImport.fileType", "File Type")}
-          </span>
-          <select
+          </Label>
+          <Select
             value={mediaType}
-            onChange={(e) => onParamChange({ mediaType: e.target.value })}
-            className={`nodrag ${inputCls} max-w-[200px]`}
-            onClick={(e) => e.stopPropagation()}
+            onValueChange={(v) => onParamChange({ mediaType: v })}
           >
-            {MEDIA_TYPE_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label} ({opt.exts})
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="nodrag max-w-[200px] h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {MEDIA_TYPE_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label} ({opt.exts})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
       {/* Scan status row */}
       <div className="min-h-[32px] px-3 py-1">
         <div className="flex items-center justify-between gap-2 w-full">
-          <span className="text-xs text-[hsl(var(--muted-foreground))] flex-shrink-0">
+          <Label className="text-xs text-muted-foreground flex-shrink-0">
             {t("workflow.directoryImport.status", "Status")}
-          </span>
-          <span className="text-xs text-[hsl(var(--foreground))]">
+          </Label>
+          <span className="text-sm text-foreground">
             {scanning ? (
-              <span className="flex items-center gap-1.5 text-[hsl(var(--muted-foreground))] animate-pulse">
+              <span className="flex items-center gap-1.5 text-muted-foreground animate-pulse">
                 <svg
                   className="animate-spin w-3 h-3"
                   viewBox="0 0 24 24"
@@ -950,11 +962,11 @@ export function DirectoryImportBody({
                 {t("workflow.directoryImport.filesFound", "file(s) matched")}
               </span>
             ) : dirPath ? (
-              <span className="text-[hsl(var(--muted-foreground))]">
+              <span className="text-muted-foreground">
                 {t("workflow.directoryImport.noFiles", "No matching files")}
               </span>
             ) : (
-              <span className="text-[hsl(var(--muted-foreground))]">—</span>
+              <span className="text-muted-foreground">—</span>
             )}
           </span>
         </div>

@@ -1098,7 +1098,12 @@ function CustomNodeComponent({
                   ? "bg-cyan-500 hover:bg-cyan-600"
                   : "bg-blue-500 hover:bg-blue-600"
               }`}
-              style={{ top: "35%", right: -12 }}
+              style={
+                data.nodeType === "trigger/http" ||
+                data.nodeType === "control/iterator"
+                  ? { top: 15, right: -12 }
+                  : { top: "50%", right: -12, transform: "translateY(-50%)" }
+              }
               onClick={(e) => {
                 e.stopPropagation();
                 const rect = (

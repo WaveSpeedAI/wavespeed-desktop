@@ -914,40 +914,50 @@ export function DefParamControl({
             className={`${inputCls} flex-1`}
             onClick={(e) => e.stopPropagation()}
           />
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handlePickDirectory();
-            }}
-            title={t("workflow.selectDirectory", "Select directory")}
-            className={`flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-md border border-[hsl(var(--border))] transition-colors ${
-              selectingDir
-                ? "bg-blue-500/25 animate-pulse text-blue-300"
-                : "bg-blue-500/15 text-blue-400 hover:bg-blue-500/25"
-            }`}
-          >
-            📂
-          </button>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleOpenDirectory();
-            }}
-            title={
-              textVal.trim()
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePickDirectory();
+                }}
+                className={`flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-md border border-[hsl(var(--border))] transition-colors ${
+                  selectingDir
+                    ? "bg-blue-500/25 animate-pulse text-blue-300"
+                    : "bg-blue-500/15 text-blue-400 hover:bg-blue-500/25"
+                }`}
+              >
+                📂
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              {t("workflow.selectDirectory", "Select directory")}
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOpenDirectory();
+                }}
+                className={`flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-md border border-[hsl(var(--border))] transition-colors ${
+                  openingDir
+                    ? "bg-blue-500/25 animate-pulse text-blue-300"
+                    : "bg-blue-500/15 text-blue-400 hover:bg-blue-500/25"
+                }`}
+              >
+                ↗
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              {textVal.trim()
                 ? t("workflow.openFolder", "Open folder")
-                : t("workflow.openWorkflowFolder", "Open workflow folder")
-            }
-            className={`flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-md border border-[hsl(var(--border))] transition-colors ${
-              openingDir
-                ? "bg-blue-500/25 animate-pulse text-blue-300"
-                : "bg-blue-500/15 text-blue-400 hover:bg-blue-500/25"
-            }`}
-          >
-            ↗
-          </button>
+                : t("workflow.openWorkflowFolder", "Open workflow folder")}
+            </TooltipContent>
+          </Tooltip>
         </div>
         <div
           className="text-[10px] text-muted-foreground truncate"

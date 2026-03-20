@@ -1202,6 +1202,14 @@
       "control": "Control"
     },
     "nodeDefs": {
+      "trigger/directory": {
+        "label": "Disparador de directorio",
+        "hint": "Escanear carpeta local — el flujo se ejecuta una vez por archivo"
+      },
+      "trigger/http": {
+        "label": "Disparador HTTP",
+        "hint": "Exponer este flujo como HTTP API — definir campos de entrada"
+      },
       "ai-task/run": {
         "label": "WaveSpeed API",
         "hint": "Ejecuta cualquier modelo de IA — imagen, vídeo, audio y más",
@@ -1288,6 +1296,10 @@
           }
         }
       },
+      "output/http-response": {
+        "label": "Respuesta HTTP",
+        "hint": "Define lo que este flujo devuelve a los llamadores HTTP"
+      },
       "free-tool/image-enhancer": {
         "label": "Mejorador de imagen",
         "hint": "Ampliar y mejorar imágenes (2×–4×) gratis"
@@ -1358,8 +1370,8 @@
         "hint": "Elegir un elemento de un array por índice"
       },
       "control/iterator": {
-        "label": "Iterador",
-        "hint": "Iterar sobre entradas — ejecutar nodos hijos N veces o una vez por elemento del array"
+        "label": "Grupo",
+        "hint": "Agrupar nodos en un sub-flujo para organización"
       }
     },
     "modelSelector": {
@@ -1473,6 +1485,18 @@
       "concat": {
         "title": "Nodo Concat — Combinar múltiples salidas",
         "desc": "¿Necesitas pasar múltiples imágenes a una entrada \"images\"? Usa el nodo Concat:\n\n1. Conecta la salida image de cada nodo anterior a value1, value2, value3, etc. de Concat\n2. Conecta la salida output de Concat (ahora un array) al parámetro images del nodo siguiente\n\nEjemplo:\n[Upload A] → image → Concat → output (array) → [Tarea AI].images\n[Upload B] → image ↗\n\nFunciona para cualquier tipo de salida — imágenes, videos, texto — siempre que necesites combinar múltiples valores individuales en una entrada de array."
+      },
+      "directoryTrigger": {
+        "title": "Disparador de directorio — Procesamiento por lotes de archivos locales",
+        "desc": "Escanea automáticamente una carpeta local y ejecuta el flujo una vez por archivo:\n\n• Elige un directorio y tipo de archivo (Imágenes, Videos, Audio o Todos)\n• El disparador encuentra todos los archivos coincidentes y los envía uno a uno al pipeline\n• Ideal para procesamiento por lotes — p.ej. mejorar cada foto de una carpeta, convertir todos los videos, etc.\n\nCada ejecución recibe un solo archivo, los nodos posteriores funcionan igual que con una subida manual."
+      },
+      "httpTrigger": {
+        "title": "Disparador HTTP — Ejecutar flujos vía API",
+        "desc": "Convierte cualquier flujo en un endpoint HTTP API:\n\n• Define campos de salida (p.ej. image, prompt) — cada uno se convierte en un puerto de salida en el lienzo\n• Cuando llega una solicitud POST, los campos del JSON body se extraen y pasan a los nodos posteriores\n• Combínalo con el nodo HTTP Response para devolver resultados al llamante\n\nEsto te permite integrar flujos en apps externas, scripts o herramientas de automatización enviando una solicitud HTTP."
+      },
+      "group": {
+        "title": "Nodo Grupo — Organizar sub-flujos",
+        "desc": "Agrupa múltiples nodos en un contenedor plegable:\n\n• Arrastra nodos a un Grupo para encapsular un sub-flujo\n• Expón entradas/salidas seleccionadas en la superficie del Grupo para que nodos externos se conecten\n• Haz clic en \"Editar subgrafo\" para entrar y editar los nodos internos\n• Importa un flujo existente a un Grupo para reutilizarlo como bloque\n\nLos Grupos mantienen los flujos complejos limpios y modulares — piensa en ellos como funciones que puedes conectar entre sí."
       },
       "canvas": {
         "title": "Interacciones del lienzo",

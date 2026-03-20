@@ -1203,6 +1203,14 @@
       "control": "Steuerung"
     },
     "nodeDefs": {
+      "trigger/directory": {
+        "label": "Verzeichnis-Trigger",
+        "hint": "Lokalen Ordner scannen — Workflow wird einmal pro Datei ausgeführt"
+      },
+      "trigger/http": {
+        "label": "HTTP-Trigger",
+        "hint": "Workflow als HTTP-API bereitstellen — Eingabefelder definieren"
+      },
       "ai-task/run": {
         "label": "WaveSpeed API",
         "hint": "Beliebiges KI-Modell ausführen — Bild, Video, Audio und mehr",
@@ -1289,6 +1297,10 @@
           }
         }
       },
+      "output/http-response": {
+        "label": "HTTP-Antwort",
+        "hint": "Definieren Sie, was dieser Workflow an HTTP-Aufrufer zurückgibt"
+      },
       "free-tool/image-enhancer": {
         "label": "Bildverbesserung",
         "hint": "Bilder kostenlos hochskalieren und schärfen (2×–4×)"
@@ -1359,8 +1371,8 @@
         "hint": "Ein Element aus einem Array per Index auswählen"
       },
       "control/iterator": {
-        "label": "Iterator",
-        "hint": "Eingaben durchlaufen — Kindknoten N-mal oder einmal pro Array-Element ausführen"
+        "label": "Gruppe",
+        "hint": "Knoten in einem Sub-Workflow gruppieren"
       }
     },
     "modelSelector": {
@@ -1444,6 +1456,18 @@
       "concat": {
         "title": "Concat-Knoten — Mehrere Ausgaben zusammenführen",
         "desc": "Müssen Sie mehrere Bilder in einen \"images\"-Eingang übergeben? Verwenden Sie den Concat-Knoten:\n\n1. Verbinden Sie die image-Ausgabe jedes vorgelagerten Knotens mit Concat's value1, value2, value3 usw.\n2. Verbinden Sie Concat's output (jetzt ein Array) mit dem images-Parameter des nachgelagerten Knotens.\n\nBeispiel:\n[Upload A] → image → Concat → output (Array) → [AI-Aufgabe].images\n[Upload B] → image ↗\n\nDies funktioniert für jeden Ausgabetyp — Bilder, Videos, Text — wann immer Sie mehrere Einzelwerte zu einem Array-Eingang kombinieren müssen."
+      },
+      "directoryTrigger": {
+        "title": "Verzeichnis-Trigger — Lokale Dateien stapelweise verarbeiten",
+        "desc": "Automatisch einen lokalen Ordner scannen und den Workflow einmal pro Datei ausführen:\n\n• Wählen Sie ein Verzeichnis und einen Dateityp (Bilder, Videos, Audio oder Alle)\n• Der Trigger findet alle passenden Dateien und leitet sie einzeln in die Pipeline\n• Ideal für Stapelverarbeitung — z.B. jedes Foto in einem Ordner verbessern, alle Videos konvertieren usw.\n\nJede Ausführung erhält eine einzelne Datei, nachgelagerte Knoten funktionieren genau wie bei manuellem Upload."
+      },
+      "httpTrigger": {
+        "title": "HTTP-Trigger — Workflows per API ausführen",
+        "desc": "Verwandeln Sie jeden Workflow in einen HTTP-API-Endpunkt:\n\n• Definieren Sie Ausgabefelder (z.B. image, prompt) — jedes wird zu einem Ausgangsport auf der Leinwand\n• Bei eingehenden POST-Anfragen werden die JSON-Body-Felder extrahiert und an nachgelagerte Knoten weitergeleitet\n• Kombinieren Sie mit dem HTTP-Response-Knoten, um Ergebnisse zurückzugeben\n\nSo können Sie Workflows in externe Apps, Skripte oder Automatisierungstools integrieren."
+      },
+      "group": {
+        "title": "Gruppen-Knoten — Sub-Workflows organisieren",
+        "desc": "Fassen Sie mehrere Knoten in einem zusammenklappbaren Container zusammen:\n\n• Ziehen Sie Knoten in eine Gruppe, um einen Sub-Workflow zu kapseln\n• Legen Sie ausgewählte Ein-/Ausgänge auf der Gruppenoberfläche frei, damit externe Knoten sich verbinden können\n• Klicken Sie auf \"Subgraph bearbeiten\", um die internen Knoten zu bearbeiten\n• Importieren Sie einen bestehenden Workflow in eine Gruppe zur Wiederverwendung\n\nGruppen halten komplexe Workflows übersichtlich und modular — denken Sie an sie wie Funktionen, die Sie miteinander verbinden können."
       },
       "canvas": {
         "title": "Leinwand-Interaktionen",

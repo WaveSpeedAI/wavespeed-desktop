@@ -127,13 +127,15 @@ function CanvasZoomControls() {
 
   // Check if any non-annotation node is currently expanded (not collapsed)
   const hasExpandedNodes = nodes.some(
-    (n) => n.type !== "annotation" && !n.data?.params?.__nodeCollapsed,
+    (n) => n.type !== "annotation" && n.data?.nodeType !== "control/iterator" && !n.data?.params?.__nodeCollapsed,
   );
 
   const toggleAllCollapsed = useCallback(() => {
     const shouldCollapse = hasExpandedNodes;
     for (const n of nodes) {
       if (n.type === "annotation") continue;
+      // Group nodes are not collapsible — skip them
+      if (n.data?.nodeType === "control/iterator") continue;
       const current = Boolean(n.data?.params?.__nodeCollapsed);
       if (current !== shouldCollapse) {
         updateNodeParams(n.id, {

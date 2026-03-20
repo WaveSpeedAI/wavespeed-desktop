@@ -1202,6 +1202,14 @@
       "control": "Kontrol"
     },
     "nodeDefs": {
+      "trigger/directory": {
+        "label": "Pemicu Direktori",
+        "hint": "Pindai folder lokal — workflow berjalan sekali per file"
+      },
+      "trigger/http": {
+        "label": "Pemicu HTTP",
+        "hint": "Ekspos workflow ini sebagai HTTP API — tentukan field input"
+      },
       "ai-task/run": {
         "label": "WaveSpeed API",
         "hint": "Jalankan model AI apa pun — gambar, video, audio, dan lainnya",
@@ -1288,6 +1296,10 @@
           }
         }
       },
+      "output/http-response": {
+        "label": "Respons HTTP",
+        "hint": "Tentukan apa yang dikembalikan workflow ini kepada pemanggil HTTP"
+      },
       "free-tool/image-enhancer": {
         "label": "Peningkat gambar",
         "hint": "Perbesar dan pertajam gambar (2×–4×) secara gratis"
@@ -1358,8 +1370,8 @@
         "hint": "Pilih satu item dari array berdasarkan indeks"
       },
       "control/iterator": {
-        "label": "Iterator",
-        "hint": "Ulangi input — jalankan node anak N kali atau sekali per item array"
+        "label": "Grup",
+        "hint": "Kelompokkan node ke dalam sub-workflow untuk organisasi"
       }
     },
     "modelSelector": {
@@ -1473,6 +1485,18 @@
       "concat": {
         "title": "Node Concat — Gabungkan Beberapa Output",
         "desc": "Perlu memasukkan beberapa gambar ke input \"images\"? Gunakan node Concat:\n\n1. Hubungkan output image dari setiap node hulu ke value1, value2, value3, dll. milik Concat\n2. Hubungkan output Concat (sekarang berupa array) ke parameter images node hilir\n\nContoh:\n[Upload A] → image → Concat → output (array) → [AI Task].images\n[Upload B] → image ↗\n\nIni berlaku untuk semua jenis output — gambar, video, teks — kapan pun Anda perlu menggabungkan beberapa nilai tunggal menjadi satu input array."
+      },
+      "directoryTrigger": {
+        "title": "Pemicu Direktori — Pemrosesan Batch File Lokal",
+        "desc": "Pindai folder lokal secara otomatis dan jalankan workflow sekali per file:\n\n• Pilih direktori dan jenis file (Gambar, Video, Audio, atau Semua)\n• Pemicu menemukan semua file yang cocok dan mengirimnya satu per satu ke pipeline\n• Cocok untuk pemrosesan batch — misal meningkatkan setiap foto di folder, mengonversi semua video, dll.\n\nSetiap eksekusi menerima satu file, node hilir bekerja persis seperti upload manual."
+      },
+      "httpTrigger": {
+        "title": "Pemicu HTTP — Jalankan Workflow via API",
+        "desc": "Ubah workflow apa pun menjadi endpoint HTTP API:\n\n• Tentukan field output (misal image, prompt) — masing-masing menjadi port output di kanvas\n• Saat permintaan POST masuk, field JSON body diekstrak dan diteruskan ke node hilir\n• Pasangkan dengan node HTTP Response untuk mengembalikan hasil ke pemanggil\n\nIni memungkinkan Anda mengintegrasikan workflow ke aplikasi eksternal, skrip, atau alat otomasi dengan mengirim permintaan HTTP."
+      },
+      "group": {
+        "title": "Node Grup — Atur Sub-Workflow",
+        "desc": "Kelompokkan beberapa node ke dalam kontainer yang dapat dilipat:\n\n• Seret node ke dalam Grup untuk mengenkapsulasi sub-workflow\n• Ekspos input/output terpilih di permukaan Grup agar node eksternal dapat terhubung\n• Klik \"Edit Subgraph\" untuk masuk dan mengedit node internal\n• Impor workflow yang ada ke dalam Grup untuk digunakan kembali sebagai blok bangunan\n\nGrup menjaga workflow kompleks tetap rapi dan modular — anggap saja seperti fungsi yang bisa Anda hubungkan satu sama lain."
       },
       "canvas": {
         "title": "Interaksi Kanvas",

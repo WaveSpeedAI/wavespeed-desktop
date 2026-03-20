@@ -1269,7 +1269,7 @@
     },
     "nodeDefs": {
       "trigger/directory": {
-        "label": "目录触发",
+        "label": "目录触发器",
         "hint": "扫描本地文件夹，每个文件执行一次工作流"
       },
       "trigger/http": {
@@ -1525,6 +1525,18 @@
       "concat": {
         "title": "Concat 节点 — 合并多个输出",
         "desc": "需要将多张图片传入「images」参数？使用 Concat 节点：\n\n1. 将每个上游节点的 image 输出分别连接到 Concat 的 value1、value2、value3 等输入口\n2. 将 Concat 的 output（此时为数组）连接到下游节点的 images 参数\n\n示例：\n[上传 A] → image → Concat → output（数组）→ [AI 任务].images\n[上传 B] → image ↗\n\n适用于任何类型的输出——图片、视频、文本——只要你需要将多个单值合并为一个数组输入。"
+      },
+      "directoryTrigger": {
+        "title": "目录触发器 — 批量处理本地文件",
+        "desc": "自动扫描本地文件夹，对每个文件执行一次工作流：\n\n• 选择目录和文件类型（图片、视频、音频或全部）\n• 触发器会找到所有匹配的文件，逐个送入下游流水线\n• 非常适合批量处理——例如增强文件夹中的每张照片、转换所有视频等\n\n每次执行只接收一个文件，下游节点的工作方式与手动上传完全一致。"
+      },
+      "httpTrigger": {
+        "title": "HTTP 触发器 — 通过 API 运行工作流",
+        "desc": "将任意工作流变成 HTTP API 端点：\n\n• 定义输出字段（如 image、prompt）——每个字段会成为画布上的一个输出端口\n• 当 POST 请求到达时，JSON body 中的字段会被提取并传递给下游节点\n• 搭配 HTTP Response 节点可将结果返回给调用方\n\n这样你就可以通过发送 HTTP 请求，将工作流集成到外部应用、脚本或自动化工具中。"
+      },
+      "group": {
+        "title": "Group 节点 — 组织子工作流",
+        "desc": "将多个节点归入一个可折叠的容器：\n\n• 将节点拖入 Group 以封装子工作流\n• 在 Group 表面暴露选定的输入/输出，供外部节点连接\n• 点击「编辑子图」进入 Group 内部编辑节点\n• 可导入已有工作流到 Group 中作为构建模块复用\n\nGroup 让复杂工作流保持整洁和模块化——可以把它们看作可以互相连接的函数。"
       },
       "canvas": {
         "title": "画布操作",

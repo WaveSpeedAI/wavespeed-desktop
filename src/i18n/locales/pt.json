@@ -1202,6 +1202,14 @@
       "control": "Controlo"
     },
     "nodeDefs": {
+      "trigger/directory": {
+        "label": "Gatilho de Diretório",
+        "hint": "Escanear pasta local — workflow executa uma vez por arquivo"
+      },
+      "trigger/http": {
+        "label": "Gatilho HTTP",
+        "hint": "Expor este workflow como HTTP API — definir campos de entrada"
+      },
       "ai-task/run": {
         "label": "WaveSpeed API",
         "hint": "Executar qualquer modelo de IA — imagem, vídeo, áudio e mais",
@@ -1288,6 +1296,10 @@
           }
         }
       },
+      "output/http-response": {
+        "label": "Resposta HTTP",
+        "hint": "Defina o que este fluxo de trabalho retorna aos chamadores HTTP"
+      },
       "free-tool/image-enhancer": {
         "label": "Melhorador de imagem",
         "hint": "Ampliar e melhorar imagens (2×–4×) gratuitamente"
@@ -1358,8 +1370,8 @@
         "hint": "Escolher um item de um array por índice"
       },
       "control/iterator": {
-        "label": "Iterador",
-        "hint": "Iterar sobre entradas — executar nós filhos N vezes ou uma vez por item do array"
+        "label": "Grupo",
+        "hint": "Agrupar nós em um sub-workflow para organização"
       }
     },
     "modelSelector": {
@@ -1473,6 +1485,18 @@
       "concat": {
         "title": "Nó Concat — Mesclar múltiplas saídas",
         "desc": "Precisa passar múltiplas imagens para uma entrada \"images\"? Use o nó Concat:\n\n1. Conecte a saída image de cada nó anterior ao value1, value2, value3, etc. do Concat\n2. Conecte a saída output do Concat (agora um array) ao parâmetro images do nó seguinte\n\nExemplo:\n[Upload A] → image → Concat → output (array) → [Tarefa AI].images\n[Upload B] → image ↗\n\nFunciona para qualquer tipo de saída — imagens, vídeos, texto — sempre que precisar combinar múltiplos valores individuais em uma entrada de array."
+      },
+      "directoryTrigger": {
+        "title": "Gatilho de Diretório — Processamento em lote de arquivos locais",
+        "desc": "Escaneie automaticamente uma pasta local e execute o workflow uma vez por arquivo:\n\n• Escolha um diretório e tipo de arquivo (Imagens, Vídeos, Áudio ou Todos)\n• O gatilho encontra todos os arquivos correspondentes e os envia um a um para o pipeline\n• Ótimo para processamento em lote — ex. melhorar cada foto de uma pasta, converter todos os vídeos, etc.\n\nCada execução recebe um único arquivo, os nós seguintes funcionam exatamente como com upload manual."
+      },
+      "httpTrigger": {
+        "title": "Gatilho HTTP — Executar workflows via API",
+        "desc": "Transforme qualquer workflow em um endpoint HTTP API:\n\n• Defina campos de saída (ex. image, prompt) — cada um se torna uma porta de saída no canvas\n• Quando uma requisição POST chega, os campos do JSON body são extraídos e passados aos nós seguintes\n• Combine com o nó HTTP Response para retornar resultados ao chamador\n\nIsso permite integrar workflows em apps externos, scripts ou ferramentas de automação enviando uma requisição HTTP."
+      },
+      "group": {
+        "title": "Nó Grupo — Organizar sub-workflows",
+        "desc": "Agrupe múltiplos nós em um contêiner recolhível:\n\n• Arraste nós para um Grupo para encapsular um sub-workflow\n• Exponha entradas/saídas selecionadas na superfície do Grupo para que nós externos possam se conectar\n• Clique em \"Editar subgrafo\" para entrar e editar os nós internos\n• Importe um workflow existente para um Grupo para reutilizá-lo como bloco\n\nGrupos mantêm workflows complexos limpos e modulares — pense neles como funções que você pode conectar entre si."
       },
       "canvas": {
         "title": "Interacoes do canvas",

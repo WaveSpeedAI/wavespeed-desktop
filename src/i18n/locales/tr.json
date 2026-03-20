@@ -1202,6 +1202,14 @@
       "control": "Kontrol"
     },
     "nodeDefs": {
+      "trigger/directory": {
+        "label": "Dizin Tetikleyici",
+        "hint": "Yerel klasörü tara — iş akışı her dosya için bir kez çalışır"
+      },
+      "trigger/http": {
+        "label": "HTTP Tetikleyici",
+        "hint": "Bu iş akışını HTTP API olarak aç — arayanların sağlayacağı giriş alanlarını tanımlayın"
+      },
       "ai-task/run": {
         "label": "WaveSpeed API",
         "hint": "Herhangi bir AI modelini çalıştırın — görsel, video, ses ve daha fazlası",
@@ -1288,6 +1296,10 @@
           }
         }
       },
+      "output/http-response": {
+        "label": "HTTP Yanıtı",
+        "hint": "Bu iş akışının HTTP arayanlarına ne döndüreceğini tanımlayın"
+      },
       "free-tool/image-enhancer": {
         "label": "Görsel geliştirici",
         "hint": "Görselleri ücretsiz olarak büyütün ve netleştirin (2×–4×)"
@@ -1358,8 +1370,8 @@
         "hint": "Bir diziden indekse göre bir öğe seçin"
       },
       "control/iterator": {
-        "label": "Yineleyici",
-        "hint": "Girdiler üzerinde döngü — alt düğümleri N kez veya dizi öğesi başına bir kez çalıştır"
+        "label": "Grup",
+        "hint": "Düğümleri organizasyon için bir alt iş akışında grupla"
       }
     },
     "modelSelector": {
@@ -1473,6 +1485,18 @@
       "concat": {
         "title": "Concat Dugumu — Birden Fazla Ciktiyi Birlestir",
         "desc": "Birden fazla gorseli \"images\" girisine aktarmaniz mi gerekiyor? Concat dugumunu kullanin:\n\n1. Her ust dugumun image ciktisini Concat'in value1, value2, value3 vb. girislerine baglayin\n2. Concat'in output ciktisini (artik bir dizi) alt dugumun images parametresine baglayin\n\nOrnek:\n[Yukleme A] → image → Concat → output (dizi) → [AI Gorevi].images\n[Yukleme B] → image ↗\n\nBu, herhangi bir cikti turu icin calisir — gorsel, video, metin — birden fazla tekil degeri tek bir dizi girisinde birlestirmeniz gerektiginde."
+      },
+      "directoryTrigger": {
+        "title": "Dizin Tetikleyicisi — Yerel Dosyalari Toplu Isleme",
+        "desc": "Yerel bir klasoru otomatik olarak tarayin ve her dosya icin is akisini bir kez calistirin:\n\n• Bir dizin ve dosya turu secin (Gorseller, Videolar, Ses veya Tumu)\n• Tetikleyici eslesen tum dosyalari bulur ve bunlari birer birer boru hattina gonderir\n• Toplu isleme icin idealdir — ornegin bir klasordeki her fotoyu iyilestirme, tum videolari donusturme vb.\n\nHer calistirma tek bir dosya alir, alt dugumler manuel yuklemeyle ayni sekilde calisir."
+      },
+      "httpTrigger": {
+        "title": "HTTP Tetikleyicisi — API ile Is Akisi Calistirma",
+        "desc": "Herhangi bir is akisini HTTP API uç noktasina donusturun:\n\n• Cikti alanlari tanimlayin (ornegin image, prompt) — her biri tuvalde bir cikti portu olur\n• POST istegi geldiginde, JSON body alanlari cikarilir ve alt dugumlere iletilir\n• Sonuclari arayana dondurmek icin HTTP Response dugumu ile eslestirin\n\nBu, HTTP istegi gondererek is akislarini harici uygulamalara, betiklere veya otomasyon araclarına entegre etmenizi saglar."
+      },
+      "group": {
+        "title": "Grup Dugumu — Alt Is Akislarini Duzenleme",
+        "desc": "Birden fazla dugumu katlanabilir bir kapsayicida gruplayin:\n\n• Dugumleri bir Gruba surukleyerek alt is akisini kapsulleyin\n• Dis dugumlerin baglanabilmesi icin secili giris/cikislari Grup yuzeyinde aciga cikarin\n• \"Alt grafi duzenle\" ye tiklayarak ic dugumleri duzenleyin\n• Mevcut bir is akisini yeniden kullanmak icin bir Gruba aktarin\n\nGruplar karmasik is akislarini temiz ve moduler tutar — birbirine baglayabileceginiz fonksiyonlar gibi dusunun."
       },
       "canvas": {
         "title": "Tuval Etkilesimleri",

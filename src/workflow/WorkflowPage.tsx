@@ -1859,7 +1859,7 @@ export function WorkflowPage() {
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
-                  {t("workflow.runCount", "Run count")}
+                  {t("workflow.runCount", "Run Count")}
                 </TooltipContent>
               </Tooltip>
             </div>

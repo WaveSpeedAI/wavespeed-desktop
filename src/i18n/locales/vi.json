@@ -1202,6 +1202,14 @@
       "control": "Điều khiển"
     },
     "nodeDefs": {
+      "trigger/directory": {
+        "label": "Kích hoạt thư mục",
+        "hint": "Quét thư mục cục bộ — quy trình chạy một lần cho mỗi tệp"
+      },
+      "trigger/http": {
+        "label": "Kích hoạt HTTP",
+        "hint": "Mở quy trình làm việc dưới dạng HTTP API — xác định các trường đầu vào mà người gọi cung cấp"
+      },
       "ai-task/run": {
         "label": "WaveSpeed API",
         "hint": "Chạy bất kỳ mô hình AI nào — hình ảnh, video, âm thanh và hơn thế",
@@ -1288,6 +1296,10 @@
           }
         }
       },
+      "output/http-response": {
+        "label": "Phản hồi HTTP",
+        "hint": "Xác định nội dung quy trình trả về cho người gọi HTTP"
+      },
       "free-tool/image-enhancer": {
         "label": "Tăng cường hình ảnh",
         "hint": "Phóng to và làm sắc nét hình ảnh (2×–4×) miễn phí"
@@ -1358,8 +1370,8 @@
         "hint": "Chọn một mục từ mảng theo chỉ mục"
       },
       "control/iterator": {
-        "label": "Bộ lặp",
-        "hint": "Lặp qua đầu vào — chạy nút con N lần hoặc một lần cho mỗi phần tử mảng"
+        "label": "Nhóm",
+        "hint": "Nhóm các node thành workflow con để tổ chức"
       }
     },
     "modelSelector": {
@@ -1473,6 +1485,18 @@
       "concat": {
         "title": "Node Concat — Gop Nhieu Dau Ra",
         "desc": "Can truyen nhieu hinh anh vao dau vao \"images\"? Su dung node Concat:\n\n1. Ket noi dau ra image cua moi node phia truoc voi value1, value2, value3, v.v. cua Concat\n2. Ket noi dau ra output cua Concat (bay gio la mang) voi tham so images cua node phia sau\n\nVi du:\n[Upload A] → image → Concat → output (mang) → [AI Task].images\n[Upload B] → image ↗\n\nDieu nay hoat dong voi bat ky loai dau ra nao — hinh anh, video, van ban — bat cu khi nao ban can gop nhieu gia tri don le thanh mot dau vao mang."
+      },
+      "directoryTrigger": {
+        "title": "Trigger Thu Muc — Xu Ly Hang Loat File Cuc Bo",
+        "desc": "Tu dong quet thu muc cuc bo va chay workflow mot lan cho moi file:\n\n• Chon thu muc va loai file (Hinh anh, Video, Am thanh hoac Tat ca)\n• Trigger tim tat ca file phu hop va gui tung file mot vao pipeline\n• Tuyet voi cho xu ly hang loat — vi du nang cap moi anh trong thu muc, chuyen doi tat ca video, v.v.\n\nMoi lan chay nhan mot file duy nhat, cac node phia sau hoat dong giong nhu upload thu cong."
+      },
+      "httpTrigger": {
+        "title": "Trigger HTTP — Chay Workflow qua API",
+        "desc": "Bien bat ky workflow nao thanh HTTP API endpoint:\n\n• Dinh nghia cac truong dau ra (vi du: image, prompt) — moi truong tro thanh mot cong dau ra tren canvas\n• Khi yeu cau POST den, cac truong JSON body duoc trich xuat va chuyen den cac node phia sau\n• Ket hop voi node HTTP Response de tra ket qua cho nguoi goi\n\nDieu nay cho phep ban tich hop workflow vao ung dung ben ngoai, script hoac cong cu tu dong hoa bang cach gui yeu cau HTTP."
+      },
+      "group": {
+        "title": "Node Nhom — To Chuc Workflow Con",
+        "desc": "Nhom nhieu node vao mot container co the gap lai:\n\n• Keo node vao Nhom de dong goi workflow con\n• Hien thi cac dau vao/dau ra duoc chon tren be mat Nhom de cac node ben ngoai co the ket noi\n• Nhan \"Chinh sua subgraph\" de vao va chinh sua cac node ben trong\n• Nhap workflow co san vao Nhom de tai su dung nhu khoi xay dung\n\nNhom giu cho workflow phuc tap gon gang va module — hay nghi chung nhu cac ham ma ban co the noi voi nhau."
       },
       "canvas": {
         "title": "Tuong tac Canvas",

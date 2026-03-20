@@ -1202,6 +1202,14 @@
       "control": "Kawalan"
     },
     "nodeDefs": {
+      "trigger/directory": {
+        "label": "Pencetus Direktori",
+        "hint": "Imbas folder tempatan — aliran kerja berjalan sekali bagi setiap fail"
+      },
+      "trigger/http": {
+        "label": "Pencetus HTTP",
+        "hint": "Dedahkan aliran kerja ini sebagai HTTP API — tentukan medan input"
+      },
       "ai-task/run": {
         "label": "WaveSpeed API",
         "hint": "Jalankan mana-mana model AI — imej, video, audio dan lain-lain",
@@ -1288,6 +1296,10 @@
           }
         }
       },
+      "output/http-response": {
+        "label": "Respons HTTP",
+        "hint": "Tentukan apa yang dikembalikan aliran kerja ini kepada pemanggil HTTP"
+      },
       "free-tool/image-enhancer": {
         "label": "Penambah imej",
         "hint": "Besarkan dan pertajam imej (2×–4×) secara percuma"
@@ -1358,8 +1370,8 @@
         "hint": "Pilih satu item dari tatasusunan mengikut indeks"
       },
       "control/iterator": {
-        "label": "Iterator",
-        "hint": "Gelung melalui input — jalankan nod anak N kali atau sekali bagi setiap item tatasusunan"
+        "label": "Kumpulan",
+        "hint": "Kumpulkan nod ke dalam sub-aliran kerja untuk penyusunan"
       }
     },
     "modelSelector": {
@@ -1473,6 +1485,18 @@
       "concat": {
         "title": "Nod Concat — Gabungkan Pelbagai Output",
         "desc": "Perlu menghantar beberapa imej ke input \"images\"? Gunakan nod Concat:\n\n1. Sambungkan output image dari setiap nod huluan ke value1, value2, value3, dll. Concat\n2. Sambungkan output Concat (kini satu tatasusunan) ke parameter images nod hiliran\n\nContoh:\n[Muat Naik A] → image → Concat → output (tatasusunan) → [Tugas AI].images\n[Muat Naik B] → image ↗\n\nIni berfungsi untuk semua jenis output — imej, video, teks — bila-bila masa anda perlu menggabungkan beberapa nilai tunggal menjadi satu input tatasusunan."
+      },
+      "directoryTrigger": {
+        "title": "Pencetus Direktori — Pemprosesan Kelompok Fail Tempatan",
+        "desc": "Imbas folder tempatan secara automatik dan jalankan aliran kerja sekali bagi setiap fail:\n\n• Pilih direktori dan jenis fail (Imej, Video, Audio, atau Semua)\n• Pencetus mencari semua fail yang sepadan dan menghantarnya satu demi satu ke saluran paip\n• Sesuai untuk pemprosesan kelompok — cth. tingkatkan setiap foto dalam folder, tukar semua video, dll.\n\nSetiap pelaksanaan menerima satu fail, nod hiliran berfungsi sama seperti muat naik manual."
+      },
+      "httpTrigger": {
+        "title": "Pencetus HTTP — Jalankan Aliran Kerja melalui API",
+        "desc": "Tukar mana-mana aliran kerja menjadi titik akhir HTTP API:\n\n• Tentukan medan output (cth. image, prompt) — setiap satu menjadi port output di kanvas\n• Apabila permintaan POST tiba, medan JSON body diekstrak dan dihantar ke nod hiliran\n• Pasangkan dengan nod HTTP Response untuk mengembalikan hasil kepada pemanggil\n\nIni membolehkan anda mengintegrasikan aliran kerja ke dalam aplikasi luaran, skrip, atau alat automasi dengan menghantar permintaan HTTP."
+      },
+      "group": {
+        "title": "Nod Kumpulan — Susun Sub-Aliran Kerja",
+        "desc": "Kumpulkan beberapa nod ke dalam bekas yang boleh dilipat:\n\n• Seret nod ke dalam Kumpulan untuk mengkapsulkan sub-aliran kerja\n• Dedahkan input/output terpilih di permukaan Kumpulan supaya nod luaran boleh bersambung\n• Klik \"Edit Subgraph\" untuk masuk dan mengedit nod dalaman\n• Import aliran kerja sedia ada ke dalam Kumpulan untuk digunakan semula sebagai blok binaan\n\nKumpulan memastikan aliran kerja kompleks kekal kemas dan modular — anggap ia seperti fungsi yang boleh anda sambungkan antara satu sama lain."
       },
       "canvas": {
         "title": "Interaksi Kanvas",

@@ -387,7 +387,7 @@ function IteratorNodeContainerComponent({
                     {t("workflow.runFromHere", "Run from here")}
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="top">{t("workflow.continueFrom", "Continue From")}</TooltipContent>
+                <TooltipContent side="top" className="bg-green-600 text-white">{t("workflow.continueFrom", "Continue From")}</TooltipContent>
               </Tooltip>
               <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
@@ -457,7 +457,7 @@ function IteratorNodeContainerComponent({
           <button
             type="button"
             onClick={toggleCollapsed}
-            className="nodrag nopan flex-shrink-0 p-1 rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+            className="nodrag nopan flex-shrink-0 p-1 rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors hidden"
             title={
               collapsed
                 ? t("workflow.expandNode", "Expand")
@@ -705,7 +705,7 @@ function IteratorNodeContainerComponent({
                   e.stopPropagation();
                   useUIStore.getState().enterGroupEdit(id);
                 }}
-                className="nodrag nopan flex-1 h-7 text-[10px] gap-1 bg-cyan-500 text-white border-cyan-500 hover:bg-cyan-600 hover:border-cyan-700 hover:text-white shadow-sm"
+                className="nodrag nopan flex-1 h-7 text-[10px] gap-1 bg-cyan-600 text-white border-cyan-600 hover:bg-cyan-700 hover:border-cyan-700 hover:text-white shadow-sm"
               >
                 <Pencil className="w-2.5 h-2.5" />
                 {t("workflow.editSubgraph", "Edit Subgraph")}

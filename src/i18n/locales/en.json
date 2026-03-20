@@ -1137,7 +1137,7 @@
     "runTarget": "Run target",
     "runTargetAll": "Run All Nodes",
     "runTargetSelected": "Run Selected Node",
-    "runCount": "Run count",
+    "runCount": "Run Count",
     "stop": "Stop",
     "running": "Running...",
     "cancelAll": "Cancel All",
@@ -1278,7 +1278,7 @@
     },
     "nodeDefs": {
       "trigger/directory": {
-        "label": "Directory",
+        "label": "Directory Trigger",
         "hint": "Scan a local folder — workflow runs once per file"
       },
       "trigger/http": {
@@ -1534,6 +1534,18 @@
       "concat": {
         "title": "Concat Node — Merge Multiple Outputs",
         "desc": "Need to pass multiple images into an \"images\" input? Use the Concat node:\n\n1. Connect each upstream node's image output to Concat's value1, value2, value3, etc.\n2. Connect Concat's output (now an array) to the downstream node's images parameter.\n\nExample:\n[Upload A] → image → Concat → output (array) → [AI Task].images\n[Upload B] → image ↗\n\nThis works for any type of output — images, videos, text — whenever you need to combine multiple single values into one array input."
+      },
+      "directoryTrigger": {
+        "title": "Directory Trigger — Batch Process Local Files",
+        "desc": "Automatically scan a local folder and run the workflow once per file:\n\n• Pick a directory and file type (Images, Videos, Audio, or All)\n• The trigger finds all matching files and feeds them one-by-one into the downstream pipeline\n• Great for batch processing — e.g. enhance every photo in a folder, convert all videos, etc.\n\nEach execution receives a single file, so downstream nodes work exactly the same as with a manual upload."
+      },
+      "httpTrigger": {
+        "title": "HTTP Trigger — Run Workflows via API",
+        "desc": "Turn any workflow into an HTTP API endpoint:\n\n• Define output fields (e.g. image, prompt) — each becomes an output port on the canvas\n• When a POST request arrives, the JSON body fields are extracted and passed to downstream nodes\n• Pair with the HTTP Response node to return results back to the caller\n\nThis lets you integrate workflows into external apps, scripts, or automation tools by simply sending an HTTP request."
+      },
+      "group": {
+        "title": "Group Node — Organize Sub-Workflows",
+        "desc": "Group multiple nodes into a single collapsible container:\n\n• Drag nodes into a Group to encapsulate a sub-workflow\n• Expose selected inputs/outputs on the Group's surface so external nodes can connect to them\n• Click \"Edit Subgraph\" to enter the Group and edit its internal nodes\n• Import an existing workflow into a Group to reuse it as a building block\n\nGroups keep complex workflows clean and modular — think of them as functions you can wire together."
       },
       "canvas": {
         "title": "Canvas Interactions",

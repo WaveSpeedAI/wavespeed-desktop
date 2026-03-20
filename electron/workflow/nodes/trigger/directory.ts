@@ -42,7 +42,7 @@ MEDIA_EXTENSIONS.all = [
 export const directoryTriggerDef: NodeTypeDefinition = {
   type: "trigger/directory",
   category: "trigger",
-  label: "Directory",
+  label: "Directory Trigger",
   inputs: [],
   outputs: [{ key: "output", label: "File", dataType: "url", required: true }],
   params: [

@@ -1202,6 +1202,14 @@
       "control": "Controllo"
     },
     "nodeDefs": {
+      "trigger/directory": {
+        "label": "Trigger Directory",
+        "hint": "Scansiona una cartella locale — il workflow viene eseguito una volta per file"
+      },
+      "trigger/http": {
+        "label": "Trigger HTTP",
+        "hint": "Esponi questo workflow come API HTTP — definisci i campi di input"
+      },
       "ai-task/run": {
         "label": "WaveSpeed API",
         "hint": "Esegui qualsiasi modello IA — immagini, video, audio e altro",
@@ -1288,6 +1296,10 @@
           }
         }
       },
+      "output/http-response": {
+        "label": "Risposta HTTP",
+        "hint": "Definisci cosa restituisce questo workflow ai chiamanti HTTP"
+      },
       "free-tool/image-enhancer": {
         "label": "Migliora immagine",
         "hint": "Ingrandisci e migliora le immagini (2×–4×) gratis"
@@ -1358,8 +1370,8 @@
         "hint": "Scegli un elemento da un array per indice"
       },
       "control/iterator": {
-        "label": "Iteratore",
-        "hint": "Ciclo sugli input — esegui i nodi figli N volte o una volta per elemento dell'array"
+        "label": "Gruppo",
+        "hint": "Raggruppa i nodi in un sub-workflow per organizzazione"
       }
     },
     "modelSelector": {
@@ -1473,6 +1485,18 @@
       "concat": {
         "title": "Nodo Concat — Unisci più output",
         "desc": "Devi passare più immagini a un input \"images\"? Usa il nodo Concat:\n\n1. Collega l'output image di ogni nodo a monte a value1, value2, value3, ecc. di Concat\n2. Collega l'output di Concat (ora un array) al parametro images del nodo a valle\n\nEsempio:\n[Upload A] → image → Concat → output (array) → [Task AI].images\n[Upload B] → image ↗\n\nFunziona per qualsiasi tipo di output — immagini, video, testo — ogni volta che devi combinare più valori singoli in un unico input array."
+      },
+      "directoryTrigger": {
+        "title": "Trigger Directory — Elaborazione batch di file locali",
+        "desc": "Scansiona automaticamente una cartella locale ed esegui il workflow una volta per file:\n\n• Scegli una directory e un tipo di file (Immagini, Video, Audio o Tutti)\n• Il trigger trova tutti i file corrispondenti e li invia uno alla volta nella pipeline\n• Ideale per l'elaborazione batch — es. migliorare ogni foto in una cartella, convertire tutti i video, ecc.\n\nOgni esecuzione riceve un singolo file, i nodi a valle funzionano esattamente come con un upload manuale."
+      },
+      "httpTrigger": {
+        "title": "Trigger HTTP — Esegui workflow via API",
+        "desc": "Trasforma qualsiasi workflow in un endpoint HTTP API:\n\n• Definisci campi di output (es. image, prompt) — ognuno diventa una porta di output sul canvas\n• Quando arriva una richiesta POST, i campi del JSON body vengono estratti e passati ai nodi a valle\n• Abbinalo al nodo HTTP Response per restituire i risultati al chiamante\n\nQuesto ti permette di integrare i workflow in app esterne, script o strumenti di automazione inviando una richiesta HTTP."
+      },
+      "group": {
+        "title": "Nodo Gruppo — Organizza sub-workflow",
+        "desc": "Raggruppa più nodi in un contenitore comprimibile:\n\n• Trascina i nodi in un Gruppo per incapsulare un sub-workflow\n• Esponi input/output selezionati sulla superficie del Gruppo per consentire ai nodi esterni di connettersi\n• Clicca \"Modifica sottografo\" per entrare e modificare i nodi interni\n• Importa un workflow esistente in un Gruppo per riutilizzarlo come blocco\n\nI Gruppi mantengono i workflow complessi puliti e modulari — pensali come funzioni che puoi collegare tra loro."
       },
       "canvas": {
         "title": "Interazioni della canvas",

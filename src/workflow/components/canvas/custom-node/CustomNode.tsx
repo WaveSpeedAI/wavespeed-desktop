@@ -704,7 +704,9 @@ function CustomNodeComponent({
                       </svg>{" "}
                       {t("workflow.run", "Run")}
                       {runCount > 1 && (
-                        <span className="text-[9px] opacity-80">×{runCount}</span>
+                        <span className="ml-1 px-1.5 py-0.5 rounded-full text-[9px] font-semibold bg-white/20 border border-white/30">
+                          ×{runCount}
+                        </span>
                       )}
                     </button>
                   </TooltipTrigger>
@@ -732,7 +734,7 @@ function CustomNodeComponent({
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="top">
-                    {t("workflow.runCount", "Run count")}
+                    {t("workflow.runCount", "Run Count")}
                   </TooltipContent>
                 </Tooltip>
                 {showRunCountPicker && (
@@ -775,7 +777,7 @@ function CustomNodeComponent({
                     {t("workflow.runFromHere", "Run from here")}
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="top">
+                <TooltipContent side="top" className="bg-green-600 text-white">
                   {t("workflow.continueFrom", "Continue From")}
                 </TooltipContent>
               </Tooltip>

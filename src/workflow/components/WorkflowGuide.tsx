@@ -105,6 +105,33 @@ function buildSteps(actions: {
       },
     },
     {
+      key: "directoryTrigger",
+      target: '[data-guide-node="trigger/directory"]',
+      side: "right",
+      prepare: () => {
+        actions.openNodePalette();
+        actions.scrollNodeIntoView('[data-guide-node="trigger/directory"]');
+      },
+    },
+    {
+      key: "httpTrigger",
+      target: '[data-guide-node="trigger/http"]',
+      side: "right",
+      prepare: () => {
+        actions.openNodePalette();
+        actions.scrollNodeIntoView('[data-guide-node="trigger/http"]');
+      },
+    },
+    {
+      key: "group",
+      target: '[data-guide-node="control/iterator"]',
+      side: "right",
+      prepare: () => {
+        actions.openNodePalette();
+        actions.scrollNodeIntoView('[data-guide-node="control/iterator"]');
+      },
+    },
+    {
       key: "canvas",
       target: '[data-guide="canvas"]',
       side: "top",
@@ -155,10 +182,11 @@ function padRect(r: Rect, p: number): Rect {
 
 /** Clamp rect to viewport boundaries so cutout never overflows */
 function clampRect(r: Rect, vw: number, vh: number): Rect {
+  const inset = 2; // keep border stroke visible at viewport edges
   const x = Math.max(0, r.x);
   const y = Math.max(0, r.y);
-  const right = Math.min(vw, r.x + r.w);
-  const bottom = Math.min(vh, r.y + r.h);
+  const right = Math.min(vw - inset, r.x + r.w);
+  const bottom = Math.min(vh - inset, r.y + r.h);
   return { x, y, w: Math.max(0, right - x), h: Math.max(0, bottom - y) };
 }
 
@@ -205,7 +233,7 @@ interface PopoverPos {
   actualSide: PopoverSide;
 }
 
-const POPOVER_WIDTH = 340;
+const POPOVER_WIDTH = 380;
 const POPOVER_EST_HEIGHT = 400;
 
 function computePopoverPos(
@@ -520,16 +548,16 @@ export function WorkflowGuide({
         </div>
 
         {/* Footer — always visible, never clipped */}
-        <div className="px-5 pb-4 pt-2 flex items-center justify-between shrink-0 border-t border-border/40">
+        <div className="px-4 pb-3 pt-2 flex items-center justify-between shrink-0 border-t border-border/40 min-w-0">
           {/* Progress dots */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1 shrink-0">
             {steps.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setStep(i)}
                 className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
                   i === step
-                    ? "bg-primary w-4"
+                    ? "bg-primary w-3"
                     : i < step
                       ? "bg-primary/50"
                       : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
@@ -540,7 +568,7 @@ export function WorkflowGuide({
           </div>
 
           {/* Buttons */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={onClose}
               className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1"

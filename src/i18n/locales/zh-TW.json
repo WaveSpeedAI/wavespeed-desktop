@@ -1160,6 +1160,14 @@
       "control": "控制"
     },
     "nodeDefs": {
+      "trigger/directory": {
+        "label": "目錄觸發器",
+        "hint": "掃描本機資料夾，每個檔案執行一次工作流"
+      },
+      "trigger/http": {
+        "label": "HTTP 觸發器",
+        "hint": "將工作流發布為 HTTP API，定義呼叫方需要提供的輸入欄位"
+      },
       "ai-task/run": {
         "label": "WaveSpeed API",
         "hint": "運行平台上的任意 AI 模型——圖片、影片、音訊等",
@@ -1246,6 +1254,10 @@
           }
         }
       },
+      "output/http-response": {
+        "label": "HTTP 回應",
+        "hint": "定義工作流透過 HTTP 回傳的內容"
+      },
       "free-tool/image-enhancer": {
         "label": "圖片增強",
         "hint": "免費放大和銳化圖片（2×–4×）"
@@ -1316,8 +1328,8 @@
         "hint": "按索引從陣列中取出一個元素"
       },
       "control/iterator": {
-        "label": "迭代器",
-        "hint": "循環執行子節點 — 固定 N 次或按陣列長度自動迭代"
+        "label": "群組",
+        "hint": "將節點分組為子工作流，便於組織管理"
       }
     },
     "modelSelector": {
@@ -1475,6 +1487,18 @@
       "concat": {
         "title": "Concat 節點 — 合併多個輸出",
         "desc": "需要將多張圖片傳入「images」參數？使用 Concat 節點：\n\n1. 將每個上游節點的 image 輸出分別連接到 Concat 的 value1、value2、value3 等輸入口\n2. 將 Concat 的 output（此時為陣列）連接到下游節點的 images 參數\n\n範例：\n[上傳 A] → image → Concat → output（陣列）→ [AI 任務].images\n[上傳 B] → image ↗\n\n適用於任何類型的輸出——圖片、影片、文字——只要你需要將多個單值合併為一個陣列輸入。"
+      },
+      "directoryTrigger": {
+        "title": "目錄觸發器 — 批次處理本機檔案",
+        "desc": "自動掃描本機資料夾，對每個檔案執行一次工作流：\n\n• 選擇目錄和檔案類型（圖片、影片、音訊或全部）\n• 觸發器會找到所有符合的檔案，逐一送入下游流水線\n• 非常適合批次處理——例如增強資料夾中的每張照片、轉換所有影片等\n\n每次執行只接收一個檔案，下游節點的運作方式與手動上傳完全一致。"
+      },
+      "httpTrigger": {
+        "title": "HTTP 觸發器 — 透過 API 執行工作流",
+        "desc": "將任意工作流變成 HTTP API 端點：\n\n• 定義輸出欄位（如 image、prompt）——每個欄位會成為畫布上的一個輸出埠\n• 當 POST 請求到達時，JSON body 中的欄位會被擷取並傳遞給下游節點\n• 搭配 HTTP Response 節點可將結果回傳給呼叫方\n\n這樣你就可以透過發送 HTTP 請求，將工作流整合到外部應用、腳本或自動化工具中。"
+      },
+      "group": {
+        "title": "Group 節點 — 組織子工作流",
+        "desc": "將多個節點歸入一個可摺疊的容器：\n\n• 將節點拖入 Group 以封裝子工作流\n• 在 Group 表面暴露選定的輸入/輸出，供外部節點連接\n• 點擊「編輯子圖」進入 Group 內部編輯節點\n• 可匯入已有工作流到 Group 中作為建構模組複用\n\nGroup 讓複雜工作流保持整潔和模組化——可以把它們看作可以互相連接的函式。"
       },
       "canvas": {
         "title": "畫布操作",

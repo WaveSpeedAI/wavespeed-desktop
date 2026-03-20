@@ -1203,6 +1203,14 @@
       "control": "Contrôle"
     },
     "nodeDefs": {
+      "trigger/directory": {
+        "label": "Déclencheur de répertoire",
+        "hint": "Scanner un dossier local — le workflow s'exécute une fois par fichier"
+      },
+      "trigger/http": {
+        "label": "Déclencheur HTTP",
+        "hint": "Exposer ce workflow comme API HTTP — définir les champs d'entrée"
+      },
       "ai-task/run": {
         "label": "WaveSpeed API",
         "hint": "Exécuter n'importe quel modèle IA — image, vidéo, audio et plus",
@@ -1289,6 +1297,10 @@
           }
         }
       },
+      "output/http-response": {
+        "label": "Réponse HTTP",
+        "hint": "Définissez ce que ce workflow renvoie aux appelants HTTP"
+      },
       "free-tool/image-enhancer": {
         "label": "Amélioration d'image",
         "hint": "Agrandir et affiner les images (2×–4×) gratuitement"
@@ -1359,8 +1371,8 @@
         "hint": "Choisir un élément d'un tableau par index"
       },
       "control/iterator": {
-        "label": "Itérateur",
-        "hint": "Boucler sur les entrées — exécuter les nœuds enfants N fois ou une fois par élément du tableau"
+        "label": "Groupe",
+        "hint": "Regrouper des nœuds dans un sous-workflow pour l'organisation"
       }
     },
     "modelSelector": {
@@ -1444,6 +1456,18 @@
       "concat": {
         "title": "Nœud Concat — Fusionner plusieurs sorties",
         "desc": "Besoin de passer plusieurs images dans une entrée \"images\" ? Utilisez le nœud Concat :\n\n1. Connectez la sortie image de chaque nœud en amont aux entrées value1, value2, value3, etc. de Concat\n2. Connectez la sortie output de Concat (maintenant un tableau) au paramètre images du nœud en aval\n\nExemple :\n[Upload A] → image → Concat → output (tableau) → [Tâche AI].images\n[Upload B] → image ↗\n\nCela fonctionne pour tout type de sortie — images, vidéos, texte — chaque fois que vous devez combiner plusieurs valeurs en une seule entrée tableau."
+      },
+      "directoryTrigger": {
+        "title": "Déclencheur de répertoire — Traitement par lots de fichiers locaux",
+        "desc": "Scannez automatiquement un dossier local et exécutez le workflow une fois par fichier :\n\n• Choisissez un répertoire et un type de fichier (Images, Vidéos, Audio ou Tous)\n• Le déclencheur trouve tous les fichiers correspondants et les envoie un par un dans le pipeline\n• Idéal pour le traitement par lots — ex. améliorer chaque photo d'un dossier, convertir toutes les vidéos, etc.\n\nChaque exécution reçoit un seul fichier, les nœuds en aval fonctionnent exactement comme avec un upload manuel."
+      },
+      "httpTrigger": {
+        "title": "Déclencheur HTTP — Exécuter des workflows via API",
+        "desc": "Transformez n'importe quel workflow en endpoint HTTP API :\n\n• Définissez des champs de sortie (ex. image, prompt) — chacun devient un port de sortie sur le canevas\n• Lorsqu'une requête POST arrive, les champs du JSON body sont extraits et transmis aux nœuds en aval\n• Associez-le au nœud HTTP Response pour renvoyer les résultats à l'appelant\n\nCela vous permet d'intégrer des workflows dans des apps externes, scripts ou outils d'automatisation en envoyant une requête HTTP."
+      },
+      "group": {
+        "title": "Nœud Groupe — Organiser les sous-workflows",
+        "desc": "Regroupez plusieurs nœuds dans un conteneur repliable :\n\n• Glissez des nœuds dans un Groupe pour encapsuler un sous-workflow\n• Exposez des entrées/sorties sélectionnées sur la surface du Groupe pour que les nœuds externes puissent s'y connecter\n• Cliquez sur « Éditer le sous-graphe » pour entrer et modifier les nœuds internes\n• Importez un workflow existant dans un Groupe pour le réutiliser comme bloc\n\nLes Groupes gardent les workflows complexes propres et modulaires — pensez-y comme des fonctions que vous pouvez connecter entre elles."
       },
       "canvas": {
         "title": "Interactions du canevas",

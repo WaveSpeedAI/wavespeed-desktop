@@ -66,7 +66,7 @@ Node-based pipeline builder for designing and executing complex AI workflows. Ch
   - Triggers (directory scan, HTTP API), AI tasks, 12 free tool nodes, processing (concat, select), group/subgraph, I/O nodes
   - Run all / run node / continue / retry / cancel / batch runs (1-99x), real-time execution monitor with cost tracking
   - Group/subgraph containers with exposed I/O, breadcrumb navigation, and workflow import
-  - HTTP API mode: expose workflows as REST endpoints via built-in HTTP server
+  - HTTP API mode: expose workflows as REST endpoints via built-in HTTP server — works as a skill server for [OpenClaw](https://github.com/anthropics/openclaw) and other AI agents
   - Directory batch processing: auto-execute per media file in a folder
   - Prompt optimizer, guided tour, result caching, circuit breaker, cycle detection
   - Cost estimation & daily budget, import/export (JSON + SQLite), multi-tab, undo/redo, customizable output naming
@@ -297,8 +297,15 @@ The built-in workflow HTTP server also exposes:
 
 | Endpoint                          | Method | Description                          |
 | --------------------------------- | ------ | ------------------------------------ |
+| `/api/health`                     | GET    | Health check                         |
 | `/api/workflows/{id}/run`         | POST   | Trigger a workflow execution via API |
-| `/api/workflows/{id}/schema`      | GET    | Get workflow input schema            |
+| `/api/workflows/{id}/schema`      | GET    | Get workflow input/output schema     |
+| `/schema`                         | GET    | Get active workflow schema           |
+| `POST /` (any path)              | POST   | Run the active workflow              |
+
+Add an HTTP Trigger node to your workflow to define the API input schema (each field becomes an output port), and optionally add an HTTP Response node to customize the response. Start the server from the workflow canvas — it listens on a configurable port (default `3100`) with CORS enabled.
+
+This turns any workflow into a callable REST endpoint, making it easy to integrate with [OpenClaw](https://github.com/anthropics/openclaw) or other AI agent frameworks as a skill server. For example, an OpenClaw agent can call `GET /api/workflows/{id}/schema` to discover the workflow's input/output contract, then `POST /api/workflows/{id}/run` with the required fields to execute the pipeline and receive results.
 
 ## Contributing
 

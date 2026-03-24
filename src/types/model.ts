@@ -31,7 +31,13 @@ export interface SchemaProperty {
   }>;
   // Extended UI hints
   step?: number;
-  "x-ui-component"?: "slider" | "uploader" | "uploaders" | "loras" | "select" | "array";
+  "x-ui-component"?:
+    | "slider"
+    | "uploader"
+    | "uploaders"
+    | "loras"
+    | "select"
+    | "array";
   "x-accept"?: string;
   "x-placeholder"?: string;
   "x-hidden"?: boolean;

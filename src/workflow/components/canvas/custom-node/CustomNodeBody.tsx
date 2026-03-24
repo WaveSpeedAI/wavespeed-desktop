@@ -1263,7 +1263,9 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
           if (fieldConfig) {
             if (!canConnect) {
               // Compact inline layout for file export's filename & format
-              const inlineParam = data.nodeType === "output/file" && (p.key === "filename" || p.key === "format");
+              const inlineParam =
+                data.nodeType === "output/file" &&
+                (p.key === "filename" || p.key === "format");
               return (
                 <div
                   key={p.key}
@@ -1272,7 +1274,9 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
                 >
                   {inlineParam ? (
                     <div className="flex items-center gap-4">
-                      <Label className="text-xs flex-shrink-0 w-[110px]">{fieldConfig.label}</Label>
+                      <Label className="text-xs flex-shrink-0 w-[110px]">
+                        {fieldConfig.label}
+                      </Label>
                       <div className="flex-1 min-w-0 [&_input]:h-7 [&_input]:text-xs [&_button[role=combobox]]:h-7 [&_button[role=combobox]]:text-xs">
                         <FormField
                           field={fieldConfig}

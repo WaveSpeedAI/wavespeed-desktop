@@ -149,7 +149,10 @@ function IteratorNodeContainerComponent({
         };
       });
     } catch {
-      return (data.inputDefinitions ?? []).map((d) => ({ ...d, _ep: undefined as unknown as ExposedParam }));
+      return (data.inputDefinitions ?? []).map((d) => ({
+        ...d,
+        _ep: undefined as unknown as ExposedParam,
+      }));
     }
   }, [data.params?.exposedInputs, data.inputDefinitions]);
 
@@ -176,7 +179,10 @@ function IteratorNodeContainerComponent({
         };
       });
     } catch {
-      return (data.outputDefinitions ?? []).map((d) => ({ ...d, _ep: undefined as unknown as ExposedParam }));
+      return (data.outputDefinitions ?? []).map((d) => ({
+        ...d,
+        _ep: undefined as unknown as ExposedParam,
+      }));
     }
   }, [data.params?.exposedOutputs, data.outputDefinitions]);
   const childNodeIds = data.childNodeIds ?? [];
@@ -278,7 +284,7 @@ function IteratorNodeContainerComponent({
   /* ── Inline name editing ───────────────────────────────────────── */
   const startEditingName = useCallback(() => {
     const displayLabel = data.params?.__userRenamed
-      ? (data.label || t("workflow.nodeDefs.control/iterator.label", "Group"))
+      ? data.label || t("workflow.nodeDefs.control/iterator.label", "Group")
       : t("workflow.nodeDefs.control/iterator.label", "Group");
     setNameValue(displayLabel);
     setEditingName(true);
@@ -292,7 +298,14 @@ function IteratorNodeContainerComponent({
       updateNodeData(id, { label: trimmed });
       updateNodeParams(id, { ...data.params, __userRenamed: true });
     }
-  }, [nameValue, data.label, id, data.params, updateNodeData, updateNodeParams]);
+  }, [
+    nameValue,
+    data.label,
+    id,
+    data.params,
+    updateNodeData,
+    updateNodeParams,
+  ]);
 
   const cancelEditingName = useCallback(() => {
     setEditingName(false);
@@ -371,7 +384,9 @@ function IteratorNodeContainerComponent({
                     {t("workflow.run", "Run")}
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="top">{t("workflow.runNode", "Run Node")}</TooltipContent>
+                <TooltipContent side="top">
+                  {t("workflow.runNode", "Run Node")}
+                </TooltipContent>
               </Tooltip>
               <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
@@ -391,7 +406,9 @@ function IteratorNodeContainerComponent({
                     {t("workflow.runFromHere", "Run from here")}
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="top" className="bg-green-600 text-white">{t("workflow.continueFrom", "Continue From")}</TooltipContent>
+                <TooltipContent side="top" className="bg-green-600 text-white">
+                  {t("workflow.continueFrom", "Continue From")}
+                </TooltipContent>
               </Tooltip>
               <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
@@ -416,7 +433,9 @@ function IteratorNodeContainerComponent({
                     </svg>
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="top" className="bg-red-500 text-white">{t("workflow.delete", "Delete")}</TooltipContent>
+                <TooltipContent side="top" className="bg-red-500 text-white">
+                  {t("workflow.delete", "Delete")}
+                </TooltipContent>
               </Tooltip>
             </>
           )}
@@ -516,7 +535,8 @@ function IteratorNodeContainerComponent({
               )}
             >
               {data.params?.__userRenamed
-                ? (data.label || t("workflow.nodeDefs.control/iterator.label", "Group"))
+                ? data.label ||
+                  t("workflow.nodeDefs.control/iterator.label", "Group")
                 : t("workflow.nodeDefs.control/iterator.label", "Group")}
             </span>
           )}
@@ -526,8 +546,20 @@ function IteratorNodeContainerComponent({
           {/* Child count — inline after shortId, nudged down slightly */}
           {hasChildren && (
             <span className="flex items-center gap-1 text-[9px] text-cyan-500 bg-cyan-500/10 border border-cyan-500/20 rounded-full px-1.5 py-0.5 flex-shrink-0 relative top-[3px] ml-9">
-              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
+              <svg
+                width="9"
+                height="9"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
               </svg>
               {childNodeIds.length} child nodes
             </span>
@@ -657,13 +689,28 @@ function IteratorNodeContainerComponent({
 
         {/* ── Capsule param pills ── */}
         {!collapsed && (inputDefs.length > 0 || outputDefs.length > 0) && (
-          <div className="relative px-3 pt-2 pb-1" style={{ minHeight: Math.max(inputDefs.length, outputDefs.length) * (CAPSULE_H + CAPSULE_GAP) + 8 }}>
+          <div
+            className="relative px-3 pt-2 pb-1"
+            style={{
+              minHeight:
+                Math.max(inputDefs.length, outputDefs.length) *
+                  (CAPSULE_H + CAPSULE_GAP) +
+                8,
+            }}
+          >
             {/* Input capsules — left aligned */}
             <div className="flex flex-col gap-2.5" style={{ width: "45%" }}>
               {inputDefs.map((inp) => {
                 const ep = inp._ep;
                 const tooltip = ep
-                  ? `${ep.paramKey.split("_").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")} — ${ep.subNodeLabel || ep.subNodeId.slice(0, 8)}${ep.dataType ? ` (${ep.dataType})` : ""}`
+                  ? `${ep.paramKey
+                      .split("_")
+                      .map(
+                        (w: string) => w.charAt(0).toUpperCase() + w.slice(1),
+                      )
+                      .join(
+                        " ",
+                      )} — ${ep.subNodeLabel || ep.subNodeId.slice(0, 8)}${ep.dataType ? ` (${ep.dataType})` : ""}`
                   : inp.label;
                 return (
                   <Tooltip key={`cap-in-${inp.key}`} delayDuration={0}>
@@ -672,17 +719,32 @@ function IteratorNodeContainerComponent({
                         {inp.label}
                       </div>
                     </TooltipTrigger>
-                    <TooltipContent side="bottom" className="text-xs bg-cyan-500 text-white">{tooltip}</TooltipContent>
+                    <TooltipContent
+                      side="bottom"
+                      className="text-xs bg-cyan-500 text-white"
+                    >
+                      {tooltip}
+                    </TooltipContent>
                   </Tooltip>
                 );
               })}
             </div>
             {/* Output capsules — right aligned, absolutely positioned */}
-            <div className="absolute top-2 right-3 flex flex-col gap-2.5 items-end" style={{ width: "45%" }}>
+            <div
+              className="absolute top-2 right-3 flex flex-col gap-2.5 items-end"
+              style={{ width: "45%" }}
+            >
               {outputDefs.map((out) => {
                 const ep = out._ep;
                 const tooltip = ep
-                  ? `${ep.paramKey.split("_").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")} — ${ep.subNodeLabel || ep.subNodeId.slice(0, 8)}${ep.dataType ? ` (${ep.dataType})` : ""}`
+                  ? `${ep.paramKey
+                      .split("_")
+                      .map(
+                        (w: string) => w.charAt(0).toUpperCase() + w.slice(1),
+                      )
+                      .join(
+                        " ",
+                      )} — ${ep.subNodeLabel || ep.subNodeId.slice(0, 8)}${ep.dataType ? ` (${ep.dataType})` : ""}`
                   : out.label;
                 return (
                   <Tooltip key={`cap-out-${out.key}`} delayDuration={0}>
@@ -691,7 +753,12 @@ function IteratorNodeContainerComponent({
                         {out.label}
                       </div>
                     </TooltipTrigger>
-                    <TooltipContent side="bottom" className="text-xs bg-emerald-500 text-white">{tooltip}</TooltipContent>
+                    <TooltipContent
+                      side="bottom"
+                      className="text-xs bg-emerald-500 text-white"
+                    >
+                      {tooltip}
+                    </TooltipContent>
                   </Tooltip>
                 );
               })}

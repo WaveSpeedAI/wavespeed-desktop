@@ -501,10 +501,7 @@ export async function executeWorkflowInBrowser(
     }
 
     // Run the target node + all downstream; include upstream in the graph but skip executing them
-    const downstream = downstreamNodeIds(
-      effectiveContinueId,
-      simpleEdges,
-    );
+    const downstream = downstreamNodeIds(effectiveContinueId, simpleEdges);
     const upstream = upstreamNodeIds(effectiveContinueId, simpleEdges);
     // The subgraph is upstream ∪ downstream so edges resolve correctly
     const subset = new Set([...upstream, ...downstream]);

@@ -57,7 +57,6 @@ export const textInputDef: NodeTypeDefinition = {
   ],
 };
 
-
 // ─── AI Task ───────────────────────────────────────────────────────────────
 export const aiTaskDef: NodeTypeDefinition = {
   type: "ai-task/run",

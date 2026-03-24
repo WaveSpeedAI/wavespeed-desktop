@@ -261,7 +261,16 @@ export function ExplorePanel({
 }: ExplorePanelProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { models, toggleFavorite, isFavorite, fetchModels, selectedType: typeFilter, setSelectedType: setTypeFilter, typeFiltersOpen, setTypeFiltersOpen } = useModelsStore();
+  const {
+    models,
+    toggleFavorite,
+    isFavorite,
+    fetchModels,
+    selectedType: typeFilter,
+    setSelectedType: setTypeFilter,
+    typeFiltersOpen,
+    setTypeFiltersOpen,
+  } = useModelsStore();
   const { createTab } = usePlaygroundStore();
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);

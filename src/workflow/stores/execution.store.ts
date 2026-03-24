@@ -382,7 +382,8 @@ export const useExecutionStore = create<ExecutionState>((set, get) => ({
 
     // If the target node is inside a group, we need to include the parent
     // group node and its upstream so the group handler can execute properly.
-    const parentGroupId = (targetNode as { parentNode?: string } | undefined)?.parentNode;
+    const parentGroupId = (targetNode as { parentNode?: string } | undefined)
+      ?.parentNode;
     const effectiveRootId = parentGroupId ?? nodeId;
 
     const upstream = new Set<string>([effectiveRootId]);

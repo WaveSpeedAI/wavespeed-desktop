@@ -75,7 +75,9 @@ function CustomNodeComponent({
   const openPreview = useUIStore((s) => s.openPreview);
   const allNodes = useWorkflowStore((s) => s.nodes);
   const allLastResults = useExecutionStore((s) => s.lastResults);
-  const allSelectedOutputIndex = useExecutionStore((s) => s.selectedOutputIndex);
+  const allSelectedOutputIndex = useExecutionStore(
+    (s) => s.selectedOutputIndex,
+  );
   const [hovered, setHovered] = useState(false);
   const [segmentPointPickerOpen, setSegmentPointPickerOpen] = useState(false);
   const [resultsExpanded, setResultsExpanded] = useState(false);
@@ -440,7 +442,15 @@ function CustomNodeComponent({
   // Tell React Flow to re-measure handle positions when node size changes
   useEffect(() => {
     requestAnimationFrame(() => updateNodeInternals(id));
-  }, [collapsed, resultsExpanded, resultGroups.length, schema.length, formFields.length, id, updateNodeInternals]);
+  }, [
+    collapsed,
+    resultsExpanded,
+    resultGroups.length,
+    schema.length,
+    formFields.length,
+    id,
+    updateNodeInternals,
+  ]);
 
   const saveWorkflow = useWorkflowStore((s) => s.saveWorkflow);
   const removeNode = useWorkflowStore((s) => s.removeNode);

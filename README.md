@@ -163,19 +163,19 @@ npm run dev
 
 ### Scripts
 
-| Script                 | Description                                |
-| ---------------------- | ------------------------------------------ |
-| `npm run dev`          | Start development server with hot reload   |
-| `npm run dev:web`      | Start web-only dev server (no Electron)    |
-| `npm run build`        | Build the application                      |
-| `npm run build:web`    | Build web-only version (no Electron)       |
-| `npm run build:win`    | Build for Windows                          |
-| `npm run build:mac`    | Build for macOS                            |
-| `npm run build:linux`  | Build for Linux                            |
-| `npm run build:all`    | Build for all platforms                    |
-| `npm run dist`         | Build and package for distribution         |
-| `npm run format`       | Format code with Prettier                  |
-| `npm run format:check` | Check code formatting                      |
+| Script                 | Description                              |
+| ---------------------- | ---------------------------------------- |
+| `npm run dev`          | Start development server with hot reload |
+| `npm run dev:web`      | Start web-only dev server (no Electron)  |
+| `npm run build`        | Build the application                    |
+| `npm run build:web`    | Build web-only version (no Electron)     |
+| `npm run build:win`    | Build for Windows                        |
+| `npm run build:mac`    | Build for macOS                          |
+| `npm run build:linux`  | Build for Linux                          |
+| `npm run build:all`    | Build for all platforms                  |
+| `npm run dist`         | Build and package for distribution       |
+| `npm run format`       | Format code with Prettier                |
+| `npm run format:check` | Check code formatting                    |
 
 ### Mobile Development
 
@@ -284,24 +284,24 @@ Get your API key from [WaveSpeedAI](https://wavespeed.ai)
 
 The application uses the WaveSpeedAI API v3:
 
-| Endpoint                          | Method | Description                          |
-| --------------------------------- | ------ | ------------------------------------ |
-| `/api/v3/models`                  | GET    | List available models                |
-| `/api/v3/{model}`                 | POST   | Run a prediction                     |
-| `/api/v3/predictions/{id}/result` | GET    | Get prediction result                |
-| `/api/v3/predictions`             | POST   | Get prediction history               |
-| `/api/v3/media/upload/binary`     | POST   | Upload files                         |
-| `/api/v3/balance`                 | GET    | Get account balance                  |
+| Endpoint                          | Method | Description            |
+| --------------------------------- | ------ | ---------------------- |
+| `/api/v3/models`                  | GET    | List available models  |
+| `/api/v3/{model}`                 | POST   | Run a prediction       |
+| `/api/v3/predictions/{id}/result` | GET    | Get prediction result  |
+| `/api/v3/predictions`             | POST   | Get prediction history |
+| `/api/v3/media/upload/binary`     | POST   | Upload files           |
+| `/api/v3/balance`                 | GET    | Get account balance    |
 
 The built-in workflow HTTP server also exposes:
 
-| Endpoint                          | Method | Description                          |
-| --------------------------------- | ------ | ------------------------------------ |
-| `/api/health`                     | GET    | Health check                         |
-| `/api/workflows/{id}/run`         | POST   | Trigger a workflow execution via API |
-| `/api/workflows/{id}/schema`      | GET    | Get workflow input/output schema     |
-| `/schema`                         | GET    | Get active workflow schema           |
-| `POST /` (any path)              | POST   | Run the active workflow              |
+| Endpoint                     | Method | Description                          |
+| ---------------------------- | ------ | ------------------------------------ |
+| `/api/health`                | GET    | Health check                         |
+| `/api/workflows/{id}/run`    | POST   | Trigger a workflow execution via API |
+| `/api/workflows/{id}/schema` | GET    | Get workflow input/output schema     |
+| `/schema`                    | GET    | Get active workflow schema           |
+| `POST /` (any path)          | POST   | Run the active workflow              |
 
 Add an HTTP Trigger node to your workflow to define the API input schema (each field becomes an output port), and optionally add an HTTP Response node to customize the response. Start the server from the workflow canvas — it listens on a configurable port (default `3100`) with CORS enabled.
 

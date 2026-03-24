@@ -967,7 +967,10 @@ export function DirectoryImportBody({
               </span>
             ) : (
               <span className="text-muted-foreground text-xs italic">
-                {t("workflow.directoryImport.awaitingDirectory", "Awaiting directory")}
+                {t(
+                  "workflow.directoryImport.awaitingDirectory",
+                  "Awaiting directory",
+                )}
               </span>
             )}
           </span>

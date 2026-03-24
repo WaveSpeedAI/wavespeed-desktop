@@ -91,8 +91,7 @@ export function DynamicFieldsEditor({
       ? t("workflow.httpTriggerFields", "API Input Fields")
       : t("workflow.httpResponseFields", "API Response Fields");
 
-  const options =
-    direction === "input" ? RESPONSE_TYPE_OPTIONS : TYPE_OPTIONS;
+  const options = direction === "input" ? RESPONSE_TYPE_OPTIONS : TYPE_OPTIONS;
 
   return (
     <div
@@ -100,13 +99,17 @@ export function DynamicFieldsEditor({
       onClick={(e) => e.stopPropagation()}
     >
       <div className="flex items-center gap-2">
-        <Label className="text-xs text-muted-foreground flex-shrink-0">{dirLabel}</Label>
+        <Label className="text-xs text-muted-foreground flex-shrink-0">
+          {dirLabel}
+        </Label>
         <div className="flex-1" />
         <div
           role="button"
           tabIndex={0}
           onClick={addField}
-          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") addField(); }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") addField();
+          }}
           className="border-2 border-dashed rounded-lg px-4 py-1.5 cursor-pointer transition-all duration-200 flex items-center justify-center gap-1.5 hover:border-primary/50 hover:bg-muted/30 hover:shadow-sm min-h-[34px]"
         >
           <Plus className="h-3.5 w-3.5 text-muted-foreground" />
@@ -136,9 +139,7 @@ export function DynamicFieldsEditor({
           />
           <Select
             value={field.type}
-            onValueChange={(v) =>
-              updateField(idx, { type: v as PortDataType })
-            }
+            onValueChange={(v) => updateField(idx, { type: v as PortDataType })}
           >
             <SelectTrigger className="w-[80px] h-8 text-xs flex-shrink-0">
               <SelectValue />

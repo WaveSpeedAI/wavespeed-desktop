@@ -127,7 +127,10 @@ function CanvasZoomControls() {
 
   // Check if any non-annotation node is currently expanded (not collapsed)
   const hasExpandedNodes = nodes.some(
-    (n) => n.type !== "annotation" && n.data?.nodeType !== "control/iterator" && !n.data?.params?.__nodeCollapsed,
+    (n) =>
+      n.type !== "annotation" &&
+      n.data?.nodeType !== "control/iterator" &&
+      !n.data?.params?.__nodeCollapsed,
   );
 
   const toggleAllCollapsed = useCallback(() => {
@@ -424,7 +427,9 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
 
   // Track virtual IO node positions across re-renders (they're not in the store).
   // Use state (not ref) so displayNodes memo recomputes when drag ends.
-  const [ioNodePositions, setIoNodePositions] = useState<Record<string, { x: number; y: number }>>({});
+  const [ioNodePositions, setIoNodePositions] = useState<
+    Record<string, { x: number; y: number }>
+  >({});
   const lastEditingGroupIdRef = useRef<string | null>(null);
 
   // Reset IO positions when entering a different group
@@ -455,8 +460,13 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
       setIoNodePositions(savedPositions);
     } else {
       // Compute initial positions from child bounding box
-      const childNodes = currentNodes.filter((n) => n.parentNode === editingGroupId);
-      let minX = 0, minY = 0, maxX = 400, maxY = 300;
+      const childNodes = currentNodes.filter(
+        (n) => n.parentNode === editingGroupId,
+      );
+      let minX = 0,
+        minY = 0,
+        maxX = 400,
+        maxY = 300;
       if (childNodes.length > 0) {
         minX = Math.min(...childNodes.map((n) => n.position.x));
         minY = Math.min(...childNodes.map((n) => n.position.y));
@@ -488,7 +498,11 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
       let ioDragEnded = false;
       for (const c of changes) {
         const cid = (c as any).id as string | undefined;
-        if (cid && String(cid).startsWith("__group-") && c.type === "position") {
+        if (
+          cid &&
+          String(cid).startsWith("__group-") &&
+          c.type === "position"
+        ) {
           const posChange = c as any;
           if (posChange.position) {
             ioUpdates[cid] = { ...posChange.position };
@@ -504,7 +518,9 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
           const next = { ...prev, ...ioUpdates };
           // Persist to group node params when drag ends
           if (ioDragEnded && editingGroupId) {
-            const groupNode = useWorkflowStore.getState().nodes.find((n) => n.id === editingGroupId);
+            const groupNode = useWorkflowStore
+              .getState()
+              .nodes.find((n) => n.id === editingGroupId);
             if (groupNode) {
               useWorkflowStore.getState().updateNodeParams(editingGroupId, {
                 ...groupNode.data?.params,
@@ -1122,14 +1138,16 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
           const storeState = useWorkflowStore.getState();
           const groupNode = storeState.nodes.find((n) => n.id === editGroupId);
           if (groupNode) {
-            storeState.onNodesChange([{
-              type: "position" as const,
-              id: newNodeId,
-              position: {
-                x: position.x + groupNode.position.x,
-                y: position.y + groupNode.position.y,
+            storeState.onNodesChange([
+              {
+                type: "position" as const,
+                id: newNodeId,
+                position: {
+                  x: position.x + groupNode.position.x,
+                  y: position.y + groupNode.position.y,
+                },
               },
-            }]);
+            ]);
           }
         }
         const { adoptNode } = useWorkflowStore.getState();
@@ -1325,14 +1343,16 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
           const storeState = useWorkflowStore.getState();
           const groupNode = storeState.nodes.find((n) => n.id === editGroupId);
           if (groupNode) {
-            storeState.onNodesChange([{
-              type: "position" as const,
-              id: newNodeId,
-              position: {
-                x: position.x + groupNode.position.x,
-                y: position.y + groupNode.position.y,
+            storeState.onNodesChange([
+              {
+                type: "position" as const,
+                id: newNodeId,
+                position: {
+                  x: position.x + groupNode.position.x,
+                  y: position.y + groupNode.position.y,
+                },
               },
-            }]);
+            ]);
           }
         }
         const { adoptNode: adopt } = useWorkflowStore.getState();
@@ -1627,7 +1647,10 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
       // --- Drop from node palette (existing behaviour) ---
       if (nodeType) {
         // Prevent nesting Group inside Group
-        if (nodeType === "control/iterator" && useUIStore.getState().editingGroupId) {
+        if (
+          nodeType === "control/iterator" &&
+          useUIStore.getState().editingGroupId
+        ) {
           return;
         }
         // Only one trigger node per workflow
@@ -1963,7 +1986,9 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
           onNodesChange: applyChanges,
         } = useWorkflowStore.getState();
 
-        const childNodes = currentNodes.filter((n) => n.parentNode === editGroupId);
+        const childNodes = currentNodes.filter(
+          (n) => n.parentNode === editGroupId,
+        );
         if (childNodes.length === 0) return;
 
         const groupNode = currentNodes.find((n) => n.id === editGroupId);
@@ -2030,11 +2055,16 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
         // Measure node sizes from DOM
         const nodeSize = new Map<string, { w: number; h: number }>();
         for (const id of allIds) {
-          const el = document.querySelector(`[data-id="${id}"]`) as HTMLElement | null;
+          const el = document.querySelector(
+            `[data-id="${id}"]`,
+          ) as HTMLElement | null;
           if (el) {
             nodeSize.set(id, { w: el.offsetWidth, h: el.offsetHeight });
           } else {
-            nodeSize.set(id, { w: id.startsWith("__group-") ? 260 : 380, h: 250 });
+            nodeSize.set(id, {
+              w: id.startsWith("__group-") ? 260 : 380,
+              h: 250,
+            });
           }
         }
 
@@ -2060,9 +2090,10 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
           if (visited.has(id)) return 0;
           visited.add(id);
           const parents = incoming.get(id) ?? [];
-          const depth = parents.length === 0
-            ? 0
-            : Math.max(...parents.map((p) => assignSubgraphLayer(p) + 1));
+          const depth =
+            parents.length === 0
+              ? 0
+              : Math.max(...parents.map((p) => assignSubgraphLayer(p) + 1));
           layer.set(id, depth);
           return depth;
         }
@@ -2097,17 +2128,25 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
           ids.forEach((id, i) => nodeOrder.set(id, i));
         }
         for (let pass = 0; pass < 4; pass++) {
-          const keys = pass % 2 === 0 ? sortedLayerKeys : [...sortedLayerKeys].reverse();
+          const keys =
+            pass % 2 === 0 ? sortedLayerKeys : [...sortedLayerKeys].reverse();
           for (const l of keys) {
             const ids = layers.get(l)!;
             const bary = new Map<string, number>();
             for (const id of ids) {
-              const neighbors = pass % 2 === 0
-                ? (incoming.get(id) ?? [])
-                : (outgoing.get(id) ?? []);
-              bary.set(id, neighbors.length > 0
-                ? neighbors.reduce((sum, nid) => sum + (nodeOrder.get(nid) ?? 0), 0) / neighbors.length
-                : (nodeOrder.get(id) ?? 0));
+              const neighbors =
+                pass % 2 === 0
+                  ? (incoming.get(id) ?? [])
+                  : (outgoing.get(id) ?? []);
+              bary.set(
+                id,
+                neighbors.length > 0
+                  ? neighbors.reduce(
+                      (sum, nid) => sum + (nodeOrder.get(nid) ?? 0),
+                      0,
+                    ) / neighbors.length
+                  : (nodeOrder.get(id) ?? 0),
+              );
             }
             ids.sort((a, b) => (bary.get(a) ?? 0) - (bary.get(b) ?? 0));
             ids.forEach((id, i) => nodeOrder.set(id, i));
@@ -2133,7 +2172,9 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
         for (const l of sortedLayerKeys) {
           const ids = layers.get(l)!;
           const heights = ids.map((id) => nodeSize.get(id)?.h ?? 250);
-          const totalHeight = heights.reduce((sum, h) => sum + h, 0) + (ids.length - 1) * SG_V_GAP;
+          const totalHeight =
+            heights.reduce((sum, h) => sum + h, 0) +
+            (ids.length - 1) * SG_V_GAP;
           let y = -totalHeight / 2;
 
           ids.forEach((id, i) => {

@@ -70,7 +70,9 @@ export function SubgraphBreadcrumb() {
         title={t("workflow.exitSubgraph", "Exit subgraph (ESC)")}
       >
         <ArrowLeft className="w-3.5 h-3.5" />
-        <span className="text-[11px] font-medium">{t("workflow.back", "Back")}</span>
+        <span className="text-[11px] font-medium">
+          {t("workflow.back", "Back")}
+        </span>
       </button>
     </div>
   );

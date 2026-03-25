@@ -1,4 +1,27 @@
 import Upscaler from "upscaler";
+import * as tf from "@tensorflow/tfjs";
+
+// Register custom layer used by ESRGAN medium/thick models (loaded from CDN)
+// Without this, TF.js throws "Unknown layer: MultiplyBeta" when loading these models
+class MultiplyBeta extends tf.layers.Layer {
+  static className = "MultiplyBeta";
+  private beta: number;
+
+  constructor(config: Record<string, unknown> = {}) {
+    super(config);
+    this.beta = (config.beta as number) ?? 0.2;
+  }
+
+  call(inputs: tf.Tensor | tf.Tensor[]): tf.Tensor {
+    const input = Array.isArray(inputs) ? inputs[0] : inputs;
+    return tf.mul(input, tf.scalar(this.beta));
+  }
+
+  getConfig() {
+    return { ...super.getConfig(), beta: this.beta };
+  }
+}
+tf.serialization.registerClass(MultiplyBeta);
 
 type ModelType = "slim" | "medium" | "thick";
 type ScaleType = "2x" | "3x" | "4x";

@@ -66,7 +66,7 @@ export const SMART_FORM_FAMILIES: SmartFormFamily[] = [
     name: "Seedream 4.5",
     provider: "bytedance",
     poster:
-      "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1764761216479761378_Yy864da9.png",
+      "https://static.wavespeed.ai/media/images/1764761216479761378_Yy864da9.png",
     category: "image",
     variantIds: [
       "bytedance/seedream-v4.5",
@@ -103,7 +103,7 @@ export const SMART_FORM_FAMILIES: SmartFormFamily[] = [
     name: "Seedance 1.5 Pro",
     provider: "bytedance",
     poster:
-      "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1766494048998434655_qEMLsAI0.png",
+      "https://static.wavespeed.ai/media/images/1766494048998434655_qEMLsAI0.png",
     category: "video",
     variantIds: [
       "bytedance/seedance-v1.5-pro/image-to-video",
@@ -149,7 +149,7 @@ export const SMART_FORM_FAMILIES: SmartFormFamily[] = [
     name: "Wan Spicy",
     provider: "wavespeed-ai",
     poster:
-      "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1766298334453523753_f975da96.png",
+      "https://static.wavespeed.ai/media/images/1766298334453523753_f975da96.png",
     category: "video",
     variantIds: [
       "wavespeed-ai/wan-2.2-spicy/image-to-video",
@@ -176,7 +176,7 @@ export const SMART_FORM_FAMILIES: SmartFormFamily[] = [
     name: "Wan Animate",
     provider: "wavespeed-ai",
     poster:
-      "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1758433474532574441_SkTQLIEA.jpeg",
+      "https://static.wavespeed.ai/media/images/1758433474532574441_SkTQLIEA.jpeg",
     category: "other",
     variantIds: ["wavespeed-ai/wan-2.2/animate"],
     primaryVariant: "wavespeed-ai/wan-2.2/animate",
@@ -193,7 +193,7 @@ export const SMART_FORM_FAMILIES: SmartFormFamily[] = [
     excludeFields: ["audio"],
     provider: "wavespeed-ai",
     poster:
-      "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1766575571686877852_Sckigeck.png",
+      "https://static.wavespeed.ai/media/images/1766575571686877852_Sckigeck.png",
     category: "other",
     variantIds: [
       "wavespeed-ai/infinitetalk",
@@ -258,7 +258,7 @@ export const SMART_FORM_FAMILIES: SmartFormFamily[] = [
     name: "Kling 2.6 Motion Control",
     provider: "kwaivgi",
     poster:
-      "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1766519115490596160_Smusqomu.png",
+      "https://static.wavespeed.ai/media/images/1766519115490596160_Smusqomu.png",
     category: "other",
     variantIds: [
       "kwaivgi/kling-v2.6-pro/motion-control",
@@ -289,7 +289,7 @@ export const SMART_FORM_FAMILIES: SmartFormFamily[] = [
     name: "Nano Banana Pro",
     provider: "google",
     poster:
-      "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1763649945119973876_WvMIEAxu.jpg",
+      "https://static.wavespeed.ai/media/images/1763649945119973876_WvMIEAxu.jpg",
     category: "image",
     variantIds: [
       "google/nano-banana-pro/text-to-image",

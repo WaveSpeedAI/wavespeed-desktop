@@ -29,7 +29,7 @@ const FEATURED_MODEL_FAMILIES: Array<{
     provider: "google",
     description: "Fast, high-quality text-to-image by Google",
     poster:
-      "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1763649945119973876_WvMIEAxu.jpg",
+      "https://static.wavespeed.ai/media/images/1763649945119973876_WvMIEAxu.jpg",
     primaryVariant: "google/nano-banana-pro/text-to-image",
     tags: ["Text-to-Image"],
     ratio: "poster" as const,
@@ -40,7 +40,7 @@ const FEATURED_MODEL_FAMILIES: Array<{
     description:
       "Ultra-realistic image generation with stunning detail and accuracy",
     poster:
-      "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1764761216479761378_Yy864da9.png",
+      "https://static.wavespeed.ai/media/images/1764761216479761378_Yy864da9.png",
     primaryVariant: "bytedance/seedream-v4.5",
     tags: ["Photorealistic", "High Detail"],
     ratio: "poster" as const,
@@ -51,7 +51,7 @@ const FEATURED_MODEL_FAMILIES: Array<{
     provider: "wavespeed-ai",
     description: "Artistic video generation with painterly, soft-toned visuals",
     poster:
-      "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1766298334453523753_f975da96.png",
+      "https://static.wavespeed.ai/media/images/1766298334453523753_f975da96.png",
     primaryVariant: "wavespeed-ai/wan-2.2-spicy/image-to-video",
     tags: ["Artistic", "Soft", "Paint"],
     ratio: "square" as const,
@@ -61,7 +61,7 @@ const FEATURED_MODEL_FAMILIES: Array<{
     provider: "wavespeed-ai",
     description: "Natural talking-head video from a single portrait photo",
     poster:
-      "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1766575571686877852_Sckigeck.png",
+      "https://static.wavespeed.ai/media/images/1766575571686877852_Sckigeck.png",
     primaryVariant: "wavespeed-ai/infinitetalk",
     tags: ["Talking Head"],
     ratio: "square" as const,
@@ -71,7 +71,7 @@ const FEATURED_MODEL_FAMILIES: Array<{
     provider: "wavespeed-ai",
     description: "Bring characters to life with smooth animation",
     poster:
-      "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1758433474532574441_SkTQLIEA.jpeg",
+      "https://static.wavespeed.ai/media/images/1758433474532574441_SkTQLIEA.jpeg",
     primaryVariant: "wavespeed-ai/wan-2.2/animate",
     tags: ["Animation"],
     ratio: "square" as const,
@@ -81,7 +81,7 @@ const FEATURED_MODEL_FAMILIES: Array<{
     provider: "kwaivgi",
     description: "Precise camera & motion-guided video generation",
     poster:
-      "https://d1q70pf5vjeyhc.wavespeed.ai/media/images/1766519115490596160_Smusqomu.png",
+      "https://static.wavespeed.ai/media/images/1766519115490596160_Smusqomu.png",
     primaryVariant: "kwaivgi/kling-v2.6-pro/motion-control",
     tags: ["Motion", "Control"],
     ratio: "square" as const,

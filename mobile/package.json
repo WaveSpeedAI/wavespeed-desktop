@@ -1,6 +1,6 @@
 {
   "name": "wavespeed-mobile",
-  "version": "2.1.3",
+  "version": "2.1.4",
   "description": "WaveSpeed Mobile Application for Android",
   "type": "module",
   "scripts": {

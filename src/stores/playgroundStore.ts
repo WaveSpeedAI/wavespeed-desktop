@@ -177,7 +177,7 @@ interface PlaygroundState {
 
   // Actions on active tab
   setSelectedModel: (model: Model | null) => void;
-  setFormValue: (key: string, value: unknown) => void;
+  setFormValue: (key: string, value: unknown, tabId?: string) => void;
   setFormValues: (values: Record<string, unknown>) => void;
   setFormFields: (fields: FormFieldConfig[]) => void;
   validateForm: () => boolean;
@@ -341,18 +341,21 @@ export const usePlaygroundStore = create<PlaygroundState>((set, get) => ({
     }));
   },
 
-  setFormValue: (key: string, value: unknown) => {
-    set((state) => ({
-      tabs: state.tabs.map((tab) =>
-        tab.id === state.activeTabId
-          ? {
-              ...tab,
-              formValues: { ...tab.formValues, [key]: value },
-              validationErrors: { ...tab.validationErrors, [key]: "" },
-            }
-          : tab,
-      ),
-    }));
+  setFormValue: (key: string, value: unknown, tabId?: string) => {
+    set((state) => {
+      const targetTabId = tabId ?? state.activeTabId;
+      return {
+        tabs: state.tabs.map((tab) =>
+          tab.id === targetTabId
+            ? {
+                ...tab,
+                formValues: { ...tab.formValues, [key]: value },
+                validationErrors: { ...tab.validationErrors, [key]: "" },
+              }
+            : tab,
+        ),
+      };
+    });
   },
 
   setFormValues: (values: Record<string, unknown>) => {

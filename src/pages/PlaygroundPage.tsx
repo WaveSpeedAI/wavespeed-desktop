@@ -555,6 +555,16 @@ export function PlaygroundPage() {
     }
   };
 
+  // Bind activeTabId into the onChange callback so that async operations
+  // (e.g. file uploads) update the correct tab even if the user switches tabs
+  // while the upload is in progress.
+  const handleFormValueChange = useCallback(
+    (key: string, value: unknown) => {
+      setFormValue(key, value, activeTabId ?? undefined);
+    },
+    [setFormValue, activeTabId],
+  );
+
   const handleSetDefaults = useCallback(
     (defaults: Record<string, unknown>) => {
       const pending = consumePendingFormValues();
@@ -892,7 +902,7 @@ export function PlaygroundPage() {
                   model={activeTab.selectedModel}
                   values={activeTab.formValues}
                   validationErrors={activeTab.validationErrors}
-                  onChange={setFormValue}
+                  onChange={handleFormValueChange}
                   onSetDefaults={handleSetDefaults}
                   collapsible
                   onFieldsChange={setFormFields}

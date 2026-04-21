@@ -11,6 +11,12 @@ import type { NodeTypeDefinition } from "../../../../src/workflow/types/node-def
 import { getWaveSpeedClient } from "../../services/service-locator";
 import { getModelById } from "../../services/model-list";
 import { normalizePayloadArrays } from "../../../../src/lib/schemaToForm";
+import {
+  getAvgExecutionTime,
+  startProgressTimer,
+  startTrickleTimer,
+  inferModelType,
+} from "../../../../src/workflow/lib/progress-estimator";
 import { existsSync, readFileSync } from "fs";
 import { basename } from "path";
 
@@ -56,7 +62,20 @@ export class AITaskHandler extends BaseNodeHandler {
     const apiParams = this.buildApiParams(ctx);
     // Upload any local-asset:// URLs to CDN before sending to API
     const resolvedParams = await this.uploadLocalAssets(apiParams);
-    ctx.onProgress(5, `Running ${modelId}...`);
+
+    // Start progress timer: linear if API has data, trickle if not
+    const avgMs = await getAvgExecutionTime(modelId);
+    const stopTimer = avgMs
+      ? startProgressTimer(
+          avgMs,
+          (pct, msg) => ctx.onProgress(pct, msg),
+          modelId,
+        )
+      : startTrickleTimer(
+          inferModelType(modelId),
+          (pct, msg) => ctx.onProgress(pct, msg),
+          modelId,
+        );
 
     try {
       const client = getWaveSpeedClient();
@@ -64,6 +83,8 @@ export class AITaskHandler extends BaseNodeHandler {
       const result = await client.run(modelId, resolvedParams, {
         signal: ctx.abortSignal,
       });
+      stopTimer();
+      ctx.onProgress(100, "Done");
 
       // Normalize first output to URL string (API may return string or { url: "..." })
       const firstOutput =
@@ -110,6 +131,7 @@ export class AITaskHandler extends BaseNodeHandler {
         cost,
       };
     } catch (error) {
+      stopTimer();
       return {
         status: "error",
         outputs: {},

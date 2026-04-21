@@ -18,6 +18,12 @@ import { BROWSER_NODE_DEFINITIONS } from "./node-definitions";
 import { ffmpegMerge, ffmpegTrim, ffmpegConvert } from "./ffmpeg-helpers";
 import type { ModelParamSchema } from "@/workflow/types/node-defs";
 import { useModelsStore } from "@/stores/modelsStore";
+import {
+  getAvgExecutionTime,
+  startProgressTimer,
+  startTrickleTimer,
+  inferModelType,
+} from "@/workflow/lib/progress-estimator";
 
 const SKIP_KEYS = new Set([
   "modelId",
@@ -710,10 +716,31 @@ export async function executeWorkflowInBrowser(
             const apiParams = buildApiParams(params, inputs);
             // Ensure all URLs are valid HTTP URLs (upload local-asset:// / blob: to CDN)
             const resolvedParams = await uploadLocalUrls(apiParams, signal);
-            callbacks.onProgress(nodeId, 5, `Running ${modelId}...`);
-            const result = await workflowClient.run(modelId, resolvedParams, {
-              signal,
-            });
+
+            // Start progress timer: linear if API has data, trickle if not
+            const avgMs = await getAvgExecutionTime(modelId);
+            const stopTimer = avgMs
+              ? startProgressTimer(
+                  avgMs,
+                  (pct, msg) => callbacks.onProgress(nodeId, pct, msg),
+                  modelId,
+                )
+              : startTrickleTimer(
+                  inferModelType(modelId),
+                  (pct, msg) => callbacks.onProgress(nodeId, pct, msg),
+                  modelId,
+                );
+
+            let result;
+            try {
+              result = await workflowClient.run(modelId, resolvedParams, {
+                signal,
+              });
+            } finally {
+              stopTimer();
+            }
+            callbacks.onProgress(nodeId, 100, "Done");
+
             const outputUrl =
               Array.isArray(result.outputs) && result.outputs.length > 0
                 ? String(result.outputs[0])
@@ -1570,12 +1597,32 @@ export async function executeWorkflowInBrowser(
                       apiParams,
                       signal,
                     );
-                    callbacks.onProgress(childId, 10, `Running ${modelId}...`);
-                    const result = await workflowClient.run(
-                      modelId,
-                      resolvedParams,
-                      { signal },
-                    );
+
+                    const avgMs = await getAvgExecutionTime(modelId);
+                    const stopTimer = avgMs
+                      ? startProgressTimer(
+                          avgMs,
+                          (pct, msg) => callbacks.onProgress(childId, pct, msg),
+                          modelId,
+                        )
+                      : startTrickleTimer(
+                          inferModelType(modelId),
+                          (pct, msg) => callbacks.onProgress(childId, pct, msg),
+                          modelId,
+                        );
+
+                    let result;
+                    try {
+                      result = await workflowClient.run(
+                        modelId,
+                        resolvedParams,
+                        { signal },
+                      );
+                    } finally {
+                      stopTimer();
+                    }
+                    callbacks.onProgress(childId, 100, "Done");
+
                     const outputUrl =
                       Array.isArray(result.outputs) && result.outputs.length > 0
                         ? String(result.outputs[0])

@@ -337,6 +337,8 @@ function propertyToField(
       ...baseField,
       type: "select",
       options: prop.enum,
+      // If no explicit default, use the first enum value so the UI isn't blank
+      default: baseField.default ?? prop.enum[0],
     };
   }
 

@@ -36,13 +36,13 @@ const avgTimeCache = new Map<string, number>();
 const TYPE_MEDIAN_SEC: Record<string, number> = {
   "content-moderation": 2,
   "image-to-text": 5,
-  "llm": 10,
+  llm: 10,
   "speech-to-text": 12,
   "text-to-image": 14,
   "video-to-text": 14,
   "audio-to-audio": 16,
   "text-to-audio": 20,
-  "upscaler": 24,
+  upscaler: 24,
   "image-to-image": 26,
   "video-dubbing": 30,
   "image-effects": 35,
@@ -59,7 +59,7 @@ const TYPE_MEDIAN_SEC: Record<string, number> = {
   "image-to-3d": 297,
   "text-to-3d": 313,
   "video-to-audio": 30,
-  "training": 1051,
+  training: 1051,
 };
 
 const GENERIC_MEDIAN_SEC = 30; // fallback if type is unknown
@@ -102,16 +102,23 @@ export async function getAvgExecutionTime(
       if (base) ms = await fetchExecTime(base);
     }
     if (ms > 0) {
-      console.log(`[ProgressEstimator] "${modelUuid}" → ${ms}ms (linear strategy)`);
+      console.log(
+        `[ProgressEstimator] "${modelUuid}" → ${ms}ms (linear strategy)`,
+      );
       avgTimeCache.set(modelUuid, ms);
       return ms;
     }
     // Mark as "no data" so we don't re-fetch every run
-    console.log(`[ProgressEstimator] "${modelUuid}" → no data (trickle strategy)`);
+    console.log(
+      `[ProgressEstimator] "${modelUuid}" → no data (trickle strategy)`,
+    );
     avgTimeCache.set(modelUuid, 0);
     return null;
   } catch (err) {
-    console.warn(`[ProgressEstimator] "${modelUuid}" → fetch failed (trickle strategy):`, err);
+    console.warn(
+      `[ProgressEstimator] "${modelUuid}" → fetch failed (trickle strategy):`,
+      err,
+    );
     return null;
   }
 }
@@ -127,8 +134,8 @@ export function estimateProgress(elapsedMs: number, avgMs: number): number {
   }
 
   const overtime = elapsedMs - T;
-  const thresholds = [0, 0.10 * T, 0.30 * T, 0.60 * T, 1.00 * T];
-  const pctValues  = [95, 96,       97,       98,       99      ];
+  const thresholds = [0, 0.1 * T, 0.3 * T, 0.6 * T, 1.0 * T];
+  const pctValues = [95, 96, 97, 98, 99];
 
   for (let i = 1; i < thresholds.length; i++) {
     if (overtime < thresholds[i]) {

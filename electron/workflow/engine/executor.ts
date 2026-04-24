@@ -599,6 +599,7 @@ export class ExecutionEngine {
                 nodeId,
                 executionId,
                 resultIndex: i,
+                params: node.params,
               });
             }
           }

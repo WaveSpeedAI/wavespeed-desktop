@@ -1802,7 +1802,10 @@ export function WorkflowPage() {
           )}
           {isDirty && workflowId && (
             <span className="text-[10px] text-orange-400 mr-2">
-              {t("workflow.unsaved", "unsaved")}
+              {t("workflow.unsaved", "unsaved")} ·{" "}
+              {navigator.platform.toUpperCase().indexOf("MAC") >= 0
+                ? "⌘S"
+                : "Ctrl+S"}
             </span>
           )}
 
@@ -2029,11 +2032,43 @@ export function WorkflowPage() {
               </TooltipContent>
             </Tooltip>
             <div className="h-px bg-border" />
-            {/* More menu (Import / Export / Save) */}
+            {/* Save button — standalone for discoverability */}
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handleSave}
+                  data-guide="toolbar-save"
+                  className="flex items-center justify-center w-9 h-9 transition-colors text-muted-foreground hover:text-foreground hover:bg-accent"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                    <polyline points="17 21 17 13 7 13 7 21" />
+                    <polyline points="7 3 7 8 15 8" />
+                  </svg>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                {t("workflow.save", "Save")} (
+                {navigator.platform.toUpperCase().indexOf("MAC") >= 0
+                  ? "⌘S"
+                  : "Ctrl+S"}
+                )
+              </TooltipContent>
+            </Tooltip>
+            <div className="h-px bg-border" />
+            {/* More menu (Import / Export / Save as Template) */}
             <MoreMenu
               onImport={handleImport}
               onExport={handleExport}
-              onSave={handleSave}
               onSaveAsTemplate={handleSaveAsTemplate}
               data-guide="toolbar-more"
               position="left"
@@ -2772,7 +2807,6 @@ function MonitorToggleBtn() {
 function MoreMenu({
   onImport,
   onExport,
-  onSave,
   onSaveAsTemplate,
   className,
   "data-guide": dataGuide,
@@ -2780,7 +2814,6 @@ function MoreMenu({
 }: {
   onImport: () => void;
   onExport: () => void;
-  onSave: () => void;
   onSaveAsTemplate: () => void;
   className?: string;
   "data-guide"?: string;
@@ -2933,29 +2966,6 @@ function MoreMenu({
                 <polyline points="7 3 7 8 15 8" />
               </svg>
               {t("workflow.saveAsTemplate", "Save as Template")}
-            </button>
-            <button
-              onClick={() => {
-                onSave();
-                setOpen(false);
-              }}
-              className="w-full px-3 py-1.5 text-xs text-left hover:bg-[hsl(var(--accent))] transition-colors flex items-center gap-2"
-            >
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                <polyline points="17 21 17 13 7 13 7 21" />
-                <polyline points="7 3 7 8 15 8" />
-              </svg>
-              {t("workflow.save", "Save")}
             </button>
           </div>,
           document.body,

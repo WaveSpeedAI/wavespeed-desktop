@@ -8,6 +8,7 @@ import { v4 as uuid } from "uuid";
 import { historyIpc } from "../ipc/ipc-client";
 import { executeWorkflowInBrowser } from "../browser/run-in-browser";
 import { useAssetsStore, detectAssetType } from "@/stores/assetsStore";
+import { usePredictionInputsStore } from "@/stores/predictionInputsStore";
 import type { NodeStatus, EdgeStatus } from "@/workflow/types/execution";
 
 export interface RunSession {
@@ -78,6 +79,13 @@ function autoSaveWorkflowResults(
   // Skip if already saved (unlikely in browser but safe)
   if (hasAssetForExecution(executionId)) return;
 
+  // Persist node params so Customize can restore them later
+  if (params && Object.keys(params).length > 0) {
+    usePredictionInputsStore
+      .getState()
+      .save(executionId, modelId, workflowName || "Workflow", params);
+  }
+
   for (let i = 0; i < urls.length; i++) {
     const url = urls[i];
     if (!url) continue;
@@ -85,6 +93,7 @@ function autoSaveWorkflowResults(
     if (!assetType) continue;
     saveAsset(url, assetType, {
       modelId,
+      predictionId: executionId,
       resultIndex: i,
       source: "workflow",
       executionId,

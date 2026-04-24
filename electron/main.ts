@@ -53,7 +53,22 @@ async function downloadToFile(
         error: `HTTP ${response.status} downloading file`,
       };
     }
+    const contentLength = Number(response.headers.get("content-length") || 0);
     const buffer = Buffer.from(await response.arrayBuffer());
+
+    // Validate: if server declared Content-Length, actual bytes must match
+    if (contentLength > 0 && buffer.length < contentLength) {
+      return {
+        success: false,
+        error: `Truncated download: expected ${contentLength} bytes, got ${buffer.length}`,
+      };
+    }
+
+    // Reject empty downloads
+    if (buffer.length === 0) {
+      return { success: false, error: "Downloaded file is empty (0 bytes)" };
+    }
+
     writeFileSync(tempPath, buffer);
     renameSync(tempPath, destPath);
     const stats = statSync(destPath);
@@ -2033,6 +2048,9 @@ app.whenReady().then(() => {
     const filePath = decodeURIComponent(
       request.url.replace("local-asset://", ""),
     );
+    if (!existsSync(filePath)) {
+      return new Response("File not found", { status: 404 });
+    }
     return net.fetch(pathToFileURL(filePath).href);
   });
 

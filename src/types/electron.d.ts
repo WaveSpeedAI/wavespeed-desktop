@@ -296,6 +296,16 @@ export interface ElectronAPI {
 
   // Assets event listener (workflow executor pushes new assets)
   onAssetsNewAsset: (callback: (asset: unknown) => void) => () => void;
+
+  // Prediction inputs listener (workflow executor pushes node params for Customize)
+  onSavePredictionInputs: (
+    callback: (data: {
+      predictionId: string;
+      modelId: string;
+      modelName: string;
+      inputs: Record<string, unknown>;
+    }) => void,
+  ) => () => void;
 }
 
 export interface WorkflowAPI {

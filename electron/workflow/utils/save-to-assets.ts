@@ -34,6 +34,7 @@ interface AssetMetadata {
   fileSize: number;
   tags: string[];
   favorite: boolean;
+  predictionId?: string;
   originalUrl?: string;
   source?: "workflow" | "playground" | "free-tool" | "z-image";
   workflowId?: string;
@@ -104,7 +105,22 @@ function detectAssetType(url: string): "image" | "video" | "audio" | null {
   return null;
 }
 
-function guessExt(url: string): string {
+/** Map detected asset type to a sensible default extension (used when URL has none). */
+function defaultExtForType(type: "image" | "video" | "audio"): string {
+  switch (type) {
+    case "image":
+      return ".png";
+    case "video":
+      return ".mp4";
+    case "audio":
+      return ".mp3";
+  }
+}
+
+function guessExt(
+  url: string,
+  assetType?: "image" | "video" | "audio" | null,
+): string {
   try {
     const pathname = new URL(url).pathname;
     const ext = extname(pathname).toLowerCase();
@@ -112,16 +128,48 @@ function guessExt(url: string): string {
   } catch {
     /* ignore */
   }
-  return ".png";
+  // Fallback to type-appropriate extension instead of always .png
+  return assetType ? defaultExtForType(assetType) : ".png";
 }
 
+/** Minimum file sizes (bytes) to consider a download valid. Anything smaller is likely corrupt. */
+const MIN_FILE_SIZES: Record<string, number> = {
+  image: 100,
+  video: 1000,
+  audio: 100,
+};
+
 /** Download a remote URL to a local file path using Electron net.fetch (respects system proxy). */
-async function downloadToFile(url: string, destPath: string): Promise<boolean> {
+async function downloadToFile(
+  url: string,
+  destPath: string,
+  expectedType?: "image" | "video" | "audio" | null,
+): Promise<boolean> {
   const tempPath = destPath + ".download";
   try {
     const response = await net.fetch(url);
     if (!response.ok) return false;
+
+    const contentLength = Number(response.headers.get("content-length") || 0);
     const buffer = Buffer.from(await response.arrayBuffer());
+
+    // Validate: if server declared Content-Length, actual bytes must match
+    if (contentLength > 0 && buffer.length < contentLength) {
+      console.error(
+        `[save-to-assets] Truncated download: expected ${contentLength} bytes, got ${buffer.length} for ${url}`,
+      );
+      return false;
+    }
+
+    // Validate: file must meet minimum size for its type
+    const minSize = expectedType ? (MIN_FILE_SIZES[expectedType] ?? 0) : 0;
+    if (buffer.length < minSize) {
+      console.error(
+        `[save-to-assets] Download too small: ${buffer.length} bytes (min ${minSize}) for ${url}`,
+      );
+      return false;
+    }
+
     writeFileSync(tempPath, buffer);
     renameSync(tempPath, destPath);
     return true;
@@ -145,6 +193,8 @@ export interface SaveToAssetsOptions {
   nodeId: string;
   executionId: string;
   resultIndex?: number;
+  /** Node params at execution time — forwarded to renderer for Customize restore */
+  params?: Record<string, unknown>;
 }
 
 /**
@@ -181,7 +231,7 @@ export async function saveWorkflowResultToAssets(
       .toLowerCase()
       .replace(/-+/g, "-") || "workflow";
   const idx = options.resultIndex ?? 0;
-  const ext = guessExt(options.url).replace(/^\./, "");
+  const ext = guessExt(options.url, assetType).replace(/^\./, "");
   const fileName = `${modelSlug}_${options.executionId}_${idx}.${ext}`;
   const filePath = join(targetDir, fileName);
 
@@ -203,7 +253,7 @@ export async function saveWorkflowResultToAssets(
     options.url.startsWith("http://") ||
     options.url.startsWith("https://")
   ) {
-    ok = await downloadToFile(options.url, filePath);
+    ok = await downloadToFile(options.url, filePath, assetType);
   }
 
   if (!ok || !existsSync(filePath)) return;
@@ -213,6 +263,20 @@ export async function saveWorkflowResultToAssets(
     fileSize = statSync(filePath).size;
   } catch {
     /* ignore */
+  }
+
+  // Reject empty or suspiciously small files (likely corrupt downloads)
+  const minSize = MIN_FILE_SIZES[assetType] ?? 0;
+  if (fileSize < minSize) {
+    console.error(
+      `[save-to-assets] File too small (${fileSize} bytes), removing: ${filePath}`,
+    );
+    try {
+      unlinkSync(filePath);
+    } catch {
+      /* best-effort */
+    }
+    return;
   }
 
   const metadata: AssetMetadata = {
@@ -225,6 +289,7 @@ export async function saveWorkflowResultToAssets(
     fileSize,
     tags: [],
     favorite: false,
+    predictionId: options.executionId,
     originalUrl: options.url,
     source: "workflow",
     workflowId: options.workflowId,
@@ -238,10 +303,19 @@ export async function saveWorkflowResultToAssets(
   allMetadata.unshift(metadata);
   saveAssetsMetadata(allMetadata);
 
-  // Notify renderer windows so My Assets refreshes
+  // Notify renderer windows so My Assets refreshes and params are persisted
   for (const win of BrowserWindow.getAllWindows()) {
     try {
       win.webContents.send("assets:new-asset", metadata);
+      // Send node params so renderer can store them for Customize restore
+      if (options.params && Object.keys(options.params).length > 0) {
+        win.webContents.send("assets:save-prediction-inputs", {
+          predictionId: options.executionId,
+          modelId: options.modelId || "workflow",
+          modelName: options.workflowName || "Workflow",
+          inputs: options.params,
+        });
+      }
     } catch {
       /* window may be destroyed */
     }

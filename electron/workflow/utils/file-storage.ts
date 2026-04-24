@@ -272,7 +272,19 @@ export class FileStorageService {
     if (!response.ok) {
       throw new Error(`Download failed: HTTP ${response.status}`);
     }
+    const contentLength = Number(response.headers.get("content-length") || 0);
     const buffer = Buffer.from(await response.arrayBuffer());
+
+    // Validate: if server declared Content-Length, actual bytes must match
+    if (contentLength > 0 && buffer.length < contentLength) {
+      throw new Error(
+        `Truncated download: expected ${contentLength} bytes, got ${buffer.length}`,
+      );
+    }
+    if (buffer.length === 0) {
+      throw new Error("Downloaded file is empty (0 bytes)");
+    }
+
     fs.writeFileSync(dest, buffer);
   }
 

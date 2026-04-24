@@ -438,6 +438,13 @@ export const electronAPIWeb: ElectronAPI = {
       /* no-op */
     };
   },
+
+  // Prediction inputs listener (no-op in web — browser-side saves directly to store)
+  onSavePredictionInputs: () => {
+    return () => {
+      /* no-op */
+    };
+  },
 };
 
 // Inject electronAPI when running in a browser environment.

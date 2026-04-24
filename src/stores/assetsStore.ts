@@ -232,6 +232,25 @@ export const useAssetsStore = create<AssetsState>((set, get) => ({
         if (assets.some((a) => a.id === asset.id)) return;
         useAssetsStore.setState({ assets: [asset, ...assets] });
       });
+
+      // Listen for prediction inputs from workflow executor (for Customize restore)
+      if (window.electronAPI.onSavePredictionInputs) {
+        window.electronAPI.onSavePredictionInputs((data) => {
+          if (!data?.predictionId || !data?.inputs) return;
+          import("@/stores/predictionInputsStore").then(
+            ({ usePredictionInputsStore }) => {
+              usePredictionInputsStore
+                .getState()
+                .save(
+                  data.predictionId,
+                  data.modelId,
+                  data.modelName,
+                  data.inputs,
+                );
+            },
+          );
+        });
+      }
     }
 
     try {

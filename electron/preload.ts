@@ -382,6 +382,29 @@ const electronAPI = {
     ipcRenderer.on("assets:new-asset", handler);
     return () => ipcRenderer.removeListener("assets:new-asset", handler);
   },
+
+  // Prediction inputs listener (workflow executor pushes node params for Customize)
+  onSavePredictionInputs: (
+    callback: (data: {
+      predictionId: string;
+      modelId: string;
+      modelName: string;
+      inputs: Record<string, unknown>;
+    }) => void,
+  ): (() => void) => {
+    const handler = (_: unknown, data: unknown) =>
+      callback(
+        data as {
+          predictionId: string;
+          modelId: string;
+          modelName: string;
+          inputs: Record<string, unknown>;
+        },
+      );
+    ipcRenderer.on("assets:save-prediction-inputs", handler);
+    return () =>
+      ipcRenderer.removeListener("assets:save-prediction-inputs", handler);
+  },
 };
 
 // ─── Workflow API (isolated namespace to avoid collision with electronAPI) ────

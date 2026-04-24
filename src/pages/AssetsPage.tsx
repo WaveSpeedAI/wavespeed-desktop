@@ -79,6 +79,7 @@ import {
   GitBranch,
   Wrench,
   Cpu,
+  AlertCircle,
 } from "lucide-react";
 import type {
   AssetMetadata,
@@ -166,12 +167,7 @@ function AssetTypeIcon({
 
 // Format date
 function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+  return new Date(dateStr).toLocaleString();
 }
 
 // Check if running in desktop mode
@@ -458,6 +454,7 @@ export function AssetsPage() {
   // Dialog state
   const [previewAsset, setPreviewAsset] = useState<AssetMetadata | null>(null);
   const deferredPreviewAsset = useDeferredClose(previewAsset);
+  const [previewError, setPreviewError] = useState(false);
   const [deleteConfirmAsset, setDeleteConfirmAsset] =
     useState<AssetMetadata | null>(null);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
@@ -803,6 +800,7 @@ export function AssetsPage() {
         newIdx = currentIdx === paginatedAssets.length - 1 ? 0 : currentIdx + 1;
       }
       setPreviewAsset(paginatedAssets[newIdx]);
+      setPreviewError(false);
     },
     [previewAsset, paginatedAssets],
   );
@@ -1180,7 +1178,15 @@ export function AssetsPage() {
       )}
 
       {/* Preview Dialog */}
-      <Dialog open={!!previewAsset} onOpenChange={() => setPreviewAsset(null)}>
+      <Dialog
+        open={!!previewAsset}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPreviewAsset(null);
+            setPreviewError(false);
+          }
+        }}
+      >
         <DialogContent className="max-w-4xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -1231,27 +1237,55 @@ export function AssetsPage() {
                 </Button>
               </>
             )}
-            {deferredPreviewAsset?.type === "image" && (
+            {deferredPreviewAsset?.type === "image" && !previewError && (
               <img
                 src={getAssetUrl(deferredPreviewAsset)}
                 alt={deferredPreviewAsset.fileName}
                 className="max-w-full max-h-[60vh] mx-auto object-contain"
+                onError={() => setPreviewError(true)}
               />
             )}
-            {deferredPreviewAsset?.type === "video" && (
+            {deferredPreviewAsset?.type === "video" && !previewError && (
               <video
                 src={getAssetUrl(deferredPreviewAsset)}
                 controls
                 className="max-w-full max-h-[60vh] mx-auto"
+                onError={() => setPreviewError(true)}
               />
             )}
-            {deferredPreviewAsset?.type === "audio" && (
+            {deferredPreviewAsset?.type === "audio" && !previewError && (
               <div className="flex items-center justify-center p-8">
                 <audio
                   src={getAssetUrl(deferredPreviewAsset)}
                   controls
                   className="w-full max-w-md"
+                  onError={() => setPreviewError(true)}
                 />
+              </div>
+            )}
+            {previewError && deferredPreviewAsset && (
+              <div className="flex flex-col items-center justify-center p-8 gap-3 text-muted-foreground">
+                <AlertCircle className="h-10 w-10" />
+                <p className="text-sm">
+                  {t(
+                    "assets.previewFailed",
+                    "Unable to load this file. It may be corrupted or missing.",
+                  )}
+                </p>
+                <div className="text-[11px] bg-muted rounded-lg p-3 max-w-md w-full space-y-1 font-mono">
+                  <p>type: {deferredPreviewAsset.type}</p>
+                  <p>source: {deferredPreviewAsset.source || "unknown"}</p>
+                  <p>size: {formatBytes(deferredPreviewAsset.fileSize)}</p>
+                  <p className="truncate" title={deferredPreviewAsset.filePath}>
+                    path: {deferredPreviewAsset.filePath || "N/A"}
+                  </p>
+                  <p
+                    className="truncate"
+                    title={deferredPreviewAsset.originalUrl}
+                  >
+                    url: {deferredPreviewAsset.originalUrl || "N/A"}
+                  </p>
+                </div>
               </div>
             )}
             {(deferredPreviewAsset?.type === "text" ||

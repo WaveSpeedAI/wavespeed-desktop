@@ -22,7 +22,6 @@ import {
   detectAssetType,
   generateDownloadFilename,
 } from "@/stores/assetsStore";
-import { storeSavedPredictionIds } from "@/stores/playgroundStore";
 import { toast } from "@/hooks/useToast";
 import { cn } from "@/lib/utils";
 import type { BatchResult, BatchQueueItem } from "@/types/batch";
@@ -195,11 +194,9 @@ export function BatchOutputGrid({
         if (autoSavedIndexesRef.current.has(result.index)) continue;
         if (result.error || result.outputs.length === 0) continue;
 
-        // Skip if store-level auto-save already handled this prediction
         if (
           result.prediction?.id &&
-          (storeSavedPredictionIds.has(result.prediction.id) ||
-            hasAssetForPrediction(result.prediction.id))
+          hasAssetForPrediction(result.prediction.id)
         ) {
           autoSavedIndexesRef.current.add(result.index);
           setSavedIndexes((prev) => new Set(prev).add(result.index));

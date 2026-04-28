@@ -6,7 +6,6 @@ import {
   detectAssetType,
   generateDownloadFilename,
 } from "@/stores/assetsStore";
-import { storeSavedPredictionIds } from "@/stores/playgroundStore";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -135,7 +134,7 @@ export function OutputDisplay({
   const [gameEndedWithResults, setGameEndedWithResults] = useState(false);
   const prevOutputsLengthRef = useRef(0);
 
-  const { settings, loadSettings, saveAsset, hasAssetForPrediction } = useAssetsStore();
+  const { settings, loadSettings, saveAsset } = useAssetsStore();
 
   // Build list of media outputs for fullscreen navigation
   const mediaOutputs = useMemo(() => {
@@ -239,18 +238,6 @@ export function OutputDisplay({
     if (!settings.autoSaveAssets || !modelId || outputs.length === 0) return;
     if (!prediction?.id) return;
 
-    // Skip if store-level auto-save already handled this prediction
-    if (storeSavedPredictionIds.has(prediction.id) || hasAssetForPrediction(prediction.id)) {
-      // Mark all outputs as saved so the UI shows the correct state
-      for (let i = 0; i < outputs.length; i++) {
-        const output = outputs[i];
-        if (typeof output === "string" && detectAssetType(output)) {
-          setSavedIndexes((prev) => new Set(prev).add(i));
-        }
-      }
-      return;
-    }
-
     // Find outputs not yet auto-saved
     const unsaved: { output: string; index: number }[] = [];
     for (let i = 0; i < outputs.length; i++) {
@@ -316,7 +303,6 @@ export function OutputDisplay({
     modelId,
     settings.autoSaveAssets,
     saveAsset,
-    hasAssetForPrediction,
     t,
   ]);
 

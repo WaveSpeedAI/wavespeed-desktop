@@ -135,7 +135,8 @@ export function OutputDisplay({
   const [gameEndedWithResults, setGameEndedWithResults] = useState(false);
   const prevOutputsLengthRef = useRef(0);
 
-  const { settings, loadSettings, saveAsset, hasAssetForPrediction } = useAssetsStore();
+  const { settings, loadSettings, saveAsset, hasAssetForPrediction } =
+    useAssetsStore();
 
   // Build list of media outputs for fullscreen navigation
   const mediaOutputs = useMemo(() => {
@@ -240,7 +241,10 @@ export function OutputDisplay({
     if (!prediction?.id) return;
 
     // Skip if store-level auto-save already handled this prediction
-    if (storeSavedPredictionIds.has(prediction.id) || hasAssetForPrediction(prediction.id)) {
+    if (
+      storeSavedPredictionIds.has(prediction.id) ||
+      hasAssetForPrediction(prediction.id)
+    ) {
       // Mark all outputs as saved so the UI shows the correct state
       for (let i = 0; i < outputs.length; i++) {
         const output = outputs[i];

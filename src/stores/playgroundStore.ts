@@ -11,10 +11,7 @@ import type { BatchConfig, BatchState, BatchResult } from "@/types/batch";
 import { DEFAULT_BATCH_CONFIG } from "@/types/batch";
 import { persistentStorage } from "@/lib/storage";
 import { isImageUrl, isVideoUrl } from "@/lib/mediaUtils";
-import {
-  useAssetsStore,
-  detectAssetType,
-} from "@/stores/assetsStore";
+import { useAssetsStore, detectAssetType } from "@/stores/assetsStore";
 
 /* ── Store-level auto-save to My Assets ───────────────────────────────── */
 

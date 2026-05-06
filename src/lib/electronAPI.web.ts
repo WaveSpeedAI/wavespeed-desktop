@@ -406,6 +406,14 @@ export const electronAPIWeb: ElectronAPI = {
     return { success: false, error: "Not available in web version" };
   },
 
+  sdCheckCudaDlls: async () => {
+    return { success: true, missing: [] };
+  },
+
+  sdExtractCudaDll: async () => {
+    return { success: false, error: "Not available in web version" };
+  },
+
   // Persistent key-value state (localStorage in web — same keys as persistentStorage)
   getState: async (key: string): Promise<unknown> => {
     try {

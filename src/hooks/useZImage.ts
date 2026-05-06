@@ -29,6 +29,30 @@ const MODELS = {
   },
 };
 
+/**
+ * CUDA 12 runtime DLLs required by the Windows Vulkan build of sd.cpp.
+ * Packaged as Python wheels on PyPI by NVIDIA — we download and extract the DLLs.
+ * Uses PyPI official source for overseas users; falls back to Tsinghua mirror.
+ */
+const CUDA_DLLS = {
+  cublas: {
+    dllNames: ["cublas64_12.dll", "cublasLt64_12.dll"],
+    urls: [
+      "https://files.pythonhosted.org/packages/84/f7/985e9bdbe3e0ac9298fcc8cfa51a392862a46a0ffaccbbd56939b62a9c83/nvidia_cublas_cu12-12.6.4.1-py3-none-win_amd64.whl",
+      "https://pypi.tuna.tsinghua.edu.cn/packages/84/f7/985e9bdbe3e0ac9298fcc8cfa51a392862a46a0ffaccbbd56939b62a9c83/nvidia_cublas_cu12-12.6.4.1-py3-none-win_amd64.whl",
+    ],
+    minSize: 400 * 1024 * 1024, // ~414MB
+  },
+  cudart: {
+    dllNames: ["cudart64_12.dll"],
+    urls: [
+      "https://files.pythonhosted.org/packages/fa/76/4c80fa138333cc975743fd0687a745fccb30d167f906f13c1c7f9a85e5ea/nvidia_cuda_runtime_cu12-12.6.77-py3-none-win_amd64.whl",
+      "https://pypi.tuna.tsinghua.edu.cn/packages/fa/76/4c80fa138333cc975743fd0687a745fccb30d167f906f13c1c7f9a85e5ea/nvidia_cuda_runtime_cu12-12.6.77-py3-none-win_amd64.whl",
+    ],
+    minSize: 500 * 1024, // ~850KB
+  },
+};
+
 interface UseZImageOptions {
   onPhase?: (phase: string) => void;
   onProgress?: (phase: string, progress: number, detail?: unknown) => void;
@@ -414,6 +438,11 @@ export function useZImage(options: UseZImageOptions = {}) {
         throw new Error(extractResult?.error || "Failed to extract SD binary");
       }
 
+      // Windows: ensure CUDA 12 DLLs are present (the Vulkan build links against them)
+      if (platform === "win32" && window.electronAPI?.sdCheckCudaDlls) {
+        await ensureCudaDlls();
+      }
+
       console.log("[useZImage] SD Binary extracted and verified successfully");
       const detail: ProgressDetail = {
         current: 100,
@@ -444,6 +473,108 @@ export function useZImage(options: UseZImageOptions = {}) {
       throw error; // Re-throw to stop the download chain
     }
   }, [updateBinaryStatus]);
+
+  /**
+   * Ensure CUDA 12 DLLs are present in sd-bin (Windows only).
+   * Downloads NVIDIA wheel packages and extracts the required DLLs.
+   */
+  const ensureCudaDlls = useCallback(async () => {
+    if (!window.electronAPI?.sdCheckCudaDlls) return;
+
+    const check = await window.electronAPI.sdCheckCudaDlls();
+    if (!check.success || check.missing.length === 0) {
+      console.log("[useZImage] All CUDA DLLs present, skipping");
+      return;
+    }
+
+    const missingNames = new Set(check.missing.map((m) => m.name));
+    console.log(
+      `[useZImage] Missing CUDA DLLs: ${[...missingNames].join(", ")}`,
+    );
+
+    // Determine which whl packages we need to download
+    const packagesToDownload: Array<{
+      key: string;
+      urls: string[];
+      dllNames: string[];
+      minSize: number;
+    }> = [];
+
+    for (const [key, pkg] of Object.entries(CUDA_DLLS)) {
+      const needed = pkg.dllNames.some((name) => missingNames.has(name));
+      if (needed) {
+        packagesToDownload.push({ key, ...pkg });
+      }
+    }
+
+    for (const pkg of packagesToDownload) {
+      console.log(
+        `[useZImage] Downloading CUDA package for: ${pkg.dllNames.join(", ")}`,
+      );
+
+      const sdBinDir =
+        check.sdBinDir ||
+        check.missing[0]?.destPath.replace(/[/\\][^/\\]+$/, "");
+      const whlPath = `${sdBinDir}/${pkg.key}.whl`;
+
+      // Try each URL (PyPI official source first, then Tsinghua mirror as fallback)
+      let downloaded = false;
+      for (const url of pkg.urls) {
+        try {
+          console.log(`[useZImage] Trying: ${url}`);
+          const downloader = new ChunkedDownloader();
+          const result = await downloader.download({
+            url,
+            destPath: whlPath,
+            onProgress: (progress) => {
+              console.log(
+                `[useZImage] CUDA ${pkg.key}: ${progress.progress}%`,
+              );
+            },
+            chunkSize: 10 * 1024 * 1024,
+            minValidSize: pkg.minSize,
+            timeout: getDownloadTimeoutMs(),
+          });
+
+          if (result.success) {
+            downloaded = true;
+            break;
+          }
+          console.warn(
+            `[useZImage] Download failed from ${url}: ${result.error}`,
+          );
+        } catch (err) {
+          console.warn(
+            `[useZImage] Download error from ${url}:`,
+            (err as Error).message,
+          );
+        }
+      }
+
+      if (!downloaded) {
+        throw new Error(
+          `Failed to download CUDA DLLs (${pkg.dllNames.join(", ")}). Please check your network connection.`,
+        );
+      }
+
+      // Extract DLLs from the whl
+      const extractResult = await window.electronAPI.sdExtractCudaDll!(
+        whlPath,
+        pkg.dllNames,
+      );
+      if (!extractResult?.success) {
+        throw new Error(
+          extractResult?.error || `Failed to extract ${pkg.key} DLLs`,
+        );
+      }
+
+      console.log(
+        `[useZImage] CUDA ${pkg.key} DLLs installed: ${extractResult.extracted?.join(", ")}`,
+      );
+    }
+
+    console.log("[useZImage] All CUDA DLLs installed successfully");
+  }, []);
 
   /**
    * Generate image

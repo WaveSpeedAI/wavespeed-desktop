@@ -226,6 +226,8 @@ const electronAPI = {
     steps: number;
     cfgScale: number;
     seed?: number;
+    samplingMethod?: string;
+    scheduler?: string;
     outputPath: string;
   }): Promise<{ success: boolean; outputPath?: string; error?: string }> =>
     ipcRenderer.invoke("sd-generate-image", params),
@@ -367,6 +369,19 @@ const electronAPI = {
     destPath: string,
   ): Promise<{ success: boolean; path?: string; error?: string }> =>
     ipcRenderer.invoke("sd-extract-binary", zipPath, destPath),
+
+  // CUDA DLL management (Windows: sd.cpp Vulkan build requires CUDA 12 DLLs)
+  sdCheckCudaDlls: (): Promise<{
+    success: boolean;
+    missing: Array<{ name: string; destPath: string }>;
+    sdBinDir?: string;
+    error?: string;
+  }> => ipcRenderer.invoke("sd-check-cuda-dlls"),
+  sdExtractCudaDll: (
+    whlPath: string,
+    dllNames: string[],
+  ): Promise<{ success: boolean; extracted?: string[]; error?: string }> =>
+    ipcRenderer.invoke("sd-extract-cuda-dll", whlPath, dllNames),
 
   // Persistent key-value state (survives app restarts, unlike renderer localStorage)
   getState: (key: string): Promise<unknown> =>

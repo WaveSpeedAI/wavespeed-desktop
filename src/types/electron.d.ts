@@ -289,6 +289,18 @@ export interface ElectronAPI {
     destPath: string,
   ) => Promise<{ success: boolean; path?: string; error?: string }>;
 
+  // CUDA DLL management (Windows: sd.cpp Vulkan build requires CUDA 12 DLLs)
+  sdCheckCudaDlls: () => Promise<{
+    success: boolean;
+    missing: Array<{ name: string; destPath: string }>;
+    sdBinDir?: string;
+    error?: string;
+  }>;
+  sdExtractCudaDll: (
+    whlPath: string,
+    dllNames: string[],
+  ) => Promise<{ success: boolean; extracted?: string[]; error?: string }>;
+
   // Persistent key-value state (survives app restarts)
   getState: (key: string) => Promise<unknown>;
   setState: (key: string, value: unknown) => Promise<boolean>;

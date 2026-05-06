@@ -217,7 +217,7 @@ interface AssetMetadata {
   favorite: boolean;
   predictionId?: string;
   originalUrl?: string;
-  source?: "playground" | "workflow" | "free-tool";
+  source?: "playground" | "workflow" | "free-tool" | "z-image";
   workflowId?: string;
   workflowName?: string;
   nodeId?: string;
@@ -1246,6 +1246,102 @@ ipcMain.handle("sd-extract-binary", (_, zipPath: string, destPath: string) => {
   }
 });
 
+/**
+ * Check which CUDA DLLs are missing from the sd-bin directory (Windows only).
+ * The Vulkan build of sd.cpp links against CUDA 12 cublas/cudart at load time,
+ * so these DLLs must be present even if the user only uses Vulkan.
+ *
+ * Returns a list of { name, whlUrl, destPath } for each missing DLL.
+ */
+ipcMain.handle("sd-check-cuda-dlls", () => {
+  try {
+    if (process.platform !== "win32") {
+      return { success: true, missing: [] };
+    }
+
+    const sdBinDir = join(app.getPath("userData"), "sd-bin");
+    if (!existsSync(sdBinDir)) {
+      return { success: true, missing: [] };
+    }
+
+    // The three CUDA 12 DLLs required by the Vulkan build
+    const requiredDlls = [
+      "cublas64_12.dll",
+      "cublasLt64_12.dll",
+      "cudart64_12.dll",
+    ];
+
+    const missing: Array<{ name: string; destPath: string }> = [];
+    for (const dll of requiredDlls) {
+      const dllPath = join(sdBinDir, dll);
+      if (!existsSync(dllPath)) {
+        missing.push({ name: dll, destPath: dllPath });
+      }
+    }
+
+    return { success: true, missing, sdBinDir };
+  } catch (error) {
+    return { success: false, error: (error as Error).message, missing: [] };
+  }
+});
+
+/**
+ * Extract specific DLL files from a downloaded .whl (zip) file into sd-bin.
+ * whlPath: path to the downloaded .whl file
+ * dllNames: array of DLL filenames to extract (e.g. ["cublas64_12.dll"])
+ */
+ipcMain.handle(
+  "sd-extract-cuda-dll",
+  (_, whlPath: string, dllNames: string[]) => {
+    try {
+      console.log("[SD CUDA] Extracting DLLs from:", whlPath);
+
+      if (!existsSync(whlPath)) {
+        throw new Error(`Whl file not found: ${whlPath}`);
+      }
+
+      const sdBinDir = join(app.getPath("userData"), "sd-bin");
+      if (!existsSync(sdBinDir)) {
+        mkdirSync(sdBinDir, { recursive: true });
+      }
+
+      const zip = new AdmZip(whlPath);
+      const entries = zip.getEntries();
+      const extracted: string[] = [];
+
+      for (const entry of entries) {
+        const entryName = entry.entryName.split("/").pop() || "";
+        if (dllNames.includes(entryName)) {
+          const destPath = join(sdBinDir, entryName);
+          zip.extractEntryTo(entry, sdBinDir, false, true);
+          console.log(`[SD CUDA] Extracted: ${entryName} -> ${destPath}`);
+          extracted.push(entryName);
+        }
+      }
+
+      // Clean up the whl file after extraction
+      try {
+        unlinkSync(whlPath);
+        console.log("[SD CUDA] Cleaned up whl file:", whlPath);
+      } catch {
+        // best-effort cleanup
+      }
+
+      if (extracted.length === 0) {
+        throw new Error(
+          `None of the requested DLLs found in whl: ${dllNames.join(", ")}`,
+        );
+      }
+
+      console.log(`[SD CUDA] Successfully extracted: ${extracted.join(", ")}`);
+      return { success: true, extracted };
+    } catch (error) {
+      console.error("[SD CUDA] Extraction error:", error);
+      return { success: false, error: (error as Error).message };
+    }
+  },
+);
+
 // Auto-updater state
 let mainWindow: BrowserWindow | null = null;
 
@@ -1427,11 +1523,17 @@ ipcMain.handle("sd-get-binary-path", () => {
     }
 
     // Priority 2: Check pre-compiled binary in resources
+    const arch = process.arch;
     const basePath = is.dev
       ? join(__dirname, "../../resources/bin/stable-diffusion")
       : join(process.resourcesPath, "bin/stable-diffusion");
 
-    const resourceBinaryPath = join(basePath, binaryName);
+    // Check with platform-arch subdirectory (consistent with sd-generate-image)
+    const resourceBinaryPath = join(
+      basePath,
+      `${platform}-${arch}`,
+      binaryName,
+    );
     if (existsSync(resourceBinaryPath)) {
       if (!binaryPathLoggedOnce) {
         console.log("[SD] Using pre-compiled binary:", resourceBinaryPath);
@@ -1440,10 +1542,20 @@ ipcMain.handle("sd-get-binary-path", () => {
       return { success: true, path: resourceBinaryPath };
     }
 
+    // Fallback: Check without platform-arch subdirectory (legacy layout)
+    const legacyBinaryPath = join(basePath, binaryName);
+    if (existsSync(legacyBinaryPath)) {
+      if (!binaryPathLoggedOnce) {
+        console.log("[SD] Using legacy pre-compiled binary:", legacyBinaryPath);
+        binaryPathLoggedOnce = true;
+      }
+      return { success: true, path: legacyBinaryPath };
+    }
+
     // Binary not found in any location
     return {
       success: false,
-      error: `Binary not found. Checked: ${userDataBinaryPath}, ${resourceBinaryPath}`,
+      error: `Binary not found. Checked: ${userDataBinaryPath}, ${resourceBinaryPath}, ${legacyBinaryPath}`,
     };
   } catch (error) {
     return {
@@ -1630,7 +1742,7 @@ ipcMain.handle(
         console.log("[SD Generate] Using downloaded binary:", binaryPath);
       }
 
-      // Priority 2: Check pre-compiled binary in resources
+      // Priority 2: Check pre-compiled binary in resources (with platform-arch subdirectory)
       if (!binaryPath) {
         const basePath = is.dev
           ? join(__dirname, "../../resources/bin/stable-diffusion")
@@ -1644,6 +1756,18 @@ ipcMain.handle(
         if (existsSync(resourceBinaryPath)) {
           binaryPath = resourceBinaryPath;
           console.log("[SD Generate] Using pre-compiled binary:", binaryPath);
+        }
+
+        // Fallback: Check without platform-arch subdirectory (legacy layout)
+        if (!binaryPath) {
+          const legacyBinaryPath = join(basePath, binaryName);
+          if (existsSync(legacyBinaryPath)) {
+            binaryPath = legacyBinaryPath;
+            console.log(
+              "[SD Generate] Using legacy pre-compiled binary:",
+              binaryPath,
+            );
+          }
         }
       }
 

@@ -124,7 +124,7 @@ export function SettingsPage() {
   } | null>(null);
 
   // Current app version - keep in sync with package.json and build.gradle
-  const currentVersion = "2.1.4";
+  const currentVersion = "2.1.5";
 
   // (APK download progress state removed - now opens browser directly)
 

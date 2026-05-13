@@ -9,6 +9,9 @@ import type {
 import packageJson from "../../package.json";
 
 const BASE_URL = "https://api.wavespeed.ai";
+const WEB_BASE_URL = "https://wavespeed.ai";
+const WEB_CENTER_URL = `${WEB_BASE_URL}/center`;
+const PRICE_SCALE = 1_000_000;
 
 // Get app version from package.json
 const version = packageJson.version;
@@ -153,9 +156,28 @@ export interface HistoryFilters {
   created_before?: string;
 }
 
+export interface PricingResult {
+  price: number;
+  discountedPrice: number;
+  discountRate?: number;
+}
+
+interface PricingPayload {
+  unit_price?: number;
+  base_price?: number;
+  price?: number;
+  discounted_price?: number;
+  discount_rate?: number;
+}
+
 class WaveSpeedClient {
   private client: AxiosInstance;
+  private webClient: AxiosInstance;
   private apiKey: string = "";
+  private promotionRatesPromises = new Map<
+    string,
+    Promise<Map<string, number>>
+  >();
 
   constructor(clientName?: string) {
     this.client = axios.create({
@@ -175,6 +197,14 @@ class WaveSpeedClient {
           })(),
         "X-Client-Version": version,
         "X-Client-OS": getOperatingSystem(),
+      },
+    });
+
+    this.webClient = axios.create({
+      baseURL: WEB_CENTER_URL,
+      timeout: 60000,
+      headers: {
+        "Content-Type": "application/json",
       },
     });
 
@@ -553,12 +583,57 @@ class WaveSpeedClient {
   async calculatePricing(
     modelId: string,
     inputs: Record<string, unknown>,
-  ): Promise<number> {
+  ): Promise<PricingResult> {
+    const promotionRatePromise = this.getPromotionDiscountRate(modelId);
+
+    try {
+      const response = await this.webClient.post<{
+        code: number;
+        message: string;
+        data: PricingPayload;
+      }>("/default/api/v1/model_product/calculate", {
+        model_uuid: modelId,
+        inputs,
+      });
+
+      if (response.data.code !== 200) {
+        throw new APIError(
+          response.data.message || "Failed to calculate pricing",
+          {
+            code: response.data.code,
+            details: response.data,
+          },
+        );
+      }
+
+      const pricing = this.normalizePricingResult(response.data.data);
+      const promotionRate = await promotionRatePromise;
+      if (
+        typeof promotionRate === "number" &&
+        promotionRate > 0 &&
+        promotionRate < 100 &&
+        pricing.discountedPrice >= pricing.price
+      ) {
+        return {
+          price: pricing.price,
+          discountedPrice: pricing.price * (promotionRate / 100),
+          discountRate: promotionRate,
+        };
+      }
+
+      return pricing;
+    } catch (error) {
+      console.warn(
+        "[pricing] Official web pricing failed; falling back to API v3 pricing",
+        error,
+      );
+    }
+
     try {
       const response = await this.client.post<{
         code: number;
         message: string;
-        data: { unit_price: number };
+        data: PricingPayload;
       }>("/api/v3/model/pricing", {
         model_id: modelId,
         inputs,
@@ -574,10 +649,131 @@ class WaveSpeedClient {
         );
       }
 
-      return response.data.data.unit_price;
+      const pricing = this.normalizePricingResult(response.data.data);
+      const promotionRate = await promotionRatePromise;
+      if (
+        typeof promotionRate === "number" &&
+        promotionRate > 0 &&
+        promotionRate < 100 &&
+        pricing.discountedPrice >= pricing.price
+      ) {
+        return {
+          price: pricing.price,
+          discountedPrice: pricing.price * (promotionRate / 100),
+          discountRate: promotionRate,
+        };
+      }
+
+      return pricing;
     } catch (error) {
       throw createAPIError(error, "Failed to calculate pricing");
     }
+  }
+
+  private normalizePricingResult(data: PricingPayload): PricingResult {
+    let discountedPrice = data.discounted_price ?? data.unit_price;
+    let price = data.price ?? data.unit_price ?? data.discounted_price;
+
+    if (
+      data.discounted_price === undefined &&
+      data.price === undefined &&
+      typeof data.unit_price === "number" &&
+      typeof data.discount_rate === "number" &&
+      data.discount_rate > 0 &&
+      data.discount_rate < 100
+    ) {
+      discountedPrice = data.unit_price;
+      price = (data.unit_price * 100) / data.discount_rate;
+    }
+
+    if (typeof price !== "number" || typeof discountedPrice !== "number") {
+      throw new APIError("Invalid pricing response", { details: data });
+    }
+
+    return {
+      price: this.normalizePrice(price),
+      discountedPrice: this.normalizePrice(discountedPrice),
+      discountRate: data.discount_rate,
+    };
+  }
+
+  private normalizePrice(value: number): number {
+    return Math.abs(value) >= PRICE_SCALE / 100 ? value / PRICE_SCALE : value;
+  }
+
+  private async getPromotionDiscountRate(
+    modelId: string,
+  ): Promise<number | undefined> {
+    const rates = await this.getPromotionRates(modelId);
+    return rates.get(modelId);
+  }
+
+  private async getPromotionRates(
+    modelId: string,
+  ): Promise<Map<string, number>> {
+    if (!this.promotionRatesPromises.has(modelId)) {
+      const promise = this.fetchPromotionRates(modelId).catch((error) => {
+        console.warn("[pricing] Failed to load official promotions", error);
+        return new Map<string, number>();
+      });
+      this.promotionRatesPromises.set(modelId, promise);
+    }
+
+    return this.promotionRatesPromises.get(modelId)!;
+  }
+
+  private async fetchPromotionRates(
+    modelId: string,
+  ): Promise<Map<string, number>> {
+    const html = await this.fetchOfficialModelsHtml(modelId);
+    const rates = new Map<string, number>();
+    const marker = "initialPromotions";
+    const markerIndex = html.indexOf(marker);
+    if (markerIndex === -1) return rates;
+
+    const slice = html.slice(markerIndex, markerIndex + 200_000);
+    const patterns = [
+      /\\"model_uuid\\":\\"(.*?)\\",\\"discount_rate\\":(\d+)/g,
+      /"model_uuid":"(.*?)","discount_rate":(\d+)/g,
+    ];
+
+    for (const pattern of patterns) {
+      for (const match of slice.matchAll(pattern)) {
+        const modelUuid = this.decodeHtmlJsonValue(match[1]);
+        const discountRate = Number(match[2]);
+        if (modelUuid && discountRate > 0 && discountRate < 100) {
+          rates.set(modelUuid, discountRate);
+        }
+      }
+    }
+
+    return rates;
+  }
+
+  private async fetchOfficialModelsHtml(modelId: string): Promise<string> {
+    if (
+      typeof window !== "undefined" &&
+      window.electronAPI?.fetchOfficialModelsHtml
+    ) {
+      return window.electronAPI.fetchOfficialModelsHtml(modelId);
+    }
+
+    const response = await axios.get<string>(
+      `${WEB_BASE_URL}/models/${modelId}`,
+      {
+        timeout: 30000,
+        headers: { Accept: "text/html" },
+      },
+    );
+    return response.data;
+  }
+
+  private decodeHtmlJsonValue(value: string): string {
+    return value
+      .replace(/\\u002F/g, "/")
+      .replace(/\\\//g, "/")
+      .replace(/\\"/g, '"')
+      .replace(/\\\\/g, "\\");
   }
 
   async getBalance(): Promise<number> {

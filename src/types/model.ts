@@ -51,6 +51,8 @@ export interface Model {
   description?: string;
   type?: string;
   base_price?: number;
+  discount_rate?: number;
+  promotion_discount_rate?: number;
   sort_order?: number;
   api_schema?: {
     openapi?: string;

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { usePlaygroundStore } from "@/stores/playgroundStore";
@@ -7,7 +7,12 @@ import { useApiKeyStore } from "@/stores/apiKeyStore";
 import { useTemplateStore } from "@/stores/templateStore";
 import { usePredictionInputsStore } from "@mobile/stores/predictionInputsStore";
 import { apiClient } from "@/api/client";
-import { getDefaultValues } from "@/lib/schemaToForm";
+import { getDefaultValues, normalizePayloadArrays } from "@/lib/schemaToForm";
+import {
+  applyDiscount,
+  getModelDiscountRate,
+  type PriceDisplay,
+} from "@/lib/pricing";
 import { DynamicForm } from "@/components/playground/DynamicForm";
 import { OutputDisplay } from "@/components/playground/OutputDisplay";
 import { BatchControls } from "@/components/playground/BatchControls";
@@ -100,9 +105,23 @@ export function MobilePlaygroundPage() {
   const [newTemplateName, setNewTemplateName] = useState("");
 
   // Dynamic pricing state
-  const [calculatedPrice, setCalculatedPrice] = useState<number | null>(null);
+  const [calculatedPrice, setCalculatedPrice] = useState<PriceDisplay | null>(
+    null,
+  );
+  const [calculatedPriceKey, setCalculatedPriceKey] = useState<string | null>(
+    null,
+  );
   const [isPricingLoading, setIsPricingLoading] = useState(false);
   const pricingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pricingModelRef = useRef<string | null>(null);
+  const currentPricingKey = useMemo(
+    () =>
+      JSON.stringify({
+        modelId: activeTab?.selectedModel?.model_id ?? null,
+        values: activeTab?.formValues ?? null,
+      }),
+    [activeTab?.selectedModel?.model_id, activeTab?.formValues],
+  );
 
   // Load templates and prediction inputs on mount
   useEffect(() => {
@@ -125,6 +144,9 @@ export function MobilePlaygroundPage() {
   useEffect(() => {
     if (!activeTab?.selectedModel || !apiKey) {
       setCalculatedPrice(null);
+      setCalculatedPriceKey(null);
+      setIsPricingLoading(false);
+      pricingModelRef.current = null;
       return;
     }
 
@@ -132,27 +154,85 @@ export function MobilePlaygroundPage() {
       clearTimeout(pricingTimeoutRef.current);
     }
 
+    const selectedModel = activeTab.selectedModel;
+    const selectedModelId = selectedModel.model_id;
+    const modelChanged = pricingModelRef.current !== selectedModelId;
+    pricingModelRef.current = selectedModelId;
+
+    setCalculatedPrice(null);
+    setCalculatedPriceKey(currentPricingKey);
+    setIsPricingLoading(true);
+    const requestPricingKey = currentPricingKey;
+
+    let cancelled = false;
+    const delay = modelChanged ? 0 : 500;
+
     pricingTimeoutRef.current = setTimeout(async () => {
       setIsPricingLoading(true);
       try {
-        const price = await apiClient.calculatePricing(
-          activeTab.selectedModel!.model_id,
-          activeTab.formValues,
+        const defaults = getDefaultValues(activeTab.formFields);
+        const mergedValues = { ...defaults, ...activeTab.formValues };
+        const cleanedInput: Record<string, unknown> = {};
+        const integerFields = new Set(
+          activeTab.formFields
+            .filter((f) => f.schemaType === "integer")
+            .map((f) => f.name),
         );
-        setCalculatedPrice(price);
+
+        for (const [key, value] of Object.entries(mergedValues)) {
+          if (
+            value !== "" &&
+            value !== undefined &&
+            value !== null &&
+            !(Array.isArray(value) && value.length === 0)
+          ) {
+            cleanedInput[key] =
+              integerFields.has(key) && typeof value === "number"
+                ? Math.round(value)
+                : value;
+          }
+        }
+
+        const price = await apiClient.calculatePricing(
+          selectedModelId,
+          normalizePayloadArrays(cleanedInput, activeTab.formFields),
+        );
+        if (cancelled) return;
+
+        const discountRate =
+          price.discountRate ?? getModelDiscountRate(selectedModel);
+        setCalculatedPrice({
+          price: price.price,
+          discountedPrice:
+            price.discountedPrice !== price.price
+              ? price.discountedPrice
+              : applyDiscount(price.price, discountRate).discountedPrice,
+          discountRate,
+        });
+        setCalculatedPriceKey(requestPricingKey);
       } catch {
+        if (cancelled) return;
         setCalculatedPrice(null);
+        setCalculatedPriceKey(requestPricingKey);
       } finally {
+        if (cancelled) return;
         setIsPricingLoading(false);
       }
-    }, 500);
+    }, delay);
 
     return () => {
+      cancelled = true;
       if (pricingTimeoutRef.current) {
         clearTimeout(pricingTimeoutRef.current);
       }
     };
-  }, [activeTab?.selectedModel, activeTab?.formValues, apiKey, tabs]);
+  }, [
+    activeTab?.selectedModel,
+    activeTab?.formValues,
+    apiKey,
+    tabs,
+    currentPricingKey,
+  ]);
 
   // Load template from URL query param
   useEffect(() => {
@@ -408,6 +488,9 @@ export function MobilePlaygroundPage() {
     );
   }
 
+  const activePrice =
+    calculatedPriceKey === currentPricingKey ? calculatedPrice : null;
+
   return (
     <div className="flex h-full flex-col">
       {/* Mobile Tab Switcher */}
@@ -498,13 +581,11 @@ export function MobilePlaygroundPage() {
                     runLabel={t("playground.run")}
                     runningLabel={t("playground.running")}
                     price={
-                      isPricingLoading
-                        ? "..."
-                        : calculatedPrice != null
-                          ? `$${calculatedPrice.toFixed(4)}`
-                          : activeTab.selectedModel?.base_price != null
-                            ? `$${activeTab.selectedModel.base_price.toFixed(4)}`
-                            : undefined
+                      activePrice != null
+                        ? activePrice
+                        : isPricingLoading
+                          ? "..."
+                          : undefined
                     }
                   />
                   <Button

@@ -20,7 +20,12 @@ import { apiClient } from "@/api/client";
 import { useTemplateStore } from "@/stores/templateStore";
 import { usePredictionInputsStore } from "@/stores/predictionInputsStore";
 import { usePageActive } from "@/hooks/usePageActive";
-import { getDefaultValues } from "@/lib/schemaToForm";
+import { getDefaultValues, normalizePayloadArrays } from "@/lib/schemaToForm";
+import {
+  applyDiscount,
+  getModelDiscountRate,
+  type PriceDisplay,
+} from "@/lib/pricing";
 import { DynamicForm } from "@/components/playground/DynamicForm";
 import { ModelSelector } from "@/components/playground/ModelSelector";
 import { BatchControls } from "@/components/playground/BatchControls";
@@ -158,9 +163,23 @@ export function PlaygroundPage() {
   const initialTabCreatedRef = useRef(false);
 
   // Dynamic pricing state
-  const [calculatedPrice, setCalculatedPrice] = useState<number | null>(null);
+  const [calculatedPrice, setCalculatedPrice] = useState<PriceDisplay | null>(
+    null,
+  );
+  const [calculatedPriceKey, setCalculatedPriceKey] = useState<string | null>(
+    null,
+  );
   const [isPricingLoading, setIsPricingLoading] = useState(false);
   const pricingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pricingModelRef = useRef<string | null>(null);
+  const currentPricingKey = useMemo(
+    () =>
+      JSON.stringify({
+        modelId: activeTab?.selectedModel?.model_id ?? null,
+        values: activeTab?.formValues ?? null,
+      }),
+    [activeTab?.selectedModel?.model_id, activeTab?.formValues],
+  );
 
   // Mobile view state: 'config' or 'output'
   const [mobileView, setMobileView] = useState<"config" | "output">("config");
@@ -404,6 +423,9 @@ export function PlaygroundPage() {
   useEffect(() => {
     if (!activeTab?.selectedModel || !apiKey) {
       setCalculatedPrice(null);
+      setCalculatedPriceKey(null);
+      setIsPricingLoading(false);
+      pricingModelRef.current = null;
       return;
     }
 
@@ -411,27 +433,84 @@ export function PlaygroundPage() {
       clearTimeout(pricingTimeoutRef.current);
     }
 
+    const selectedModel = activeTab.selectedModel;
+    const selectedModelId = selectedModel.model_id;
+    const modelChanged = pricingModelRef.current !== selectedModelId;
+    pricingModelRef.current = selectedModelId;
+
+    setCalculatedPrice(null);
+    setCalculatedPriceKey(currentPricingKey);
+    setIsPricingLoading(true);
+    const requestPricingKey = currentPricingKey;
+
+    let cancelled = false;
+    const delay = modelChanged ? 0 : 500;
+
     pricingTimeoutRef.current = setTimeout(async () => {
       setIsPricingLoading(true);
       try {
-        const price = await apiClient.calculatePricing(
-          activeTab.selectedModel!.model_id,
-          activeTab.formValues,
+        const defaults = getDefaultValues(activeTab.formFields);
+        const mergedValues = { ...defaults, ...activeTab.formValues };
+        const cleanedInput: Record<string, unknown> = {};
+        const integerFields = new Set(
+          activeTab.formFields
+            .filter((f) => f.schemaType === "integer")
+            .map((f) => f.name),
         );
-        setCalculatedPrice(price);
+
+        for (const [key, value] of Object.entries(mergedValues)) {
+          if (
+            value !== "" &&
+            value !== undefined &&
+            value !== null &&
+            !(Array.isArray(value) && value.length === 0)
+          ) {
+            cleanedInput[key] =
+              integerFields.has(key) && typeof value === "number"
+                ? Math.round(value)
+                : value;
+          }
+        }
+
+        const price = await apiClient.calculatePricing(
+          selectedModelId,
+          normalizePayloadArrays(cleanedInput, activeTab.formFields),
+        );
+        if (cancelled) return;
+
+        const discountRate =
+          price.discountRate ?? getModelDiscountRate(selectedModel);
+        setCalculatedPrice({
+          price: price.price,
+          discountedPrice:
+            price.discountedPrice !== price.price
+              ? price.discountedPrice
+              : applyDiscount(price.price, discountRate).discountedPrice,
+          discountRate,
+        });
+        setCalculatedPriceKey(requestPricingKey);
       } catch {
+        if (cancelled) return;
         setCalculatedPrice(null);
+        setCalculatedPriceKey(requestPricingKey);
       } finally {
+        if (cancelled) return;
         setIsPricingLoading(false);
       }
-    }, 800);
+    }, delay);
 
     return () => {
+      cancelled = true;
       if (pricingTimeoutRef.current) {
         clearTimeout(pricingTimeoutRef.current);
       }
     };
-  }, [activeTab?.selectedModel, activeTab?.formValues, apiKey]);
+  }, [
+    activeTab?.selectedModel,
+    activeTab?.formValues,
+    apiKey,
+    currentPricingKey,
+  ]);
 
   // Load template from URL query param
   useEffect(() => {
@@ -791,6 +870,9 @@ export function PlaygroundPage() {
     );
   }
 
+  const activePrice =
+    calculatedPriceKey === currentPricingKey ? calculatedPrice : null;
+
   return (
     <div className="flex h-full flex-col md:pt-0">
       <div className="flex flex-col flex-1 overflow-hidden">
@@ -965,13 +1047,11 @@ export function PlaygroundPage() {
                         : t("playground.abort", "Abort")
                     }
                     price={
-                      isPricingLoading
-                        ? "..."
-                        : calculatedPrice != null
-                          ? `${calculatedPrice.toFixed(4)}`
-                          : activeTab?.selectedModel?.base_price != null
-                            ? `${activeTab.selectedModel.base_price.toFixed(4)}`
-                            : undefined
+                      activePrice != null
+                        ? activePrice
+                        : isPricingLoading
+                          ? "..."
+                          : undefined
                     }
                   />
                 </div>

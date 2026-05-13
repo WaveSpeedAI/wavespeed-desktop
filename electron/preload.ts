@@ -102,6 +102,8 @@ const electronAPI = {
     ipcRenderer.invoke("save-file-silent", url, dir, fileName),
   openExternal: (url: string): Promise<void> =>
     ipcRenderer.invoke("open-external", url),
+  fetchOfficialModelsHtml: (modelId: string): Promise<string> =>
+    ipcRenderer.invoke("fetch-official-models-html", modelId),
 
   // Title bar theme
   updateTitlebarTheme: (isDark: boolean): Promise<void> =>

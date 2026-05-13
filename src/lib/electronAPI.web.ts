@@ -105,6 +105,21 @@ export const electronAPIWeb: ElectronAPI = {
     window.open(url, "_blank", "noopener,noreferrer");
   },
 
+  fetchOfficialModelsHtml: async (modelId: string): Promise<string> => {
+    const response = await fetch(
+      `https://wavespeed.ai/models/${encodeURI(modelId)}`,
+      {
+        headers: { Accept: "text/html" },
+      },
+    );
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch official models page: ${response.status}`,
+      );
+    }
+    return response.text();
+  },
+
   // App information
   getAppVersion: async (): Promise<string> => {
     return "1.0.0-web";

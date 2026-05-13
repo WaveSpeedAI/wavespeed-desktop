@@ -535,6 +535,23 @@ ipcMain.handle("open-external", async (_, url: string) => {
   await shell.openExternal(url);
 });
 
+ipcMain.handle("fetch-official-models-html", async (_, modelId: string) => {
+  if (!modelId || modelId.includes("..")) {
+    throw new Error("Invalid model id");
+  }
+
+  const response = await fetch(
+    `https://wavespeed.ai/models/${encodeURI(modelId)}`,
+    {
+      headers: { Accept: "text/html" },
+    },
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to fetch official models page: ${response.status}`);
+  }
+  return response.text();
+});
+
 // Download file handler
 ipcMain.handle(
   "download-file",

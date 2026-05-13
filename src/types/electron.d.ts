@@ -132,6 +132,7 @@ export interface ElectronAPI {
     fileName: string,
   ) => Promise<DownloadResult>;
   openExternal: (url: string) => Promise<void>;
+  fetchOfficialModelsHtml?: (modelId: string) => Promise<string>;
 
   // Title bar theme
   updateTitlebarTheme: (isDark: boolean) => Promise<void>;

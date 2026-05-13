@@ -10,6 +10,11 @@ import {
   getDefaultValues,
   type FormFieldConfig,
 } from "@/lib/schemaToForm";
+import {
+  applyDiscount,
+  getModelDiscountRate,
+  type PriceDisplay,
+} from "@/lib/pricing";
 import type { SchemaProperty } from "@/types/model";
 import type { Model } from "@/types/model";
 import type { PredictionResult } from "@/types/prediction";
@@ -161,7 +166,13 @@ export function SmartPlaygroundPage() {
   const [prediction, setPrediction] = useState<PredictionResult | null>(null);
   const [mobileView, setMobileView] = useState<"input" | "output">("input");
   const [isUploading, setIsUploading] = useState(false);
-  const [calculatedPrice, setCalculatedPrice] = useState<number | null>(null);
+  const [calculatedPrice, setCalculatedPrice] = useState<PriceDisplay | null>(
+    null,
+  );
+  const [calculatedPriceKey, setCalculatedPriceKey] = useState<string | null>(
+    null,
+  );
+  const [isPricingLoading, setIsPricingLoading] = useState(false);
   const [batchEnabled, setBatchEnabled] = useState(false);
   const [batchCount, setBatchCount] = useState(2);
   const [batchRandomizeSeed, setBatchRandomizeSeed] = useState(true);
@@ -173,6 +184,7 @@ export function SmartPlaygroundPage() {
     null,
   );
   const pricingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pricingModelRef = useRef<string | null>(null);
   const defaultsInitializedRef = useRef<string | null>(null);
 
   // Find family config (SMART_FORM_FAMILIES in deps ensures HMR updates propagate)
@@ -263,6 +275,15 @@ export function SmartPlaygroundPage() {
     return result;
   }, [family, filledFields, toggleValues]);
 
+  const currentPricingKey = useMemo(
+    () =>
+      JSON.stringify({
+        modelId: resolvedVariantId || null,
+        values: formValues,
+      }),
+    [resolvedVariantId, formValues],
+  );
+
   const resolvedModel = useMemo(() => {
     return models.find((m) => m.model_id === resolvedVariantId);
   }, [models, resolvedVariantId]);
@@ -341,12 +362,26 @@ export function SmartPlaygroundPage() {
   useEffect(() => {
     if (!resolvedVariantId || !resolvedModel) {
       setCalculatedPrice(null);
+      setCalculatedPriceKey(null);
+      setIsPricingLoading(false);
+      pricingModelRef.current = null;
       return;
     }
 
     if (pricingTimeoutRef.current) {
       clearTimeout(pricingTimeoutRef.current);
     }
+
+    const modelChanged = pricingModelRef.current !== resolvedVariantId;
+    pricingModelRef.current = resolvedVariantId;
+
+    setCalculatedPrice(null);
+    setCalculatedPriceKey(currentPricingKey);
+    setIsPricingLoading(true);
+    const requestPricingKey = currentPricingKey;
+
+    let cancelled = false;
+    const delay = modelChanged ? 0 : 500;
 
     pricingTimeoutRef.current = setTimeout(async () => {
       try {
@@ -362,18 +397,37 @@ export function SmartPlaygroundPage() {
           resolvedVariantId,
           filteredValues,
         );
-        setCalculatedPrice(price);
+        if (cancelled) return;
+
+        const discountRate =
+          price.discountRate ?? getModelDiscountRate(resolvedModel);
+        setCalculatedPrice({
+          price: price.price,
+          discountedPrice:
+            price.discountedPrice !== price.price
+              ? price.discountedPrice
+              : applyDiscount(price.price, discountRate).discountedPrice,
+          discountRate,
+        });
+        setCalculatedPriceKey(requestPricingKey);
       } catch {
+        if (cancelled) return;
         // Pricing calculation failed silently
+        setCalculatedPrice(null);
+        setCalculatedPriceKey(requestPricingKey);
+      } finally {
+        if (cancelled) return;
+        setIsPricingLoading(false);
       }
-    }, 500);
+    }, delay);
 
     return () => {
+      cancelled = true;
       if (pricingTimeoutRef.current) {
         clearTimeout(pricingTimeoutRef.current);
       }
     };
-  }, [resolvedVariantId, resolvedModel, formValues]);
+  }, [resolvedVariantId, resolvedModel, formValues, currentPricingKey]);
 
   // Handle form value change
   const handleFieldChange = useCallback(
@@ -528,6 +582,9 @@ export function SmartPlaygroundPage() {
 
   const shortVariantId =
     resolvedVariantId.split("/").slice(-1)[0] || resolvedVariantId;
+  const activePrice =
+    calculatedPriceKey === currentPricingKey ? calculatedPrice : null;
+  const displayPrice = activePrice;
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
@@ -584,11 +641,13 @@ export function SmartPlaygroundPage() {
               >
                 {shortVariantId}
               </Badge>
-              {calculatedPrice !== null && (
+              {displayPrice !== null ? (
                 <span className="text-[10px] text-muted-foreground font-medium">
-                  ${calculatedPrice.toFixed(4)}
+                  ${displayPrice.discountedPrice.toFixed(4)}
                 </span>
-              )}
+              ) : isPricingLoading ? (
+                <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+              ) : null}
             </div>
           </div>
         </div>
@@ -737,15 +796,29 @@ export function SmartPlaygroundPage() {
                     {batchEnabled && batchCount > 1
                       ? `${t("smartPlayground.run")} (${batchCount})`
                       : t("smartPlayground.run")}
-                    {calculatedPrice !== null && (
-                      <span className="ml-1 opacity-70">
-                        ($
-                        {(
-                          calculatedPrice * (batchEnabled ? batchCount : 1)
-                        ).toFixed(4)}
-                        )
+                    {displayPrice !== null ? (
+                      <span className="ml-1 inline-flex items-baseline gap-1 opacity-80">
+                        {displayPrice.discountedPrice < displayPrice.price && (
+                          <span className="line-through opacity-60">
+                            $
+                            {(
+                              displayPrice.price *
+                              (batchEnabled ? batchCount : 1)
+                            ).toFixed(4)}
+                          </span>
+                        )}
+                        <span>
+                          ($
+                          {(
+                            displayPrice.discountedPrice *
+                            (batchEnabled ? batchCount : 1)
+                          ).toFixed(4)}
+                          )
+                        </span>
                       </span>
-                    )}
+                    ) : isPricingLoading ? (
+                      <Loader2 className="ml-1 h-3.5 w-3.5 animate-spin opacity-80" />
+                    ) : null}
                   </>
                 )}
               </Button>

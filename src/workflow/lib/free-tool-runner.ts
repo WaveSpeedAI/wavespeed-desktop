@@ -451,6 +451,53 @@ export async function runVideoEnhancer(
 /**
  * Run face swapper — swap source face onto target image.
  */
+export async function runExtractFrame(
+  inputUrl: string,
+  params: { time?: number; format?: string },
+  onProgress?: (progress: number, message?: string) => void,
+): Promise<string> {
+  const requestedTime = Number(params.time ?? 0);
+  const time = Number.isFinite(requestedTime) ? Math.max(0, requestedTime) : 0;
+  const format = String(params.format ?? "png").toLowerCase();
+  const mime =
+    format === "jpg" || format === "jpeg"
+      ? "image/jpeg"
+      : format === "webp"
+        ? "image/webp"
+        : "image/png";
+
+  onProgress?.(10, "Loading video...");
+  const video = document.createElement("video");
+  video.muted = true;
+  video.crossOrigin = "anonymous";
+  video.preload = "auto";
+  video.src = inputUrl;
+
+  await new Promise<void>((resolve, reject) => {
+    video.onloadedmetadata = () => resolve();
+    video.onerror = () => reject(new Error("Failed to load video"));
+  });
+
+  const duration = Number.isFinite(video.duration) ? video.duration : time;
+  video.currentTime = Math.min(time, Math.max(0, duration));
+  onProgress?.(45, "Seeking frame...");
+
+  await new Promise<void>((resolve, reject) => {
+    video.onseeked = () => resolve();
+    video.onerror = () => reject(new Error("Failed to seek video"));
+  });
+
+  const canvas = document.createElement("canvas");
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Failed to create frame canvas");
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const dataUrl = canvas.toDataURL(mime, 0.95);
+  onProgress?.(100, "Frame extracted.");
+  return dataURLToBase64(dataUrl);
+}
+
 export async function runFaceSwapper(
   sourceUrl: string,
   targetUrl: string,

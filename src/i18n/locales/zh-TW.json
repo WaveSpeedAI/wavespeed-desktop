@@ -1079,6 +1079,25 @@
     "selectDirectory": "選擇目錄",
     "openFolder": "開啟資料夾",
     "openWorkflowFolder": "開啟工作流程目錄",
+    "extractFrame": {
+      "needVideo": "連接或上傳影片，然後拖動預覽選擇一幀。",
+      "loadFailed": "無法載入此影片預覽。",
+      "previousFrame": "上一幀",
+      "backFive": "後退 5 秒",
+      "forwardFive": "前進 5 秒",
+      "nextFrame": "下一幀",
+      "captureResult": "將目前影格擷取到結果中",
+      "capture": "擷取影格",
+      "clearVideo": "清除影片",
+      "useUrl": "使用 URL",
+      "videoHint": "上傳影片或連接上游節點的影片，然後拖動預覽選擇一幀。",
+      "saveToLocalFolder": "儲存到本機資料夾",
+      "localExportOff": "本機匯出已關閉",
+      "localExportOffHint": "未設定：不會額外匯出到本機",
+      "customFolder": "自訂",
+      "exportOff": "關閉",
+      "noFolderToOpen": "未設定資料夾"
+    },
     "nodes": "節點",
     "config": "配置",
     "results": "結果",
@@ -1298,6 +1317,29 @@
           },
           "invertMask": {
             "label": "反轉遮罩"
+          }
+        }
+      },
+      "free-tool/extract-frame": {
+        "label": "擷取影格",
+        "hint": "從影片指定時間點免費擷取靜態圖片",
+        "inputs": {
+          "input": {
+            "label": "影片"
+          }
+        },
+        "params": {
+          "time": {
+            "label": "時間（秒）",
+            "description": "所選影格在影片中的時間戳，單位為秒。"
+          },
+          "format": {
+            "label": "格式",
+            "description": "儲存擷取影格時使用的圖片格式。"
+          },
+          "outputDir": {
+            "label": "儲存到本機資料夾",
+            "description": "可選。設定資料夾後，會額外匯出一份擷取影格到本機。"
           }
         }
       },

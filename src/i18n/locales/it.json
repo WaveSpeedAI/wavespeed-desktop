@@ -1081,6 +1081,25 @@
     "selectDirectory": "Seleziona directory",
     "openFolder": "Apri cartella",
     "openWorkflowFolder": "Apri cartella flusso di lavoro",
+    "extractFrame": {
+      "needVideo": "Collega o carica un video, poi scorri l’anteprima per scegliere un fotogramma.",
+      "loadFailed": "Impossibile caricare questa anteprima video.",
+      "previousFrame": "Fotogramma precedente",
+      "backFive": "Indietro di 5 secondi",
+      "forwardFive": "Avanti di 5 secondi",
+      "nextFrame": "Fotogramma successivo",
+      "captureResult": "Cattura il fotogramma selezionato nei risultati",
+      "capture": "Cattura",
+      "clearVideo": "Cancella video",
+      "useUrl": "Usa URL",
+      "videoHint": "Carica un video o collegane uno da un nodo precedente, poi scorri l’anteprima per scegliere un fotogramma.",
+      "saveToLocalFolder": "Salva in cartella locale",
+      "localExportOff": "Esportazione locale disattivata",
+      "localExportOffHint": "Non impostato: nessuna esportazione locale aggiuntiva",
+      "customFolder": "Personalizzata",
+      "exportOff": "Disattivato",
+      "noFolderToOpen": "Nessuna cartella impostata"
+    },
     "nodes": "Nodi",
     "config": "Configurazione",
     "results": "Risultati",
@@ -1340,6 +1359,29 @@
           },
           "invertMask": {
             "label": "Inverti maschera"
+          }
+        }
+      },
+      "free-tool/extract-frame": {
+        "label": "Estrai fotogramma",
+        "hint": "Cattura gratuitamente un’immagine fissa da un punto selezionato del video",
+        "inputs": {
+          "input": {
+            "label": "Video"
+          }
+        },
+        "params": {
+          "time": {
+            "label": "Tempo (s)",
+            "description": "Il timestamp del fotogramma selezionato in secondi."
+          },
+          "format": {
+            "label": "Formato",
+            "description": "Il formato immagine usato per salvare il fotogramma catturato."
+          },
+          "outputDir": {
+            "label": "Salva in cartella locale",
+            "description": "Opzionale. Imposta una cartella per esportare una copia locale aggiuntiva del fotogramma estratto."
           }
         }
       },

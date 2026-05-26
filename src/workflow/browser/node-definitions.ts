@@ -226,7 +226,16 @@ export const videoEnhancerDef: NodeTypeDefinition = {
   type: "free-tool/video-enhancer",
   category: "free-tool",
   label: "Video Enhancer",
-  inputs: [{ key: "input", label: "Video", dataType: "video", required: true }],
+  inputs: [
+    {
+      key: "input",
+      label: "Video",
+      dataType: "video",
+      required: true,
+      description:
+        "Upload a video or connect one from an upstream node, then scrub the preview to choose a frame.",
+    },
+  ],
   outputs: [
     { key: "output", label: "Output", dataType: "video", required: true },
   ],
@@ -294,6 +303,60 @@ export const segmentAnythingDef: NodeTypeDefinition = {
       label: "Invert Mask",
       type: "boolean",
       default: false,
+    },
+  ],
+};
+
+export const extractFrameDef: NodeTypeDefinition = {
+  type: "free-tool/extract-frame",
+  category: "free-tool",
+  label: "Extract Frame",
+  inputs: [
+    {
+      key: "input",
+      label: "Video",
+      dataType: "video",
+      required: true,
+      description:
+        "Upload a video or connect one from an upstream node, then scrub the preview to choose a frame.",
+    },
+  ],
+  outputs: [
+    { key: "output", label: "Frame", dataType: "image", required: true },
+  ],
+  params: [
+    {
+      key: "time",
+      label: "Time (s)",
+      type: "number",
+      default: 0,
+      dataType: "text",
+      connectable: false,
+      description: "The timestamp of the selected frame in seconds.",
+      validation: { min: 0, step: 0.001 },
+    },
+    {
+      key: "format",
+      label: "Format",
+      type: "select",
+      default: "png",
+      dataType: "text",
+      connectable: true,
+      description: "The image format used when saving the captured frame.",
+      options: [
+        { label: "PNG", value: "png" },
+        { label: "JPG", value: "jpg" },
+        { label: "WEBP", value: "webp" },
+      ],
+    },
+    {
+      key: "outputDir",
+      label: "Save to Local Folder",
+      type: "string",
+      default: "",
+      connectable: false,
+      description:
+        "Optional. Set a folder to export an extra local copy of the extracted frame.",
     },
   ],
 };
@@ -531,6 +594,7 @@ export const BROWSER_NODE_DEFINITIONS: NodeTypeDefinition[] = [
   faceSwapperDef,
   imageEraserDef,
   segmentAnythingDef,
+  extractFrameDef,
   videoConverterDef,
   audioConverterDef,
   imageConverterDef,

@@ -1081,6 +1081,25 @@
     "selectDirectory": "Pilih direktori",
     "openFolder": "Buka folder",
     "openWorkflowFolder": "Buka folder alur kerja",
+    "extractFrame": {
+      "needVideo": "Hubungkan atau unggah video, lalu geser pratinjau untuk memilih frame.",
+      "loadFailed": "Pratinjau video ini tidak dapat dimuat.",
+      "previousFrame": "Frame sebelumnya",
+      "backFive": "Mundur 5 detik",
+      "forwardFive": "Maju 5 detik",
+      "nextFrame": "Frame berikutnya",
+      "captureResult": "Tangkap frame yang dipilih ke Hasil",
+      "capture": "Tangkap",
+      "clearVideo": "Hapus video",
+      "useUrl": "Gunakan URL",
+      "videoHint": "Unggah video atau hubungkan dari node upstream, lalu geser pratinjau untuk memilih frame.",
+      "saveToLocalFolder": "Simpan ke folder lokal",
+      "localExportOff": "Ekspor lokal nonaktif",
+      "localExportOffHint": "Belum diatur: tidak ada ekspor lokal tambahan",
+      "customFolder": "Kustom",
+      "exportOff": "Nonaktif",
+      "noFolderToOpen": "Belum ada folder"
+    },
     "nodes": "Node",
     "config": "Konfigurasi",
     "results": "Hasil",
@@ -1340,6 +1359,29 @@
           },
           "invertMask": {
             "label": "Balikkan topeng"
+          }
+        }
+      },
+      "free-tool/extract-frame": {
+        "label": "Ekstrak frame",
+        "hint": "Menangkap gambar diam dari waktu video yang dipilih secara gratis",
+        "inputs": {
+          "input": {
+            "label": "Video"
+          }
+        },
+        "params": {
+          "time": {
+            "label": "Waktu (d)",
+            "description": "Timestamp frame yang dipilih dalam detik."
+          },
+          "format": {
+            "label": "Format",
+            "description": "Format gambar yang digunakan saat menyimpan frame yang ditangkap."
+          },
+          "outputDir": {
+            "label": "Simpan ke folder lokal",
+            "description": "Opsional. Atur folder untuk mengekspor salinan lokal tambahan dari frame yang diekstrak."
           }
         }
       },

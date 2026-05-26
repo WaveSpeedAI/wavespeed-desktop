@@ -1082,6 +1082,25 @@
     "selectDirectory": "Verzeichnis auswählen",
     "openFolder": "Ordner öffnen",
     "openWorkflowFolder": "Workflow-Ordner öffnen",
+    "extractFrame": {
+      "needVideo": "Verbinden oder laden Sie ein Video hoch und scrubben Sie die Vorschau, um ein Bild auszuwählen.",
+      "loadFailed": "Diese Videovorschau konnte nicht geladen werden.",
+      "previousFrame": "Vorheriges Bild",
+      "backFive": "5 Sekunden zurück",
+      "forwardFive": "5 Sekunden vor",
+      "nextFrame": "Nächstes Bild",
+      "captureResult": "Ausgewähltes Bild in Ergebnisse aufnehmen",
+      "capture": "Aufnehmen",
+      "clearVideo": "Video löschen",
+      "useUrl": "URL verwenden",
+      "videoHint": "Laden Sie ein Video hoch oder verbinden Sie eines von einem vorgelagerten Knoten, und scrubben Sie dann die Vorschau, um ein Bild auszuwählen.",
+      "saveToLocalFolder": "In lokalem Ordner speichern",
+      "localExportOff": "Lokaler Export ist deaktiviert",
+      "localExportOffHint": "Nicht festgelegt: kein zusätzlicher lokaler Export",
+      "customFolder": "Benutzerdefiniert",
+      "exportOff": "Aus",
+      "noFolderToOpen": "Kein Ordner festgelegt"
+    },
     "nodes": "Knoten",
     "config": "Konfiguration",
     "results": "Ergebnisse",
@@ -1341,6 +1360,29 @@
           },
           "invertMask": {
             "label": "Maske invertieren"
+          }
+        }
+      },
+      "free-tool/extract-frame": {
+        "label": "Frame extrahieren",
+        "hint": "Erfasst kostenlos ein Standbild von einem ausgewählten Videozeitpunkt",
+        "inputs": {
+          "input": {
+            "label": "Video"
+          }
+        },
+        "params": {
+          "time": {
+            "label": "Zeit (s)",
+            "description": "Der Zeitstempel des ausgewählten Bildes in Sekunden."
+          },
+          "format": {
+            "label": "Format",
+            "description": "Das Bildformat zum Speichern des erfassten Frames."
+          },
+          "outputDir": {
+            "label": "In lokalem Ordner speichern",
+            "description": "Optional. Legen Sie einen Ordner fest, um eine zusätzliche lokale Kopie des extrahierten Frames zu exportieren."
           }
         }
       },

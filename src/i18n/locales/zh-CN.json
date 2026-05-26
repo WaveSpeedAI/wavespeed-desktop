@@ -1129,6 +1129,25 @@
     "selectDirectory": "选择目录",
     "openFolder": "打开文件夹",
     "openWorkflowFolder": "打开工作流目录",
+    "extractFrame": {
+      "needVideo": "连接或上传视频，然后拖动预览选择一帧。",
+      "loadFailed": "无法加载此视频预览。",
+      "previousFrame": "上一帧",
+      "backFive": "后退 5 秒",
+      "forwardFive": "前进 5 秒",
+      "nextFrame": "下一帧",
+      "captureResult": "将当前帧截取到结果中",
+      "capture": "截帧",
+      "clearVideo": "清除视频",
+      "useUrl": "使用 URL",
+      "videoHint": "上传视频或连接上游节点的视频，然后拖动预览选择一帧。",
+      "saveToLocalFolder": "保存到本地文件夹",
+      "localExportOff": "本地导出已关闭",
+      "localExportOffHint": "未设置：不会额外导出到本地",
+      "customFolder": "自定义",
+      "exportOff": "关闭",
+      "noFolderToOpen": "未设置文件夹"
+    },
     "nodes": "节点",
     "config": "配置",
     "results": "结果",
@@ -1435,6 +1454,29 @@
           },
           "invertMask": {
             "label": "反转蒙版"
+          }
+        }
+      },
+      "free-tool/extract-frame": {
+        "label": "提取帧",
+        "hint": "从视频指定时间点免费截取静态图片",
+        "inputs": {
+          "input": {
+            "label": "视频"
+          }
+        },
+        "params": {
+          "time": {
+            "label": "时间（秒）",
+            "description": "所选帧在视频中的时间戳，单位为秒。"
+          },
+          "format": {
+            "label": "格式",
+            "description": "保存截取帧时使用的图片格式。"
+          },
+          "outputDir": {
+            "label": "保存到本地文件夹",
+            "description": "可选。设置文件夹后，会额外导出一份截取帧到本地。"
           }
         }
       },

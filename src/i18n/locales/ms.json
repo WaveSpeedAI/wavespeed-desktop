@@ -1081,6 +1081,25 @@
     "selectDirectory": "Pilih direktori",
     "openFolder": "Buka folder",
     "openWorkflowFolder": "Buka folder aliran kerja",
+    "extractFrame": {
+      "needVideo": "Sambungkan atau muat naik video, kemudian seret pratonton untuk memilih bingkai.",
+      "loadFailed": "Tidak dapat memuatkan pratonton video ini.",
+      "previousFrame": "Bingkai sebelumnya",
+      "backFive": "Undur 5 saat",
+      "forwardFive": "Maju 5 saat",
+      "nextFrame": "Bingkai seterusnya",
+      "captureResult": "Tangkap bingkai yang dipilih ke Hasil",
+      "capture": "Tangkap",
+      "clearVideo": "Kosongkan video",
+      "useUrl": "Guna URL",
+      "videoHint": "Muat naik video atau sambungkan daripada nod huluan, kemudian seret pratonton untuk memilih bingkai.",
+      "saveToLocalFolder": "Simpan ke folder setempat",
+      "localExportOff": "Eksport setempat dimatikan",
+      "localExportOffHint": "Tidak ditetapkan: tiada eksport setempat tambahan",
+      "customFolder": "Tersuai",
+      "exportOff": "Mati",
+      "noFolderToOpen": "Tiada folder ditetapkan"
+    },
     "nodes": "Nod",
     "config": "Konfigurasi",
     "results": "Hasil",
@@ -1340,6 +1359,29 @@
           },
           "invertMask": {
             "label": "Songsangkan topeng"
+          }
+        }
+      },
+      "free-tool/extract-frame": {
+        "label": "Ekstrak bingkai",
+        "hint": "Tangkap imej pegun daripada masa video yang dipilih secara percuma",
+        "inputs": {
+          "input": {
+            "label": "Video"
+          }
+        },
+        "params": {
+          "time": {
+            "label": "Masa (s)",
+            "description": "Cap masa bingkai yang dipilih dalam saat."
+          },
+          "format": {
+            "label": "Format",
+            "description": "Format imej yang digunakan semasa menyimpan bingkai yang ditangkap."
+          },
+          "outputDir": {
+            "label": "Simpan ke folder setempat",
+            "description": "Pilihan. Tetapkan folder untuk mengeksport salinan setempat tambahan bagi bingkai yang diekstrak."
           }
         }
       },

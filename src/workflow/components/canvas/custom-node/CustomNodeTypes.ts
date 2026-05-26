@@ -63,6 +63,7 @@ export const NODE_INPUT_ACCEPT_RULES: Record<
   "free-tool/face-swapper": { source: "image/*", target: "image/*" },
   "free-tool/image-eraser": { input: "image/*", mask_image: "image/*" },
   "free-tool/segment-anything": { input: "image/*" },
+  "free-tool/extract-frame": { input: "video/*" },
   "free-tool/image-converter": { input: "image/*" },
   "free-tool/video-converter": { input: "video/*" },
   "free-tool/audio-converter": { input: "audio/*" },

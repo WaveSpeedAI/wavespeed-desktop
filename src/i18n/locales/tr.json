@@ -1081,6 +1081,25 @@
     "selectDirectory": "Dizin seç",
     "openFolder": "Klasörü aç",
     "openWorkflowFolder": "İş akışı klasörünü aç",
+    "extractFrame": {
+      "needVideo": "Bir video bağlayın veya yükleyin, ardından bir kare seçmek için önizlemeyi gezinin.",
+      "loadFailed": "Bu video önizlemesi yüklenemedi.",
+      "previousFrame": "Önceki kare",
+      "backFive": "5 saniye geri",
+      "forwardFive": "5 saniye ileri",
+      "nextFrame": "Sonraki kare",
+      "captureResult": "Seçilen kareyi Sonuçlar'a yakala",
+      "capture": "Yakala",
+      "clearVideo": "Videoyu temizle",
+      "useUrl": "URL kullan",
+      "videoHint": "Bir video yükleyin veya yukarı akıştaki bir düğümden bağlayın, ardından bir kare seçmek için önizlemeyi gezinin.",
+      "saveToLocalFolder": "Yerel klasöre kaydet",
+      "localExportOff": "Yerel dışa aktarma kapalı",
+      "localExportOffHint": "Ayarlanmadı: ek yerel dışa aktarma yok",
+      "customFolder": "Özel",
+      "exportOff": "Kapalı",
+      "noFolderToOpen": "Klasör ayarlanmadı"
+    },
     "nodes": "Düğümler",
     "config": "Yapılandırma",
     "results": "Sonuçlar",
@@ -1340,6 +1359,29 @@
           },
           "invertMask": {
             "label": "Maskeyi ters çevir"
+          }
+        }
+      },
+      "free-tool/extract-frame": {
+        "label": "Kare çıkar",
+        "hint": "Seçilen video zamanından ücretsiz olarak sabit görüntü yakalar",
+        "inputs": {
+          "input": {
+            "label": "Video"
+          }
+        },
+        "params": {
+          "time": {
+            "label": "Zaman (sn)",
+            "description": "Seçilen karenin saniye cinsinden zaman damgası."
+          },
+          "format": {
+            "label": "Biçim",
+            "description": "Yakalanan kare kaydedilirken kullanılan görüntü biçimi."
+          },
+          "outputDir": {
+            "label": "Yerel klasöre kaydet",
+            "description": "İsteğe bağlı. Çıkarılan karenin ek bir yerel kopyasını dışa aktarmak için klasör ayarlayın."
           }
         }
       },

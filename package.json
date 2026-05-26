@@ -28,8 +28,8 @@
     "build:web": "vite build",
     "preview:web": "vite preview --port 5173 --host 0.0.0.0",
     "dev:web": "vite --port 5173 --host 0.0.0.0",
-    "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"electron/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"electron/**/*.ts\""
+    "format": "prettier --write \"*.{json,js,cjs,mjs,ts,tsx,css,md,yml,yaml,html}\" \".github/**/*.{yml,yaml,md,json}\" \"data/**/*.json\" \"docs/**/*.md\" \"electron/**/*.ts\" \"mobile/**/*.{ts,tsx,css,json,js,cjs,mjs,md,yml,yaml,html}\" \"scripts/**/*.js\" \"src/**/*.{ts,tsx,css,json}\"",
+    "format:check": "prettier --check \"*.{json,js,cjs,mjs,ts,tsx,css,md,yml,yaml,html}\" \".github/**/*.{yml,yaml,md,json}\" \"data/**/*.json\" \"docs/**/*.md\" \"electron/**/*.ts\" \"mobile/**/*.{ts,tsx,css,json,js,cjs,mjs,md,yml,yaml,html}\" \"scripts/**/*.js\" \"src/**/*.{ts,tsx,css,json}\""
   },
   "dependencies": {
     "7zip-bin": "^5.2.0",

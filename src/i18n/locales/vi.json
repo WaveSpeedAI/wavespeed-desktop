@@ -1081,6 +1081,25 @@
     "selectDirectory": "Chọn thư mục",
     "openFolder": "Mở thư mục",
     "openWorkflowFolder": "Mở thư mục quy trình làm việc",
+    "extractFrame": {
+      "needVideo": "Kết nối hoặc tải video lên, sau đó kéo phần xem trước để chọn một khung hình.",
+      "loadFailed": "Không thể tải phần xem trước video này.",
+      "previousFrame": "Khung hình trước",
+      "backFive": "Lùi 5 giây",
+      "forwardFive": "Tiến 5 giây",
+      "nextFrame": "Khung hình tiếp theo",
+      "captureResult": "Chụp khung hình đã chọn vào Kết quả",
+      "capture": "Chụp",
+      "clearVideo": "Xóa video",
+      "useUrl": "Dùng URL",
+      "videoHint": "Tải video lên hoặc kết nối từ nút phía trước, rồi kéo phần xem trước để chọn một khung hình.",
+      "saveToLocalFolder": "Lưu vào thư mục cục bộ",
+      "localExportOff": "Xuất cục bộ đang tắt",
+      "localExportOffHint": "Chưa đặt: không xuất thêm bản cục bộ",
+      "customFolder": "Tùy chỉnh",
+      "exportOff": "Tắt",
+      "noFolderToOpen": "Chưa đặt thư mục"
+    },
     "nodes": "Nút",
     "config": "Cấu hình",
     "results": "Kết quả",
@@ -1340,6 +1359,29 @@
           },
           "invertMask": {
             "label": "Đảo ngược mặt nạ"
+          }
+        }
+      },
+      "free-tool/extract-frame": {
+        "label": "Trích xuất khung hình",
+        "hint": "Chụp miễn phí ảnh tĩnh từ thời điểm đã chọn trong video",
+        "inputs": {
+          "input": {
+            "label": "Video"
+          }
+        },
+        "params": {
+          "time": {
+            "label": "Thời gian (giây)",
+            "description": "Mốc thời gian của khung hình đã chọn, tính bằng giây."
+          },
+          "format": {
+            "label": "Định dạng",
+            "description": "Định dạng ảnh dùng khi lưu khung hình đã chụp."
+          },
+          "outputDir": {
+            "label": "Lưu vào thư mục cục bộ",
+            "description": "Tùy chọn. Đặt thư mục để xuất thêm một bản sao cục bộ của khung hình đã trích xuất."
           }
         }
       },

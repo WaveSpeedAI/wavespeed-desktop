@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, memo } from "react";
+import { useState, useEffect, useRef, memo, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
@@ -82,6 +82,30 @@ interface SidebarProps {
   lastFreeToolsPage: string | null;
   isMobileOpen?: boolean;
   onMobileClose?: () => void;
+}
+
+function SidebarTooltip({
+  enabled,
+  children,
+}: {
+  enabled: boolean;
+  children: ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!enabled) setOpen(false);
+  }, [enabled]);
+
+  return (
+    <Tooltip
+      delayDuration={0}
+      open={enabled ? open : false}
+      onOpenChange={(nextOpen) => setOpen(enabled ? nextOpen : false)}
+    >
+      {children}
+    </Tooltip>
+  );
 }
 
 export const Sidebar = memo(function Sidebar({
@@ -237,11 +261,7 @@ export const Sidebar = memo(function Sidebar({
                 const showTooltip = collapsed && !isMobileOpen && tooltipReady;
                 const isNewFeature = item.href === "/workflow";
                 return (
-                  <Tooltip
-                    key={item.href}
-                    delayDuration={0}
-                    open={showTooltip ? undefined : false}
-                  >
+                  <SidebarTooltip key={item.href} enabled={showTooltip}>
                     <TooltipTrigger asChild>
                       <button
                         data-nav-active={active || undefined}
@@ -318,7 +338,7 @@ export const Sidebar = memo(function Sidebar({
                         )}
                       </TooltipContent>
                     )}
-                  </Tooltip>
+                  </SidebarTooltip>
                 );
               })}
             </div>
@@ -333,11 +353,7 @@ export const Sidebar = memo(function Sidebar({
             const active = location.pathname === item.href;
             const showTooltip = collapsed && !isMobileOpen && tooltipReady;
             return (
-              <Tooltip
-                key={item.href}
-                delayDuration={0}
-                open={showTooltip ? undefined : false}
-              >
+              <SidebarTooltip key={item.href} enabled={showTooltip}>
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => navigate(item.href)}
@@ -363,17 +379,14 @@ export const Sidebar = memo(function Sidebar({
                     {t(item.titleKey)}
                   </TooltipContent>
                 )}
-              </Tooltip>
+              </SidebarTooltip>
             );
           })}
         </nav>
 
         {/* Collapse/expand: bottom button toggles; state also syncs to window width on resize */}
         {!isMobileOpen && (
-          <Tooltip
-            delayDuration={0}
-            open={collapsed && tooltipReady ? undefined : false}
-          >
+          <SidebarTooltip enabled={collapsed && tooltipReady}>
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
@@ -402,7 +415,7 @@ export const Sidebar = memo(function Sidebar({
             <TooltipContent side="right">
               {t("nav.expand", "Expand")}
             </TooltipContent>
-          </Tooltip>
+          </SidebarTooltip>
         )}
       </div>
     </div>

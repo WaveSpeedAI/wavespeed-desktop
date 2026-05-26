@@ -6,14 +6,45 @@
  * schema params, input ports, segment picker, defParams,
  * inline preview, and results panel.
  */
-import { type Dispatch, type SetStateAction } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentProps,
+  type Dispatch,
+  type ReactNode,
+  type SetStateAction,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { useWorkflowStore } from "../../../stores/workflow.store";
+import { useExecutionStore } from "../../../stores/execution.store";
 import {
   SegmentPointPicker,
   type SegmentPoint,
 } from "../../SegmentPointPicker";
-import { MousePointer2, ChevronRight, ChevronDown } from "lucide-react";
+import {
+  MousePointer2,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  Camera,
+  ExternalLink,
+  FolderOpen,
+  Link,
+  Loader2,
+  SkipBack,
+  SkipForward,
+  Upload,
+  X,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { getSingleImageFromValues } from "@/lib/schemaToForm";
 import { convertDesktopModel } from "../../../lib/model-converter";
 import type {
@@ -35,6 +66,7 @@ import { Label } from "@/components/ui/label";
 import {
   type CustomNodeData,
   ML_FREE_TOOLS,
+  inputCls,
   paramDefToFormFieldConfig,
   portToFormFieldConfig,
 } from "./CustomNodeTypes";
@@ -60,6 +92,899 @@ import {
   DirectoryImportBody,
 } from "./CustomNodeInputBodies";
 import { DynamicFieldsEditor, type FieldConfig } from "./DynamicFieldsEditor";
+
+function formatClockTime(seconds: number): string {
+  if (!Number.isFinite(seconds)) return "0:00.000";
+  const clamped = Math.max(0, seconds);
+  const mins = Math.floor(clamped / 60);
+  const secs = clamped - mins * 60;
+  return `${mins}:${secs.toFixed(3).padStart(6, "0")}`;
+}
+
+function formatPreciseSeconds(seconds: number): string {
+  if (!Number.isFinite(seconds)) return "0.000";
+  return Math.max(0, seconds).toFixed(3);
+}
+
+function frameMime(format: string): string {
+  if (format === "jpg" || format === "jpeg") return "image/jpeg";
+  if (format === "webp") return "image/webp";
+  return "image/png";
+}
+
+function roundedSeconds(value: number): number | null {
+  if (!Number.isFinite(value)) return null;
+  return Number(value.toFixed(3));
+}
+
+function summarizeMediaUrl(url: string): Record<string, unknown> {
+  if (!url) return { kind: "empty" };
+  if (/^local-asset:\/\//i.test(url)) {
+    try {
+      const decoded = decodeURIComponent(url.replace(/^local-asset:\/\//i, ""));
+      return {
+        kind: "local-asset",
+        file: decoded.split(/[/\\]/).pop() || decoded,
+      };
+    } catch {
+      return { kind: "local-asset", file: "decode-failed" };
+    }
+  }
+  if (/^data:/i.test(url)) return { kind: "data-url" };
+  if (/^blob:/i.test(url)) return { kind: "blob-url" };
+  if (/^https?:\/\//i.test(url)) {
+    try {
+      const parsed = new URL(url);
+      return { kind: parsed.protocol.replace(":", ""), host: parsed.host };
+    } catch {
+      return { kind: "http-url" };
+    }
+  }
+  return { kind: "other", prefix: url.slice(0, 40) };
+}
+
+function serializeTimeRanges(ranges: TimeRanges): Array<[number, number]> {
+  const output: Array<[number, number]> = [];
+  for (let i = 0; i < ranges.length; i += 1) {
+    output.push([
+      Number(ranges.start(i).toFixed(3)),
+      Number(ranges.end(i).toFixed(3)),
+    ]);
+  }
+  return output;
+}
+
+function extractFrameDebug(event: string, payload: Record<string, unknown>) {
+  try {
+    if (localStorage.getItem("wavespeed_extract_frame_debug") !== "1") return;
+  } catch {
+    return;
+  }
+  console.info(`[ExtractFrame] ${event} ${JSON.stringify(payload)}`);
+}
+
+const EXTRACT_FRAME_SKIP_SECONDS = 5;
+const EXTRACT_FRAME_FRAME_STEP_SECONDS = 1 / 30;
+
+function ExtractFrameTooltipButton({
+  label,
+  children,
+  className,
+  disabled,
+  onClick,
+  variant = "ghost",
+  size = "icon",
+}: {
+  label: string;
+  children: ReactNode;
+  className?: string;
+  disabled?: boolean;
+  onClick?: () => void;
+  variant?: ComponentProps<typeof Button>["variant"];
+  size?: ComponentProps<typeof Button>["size"];
+}) {
+  return (
+    <Tooltip delayDuration={0}>
+      <TooltipTrigger asChild>
+        <span className="inline-flex">
+          <Button
+            type="button"
+            variant={variant}
+            size={size}
+            className={className}
+            onClick={onClick}
+            disabled={disabled}
+          >
+            {children}
+            <span className="sr-only">{label}</span>
+          </Button>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="top">{label}</TooltipContent>
+    </Tooltip>
+  );
+}
+
+function ExtractFrameScrubber({
+  nodeId,
+  params,
+  videoUrl,
+  ensureWorkflowId,
+  onParamChange,
+}: {
+  nodeId: string;
+  params: Record<string, unknown>;
+  videoUrl: string;
+  ensureWorkflowId: () => Promise<string | null | undefined>;
+  onParamChange: (updates: Record<string, unknown>) => void;
+}) {
+  const { t } = useTranslation();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(Number(params.time ?? 0) || 0);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState("");
+  const paramsRef = useRef(params);
+  const isSeekingRef = useRef(false);
+  const shouldPauseAfterSeekRef = useRef(false);
+  const seekCommitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTimeUpdateLogRef = useRef(0);
+  const format = String(params.format ?? "png").toLowerCase();
+
+  useEffect(() => {
+    paramsRef.current = params;
+  }, [params]);
+
+  const debugVideoEvent = useCallback(
+    (
+      event: string,
+      video: HTMLVideoElement,
+      extra: Record<string, unknown> = {},
+    ) => {
+      extractFrameDebug(event, {
+        nodeId,
+        video: summarizeMediaUrl(video.currentSrc || video.src),
+        videoTime: roundedSeconds(video.currentTime),
+        stateTime: roundedSeconds(currentTime),
+        paramsTime: roundedSeconds(Number(paramsRef.current.time ?? 0)),
+        duration: roundedSeconds(video.duration),
+        durationState: roundedSeconds(duration),
+        paused: video.paused,
+        seeking: video.seeking,
+        seekingRef: isSeekingRef.current,
+        readyState: video.readyState,
+        networkState: video.networkState,
+        seekable: serializeTimeRanges(video.seekable),
+        buffered: serializeTimeRanges(video.buffered),
+        error: video.error
+          ? { code: video.error.code, message: video.error.message }
+          : null,
+        ...extra,
+      });
+    },
+    [currentTime, duration, nodeId],
+  );
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !videoUrl) return;
+    setError("");
+    extractFrameDebug("video-url", {
+      nodeId,
+      video: summarizeMediaUrl(videoUrl),
+      paramsTime: roundedSeconds(Number(paramsRef.current.time ?? 0)),
+    });
+  }, [nodeId, videoUrl]);
+
+  const updateTimeParam = useCallback(
+    (time: number) => {
+      const nextTime = Number(time.toFixed(3));
+      extractFrameDebug("params-time-update", {
+        nodeId,
+        from: roundedSeconds(Number(paramsRef.current.time ?? 0)),
+        to: nextTime,
+      });
+      onParamChange({ ...paramsRef.current, time: nextTime });
+    },
+    [nodeId, onParamChange],
+  );
+
+  const commitTime = useCallback(
+    (time: number) => {
+      const nextTime = Math.max(0, Math.min(time, duration || time));
+      extractFrameDebug("commit-time", {
+        nodeId,
+        input: roundedSeconds(time),
+        nextTime: roundedSeconds(nextTime),
+        durationState: roundedSeconds(duration),
+      });
+      setCurrentTime(nextTime);
+      updateTimeParam(nextTime);
+    },
+    [duration, nodeId, updateTimeParam],
+  );
+
+  const clearSeekCommitTimer = useCallback(() => {
+    if (!seekCommitTimerRef.current) return;
+    clearTimeout(seekCommitTimerRef.current);
+    seekCommitTimerRef.current = null;
+  }, []);
+
+  const scheduleSeekCommitFallback = useCallback(
+    (time: number) => {
+      clearSeekCommitTimer();
+      seekCommitTimerRef.current = setTimeout(() => {
+        const video = videoRef.current;
+        const settledTime = video ? video.currentTime : time;
+        if (video && shouldPauseAfterSeekRef.current && !video.paused) {
+          video.pause();
+        }
+        shouldPauseAfterSeekRef.current = false;
+        isSeekingRef.current = false;
+        extractFrameDebug("seek-fallback-commit", {
+          nodeId,
+          requested: roundedSeconds(time),
+          settledTime: roundedSeconds(settledTime),
+        });
+        commitTime(settledTime);
+      }, 500);
+    },
+    [clearSeekCommitTimer, commitTime, nodeId],
+  );
+
+  useEffect(() => {
+    return () => clearSeekCommitTimer();
+  }, [clearSeekCommitTimer]);
+
+  const seekTo = useCallback(
+    (time: number) => {
+      const video = videoRef.current;
+      const nextTime = Math.max(0, Math.min(time, duration || time));
+      extractFrameDebug("button-seek", {
+        nodeId,
+        requested: roundedSeconds(time),
+        nextTime: roundedSeconds(nextTime),
+        beforeVideoTime: video ? roundedSeconds(video.currentTime) : null,
+      });
+      setCurrentTime(nextTime);
+      if (video && Number.isFinite(nextTime)) {
+        shouldPauseAfterSeekRef.current = true;
+        isSeekingRef.current = true;
+        if (!video.paused) video.pause();
+        video.currentTime = nextTime;
+        scheduleSeekCommitFallback(nextTime);
+        debugVideoEvent("button-seek-after-set", video, {
+          requested: roundedSeconds(time),
+          nextTime: roundedSeconds(nextTime),
+        });
+      } else {
+        commitTime(nextTime);
+      }
+    },
+    [commitTime, debugVideoEvent, duration, nodeId, scheduleSeekCommitFallback],
+  );
+
+  const handleCapture = useCallback(async () => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas || !video.videoWidth || !video.videoHeight) return;
+
+    try {
+      debugVideoEvent("capture-start", video);
+      setIsSaving(true);
+      setError("");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Failed to create canvas context.");
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(
+          (result) =>
+            result ? resolve(result) : reject(new Error("Capture failed.")),
+          frameMime(format),
+          0.95,
+        );
+      });
+      const wfId = await ensureWorkflowId();
+      if (!wfId) throw new Error("Workflow not saved yet.");
+      const { storageIpc } = await import("../../../ipc/ipc-client");
+      const arrBuf = await blob.arrayBuffer();
+      const ext = format === "jpg" || format === "jpeg" ? "jpg" : format;
+      const captureTime = Number(video.currentTime.toFixed(3));
+      const frameStamp = String(captureTime).replace(".", "-");
+      const outputDir = String(paramsRef.current.outputDir ?? "").trim();
+      const fileName = `extracted-frame-${frameStamp}-${Date.now()}.${ext}`;
+      const localPath = await storageIpc.saveNodeOutput(
+        wfId,
+        nodeId,
+        "extracted-frame",
+        ext,
+        arrBuf,
+      );
+      const exportPath = outputDir
+        ? await storageIpc.saveFileToDirectory(outputDir, fileName, arrBuf)
+        : "";
+      const url = `local-asset://${encodeURIComponent(localPath)}`;
+      extractFrameDebug("capture-saved", {
+        nodeId,
+        captureTime,
+        preview: summarizeMediaUrl(url),
+        outputDir,
+        exportPath: exportPath ? summarizeMediaUrl(exportPath) : null,
+      });
+      const nextParams = { ...paramsRef.current };
+      delete nextParams.__previewFrame;
+      onParamChange({
+        ...nextParams,
+        time: captureTime,
+      });
+      useExecutionStore.setState((state) => {
+        const existing = state.lastResults[nodeId] ?? [];
+        return {
+          lastResults: {
+            ...state.lastResults,
+            [nodeId]: [
+              {
+                urls: [url],
+                time: new Date().toISOString(),
+                cost: 0,
+                durationMs: 0,
+              },
+              ...existing,
+            ].slice(0, 50),
+          },
+          selectedOutputIndex: {
+            ...state.selectedOutputIndex,
+            [nodeId]: 0,
+          },
+          nodeStatuses: {
+            ...state.nodeStatuses,
+            [nodeId]: "confirmed",
+          },
+        };
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+      extractFrameDebug("capture-error", {
+        nodeId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  }, [debugVideoEvent, ensureWorkflowId, format, nodeId, onParamChange]);
+
+  if (!videoUrl) {
+    return (
+      <div className="mx-3 my-1 rounded-lg border border-dashed border-border bg-muted/20 px-3 py-2 text-[11px] text-muted-foreground">
+        {t(
+          "workflow.extractFrame.needVideo",
+          "Connect or upload a video to scrub and choose a frame.",
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="nodrag nopan mx-3 my-1 space-y-2 rounded-lg border border-border bg-muted/20 p-2"
+      onClick={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
+    >
+      <div className="relative overflow-hidden rounded-md border border-border bg-black">
+        <video
+          ref={videoRef}
+          src={videoUrl}
+          controls
+          preload="metadata"
+          className="nodrag nopan h-auto max-h-[260px] w-full object-contain"
+          onLoadedMetadata={(e) => {
+            const video = e.currentTarget;
+            const d = Number.isFinite(video.duration) ? video.duration : 0;
+            setDuration(d);
+            const requested = Number(params.time ?? 0);
+            const next = Number.isFinite(requested)
+              ? Math.min(Math.max(0, requested), d || requested)
+              : 0;
+            setCurrentTime(next);
+            if (next > 0) video.currentTime = next;
+            debugVideoEvent("loadedmetadata", video, {
+              requested: roundedSeconds(requested),
+              next: roundedSeconds(next),
+            });
+          }}
+          onTimeUpdate={(e) => {
+            setCurrentTime(e.currentTarget.currentTime);
+            const now = Date.now();
+            if (now - lastTimeUpdateLogRef.current > 750) {
+              lastTimeUpdateLogRef.current = now;
+              debugVideoEvent("timeupdate", e.currentTarget);
+            }
+          }}
+          onSeeking={(e) => {
+            const video = e.currentTarget;
+            isSeekingRef.current = true;
+            shouldPauseAfterSeekRef.current = true;
+            setCurrentTime(video.currentTime);
+            if (!video.paused) video.pause();
+            scheduleSeekCommitFallback(video.currentTime);
+            debugVideoEvent("seeking", video);
+          }}
+          onSeeked={(e) => {
+            clearSeekCommitTimer();
+            if (shouldPauseAfterSeekRef.current && !e.currentTarget.paused) {
+              e.currentTarget.pause();
+            }
+            shouldPauseAfterSeekRef.current = false;
+            isSeekingRef.current = false;
+            debugVideoEvent("seeked-before-commit", e.currentTarget);
+            commitTime(e.currentTarget.currentTime);
+          }}
+          onPlay={(e) => {
+            debugVideoEvent("play", e.currentTarget);
+          }}
+          onPlaying={(e) => {
+            debugVideoEvent("playing", e.currentTarget);
+          }}
+          onPause={(e) => {
+            debugVideoEvent("pause", e.currentTarget, {
+              willCommit: !isSeekingRef.current,
+            });
+            if (isSeekingRef.current) return;
+            commitTime(e.currentTarget.currentTime);
+          }}
+          onEnded={(e) => {
+            debugVideoEvent("ended", e.currentTarget);
+            commitTime(e.currentTarget.currentTime);
+          }}
+          onWaiting={(e) => {
+            debugVideoEvent("waiting", e.currentTarget);
+          }}
+          onStalled={(e) => {
+            debugVideoEvent("stalled", e.currentTarget);
+          }}
+          onSuspend={(e) => {
+            debugVideoEvent("suspend", e.currentTarget);
+          }}
+          onError={() => {
+            const video = videoRef.current;
+            if (video) debugVideoEvent("video-error", video);
+            setError(
+              t(
+                "workflow.extractFrame.loadFailed",
+                "Could not load this video preview.",
+              ),
+            );
+          }}
+        />
+      </div>
+
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+        <div className="inline-flex min-w-0 justify-self-start whitespace-nowrap rounded-md border border-border bg-background/80 px-2.5 py-1.5 text-[10px] text-muted-foreground">
+          <span className="tabular-nums">
+            {formatPreciseSeconds(currentTime)}
+          </span>
+          <span className="mx-1 text-muted-foreground/60">/</span>
+          <span className="tabular-nums">{formatPreciseSeconds(duration)}</span>
+        </div>
+        <div className="flex items-center gap-0.5 justify-self-center rounded-md border border-border bg-background/70 p-0.5">
+          <ExtractFrameTooltipButton
+            label={t("workflow.extractFrame.previousFrame", "Previous frame")}
+            className="h-6 w-6"
+            onClick={() =>
+              seekTo(currentTime - EXTRACT_FRAME_FRAME_STEP_SECONDS)
+            }
+            disabled={!duration}
+          >
+            <ChevronLeft className="h-3.5 w-3.5" />
+          </ExtractFrameTooltipButton>
+          <ExtractFrameTooltipButton
+            label={t("workflow.extractFrame.backFive", "Back 5 seconds")}
+            className="h-6 w-6"
+            onClick={() => seekTo(currentTime - EXTRACT_FRAME_SKIP_SECONDS)}
+            disabled={!duration}
+          >
+            <SkipBack className="h-3.5 w-3.5" />
+          </ExtractFrameTooltipButton>
+          <ExtractFrameTooltipButton
+            label={t("workflow.extractFrame.forwardFive", "Forward 5 seconds")}
+            className="h-6 w-6"
+            onClick={() => seekTo(currentTime + EXTRACT_FRAME_SKIP_SECONDS)}
+            disabled={!duration}
+          >
+            <SkipForward className="h-3.5 w-3.5" />
+          </ExtractFrameTooltipButton>
+          <ExtractFrameTooltipButton
+            label={t("workflow.extractFrame.nextFrame", "Next frame")}
+            className="h-6 w-6"
+            onClick={() =>
+              seekTo(currentTime + EXTRACT_FRAME_FRAME_STEP_SECONDS)
+            }
+            disabled={!duration}
+          >
+            <ChevronRight className="h-3.5 w-3.5" />
+          </ExtractFrameTooltipButton>
+        </div>
+        <div className="justify-self-end">
+          <ExtractFrameTooltipButton
+            label={t(
+              "workflow.extractFrame.captureResult",
+              "Capture the selected frame to Results",
+            )}
+            size="sm"
+            className="h-8 gap-1.5 px-3"
+            onClick={handleCapture}
+            disabled={isSaving || !duration}
+            variant="default"
+          >
+            {isSaving ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Camera className="h-3.5 w-3.5" />
+            )}
+            <span className="text-xs">
+              {t("workflow.extractFrame.capture", "Capture")}
+            </span>
+          </ExtractFrameTooltipButton>
+        </div>
+      </div>
+
+      {error && <p className="text-[10px] text-red-400">{error}</p>}
+      <canvas ref={canvasRef} className="hidden" />
+    </div>
+  );
+}
+
+function ExtractFrameVideoInput({
+  nodeId,
+  value,
+  ensureWorkflowId,
+  onChange,
+}: {
+  nodeId: string;
+  value: unknown;
+  ensureWorkflowId: () => Promise<string | null | undefined>;
+  onChange: (value: unknown) => void;
+}) {
+  const { t } = useTranslation();
+  const [uploading, setUploading] = useState(false);
+  const [showUrl, setShowUrl] = useState(() => {
+    const initial = String(value ?? "").trim();
+    return Boolean(initial && !/^local-asset:\/\//i.test(initial));
+  });
+  const urlInputRef = useRef<HTMLInputElement>(null);
+  const textVal = String(value ?? "");
+  const isRemoteUrl = Boolean(textVal && !/^local-asset:\/\//i.test(textVal));
+  const displayName = useMemo(() => {
+    if (!textVal) return "";
+    try {
+      const decoded = /^local-asset:\/\//i.test(textVal)
+        ? decodeURIComponent(textVal.replace(/^local-asset:\/\//i, ""))
+        : textVal;
+      return decoded.split(/[/\\]/).pop() || decoded;
+    } catch {
+      return textVal;
+    }
+  }, [textVal]);
+
+  const handleFile = useCallback(
+    async (file: File) => {
+      try {
+        setUploading(true);
+        const wfId = await ensureWorkflowId();
+        if (!wfId) throw new Error("Workflow not saved yet.");
+        const { storageIpc } = await import("../../../ipc/ipc-client");
+        const data = await file.arrayBuffer();
+        const localPath = await storageIpc.saveUploadedFile(
+          wfId,
+          nodeId,
+          file.name,
+          data,
+        );
+        onChange(`local-asset://${encodeURIComponent(localPath)}`);
+        setShowUrl(false);
+      } catch (error) {
+        console.error("Extract frame video upload failed:", error);
+      } finally {
+        setUploading(false);
+      }
+    },
+    [ensureWorkflowId, nodeId, onChange],
+  );
+
+  return (
+    <div
+      className="nodrag nopan w-full space-y-2"
+      onClick={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
+    >
+      <div className="flex items-center gap-2">
+        <div className="group relative min-w-0 flex-1">
+          <label
+            className={`flex min-h-[38px] cursor-pointer items-center justify-center gap-1.5 rounded-lg border-2 border-dashed border-border bg-background px-3 py-2 transition-all duration-200 hover:border-primary/50 hover:bg-muted/30 hover:shadow-sm ${
+              uploading ? "animate-pulse" : ""
+            } ${textVal ? "pr-9" : ""}`}
+          >
+            {uploading ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+            ) : (
+              <Upload className="h-3.5 w-3.5 text-muted-foreground" />
+            )}
+            <span className="truncate text-xs text-muted-foreground">
+              {displayName || t("workflow.mediaUpload.clickUpload", "点击上传")}
+            </span>
+            <input
+              type="file"
+              accept="video/*"
+              className="hidden"
+              disabled={uploading}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) void handleFile(file);
+                e.currentTarget.value = "";
+              }}
+            />
+          </label>
+          {textVal && (
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-md border border-border/70 bg-background/90 text-muted-foreground opacity-0 shadow-sm transition-all hover:border-red-400/50 hover:bg-red-500/10 hover:text-red-400 group-hover:opacity-100"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onChange("");
+                    setShowUrl(false);
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                  <span className="sr-only">
+                    {t("workflow.extractFrame.clearVideo", "Clear video")}
+                  </span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                {t("workflow.extractFrame.clearVideo", "Clear video")}
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
+        <Tooltip delayDuration={0}>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-[38px] w-[38px] flex-shrink-0"
+              onClick={() => {
+                setShowUrl((visible) => !visible);
+                window.setTimeout(() => {
+                  urlInputRef.current?.focus();
+                  urlInputRef.current?.select();
+                }, 0);
+              }}
+            >
+              <Link className="h-4 w-4" />
+              <span className="sr-only">
+                {t("workflow.extractFrame.useUrl", "Use URL")}
+              </span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            {t("workflow.extractFrame.useUrl", "Use URL")}
+          </TooltipContent>
+        </Tooltip>
+      </div>
+      {(showUrl || isRemoteUrl) && (
+        <input
+          ref={urlInputRef}
+          type="text"
+          value={isRemoteUrl ? textVal : ""}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={t(
+            "workflow.mediaUpload.urlPlaceholder",
+            "或输入 URL...",
+          )}
+          className={`${inputCls} w-full`}
+        />
+      )}
+    </div>
+  );
+}
+
+function ExtractFrameOutputDirectory({
+  value,
+  ensureWorkflowId,
+  onChange,
+}: {
+  value: unknown;
+  ensureWorkflowId: () => Promise<string | null | undefined>;
+  onChange: (value: unknown) => void;
+}) {
+  const { t } = useTranslation();
+  const textVal = String(value ?? "");
+  const [expanded, setExpanded] = useState(Boolean(textVal.trim()));
+  const [selectingDir, setSelectingDir] = useState(false);
+  const [openingDir, setOpeningDir] = useState(false);
+
+  const fallbackHint = t(
+    "workflow.extractFrame.localExportOffHint",
+    "Not set: no extra local export",
+  );
+  const hasCustomDir = Boolean(textVal.trim());
+
+  const handlePickDirectory = async () => {
+    try {
+      setSelectingDir(true);
+      const result = await window.electronAPI?.selectDirectory?.();
+      if (result?.success && result.path) {
+        onChange(result.path);
+        setExpanded(true);
+      }
+    } catch (error) {
+      console.error("Select extract frame output directory failed:", error);
+    } finally {
+      setSelectingDir(false);
+    }
+  };
+
+  const handleOpenDirectory = async () => {
+    try {
+      setOpeningDir(true);
+      const dir = textVal.trim();
+      if (dir) {
+        await window.electronAPI?.openFileLocation?.(dir);
+        return;
+      }
+      return;
+    } catch (error) {
+      console.error("Open extract frame output directory failed:", error);
+    } finally {
+      setOpeningDir(false);
+    }
+  };
+
+  return (
+    <div className="px-3 py-1.5 nodrag" onClick={(e) => e.stopPropagation()}>
+      <div
+        className={`rounded-lg border transition-colors ${
+          expanded || hasCustomDir
+            ? "border-primary/30 bg-primary/5"
+            : "border-dashed border-border bg-muted/20 hover:border-primary/30 hover:bg-muted/30"
+        }`}
+      >
+        <button
+          type="button"
+          className="flex w-full items-center justify-between gap-2 px-2.5 py-2 text-left"
+          onClick={() => setExpanded((v) => !v)}
+        >
+          <span className="flex min-w-0 items-center gap-2">
+            <span
+              className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md ${
+                hasCustomDir
+                  ? "bg-primary/15 text-primary"
+                  : "bg-background text-muted-foreground"
+              }`}
+            >
+              <FolderOpen className="h-3.5 w-3.5" />
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate text-xs font-medium text-foreground">
+                {t(
+                  "workflow.extractFrame.saveToLocalFolder",
+                  "Save to Local Folder",
+                )}
+              </span>
+              <span className="block truncate text-[10px] text-muted-foreground">
+                {hasCustomDir
+                  ? textVal
+                  : t(
+                      "workflow.extractFrame.localExportOff",
+                      "Local export is off",
+                    )}
+              </span>
+            </span>
+          </span>
+          <span
+            className={`flex flex-shrink-0 items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] ${
+              hasCustomDir
+                ? "bg-primary/10 text-primary"
+                : "bg-background text-muted-foreground"
+            }`}
+          >
+            {hasCustomDir
+              ? t("workflow.extractFrame.customFolder", "Custom")
+              : t("workflow.extractFrame.exportOff", "Off")}
+            <ChevronDown
+              className={`h-3.5 w-3.5 flex-shrink-0 transition-transform ${
+                expanded ? "rotate-180" : ""
+              }`}
+            />
+          </span>
+        </button>
+        {expanded && (
+          <div className="space-y-1 border-t border-border/70 px-2.5 py-2">
+            <div className="flex items-center gap-1.5">
+              <input
+                type="text"
+                value={textVal}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder={t(
+                  "workflow.nodeDefs.output/file.params.outputDir.placeholder",
+                  "Choose a folder to export a local copy",
+                )}
+                className={`${inputCls} flex-1`}
+              />
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8 flex-shrink-0"
+                    onClick={handlePickDirectory}
+                  >
+                    {selectingDir ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <FolderOpen className="h-3.5 w-3.5" />
+                    )}
+                    <span className="sr-only">
+                      {t("workflow.selectDirectory", "Select directory")}
+                    </span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  {t("workflow.selectDirectory", "Select directory")}
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8 flex-shrink-0"
+                    onClick={handleOpenDirectory}
+                    disabled={!textVal.trim()}
+                  >
+                    {openingDir ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    )}
+                    <span className="sr-only">
+                      {textVal.trim()
+                        ? t("workflow.openFolder", "Open folder")
+                        : t(
+                            "workflow.extractFrame.noFolderToOpen",
+                            "No folder set",
+                          )}
+                    </span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  {textVal.trim()
+                    ? t("workflow.openFolder", "Open folder")
+                    : t(
+                        "workflow.extractFrame.noFolderToOpen",
+                        "No folder set",
+                      )}
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            <p className="truncate text-[10px] text-muted-foreground">
+              {textVal || fallbackHint}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export interface CustomNodeBodyProps {
   id: string;
@@ -162,6 +1087,43 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
     collapsed = false,
   } = props;
   const { t } = useTranslation();
+  const allNodes = useWorkflowStore((s) => s.nodes);
+  const allLastResults = useExecutionStore((s) => s.lastResults);
+  const selectedOutputIndex = useExecutionStore((s) => s.selectedOutputIndex);
+
+  const extractFrameVideoUrl = useMemo(() => {
+    if (data.nodeType !== "free-tool/extract-frame") return "";
+    const localInput = String(data.params.input ?? "");
+    if (localInput.trim()) return localInput;
+
+    const edge = edges.find(
+      (e) => e.target === id && e.targetHandle === "input-input",
+    );
+    if (!edge) return "";
+
+    const selectedIndex = selectedOutputIndex[edge.source] ?? 0;
+    const latest = allLastResults[edge.source]?.[selectedIndex]?.urls?.[0];
+    if (latest) return latest;
+
+    const sourceNode = allNodes.find((n) => n.id === edge.source);
+    const sourceParams = sourceNode?.data?.params as
+      | Record<string, unknown>
+      | undefined;
+    return String(
+      sourceParams?.uploadedUrl ??
+        sourceParams?.output ??
+        sourceParams?.input ??
+        "",
+    );
+  }, [
+    allLastResults,
+    allNodes,
+    data.nodeType,
+    data.params.input,
+    edges,
+    id,
+    selectedOutputIndex,
+  ]);
 
   /** CDN upload via workflowClient so workflow requests use the correct X-Client-Name header. */
   const handleCdnUpload = async (file: File): Promise<string> => {
@@ -1030,7 +1992,63 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
         const hid = `input-${inp.key}`;
         const conn = connectedSet.has(hid);
         const portFieldConfig = portToFormFieldConfig(inp, data.nodeType);
-        const useFormFieldForPort = portFieldConfig != null && !conn;
+        const useFormFieldForPort =
+          portFieldConfig != null &&
+          !conn &&
+          !(data.nodeType === "free-tool/extract-frame" && inp.key === "input");
+        if (
+          data.nodeType === "free-tool/extract-frame" &&
+          inp.key === "input"
+        ) {
+          const inputHint =
+            inp.description ??
+            t(
+              "workflow.extractFrame.videoHint",
+              "Upload a video or connect one from an upstream node, then scrub the preview to choose a frame.",
+            );
+          return (
+            <Row key={inp.key}>
+              <div className="w-full min-w-0 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`inline-flex items-center text-sm font-medium leading-none ${
+                      conn ? "text-green-400" : "text-foreground"
+                    }`}
+                  >
+                    <HandleAnchor
+                      id={hid}
+                      type="target"
+                      connected={conn}
+                      media
+                    />
+                    {localizeInputLabel(inp.key, inp.label)}
+                    {inp.required && (
+                      <span className="ml-0.5 text-red-400">*</span>
+                    )}
+                  </span>
+                </div>
+                {conn ? (
+                  <ConnectedInputControl
+                    nodeId={id}
+                    handleId={hid}
+                    edges={edges}
+                    nodes={useWorkflowStore.getState().nodes}
+                    onPreview={openPreview}
+                    showPreview={false}
+                  />
+                ) : (
+                  <ExtractFrameVideoInput
+                    nodeId={id}
+                    value={data.params[inp.key]}
+                    ensureWorkflowId={ensureWorkflowId}
+                    onChange={(v) => setParam(inp.key, v)}
+                  />
+                )}
+                <p className="text-xs text-muted-foreground">{inputHint}</p>
+              </div>
+            </Row>
+          );
+        }
         if (!isPreviewNode) {
           return (
             <Row key={inp.key}>
@@ -1068,6 +2086,16 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
                       }
                     />
                   </div>
+                ) : data.nodeType === "free-tool/extract-frame" &&
+                  inp.key === "input" ? (
+                  <div className="flex-1 min-w-0">
+                    <ExtractFrameVideoInput
+                      nodeId={id}
+                      value={data.params[inp.key]}
+                      ensureWorkflowId={ensureWorkflowId}
+                      onChange={(v) => setParam(inp.key, v)}
+                    />
+                  </div>
                 ) : (
                   <div className="flex-1 min-w-0">
                     <InputPortControl
@@ -1085,6 +2113,12 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
                       showDrawMaskButton={
                         data.nodeType === "free-tool/image-eraser" &&
                         inp.key === "mask_image"
+                      }
+                      showPreview={
+                        !(
+                          data.nodeType === "free-tool/extract-frame" &&
+                          inp.key === "input"
+                        )
                       }
                     />
                   </div>
@@ -1157,6 +2191,16 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
           </Row>
         );
       })}
+
+      {data.nodeType === "free-tool/extract-frame" && (
+        <ExtractFrameScrubber
+          nodeId={id}
+          params={data.params}
+          videoUrl={extractFrameVideoUrl}
+          ensureWorkflowId={ensureWorkflowId}
+          onParamChange={(updates) => updateNodeParams(id, updates)}
+        />
+      )}
 
       {/* Segment Anything: Pick points by clicking */}
       {data.nodeType === "free-tool/segment-anything" && (
@@ -1254,6 +2298,21 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
             (p.key === "responseFields" || p.key === "statusCode")
           )
             return null;
+          if (data.nodeType === "free-tool/extract-frame" && p.key === "time")
+            return null;
+          if (
+            data.nodeType === "free-tool/extract-frame" &&
+            p.key === "outputDir"
+          ) {
+            return (
+              <ExtractFrameOutputDirectory
+                key={p.key}
+                value={data.params[p.key]}
+                ensureWorkflowId={ensureWorkflowId}
+                onChange={(v) => setParam(p.key, v)}
+              />
+            );
+          }
           const hid = `param-${p.key}`;
           const canConnect =
             p.connectable !== false && p.dataType !== undefined;
@@ -1262,7 +2321,7 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
 
           if (fieldConfig) {
             if (!canConnect) {
-              // Compact inline layout for file export's filename & format
+              // Compact inline layout for file export's filename & format.
               const inlineParam =
                 data.nodeType === "output/file" &&
                 (p.key === "filename" || p.key === "format");

@@ -140,36 +140,46 @@ export function ResultsPanel({
     }
   }, [nodeId, clearNodeResults]);
 
-  if (!nodeId) {
-    return (
-      <div className="p-4 text-muted-foreground text-sm text-center">
-        Select a node to view results
-      </div>
-    );
-  }
+  const currentNodeStatus = nodeId ? nodeStatuses[nodeId] : undefined;
 
-  const currentNodeStatus = nodeStatuses[nodeId];
-
-  // When history is empty (e.g. just finished), show lastResults as synthetic records so preview is visible
-  const lastResultsForNode = lastResults[nodeId] ?? [];
-  const displayRecords: NodeExecutionRecord[] =
-    records.length > 0
-      ? records
-      : lastResultsForNode.map((item, idx) => ({
-          id: `last-${idx}`,
-          nodeId,
-          workflowId: "",
-          inputHash: "",
-          paramsHash: "",
-          status: "success" as const,
-          resultPath: item.urls[0] ?? "",
-          resultMetadata: { resultUrls: item.urls },
-          durationMs: item.durationMs ?? null,
-          cost: item.cost ?? 0,
-          createdAt: item.time,
-          score: null,
-          starred: false,
-        }));
+  // Surface immediate in-memory outputs first; persisted history can arrive later.
+  const lastResultsForNode = nodeId ? (lastResults[nodeId] ?? []) : [];
+  const syntheticRecords: NodeExecutionRecord[] = lastResultsForNode.map(
+    (item, idx) => ({
+      id: `last-${idx}`,
+      nodeId: nodeId ?? "",
+      workflowId: "",
+      inputHash: "",
+      paramsHash: "",
+      status: "success" as const,
+      resultPath: item.urls[0] ?? "",
+      resultMetadata: { resultUrls: item.urls },
+      durationMs: item.durationMs ?? null,
+      cost: item.cost ?? 0,
+      createdAt: item.time,
+      score: null,
+      starred: false,
+    }),
+  );
+  const persistedResultUrls = new Set(
+    records.flatMap((rec) => {
+      const meta = rec.resultMetadata as Record<string, unknown> | null;
+      const metaUrls = meta?.resultUrls;
+      if (Array.isArray(metaUrls)) return metaUrls.filter(Boolean).map(String);
+      return rec.resultPath ? [rec.resultPath] : [];
+    }),
+  );
+  const displayRecords: NodeExecutionRecord[] = [
+    ...syntheticRecords.filter((rec) => {
+      const urls = rec.resultMetadata?.resultUrls;
+      return !(
+        Array.isArray(urls) &&
+        urls.length > 0 &&
+        urls.every((url) => persistedResultUrls.has(String(url)))
+      );
+    }),
+    ...records,
+  ];
   const isSyntheticRecord = (id: string) => id.startsWith("last-");
 
   // Reset stack index when new results arrive (e.g. user runs again)
@@ -292,6 +302,14 @@ export function ResultsPanel({
   }, [clampedIndex, stackIndex]);
 
   /* ── Stacked card view for embedded-in-node mode ─────────────── */
+  if (!nodeId) {
+    return (
+      <div className="p-4 text-muted-foreground text-sm text-center">
+        Select a node to view results
+      </div>
+    );
+  }
+
   if (embeddedInNode) {
     if (displayRecords.length === 0) {
       return (

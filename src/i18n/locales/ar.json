@@ -1081,6 +1081,25 @@
     "selectDirectory": "اختر المجلد",
     "openFolder": "فتح المجلد",
     "openWorkflowFolder": "فتح مجلد سير العمل",
+    "extractFrame": {
+      "needVideo": "وصّل فيديو أو ارفعه، ثم حرّك المعاينة لاختيار إطار.",
+      "loadFailed": "تعذر تحميل معاينة الفيديو هذه.",
+      "previousFrame": "الإطار السابق",
+      "backFive": "رجوع 5 ثوانٍ",
+      "forwardFive": "تقديم 5 ثوانٍ",
+      "nextFrame": "الإطار التالي",
+      "captureResult": "التقاط الإطار المحدد إلى النتائج",
+      "capture": "التقاط",
+      "clearVideo": "مسح الفيديو",
+      "useUrl": "استخدام URL",
+      "videoHint": "ارفع فيديو أو وصّله من عقدة سابقة، ثم حرّك المعاينة لاختيار إطار.",
+      "saveToLocalFolder": "حفظ إلى مجلد محلي",
+      "localExportOff": "التصدير المحلي متوقف",
+      "localExportOffHint": "غير مضبوط: لا يوجد تصدير محلي إضافي",
+      "customFolder": "مخصص",
+      "exportOff": "إيقاف",
+      "noFolderToOpen": "لم يتم تعيين مجلد"
+    },
     "nodes": "العقد",
     "config": "الإعدادات",
     "results": "النتائج",
@@ -1340,6 +1359,29 @@
           },
           "invertMask": {
             "label": "عكس القناع"
+          }
+        }
+      },
+      "free-tool/extract-frame": {
+        "label": "استخراج إطار",
+        "hint": "التقاط صورة ثابتة مجانًا من وقت محدد في الفيديو",
+        "inputs": {
+          "input": {
+            "label": "فيديو"
+          }
+        },
+        "params": {
+          "time": {
+            "label": "الوقت (ث)",
+            "description": "الطابع الزمني للإطار المحدد بالثواني."
+          },
+          "format": {
+            "label": "الصيغة",
+            "description": "صيغة الصورة المستخدمة عند حفظ الإطار الملتقط."
+          },
+          "outputDir": {
+            "label": "حفظ إلى مجلد محلي",
+            "description": "اختياري. عيّن مجلدًا لتصدير نسخة محلية إضافية من الإطار المستخرج."
           }
         }
       },

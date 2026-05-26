@@ -1082,6 +1082,25 @@
     "selectDirectory": "Sélectionner le répertoire",
     "openFolder": "Ouvrir le dossier",
     "openWorkflowFolder": "Ouvrir le dossier du workflow",
+    "extractFrame": {
+      "needVideo": "Connectez ou importez une vidéo, puis parcourez l’aperçu pour choisir une image.",
+      "loadFailed": "Impossible de charger cet aperçu vidéo.",
+      "previousFrame": "Image précédente",
+      "backFive": "Reculer de 5 secondes",
+      "forwardFive": "Avancer de 5 secondes",
+      "nextFrame": "Image suivante",
+      "captureResult": "Capturer l’image sélectionnée dans les résultats",
+      "capture": "Capturer",
+      "clearVideo": "Effacer la vidéo",
+      "useUrl": "Utiliser une URL",
+      "videoHint": "Importez une vidéo ou connectez-en une depuis un nœud en amont, puis parcourez l’aperçu pour choisir une image.",
+      "saveToLocalFolder": "Enregistrer dans un dossier local",
+      "localExportOff": "L’export local est désactivé",
+      "localExportOffHint": "Non défini : aucun export local supplémentaire",
+      "customFolder": "Personnalisé",
+      "exportOff": "Désactivé",
+      "noFolderToOpen": "Aucun dossier défini"
+    },
     "nodes": "Nœuds",
     "config": "Configuration",
     "results": "Résultats",
@@ -1341,6 +1360,29 @@
           },
           "invertMask": {
             "label": "Inverser le masque"
+          }
+        }
+      },
+      "free-tool/extract-frame": {
+        "label": "Extraire une image",
+        "hint": "Capture gratuitement une image fixe depuis un horodatage vidéo sélectionné",
+        "inputs": {
+          "input": {
+            "label": "Vidéo"
+          }
+        },
+        "params": {
+          "time": {
+            "label": "Temps (s)",
+            "description": "L’horodatage de l’image sélectionnée, en secondes."
+          },
+          "format": {
+            "label": "Format",
+            "description": "Le format d’image utilisé lors de l’enregistrement de l’image capturée."
+          },
+          "outputDir": {
+            "label": "Enregistrer dans un dossier local",
+            "description": "Facultatif. Définissez un dossier pour exporter une copie locale supplémentaire de l’image extraite."
           }
         }
       },

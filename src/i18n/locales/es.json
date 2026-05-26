@@ -1081,6 +1081,25 @@
     "selectDirectory": "Seleccionar directorio",
     "openFolder": "Abrir carpeta",
     "openWorkflowFolder": "Abrir carpeta de flujo de trabajo",
+    "extractFrame": {
+      "needVideo": "Conecta o sube un video y arrastra la vista previa para elegir un fotograma.",
+      "loadFailed": "No se pudo cargar esta vista previa de video.",
+      "previousFrame": "Fotograma anterior",
+      "backFive": "Retroceder 5 segundos",
+      "forwardFive": "Avanzar 5 segundos",
+      "nextFrame": "Fotograma siguiente",
+      "captureResult": "Capturar el fotograma seleccionado en Resultados",
+      "capture": "Capturar",
+      "clearVideo": "Borrar video",
+      "useUrl": "Usar URL",
+      "videoHint": "Sube un video o conéctalo desde un nodo anterior, luego arrastra la vista previa para elegir un fotograma.",
+      "saveToLocalFolder": "Guardar en carpeta local",
+      "localExportOff": "La exportación local está desactivada",
+      "localExportOffHint": "Sin configurar: no hay exportación local adicional",
+      "customFolder": "Personalizada",
+      "exportOff": "Desactivado",
+      "noFolderToOpen": "No hay carpeta configurada"
+    },
     "nodes": "Nodos",
     "config": "Configuración",
     "results": "Resultados",
@@ -1340,6 +1359,29 @@
           },
           "invertMask": {
             "label": "Invertir máscara"
+          }
+        }
+      },
+      "free-tool/extract-frame": {
+        "label": "Extraer fotograma",
+        "hint": "Captura gratis una imagen fija desde un momento seleccionado del video",
+        "inputs": {
+          "input": {
+            "label": "Video"
+          }
+        },
+        "params": {
+          "time": {
+            "label": "Tiempo (s)",
+            "description": "La marca de tiempo del fotograma seleccionado, en segundos."
+          },
+          "format": {
+            "label": "Formato",
+            "description": "El formato de imagen usado al guardar el fotograma capturado."
+          },
+          "outputDir": {
+            "label": "Guardar en carpeta local",
+            "description": "Opcional. Define una carpeta para exportar una copia local adicional del fotograma extraído."
           }
         }
       },

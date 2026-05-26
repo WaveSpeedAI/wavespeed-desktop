@@ -9,7 +9,7 @@ import {
   protocol,
   net,
 } from "electron";
-import { join, dirname } from "path";
+import { join, dirname, extname, basename } from "path";
 import {
   existsSync,
   readFileSync,
@@ -20,6 +20,9 @@ import {
   readdirSync,
   copyFileSync,
   renameSync,
+  openSync,
+  readSync,
+  closeSync,
 } from "fs";
 import { readdir, stat } from "fs/promises";
 import AdmZip from "adm-zip";
@@ -28,10 +31,171 @@ import { autoUpdater, UpdateInfo } from "electron-updater";
 import { spawn, execSync } from "child_process";
 // NOTE: Use downloadToFile() (net.fetch) instead of http/https for downloads.
 // net.fetch uses Chromium's network stack and respects system proxy settings.
-import { pathToFileURL } from "url";
 import { SDGenerator } from "./lib/sdGenerator";
 import log from "electron-log";
 import { initWorkflowModule, closeWorkflowDatabase } from "./workflow";
+
+const EXTRACT_FRAME_DEBUG = process.env.WAVESPEED_EXTRACT_FRAME_DEBUG === "1";
+
+if (!EXTRACT_FRAME_DEBUG) {
+  app.commandLine.appendSwitch("log-level", "3");
+}
+
+function contentTypeForFile(filePath: string): string {
+  const ext = extname(filePath).toLowerCase();
+  if (ext === ".mp4" || ext === ".m4v") return "video/mp4";
+  if (ext === ".webm") return "video/webm";
+  if (ext === ".mov" || ext === ".qt") return "video/quicktime";
+  if (ext === ".mp3") return "audio/mpeg";
+  if (ext === ".wav") return "audio/wav";
+  if (ext === ".ogg" || ext === ".oga") return "audio/ogg";
+  if (ext === ".png") return "image/png";
+  if (ext === ".jpg" || ext === ".jpeg") return "image/jpeg";
+  if (ext === ".webp") return "image/webp";
+  if (ext === ".gif") return "image/gif";
+  return "application/octet-stream";
+}
+
+function parseRangeHeader(
+  range: string | null,
+  size: number,
+): { start: number; end: number } | null {
+  if (!range) return null;
+  const match = /^bytes=(\d*)-(\d*)$/i.exec(range.trim());
+  if (!match) return null;
+
+  let start: number;
+  let end: number;
+  if (match[1] === "" && match[2] === "") return null;
+  if (match[1] === "") {
+    const suffixLength = Number(match[2]);
+    if (!Number.isFinite(suffixLength) || suffixLength <= 0) return null;
+    start = Math.max(0, size - suffixLength);
+    end = size - 1;
+  } else {
+    start = Number(match[1]);
+    end = match[2] === "" ? size - 1 : Number(match[2]);
+  }
+
+  if (
+    !Number.isFinite(start) ||
+    !Number.isFinite(end) ||
+    start < 0 ||
+    end < start ||
+    start >= size
+  ) {
+    return null;
+  }
+
+  return { start, end: Math.min(end, size - 1) };
+}
+
+function readFileSlice(filePath: string, start: number, end: number): Buffer {
+  const length = end - start + 1;
+  const buffer = Buffer.allocUnsafe(length);
+  const fd = openSync(filePath, "r");
+  try {
+    readSync(fd, buffer, 0, length, start);
+  } finally {
+    closeSync(fd);
+  }
+  return buffer;
+}
+
+function localAssetResponse(request: Request): Response {
+  const filePath = decodeURIComponent(
+    request.url.replace("local-asset://", ""),
+  );
+  if (!existsSync(filePath)) {
+    if (EXTRACT_FRAME_DEBUG) {
+      console.warn(
+        `[ExtractFrame][local-asset] not-found ${JSON.stringify({
+          file: filePath,
+          range: request.headers.get("range"),
+        })}`,
+      );
+    }
+    return new Response("File not found", { status: 404 });
+  }
+
+  const size = statSync(filePath).size;
+  const contentType = contentTypeForFile(filePath);
+  const rangeHeader = request.headers.get("range");
+  const shouldLogLocalAsset =
+    EXTRACT_FRAME_DEBUG &&
+    (Boolean(rangeHeader) ||
+      contentType.startsWith("video/") ||
+      contentType.startsWith("audio/"));
+  const range = parseRangeHeader(rangeHeader, size);
+  if (rangeHeader && !range) {
+    if (shouldLogLocalAsset) {
+      console.warn(
+        `[ExtractFrame][local-asset] invalid-range ${JSON.stringify({
+          file: basename(filePath),
+          size,
+          contentType,
+          range: rangeHeader,
+          status: 416,
+        })}`,
+      );
+    }
+    return new Response(null, {
+      status: 416,
+      headers: {
+        "Accept-Ranges": "bytes",
+        "Content-Range": `bytes */${size}`,
+      },
+    });
+  }
+
+  if (range) {
+    const { start, end } = range;
+    const chunk = readFileSlice(filePath, start, end);
+    if (shouldLogLocalAsset) {
+      console.log(
+        `[ExtractFrame][local-asset] partial ${JSON.stringify({
+          file: basename(filePath),
+          size,
+          contentType,
+          range: rangeHeader,
+          start,
+          end,
+          length: chunk.length,
+          status: 206,
+        })}`,
+      );
+    }
+    return new Response(chunk, {
+      status: 206,
+      headers: {
+        "Accept-Ranges": "bytes",
+        "Content-Range": `bytes ${start}-${end}/${size}`,
+        "Content-Length": String(chunk.length),
+        "Content-Type": contentType,
+      },
+    });
+  }
+
+  if (shouldLogLocalAsset) {
+    console.log(
+      `[ExtractFrame][local-asset] full ${JSON.stringify({
+        file: basename(filePath),
+        size,
+        contentType,
+        range: rangeHeader,
+        status: 200,
+      })}`,
+    );
+  }
+  return new Response(readFileSync(filePath), {
+    status: 200,
+    headers: {
+      "Accept-Ranges": "bytes",
+      "Content-Length": String(size),
+      "Content-Type": contentType,
+    },
+  });
+}
 
 /**
  * Download a URL to a local file using Electron's net.fetch (Chromium network stack).
@@ -83,20 +247,22 @@ async function downloadToFile(
   }
 }
 
-// Suppress Chromium's noisy ffmpeg pixel format warnings (harmless, caused by video thumbnail decoding)
-// These come from GPU/renderer processes' stderr and cannot be disabled via command-line switches.
-// Filter them at the process level:
+// Suppress Chromium's noisy ffmpeg pixel format warnings from video preview decoding.
+// Keep them visible when extract-frame debug logging is explicitly enabled.
 const originalStderrWrite = process.stderr.write.bind(process.stderr);
 process.stderr.write = (
   chunk: string | Uint8Array,
   ...args: unknown[]
 ): boolean => {
-  const str = typeof chunk === "string" ? chunk : chunk.toString();
-  if (
-    str.includes("Unsupported pixel format") ||
-    str.includes("ffmpeg_common.cc")
-  )
-    return true;
+  const str =
+    typeof chunk === "string" ? chunk : Buffer.from(chunk).toString("utf8");
+  if (!EXTRACT_FRAME_DEBUG) {
+    if (
+      str.includes("Unsupported pixel format") ||
+      str.includes("ffmpeg_common.cc")
+    )
+      return true;
+  }
   return (originalStderrWrite as (...a: unknown[]) => boolean)(chunk, ...args);
 };
 
@@ -336,6 +502,29 @@ function createWindow(): void {
   mainWindow.on("ready-to-show", () => {
     mainWindow?.show();
   });
+
+  mainWindow.webContents.on(
+    "console-message",
+    (_event, level, message, line, sourceId) => {
+      const isExpectedRendererNoise =
+        message.includes("Electron Security Warning") ||
+        message.includes("Insecure Content-Security-Policy") ||
+        message.includes("ResizeObserver loop");
+
+      if (isExpectedRendererNoise) {
+        return;
+      }
+
+      if (
+        level >= 2 ||
+        (EXTRACT_FRAME_DEBUG && message.includes("[ExtractFrame]"))
+      ) {
+        console.log(
+          `[Renderer][${level}] ${message} ${sourceId ? `(${sourceId}:${line})` : ""}`,
+        );
+      }
+    },
+  );
 
   // macOS: Hide window instead of closing when clicking the red button
   // The app will only quit when user presses Cmd+Q
@@ -2062,13 +2251,7 @@ app.whenReady().then(() => {
 
   // Handle local-asset:// protocol for loading local files (videos, images, etc.)
   protocol.handle("local-asset", (request) => {
-    const filePath = decodeURIComponent(
-      request.url.replace("local-asset://", ""),
-    );
-    if (!existsSync(filePath)) {
-      return new Response("File not found", { status: 404 });
-    }
-    return net.fetch(pathToFileURL(filePath).href);
+    return localAssetResponse(request);
   });
 
   app.on("browser-window-created", (_, window) => {

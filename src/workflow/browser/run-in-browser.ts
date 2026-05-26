@@ -9,6 +9,7 @@ import {
   runBackgroundRemover,
   runFaceEnhancer,
   runVideoEnhancer,
+  runExtractFrame,
   runFaceSwapper,
   runImageEraser,
   runSegmentAnything,
@@ -1193,6 +1194,38 @@ export async function executeWorkflowInBrowser(
             results.set(nodeId, {
               outputUrl: dataUrl,
               resultMetadata: { output: dataUrl, resultUrl: dataUrl },
+            });
+            callbacks.onNodeStatus(nodeId, "confirmed");
+            callbacks.onNodeComplete(nodeId, {
+              urls: [dataUrl],
+              cost: 0,
+              durationMs: Date.now() - start,
+            });
+            return;
+          }
+          if (nodeType === "free-tool/extract-frame") {
+            const inputUrl = String(inputs.input ?? params.input ?? "");
+            if (!inputUrl) throw new Error("Missing input");
+            const format = String(params.format ?? "png").toLowerCase();
+            const mime =
+              format === "jpg" || format === "jpeg"
+                ? "image/jpeg"
+                : format === "webp"
+                  ? "image/webp"
+                  : "image/png";
+            const base64 = await runExtractFrame(
+              inputUrl,
+              params as { time?: number; format?: string },
+              onProgress,
+            );
+            const dataUrl = base64ToDataUrl(base64, mime);
+            results.set(nodeId, {
+              outputUrl: dataUrl,
+              resultMetadata: {
+                output: dataUrl,
+                resultUrl: dataUrl,
+                resultUrls: [dataUrl],
+              },
             });
             callbacks.onNodeStatus(nodeId, "confirmed");
             callbacks.onNodeComplete(nodeId, {

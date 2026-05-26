@@ -1082,6 +1082,25 @@
     "selectDirectory": "ディレクトリを選択",
     "openFolder": "フォルダを開く",
     "openWorkflowFolder": "ワークフローフォルダを開く",
+    "extractFrame": {
+      "needVideo": "動画を接続またはアップロードし、プレビューをスクラブしてフレームを選択します。",
+      "loadFailed": "この動画プレビューを読み込めませんでした。",
+      "previousFrame": "前のフレーム",
+      "backFive": "5秒戻る",
+      "forwardFive": "5秒進む",
+      "nextFrame": "次のフレーム",
+      "captureResult": "選択したフレームを結果にキャプチャ",
+      "capture": "キャプチャ",
+      "clearVideo": "動画をクリア",
+      "useUrl": "URLを使用",
+      "videoHint": "動画をアップロードするか上流ノードから接続し、プレビューをスクラブしてフレームを選択します。",
+      "saveToLocalFolder": "ローカルフォルダに保存",
+      "localExportOff": "ローカル書き出しはオフです",
+      "localExportOffHint": "未設定：追加のローカル書き出しは行いません",
+      "customFolder": "カスタム",
+      "exportOff": "オフ",
+      "noFolderToOpen": "フォルダが設定されていません"
+    },
     "nodes": "ノード",
     "config": "設定",
     "results": "結果",
@@ -1301,6 +1320,29 @@
           },
           "invertMask": {
             "label": "マスク反転"
+          }
+        }
+      },
+      "free-tool/extract-frame": {
+        "label": "フレーム抽出",
+        "hint": "動画の指定した時刻から静止画像を無料でキャプチャします",
+        "inputs": {
+          "input": {
+            "label": "動画"
+          }
+        },
+        "params": {
+          "time": {
+            "label": "時間（秒）",
+            "description": "選択したフレームのタイムスタンプ（秒）。"
+          },
+          "format": {
+            "label": "形式",
+            "description": "キャプチャしたフレームを保存する画像形式。"
+          },
+          "outputDir": {
+            "label": "ローカルフォルダに保存",
+            "description": "任意。フォルダを設定すると、抽出したフレームのローカルコピーを追加で書き出します。"
           }
         }
       },

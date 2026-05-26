@@ -183,6 +183,30 @@ export const storageIpc = {
       filename,
       data,
     }) as Promise<string>,
+  saveNodeOutput: (
+    workflowId: string,
+    nodeId: string,
+    prefix: string,
+    ext: string,
+    data: ArrayBuffer,
+  ) =>
+    rawInvoke("storage:save-node-output", {
+      workflowId,
+      nodeId,
+      prefix,
+      ext,
+      data,
+    }) as Promise<string>,
+  saveFileToDirectory: (
+    outputDir: string,
+    filename: string,
+    data: ArrayBuffer,
+  ) =>
+    rawInvoke("storage:save-file-to-directory", {
+      outputDir,
+      filename,
+      data,
+    }) as Promise<string>,
   copyUploadedFile: (workflowId: string, nodeId: string, sourcePath: string) =>
     rawInvoke("storage:copy-uploaded-file", {
       workflowId,

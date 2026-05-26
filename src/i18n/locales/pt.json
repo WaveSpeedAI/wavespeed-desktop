@@ -1081,6 +1081,25 @@
     "selectDirectory": "Selecionar diretório",
     "openFolder": "Abrir pasta",
     "openWorkflowFolder": "Abrir pasta do fluxo de trabalho",
+    "extractFrame": {
+      "needVideo": "Conecte ou envie um vídeo e arraste a prévia para escolher um quadro.",
+      "loadFailed": "Não foi possível carregar esta prévia de vídeo.",
+      "previousFrame": "Quadro anterior",
+      "backFive": "Voltar 5 segundos",
+      "forwardFive": "Avançar 5 segundos",
+      "nextFrame": "Próximo quadro",
+      "captureResult": "Capturar o quadro selecionado nos resultados",
+      "capture": "Capturar",
+      "clearVideo": "Limpar vídeo",
+      "useUrl": "Usar URL",
+      "videoHint": "Envie um vídeo ou conecte um de um nó anterior, depois arraste a prévia para escolher um quadro.",
+      "saveToLocalFolder": "Salvar em pasta local",
+      "localExportOff": "Exportação local desativada",
+      "localExportOffHint": "Não definido: sem exportação local extra",
+      "customFolder": "Personalizada",
+      "exportOff": "Desativado",
+      "noFolderToOpen": "Nenhuma pasta definida"
+    },
     "nodes": "Nós",
     "config": "Configuração",
     "results": "Resultados",
@@ -1340,6 +1359,29 @@
           },
           "invertMask": {
             "label": "Inverter máscara"
+          }
+        }
+      },
+      "free-tool/extract-frame": {
+        "label": "Extrair quadro",
+        "hint": "Captura gratuitamente uma imagem estática de um momento selecionado do vídeo",
+        "inputs": {
+          "input": {
+            "label": "Vídeo"
+          }
+        },
+        "params": {
+          "time": {
+            "label": "Tempo (s)",
+            "description": "O carimbo de tempo do quadro selecionado em segundos."
+          },
+          "format": {
+            "label": "Formato",
+            "description": "O formato de imagem usado ao salvar o quadro capturado."
+          },
+          "outputDir": {
+            "label": "Salvar em pasta local",
+            "description": "Opcional. Defina uma pasta para exportar uma cópia local adicional do quadro extraído."
           }
         }
       },

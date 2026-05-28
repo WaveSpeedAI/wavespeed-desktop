@@ -1287,6 +1287,20 @@
         "label": "背景移除",
         "hint": "免費自動移除圖片背景"
       },
+      "free-tool/paint": {
+        "label": "重繪",
+        "hint": "選擇圖片區域後進行重繪、擴圖、擦除或增強",
+        "inputs": {
+          "input": {
+            "label": "圖片"
+          }
+        },
+        "outputs": {
+          "output": {
+            "label": "輸出"
+          }
+        }
+      },
       "free-tool/face-enhancer": {
         "label": "人臉增強",
         "hint": "免費增強和修復照片中的人臉"
@@ -1426,6 +1440,77 @@
       "optimizeOffHint": "預設：不優化（以原文執行）",
       "manualOptimizedHint": "已手動優化。文字變更前將略過執行時自動優化。",
       "enterTextOrPrompt": "輸入文字或提示詞..."
+    },
+    "paintNode": {
+      "imageHint": "上傳圖片或連接上游圖片，然後選擇編輯方式。",
+      "clearImage": "清除圖片",
+      "modeRepaint": "重繪",
+      "modeRegion": "遮罩",
+      "modeErase": "擦除",
+      "modeExpand": "擴圖",
+      "modeRemoveBg": "移除背景",
+      "modeEnhance": "增強",
+      "modeFace": "人臉增強",
+      "editImage": "編輯圖片",
+      "paintHint": "塗抹需要重繪的區域。右鍵拖曳或按住 Alt 可減去區域。",
+      "boxHint": "拖曳框選需要處理的區域。",
+      "lassoHint": "拖曳圈出自由形狀區域，放開後閉合選取。",
+      "sketchHint": "繪製視覺參考，筆觸區域會作為編輯區域。",
+      "eraseBrushHint": "塗抹需要擦除的物體或區域。",
+      "clearRegion": "清除區域",
+      "loadingMaskTools": "正在載入遮罩工具...",
+      "savingMask": "正在儲存遮罩...",
+      "encoding": "正在分析圖片...",
+      "decoding": "正在更新遮罩...",
+      "eraserSize": "橡皮擦",
+      "brushSize": "筆刷",
+      "savingSelection": "正在儲存選取...",
+      "selectionSaved": "選取已儲存",
+      "selectionRequired": "在畫面上選擇一個區域",
+      "functionSelected": "已選擇{{mode}}",
+      "savingSelectionHint": "正在準備將傳送給模型的標記圖片。",
+      "selectionSavedHint": "繼續設定編輯參數。待傳送預覽已準備好。",
+      "selectionRequiredHint": "使用目前遮罩工具在圖片上選擇區域，然後繼續。",
+      "functionSelectedHint": "繼續設定此功能，工作流程執行時會使用它。",
+      "collapseTools": "收合工具",
+      "expandTools": "展開工具",
+      "selectPaint": "筆刷",
+      "selectPaintHelp": "快速柔和選取",
+      "selectBox": "框選",
+      "selectBoxHelp": "粗略區塊",
+      "selectLasso": "套索",
+      "selectLassoHelp": "自由形狀",
+      "selectSketch": "草圖",
+      "selectSketchHelp": "視覺參考",
+      "expandRatio": "擴圖比例",
+      "undo": "復原",
+      "undoShortcut": "復原 (Ctrl+Z)",
+      "redo": "重做",
+      "redoShortcut": "重做 (Ctrl+Y)",
+      "continueEdit": "繼續",
+      "needImage": "請先新增圖片，再開啟編輯器。",
+      "regionReady": "區域已準備",
+      "openEditorHint": "開啟編輯器選擇區域、遮罩或工具。",
+      "editorTitle": "畫面編輯器",
+      "editorDescription": "為重繪節點選擇區域或目標畫面。",
+      "modelOutput": "輸出",
+      "modelOutputGenerate": "執行所選模型",
+      "noMatchedModels": "本機模型快取中還沒有匹配的圖片編輯模型。",
+      "missingSelectedModel": "所選模型目前不在本機列表中。執行前請從列表中選擇支援的圖片編輯模型。",
+      "incompatibleSelectedModel": "所選模型不支援目前重繪功能。執行前請從列表中選擇相容的圖片編輯模型。",
+      "repaintModelHint": "使用標記後的圖片、支援時的遮罩，以及提示詞執行所選模型。",
+      "eraseHint": "使用塗抹區域執行內建圖片擦除工具。",
+      "expandHint": "依選擇的擴圖比例輸出來源畫面。",
+      "regionOnlyHint": "只輸出所選區域的遮罩。",
+      "directToolHint": "工作流程執行時執行匹配的內建免費工具。",
+      "prompts": {
+        "repaintPaint": "自然重繪塗抹區域，同時保留周圍細節。",
+        "repaintBox": "自然重繪框選區域，同時保留周圍細節。",
+        "repaintLasso": "自然無縫地重繪套索選擇的區域。",
+        "repaintSketch": "參考紅色草圖進行自然重繪，並保留選區周圍細節。",
+        "erase": "移除選中的物體或區域，並自然重建背景。",
+        "expand": "在原圖邊界外自然擴展畫面，並保持風格、光線和透視一致。"
+      }
     },
     "promptOptimizer": {
       "optimizationFailed": "優化失敗",

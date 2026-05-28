@@ -1329,6 +1329,20 @@
         "label": "Rimuovi sfondo",
         "hint": "Rimuovi automaticamente lo sfondo delle immagini gratis"
       },
+      "free-tool/paint": {
+        "label": "Ridisegna",
+        "hint": "Scegli un'area dell'immagine da ridisegnare, espandere, cancellare o migliorare",
+        "inputs": {
+          "input": {
+            "label": "Immagine"
+          }
+        },
+        "outputs": {
+          "output": {
+            "label": "Output"
+          }
+        }
+      },
       "free-tool/face-enhancer": {
         "label": "Migliora volto",
         "hint": "Migliora e ripristina i volti nelle foto gratis"
@@ -1468,6 +1482,77 @@
       "optimizeOffHint": "Predefinito: nessuna ottimizzazione (esegui con testo originale)",
       "manualOptimizedHint": "Ottimizzato manualmente. Auto-on-run verrà saltato finché il testo non cambia.",
       "enterTextOrPrompt": "Inserisci testo o prompt..."
+    },
+    "paintNode": {
+      "imageHint": "Carica un'immagine o collega un fotogramma estratto, poi scegli una modalità di modifica.",
+      "clearImage": "Cancella immagine",
+      "modeRepaint": "Ridisegna",
+      "modeRegion": "Maschera",
+      "modeErase": "Cancella",
+      "modeExpand": "Espandi",
+      "modeRemoveBg": "Rimuovi sfondo",
+      "modeEnhance": "Migliora",
+      "modeFace": "Migliora volto",
+      "editImage": "Modifica immagine",
+      "paintHint": "Dipingi l'area da ridisegnare. Trascina con il tasto destro o tieni Alt per sottrarre.",
+      "boxHint": "Trascina un rettangolo intorno all'area.",
+      "lassoHint": "Trascina intorno all'area per chiudere una selezione libera.",
+      "sketchHint": "Disegna una guida visiva; l'area del tratto diventa la regione di modifica.",
+      "eraseBrushHint": "Dipingi sull'oggetto o sull'area da cancellare.",
+      "clearRegion": "Cancella regione",
+      "loadingMaskTools": "Caricamento strumenti maschera...",
+      "savingMask": "Salvataggio maschera...",
+      "encoding": "Analisi immagine...",
+      "decoding": "Aggiornamento maschera...",
+      "eraserSize": "Gomma",
+      "brushSize": "Pennello",
+      "savingSelection": "Salvataggio selezione...",
+      "selectionSaved": "Selezione salvata",
+      "selectionRequired": "Seleziona un'area nel fotogramma",
+      "functionSelected": "{{mode}} selezionato",
+      "savingSelectionHint": "Preparazione dell'immagine marcata da inviare al modello.",
+      "selectionSavedHint": "Continua per configurare la modifica. L'anteprima è pronta.",
+      "selectionRequiredHint": "Usa lo strumento maschera attivo sull'immagine, poi continua.",
+      "functionSelectedHint": "Continua per configurare questa funzione per la prossima generazione AI.",
+      "collapseTools": "Comprimi strumenti",
+      "expandTools": "Espandi strumenti",
+      "selectPaint": "Dipingi",
+      "selectPaintHelp": "area morbida rapida",
+      "selectBox": "Riquadro",
+      "selectBoxHelp": "blocco approssimativo",
+      "selectLasso": "Lazo",
+      "selectLassoHelp": "forma libera",
+      "selectSketch": "Schizzo",
+      "selectSketchHelp": "guida visiva",
+      "expandRatio": "Rapporto di espansione",
+      "undo": "Annulla",
+      "undoShortcut": "Annulla (Ctrl+Z)",
+      "redo": "Ripeti",
+      "redoShortcut": "Ripeti (Ctrl+Y)",
+      "continueEdit": "Continua",
+      "needImage": "Aggiungi un'immagine prima di aprire l'editor.",
+      "regionReady": "Regione pronta",
+      "openEditorHint": "Apri l'editor per scegliere un'area, una maschera o uno strumento.",
+      "editorTitle": "Editor fotogramma",
+      "editorDescription": "Scegli un'area o un fotogramma di destinazione per il nodo di ridisegno.",
+      "modelOutput": "Output",
+      "modelOutputGenerate": "esegui modello selezionato",
+      "noMatchedModels": "Nella cache locale non è ancora disponibile un modello di modifica immagini compatibile.",
+      "missingSelectedModel": "Il modello selezionato non è disponibile localmente. Scegli un modello di modifica immagini supportato prima dell'esecuzione.",
+      "incompatibleSelectedModel": "Il modello selezionato non supporta questa funzione di pittura. Scegli un modello di modifica immagini compatibile prima dell'esecuzione.",
+      "repaintModelHint": "Esegue il modello selezionato con il fotogramma marcato, la maschera se supportata e il prompt.",
+      "eraseHint": "Esegue la gomma immagine esistente con l'area dipinta.",
+      "expandHint": "Restituisce il fotogramma sorgente con il rapporto di espansione selezionato.",
+      "regionOnlyHint": "Restituisce solo la maschera della regione selezionata.",
+      "directToolHint": "Esegue lo strumento gratuito corrispondente quando parte il workflow.",
+      "prompts": {
+        "repaintPaint": "Ridisegna naturalmente l'area dipinta conservando i dettagli circostanti.",
+        "repaintBox": "Ridisegna naturalmente l'area rettangolare selezionata conservando i dettagli circostanti.",
+        "repaintLasso": "Ridisegna l'area libera selezionata con un risultato naturale e uniforme.",
+        "repaintSketch": "Segui lo schizzo rosso come guida visiva e ridisegna naturalmente l'area selezionata.",
+        "erase": "Rimuovi l'oggetto o l'area selezionata e ricostruisci naturalmente lo sfondo.",
+        "expand": "Espandi naturalmente l'immagine oltre il fotogramma originale, preservando stile, luce e prospettiva."
+      }
     },
     "promptOptimizer": {
       "optimizationFailed": "Ottimizzazione fallita",

@@ -1290,6 +1290,20 @@
         "label": "背景除去",
         "hint": "画像の背景を無料で自動除去"
       },
+      "free-tool/paint": {
+        "label": "再描画",
+        "hint": "画像の範囲を選択して、再描画、拡張、消去、補正を行います",
+        "inputs": {
+          "input": {
+            "label": "画像"
+          }
+        },
+        "outputs": {
+          "output": {
+            "label": "出力"
+          }
+        }
+      },
       "free-tool/face-enhancer": {
         "label": "顔補正",
         "hint": "写真の顔を無料で補正・修復"
@@ -1429,6 +1443,77 @@
       "optimizeOffHint": "デフォルト: 最適化なし（元のテキストで実行）",
       "manualOptimizedHint": "手動で最適化済み。テキストが変更されるまで実行時自動最適化をスキップします。",
       "enterTextOrPrompt": "テキストまたはプロンプトを入力..."
+    },
+    "paintNode": {
+      "imageHint": "画像をアップロードするか抽出フレームを接続し、編集モードを選択してください。",
+      "clearImage": "画像をクリア",
+      "modeRepaint": "再描画",
+      "modeRegion": "マスク",
+      "modeErase": "消去",
+      "modeExpand": "拡張",
+      "modeRemoveBg": "背景を削除",
+      "modeEnhance": "補正",
+      "modeFace": "顔を補正",
+      "editImage": "画像を編集",
+      "paintHint": "再描画する範囲を塗ってください。右ドラッグまたは Alt キーで範囲を減らせます。",
+      "boxHint": "範囲を囲む長方形をドラッグしてください。",
+      "lassoHint": "範囲を囲むようにドラッグして自由選択を閉じます。",
+      "sketchHint": "視覚的なガイドをスケッチします。ストローク範囲が編集範囲になります。",
+      "eraseBrushHint": "消去したい物体または範囲をブラシで塗ってください。",
+      "clearRegion": "範囲をクリア",
+      "loadingMaskTools": "マスクツールを読み込み中...",
+      "savingMask": "マスクを保存中...",
+      "encoding": "画像を解析中...",
+      "decoding": "マスクを更新中...",
+      "eraserSize": "消しゴム",
+      "brushSize": "ブラシ",
+      "savingSelection": "選択範囲を保存中...",
+      "selectionSaved": "選択範囲を保存しました",
+      "selectionRequired": "フレーム上で範囲を選択してください",
+      "functionSelected": "{{mode}} を選択しました",
+      "savingSelectionHint": "モデルに送信するマーク付き画像を準備しています。",
+      "selectionSavedHint": "編集設定に進んでください。保存済みプレビューは実行準備ができています。",
+      "selectionRequiredHint": "画像上でアクティブなマスクツールを使用してから続行してください。",
+      "functionSelectedHint": "次の AI 生成に使うこの機能の設定に進みます。",
+      "collapseTools": "ツールを折りたたむ",
+      "expandTools": "ツールを展開",
+      "selectPaint": "ペイント",
+      "selectPaintHelp": "すばやいソフト範囲",
+      "selectBox": "ボックス",
+      "selectBoxHelp": "粗いブロック",
+      "selectLasso": "投げ縄",
+      "selectLassoHelp": "自由形状",
+      "selectSketch": "スケッチ",
+      "selectSketchHelp": "視覚ガイド",
+      "expandRatio": "拡張比率",
+      "undo": "元に戻す",
+      "undoShortcut": "元に戻す (Ctrl+Z)",
+      "redo": "やり直す",
+      "redoShortcut": "やり直す (Ctrl+Y)",
+      "continueEdit": "続行",
+      "needImage": "エディターを開く前に画像を追加してください。",
+      "regionReady": "範囲の準備完了",
+      "openEditorHint": "エディターを開いて範囲、マスク、またはツールを選択します。",
+      "editorTitle": "フレームエディター",
+      "editorDescription": "再描画ノードの範囲または対象フレームを選択します。",
+      "modelOutput": "出力",
+      "modelOutputGenerate": "選択したモデルを実行",
+      "noMatchedModels": "ローカルモデルキャッシュに一致する画像編集モデルはまだありません。",
+      "missingSelectedModel": "選択したモデルはローカルで利用できません。実行前に対応する画像編集モデルを選択してください。",
+      "incompatibleSelectedModel": "選択したモデルはこのペイント機能に対応していません。実行前に互換性のある画像編集モデルを選択してください。",
+      "repaintModelHint": "マーク付きフレーム、対応時のマスク、プロンプトで選択モデルを実行します。",
+      "eraseHint": "ブラシ範囲を使って既存の画像消去ツールを実行します。",
+      "expandHint": "選択した拡張比率で元フレームを出力します。",
+      "regionOnlyHint": "選択範囲のマスクのみを出力します。",
+      "directToolHint": "ワークフロー実行時に対応する無料ツールを実行します。",
+      "prompts": {
+        "repaintPaint": "周囲のディテールを保ちながら、塗った範囲を自然に再描画してください。",
+        "repaintBox": "周囲のディテールを保ちながら、選択した長方形範囲を自然に再描画してください。",
+        "repaintLasso": "選択した自由形状範囲を自然でシームレスな結果になるよう再描画してください。",
+        "repaintSketch": "赤いスケッチを視覚ガイドとして使い、選択範囲を自然に再描画してください。",
+        "erase": "選択した物体または範囲を削除し、背景を自然に再構築してください。",
+        "expand": "元のフレームを超えて画像を自然に拡張し、スタイル、光、遠近感を保ってください。"
+      }
     },
     "guide": {
       "skip": "スキップ",

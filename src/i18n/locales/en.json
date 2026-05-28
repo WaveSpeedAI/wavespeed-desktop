@@ -1433,6 +1433,20 @@
         "label": "Background Remover",
         "hint": "Remove image backgrounds automatically for free"
       },
+      "free-tool/paint": {
+        "label": "Repaint",
+        "hint": "Choose an image area and repaint, expand, erase, or enhance it",
+        "inputs": {
+          "input": {
+            "label": "Image"
+          }
+        },
+        "outputs": {
+          "output": {
+            "label": "Output"
+          }
+        }
+      },
       "free-tool/face-enhancer": {
         "label": "Face Enhancer",
         "hint": "Enhance and restore faces in photos for free"
@@ -1576,6 +1590,77 @@
       "optimizeOffHint": "Default: no optimization (run with original text)",
       "manualOptimizedHint": "Manually optimized. Auto-on-run will be skipped until text changes.",
       "enterTextOrPrompt": "Enter text or prompt..."
+    },
+    "paintNode": {
+      "imageHint": "Upload an image or connect an extracted frame, then choose an edit mode.",
+      "clearImage": "Clear image",
+      "modeRepaint": "Repaint",
+      "modeRegion": "Mask",
+      "modeErase": "Erase",
+      "modeExpand": "Expand",
+      "modeRemoveBg": "Remove background",
+      "modeEnhance": "Enhance",
+      "modeFace": "Face enhance",
+      "editImage": "Edit image",
+      "paintHint": "Paint the area to repaint. Right-drag or hold Alt to subtract.",
+      "boxHint": "Drag a rectangle around the area.",
+      "lassoHint": "Drag around the area to close a freeform selection.",
+      "sketchHint": "Sketch visual guidance; the stroke area becomes the edit region.",
+      "eraseBrushHint": "Brush over the object or area to erase.",
+      "clearRegion": "Clear region",
+      "loadingMaskTools": "Loading mask tools...",
+      "savingMask": "Saving mask...",
+      "encoding": "Analyzing image...",
+      "decoding": "Updating mask...",
+      "eraserSize": "Eraser",
+      "brushSize": "Brush",
+      "savingSelection": "Saving selection...",
+      "selectionSaved": "Selection saved",
+      "selectionRequired": "Select an area on the frame",
+      "functionSelected": "{{mode}} selected",
+      "savingSelectionHint": "Preparing the marked image that will be sent to the model.",
+      "selectionSavedHint": "Continue to configure the edit. The saved preview is ready to run.",
+      "selectionRequiredHint": "Use the active mask tool on the image, then continue.",
+      "functionSelectedHint": "Continue to configure this function for the next AI generation.",
+      "collapseTools": "Collapse tools",
+      "expandTools": "Expand tools",
+      "selectPaint": "Paint",
+      "selectPaintHelp": "fast soft area",
+      "selectBox": "Box",
+      "selectBoxHelp": "rough block",
+      "selectLasso": "Lasso",
+      "selectLassoHelp": "free shape",
+      "selectSketch": "Sketch",
+      "selectSketchHelp": "visual guide",
+      "expandRatio": "Expanded ratio",
+      "undo": "Undo",
+      "undoShortcut": "Undo (Ctrl+Z)",
+      "redo": "Redo",
+      "redoShortcut": "Redo (Ctrl+Y)",
+      "continueEdit": "Continue",
+      "needImage": "Add an image before opening the editor.",
+      "regionReady": "Region ready",
+      "openEditorHint": "Open the editor to choose an area, mask, or tool.",
+      "editorTitle": "Frame editor",
+      "editorDescription": "Choose an area or target frame for the repaint node.",
+      "modelOutput": "Output",
+      "modelOutputGenerate": "run selected model",
+      "noMatchedModels": "No matching image edit model is available in the local model cache yet.",
+      "missingSelectedModel": "The selected model is not available locally. Choose a supported image edit model from the list before running.",
+      "incompatibleSelectedModel": "The selected model does not support this paint function. Choose a compatible image edit model from the list before running.",
+      "repaintModelHint": "Runs the selected model with the marked frame, mask when supported, and prompt.",
+      "eraseHint": "Runs the existing image eraser with the brushed area.",
+      "expandHint": "Outputs the source frame with the selected expand ratio.",
+      "regionOnlyHint": "Outputs only the selected region mask.",
+      "directToolHint": "Runs the matching free tool when the workflow runs.",
+      "prompts": {
+        "repaintPaint": "Redraw the painted area naturally while preserving surrounding details.",
+        "repaintBox": "Redraw the selected rectangular area naturally while preserving surrounding details.",
+        "repaintLasso": "Redraw the selected freeform area with a natural, seamless result.",
+        "repaintSketch": "Follow the red sketch as visual guidance and redraw the selected area naturally.",
+        "erase": "Remove the selected object or area and reconstruct the background naturally.",
+        "expand": "Extend the image naturally beyond the original frame, preserving style, lighting, and perspective."
+      }
     },
     "guide": {
       "skip": "Skip",

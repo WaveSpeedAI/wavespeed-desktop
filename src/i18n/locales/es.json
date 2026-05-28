@@ -1329,6 +1329,20 @@
         "label": "Quitafondos",
         "hint": "Eliminar fondos de imágenes automáticamente gratis"
       },
+      "free-tool/paint": {
+        "label": "Repintar",
+        "hint": "Elige un área de la imagen para repintar, ampliar, borrar o mejorar",
+        "inputs": {
+          "input": {
+            "label": "Imagen"
+          }
+        },
+        "outputs": {
+          "output": {
+            "label": "Salida"
+          }
+        }
+      },
       "free-tool/face-enhancer": {
         "label": "Mejorador de rostros",
         "hint": "Mejorar y restaurar rostros en fotos gratis"
@@ -1468,6 +1482,77 @@
       "optimizeOffHint": "Por defecto: sin optimización (ejecutar con texto original)",
       "manualOptimizedHint": "Optimizado manualmente. Se omitirá la optimización automática hasta que cambie el texto.",
       "enterTextOrPrompt": "Introduzca texto o prompt..."
+    },
+    "paintNode": {
+      "imageHint": "Sube una imagen o conecta un fotograma extraído y luego elige un modo de edición.",
+      "clearImage": "Borrar imagen",
+      "modeRepaint": "Repintar",
+      "modeRegion": "Máscara",
+      "modeErase": "Borrar",
+      "modeExpand": "Expandir",
+      "modeRemoveBg": "Eliminar fondo",
+      "modeEnhance": "Mejorar",
+      "modeFace": "Mejorar rostro",
+      "editImage": "Editar imagen",
+      "paintHint": "Pinta el área que se repintará. Arrastra con botón derecho o mantén Alt para restar.",
+      "boxHint": "Arrastra un rectángulo alrededor del área.",
+      "lassoHint": "Arrastra alrededor del área para cerrar una selección libre.",
+      "sketchHint": "Dibuja una guía visual; el trazo se convierte en el área de edición.",
+      "eraseBrushHint": "Pinta sobre el objeto o área que quieres borrar.",
+      "clearRegion": "Borrar región",
+      "loadingMaskTools": "Cargando herramientas de máscara...",
+      "savingMask": "Guardando máscara...",
+      "encoding": "Analizando imagen...",
+      "decoding": "Actualizando máscara...",
+      "eraserSize": "Borrador",
+      "brushSize": "Pincel",
+      "savingSelection": "Guardando selección...",
+      "selectionSaved": "Selección guardada",
+      "selectionRequired": "Selecciona un área en el fotograma",
+      "functionSelected": "{{mode}} seleccionado",
+      "savingSelectionHint": "Preparando la imagen marcada que se enviará al modelo.",
+      "selectionSavedHint": "Continúa para configurar la edición. La vista previa está lista.",
+      "selectionRequiredHint": "Usa la herramienta de máscara activa sobre la imagen y continúa.",
+      "functionSelectedHint": "Continúa para configurar esta función para la próxima generación de AI.",
+      "collapseTools": "Contraer herramientas",
+      "expandTools": "Expandir herramientas",
+      "selectPaint": "Pintar",
+      "selectPaintHelp": "área suave rápida",
+      "selectBox": "Cuadro",
+      "selectBoxHelp": "bloque aproximado",
+      "selectLasso": "Lazo",
+      "selectLassoHelp": "forma libre",
+      "selectSketch": "Boceto",
+      "selectSketchHelp": "guía visual",
+      "expandRatio": "Relación de expansión",
+      "undo": "Deshacer",
+      "undoShortcut": "Deshacer (Ctrl+Z)",
+      "redo": "Rehacer",
+      "redoShortcut": "Rehacer (Ctrl+Y)",
+      "continueEdit": "Continuar",
+      "needImage": "Añade una imagen antes de abrir el editor.",
+      "regionReady": "Región lista",
+      "openEditorHint": "Abre el editor para elegir un área, máscara o herramienta.",
+      "editorTitle": "Editor de fotogramas",
+      "editorDescription": "Elige un área o fotograma objetivo para el nodo de redibujo.",
+      "modelOutput": "Salida",
+      "modelOutputGenerate": "ejecutar modelo seleccionado",
+      "noMatchedModels": "Aún no hay ningún modelo de edición de imágenes compatible en la caché local.",
+      "missingSelectedModel": "El modelo seleccionado no está disponible localmente. Elige un modelo de edición de imágenes compatible antes de ejecutar.",
+      "incompatibleSelectedModel": "El modelo seleccionado no admite esta función de pintura. Elige un modelo de edición de imágenes compatible antes de ejecutar.",
+      "repaintModelHint": "Ejecuta el modelo seleccionado con el fotograma marcado, máscara si se admite, y prompt.",
+      "eraseHint": "Ejecuta el borrador de imagen existente con el área pintada.",
+      "expandHint": "Devuelve el fotograma de origen con la relación de expansión seleccionada.",
+      "regionOnlyHint": "Devuelve solo la máscara de la región seleccionada.",
+      "directToolHint": "Ejecuta la herramienta gratuita correspondiente cuando se ejecute el flujo de trabajo.",
+      "prompts": {
+        "repaintPaint": "Repinta el área pintada de forma natural conservando los detalles circundantes.",
+        "repaintBox": "Repinta el área rectangular seleccionada de forma natural conservando los detalles circundantes.",
+        "repaintLasso": "Repinta el área libre seleccionada con un resultado natural y continuo.",
+        "repaintSketch": "Sigue el boceto rojo como guía visual y repinta el área seleccionada de forma natural.",
+        "erase": "Elimina el objeto o área seleccionada y reconstruye el fondo de forma natural.",
+        "expand": "Extiende la imagen de forma natural más allá del marco original, conservando estilo, iluminación y perspectiva."
+      }
     },
     "promptOptimizer": {
       "optimizationFailed": "Optimización fallida",

@@ -15,6 +15,8 @@ interface BackgroundRemoverParams {
   model?: string;
 }
 
+const MIN_FOREGROUND_ALPHA_RATIO = 0.001;
+
 function imageDataToFloat32(imageData: ImageData): Float32Array {
   const { width, height, data } = imageData;
   const result = new Float32Array(width * height * 3);
@@ -82,6 +84,31 @@ async function loadImageAsImageData(url: string): Promise<ImageData> {
   const imageData = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
   bitmap.close();
   return imageData;
+}
+
+async function hasVisibleForeground(blob: Blob): Promise<boolean> {
+  const bitmap = await createImageBitmap(blob);
+  const maxSide = 192;
+  const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+  const width = Math.max(1, Math.round(bitmap.width * scale));
+  const height = Math.max(1, Math.round(bitmap.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) {
+    bitmap.close();
+    return true;
+  }
+  ctx.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close();
+
+  const { data } = ctx.getImageData(0, 0, width, height);
+  let visible = 0;
+  for (let i = 3; i < data.length; i += 4) {
+    if (data[i] > 8) visible += 1;
+  }
+  return visible / (width * height) >= MIN_FOREGROUND_ALPHA_RATIO;
 }
 
 /**
@@ -172,6 +199,23 @@ export async function runBackgroundRemover(
   if (!res.ok) throw new Error(`Failed to fetch image: ${res.status}`);
   const imageBlob = await res.blob();
 
+  const runOnce = (currentModel: BgRemoverModel): Promise<string> =>
+    runBackgroundRemoverOnce(imageBlob, currentModel, onProgress);
+
+  try {
+    return await runOnce(model);
+  } catch (error) {
+    if (model === "isnet") throw error;
+    onProgress?.(15, "Retrying with quality model...");
+    return runOnce("isnet");
+  }
+}
+
+function runBackgroundRemoverOnce(
+  imageBlob: Blob,
+  model: BgRemoverModel,
+  onProgress?: (progress: number, message?: string) => void,
+): Promise<string> {
   const worker = new Worker(
     new URL("../../workers/backgroundRemover.worker.ts", import.meta.url),
     { type: "module" },
@@ -193,15 +237,27 @@ export async function runBackgroundRemover(
       } else if (type === "result") {
         const { arrayBuffer } = payload;
         worker.terminate();
-        onProgress?.(100, "Done");
         const blob = new Blob([arrayBuffer]);
-        const reader = new FileReader();
-        reader.onload = () => {
-          const dataUrl = reader.result as string;
-          resolve(dataUrl.split(",")[1] ?? "");
-        };
-        reader.onerror = () => reject(new Error("Failed to read result"));
-        reader.readAsDataURL(blob);
+        hasVisibleForeground(blob)
+          .then((hasForeground) => {
+            if (!hasForeground) {
+              reject(
+                new Error("Background remover produced an empty foreground."),
+              );
+              return;
+            }
+            onProgress?.(100, "Done");
+            const reader = new FileReader();
+            reader.onload = () => {
+              const dataUrl = reader.result as string;
+              resolve(dataUrl.split(",")[1] ?? "");
+            };
+            reader.onerror = () => reject(new Error("Failed to read result"));
+            reader.readAsDataURL(blob);
+          })
+          .catch((error) =>
+            reject(error instanceof Error ? error : new Error(String(error))),
+          );
       } else if (type === "error") {
         worker.terminate();
         reject(new Error(String(payload ?? "Unknown error")));

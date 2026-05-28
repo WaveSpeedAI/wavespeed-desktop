@@ -1329,6 +1329,20 @@
         "label": "Pembuang latar belakang",
         "hint": "Buang latar belakang imej secara automatik dan percuma"
       },
+      "free-tool/paint": {
+        "label": "Lukis semula",
+        "hint": "Pilih kawasan imej untuk dilukis semula, dikembangkan, dipadam atau dipertingkat",
+        "inputs": {
+          "input": {
+            "label": "Imej"
+          }
+        },
+        "outputs": {
+          "output": {
+            "label": "Output"
+          }
+        }
+      },
       "free-tool/face-enhancer": {
         "label": "Penambah muka",
         "hint": "Tingkatkan dan pulihkan muka dalam foto secara percuma"
@@ -1468,6 +1482,77 @@
       "optimizeOffHint": "Lalai: tiada pengoptimuman (jalankan dengan teks asal)",
       "manualOptimizedHint": "Dioptimumkan secara manual. Auto-on-run akan dilangkau sehingga teks berubah.",
       "enterTextOrPrompt": "Masukkan teks atau prompt..."
+    },
+    "paintNode": {
+      "imageHint": "Muat naik imej atau sambungkan bingkai yang diekstrak, kemudian pilih mod sunting.",
+      "clearImage": "Kosongkan imej",
+      "modeRepaint": "Lukis semula",
+      "modeRegion": "Topeng",
+      "modeErase": "Padam",
+      "modeExpand": "Kembangkan",
+      "modeRemoveBg": "Buang latar belakang",
+      "modeEnhance": "Pertingkat",
+      "modeFace": "Pertingkat wajah",
+      "editImage": "Sunting imej",
+      "paintHint": "Lukis kawasan yang hendak dilukis semula. Seret kanan atau tahan Alt untuk menolak kawasan.",
+      "boxHint": "Seret segi empat di sekeliling kawasan.",
+      "lassoHint": "Seret mengelilingi kawasan untuk menutup pilihan bebas.",
+      "sketchHint": "Lakarkan panduan visual; kawasan strok menjadi kawasan suntingan.",
+      "eraseBrushHint": "Berus pada objek atau kawasan yang hendak dipadam.",
+      "clearRegion": "Kosongkan kawasan",
+      "loadingMaskTools": "Memuatkan alat topeng...",
+      "savingMask": "Menyimpan topeng...",
+      "encoding": "Menganalisis imej...",
+      "decoding": "Mengemas kini topeng...",
+      "eraserSize": "Pemadam",
+      "brushSize": "Berus",
+      "savingSelection": "Menyimpan pilihan...",
+      "selectionSaved": "Pilihan disimpan",
+      "selectionRequired": "Pilih kawasan pada bingkai",
+      "functionSelected": "{{mode}} dipilih",
+      "savingSelectionHint": "Menyediakan imej bertanda yang akan dihantar kepada model.",
+      "selectionSavedHint": "Teruskan untuk mengkonfigurasi suntingan. Pratonton yang disimpan sedia dijalankan.",
+      "selectionRequiredHint": "Gunakan alat topeng aktif pada imej, kemudian teruskan.",
+      "functionSelectedHint": "Teruskan untuk mengkonfigurasi fungsi ini bagi generasi AI seterusnya.",
+      "collapseTools": "Lipat alat",
+      "expandTools": "Kembangkan alat",
+      "selectPaint": "Lukis",
+      "selectPaintHelp": "kawasan lembut pantas",
+      "selectBox": "Kotak",
+      "selectBoxHelp": "blok kasar",
+      "selectLasso": "Laso",
+      "selectLassoHelp": "bentuk bebas",
+      "selectSketch": "Lakaran",
+      "selectSketchHelp": "panduan visual",
+      "expandRatio": "Nisbah kembangan",
+      "undo": "Buat asal",
+      "undoShortcut": "Buat asal (Ctrl+Z)",
+      "redo": "Buat semula",
+      "redoShortcut": "Buat semula (Ctrl+Y)",
+      "continueEdit": "Teruskan",
+      "needImage": "Tambah imej sebelum membuka editor.",
+      "regionReady": "Kawasan sedia",
+      "openEditorHint": "Buka editor untuk memilih kawasan, topeng atau alat.",
+      "editorTitle": "Editor bingkai",
+      "editorDescription": "Pilih kawasan atau bingkai sasaran untuk nod lukis semula.",
+      "modelOutput": "Output",
+      "modelOutputGenerate": "jalankan model dipilih",
+      "noMatchedModels": "Tiada model sunting imej yang sepadan dalam cache model tempatan lagi.",
+      "missingSelectedModel": "Model yang dipilih tidak tersedia secara tempatan. Pilih model sunting imej yang disokong sebelum menjalankan.",
+      "incompatibleSelectedModel": "Model yang dipilih tidak menyokong fungsi lukis ini. Pilih model sunting imej yang serasi sebelum menjalankan.",
+      "repaintModelHint": "Menjalankan model dipilih dengan bingkai bertanda, topeng jika disokong, dan prompt.",
+      "eraseHint": "Menjalankan pemadam imej sedia ada dengan kawasan berus.",
+      "expandHint": "Mengeluarkan bingkai sumber dengan nisbah kembangan dipilih.",
+      "regionOnlyHint": "Mengeluarkan hanya topeng kawasan dipilih.",
+      "directToolHint": "Menjalankan alat percuma yang sepadan apabila aliran kerja dijalankan.",
+      "prompts": {
+        "repaintPaint": "Lukis semula kawasan yang diberus secara semula jadi sambil mengekalkan butiran sekeliling.",
+        "repaintBox": "Lukis semula kawasan segi empat yang dipilih secara semula jadi sambil mengekalkan butiran sekeliling.",
+        "repaintLasso": "Lukis semula kawasan bebas yang dipilih dengan hasil semula jadi dan lancar.",
+        "repaintSketch": "Ikut lakaran merah sebagai panduan visual dan lukis semula kawasan dipilih secara semula jadi.",
+        "erase": "Buang objek atau kawasan dipilih dan bina semula latar belakang secara semula jadi.",
+        "expand": "Kembangkan imej secara semula jadi melepasi bingkai asal, sambil mengekalkan gaya, pencahayaan dan perspektif."
+      }
     },
     "promptOptimizer": {
       "optimizationFailed": "Pengoptimuman gagal",

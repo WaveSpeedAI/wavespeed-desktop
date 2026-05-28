@@ -1329,6 +1329,20 @@
         "label": "Xóa nền",
         "hint": "Tự động xóa nền hình ảnh miễn phí"
       },
+      "free-tool/paint": {
+        "label": "Vẽ lại",
+        "hint": "Chọn một vùng ảnh để vẽ lại, mở rộng, xóa hoặc tăng cường",
+        "inputs": {
+          "input": {
+            "label": "Hình ảnh"
+          }
+        },
+        "outputs": {
+          "output": {
+            "label": "Đầu ra"
+          }
+        }
+      },
       "free-tool/face-enhancer": {
         "label": "Tăng cường khuôn mặt",
         "hint": "Cải thiện và phục hồi khuôn mặt trong ảnh miễn phí"
@@ -1468,6 +1482,77 @@
       "optimizeOffHint": "Mặc định: không tối ưu (chạy với văn gốc)",
       "manualOptimizedHint": "Đã tối ưu thủ công. Bỏ qua tối ưu tự động cho đến khi văn bản thay đổi.",
       "enterTextOrPrompt": "Nhập văn bản hoặc gợi ý..."
+    },
+    "paintNode": {
+      "imageHint": "Tải ảnh lên hoặc kết nối khung hình đã trích xuất, rồi chọn chế độ chỉnh sửa.",
+      "clearImage": "Xóa ảnh",
+      "modeRepaint": "Vẽ lại",
+      "modeRegion": "Mặt nạ",
+      "modeErase": "Xóa",
+      "modeExpand": "Mở rộng",
+      "modeRemoveBg": "Xóa nền",
+      "modeEnhance": "Tăng cường",
+      "modeFace": "Tăng cường khuôn mặt",
+      "editImage": "Chỉnh sửa ảnh",
+      "paintHint": "Tô vùng cần vẽ lại. Kéo chuột phải hoặc giữ Alt để trừ bớt.",
+      "boxHint": "Kéo một hình chữ nhật quanh vùng.",
+      "lassoHint": "Kéo quanh vùng để đóng lựa chọn tự do.",
+      "sketchHint": "Phác thảo hướng dẫn trực quan; vùng nét vẽ sẽ trở thành vùng chỉnh sửa.",
+      "eraseBrushHint": "Tô lên đối tượng hoặc vùng cần xóa.",
+      "clearRegion": "Xóa vùng",
+      "loadingMaskTools": "Đang tải công cụ mặt nạ...",
+      "savingMask": "Đang lưu mặt nạ...",
+      "encoding": "Đang phân tích ảnh...",
+      "decoding": "Đang cập nhật mặt nạ...",
+      "eraserSize": "Tẩy",
+      "brushSize": "Cọ",
+      "savingSelection": "Đang lưu lựa chọn...",
+      "selectionSaved": "Đã lưu lựa chọn",
+      "selectionRequired": "Chọn một vùng trên khung hình",
+      "functionSelected": "Đã chọn {{mode}}",
+      "savingSelectionHint": "Đang chuẩn bị ảnh đã đánh dấu để gửi tới mô hình.",
+      "selectionSavedHint": "Tiếp tục để cấu hình chỉnh sửa. Bản xem trước đã sẵn sàng chạy.",
+      "selectionRequiredHint": "Dùng công cụ mặt nạ đang bật trên ảnh, rồi tiếp tục.",
+      "functionSelectedHint": "Tiếp tục cấu hình chức năng này cho lần tạo AI tiếp theo.",
+      "collapseTools": "Thu gọn công cụ",
+      "expandTools": "Mở rộng công cụ",
+      "selectPaint": "Tô",
+      "selectPaintHelp": "vùng mềm nhanh",
+      "selectBox": "Hộp",
+      "selectBoxHelp": "khối thô",
+      "selectLasso": "Lasso",
+      "selectLassoHelp": "hình tự do",
+      "selectSketch": "Phác thảo",
+      "selectSketchHelp": "hướng dẫn trực quan",
+      "expandRatio": "Tỷ lệ mở rộng",
+      "undo": "Hoàn tác",
+      "undoShortcut": "Hoàn tác (Ctrl+Z)",
+      "redo": "Làm lại",
+      "redoShortcut": "Làm lại (Ctrl+Y)",
+      "continueEdit": "Tiếp tục",
+      "needImage": "Thêm ảnh trước khi mở trình chỉnh sửa.",
+      "regionReady": "Vùng đã sẵn sàng",
+      "openEditorHint": "Mở trình chỉnh sửa để chọn vùng, mặt nạ hoặc công cụ.",
+      "editorTitle": "Trình chỉnh sửa khung hình",
+      "editorDescription": "Chọn vùng hoặc khung đích cho nút vẽ lại.",
+      "modelOutput": "Đầu ra",
+      "modelOutputGenerate": "chạy mô hình đã chọn",
+      "noMatchedModels": "Chưa có mô hình chỉnh sửa ảnh phù hợp trong bộ nhớ đệm mô hình cục bộ.",
+      "missingSelectedModel": "Mô hình đã chọn không có sẵn cục bộ. Hãy chọn mô hình chỉnh sửa ảnh được hỗ trợ trước khi chạy.",
+      "incompatibleSelectedModel": "Mô hình đã chọn không hỗ trợ chức năng tô này. Hãy chọn mô hình chỉnh sửa ảnh tương thích trước khi chạy.",
+      "repaintModelHint": "Chạy mô hình đã chọn với khung hình đã đánh dấu, mặt nạ khi được hỗ trợ và prompt.",
+      "eraseHint": "Chạy công cụ xóa ảnh hiện có với vùng đã tô.",
+      "expandHint": "Xuất khung hình nguồn với tỷ lệ mở rộng đã chọn.",
+      "regionOnlyHint": "Chỉ xuất mặt nạ của vùng đã chọn.",
+      "directToolHint": "Chạy công cụ miễn phí phù hợp khi workflow chạy.",
+      "prompts": {
+        "repaintPaint": "Vẽ lại vùng đã tô một cách tự nhiên trong khi giữ các chi tiết xung quanh.",
+        "repaintBox": "Vẽ lại vùng hình chữ nhật đã chọn một cách tự nhiên trong khi giữ các chi tiết xung quanh.",
+        "repaintLasso": "Vẽ lại vùng tự do đã chọn với kết quả tự nhiên và liền mạch.",
+        "repaintSketch": "Theo phác thảo màu đỏ làm hướng dẫn trực quan và vẽ lại vùng đã chọn một cách tự nhiên.",
+        "erase": "Xóa đối tượng hoặc vùng đã chọn và tái tạo nền một cách tự nhiên.",
+        "expand": "Mở rộng ảnh tự nhiên ra ngoài khung ban đầu, giữ phong cách, ánh sáng và phối cảnh."
+      }
     },
     "promptOptimizer": {
       "optimizationFailed": "Tối ưu thất bại",

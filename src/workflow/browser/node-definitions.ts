@@ -361,6 +361,31 @@ export const extractFrameDef: NodeTypeDefinition = {
   ],
 };
 
+export const paintDef: NodeTypeDefinition = {
+  type: "free-tool/paint",
+  category: "free-tool",
+  label: "Repaint",
+  inputs: [
+    {
+      key: "input",
+      label: "Image",
+      dataType: "image",
+      required: true,
+      description:
+        "Upload an image or connect an extracted frame, then choose an edit mode.",
+    },
+  ],
+  outputs: [
+    {
+      key: "output",
+      label: "Output",
+      dataType: "url",
+      required: true,
+    },
+  ],
+  params: [],
+};
+
 const VIDEO_FORMATS = [
   { label: "MP4 (H.264)", value: "mp4-h264" },
   { label: "MP4 (H.265/HEVC)", value: "mp4-h265" },
@@ -595,6 +620,7 @@ export const BROWSER_NODE_DEFINITIONS: NodeTypeDefinition[] = [
   imageEraserDef,
   segmentAnythingDef,
   extractFrameDef,
+  paintDef,
   videoConverterDef,
   audioConverterDef,
   imageConverterDef,

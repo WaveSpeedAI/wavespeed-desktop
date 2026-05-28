@@ -22,6 +22,9 @@ import type { ExposedParam } from "@/workflow/types/workflow";
 
 const RECENT_KEY = "wavespeed_workflow_recent_models";
 const MAX_RECENT = 5;
+const PAINT_OUTPUT_DEFINITIONS: PortDefinition[] = [
+  { key: "output", label: "Output", dataType: "url", required: true },
+];
 
 function getRecentModels(): Array<{
   modelId: string;
@@ -213,7 +216,9 @@ function ExposeParamControls({
   const inputDefs: PortDefinition[] =
     (node.data.inputDefinitions as PortDefinition[] | undefined) ?? [];
   const outputDefs: PortDefinition[] =
-    (node.data.outputDefinitions as PortDefinition[] | undefined) ?? [];
+    node.data.nodeType === "free-tool/paint"
+      ? PAINT_OUTPUT_DEFINITIONS
+      : ((node.data.outputDefinitions as PortDefinition[] | undefined) ?? []);
 
   const isExposed = (paramKey: string, direction: "input" | "output") => {
     const nk = `${subNodeLabel}.${paramKey}`;

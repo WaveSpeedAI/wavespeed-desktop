@@ -227,7 +227,7 @@ export function useSegmentAnythingWorker(
   }, [ensureWorker]);
 
   const segmentImage = useCallback(
-    (imageDataUrl: string): Promise<void> => {
+    (imageDataUrl: string, cacheKey?: string): Promise<void> => {
       return new Promise((resolve, reject) => {
         ensureWorker();
 
@@ -253,7 +253,7 @@ export function useSegmentAnythingWorker(
 
         workerRef.current.postMessage({
           type: "segment",
-          payload: { id, imageDataUrl },
+          payload: { id, imageDataUrl, cacheKey },
         });
       });
     },

@@ -92,6 +92,7 @@ import {
   DirectoryImportBody,
 } from "./CustomNodeInputBodies";
 import { DynamicFieldsEditor, type FieldConfig } from "./DynamicFieldsEditor";
+import { PaintNodeEditor } from "./PaintNodeEditor";
 
 function formatClockTime(seconds: number): string {
   if (!Number.isFinite(seconds)) return "0:00.000";
@@ -795,6 +796,165 @@ function ExtractFrameVideoInput({
   );
 }
 
+function PaintImageInput({
+  nodeId,
+  value,
+  ensureWorkflowId,
+  onChange,
+}: {
+  nodeId: string;
+  value: unknown;
+  ensureWorkflowId: () => Promise<string | null | undefined>;
+  onChange: (value: unknown) => void;
+}) {
+  const { t } = useTranslation();
+  const [uploading, setUploading] = useState(false);
+  const [showUrl, setShowUrl] = useState(() => {
+    const initial = String(value ?? "").trim();
+    return Boolean(initial && !/^local-asset:\/\//i.test(initial));
+  });
+  const urlInputRef = useRef<HTMLInputElement>(null);
+  const textVal = String(value ?? "");
+  const isRemoteUrl = Boolean(textVal && !/^local-asset:\/\//i.test(textVal));
+  const displayName = useMemo(() => {
+    if (!textVal) return "";
+    try {
+      const decoded = /^local-asset:\/\//i.test(textVal)
+        ? decodeURIComponent(textVal.replace(/^local-asset:\/\//i, ""))
+        : textVal;
+      return decoded.split(/[/\\]/).pop() || decoded;
+    } catch {
+      return textVal;
+    }
+  }, [textVal]);
+
+  const handleFile = useCallback(
+    async (file: File) => {
+      try {
+        setUploading(true);
+        const wfId = await ensureWorkflowId();
+        if (!wfId) throw new Error("Workflow not saved yet.");
+        const { storageIpc } = await import("../../../ipc/ipc-client");
+        const data = await file.arrayBuffer();
+        const localPath = await storageIpc.saveUploadedFile(
+          wfId,
+          nodeId,
+          file.name,
+          data,
+        );
+        onChange(`local-asset://${encodeURIComponent(localPath)}`);
+        setShowUrl(false);
+      } catch (error) {
+        console.error("Paint image upload failed:", error);
+      } finally {
+        setUploading(false);
+      }
+    },
+    [ensureWorkflowId, nodeId, onChange],
+  );
+
+  return (
+    <div
+      className="nodrag nopan w-full space-y-2"
+      onClick={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
+    >
+      <div className="flex items-center gap-2">
+        <div className="group relative min-w-0 flex-1">
+          <label
+            className={`flex min-h-[38px] cursor-pointer items-center justify-center gap-1.5 rounded-lg border-2 border-dashed border-border bg-background px-3 py-2 transition-all duration-200 hover:border-primary/50 hover:bg-muted/30 hover:shadow-sm ${
+              uploading ? "animate-pulse" : ""
+            } ${textVal ? "pr-9" : ""}`}
+          >
+            {uploading ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+            ) : (
+              <Upload className="h-3.5 w-3.5 text-muted-foreground" />
+            )}
+            <span className="truncate text-xs text-muted-foreground">
+              {displayName ||
+                t("workflow.mediaUpload.clickUpload", "Click upload")}
+            </span>
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              disabled={uploading}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) void handleFile(file);
+                e.currentTarget.value = "";
+              }}
+            />
+          </label>
+          {textVal && (
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-md border border-border/70 bg-background/90 text-muted-foreground opacity-0 shadow-sm transition-all hover:border-red-400/50 hover:bg-red-500/10 hover:text-red-400 group-hover:opacity-100"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onChange("");
+                    setShowUrl(false);
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                  <span className="sr-only">
+                    {t("workflow.paintNode.clearImage", "Clear image")}
+                  </span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                {t("workflow.paintNode.clearImage", "Clear image")}
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
+        <Tooltip delayDuration={0}>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-[38px] w-[38px] flex-shrink-0"
+              onClick={() => {
+                setShowUrl((visible) => !visible);
+                window.setTimeout(() => {
+                  urlInputRef.current?.focus();
+                  urlInputRef.current?.select();
+                }, 0);
+              }}
+            >
+              <Link className="h-4 w-4" />
+              <span className="sr-only">
+                {t("workflow.extractFrame.useUrl", "Use URL")}
+              </span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            {t("workflow.extractFrame.useUrl", "Use URL")}
+          </TooltipContent>
+        </Tooltip>
+      </div>
+      {(showUrl || isRemoteUrl) && (
+        <input
+          ref={urlInputRef}
+          type="text"
+          value={isRemoteUrl ? textVal : ""}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={t(
+            "workflow.mediaUpload.urlPlaceholder",
+            "Or enter URL...",
+          )}
+          className={`${inputCls} w-full`}
+        />
+      )}
+    </div>
+  );
+}
+
 function ExtractFrameOutputDirectory({
   value,
   ensureWorkflowId,
@@ -1110,7 +1270,8 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
       | Record<string, unknown>
       | undefined;
     return String(
-      sourceParams?.uploadedUrl ??
+      sourceParams?.__selectedOutputUrl ??
+        sourceParams?.uploadedUrl ??
         sourceParams?.output ??
         sourceParams?.input ??
         "",
@@ -1124,6 +1285,56 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
     id,
     selectedOutputIndex,
   ]);
+
+  const paintImageUrl = useMemo(() => {
+    if (data.nodeType !== "free-tool/paint") return "";
+    const edge = edges.find(
+      (e) => e.target === id && e.targetHandle === "input-input",
+    );
+    if (!edge) {
+      return String(data.params.input ?? "");
+    }
+
+    const selectedIndex = selectedOutputIndex[edge.source] ?? 0;
+    const latest = allLastResults[edge.source]?.[selectedIndex]?.urls?.[0];
+    if (latest) return latest;
+
+    const sourceNode = allNodes.find((n) => n.id === edge.source);
+    const sourceParams = sourceNode?.data?.params as
+      | Record<string, unknown>
+      | undefined;
+    return String(
+      sourceParams?.__selectedOutputUrl ??
+        sourceParams?.uploadedUrl ??
+        sourceParams?.__paintedImage ??
+        sourceParams?.output ??
+        sourceParams?.input ??
+        "",
+    );
+  }, [
+    allLastResults,
+    allNodes,
+    data.nodeType,
+    data.params.input,
+    edges,
+    id,
+    selectedOutputIndex,
+  ]);
+
+  const setPaintInput = useCallback(
+    (value: unknown) => {
+      updateNodeParams(id, {
+        ...data.params,
+        input: value,
+        __sourceImage: String(value ?? ""),
+        __paintedImage: String(value ?? ""),
+        __maskImage: "",
+        __maskBbox: "",
+        __segmentPoints: "[]",
+      });
+    },
+    [data.params, id, updateNodeParams],
+  );
 
   /** CDN upload via workflowClient so workflow requests use the correct X-Client-Name header. */
   const handleCdnUpload = async (file: File): Promise<string> => {
@@ -1995,7 +2206,10 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
         const useFormFieldForPort =
           portFieldConfig != null &&
           !conn &&
-          !(data.nodeType === "free-tool/extract-frame" && inp.key === "input");
+          !(
+            data.nodeType === "free-tool/extract-frame" && inp.key === "input"
+          ) &&
+          !(data.nodeType === "free-tool/paint" && inp.key === "input");
         if (
           data.nodeType === "free-tool/extract-frame" &&
           inp.key === "input"
@@ -2042,6 +2256,55 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
                     value={data.params[inp.key]}
                     ensureWorkflowId={ensureWorkflowId}
                     onChange={(v) => setParam(inp.key, v)}
+                  />
+                )}
+                <p className="text-xs text-muted-foreground">{inputHint}</p>
+              </div>
+            </Row>
+          );
+        }
+        if (data.nodeType === "free-tool/paint" && inp.key === "input") {
+          const inputHint = t(
+            "workflow.paintNode.imageHint",
+            inp.description ??
+              "Upload an image or connect an extracted frame, then choose an edit mode.",
+          );
+          return (
+            <Row key={inp.key}>
+              <div className="w-full min-w-0 space-y-2">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`inline-flex items-center text-sm font-medium leading-none ${
+                      conn ? "text-green-400" : "text-foreground"
+                    }`}
+                  >
+                    <HandleAnchor
+                      id={hid}
+                      type="target"
+                      connected={conn}
+                      media
+                    />
+                    {localizeInputLabel(inp.key, inp.label)}
+                    {inp.required && (
+                      <span className="ml-0.5 text-red-400">*</span>
+                    )}
+                  </span>
+                </div>
+                {conn ? (
+                  <ConnectedInputControl
+                    nodeId={id}
+                    handleId={hid}
+                    edges={edges}
+                    nodes={useWorkflowStore.getState().nodes}
+                    onPreview={openPreview}
+                    showPreview={false}
+                  />
+                ) : (
+                  <PaintImageInput
+                    nodeId={id}
+                    value={data.params[inp.key]}
+                    ensureWorkflowId={ensureWorkflowId}
+                    onChange={setPaintInput}
                   />
                 )}
                 <p className="text-xs text-muted-foreground">{inputHint}</p>
@@ -2117,6 +2380,10 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
                       showPreview={
                         !(
                           data.nodeType === "free-tool/extract-frame" &&
+                          inp.key === "input"
+                        ) &&
+                        !(
+                          data.nodeType === "free-tool/paint" &&
                           inp.key === "input"
                         )
                       }
@@ -2199,6 +2466,20 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
           videoUrl={extractFrameVideoUrl}
           ensureWorkflowId={ensureWorkflowId}
           onParamChange={(updates) => updateNodeParams(id, updates)}
+        />
+      )}
+
+      {data.nodeType === "free-tool/paint" && (
+        <PaintNodeEditor
+          nodeId={id}
+          params={data.params}
+          imageUrl={paintImageUrl}
+          storeModels={storeModels}
+          getModelById={getModelById}
+          ensureWorkflowId={ensureWorkflowId}
+          onParamChange={(updates) => updateNodeParams(id, updates)}
+          onPreview={openPreview}
+          onUploadFile={handleWorkflowUploadFile}
         />
       )}
 

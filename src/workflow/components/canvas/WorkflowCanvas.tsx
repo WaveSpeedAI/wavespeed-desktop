@@ -361,6 +361,8 @@ interface WorkflowCanvasProps {
 
 export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
   const { t } = useTranslation();
+  const stableNodeTypes = useMemo(() => nodeTypes, []);
+  const stableEdgeTypes = useMemo(() => edgeTypes, []);
   const {
     nodes,
     edges,
@@ -1039,13 +1041,8 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
   }, []);
 
   const projectMenuPosition = useCallback((x: number, y: number) => {
-    if (!reactFlowInstance.current || !reactFlowWrapper.current)
-      return { x, y };
-    const bounds = reactFlowWrapper.current.getBoundingClientRect();
-    return reactFlowInstance.current.project({
-      x: x - bounds.left,
-      y: y - bounds.top,
-    });
+    if (!reactFlowInstance.current) return { x, y };
+    return reactFlowInstance.current.screenToFlowPosition({ x, y });
   }, []);
 
   const addNodeAtMenuPosition = useCallback(
@@ -1542,14 +1539,13 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
       return items;
     }
 
-    /** Convert context menu screen coords to flow position, accounting for wrapper offset */
+    /** Convert context menu screen coords to flow position. */
     const menuToFlowPosition = () => {
-      if (!reactFlowInstance.current || !reactFlowWrapper.current)
+      if (!reactFlowInstance.current)
         return { x: contextMenu.x, y: contextMenu.y };
-      const bounds = reactFlowWrapper.current.getBoundingClientRect();
-      return reactFlowInstance.current.project({
-        x: contextMenu.x - bounds.left,
-        y: contextMenu.y - bounds.top,
+      return reactFlowInstance.current.screenToFlowPosition({
+        x: contextMenu.x,
+        y: contextMenu.y,
       });
     };
 
@@ -1678,10 +1674,9 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
           }
         }
 
-        const bounds = reactFlowWrapper.current.getBoundingClientRect();
-        const position = reactFlowInstance.current.project({
-          x: event.clientX - bounds.left,
-          y: event.clientY - bounds.top,
+        const position = reactFlowInstance.current.screenToFlowPosition({
+          x: event.clientX,
+          y: event.clientY,
         });
 
         // If dropping inside an iterator, adopt the new node into it
@@ -1736,10 +1731,9 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
       const target = event.target as HTMLElement;
       if (target.closest(".react-flow__node")) return;
 
-      const bounds = reactFlowWrapper.current.getBoundingClientRect();
-      const position = reactFlowInstance.current.project({
-        x: event.clientX - bounds.left,
-        y: event.clientY - bounds.top,
+      const position = reactFlowInstance.current.screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
       });
 
       const uploadDef = nodeDefs.find((d) => d.type === "input/media-upload");
@@ -2629,8 +2623,8 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
               }
             }
           }}
-          nodeTypes={nodeTypes}
-          edgeTypes={edgeTypes}
+          nodeTypes={stableNodeTypes}
+          edgeTypes={stableEdgeTypes}
           edgesUpdatable
           reconnectRadius={6}
           selectionOnDrag={interactionMode === "select"}

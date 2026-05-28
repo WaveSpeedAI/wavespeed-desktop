@@ -14,7 +14,11 @@ import {
   runImageEraser,
   runSegmentAnything,
 } from "@/workflow/lib/free-tool-runner";
-import { normalizePayloadArrays } from "@/lib/schemaToForm";
+import {
+  getFormFieldsFromModel,
+  normalizePayloadArrays,
+} from "@/lib/schemaToForm";
+import { formFieldsToModelParamSchema } from "@/workflow/lib/model-converter";
 import { BROWSER_NODE_DEFINITIONS } from "./node-definitions";
 import { ffmpegMerge, ffmpegTrim, ffmpegConvert } from "./ffmpeg-helpers";
 import type { ModelParamSchema } from "@/workflow/types/node-defs";
@@ -25,6 +29,13 @@ import {
   startTrickleTimer,
   inferModelType,
 } from "@/workflow/lib/progress-estimator";
+import {
+  buildPaintModelApiParams,
+  getPaintModelMatchScore,
+  readPaintModelSchema,
+  type PaintTask,
+  type PaintTarget,
+} from "@/workflow/lib/paint-model";
 
 const SKIP_KEYS = new Set([
   "modelId",
@@ -220,6 +231,25 @@ function validateNodeInputs(
 function base64ToDataUrl(base64: string, mime = "image/png"): string {
   if (base64.startsWith("data:")) return base64;
   return `data:${mime};base64,${base64}`;
+}
+
+function normalizeRunOutput(value: unknown): string {
+  if (
+    value &&
+    typeof value === "object" &&
+    typeof (value as { url?: unknown }).url === "string"
+  ) {
+    return (value as { url: string }).url;
+  }
+  return value == null ? "" : String(value);
+}
+
+function normalizeRunOutputs(outputs: unknown): string[] {
+  return Array.isArray(outputs)
+    ? outputs
+        .map(normalizeRunOutput)
+        .filter((url) => url && url !== "[object Object]")
+    : [];
 }
 
 /** Collect nodeId and all nodes that feed into it (upstream subgraph). */
@@ -1230,6 +1260,252 @@ export async function executeWorkflowInBrowser(
             callbacks.onNodeStatus(nodeId, "confirmed");
             callbacks.onNodeComplete(nodeId, {
               urls: [dataUrl],
+              cost: 0,
+              durationMs: Date.now() - start,
+            });
+            return;
+          }
+          if (nodeType === "free-tool/paint") {
+            const inputUrl = String(inputs.input ?? params.input ?? "");
+            const sourceUrl = inputUrl || String(params.__sourceImage ?? "");
+            const maskUrl = String(params.__maskImage ?? "");
+            const bbox = String(params.__maskBbox ?? "");
+            const prompt = String(params.__editPrompt ?? "");
+            const task = String(params.__paintTask ?? "repaint") as PaintTask;
+            const paintTarget = "image" as PaintTarget;
+            const paintModelId = String(params.__paintModelId ?? "");
+            const selectionMode = String(
+              params.__selectionMode ?? params.__regionMode ?? "paint",
+            );
+            const expandRatio = String(params.__expandRatio ?? "16:9");
+            const requiresRegion =
+              task === "repaint" || task === "erase" || task === "region";
+            const supportsModelTarget = task === "repaint" || task === "expand";
+            if (!inputUrl) throw new Error("Missing input");
+
+            if (task === "remove-bg") {
+              const base64 = await runBackgroundRemover(
+                inputUrl,
+                { model: "isnet_fp16" },
+                onProgress,
+              );
+              const dataUrl = base64ToDataUrl(base64);
+              results.set(nodeId, {
+                outputUrl: dataUrl,
+                resultMetadata: {
+                  output: dataUrl,
+                  task,
+                  resultUrl: dataUrl,
+                  resultUrls: [dataUrl],
+                },
+              });
+              callbacks.onNodeStatus(nodeId, "confirmed");
+              callbacks.onNodeComplete(nodeId, {
+                urls: [dataUrl],
+                cost: 0,
+                durationMs: Date.now() - start,
+              });
+              return;
+            }
+
+            if (task === "enhance") {
+              const base64 = await runImageEnhancer(
+                inputUrl,
+                { model: "slim", scale: "2x" },
+                onProgress,
+              );
+              const dataUrl = base64ToDataUrl(base64);
+              results.set(nodeId, {
+                outputUrl: dataUrl,
+                resultMetadata: { output: dataUrl, task, resultUrl: dataUrl },
+              });
+              callbacks.onNodeStatus(nodeId, "confirmed");
+              callbacks.onNodeComplete(nodeId, {
+                urls: [dataUrl],
+                cost: 0,
+                durationMs: Date.now() - start,
+              });
+              return;
+            }
+
+            if (task === "face-enhance") {
+              const base64 = await runFaceEnhancer(
+                inputUrl,
+                params,
+                onProgress,
+              );
+              const dataUrl = base64ToDataUrl(base64);
+              results.set(nodeId, {
+                outputUrl: dataUrl,
+                resultMetadata: { output: dataUrl, task, resultUrl: dataUrl },
+              });
+              callbacks.onNodeStatus(nodeId, "confirmed");
+              callbacks.onNodeComplete(nodeId, {
+                urls: [dataUrl],
+                cost: 0,
+                durationMs: Date.now() - start,
+              });
+              return;
+            }
+
+            if (requiresRegion && !maskUrl) {
+              throw new Error(
+                "No saved region. Select a region before running the workflow.",
+              );
+            }
+
+            if (supportsModelTarget && !paintModelId) {
+              throw new Error("No paint model selected.");
+            }
+
+            if (supportsModelTarget && paintModelId) {
+              const selectedModel = useModelsStore
+                .getState()
+                .getModelById(paintModelId);
+              if (!selectedModel) {
+                throw new Error(
+                  "Selected model is not available in the local model cache. Choose a supported model from the list before running.",
+                );
+              }
+              let modelSchema = readPaintModelSchema(
+                params.__paintModelInputSchema,
+              );
+              if (modelSchema.length === 0) {
+                modelSchema = formFieldsToModelParamSchema(
+                  getFormFieldsFromModel(selectedModel),
+                );
+              }
+              if (
+                modelSchema.length === 0 ||
+                getPaintModelMatchScore(
+                  selectedModel,
+                  modelSchema,
+                  task,
+                  paintTarget,
+                ) <= 0
+              ) {
+                throw new Error(
+                  "Selected model does not support this paint function. Choose a compatible model from the list.",
+                );
+              }
+              const apiParams = buildPaintModelApiParams({
+                params,
+                schema: modelSchema,
+                task,
+                source: sourceUrl,
+                mask: maskUrl,
+                prompt,
+                reference: String(params.__paintedImage ?? sourceUrl),
+                expandRatio,
+              });
+              const resolvedParams = await uploadLocalUrls(
+                normalizePayloadArrays(apiParams, []),
+                signal,
+              );
+              const avgMs = await getAvgExecutionTime(paintModelId);
+              const stopTimer = avgMs
+                ? startProgressTimer(avgMs, onProgress, paintModelId)
+                : startTrickleTimer(
+                    inferModelType(paintModelId),
+                    onProgress,
+                    paintModelId,
+                  );
+              let result;
+              try {
+                result = await workflowClient.run(
+                  paintModelId,
+                  resolvedParams,
+                  {
+                    signal,
+                  },
+                );
+              } finally {
+                stopTimer();
+              }
+              callbacks.onProgress(nodeId, 100, "Done");
+              const resultUrls = normalizeRunOutputs(result.outputs);
+              const outputUrl = resultUrls[0] ?? "";
+              const cost = selectedModel.base_price ?? 0;
+              results.set(nodeId, {
+                outputUrl,
+                resultMetadata: {
+                  output: outputUrl,
+                  resultUrl: outputUrl,
+                  resultUrls,
+                  source: sourceUrl,
+                  mask: maskUrl,
+                  prompt,
+                  bbox,
+                  task,
+                  selectionMode,
+                  expandRatio,
+                  paintTarget,
+                  modelId: paintModelId,
+                  raw: result,
+                },
+              });
+              callbacks.onNodeStatus(nodeId, "confirmed");
+              callbacks.onNodeComplete(nodeId, {
+                urls:
+                  resultUrls.length > 0
+                    ? resultUrls
+                    : [outputUrl].filter(Boolean),
+                cost,
+                durationMs: Date.now() - start,
+              });
+              return;
+            }
+
+            if (task === "erase") {
+              const base64 = await runImageEraser(
+                inputUrl,
+                maskUrl,
+                params,
+                onProgress,
+              );
+              const dataUrl = base64ToDataUrl(base64);
+              results.set(nodeId, {
+                outputUrl: dataUrl,
+                resultMetadata: {
+                  output: dataUrl,
+                  mask: maskUrl,
+                  bbox,
+                  task,
+                  resultUrl: dataUrl,
+                  resultUrls: [dataUrl],
+                },
+              });
+              callbacks.onNodeStatus(nodeId, "confirmed");
+              callbacks.onNodeComplete(nodeId, {
+                urls: [dataUrl],
+                cost: 0,
+                durationMs: Date.now() - start,
+              });
+              return;
+            }
+
+            const outputMask = requiresRegion ? maskUrl : "";
+            const outputBbox = requiresRegion ? bbox : "";
+            const outputUrl = task === "region" ? outputMask : sourceUrl;
+            const resultUrls = [outputUrl].filter(Boolean);
+            results.set(nodeId, {
+              outputUrl,
+              resultMetadata: {
+                output: outputUrl,
+                mask: outputMask,
+                prompt,
+                reference: String(params.__paintedImage ?? sourceUrl),
+                bbox: outputBbox,
+                task,
+                selectionMode,
+                expandRatio,
+                resultUrl: outputUrl,
+                resultUrls,
+              },
+            });
+            callbacks.onNodeStatus(nodeId, "confirmed");
+            callbacks.onNodeComplete(nodeId, {
+              urls: resultUrls,
               cost: 0,
               durationMs: Date.now() - start,
             });

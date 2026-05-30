@@ -83,6 +83,10 @@ function App() {
           element={<PersistentPagePlaceholder />}
         />
         <Route
+          path="free-tools/image-colorizer"
+          element={<PersistentPagePlaceholder />}
+        />
+        <Route
           path="free-tools/background-remover"
           element={<PersistentPagePlaceholder />}
         />

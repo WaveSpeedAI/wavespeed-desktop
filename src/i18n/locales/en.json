@@ -681,12 +681,14 @@
       "downloadCancelled": "Download Cancelled",
       "downloadCancelledDesc": "Model download was cancelled",
       "alreadyCached": "Already cached",
+      "notDownloaded": "Not downloaded",
       "downloaded": "Downloaded",
       "overallProgress": "Overall Progress",
       "models": {
         "ffmpegJs": "FFmpeg Core (JS)",
         "ffmpegWasm": "FFmpeg Core (WASM)",
         "backgroundRemover": "Background Remover",
+        "imageColorizer": "Image Colorizer (DDColor)",
         "imageEraser": "Image Eraser (LaMa)",
         "samEncoder": "SAM Vision Encoder",
         "samDecoder": "SAM Prompt Decoder"
@@ -799,6 +801,34 @@
       "comparison": "Comparison slider",
       "dragToCompare": "Drag to compare",
       "enhanceFace": "Enhance face quality"
+    },
+    "imageColorizer": {
+      "title": "Image Colorizer",
+      "description": "Add color to black-and-white photos locally for free",
+      "selectImage": "Select an image",
+      "supportedFormats": "PNG, JPG, WebP, BMP, and other browser-supported images",
+      "settings": "Settings",
+      "replace": "Replace",
+      "mode": "Color mode",
+      "modes": {
+        "ai": "AI Colorizer",
+        "natural": "Natural",
+        "vintage": "Vintage",
+        "vivid": "Vivid",
+        "portrait": "Portrait"
+      },
+      "strength": "Strength",
+      "saturation": "Saturation",
+      "preserveContrast": "Preserve contrast",
+      "outputFormat": "Output",
+      "colorize": "Colorize",
+      "recolorize": "Recolorize",
+      "colorizing": "Colorizing...",
+      "original": "Original",
+      "result": "Result",
+      "resultPlaceholder": "Colorized image will appear here",
+      "ready": "Ready to save",
+      "preview": "Preview"
     },
     "faceEnhancer": {
       "title": "Face Enhancer",

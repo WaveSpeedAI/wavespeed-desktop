@@ -681,12 +681,14 @@
       "downloadCancelled": "下载已取消",
       "downloadCancelledDesc": "模型下载已取消",
       "alreadyCached": "已缓存",
+      "notDownloaded": "未下载",
       "downloaded": "已下载",
       "overallProgress": "总进度",
       "models": {
         "ffmpegJs": "FFmpeg 核心 (JS)",
         "ffmpegWasm": "FFmpeg 核心 (WASM)",
         "backgroundRemover": "背景移除",
+        "imageColorizer": "图片上色 (DDColor)",
         "imageEraser": "图片擦除 (LaMa)",
         "samEncoder": "SAM 视觉编码器",
         "samDecoder": "SAM 提示解码器"
@@ -799,6 +801,34 @@
       "comparison": "滑块对比",
       "dragToCompare": "拖动对比",
       "enhanceFace": "增强面部质量"
+    },
+    "imageColorizer": {
+      "title": "图片上色",
+      "description": "在本地免费为黑白照片添加色彩",
+      "selectImage": "选择图片",
+      "supportedFormats": "支持 PNG、JPG、WebP、BMP 及其他浏览器支持的图片",
+      "settings": "设置",
+      "replace": "替换",
+      "mode": "上色模式",
+      "modes": {
+        "ai": "AI 上色",
+        "natural": "自然",
+        "vintage": "复古",
+        "vivid": "鲜艳",
+        "portrait": "人像"
+      },
+      "strength": "强度",
+      "saturation": "饱和度",
+      "preserveContrast": "保留对比度",
+      "outputFormat": "输出",
+      "colorize": "上色",
+      "recolorize": "重新上色",
+      "colorizing": "上色中...",
+      "original": "原图",
+      "result": "结果",
+      "resultPlaceholder": "上色结果会显示在这里",
+      "ready": "可以保存",
+      "preview": "预览"
     },
     "faceEnhancer": {
       "title": "人脸增强",

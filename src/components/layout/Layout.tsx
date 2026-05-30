@@ -50,6 +50,11 @@ const LazyImageEnhancerPage = lazy(() =>
     default: m.ImageEnhancerPage,
   })),
 );
+const LazyImageColorizerPage = lazy(() =>
+  import("@/pages/ImageColorizerPage").then((m) => ({
+    default: m.ImageColorizerPage,
+  })),
+);
 const LazyBackgroundRemoverPage = lazy(() =>
   import("@/pages/BackgroundRemoverPage").then((m) => ({
     default: m.BackgroundRemoverPage,
@@ -127,6 +132,7 @@ const PERSISTENT_PATHS = [
   "/assets",
   "/free-tools/video-enhancer",
   "/free-tools/image-enhancer",
+  "/free-tools/image-colorizer",
   "/free-tools/face-enhancer",
   "/free-tools/face-swapper",
   "/free-tools/background-remover",
@@ -587,6 +593,15 @@ export function Layout() {
                   >
                     <LazyImageEnhancerPage
                       key={pageKeys["/free-tools/image-enhancer"] || 0}
+                    />
+                  </PersistentPage>
+                  <PersistentPage
+                    visited={hasVisited("/free-tools/image-colorizer")}
+                    active={location.pathname === "/free-tools/image-colorizer"}
+                    pageKey={pageKeys["/free-tools/image-colorizer"] || 0}
+                  >
+                    <LazyImageColorizerPage
+                      key={pageKeys["/free-tools/image-colorizer"] || 0}
                     />
                   </PersistentPage>
                   <PersistentPage

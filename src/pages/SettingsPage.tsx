@@ -6,6 +6,10 @@ import { useThemeStore, type Theme } from "@/stores/themeStore";
 import { useAssetsStore } from "@/stores/assetsStore";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { languages } from "@/i18n";
+import {
+  FREE_TOOL_MODEL_DOWNLOADS,
+  type FreeToolModelDownload,
+} from "@/lib/freeToolModels";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -76,6 +80,15 @@ interface CacheItem {
   modelType?: "llm" | "vae"; // for sd-auxiliary models
 }
 
+interface PredownloadState {
+  downloaded: boolean;
+  downloading: boolean;
+  progress: number;
+  error: string | null;
+  current?: number;
+  total?: number;
+}
+
 type UpdateChannel = "stable" | "nightly";
 
 interface UpdateStatus {
@@ -84,6 +97,21 @@ interface UpdateStatus {
   releaseNotes?: string | null;
   percent?: number;
   message?: string;
+}
+
+function createPredownloadStates() {
+  return FREE_TOOL_MODEL_DOWNLOADS.reduce<Record<string, PredownloadState>>(
+    (states, model) => {
+      states[model.id] = {
+        downloaded: false,
+        downloading: false,
+        progress: 0,
+        error: null,
+      };
+      return states;
+    },
+    {},
+  );
 }
 
 export function SettingsPage() {
@@ -135,6 +163,10 @@ export function SettingsPage() {
   const [showCacheDialog, setShowCacheDialog] = useState(false);
   const [isDeletingItem, setIsDeletingItem] = useState<string | null>(null);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [predownloadStates, setPredownloadStates] = useState(
+    createPredownloadStates,
+  );
+  const [isPredownloading, setIsPredownloading] = useState(false);
 
   // Get the saved language preference (including 'auto')
   const [languagePreference, setLanguagePreference] = useState(() => {
@@ -284,6 +316,189 @@ export function SettingsPage() {
     await loadCacheDetails();
   }, [loadCacheDetails]);
 
+  const loadPredownloadStatus = useCallback(async () => {
+    const nextStates = createPredownloadStates();
+
+    await Promise.all(
+      FREE_TOOL_MODEL_DOWNLOADS.map(async (model) => {
+        try {
+          const cache = await caches.open(model.cacheName);
+          const response = await cache.match(model.url);
+          if (!response) return;
+
+          const blob = await response.blob();
+          nextStates[model.id] = {
+            downloaded: true,
+            downloading: false,
+            progress: 100,
+            error: null,
+            current: blob.size,
+            total: blob.size,
+          };
+        } catch (error) {
+          nextStates[model.id] = {
+            ...nextStates[model.id],
+            error: (error as Error).message,
+          };
+        }
+      }),
+    );
+
+    setPredownloadStates(nextStates);
+  }, []);
+
+  const updatePredownloadState = useCallback(
+    (id: string, patch: Partial<PredownloadState>) => {
+      setPredownloadStates((states) => ({
+        ...states,
+        [id]: {
+          ...(states[id] ?? {
+            downloaded: false,
+            downloading: false,
+            progress: 0,
+            error: null,
+          }),
+          ...patch,
+        },
+      }));
+    },
+    [],
+  );
+
+  const downloadPredownloadModel = useCallback(
+    async (model: FreeToolModelDownload) => {
+      const cache = await caches.open(model.cacheName);
+      const cachedResponse = await cache.match(model.url);
+      if (cachedResponse) {
+        const blob = await cachedResponse.blob();
+        updatePredownloadState(model.id, {
+          downloaded: true,
+          downloading: false,
+          progress: 100,
+          error: null,
+          current: blob.size,
+          total: blob.size,
+        });
+        return "cached";
+      }
+
+      const controller = new AbortController();
+      const timeoutMs = generalSettings.downloadTimeout * 1000;
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+      updatePredownloadState(model.id, {
+        downloaded: false,
+        downloading: true,
+        progress: 0,
+        error: null,
+        current: 0,
+        total: model.size,
+      });
+
+      try {
+        const response = await fetch(model.url, { signal: controller.signal });
+        if (!response.ok) {
+          throw new Error(`Failed to download model: ${response.status}`);
+        }
+
+        const contentLength = response.headers.get("content-length");
+        const total = contentLength ? parseInt(contentLength, 10) : model.size;
+        const reader = response.body?.getReader();
+        if (!reader) throw new Error("Failed to read model response");
+
+        const chunks: Uint8Array[] = [];
+        let received = 0;
+
+        while (true) {
+          if (controller.signal.aborted) {
+            await reader.cancel();
+            throw new Error("Model download timed out");
+          }
+
+          const { done, value } = await reader.read();
+          if (done) break;
+          chunks.push(value);
+          received += value.length;
+          updatePredownloadState(model.id, {
+            progress: total > 0 ? (received / total) * 100 : 0,
+            current: received,
+            total,
+          });
+        }
+
+        const buffer = new Uint8Array(received);
+        let position = 0;
+        for (const chunk of chunks) {
+          buffer.set(chunk, position);
+          position += chunk.length;
+        }
+
+        await cache.put(
+          model.url,
+          new Response(buffer, {
+            headers: {
+              "Content-Type": "application/octet-stream",
+              "Content-Length": buffer.byteLength.toString(),
+            },
+          }),
+        );
+
+        updatePredownloadState(model.id, {
+          downloaded: true,
+          downloading: false,
+          progress: 100,
+          error: null,
+          current: received,
+          total: received,
+        });
+        return "downloaded";
+      } catch (error) {
+        updatePredownloadState(model.id, {
+          downloading: false,
+          error: (error as Error).message,
+        });
+        throw error;
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    },
+    [generalSettings.downloadTimeout, updatePredownloadState],
+  );
+
+  const handlePredownloadModels = useCallback(async () => {
+    setIsPredownloading(true);
+    let downloadedCount = 0;
+    let cachedCount = 0;
+
+    try {
+      for (const model of FREE_TOOL_MODEL_DOWNLOADS) {
+        const result = await downloadPredownloadModel(model);
+        if (result === "downloaded") downloadedCount++;
+        else cachedCount++;
+      }
+
+      await Promise.all([loadCacheDetails(), loadPredownloadStatus()]);
+      toast({
+        title: t("settings.cache.downloadComplete"),
+        description: t("settings.cache.downloadCompleteDesc"),
+      });
+    } catch (error) {
+      await Promise.all([loadCacheDetails(), loadPredownloadStatus()]);
+      toast({
+        title:
+          downloadedCount > 0 || cachedCount > 0
+            ? t("settings.cache.downloadPartial")
+            : t("common.error"),
+        description:
+          (error as Error).message || t("settings.cache.clearFailed"),
+        variant:
+          downloadedCount > 0 || cachedCount > 0 ? "default" : "destructive",
+      });
+    } finally {
+      setIsPredownloading(false);
+    }
+  }, [downloadPredownloadModel, loadCacheDetails, loadPredownloadStatus, t]);
+
   // Fetch account balance
   const fetchBalance = useCallback(async () => {
     if (!isValidated) return;
@@ -339,7 +554,7 @@ export function SettingsPage() {
           }
         }
 
-        await loadCacheDetails();
+        await Promise.all([loadCacheDetails(), loadPredownloadStatus()]);
         toast({
           title: t("common.success"),
           description: t("settings.cache.itemDeleted"),
@@ -355,7 +570,7 @@ export function SettingsPage() {
         setIsDeletingItem(null);
       }
     },
-    [loadCacheDetails, t],
+    [loadCacheDetails, loadPredownloadStatus, t],
   );
 
   // Clear all caches
@@ -396,6 +611,7 @@ export function SettingsPage() {
 
       setCacheSize(0);
       setCacheItems([]);
+      setPredownloadStates(createPredownloadStates());
       setShowCacheDialog(false);
       toast({
         title: t("settings.cache.cleared"),
@@ -466,9 +682,15 @@ export function SettingsPage() {
       initGeneralSettings();
       // Calculate cache size
       calculateCacheSize();
+      loadPredownloadStatus();
     };
     loadSettings();
-  }, [loadAssetsSettings, initGeneralSettings, calculateCacheSize]);
+  }, [
+    loadAssetsSettings,
+    initGeneralSettings,
+    calculateCacheSize,
+    loadPredownloadStatus,
+  ]);
 
   // Fetch balance when authenticated
   useEffect(() => {
@@ -748,6 +970,20 @@ export function SettingsPage() {
     }
   };
 
+  const allPredownloaded = FREE_TOOL_MODEL_DOWNLOADS.every(
+    (model) => predownloadStates[model.id]?.downloaded,
+  );
+  const activePredownload = FREE_TOOL_MODEL_DOWNLOADS.find(
+    (model) => predownloadStates[model.id]?.downloading,
+  );
+  const predownloadOverallProgress =
+    FREE_TOOL_MODEL_DOWNLOADS.length > 0
+      ? FREE_TOOL_MODEL_DOWNLOADS.reduce(
+          (sum, model) => sum + (predownloadStates[model.id]?.progress ?? 0),
+          0,
+        ) / FREE_TOOL_MODEL_DOWNLOADS.length
+      : 0;
+
   return (
     <div className="container max-w-2xl px-4 md:px-6 py-6 md:py-8 pt-14 md:pt-4 settings-stagger">
       <div className="mb-6 md:mb-8 animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both">
@@ -1013,6 +1249,94 @@ export function SettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {FREE_TOOL_MODEL_DOWNLOADS.length > 0 && (
+            <div className="space-y-3 rounded-lg border p-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <Download className="h-4 w-4 text-muted-foreground" />
+                    <Label>{t("settings.cache.predownload")}</Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {t("settings.cache.predownloadDesc")}
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePredownloadModels}
+                  disabled={isPredownloading || allPredownloaded}
+                >
+                  {isPredownloading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="mr-2 h-4 w-4" />
+                  )}
+                  {allPredownloaded
+                    ? t("settings.cache.downloaded")
+                    : t("settings.cache.downloadModels")}
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                {FREE_TOOL_MODEL_DOWNLOADS.map((model) => {
+                  const state = predownloadStates[model.id];
+                  return (
+                    <div key={model.id} className="space-y-1.5">
+                      <div className="flex items-center justify-between gap-3 text-sm">
+                        <div className="min-w-0">
+                          <span className="font-medium">
+                            {t(model.labelKey)}
+                          </span>
+                          <span className="ml-2 text-xs text-muted-foreground">
+                            {formatSize(model.size)}
+                          </span>
+                        </div>
+                        <Badge
+                          variant={state?.downloaded ? "success" : "outline"}
+                        >
+                          {state?.downloaded
+                            ? t("settings.cache.downloaded")
+                            : state?.downloading
+                              ? `${Math.round(state.progress)}%`
+                              : t("settings.cache.notDownloaded")}
+                        </Badge>
+                      </div>
+                      {(state?.downloading || state?.error) && (
+                        <div className="space-y-1">
+                          {state.downloading && (
+                            <Progress value={state.progress} />
+                          )}
+                          {state.current != null && state.total != null && (
+                            <p className="text-xs text-muted-foreground">
+                              {formatSize(state.current)} /{" "}
+                              {formatSize(state.total)}
+                            </p>
+                          )}
+                          {state.error && (
+                            <p className="text-xs text-destructive">
+                              {state.error}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {activePredownload && (
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>{t(activePredownload.labelKey)}</span>
+                    <span>{Math.round(predownloadOverallProgress)}%</span>
+                  </div>
+                  <Progress value={predownloadOverallProgress} />
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-muted-foreground" />

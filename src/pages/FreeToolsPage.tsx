@@ -22,6 +22,7 @@ import {
   Combine,
   Sparkles,
   ArrowLeftRight,
+  Palette,
 } from "lucide-react";
 
 // Import tool demo images
@@ -60,6 +61,18 @@ export function FreeToolsPage() {
       route: "/free-tools/image-enhancer",
       gradient: "from-cyan-500/20 via-blue-500/10 to-transparent",
       image: imageEnhancerImg,
+    },
+    {
+      id: "image-colorizer",
+      icon: Palette,
+      titleKey: "freeTools.imageColorizer.title",
+      descriptionKey: "freeTools.imageColorizer.description",
+      route: "/free-tools/image-colorizer",
+      gradient: "from-sky-500/20 via-amber-500/10 to-transparent",
+      image: imageEnhancerImg,
+      fallbackTitle: "Image Colorizer",
+      fallbackDescription:
+        "Add color to black-and-white photos locally for free",
     },
     {
       id: "face-enhancer",
@@ -193,7 +206,7 @@ export function FreeToolsPage() {
                   {tool.image ? (
                     <img
                       src={tool.image}
-                      alt={t(tool.titleKey)}
+                      alt={t(tool.titleKey, tool.fallbackTitle)}
                       className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   ) : (
@@ -208,12 +221,12 @@ export function FreeToolsPage() {
                     <tool.icon className="h-4 w-4 text-primary" />
                   </div>
                   <CardTitle className="text-base">
-                    {t(tool.titleKey)}
+                    {t(tool.titleKey, tool.fallbackTitle)}
                   </CardTitle>
                 </div>
                 <CardDescription className="mt-2 text-sm">
                   <span className="line-clamp-2 leading-relaxed">
-                    {t(tool.descriptionKey)}
+                    {t(tool.descriptionKey, tool.fallbackDescription)}
                   </span>
                 </CardDescription>
               </CardHeader>

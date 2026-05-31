@@ -349,6 +349,7 @@ function propertyToField(
       type: "size",
       min: prop.minimum,
       max: prop.maximum,
+      step: prop.step,
     };
   }
 

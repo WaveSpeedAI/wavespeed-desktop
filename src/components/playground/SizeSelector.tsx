@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { ArrowLeftRight, Lock, Unlock } from "lucide-react";
 
 // Compact aspect ratio icon
 function AspectIcon({ ratio }: { ratio: string }) {
@@ -40,6 +41,7 @@ interface SizeSelectorProps {
   disabled?: boolean;
   min?: number; // minimum dimension value from schema
   max?: number; // maximum dimension value from schema
+  step?: number; // dimension step from schema
 }
 
 // 1K presets (~1 megapixel total, similar to 1024×1024)
@@ -95,18 +97,122 @@ function generatePresets(min: number, max: number) {
   return presets;
 }
 
+function greatestCommonDivisor(a: number, b: number): number {
+  let x = Math.abs(Math.round(a));
+  let y = Math.abs(Math.round(b));
+  while (y) {
+    const t = y;
+    y = x % y;
+    x = t;
+  }
+  return x || 1;
+}
+
+function formatRatio(width: number, height: number): string {
+  const divisor = greatestCommonDivisor(width, height);
+  return `${Math.round(width / divisor)}:${Math.round(height / divisor)}`;
+}
+
+function alignToStep(value: number, step: number): number {
+  if (!Number.isFinite(value)) return value;
+  return Math.round(value / step) * step;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function normalizeDimension(
+  value: number,
+  min: number,
+  max: number,
+  step: number,
+) {
+  return clamp(alignToStep(value, step), min, max);
+}
+
+function getDimensionCandidates(min: number, max: number, step: number) {
+  const candidates = new Set<number>([min, max]);
+  const firstSteppedValue = Math.ceil(min / step) * step;
+
+  for (let value = firstSteppedValue; value <= max; value += step) {
+    candidates.add(value);
+  }
+
+  return Array.from(candidates).sort((a, b) => a - b);
+}
+
+function getRatioError(width: number, height: number, ratio: number) {
+  if (height <= 0 || ratio <= 0) return Number.POSITIVE_INFINITY;
+  return Math.abs(width / height - ratio) / ratio;
+}
+
+function fitLockedSize({
+  changed,
+  value,
+  ratio,
+  min,
+  max,
+  step,
+}: {
+  changed: "width" | "height";
+  value: number;
+  ratio: number;
+  min: number;
+  max: number;
+  step: number;
+}) {
+  const requested = Number.isFinite(value) ? value : min;
+  const target = clamp(requested, min, max);
+  const candidates = getDimensionCandidates(min, max, step);
+  const range = Math.max(1, max - min);
+  let best:
+    | {
+        width: number;
+        height: number;
+        score: number;
+      }
+    | undefined;
+
+  for (const candidate of candidates) {
+    const derived = changed === "width" ? candidate / ratio : candidate * ratio;
+    const paired = normalizeDimension(derived, min, max, step);
+    const nextWidth = changed === "width" ? candidate : paired;
+    const nextHeight = changed === "height" ? candidate : paired;
+    const ratioError = getRatioError(nextWidth, nextHeight, ratio);
+    const inputDistance = Math.abs(candidate - target) / range;
+    const score = ratioError * 10 + inputDistance;
+
+    if (!best || score < best.score) {
+      best = { width: nextWidth, height: nextHeight, score };
+    }
+  }
+
+  return (
+    best ?? {
+      width: normalizeDimension(value, min, max, step),
+      height: normalizeDimension(value / ratio, min, max, step),
+    }
+  );
+}
+
 export function SizeSelector({
   value,
   onChange,
   disabled,
   min = 256,
   max = 1536,
+  step = 1,
 }: SizeSelectorProps) {
   const [width, setWidth] = useState(1024);
   const [height, setHeight] = useState(1024);
   const [widthInput, setWidthInput] = useState("1024");
   const [heightInput, setHeightInput] = useState("1024");
+  const [isRatioLocked, setIsRatioLocked] = useState(false);
+  const [lockedRatio, setLockedRatio] = useState(1);
+  const [selectedRatio, setSelectedRatio] = useState<string | null>(null);
   const [swapRotation, setSwapRotation] = useState(0);
+  const effectiveStep = Math.max(1, step);
 
   // Parse value into width/height
   // Supports formats: "W*H" (e.g. "2048*2048"), single number string "2048", or number 2048
@@ -138,41 +244,87 @@ export function SizeSelector({
     }
   }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const clamp = (n: number) => Math.min(max, Math.max(min, n));
+  const commitSize = useCallback(
+    (w: number, h: number, options?: { updateLockedRatio?: boolean }) => {
+      setWidth(w);
+      setHeight(h);
+      setWidthInput(String(w));
+      setHeightInput(String(h));
+      if (options?.updateLockedRatio && h > 0) {
+        setLockedRatio(w / h);
+      }
+      onChange(`${w}*${h}`);
+    },
+    [onChange],
+  );
 
   const handleWidthChange = (w: number) => {
-    setWidth(w);
-    setWidthInput(String(w));
-    onChange(`${w}*${height}`);
+    if (isRatioLocked) {
+      const next = fitLockedSize({
+        changed: "width",
+        value: w,
+        ratio: lockedRatio,
+        min,
+        max,
+        step: effectiveStep,
+      });
+      commitSize(next.width, next.height);
+      return;
+    }
+
+    setSelectedRatio(null);
+    commitSize(w, height);
   };
 
   const handleHeightChange = (h: number) => {
-    setHeight(h);
-    setHeightInput(String(h));
-    onChange(`${width}*${h}`);
+    if (isRatioLocked) {
+      const next = fitLockedSize({
+        changed: "height",
+        value: h,
+        ratio: lockedRatio,
+        min,
+        max,
+        step: effectiveStep,
+      });
+      commitSize(next.width, next.height);
+      return;
+    }
+
+    setSelectedRatio(null);
+    commitSize(width, h);
   };
 
   const handlePreset = (w: number, h: number) => {
-    setWidth(w);
-    setHeight(h);
-    setWidthInput(String(w));
-    setHeightInput(String(h));
-    onChange(`${w}*${h}`);
+    setSelectedRatio(formatRatio(w, h));
+    commitSize(w, h, { updateLockedRatio: isRatioLocked });
   };
 
   const handleSwap = useCallback(() => {
-    setWidth(height);
-    setHeight(width);
-    setWidthInput(String(height));
-    setHeightInput(String(width));
-    onChange(`${height}*${width}`);
+    setSelectedRatio(formatRatio(height, width));
+    commitSize(height, width, { updateLockedRatio: isRatioLocked });
     setSwapRotation((r) => r + 180);
-  }, [width, height, onChange]);
+  }, [width, height, isRatioLocked, commitSize]);
+
+  const toggleRatioLock = () => {
+    if (isRatioLocked) {
+      setIsRatioLocked(false);
+      return;
+    }
+    setLockedRatio(width / height);
+    setIsRatioLocked(true);
+  };
 
   // Generate presets based on min/max range
   const availablePresets = useMemo(() => generatePresets(min, max), [min, max]);
 
-  const isCurrentPreset = (w: number, h: number) => width === w && height === h;
+  const ratioLabel = formatRatio(width, height);
+  const lockedRatioLabel = selectedRatio ?? ratioLabel;
+  const isCurrentPreset = (w: number, h: number) => {
+    const presetRatio = formatRatio(w, h);
+    return selectedRatio
+      ? selectedRatio === presetRatio
+      : width === w && height === h;
+  };
 
   return (
     <div className="space-y-3">
@@ -212,54 +364,68 @@ export function SizeSelector({
               if (next === "") return;
               const parsed = parseInt(next, 10);
               if (Number.isNaN(parsed)) return;
-              handleWidthChange(parsed);
+              if (parsed >= min && parsed <= max) handleWidthChange(parsed);
             }}
             onBlur={() => {
               if (widthInput === "") {
                 handleWidthChange(min);
                 return;
               }
-              const parsed = parseInt(widthInput, 10);
-              if (!Number.isNaN(parsed)) {
-                handleWidthChange(clamp(parsed));
+              const parsed = Number(widthInput);
+              if (Number.isFinite(parsed)) {
+                handleWidthChange(
+                  isRatioLocked
+                    ? parsed
+                    : normalizeDimension(parsed, min, max, effectiveStep),
+                );
+              } else {
+                handleWidthChange(width);
               }
             }}
             min={min}
             max={max}
-            step={64}
+            step={effectiveStep}
             disabled={disabled}
             className="h-9"
           />
         </div>
 
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={handleSwap}
-          disabled={disabled}
-          className="mt-5 h-9 w-9"
-          title="Swap width and height"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="transition-transform duration-300"
-            style={{ transform: `rotate(${swapRotation}deg)` }}
+        <div className="mt-5 flex items-center gap-1">
+          <Button
+            type="button"
+            variant={isRatioLocked ? "default" : "ghost"}
+            size="icon"
+            onClick={toggleRatioLock}
+            disabled={disabled}
+            className="h-9 w-9"
+            title={
+              isRatioLocked
+                ? `Unlock aspect ratio (${lockedRatioLabel})`
+                : `Lock aspect ratio (${ratioLabel})`
+            }
           >
-            <path d="M8 3L4 7l4 4" />
-            <path d="M4 7h16" />
-            <path d="M16 21l4-4-4-4" />
-            <path d="M20 17H4" />
-          </svg>
-        </Button>
+            {isRatioLocked ? (
+              <Lock className="h-4 w-4" />
+            ) : (
+              <Unlock className="h-4 w-4" />
+            )}
+          </Button>
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={handleSwap}
+            disabled={disabled}
+            className="h-9 w-9"
+            title="Swap width and height"
+          >
+            <ArrowLeftRight
+              className="h-4 w-4 transition-transform duration-300"
+              style={{ transform: `rotate(${swapRotation}deg)` }}
+            />
+          </Button>
+        </div>
 
         <div className="flex-1">
           <Label className="text-xs text-muted-foreground">Height</Label>
@@ -272,21 +438,27 @@ export function SizeSelector({
               if (next === "") return;
               const parsed = parseInt(next, 10);
               if (Number.isNaN(parsed)) return;
-              handleHeightChange(parsed);
+              if (parsed >= min && parsed <= max) handleHeightChange(parsed);
             }}
             onBlur={() => {
               if (heightInput === "") {
                 handleHeightChange(min);
                 return;
               }
-              const parsed = parseInt(heightInput, 10);
-              if (!Number.isNaN(parsed)) {
-                handleHeightChange(clamp(parsed));
+              const parsed = Number(heightInput);
+              if (Number.isFinite(parsed)) {
+                handleHeightChange(
+                  isRatioLocked
+                    ? parsed
+                    : normalizeDimension(parsed, min, max, effectiveStep),
+                );
+              } else {
+                handleHeightChange(height);
               }
             }}
             min={min}
             max={max}
-            step={64}
+            step={effectiveStep}
             disabled={disabled}
             className="h-9"
           />
@@ -299,7 +471,8 @@ export function SizeSelector({
           {width} × {height} px
         </span>
         <span>
-          Range: {min} - {max}
+          {isRatioLocked ? `${lockedRatioLabel} locked · ` : ""}Range: {min} -{" "}
+          {max}
         </span>
       </div>
     </div>

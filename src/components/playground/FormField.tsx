@@ -380,6 +380,7 @@ export function FormField({
             disabled={disabled}
             min={field.min}
             max={field.max}
+            step={field.step}
           />
         );
       }

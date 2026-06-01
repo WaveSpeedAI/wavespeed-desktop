@@ -5,16 +5,33 @@ export type PaintTask =
   | "repaint"
   | "erase"
   | "expand"
+  | "cutout"
   | "remove-bg"
   | "enhance"
   | "face-enhance"
   | "region";
 
 export type PaintTarget = "image" | "video";
+export type RepaintScope = "region" | "full";
 
 export const PAINT_MODEL_PARAM_PREFIX = "__paintModelParam_";
-const REPAINT_MARKER_INSTRUCTION =
-  "Only modify the red highlighted region. The red overlay and outline are selection markers, not part of the final image.";
+const REPAINT_REGION_FALLBACK =
+  "Fill the selected area naturally, consistent with the surrounding image.";
+const REPAINT_REGION_CONSTRAINT =
+  "Only edit the selected area. Keep everything outside unchanged.";
+const REPAINT_REGION_BLEND =
+  "Match surrounding lighting, texture, perspective, and edges.";
+const REPAINT_MARKER_REGION = "Use the red marked area as the edit region.";
+const REPAINT_MARKER_SKETCH =
+  "Follow the red sketch as visual guidance for the selected area.";
+const REPAINT_MARKER_FINAL =
+  "The red marks are selection guides only and must not appear in the final image.";
+const EXPAND_FALLBACK = "Extend the image naturally into the new canvas area.";
+const EXPAND_PRESERVE_ORIGINAL =
+  "Preserve the original image content unchanged.";
+const EXPAND_FILL_NEW_AREA = "Fill only the newly added canvas area.";
+const EXPAND_BLEND =
+  "Match the original image's lighting, perspective, texture, and style.";
 
 const SOURCE_FIELD_PRIORITY = [
   "image",
@@ -30,6 +47,18 @@ const SOURCE_FIELD_PRIORITY = [
   "images",
   "image_urls",
 ];
+const GENERIC_IMAGE_EDIT_MODEL_RE = /gpt[-_\s]*image|nano[-_\s]*banana/;
+const IMAGE_EDIT_MODEL_RE =
+  /\/edit\b|image[-_\s]*(?:edit|to[-_\s]*image)|img[-_\s]*to[-_\s]*img|i2i|inpaint|repaint|seededit|kontext/;
+const EXPAND_MODEL_RE = /outpaint|expand|uncrop|extend|generative[-_\s]*fill/;
+const ERASE_MODEL_RE =
+  /erase|cleanup|clean[-_\s]*up|object[-_\s]*(?:remove|removal)|inpaint|mask/;
+const CUTOUT_MODEL_RE =
+  /background[-_\s]*(?:remove|removal|remover)|remove[-_\s]*background|rmbg|matting|cutout|isnet|bria/;
+const NON_IMAGE_EDIT_MODEL_RE =
+  /translate|translation|locali[sz]e|embed[-_\s]*product|product[-_\s]*embed|product[-_\s]*(?:placement|try|scene)|fat[-_\s]*filter|skinny[-_\s]*filter|beauty[-_\s]*filter|ai[-_\s]*filter|\bfilter\b|gender[-_\s]*swap|dog[-_\s]*selfie|pet[-_\s]*selfie|animal[-_\s]*selfie|face[-_\s]*swap|faceswap|swap[-_\s]*face|face[-_\s]*fusion|lip[-_\s]*sync|lipsync|talking[-_\s]*head|avatar|try[-_\s]*on|virtual[-_\s]*try|clothes?|garment|fashion|makeup|hair[-_\s]*(?:change|style)|pose|relight|upscal|enhanc|restor|super[-_\s]*resolution|background[-_\s]*(?:remove|removal|remover)|remove[-_\s]*background|rmbg|matting|cutout/;
+const NON_CUTOUT_MODEL_RE =
+  /translate|translation|locali[sz]e|embed[-_\s]*product|product[-_\s]*embed|product[-_\s]*(?:placement|try|scene)|fat[-_\s]*filter|skinny[-_\s]*filter|beauty[-_\s]*filter|ai[-_\s]*filter|\bfilter\b|gender[-_\s]*swap|dog[-_\s]*selfie|pet[-_\s]*selfie|animal[-_\s]*selfie|face[-_\s]*swap|faceswap|swap[-_\s]*face|lip[-_\s]*sync|lipsync|talking[-_\s]*head|avatar|try[-_\s]*on|virtual[-_\s]*try|upscal|enhanc|restor|inpaint|repaint|outpaint|expand|uncrop|seededit|kontext/;
 
 function lower(value: unknown): string {
   return String(value ?? "").toLowerCase();
@@ -244,11 +273,63 @@ function valueForField(field: ModelParamSchema, value: string): unknown {
   return field.fieldType === "file-array" ? [value] : value;
 }
 
-function appendRepaintMarkerInstruction(value: unknown): string {
-  const text = String(value ?? "").trim();
-  if (!text) return REPAINT_MARKER_INSTRUCTION;
-  if (text.includes(REPAINT_MARKER_INSTRUCTION)) return text;
-  return `${text}\n\n${REPAINT_MARKER_INSTRUCTION}`;
+export function normalizeRepaintScope(value: unknown): RepaintScope {
+  return value === "full" ? "full" : "region";
+}
+
+function joinPromptLines(lines: string[]): string {
+  const seen = new Set<string>();
+  return lines
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .filter((line) => {
+      if (seen.has(line)) return false;
+      seen.add(line);
+      return true;
+    })
+    .join("\n");
+}
+
+function buildRepaintPrompt({
+  userPrompt,
+  scope,
+  selectionMode,
+  usesMarkedReference,
+}: {
+  userPrompt: unknown;
+  scope: RepaintScope;
+  selectionMode: string;
+  usesMarkedReference: boolean;
+}): string {
+  const text = String(userPrompt ?? "").trim();
+  if (scope === "full") return text;
+
+  const lines = [
+    text || REPAINT_REGION_FALLBACK,
+    REPAINT_REGION_CONSTRAINT,
+    REPAINT_REGION_BLEND,
+  ];
+
+  if (usesMarkedReference) {
+    lines.push(
+      selectionMode === "sketch"
+        ? REPAINT_MARKER_SKETCH
+        : REPAINT_MARKER_REGION,
+      REPAINT_MARKER_FINAL,
+    );
+  }
+
+  return joinPromptLines(lines);
+}
+
+function buildExpandPrompt(userPrompt: unknown): string {
+  const text = String(userPrompt ?? "").trim();
+  return joinPromptLines([
+    text || EXPAND_FALLBACK,
+    EXPAND_PRESERVE_ORIGINAL,
+    EXPAND_FILL_NEW_AREA,
+    EXPAND_BLEND,
+  ]);
 }
 
 export function buildPaintModelApiParams({
@@ -260,6 +341,8 @@ export function buildPaintModelApiParams({
   prompt,
   reference,
   expandRatio,
+  repaintScope,
+  selectionMode,
 }: {
   params: Record<string, unknown>;
   schema: ModelParamSchema[];
@@ -269,13 +352,37 @@ export function buildPaintModelApiParams({
   prompt: string;
   reference: string;
   expandRatio: string;
+  repaintScope?: RepaintScope;
+  selectionMode?: string;
 }): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   const customParams = readPaintModelParams(params.__paintModelParams);
   const sourceField = findPaintSourceField(schema);
   const promptField =
-    task === "repaint" ? findPaintPromptField(schema) : undefined;
-  const modelInputImage = task === "repaint" ? reference || source : source;
+    task === "repaint" || task === "expand"
+      ? findPaintPromptField(schema)
+      : undefined;
+  const normalizedRepaintScope = normalizeRepaintScope(
+    repaintScope ?? params.__repaintScope,
+  );
+  const hasMaskField = schema.some(isPaintMaskField);
+  const effectiveMask =
+    task === "erase" ||
+    (task === "repaint" && normalizedRepaintScope === "region")
+      ? mask
+      : "";
+  const normalizedSelectionMode = String(selectionMode ?? "paint");
+  const shouldUseMarkedReference =
+    task === "repaint" &&
+    normalizedRepaintScope === "region" &&
+    Boolean(reference && reference !== source) &&
+    (!hasMaskField || normalizedSelectionMode === "sketch");
+  const modelInputImage =
+    task === "repaint" && shouldUseMarkedReference
+      ? reference
+      : task === "repaint"
+        ? source
+        : source;
 
   for (const field of schema) {
     if (field.name.startsWith("__")) continue;
@@ -292,9 +399,9 @@ export function buildPaintModelApiParams({
     if (
       (task === "repaint" || task === "erase") &&
       isPaintMaskField(field) &&
-      mask
+      effectiveMask
     ) {
-      out[field.name] = valueForField(field, mask);
+      out[field.name] = valueForField(field, effectiveMask);
       continue;
     }
 
@@ -306,11 +413,32 @@ export function buildPaintModelApiParams({
       continue;
     }
 
+    if (task === "expand" && field.name === promptField?.name) {
+      const customValue = customParams[field.name];
+      const expandPrompt = buildExpandPrompt(
+        prompt.trim()
+          ? prompt
+          : !isEmptyPaintValue(customValue)
+            ? customValue
+            : "",
+      );
+      if (expandPrompt) out[field.name] = expandPrompt;
+      continue;
+    }
+
     if (task === "repaint" && field.name === promptField?.name) {
       const customValue = customParams[field.name];
-      out[field.name] = appendRepaintMarkerInstruction(
-        !isEmptyPaintValue(customValue) ? customValue : prompt,
-      );
+      const repaintPrompt = buildRepaintPrompt({
+        userPrompt: prompt.trim()
+          ? prompt
+          : !isEmptyPaintValue(customValue)
+            ? customValue
+            : "",
+        scope: normalizedRepaintScope,
+        selectionMode: normalizedSelectionMode,
+        usesMarkedReference: shouldUseMarkedReference,
+      });
+      if (repaintPrompt) out[field.name] = repaintPrompt;
       continue;
     }
 
@@ -353,7 +481,14 @@ export function getPaintModelMatchScore(
   const hasPrompt =
     Boolean(findPaintPromptField(schema)) || haystack.includes("prompt");
   const hasMask =
-    schema.some(isPaintMaskField) || /inpaint|mask|erase|remove/.test(haystack);
+    schema.some(isPaintMaskField) || ERASE_MODEL_RE.test(haystack);
+  const hasGenericEditCapability =
+    GENERIC_IMAGE_EDIT_MODEL_RE.test(haystack) && hasSource && hasPrompt;
+  const hasImageEditHint =
+    IMAGE_EDIT_MODEL_RE.test(haystack) || hasGenericEditCapability;
+  const hasExpandHint = EXPAND_MODEL_RE.test(haystack);
+  const hasExpandControl = schema.some(isPaintDimensionField);
+  const hasCutoutHint = CUTOUT_MODEL_RE.test(haystack);
 
   if (target === "video") {
     if (!/image-to-video|img-to-video|i2v/.test(haystack)) return 0;
@@ -364,33 +499,53 @@ export function getPaintModelMatchScore(
 
   if (
     !hasSource &&
-    !/\/edit|image-to-image|img-to-img|i2i|outpaint|inpaint/.test(haystack)
+    !hasImageEditHint &&
+    !/outpaint|expand|uncrop|extend/.test(haystack)
   ) {
     return 0;
   }
 
   if (task === "repaint") {
-    let score = 20;
-    if (/inpaint|mask/.test(haystack) || hasMask) score += 45;
-    if (/\/edit|image-to-image|img-to-img|i2i/.test(haystack)) score += 28;
+    if (NON_IMAGE_EDIT_MODEL_RE.test(haystack)) return 0;
+    if (!hasPrompt) return 0;
+    if (!hasImageEditHint && !hasMask) return 0;
+    let score = 0;
+    if (/inpaint|mask/.test(haystack) || hasMask) score += 55;
+    if (hasImageEditHint) score += 28;
     if (/text-to-image|text2image|t2i/.test(haystack)) score -= 35;
     if (hasPrompt) score += 12;
     return Math.max(0, score);
   }
 
   if (task === "expand") {
-    let score = 15;
-    if (/outpaint|expand|uncrop|extend/.test(haystack)) score += 50;
-    if (/\/edit|image-to-image|img-to-img|i2i/.test(haystack)) score += 22;
+    if (NON_IMAGE_EDIT_MODEL_RE.test(haystack)) return 0;
+    const canGenericEditExpand =
+      hasImageEditHint && hasPrompt && hasExpandControl;
+    if (!hasExpandHint && !canGenericEditExpand) return 0;
+    let score = 0;
+    if (hasExpandHint) score += 65;
+    if (canGenericEditExpand) score += 22;
+    if (hasExpandControl) score += 12;
+    if (hasPrompt) score += 8;
     if (/text-to-image|text2image|t2i/.test(haystack)) score -= 30;
     return Math.max(0, score);
   }
 
   if (task === "erase") {
+    if (NON_IMAGE_EDIT_MODEL_RE.test(haystack)) return 0;
+    if (!ERASE_MODEL_RE.test(haystack) && !hasMask) return 0;
     let score = 0;
-    if (/erase|remove|cleanup|inpaint|mask/.test(haystack) || hasMask)
-      score += 65;
-    if (/\/edit|image-to-image|img-to-img|i2i/.test(haystack)) score += 18;
+    if (ERASE_MODEL_RE.test(haystack) || hasMask) score += 65;
+    if (hasImageEditHint) score += 18;
+    return score;
+  }
+
+  if (task === "remove-bg") {
+    if (NON_CUTOUT_MODEL_RE.test(haystack)) return 0;
+    if (!hasCutoutHint) return 0;
+    let score = 60;
+    if (/isnet|bria|rmbg/.test(haystack)) score += 20;
+    if (hasSource) score += 10;
     return score;
   }
 

@@ -1,4 +1,4 @@
-﻿{
+{
   "common": {
     "loading": "Memuat...",
     "save": "Simpan",
@@ -1330,8 +1330,8 @@
         "hint": "Hapus latar belakang gambar secara otomatis dan gratis"
       },
       "free-tool/paint": {
-        "label": "Gambar ulang",
-        "hint": "Pilih area gambar untuk digambar ulang, diperluas, dihapus, atau ditingkatkan",
+        "label": "Edit gambar",
+        "hint": "Repaint, hapus, perluas, cutout AI, atau tingkatkan gambar",
         "inputs": {
           "input": {
             "label": "Gambar"
@@ -1532,9 +1532,9 @@
       "continueEdit": "Lanjutkan",
       "needImage": "Tambahkan gambar sebelum membuka editor.",
       "regionReady": "Area siap",
-      "openEditorHint": "Buka editor untuk memilih area, masker, atau alat.",
-      "editorTitle": "Editor frame",
-      "editorDescription": "Pilih area atau frame target untuk node repaint.",
+      "openEditorHint": "Buka editor untuk memilih area fungsi ini.",
+      "editorTitle": "Editor area",
+      "editorDescription": "Pilih area untuk node edit gambar.",
       "modelOutput": "Output",
       "modelOutputGenerate": "jalankan model terpilih",
       "noMatchedModels": "Belum ada model edit gambar yang cocok di cache model lokal.",
@@ -1542,7 +1542,7 @@
       "incompatibleSelectedModel": "Model yang dipilih tidak mendukung fungsi paint ini. Pilih model edit gambar yang kompatibel sebelum menjalankan.",
       "repaintModelHint": "Menjalankan model terpilih dengan frame bertanda, masker jika didukung, dan prompt.",
       "eraseHint": "Menjalankan penghapus gambar yang ada dengan area yang disapukan.",
-      "expandHint": "Mengeluarkan frame sumber dengan rasio perluasan yang dipilih.",
+      "expandHint": "Menjalankan model perluasan terpilih dengan kanvas saat ini.",
       "regionOnlyHint": "Mengeluarkan hanya masker area yang dipilih.",
       "directToolHint": "Menjalankan alat gratis yang cocok saat workflow dijalankan.",
       "prompts": {
@@ -1552,7 +1552,40 @@
         "repaintSketch": "Ikuti sketsa merah sebagai panduan visual dan gambar ulang area yang dipilih secara alami.",
         "erase": "Hapus objek atau area yang dipilih dan rekonstruksi latar secara alami.",
         "expand": "Perluas gambar secara alami melewati frame asli, sambil mempertahankan gaya, pencahayaan, dan perspektif."
-      }
+      },
+      "function": "Fungsi",
+      "selectRegion": "Pilih area",
+      "adjustCanvas": "Sesuaikan kanvas",
+      "repaintScope": "Cakupan edit",
+      "repaintScopeRegion": "Area lokal",
+      "repaintScopeRegionHint": "Gunakan mask terpilih atau area yang ditandai.",
+      "repaintScopeFull": "Gambar penuh",
+      "repaintScopeFullHint": "Edit tanpa memilih area.",
+      "expandSettings": "Kanvas",
+      "repaintPrompt": "Prompt repaint",
+      "repaintPromptRegionPlaceholder": "Jelaskan apa yang harus muncul di area terpilih.",
+      "repaintPromptFullPlaceholder": "Jelaskan cara mengedit seluruh gambar.",
+      "expandPrompt": "Prompt perluasan",
+      "expandPromptPlaceholder": "Jelaskan bagaimana area kanvas baru harus melanjutkan gambar asli secara alami.",
+      "cutoutHint": "Pilih subjek atau area, lalu keluarkan dengan latar transparan.",
+      "enhanceHint": "Menjalankan model peningkatan terpilih pada kanvas saat ini.",
+      "faceEnhanceHint": "Meningkatkan wajah yang terdeteksi di kanvas saat ini.",
+      "enhanceModel": "Model",
+      "enhanceScale": "Skala",
+      "cutoutModel": "Model",
+      "faceEnhanceNoParams": "Wajah dideteksi otomatis; tidak perlu pengaturan tambahan.",
+      "useResultAsCanvas": "Gunakan sebagai kanvas",
+      "resetCanvas": "Reset ke input",
+      "usingWorkingImage": "Kanvas saat ini: hasil edit",
+      "usingInputImage": "Kanvas saat ini: input upstream",
+      "modeCutout": "Potong AI",
+      "backgroundRemoveHint": "Menghapus latar belakang seluruh gambar secara otomatis.",
+      "backgroundRemoveModel": "Model",
+      "selectSubject": "Pilih subjek",
+      "cutoutSelectionRequired": "Pilih subjek pada gambar",
+      "cutoutSelectionRequiredHint": "Klik untuk memasukkan subjek; klik kanan untuk mengecualikan area, lalu lanjutkan.",
+      "resultAsCanvasHint": "Menjadikan hasil ini sebagai kanvas saat ini untuk seleksi dan eksekusi berikutnya.",
+      "interactiveResultAsCanvasHint": "Hasil editor ini belum dijalankan. Gunakan sebagai kanvas saat ini sebelum edit berikutnya."
     },
     "promptOptimizer": {
       "optimizationFailed": "Optimisasi gagal",

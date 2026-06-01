@@ -94,14 +94,6 @@ import {
 import { DynamicFieldsEditor, type FieldConfig } from "./DynamicFieldsEditor";
 import { PaintNodeEditor } from "./PaintNodeEditor";
 
-function formatClockTime(seconds: number): string {
-  if (!Number.isFinite(seconds)) return "0:00.000";
-  const clamped = Math.max(0, seconds);
-  const mins = Math.floor(clamped / 60);
-  const secs = clamped - mins * 60;
-  return `${mins}:${secs.toFixed(3).padStart(6, "0")}`;
-}
-
 function formatPreciseSeconds(seconds: number): string {
   if (!Number.isFinite(seconds)) return "0.000";
   return Math.max(0, seconds).toFixed(3);
@@ -957,11 +949,9 @@ function PaintImageInput({
 
 function ExtractFrameOutputDirectory({
   value,
-  ensureWorkflowId,
   onChange,
 }: {
   value: unknown;
-  ensureWorkflowId: () => Promise<string | null | undefined>;
   onChange: (value: unknown) => void;
 }) {
   const { t } = useTranslation();
@@ -1286,7 +1276,7 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
     selectedOutputIndex,
   ]);
 
-  const paintImageUrl = useMemo(() => {
+  const paintUpstreamImageUrl = useMemo(() => {
     if (data.nodeType !== "free-tool/paint") return "";
     const edge = edges.find(
       (e) => e.target === id && e.targetHandle === "input-input",
@@ -1321,11 +1311,24 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
     selectedOutputIndex,
   ]);
 
+  const paintImageUrl = useMemo(() => {
+    if (data.nodeType !== "free-tool/paint") return "";
+    const workingImage = String(data.params.__workingImage ?? "");
+    return workingImage || paintUpstreamImageUrl;
+  }, [data.nodeType, data.params.__workingImage, paintUpstreamImageUrl]);
+
+  const paintLatestResultUrl = useMemo(() => {
+    if (data.nodeType !== "free-tool/paint") return "";
+    const selectedIndex = selectedOutputIndex[id] ?? 0;
+    return allLastResults[id]?.[selectedIndex]?.urls?.[0] ?? "";
+  }, [allLastResults, data.nodeType, id, selectedOutputIndex]);
+
   const setPaintInput = useCallback(
     (value: unknown) => {
       updateNodeParams(id, {
         ...data.params,
         input: value,
+        __workingImage: "",
         __sourceImage: String(value ?? ""),
         __paintedImage: String(value ?? ""),
         __maskImage: "",
@@ -2474,6 +2477,8 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
           nodeId={id}
           params={data.params}
           imageUrl={paintImageUrl}
+          upstreamImageUrl={paintUpstreamImageUrl}
+          latestResultUrl={paintLatestResultUrl}
           storeModels={storeModels}
           getModelById={getModelById}
           ensureWorkflowId={ensureWorkflowId}
@@ -2589,7 +2594,6 @@ export function CustomNodeBody(props: CustomNodeBodyProps) {
               <ExtractFrameOutputDirectory
                 key={p.key}
                 value={data.params[p.key]}
-                ensureWorkflowId={ensureWorkflowId}
                 onChange={(v) => setParam(p.key, v)}
               />
             );

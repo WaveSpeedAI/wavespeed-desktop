@@ -8,6 +8,7 @@ import { useExecutionStore } from "../stores/execution.store";
 import {
   runImageEnhancer,
   runBackgroundRemover,
+  runImageCutout,
   runFaceEnhancer,
   runVideoEnhancer,
   runFaceSwapper,
@@ -68,6 +69,23 @@ export function useFreeToolListener(): void {
             outputData,
             outputExt: "png",
             outputPrefix: "background_remover",
+          });
+        } else if (nodeType === "free-tool/image-cutout") {
+          const imageUrl = inputs.input;
+          const maskUrl = inputs.mask_image;
+          if (!imageUrl || !maskUrl) throw new Error("Missing image or mask");
+          const outputData = await runImageCutout(
+            imageUrl,
+            maskUrl,
+            onProgress,
+          );
+          await freeToolIpc.complete({
+            requestId,
+            workflowId,
+            nodeId,
+            outputData,
+            outputExt: "png",
+            outputPrefix: "image_cutout",
           });
         } else if (nodeType === "free-tool/face-enhancer") {
           const inputUrl = inputs.input;

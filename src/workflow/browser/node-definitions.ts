@@ -364,7 +364,7 @@ export const extractFrameDef: NodeTypeDefinition = {
 export const paintDef: NodeTypeDefinition = {
   type: "free-tool/paint",
   category: "free-tool",
-  label: "Repaint",
+  label: "Image Edit",
   inputs: [
     {
       key: "input",

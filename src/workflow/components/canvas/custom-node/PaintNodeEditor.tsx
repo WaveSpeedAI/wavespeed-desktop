@@ -6,8 +6,8 @@ import React, {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import type { TFunction } from "i18next";
 import {
+  ArrowRight,
   Brush,
   Check,
   ChevronDown,
@@ -26,6 +26,7 @@ import {
   Star,
   Trash2,
   Redo2,
+  Scissors,
   Undo2,
   X,
 } from "lucide-react";
@@ -34,6 +35,7 @@ import { ModelSelector } from "@/components/playground/ModelSelector";
 import { SizeSelector } from "@/components/playground/SizeSelector";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -59,15 +61,18 @@ import {
   type FormFieldConfig,
 } from "@/lib/schemaToForm";
 import { formFieldsToModelParamSchema } from "../../../lib/model-converter";
+import { runImageCutout } from "../../../lib/free-tool-runner";
 import {
-  findPaintPromptField,
   getPaintModelBindings,
   getPaintModelMatchScore,
   isPaintAspectField,
   isPaintDimensionField,
+  isPaintPromptField,
+  normalizeRepaintScope,
   readPaintModelParams,
   readPaintModelSchema,
   type PaintTarget,
+  type RepaintScope,
 } from "../../../lib/paint-model";
 import type { Model } from "@/types/model";
 
@@ -75,6 +80,7 @@ type EditMode =
   | "repaint"
   | "erase"
   | "expand"
+  | "cutout"
   | "remove-bg"
   | "enhance"
   | "face-enhance"
@@ -105,8 +111,27 @@ type SelectionSnapshot = {
 };
 type NumericModelField = ReturnType<typeof schemaForModel>[number];
 
-const REQUIRED_REGION_MODES = new Set<EditMode>(["repaint", "erase", "region"]);
 const MODEL_TARGET_MODES = new Set<EditMode>(["repaint", "expand"]);
+const DIRECT_TOOL_MODES = new Set<EditMode>([
+  "remove-bg",
+  "enhance",
+  "face-enhance",
+]);
+const IMAGE_ENHANCER_OPTIONS = [
+  { label: "Slim (fast)", value: "slim" },
+  { label: "Medium", value: "medium" },
+  { label: "Thick (quality)", value: "thick" },
+];
+const IMAGE_ENHANCER_SCALE_OPTIONS = [
+  { label: "2x", value: "2x" },
+  { label: "3x", value: "3x" },
+  { label: "4x", value: "4x" },
+];
+const BACKGROUND_REMOVER_OPTIONS = [
+  { label: "ISNet Quint8 (fast)", value: "isnet_quint8" },
+  { label: "ISNet FP16", value: "isnet_fp16" },
+  { label: "ISNet (quality)", value: "isnet" },
+];
 const EXPAND_RATIOS: ExpandRatio[] = [
   "16:9",
   "9:16",
@@ -130,15 +155,6 @@ const EMPTY_HISTORY_STATE: SelectionHistoryState = {
 const MAX_SELECTION_HISTORY = 50;
 const CANVAS_READ_OPTIONS: CanvasRenderingContext2DSettings = {
   willReadFrequently: true,
-};
-const DEFAULT_PAINT_PROMPT_KEYS: Record<string, string> = {
-  repaint: "workflow.paintNode.prompts.repaintPaint",
-  "repaint:paint": "workflow.paintNode.prompts.repaintPaint",
-  "repaint:box": "workflow.paintNode.prompts.repaintBox",
-  "repaint:lasso": "workflow.paintNode.prompts.repaintLasso",
-  "repaint:sketch": "workflow.paintNode.prompts.repaintSketch",
-  erase: "workflow.paintNode.prompts.erase",
-  expand: "workflow.paintNode.prompts.expand",
 };
 const clamp01 = (value: number) => Math.max(0, Math.min(1, value));
 
@@ -166,17 +182,6 @@ function schemaForModel(model: Model | undefined) {
   return formFieldsToModelParamSchema(fieldsForModel(model));
 }
 
-function getDefaultPaintPrompt(
-  t: TFunction,
-  mode: EditMode,
-  selectionMode: string,
-) {
-  const key =
-    DEFAULT_PAINT_PROMPT_KEYS[`${mode}:${selectionMode}`] ??
-    DEFAULT_PAINT_PROMPT_KEYS[mode];
-  return key ? t(key) : "";
-}
-
 function getPreferredPaintModelScore(model: Model) {
   const text = `${model.model_id} ${model.name}`.toLowerCase();
   if (/gpt[-_\s]*image[-_\s]*2/.test(text)) return 1000;
@@ -184,22 +189,6 @@ function getPreferredPaintModelScore(model: Model) {
     return 900;
   }
   return 0;
-}
-
-function withDefaultPaintPrompt(
-  t: TFunction,
-  schema: ReturnType<typeof schemaForModel>,
-  params: Record<string, unknown>,
-  mode: EditMode,
-  selectionMode: string,
-) {
-  const promptField = findPaintPromptField(schema);
-  const prompt = getDefaultPaintPrompt(t, mode, selectionMode);
-  if (!promptField || !prompt) return params;
-  return {
-    ...params,
-    [promptField.name]: prompt,
-  };
 }
 
 function withExpandRatioParam(
@@ -214,6 +203,21 @@ function withExpandRatioParam(
     ...params,
     [aspectField.name]: value,
   };
+}
+
+function withoutPaintPromptParams(
+  schema: ReturnType<typeof schemaForModel>,
+  params: Record<string, unknown>,
+) {
+  const promptFieldNames = schema
+    .filter(isPaintPromptField)
+    .map((field) => field.name);
+  if (promptFieldNames.length === 0) return params;
+  const next = { ...params };
+  for (const fieldName of promptFieldNames) {
+    delete next[fieldName];
+  }
+  return next;
 }
 
 function resolveExpandAspectValue(
@@ -327,36 +331,32 @@ function HoverOnlyTooltip({
   );
 }
 
-function ModeButton({
+function InlineSelect({
   label,
-  active,
-  children,
-  onClick,
-  onMouseEnter,
+  value,
+  options,
+  onChange,
 }: {
   label: string;
-  active?: boolean;
-  children: React.ReactNode;
-  onClick: () => void;
-  onMouseEnter?: () => void;
+  value: string;
+  options: Array<{ label: string; value: string }>;
+  onChange: (value: string) => void;
 }) {
   return (
-    <HoverOnlyTooltip content={label}>
-      <Button
-        type="button"
-        variant={active ? "default" : "outline"}
-        size="icon"
-        className="h-8 w-8"
-        onClick={(event) => {
-          event.currentTarget.blur();
-          onClick();
-        }}
-        onMouseEnter={onMouseEnter}
+    <label className="flex items-center justify-between gap-2 rounded-md border border-border bg-background px-2 py-1.5">
+      <span className="shrink-0 text-xs text-muted-foreground">{label}</span>
+      <select
+        className="h-7 min-w-0 flex-1 rounded-md border border-border bg-background px-2 text-xs text-foreground outline-none focus:border-primary"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
       >
-        {children}
-        <span className="sr-only">{label}</span>
-      </Button>
-    </HoverOnlyTooltip>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }
 
@@ -1624,6 +1624,8 @@ function ManualSelectionCanvas({
 export function PaintNodeEditor({
   nodeId,
   imageUrl,
+  upstreamImageUrl,
+  latestResultUrl,
   params,
   storeModels,
   getModelById,
@@ -1634,6 +1636,8 @@ export function PaintNodeEditor({
 }: {
   nodeId: string;
   imageUrl: string;
+  upstreamImageUrl: string;
+  latestResultUrl: string;
   params: Record<string, unknown>;
   storeModels: Model[];
   getModelById: (id: string) => Model | undefined;
@@ -1666,6 +1670,7 @@ export function PaintNodeEditor({
     useState<SelectionHistoryCommand | null>(null);
   const [historyState, setHistoryState] =
     useState<SelectionHistoryState>(EMPTY_HISTORY_STATE);
+  const [cutoutPreviewUrl, setCutoutPreviewUrl] = useState("");
   const [localSelectionReady, setLocalSelectionReady] = useState(
     Boolean(params.__maskImage),
   );
@@ -1673,10 +1678,17 @@ export function PaintNodeEditor({
   const pendingSelectionSaveRef = useRef<Promise<void> | null>(null);
   const [error, setError] = useState("");
 
+  const hasInputImage = Boolean(imageUrl.trim());
   const savedSource = String(params.__sourceImage ?? "");
   const savedMask = String(params.__maskImage ?? "");
   const savedPaintedImage = String(params.__paintedImage ?? "");
   const savedBbox = String(params.__maskBbox ?? "");
+  const workingImage = String(params.__workingImage ?? "");
+  const upstreamSource = upstreamImageUrl.trim();
+  const usingWorkingImage = Boolean(workingImage);
+  const repaintScope = normalizeRepaintScope(params.__repaintScope);
+  const repaintPromptValue = String(params.__editPrompt ?? "");
+  const expandPromptValue = String(params.__expandPrompt ?? "");
   const sourceMatchesSavedSelection = Boolean(
     imageUrl && savedSource && imageUrl === savedSource,
   );
@@ -1691,12 +1703,20 @@ export function PaintNodeEditor({
       return [];
     }
   }, [params.__segmentPoints]);
-  const needsRegion = REQUIRED_REGION_MODES.has(mode);
+  const needsRegion =
+    mode === "erase" ||
+    mode === "cutout" ||
+    mode === "region" ||
+    (mode === "repaint" && repaintScope === "region");
   const supportsModelTarget = MODEL_TARGET_MODES.has(mode);
   const selectedPaintModelId = String(params.__paintModelId ?? "");
   const selectedPaintModel = selectedPaintModelId
     ? getModelById(selectedPaintModelId)
     : undefined;
+
+  useEffect(() => {
+    if (!hasInputImage && editorOpen) setEditorOpen(false);
+  }, [editorOpen, hasInputImage]);
 
   useEffect(() => {
     if (savedMask && sourceMatchesSavedSelection) setLocalSelectionReady(true);
@@ -1752,6 +1772,10 @@ export function PaintNodeEditor({
     () => selectedModelSchema.find(isSizeField),
     [selectedModelSchema],
   );
+  const selectedPromptField = useMemo(
+    () => selectedModelSchema.find(isPaintPromptField),
+    [selectedModelSchema],
+  );
 
   const modeOptions = useMemo(
     () => [
@@ -1776,9 +1800,14 @@ export function PaintNodeEditor({
         label: t("workflow.paintNode.modeExpand", "Expand"),
       },
       {
+        value: "cutout" as const,
+        icon: Scissors,
+        label: t("workflow.paintNode.modeCutout", "AI cutout"),
+      },
+      {
         value: "remove-bg" as const,
         icon: ImageOff,
-        label: t("workflow.paintNode.modeRemoveBg", "Remove background"),
+        label: t("workflow.paintNode.modeRemoveBg", "Remove bg"),
       },
       {
         value: "enhance" as const,
@@ -1821,7 +1850,11 @@ export function PaintNodeEditor({
       selectedModelFields.filter(
         (field) =>
           !modelBindings.has(field.name) &&
-          (mode === "expand" || !isPaintDimensionField(field)),
+          !isPaintDimensionField(field) &&
+          !(
+            (mode === "repaint" || mode === "expand") &&
+            isPaintPromptField(field)
+          ),
       ),
     [mode, modelBindings, selectedModelFields],
   );
@@ -1850,17 +1883,18 @@ export function PaintNodeEditor({
       setSelectionModeState(nextSelectionMode);
       setError("");
       const nextSchema = selectedPaintModel ? selectedModelSchema : [];
-      const nextModelParams = withDefaultPaintPrompt(
-        t,
-        nextSchema,
-        readPaintModelParams(params.__paintModelParams),
-        nextMode,
-        nextSelectionMode,
+      const currentModelParams = readPaintModelParams(
+        params.__paintModelParams,
       );
-      onParamChange({
+      const nextModelParams =
+        nextMode === "repaint" || nextMode === "expand"
+          ? withoutPaintPromptParams(nextSchema, currentModelParams)
+          : currentModelParams;
+      const updates: Record<string, unknown> = {
         ...params,
         __paintTask: nextMode,
         __paintTarget: nextTarget,
+        __repaintScope: repaintScope,
         __selectionMode: nextSelectionMode,
         __regionMode: nextSelectionMode,
         __paintModelId: selectedPaintModelId,
@@ -1873,7 +1907,32 @@ export function PaintNodeEditor({
         __maskBbox: "",
         __segmentPoints: "[]",
         __paintedImage: imageUrl || String(params.__sourceImage ?? ""),
-      });
+      };
+      if (
+        nextMode === "remove-bg" &&
+        !BACKGROUND_REMOVER_OPTIONS.some(
+          (option) => option.value === String(updates.model ?? ""),
+        )
+      ) {
+        updates.model = "isnet_fp16";
+      }
+      if (nextMode === "enhance") {
+        if (
+          !IMAGE_ENHANCER_OPTIONS.some(
+            (option) => option.value === String(updates.model ?? ""),
+          )
+        ) {
+          updates.model = "slim";
+        }
+        if (
+          !IMAGE_ENHANCER_SCALE_OPTIONS.some(
+            (option) => option.value === String(updates.scale ?? ""),
+          )
+        ) {
+          updates.scale = "2x";
+        }
+      }
+      onParamChange(updates);
     },
     [
       imageUrl,
@@ -1884,7 +1943,7 @@ export function PaintNodeEditor({
       selectedPaintModel,
       selectedPaintModelId,
       selectionMode,
-      t,
+      repaintScope,
     ],
   );
 
@@ -1892,22 +1951,35 @@ export function PaintNodeEditor({
     (nextSelectionMode: RepaintSelectionMode) => {
       setSelectionModeState(nextSelectionMode);
       setError("");
-      const nextModelParams = withDefaultPaintPrompt(
-        t,
-        selectedModelSchema,
-        paintModelParams,
-        mode,
-        nextSelectionMode,
-      );
       onParamChange({
         ...params,
         __paintTask: mode,
         __selectionMode: nextSelectionMode,
         __regionMode: nextSelectionMode,
-        __paintModelParams: nextModelParams,
       });
     },
-    [mode, onParamChange, paintModelParams, params, selectedModelSchema, t],
+    [mode, onParamChange, params],
+  );
+
+  const setRepaintScope = useCallback(
+    (nextScope: RepaintScope) => {
+      onParamChange({
+        ...params,
+        __paintTask: "repaint",
+        __repaintScope: nextScope,
+        ...(nextScope === "full"
+          ? {
+              __maskImage: "",
+              __maskBbox: "",
+              __segmentPoints: "[]",
+              __paintedImage: imageUrl || String(params.__sourceImage ?? ""),
+            }
+          : {}),
+      });
+      setError("");
+      if (nextScope === "full") setLocalSelectionReady(false);
+    },
+    [imageUrl, onParamChange, params],
   );
 
   const setBrushSize = useCallback(
@@ -1921,6 +1993,28 @@ export function PaintNodeEditor({
       });
     },
     [mode, onParamChange, params, selectionMode],
+  );
+
+  const setRepaintPrompt = useCallback(
+    (value: string) => {
+      onParamChange({
+        ...params,
+        __paintTask: mode,
+        __editPrompt: value,
+      });
+    },
+    [mode, onParamChange, params],
+  );
+
+  const setExpandPrompt = useCallback(
+    (value: string) => {
+      onParamChange({
+        ...params,
+        __paintTask: "expand",
+        __expandPrompt: value,
+      });
+    },
+    [onParamChange, params],
   );
 
   const setExpandRatio = useCallback(
@@ -1952,13 +2046,11 @@ export function PaintNodeEditor({
       if (!model) return;
       const fields = fieldsForModel(model);
       const schema = formFieldsToModelParamSchema(fields);
-      const defaultParams = withDefaultPaintPrompt(
-        t,
-        schema,
-        getDefaultValues(fields),
-        mode,
-        selectionMode,
-      );
+      const modelDefaults = getDefaultValues(fields);
+      const defaultParams =
+        mode === "repaint" || mode === "expand"
+          ? withoutPaintPromptParams(schema, modelDefaults)
+          : modelDefaults;
       const nextAspectValue = resolveExpandAspectValue(
         schema,
         defaultParams,
@@ -1970,6 +2062,7 @@ export function PaintNodeEditor({
       onParamChange({
         ...params,
         __paintTask: mode,
+        __repaintScope: repaintScope,
         __selectionMode: selectionMode,
         __regionMode: selectionMode,
         __paintTarget: paintTarget,
@@ -1990,26 +2083,70 @@ export function PaintNodeEditor({
       onParamChange,
       paintTarget,
       params,
+      repaintScope,
       selectionMode,
-      t,
     ],
   );
 
   useEffect(() => {
+    if (!supportsModelTarget || paintModelOptions.length === 0) {
+      return;
+    }
     if (
-      !supportsModelTarget ||
-      selectedPaintModelId ||
-      paintModelOptions.length === 0
+      selectedPaintModelId &&
+      !selectedModelMissing &&
+      !selectedModelIncompatible
     ) {
       return;
     }
     setPaintModel(paintModelOptions[0].model_id);
   }, [
     paintModelOptions,
+    selectedModelIncompatible,
+    selectedModelMissing,
     selectedPaintModelId,
     setPaintModel,
     supportsModelTarget,
   ]);
+
+  useEffect(() => {
+    if (mode === "remove-bg") {
+      const model = String(params.model ?? "");
+      if (
+        !BACKGROUND_REMOVER_OPTIONS.some((option) => option.value === model)
+      ) {
+        onParamChange({
+          ...params,
+          __paintTask: mode,
+          model: "isnet_fp16",
+        });
+      }
+      return;
+    }
+
+    if (mode === "enhance") {
+      const model = String(params.model ?? "");
+      const scale = String(params.scale ?? "");
+      const nextModel = IMAGE_ENHANCER_OPTIONS.some(
+        (option) => option.value === model,
+      )
+        ? model
+        : "slim";
+      const nextScale = IMAGE_ENHANCER_SCALE_OPTIONS.some(
+        (option) => option.value === scale,
+      )
+        ? scale
+        : "2x";
+      if (nextModel !== model || nextScale !== scale) {
+        onParamChange({
+          ...params,
+          __paintTask: mode,
+          model: nextModel,
+          scale: nextScale,
+        });
+      }
+    }
+  }, [mode, onParamChange, params]);
 
   const setPaintModelParam = useCallback(
     (fieldName: string, value: unknown) => {
@@ -2044,6 +2181,52 @@ export function PaintNodeEditor({
       expandRatio,
     ],
   );
+
+  const setDirectToolParam = useCallback(
+    (key: "model" | "scale", value: string) => {
+      onParamChange({
+        ...params,
+        __paintTask: mode,
+        [key]: value,
+      });
+    },
+    [mode, onParamChange, params],
+  );
+
+  const continueFromImage = useCallback(
+    (image: string) => {
+      const nextImage = image.trim();
+      if (!nextImage) return;
+      onParamChange({
+        ...params,
+        __workingImage: nextImage,
+        __sourceImage: nextImage,
+        __paintedImage: nextImage,
+        __maskImage: "",
+        __maskBbox: "",
+        __segmentPoints: "[]",
+      });
+      setLocalSelectionReady(false);
+      setError("");
+    },
+    [onParamChange, params],
+  );
+
+  const resetWorkingImage = useCallback(() => {
+    const nextImage =
+      upstreamSource || String(params.input ?? params.__sourceImage ?? "");
+    onParamChange({
+      ...params,
+      __workingImage: "",
+      __sourceImage: nextImage,
+      __paintedImage: nextImage,
+      __maskImage: "",
+      __maskBbox: "",
+      __segmentPoints: "[]",
+    });
+    setLocalSelectionReady(false);
+    setError("");
+  }, [onParamChange, params, upstreamSource]);
 
   const setExpandNumericParam = useCallback(
     (field: NumericModelField, value: number) => {
@@ -2227,42 +2410,82 @@ export function PaintNodeEditor({
   const activeMode = modeOptions.find((item) => item.value === mode);
   const ActiveModeIcon = activeMode?.icon ?? Paintbrush;
   const editorSourceUrl = imageUrl || savedSource;
+
+  useEffect(() => {
+    if (
+      mode !== "cutout" ||
+      !sourceMatchesSavedSelection ||
+      !savedMask ||
+      !editorSourceUrl
+    ) {
+      setCutoutPreviewUrl("");
+      return;
+    }
+
+    let cancelled = false;
+    setCutoutPreviewUrl("");
+    void runImageCutout(editorSourceUrl, savedMask)
+      .then((base64) => {
+        if (!cancelled) {
+          setCutoutPreviewUrl(`data:image/png;base64,${base64}`);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) setCutoutPreviewUrl("");
+        console.error("Paint cutout preview error:", err);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [editorSourceUrl, mode, savedMask, sourceMatchesSavedSelection]);
+
   const canvasMode: CanvasInteractionMode =
-    mode === "repaint"
+    mode === "repaint" && repaintScope === "region"
       ? selectionMode
-      : mode === "erase"
-        ? "erase"
-        : mode === "region"
-          ? "region"
-          : "view";
+      : mode === "cutout"
+        ? "region"
+        : mode === "erase"
+          ? "erase"
+          : mode === "region"
+            ? "region"
+            : "view";
   const showBrushControl =
     mode === "erase" ||
     (mode === "repaint" &&
+      repaintScope === "region" &&
       (selectionMode === "paint" || selectionMode === "sketch"));
   const supportsSelectionHistory =
-    mode === "repaint" || mode === "erase" || mode === "region";
-  const hasFloatingToolControls =
-    mode === "repaint" ||
+    (mode === "repaint" && repaintScope === "region") ||
+    mode === "cutout" ||
     mode === "erase" ||
-    mode === "region" ||
-    mode === "expand";
-  const requiresSelection =
-    mode === "repaint" || mode === "erase" || mode === "region";
+    mode === "region";
+  const hasFloatingToolControls =
+    (mode === "repaint" && repaintScope === "region") ||
+    mode === "cutout" ||
+    mode === "erase" ||
+    mode === "region";
+  const requiresSelection = needsRegion;
   const selectionFooterTitle =
     requiresSelection && selectionSaving
       ? t("workflow.paintNode.savingSelection", "Saving selection...")
       : requiresSelection && selectionReady
         ? t("workflow.paintNode.selectionSaved", "Selection saved")
-        : requiresSelection
+        : requiresSelection && mode === "cutout"
           ? t(
-              "workflow.paintNode.selectionRequired",
-              "Select an area on the frame",
+              "workflow.paintNode.cutoutSelectionRequired",
+              "Select the subject on the image",
             )
-          : t("workflow.paintNode.functionSelected", "{{mode}} selected", {
-              mode:
-                activeMode?.label ??
-                t("workflow.paintNode.editImage", "Edit image"),
-            });
+          : requiresSelection
+            ? t(
+                "workflow.paintNode.selectionRequired",
+                "Select an area on the frame",
+              )
+            : t("workflow.paintNode.functionSelected", "{{mode}} selected", {
+                mode:
+                  activeMode?.label ??
+                  t("workflow.paintNode.editImage", "Edit image"),
+              });
   const selectionFooterHint =
     requiresSelection && selectionSaving
       ? t(
@@ -2274,17 +2497,22 @@ export function PaintNodeEditor({
             "workflow.paintNode.selectionSavedHint",
             "Continue to configure the edit. The saved preview is ready to run.",
           )
-        : requiresSelection
+        : requiresSelection && mode === "cutout"
           ? t(
-              "workflow.paintNode.selectionRequiredHint",
-              "Use the active mask tool on the image, then continue.",
+              "workflow.paintNode.cutoutSelectionRequiredHint",
+              "Click to include the subject; right-click areas to exclude, then continue.",
             )
-          : t(
-              "workflow.paintNode.functionSelectedHint",
-              "Continue to configure this function for the next AI generation.",
-            );
+          : requiresSelection
+            ? t(
+                "workflow.paintNode.selectionRequiredHint",
+                "Use the active mask tool on the image, then continue.",
+              )
+            : t(
+                "workflow.paintNode.functionSelectedHint",
+                "Continue to configure this function for the next AI generation.",
+              );
   const pendingRequestImage =
-    mode === "repaint"
+    mode === "repaint" && repaintScope === "region"
       ? sourceMatchesSavedSelection && savedPaintedImage
         ? savedPaintedImage
         : editorSourceUrl
@@ -2292,7 +2520,11 @@ export function PaintNodeEditor({
         ? sourceMatchesSavedSelection
           ? savedMask || ""
           : ""
-        : editorSourceUrl;
+        : mode === "cutout"
+          ? sourceMatchesSavedSelection && savedMask && cutoutPreviewUrl
+            ? cutoutPreviewUrl
+            : editorSourceUrl
+          : editorSourceUrl;
   const runSelectionHistoryCommand = useCallback(
     (action: SelectionHistoryAction) => {
       setHistoryCommand((previous) => ({
@@ -2394,121 +2626,6 @@ export function PaintNodeEditor({
         </div>
       )}
 
-      {mode === "expand" && (
-        <>
-          {expandAspectOptions.length > 0 ? (
-            <div className="flex max-h-[360px] flex-col gap-1 overflow-y-auto">
-              {expandAspectOptions.map((ratio) => (
-                <Tooltip key={ratio} delayDuration={0}>
-                  <TooltipTrigger asChild>
-                    <button
-                      type="button"
-                      className={cn(
-                        "flex h-8 min-w-12 items-center justify-center rounded-md px-2 text-xs transition-colors",
-                        expandAspectValue === ratio
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:bg-muted",
-                      )}
-                      onClick={() =>
-                        setPaintModelParam(selectedAspectField!.name, ratio)
-                      }
-                    >
-                      {ratio}
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">
-                    {t("workflow.paintNode.expandRatio", "Expanded ratio")}
-                  </TooltipContent>
-                </Tooltip>
-              ))}
-            </div>
-          ) : selectedSizeField ? (
-            <div className="w-64 rounded-md border border-border bg-background p-2 shadow-sm">
-              <SizeSelector
-                value={expandSizeValue}
-                min={selectedSizeField.min}
-                max={selectedSizeField.max}
-                onChange={(value) =>
-                  setPaintModelParam(selectedSizeField.name, value)
-                }
-              />
-            </div>
-          ) : selectedWidthField && selectedHeightField ? (
-            <div className="flex w-36 flex-col gap-2 rounded-md border border-border bg-muted/30 p-2">
-              {[
-                {
-                  label: "W",
-                  field: selectedWidthField,
-                  value: expandWidthValue,
-                },
-                {
-                  label: "H",
-                  field: selectedHeightField,
-                  value: expandHeightValue,
-                },
-              ].map(({ label, field, value }) => (
-                <div key={field.name} className="space-y-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] font-medium text-muted-foreground">
-                      {label}
-                    </span>
-                    <Input
-                      type="number"
-                      className="h-7 w-20 px-2 text-xs"
-                      value={value}
-                      min={field.min}
-                      max={field.max}
-                      step={field.step ?? 1}
-                      onChange={(event) => {
-                        const next = Number(event.target.value);
-                        if (Number.isFinite(next)) {
-                          setExpandNumericParam(field, next);
-                        }
-                      }}
-                    />
-                  </div>
-                  {field.min !== undefined && field.max !== undefined && (
-                    <Slider
-                      value={[value]}
-                      min={field.min}
-                      max={field.max}
-                      step={field.step ?? 1}
-                      onValueChange={([next]) =>
-                        setExpandNumericParam(field, next)
-                      }
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-1">
-              {EXPAND_RATIOS.map((ratio) => (
-                <Tooltip key={ratio} delayDuration={0}>
-                  <TooltipTrigger asChild>
-                    <button
-                      type="button"
-                      className={cn(
-                        "flex h-8 min-w-12 items-center justify-center rounded-md px-2 text-xs transition-colors",
-                        expandRatio === ratio
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:bg-muted",
-                      )}
-                      onClick={() => setExpandRatio(ratio)}
-                    >
-                      {ratio}
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">
-                    {t("workflow.paintNode.expandRatio", "Expanded ratio")}
-                  </TooltipContent>
-                </Tooltip>
-              ))}
-            </div>
-          )}
-        </>
-      )}
-
       {supportsSelectionHistory && (
         <div className="flex flex-col gap-1">
           <Tooltip delayDuration={0}>
@@ -2554,7 +2671,10 @@ export function PaintNodeEditor({
         </div>
       )}
 
-      {(mode === "repaint" || mode === "erase" || mode === "region") && (
+      {(mode === "repaint" ||
+        mode === "cutout" ||
+        mode === "erase" ||
+        mode === "region") && (
         <Tooltip delayDuration={0}>
           <TooltipTrigger asChild>
             <Button
@@ -2623,35 +2743,7 @@ export function PaintNodeEditor({
 
   const editorContent = (
     <div className="space-y-2">
-      <div className="relative grid h-[calc(100vh-180px)] min-h-[420px] max-h-[620px] grid-cols-[44px_minmax(0,1fr)] gap-3 overflow-hidden">
-        <div className="flex h-full flex-col items-center gap-1 rounded-lg border border-border bg-background p-1">
-          {modeOptions.map((item) => {
-            const Icon = item.icon;
-            return (
-              <ModeButton
-                key={item.value}
-                label={item.label}
-                active={mode === item.value}
-                onMouseEnter={() => {
-                  if (item.value === mode && hasFloatingToolControls) {
-                    setToolControlsOpen(true);
-                  }
-                }}
-                onClick={() => {
-                  setMode(item.value);
-                  setToolControlsOpen(
-                    item.value === "repaint" ||
-                      item.value === "erase" ||
-                      item.value === "region" ||
-                      item.value === "expand",
-                  );
-                }}
-              >
-                <Icon className="h-4 w-4" />
-              </ModeButton>
-            );
-          })}
-        </div>
+      <div className="relative h-[calc(100vh-180px)] min-h-[420px] max-h-[620px] overflow-hidden">
         {editorStage}
       </div>
 
@@ -2683,17 +2775,237 @@ export function PaintNodeEditor({
       {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
   );
-
-  if (!imageUrl) {
-    return (
-      <div className="px-3 py-2 text-xs text-muted-foreground">
-        {t(
-          "workflow.paintNode.needImage",
-          "Connect an extracted frame or upload an image to edit it.",
+  const canOpenImageEditor = requiresSelection && hasInputImage;
+  const editorActionTitle =
+    mode === "cutout"
+      ? t("workflow.paintNode.selectSubject", "Select subject")
+      : t("workflow.paintNode.selectRegion", "Select region");
+  const latestEditableResult = latestResultUrl.trim();
+  const interactiveEditableResult =
+    mode === "cutout" && sourceMatchesSavedSelection
+      ? cutoutPreviewUrl
+      : mode === "region" && sourceMatchesSavedSelection
+        ? savedMask
+        : "";
+  const editableResultUrl = latestEditableResult || interactiveEditableResult;
+  const isInteractiveEditableResult = Boolean(
+    !latestEditableResult && interactiveEditableResult,
+  );
+  const canContinueFromLatest = Boolean(
+    editableResultUrl && editableResultUrl !== imageUrl,
+  );
+  const continueFromCurrentResult = useCallback(() => {
+    continueFromImage(editableResultUrl);
+  }, [continueFromImage, editableResultUrl]);
+  const currentDirectModel = String(params.model ?? "");
+  const enhanceModelValue = IMAGE_ENHANCER_OPTIONS.some(
+    (option) => option.value === currentDirectModel,
+  )
+    ? currentDirectModel
+    : "slim";
+  const currentEnhanceScale = String(params.scale ?? "");
+  const enhanceScaleValue = IMAGE_ENHANCER_SCALE_OPTIONS.some(
+    (option) => option.value === currentEnhanceScale,
+  )
+    ? currentEnhanceScale
+    : "2x";
+  const cutoutModelValue = BACKGROUND_REMOVER_OPTIONS.some(
+    (option) => option.value === currentDirectModel,
+  )
+    ? currentDirectModel
+    : "isnet_fp16";
+  const modeHint =
+    mode === "repaint"
+      ? t(
+          "workflow.paintNode.repaintModelHint",
+          "Runs the selected model with the marked frame, mask when supported, and prompt.",
+        )
+      : mode === "erase"
+        ? t(
+            "workflow.paintNode.eraseHint",
+            "Runs the existing image eraser with the brushed area.",
+          )
+        : mode === "expand"
+          ? t(
+              "workflow.paintNode.expandHint",
+              "Runs the selected expand model with the current canvas.",
+            )
+          : mode === "region"
+            ? t(
+                "workflow.paintNode.regionOnlyHint",
+                "Outputs only the selected region mask.",
+              )
+            : mode === "cutout"
+              ? t(
+                  "workflow.paintNode.cutoutHint",
+                  "Select a subject or area, then output it with a transparent background.",
+                )
+              : mode === "remove-bg"
+                ? t(
+                    "workflow.paintNode.backgroundRemoveHint",
+                    "Removes the full image background automatically.",
+                  )
+                : mode === "enhance"
+                  ? t(
+                      "workflow.paintNode.enhanceHint",
+                      "Runs the selected enhancement model on the current canvas.",
+                    )
+                  : t(
+                      "workflow.paintNode.faceEnhanceHint",
+                      "Enhances faces detected in the current canvas.",
+                    );
+  const repaintScopeControls =
+    mode === "repaint" ? (
+      <div className="space-y-1 rounded-lg border border-border bg-background p-2">
+        <div className="text-xs font-medium text-foreground">
+          {t("workflow.paintNode.repaintScope", "Edit scope")}
+        </div>
+        <div className="grid grid-cols-2 gap-1">
+          {[
+            {
+              value: "region" as const,
+              label: t("workflow.paintNode.repaintScopeRegion", "Local area"),
+              hint: t(
+                "workflow.paintNode.repaintScopeRegionHint",
+                "Use a selected mask or marked region.",
+              ),
+            },
+            {
+              value: "full" as const,
+              label: t("workflow.paintNode.repaintScopeFull", "Full image"),
+              hint: t(
+                "workflow.paintNode.repaintScopeFullHint",
+                "Edit the current canvas without selecting a region.",
+              ),
+            },
+          ].map((item) => {
+            const active = repaintScope === item.value;
+            return (
+              <button
+                key={item.value}
+                type="button"
+                className={cn(
+                  "min-w-0 rounded-md border px-2 py-1.5 text-left transition-colors",
+                  active
+                    ? "border-primary/50 bg-primary/10 text-foreground"
+                    : "border-border bg-muted/20 text-muted-foreground hover:bg-muted",
+                )}
+                onClick={() => setRepaintScope(item.value)}
+              >
+                <span className="block truncate text-xs font-medium">
+                  {item.label}
+                </span>
+                <span className="block truncate text-[10px]">{item.hint}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    ) : null;
+  const expandControls =
+    mode === "expand" ? (
+      <div className="space-y-2 rounded-lg border border-border bg-background p-2">
+        <div className="text-xs font-medium text-foreground">
+          {t("workflow.paintNode.expandSettings", "Canvas")}
+        </div>
+        {expandAspectOptions.length > 0 && selectedAspectField ? (
+          <div className="grid grid-cols-3 gap-1">
+            {expandAspectOptions.map((ratio) => (
+              <button
+                key={ratio}
+                type="button"
+                className={cn(
+                  "rounded-md border px-2 py-1.5 text-xs transition-colors",
+                  expandAspectValue === ratio
+                    ? "border-primary/50 bg-primary text-primary-foreground"
+                    : "border-border bg-muted/20 text-muted-foreground hover:bg-muted",
+                )}
+                onClick={() =>
+                  setPaintModelParam(selectedAspectField.name, ratio)
+                }
+              >
+                {ratio}
+              </button>
+            ))}
+          </div>
+        ) : selectedSizeField ? (
+          <SizeSelector
+            value={expandSizeValue}
+            min={selectedSizeField.min}
+            max={selectedSizeField.max}
+            onChange={(value) =>
+              setPaintModelParam(selectedSizeField.name, value)
+            }
+          />
+        ) : selectedWidthField && selectedHeightField ? (
+          <div className="space-y-2">
+            {[
+              {
+                label: "W",
+                field: selectedWidthField,
+                value: expandWidthValue,
+              },
+              {
+                label: "H",
+                field: selectedHeightField,
+                value: expandHeightValue,
+              },
+            ].map(({ label, field, value }) => (
+              <div key={field.name} className="space-y-1">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] font-medium text-muted-foreground">
+                    {label}
+                  </span>
+                  <Input
+                    type="number"
+                    className="h-7 w-24 px-2 text-xs"
+                    value={value}
+                    min={field.min}
+                    max={field.max}
+                    step={field.step ?? 1}
+                    onChange={(event) => {
+                      const next = Number(event.target.value);
+                      if (Number.isFinite(next)) {
+                        setExpandNumericParam(field, next);
+                      }
+                    }}
+                  />
+                </div>
+                {field.min !== undefined && field.max !== undefined && (
+                  <Slider
+                    value={[value]}
+                    min={field.min}
+                    max={field.max}
+                    step={field.step ?? 1}
+                    onValueChange={([next]) =>
+                      setExpandNumericParam(field, next)
+                    }
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-1">
+            {EXPAND_RATIOS.map((ratio) => (
+              <button
+                key={ratio}
+                type="button"
+                className={cn(
+                  "rounded-md border px-2 py-1.5 text-xs transition-colors",
+                  expandRatio === ratio
+                    ? "border-primary/50 bg-primary text-primary-foreground"
+                    : "border-border bg-muted/20 text-muted-foreground hover:bg-muted",
+                )}
+                onClick={() => setExpandRatio(ratio)}
+              >
+                {ratio}
+              </button>
+            ))}
+          </div>
         )}
       </div>
-    );
-  }
+    ) : null;
 
   return (
     <div
@@ -2701,30 +3013,73 @@ export function PaintNodeEditor({
       onClick={(event) => event.stopPropagation()}
     >
       <div className="space-y-2 rounded-lg border border-border bg-card p-2">
-        <button
-          type="button"
-          className="flex w-full items-center gap-3 rounded-lg border border-primary/35 bg-primary/5 p-2 text-left shadow-sm shadow-primary/10 transition-colors hover:border-primary/55 hover:bg-primary/10"
-          onClick={() => setEditorOpen(true)}
-        >
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
-            <ActiveModeIcon className="h-5 w-5" />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-sm font-medium">
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-medium text-foreground">
+              {t("workflow.paintNode.function", "Function")}
+            </span>
+            <span className="truncate text-[10px] text-muted-foreground">
               {activeMode?.label ??
                 t("workflow.paintNode.editImage", "Edit image")}
             </span>
-            <span className="block truncate text-xs text-muted-foreground">
-              {selectionReady && savedMask && needsRegion
-                ? t("workflow.paintNode.regionReady", "Region ready")
-                : t(
-                    "workflow.paintNode.openEditorHint",
-                    "Open the editor to choose an area, mask, erase, expand, or enhance.",
+          </div>
+          <div className="grid grid-cols-2 gap-1">
+            {modeOptions.map((item) => {
+              const Icon = item.icon;
+              const active = mode === item.value;
+              return (
+                <button
+                  key={item.value}
+                  type="button"
+                  className={cn(
+                    "flex min-w-0 items-center gap-1.5 rounded-md border px-2 py-1.5 text-left text-xs transition-colors",
+                    active
+                      ? "border-primary/50 bg-primary text-primary-foreground"
+                      : "border-border bg-background text-muted-foreground hover:bg-muted",
                   )}
+                  onClick={() => {
+                    setMode(item.value);
+                    setToolControlsOpen(
+                      item.value === "repaint" ||
+                        item.value === "cutout" ||
+                        item.value === "erase" ||
+                        item.value === "region",
+                    );
+                  }}
+                >
+                  <Icon className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {canOpenImageEditor && (
+          <button
+            type="button"
+            className="flex w-full items-center gap-3 rounded-lg border border-primary/35 bg-primary/5 p-2 text-left shadow-sm shadow-primary/10 transition-colors hover:border-primary/55 hover:bg-primary/10"
+            onClick={() => setEditorOpen(true)}
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
+              <ActiveModeIcon className="h-5 w-5" />
             </span>
-          </span>
-          <ChevronDown className="-rotate-90 h-4 w-4 shrink-0 text-primary" />
-        </button>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-medium">
+                {editorActionTitle}
+              </span>
+              <span className="block truncate text-xs text-muted-foreground">
+                {selectionReady && savedMask && needsRegion
+                  ? t("workflow.paintNode.regionReady", "Region ready")
+                  : t(
+                      "workflow.paintNode.openEditorHint",
+                      "Open the editor to choose the area for this function.",
+                    )}
+              </span>
+            </span>
+            <ChevronDown className="-rotate-90 h-4 w-4 shrink-0 text-primary" />
+          </button>
+        )}
 
         <Dialog open={editorOpen} onOpenChange={setEditorOpen}>
           <DialogContent
@@ -2746,6 +3101,98 @@ export function PaintNodeEditor({
             {editorContent}
           </DialogContent>
         </Dialog>
+
+        {repaintScopeControls}
+
+        {mode === "repaint" && (
+          <div className="space-y-1.5 rounded-lg border border-border bg-background p-2">
+            <label
+              htmlFor={`paint-prompt-${nodeId}`}
+              className="text-xs font-medium text-foreground"
+            >
+              {t("workflow.paintNode.repaintPrompt", "Prompt")}
+            </label>
+            <Textarea
+              id={`paint-prompt-${nodeId}`}
+              value={repaintPromptValue}
+              onChange={(event) => setRepaintPrompt(event.target.value)}
+              placeholder={
+                repaintScope === "region"
+                  ? t(
+                      "workflow.paintNode.repaintPromptRegionPlaceholder",
+                      "Describe what should appear in the selected area.",
+                    )
+                  : t(
+                      "workflow.paintNode.repaintPromptFullPlaceholder",
+                      "Describe how to edit the whole image.",
+                    )
+              }
+              rows={3}
+              className="min-h-[72px] resize-none text-xs nodrag nowheel"
+            />
+          </div>
+        )}
+
+        {mode === "expand" && selectedPromptField && (
+          <div className="space-y-1.5 rounded-lg border border-border bg-background p-2">
+            <label
+              htmlFor={`expand-prompt-${nodeId}`}
+              className="text-xs font-medium text-foreground"
+            >
+              {t("workflow.paintNode.expandPrompt", "Expand prompt")}
+            </label>
+            <Textarea
+              id={`expand-prompt-${nodeId}`}
+              value={expandPromptValue}
+              onChange={(event) => setExpandPrompt(event.target.value)}
+              placeholder={t(
+                "workflow.paintNode.expandPromptPlaceholder",
+                "Describe what should appear in the extended canvas.",
+              )}
+              rows={3}
+              className="min-h-[72px] resize-none text-xs nodrag nowheel"
+            />
+          </div>
+        )}
+
+        {DIRECT_TOOL_MODES.has(mode) && (
+          <div className="space-y-2 rounded-lg border border-border bg-background p-2">
+            {mode === "enhance" && (
+              <>
+                <InlineSelect
+                  label={t("workflow.paintNode.enhanceModel", "Model")}
+                  value={enhanceModelValue}
+                  options={IMAGE_ENHANCER_OPTIONS}
+                  onChange={(value) => setDirectToolParam("model", value)}
+                />
+                <InlineSelect
+                  label={t("workflow.paintNode.enhanceScale", "Scale")}
+                  value={enhanceScaleValue}
+                  options={IMAGE_ENHANCER_SCALE_OPTIONS}
+                  onChange={(value) => setDirectToolParam("scale", value)}
+                />
+              </>
+            )}
+
+            {mode === "remove-bg" && (
+              <InlineSelect
+                label={t("workflow.paintNode.backgroundRemoveModel", "Model")}
+                value={cutoutModelValue}
+                options={BACKGROUND_REMOVER_OPTIONS}
+                onChange={(value) => setDirectToolParam("model", value)}
+              />
+            )}
+
+            {mode === "face-enhance" && (
+              <div className="rounded-md border border-border bg-muted/30 px-2 py-1.5 text-xs text-muted-foreground">
+                {t(
+                  "workflow.paintNode.faceEnhanceNoParams",
+                  "Detects faces automatically; no extra settings are needed.",
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {supportsModelTarget && (
           <div className="space-y-2 rounded-lg border border-border bg-background p-2">
@@ -2770,6 +3217,7 @@ export function PaintNodeEditor({
                 value={selectedPaintModelId || undefined}
                 onChange={setPaintModel}
               />
+              {expandControls}
               {modelSelectorOptions.length === 0 && (
                 <p className="text-[10px] text-muted-foreground">
                   {t(
@@ -2819,30 +3267,7 @@ export function PaintNodeEditor({
 
         <div className="space-y-2">
           <p className="text-center text-xs text-muted-foreground">
-            {mode === "repaint"
-              ? t(
-                  "workflow.paintNode.repaintModelHint",
-                  "Runs the selected model with the marked frame, mask when supported, and prompt.",
-                )
-              : mode === "erase"
-                ? t(
-                    "workflow.paintNode.eraseHint",
-                    "Runs the existing image eraser with the brushed area.",
-                  )
-                : mode === "expand"
-                  ? t(
-                      "workflow.paintNode.expandHint",
-                      "Outputs the source frame with the selected expand ratio.",
-                    )
-                  : mode === "region"
-                    ? t(
-                        "workflow.paintNode.regionOnlyHint",
-                        "Outputs only the selected region mask.",
-                      )
-                    : t(
-                        "workflow.paintNode.directToolHint",
-                        "Runs the matching free tool when the workflow runs.",
-                      )}
+            {modeHint}
           </p>
           <div className="flex justify-center">
             {pendingRequestImage ? (
@@ -2868,11 +3293,78 @@ export function PaintNodeEditor({
                 <span className="pointer-events-none absolute inset-0 rounded-md ring-0 ring-primary/40 transition group-hover:ring-2" />
               </button>
             ) : (
-              <div className="flex h-28 w-28 items-center justify-center rounded-md border border-dashed border-border bg-muted/30 text-muted-foreground">
+              <div className="flex h-28 w-28 flex-col items-center justify-center gap-1 rounded-md border border-dashed border-border bg-muted/30 px-2 text-center text-muted-foreground">
                 <ImageOff className="h-5 w-5" />
+                {!hasInputImage && (
+                  <span className="text-[10px] leading-tight">
+                    {t(
+                      "workflow.paintNode.needImage",
+                      "Connect an extracted frame or upload an image to edit it.",
+                    )}
+                  </span>
+                )}
               </div>
             )}
           </div>
+          {canContinueFromLatest || usingWorkingImage ? (
+            <div className="space-y-1.5 rounded-lg border border-primary/25 bg-primary/5 p-2 text-center">
+              {canContinueFromLatest && (
+                <p className="text-[10px] leading-snug text-muted-foreground">
+                  {isInteractiveEditableResult
+                    ? t(
+                        "workflow.paintNode.interactiveResultAsCanvasHint",
+                        "This editor result has not run yet. Use it as the current canvas before the next edit.",
+                      )
+                    : t(
+                        "workflow.paintNode.resultAsCanvasHint",
+                        "Sets this result as the current canvas for the next selection and run.",
+                      )}
+                </p>
+              )}
+              <div className="flex flex-wrap justify-center gap-1.5">
+                {canContinueFromLatest && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="h-8 gap-1.5 px-2.5 text-[11px]"
+                    onClick={continueFromCurrentResult}
+                  >
+                    <ArrowRight className="h-3.5 w-3.5" />
+                    {t("workflow.paintNode.useResultAsCanvas", "Use as canvas")}
+                  </Button>
+                )}
+                {usingWorkingImage && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 px-2 text-[11px]"
+                    onClick={resetWorkingImage}
+                  >
+                    {t("workflow.paintNode.resetCanvas", "Reset to input")}
+                  </Button>
+                )}
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                {usingWorkingImage
+                  ? t(
+                      "workflow.paintNode.usingWorkingImage",
+                      "Current canvas: edited result",
+                    )
+                  : t(
+                      "workflow.paintNode.usingInputImage",
+                      "Current canvas: upstream input",
+                    )}
+              </p>
+            </div>
+          ) : (
+            <p className="text-center text-[10px] text-muted-foreground">
+              {t(
+                "workflow.paintNode.usingInputImage",
+                "Current canvas: upstream input",
+              )}
+            </p>
+          )}
         </div>
         {savedBbox && needsRegion && (
           <p className="truncate text-[10px] text-muted-foreground/80">

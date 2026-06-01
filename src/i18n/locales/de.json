@@ -1,4 +1,4 @@
-﻿{
+{
   "common": {
     "loading": "Laden...",
     "save": "Speichern",
@@ -1331,8 +1331,8 @@
         "hint": "Bildhintergründe kostenlos automatisch entfernen"
       },
       "free-tool/paint": {
-        "label": "Neu zeichnen",
-        "hint": "Wähle einen Bildbereich aus, um ihn neu zu zeichnen, zu erweitern, zu löschen oder zu verbessern",
+        "label": "Bild bearbeiten",
+        "hint": "Bild neu zeichnen, radieren, erweitern, per AI freistellen oder verbessern",
         "inputs": {
           "input": {
             "label": "Bild"
@@ -1533,9 +1533,9 @@
       "continueEdit": "Weiter",
       "needImage": "Füge ein Bild hinzu, bevor du den Editor öffnest.",
       "regionReady": "Bereich bereit",
-      "openEditorHint": "Öffne den Editor, um einen Bereich, eine Maske oder ein Werkzeug auszuwählen.",
-      "editorTitle": "Bildeditor",
-      "editorDescription": "Wähle einen Bereich oder Zielrahmen für den Repaint-Knoten.",
+      "openEditorHint": "Öffne den Editor, um den Bereich für diese Funktion auszuwählen.",
+      "editorTitle": "Bereichseditor",
+      "editorDescription": "Wähle einen Bereich für den Bildbearbeitungsknoten aus.",
       "modelOutput": "Ausgabe",
       "modelOutputGenerate": "ausgewähltes Modell ausführen",
       "noMatchedModels": "Im lokalen Modellcache ist noch kein passendes Bildbearbeitungsmodell verfügbar.",
@@ -1543,7 +1543,7 @@
       "incompatibleSelectedModel": "Das ausgewählte Modell unterstützt diese Malfunktion nicht. Wähle vor dem Ausführen ein kompatibles Bildbearbeitungsmodell aus.",
       "repaintModelHint": "Führt das ausgewählte Modell mit dem markierten Bild, einer Maske wenn unterstützt, und dem Prompt aus.",
       "eraseHint": "Führt den vorhandenen Bildradierer mit dem gemalten Bereich aus.",
-      "expandHint": "Gibt das Quellbild mit dem ausgewählten Erweiterungsverhältnis aus.",
+      "expandHint": "Führt das ausgewählte Erweiterungsmodell mit der aktuellen Leinwand aus.",
       "regionOnlyHint": "Gibt nur die Maske des ausgewählten Bereichs aus.",
       "directToolHint": "Führt beim Start des Workflows das passende kostenlose Werkzeug aus.",
       "prompts": {
@@ -1553,7 +1553,40 @@
         "repaintSketch": "Folge der roten Skizze als visueller Vorgabe und zeichne den ausgewählten Bereich natürlich neu.",
         "erase": "Entferne das ausgewählte Objekt oder den Bereich und rekonstruiere den Hintergrund natürlich.",
         "expand": "Erweitere das Bild natürlich über den ursprünglichen Rahmen hinaus und erhalte Stil, Licht und Perspektive."
-      }
+      },
+      "function": "Funktion",
+      "selectRegion": "Bereich auswählen",
+      "adjustCanvas": "Leinwand anpassen",
+      "repaintScope": "Bearbeitungsbereich",
+      "repaintScopeRegion": "Lokaler Bereich",
+      "repaintScopeRegionHint": "Eine Maske oder markierte Region verwenden.",
+      "repaintScopeFull": "Ganzes Bild",
+      "repaintScopeFullHint": "Ohne Bereichsauswahl bearbeiten.",
+      "expandSettings": "Leinwand",
+      "repaintPrompt": "Repaint-Prompt",
+      "repaintPromptRegionPlaceholder": "Beschreibe, was im ausgewählten Bereich erscheinen soll.",
+      "repaintPromptFullPlaceholder": "Beschreibe, wie das gesamte Bild bearbeitet werden soll.",
+      "expandPrompt": "Erweiterungs-Prompt",
+      "expandPromptPlaceholder": "Beschreibe, wie der neue Leinwandbereich das Originalbild natürlich fortsetzen soll.",
+      "cutoutHint": "Waehle ein Motiv oder einen Bereich aus und gib es mit transparentem Hintergrund aus.",
+      "enhanceHint": "Führt das ausgewählte Verbesserungsmodell auf der aktuellen Leinwand aus.",
+      "faceEnhanceHint": "Verbessert erkannte Gesichter auf der aktuellen Leinwand.",
+      "enhanceModel": "Modell",
+      "enhanceScale": "Skalierung",
+      "cutoutModel": "Modell",
+      "faceEnhanceNoParams": "Gesichter werden automatisch erkannt; keine weiteren Einstellungen erforderlich.",
+      "useResultAsCanvas": "Als Leinwand nutzen",
+      "resetCanvas": "Auf Eingabe zurücksetzen",
+      "usingWorkingImage": "Aktuelle Leinwand: bearbeitetes Ergebnis",
+      "usingInputImage": "Aktuelle Leinwand: Eingabe",
+      "modeCutout": "KI-Freistellen",
+      "backgroundRemoveHint": "Entfernt automatisch den Hintergrund des gesamten Bildes.",
+      "backgroundRemoveModel": "Modell",
+      "selectSubject": "Motiv auswaehlen",
+      "cutoutSelectionRequired": "Waehle das Motiv im Bild aus",
+      "cutoutSelectionRequiredHint": "Klicken zum Einschliessen; Rechtsklick zum Ausschliessen, dann fortfahren.",
+      "resultAsCanvasHint": "Legt dieses Ergebnis als aktuelle Leinwand fuer die naechste Auswahl und Ausfuehrung fest.",
+      "interactiveResultAsCanvasHint": "Dieses Editor-Ergebnis wurde noch nicht ausgefuehrt. Nutze es vor der naechsten Bearbeitung als aktuelle Leinwand."
     },
     "guide": {
       "skip": "Überspringen",

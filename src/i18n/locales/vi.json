@@ -1,4 +1,4 @@
-﻿{
+{
   "common": {
     "loading": "Đang tải...",
     "save": "Lưu",
@@ -1330,8 +1330,8 @@
         "hint": "Tự động xóa nền hình ảnh miễn phí"
       },
       "free-tool/paint": {
-        "label": "Vẽ lại",
-        "hint": "Chọn một vùng ảnh để vẽ lại, mở rộng, xóa hoặc tăng cường",
+        "label": "Chỉnh sửa ảnh",
+        "hint": "Vẽ lại, xóa, mở rộng, cắt nền bằng AI hoặc nâng cấp ảnh",
         "inputs": {
           "input": {
             "label": "Hình ảnh"
@@ -1490,7 +1490,7 @@
       "modeRegion": "Mặt nạ",
       "modeErase": "Xóa",
       "modeExpand": "Mở rộng",
-      "modeRemoveBg": "Xóa nền",
+      "modeRemoveBg": "Xoa nen",
       "modeEnhance": "Tăng cường",
       "modeFace": "Tăng cường khuôn mặt",
       "editImage": "Chỉnh sửa ảnh",
@@ -1532,9 +1532,9 @@
       "continueEdit": "Tiếp tục",
       "needImage": "Thêm ảnh trước khi mở trình chỉnh sửa.",
       "regionReady": "Vùng đã sẵn sàng",
-      "openEditorHint": "Mở trình chỉnh sửa để chọn vùng, mặt nạ hoặc công cụ.",
-      "editorTitle": "Trình chỉnh sửa khung hình",
-      "editorDescription": "Chọn vùng hoặc khung đích cho nút vẽ lại.",
+      "openEditorHint": "Mở trình chỉnh sửa để chọn vùng cho chức năng này.",
+      "editorTitle": "Trình chỉnh sửa vùng",
+      "editorDescription": "Chọn một vùng cho node chỉnh sửa ảnh.",
       "modelOutput": "Đầu ra",
       "modelOutputGenerate": "chạy mô hình đã chọn",
       "noMatchedModels": "Chưa có mô hình chỉnh sửa ảnh phù hợp trong bộ nhớ đệm mô hình cục bộ.",
@@ -1542,7 +1542,7 @@
       "incompatibleSelectedModel": "Mô hình đã chọn không hỗ trợ chức năng tô này. Hãy chọn mô hình chỉnh sửa ảnh tương thích trước khi chạy.",
       "repaintModelHint": "Chạy mô hình đã chọn với khung hình đã đánh dấu, mặt nạ khi được hỗ trợ và prompt.",
       "eraseHint": "Chạy công cụ xóa ảnh hiện có với vùng đã tô.",
-      "expandHint": "Xuất khung hình nguồn với tỷ lệ mở rộng đã chọn.",
+      "expandHint": "Chạy mô hình mở rộng đã chọn với canvas hiện tại.",
       "regionOnlyHint": "Chỉ xuất mặt nạ của vùng đã chọn.",
       "directToolHint": "Chạy công cụ miễn phí phù hợp khi workflow chạy.",
       "prompts": {
@@ -1552,7 +1552,40 @@
         "repaintSketch": "Theo phác thảo màu đỏ làm hướng dẫn trực quan và vẽ lại vùng đã chọn một cách tự nhiên.",
         "erase": "Xóa đối tượng hoặc vùng đã chọn và tái tạo nền một cách tự nhiên.",
         "expand": "Mở rộng ảnh tự nhiên ra ngoài khung ban đầu, giữ phong cách, ánh sáng và phối cảnh."
-      }
+      },
+      "function": "Chức năng",
+      "selectRegion": "Chọn vùng",
+      "adjustCanvas": "Điều chỉnh canvas",
+      "repaintScope": "Phạm vi chỉnh sửa",
+      "repaintScopeRegion": "Vùng cục bộ",
+      "repaintScopeRegionHint": "Dùng mask đã chọn hoặc vùng được đánh dấu.",
+      "repaintScopeFull": "Toàn ảnh",
+      "repaintScopeFullHint": "Chỉnh sửa mà không chọn vùng.",
+      "expandSettings": "Canvas",
+      "repaintPrompt": "Prompt vẽ lại",
+      "repaintPromptRegionPlaceholder": "Mô tả nội dung nên xuất hiện trong vùng đã chọn.",
+      "repaintPromptFullPlaceholder": "Mô tả cách chỉnh sửa toàn bộ ảnh.",
+      "expandPrompt": "Prompt mở rộng",
+      "expandPromptPlaceholder": "Mô tả cách vùng canvas mới tiếp nối tự nhiên ảnh gốc.",
+      "cutoutHint": "Chon chu the hoac vung, roi xuat ket qua voi nen trong suot.",
+      "enhanceHint": "Chạy mô hình nâng cấp đã chọn trên canvas hiện tại.",
+      "faceEnhanceHint": "Nâng cấp các khuôn mặt được phát hiện trong canvas hiện tại.",
+      "enhanceModel": "Mô hình",
+      "enhanceScale": "Tỉ lệ",
+      "cutoutModel": "Mô hình",
+      "faceEnhanceNoParams": "Khuôn mặt được phát hiện tự động; không cần cài đặt thêm.",
+      "useResultAsCanvas": "Dung lam canvas",
+      "resetCanvas": "Đặt lại về đầu vào",
+      "usingWorkingImage": "Canvas hien tai: ket qua da sua",
+      "usingInputImage": "Canvas hien tai: dau vao truoc",
+      "modeCutout": "Tach nen AI",
+      "backgroundRemoveHint": "Tu dong xoa nen cua toan bo hinh anh.",
+      "backgroundRemoveModel": "Mo hinh",
+      "selectSubject": "Chon chu the",
+      "cutoutSelectionRequired": "Chon chu the tren hinh anh",
+      "cutoutSelectionRequiredHint": "Bam de them chu the; nhap chuot phai de loai tru vung, roi tiep tuc.",
+      "resultAsCanvasHint": "Dat ket qua nay lam canvas hien tai cho lan chon va chay tiep theo.",
+      "interactiveResultAsCanvasHint": "Ket qua trong trinh sua nay chua duoc chay. Hay dung no lam canvas hien tai truoc lan sua tiep theo."
     },
     "promptOptimizer": {
       "optimizationFailed": "Tối ưu thất bại",

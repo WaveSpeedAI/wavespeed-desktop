@@ -1,4 +1,4 @@
-﻿{
+{
   "common": {
     "loading": "Yükleniyor...",
     "save": "Kaydet",
@@ -1330,8 +1330,8 @@
         "hint": "Görsel arka planlarını ücretsiz otomatik olarak kaldırın"
       },
       "free-tool/paint": {
-        "label": "Yeniden çiz",
-        "hint": "Yeniden çizmek, genişletmek, silmek veya iyileştirmek için görselde bir alan seçin",
+        "label": "Görüntü düzenleme",
+        "hint": "Bir görüntüyü yeniden boya, sil, genişlet, AI ile kes veya iyileştir",
         "inputs": {
           "input": {
             "label": "Görsel"
@@ -1532,9 +1532,9 @@
       "continueEdit": "Devam et",
       "needImage": "Düzenleyiciyi açmadan önce bir görsel ekleyin.",
       "regionReady": "Bölge hazır",
-      "openEditorHint": "Bir alan, maske veya araç seçmek için düzenleyiciyi açın.",
-      "editorTitle": "Kare düzenleyici",
-      "editorDescription": "Yeniden çizim düğümü için bir alan veya hedef kare seçin.",
+      "openEditorHint": "Bu işlevin alanını seçmek için düzenleyiciyi açın.",
+      "editorTitle": "Bölge düzenleyici",
+      "editorDescription": "Görüntü düzenleme düğümü için bir alan seçin.",
       "modelOutput": "Çıktı",
       "modelOutputGenerate": "seçili modeli çalıştır",
       "noMatchedModels": "Yerel model önbelleğinde henüz eşleşen bir görsel düzenleme modeli yok.",
@@ -1542,7 +1542,7 @@
       "incompatibleSelectedModel": "Seçili model bu boyama işlevini desteklemiyor. Çalıştırmadan önce uyumlu bir görsel düzenleme modeli seçin.",
       "repaintModelHint": "Seçili modeli işaretli kare, desteklenirse maske ve istem ile çalıştırır.",
       "eraseHint": "Mevcut görsel silgiyi fırçalanmış alanla çalıştırır.",
-      "expandHint": "Kaynak kareyi seçili genişletme oranıyla çıktı verir.",
+      "expandHint": "Seçili genişletme modelini mevcut tuval ile çalıştırır.",
       "regionOnlyHint": "Yalnızca seçili bölgenin maskesini çıktı verir.",
       "directToolHint": "İş akışı çalıştığında eşleşen ücretsiz aracı çalıştırır.",
       "prompts": {
@@ -1552,7 +1552,40 @@
         "repaintSketch": "Kırmızı eskizi görsel rehber olarak izle ve seçili alanı doğal şekilde yeniden çiz.",
         "erase": "Seçili nesneyi veya alanı kaldır ve arka planı doğal şekilde yeniden oluştur.",
         "expand": "Görseli özgün çerçevenin ötesine doğal şekilde genişlet; stil, ışık ve perspektifi koru."
-      }
+      },
+      "function": "İşlev",
+      "selectRegion": "Bölge seç",
+      "adjustCanvas": "Tuvali ayarla",
+      "repaintScope": "Düzenleme kapsamı",
+      "repaintScopeRegion": "Yerel alan",
+      "repaintScopeRegionHint": "Seçili maskeyi veya işaretli bölgeyi kullan.",
+      "repaintScopeFull": "Tüm görüntü",
+      "repaintScopeFullHint": "Bölge seçmeden düzenle.",
+      "expandSettings": "Tuval",
+      "repaintPrompt": "Yeniden boyama promptu",
+      "repaintPromptRegionPlaceholder": "Seçili alanda ne görünmesi gerektiğini açıklayın.",
+      "repaintPromptFullPlaceholder": "Tüm görüntünün nasıl düzenleneceğini açıklayın.",
+      "expandPrompt": "Genişletme promptu",
+      "expandPromptPlaceholder": "Yeni tuval alanının özgün görüntüyü doğal şekilde nasıl sürdürmesi gerektiğini açıklayın.",
+      "cutoutHint": "Bir nesne veya alan secin, ardindan seffaf arka planli cikti alin.",
+      "enhanceHint": "Seçili iyileştirme modelini mevcut tuvalde çalıştırır.",
+      "faceEnhanceHint": "Mevcut tuvalde algılanan yüzleri iyileştirir.",
+      "enhanceModel": "Model",
+      "enhanceScale": "Ölçek",
+      "cutoutModel": "Model",
+      "faceEnhanceNoParams": "Yüzler otomatik algılanır; ek ayar gerekmez.",
+      "useResultAsCanvas": "Tuval olarak kullan",
+      "resetCanvas": "Girdiye sıfırla",
+      "usingWorkingImage": "Gecerli tuval: duzenlenen sonuc",
+      "usingInputImage": "Gecerli tuval: ust girdi",
+      "modeCutout": "AI kesme",
+      "backgroundRemoveHint": "Tum gorselin arka planini otomatik kaldirir.",
+      "backgroundRemoveModel": "Model",
+      "selectSubject": "Nesne sec",
+      "cutoutSelectionRequired": "Gorseldeki nesneyi secin",
+      "cutoutSelectionRequiredHint": "Nesneyi dahil etmek icin tiklayin; alanlari haric tutmak icin sag tiklayin, sonra devam edin.",
+      "resultAsCanvasHint": "Bu sonucu sonraki secim ve calistirma icin gecerli tuval yapar.",
+      "interactiveResultAsCanvasHint": "Bu editor sonucu henuz calistirilmadi. Sonraki duzenlemeden once gecerli tuval olarak kullanin."
     },
     "promptOptimizer": {
       "optimizationFailed": "Optimizasyon başarısız",

@@ -1,4 +1,4 @@
-﻿{
+{
   "common": {
     "loading": "Caricamento...",
     "save": "Salva",
@@ -1330,8 +1330,8 @@
         "hint": "Rimuovi automaticamente lo sfondo delle immagini gratis"
       },
       "free-tool/paint": {
-        "label": "Ridisegna",
-        "hint": "Scegli un'area dell'immagine da ridisegnare, espandere, cancellare o migliorare",
+        "label": "Modifica immagine",
+        "hint": "Ridisegna, cancella, espandi, ritaglia con AI o migliora un’immagine",
         "inputs": {
           "input": {
             "label": "Immagine"
@@ -1532,9 +1532,9 @@
       "continueEdit": "Continua",
       "needImage": "Aggiungi un'immagine prima di aprire l'editor.",
       "regionReady": "Regione pronta",
-      "openEditorHint": "Apri l'editor per scegliere un'area, una maschera o uno strumento.",
-      "editorTitle": "Editor fotogramma",
-      "editorDescription": "Scegli un'area o un fotogramma di destinazione per il nodo di ridisegno.",
+      "openEditorHint": "Apri l’editor per scegliere l’area di questa funzione.",
+      "editorTitle": "Editor area",
+      "editorDescription": "Scegli un’area per il nodo di modifica immagine.",
       "modelOutput": "Output",
       "modelOutputGenerate": "esegui modello selezionato",
       "noMatchedModels": "Nella cache locale non è ancora disponibile un modello di modifica immagini compatibile.",
@@ -1542,7 +1542,7 @@
       "incompatibleSelectedModel": "Il modello selezionato non supporta questa funzione di pittura. Scegli un modello di modifica immagini compatibile prima dell'esecuzione.",
       "repaintModelHint": "Esegue il modello selezionato con il fotogramma marcato, la maschera se supportata e il prompt.",
       "eraseHint": "Esegue la gomma immagine esistente con l'area dipinta.",
-      "expandHint": "Restituisce il fotogramma sorgente con il rapporto di espansione selezionato.",
+      "expandHint": "Esegue il modello di espansione selezionato con il canvas attuale.",
       "regionOnlyHint": "Restituisce solo la maschera della regione selezionata.",
       "directToolHint": "Esegue lo strumento gratuito corrispondente quando parte il workflow.",
       "prompts": {
@@ -1552,7 +1552,40 @@
         "repaintSketch": "Segui lo schizzo rosso come guida visiva e ridisegna naturalmente l'area selezionata.",
         "erase": "Rimuovi l'oggetto o l'area selezionata e ricostruisci naturalmente lo sfondo.",
         "expand": "Espandi naturalmente l'immagine oltre il fotogramma originale, preservando stile, luce e prospettiva."
-      }
+      },
+      "function": "Funzione",
+      "selectRegion": "Seleziona area",
+      "adjustCanvas": "Regola canvas",
+      "repaintScope": "Ambito modifica",
+      "repaintScopeRegion": "Area locale",
+      "repaintScopeRegionHint": "Usa una maschera selezionata o un’area marcata.",
+      "repaintScopeFull": "Immagine intera",
+      "repaintScopeFullHint": "Modifica senza selezionare un’area.",
+      "expandSettings": "Canvas",
+      "repaintPrompt": "Prompt di ridisegno",
+      "repaintPromptRegionPlaceholder": "Descrivi cosa deve apparire nell’area selezionata.",
+      "repaintPromptFullPlaceholder": "Descrivi come modificare l’intera immagine.",
+      "expandPrompt": "Prompt di espansione",
+      "expandPromptPlaceholder": "Descrivi come la nuova area del canvas deve proseguire naturalmente l’immagine originale.",
+      "cutoutHint": "Seleziona un soggetto o un area, poi esportalo con sfondo trasparente.",
+      "enhanceHint": "Esegue il modello di miglioramento selezionato sul canvas attuale.",
+      "faceEnhanceHint": "Migliora i volti rilevati nel canvas attuale.",
+      "enhanceModel": "Modello",
+      "enhanceScale": "Scala",
+      "cutoutModel": "Modello",
+      "faceEnhanceNoParams": "I volti vengono rilevati automaticamente; non servono impostazioni aggiuntive.",
+      "useResultAsCanvas": "Usa come tela",
+      "resetCanvas": "Ripristina input",
+      "usingWorkingImage": "Tela attuale: risultato modificato",
+      "usingInputImage": "Tela attuale: input a monte",
+      "modeCutout": "Ritaglio AI",
+      "backgroundRemoveHint": "Rimuove automaticamente lo sfondo dell intera immagine.",
+      "backgroundRemoveModel": "Modello",
+      "selectSubject": "Seleziona soggetto",
+      "cutoutSelectionRequired": "Seleziona il soggetto nell immagine",
+      "cutoutSelectionRequiredHint": "Fai clic per includere il soggetto; clic destro per escludere aree, poi continua.",
+      "resultAsCanvasHint": "Imposta questo risultato come tela attuale per la prossima selezione ed esecuzione.",
+      "interactiveResultAsCanvasHint": "Questo risultato dell editor non e ancora stato eseguito. Usalo come tela attuale prima della prossima modifica."
     },
     "promptOptimizer": {
       "optimizationFailed": "Ottimizzazione fallita",

@@ -1,4 +1,4 @@
-﻿{
+{
   "common": {
     "loading": "Chargement...",
     "save": "Enregistrer",
@@ -1331,8 +1331,8 @@
         "hint": "Supprimer automatiquement l'arrière-plan des images gratuitement"
       },
       "free-tool/paint": {
-        "label": "Repeindre",
-        "hint": "Choisir une zone de l'image pour la repeindre, l'étendre, l'effacer ou l'améliorer",
+        "label": "Édition d’image",
+        "hint": "Repeindre, effacer, étendre, détourer avec l’IA ou améliorer une image",
         "inputs": {
           "input": {
             "label": "Image"
@@ -1491,7 +1491,7 @@
       "modeRegion": "Masque",
       "modeErase": "Effacer",
       "modeExpand": "Étendre",
-      "modeRemoveBg": "Supprimer l'arrière-plan",
+      "modeRemoveBg": "Supprimer le fond",
       "modeEnhance": "Améliorer",
       "modeFace": "Améliorer le visage",
       "editImage": "Modifier l'image",
@@ -1533,9 +1533,9 @@
       "continueEdit": "Continuer",
       "needImage": "Ajoutez une image avant d'ouvrir l'éditeur.",
       "regionReady": "Zone prête",
-      "openEditorHint": "Ouvrez l'éditeur pour choisir une zone, un masque ou un outil.",
-      "editorTitle": "Éditeur d'image",
-      "editorDescription": "Choisissez une zone ou une image cible pour le nœud de retouche.",
+      "openEditorHint": "Ouvrez l’éditeur pour choisir la zone de cette fonction.",
+      "editorTitle": "Éditeur de zone",
+      "editorDescription": "Choisissez une zone pour le nœud d’édition d’image.",
       "modelOutput": "Sortie",
       "modelOutputGenerate": "exécuter le modèle sélectionné",
       "noMatchedModels": "Aucun modèle d'édition d'image compatible n'est encore disponible dans le cache local.",
@@ -1543,7 +1543,7 @@
       "incompatibleSelectedModel": "Le modèle sélectionné ne prend pas en charge cette fonction de peinture. Choisissez un modèle d'édition d'image compatible avant l'exécution.",
       "repaintModelHint": "Exécute le modèle sélectionné avec l'image marquée, le masque si pris en charge, et l'invite.",
       "eraseHint": "Exécute l'effaceur d'image existant avec la zone peinte.",
-      "expandHint": "Produit l'image source avec le ratio d'extension sélectionné.",
+      "expandHint": "Exécute le modèle d’extension sélectionné avec la toile actuelle.",
       "regionOnlyHint": "Produit uniquement le masque de la zone sélectionnée.",
       "directToolHint": "Exécute l'outil gratuit correspondant lorsque le workflow est lancé.",
       "prompts": {
@@ -1553,7 +1553,40 @@
         "repaintSketch": "Suivre le croquis rouge comme guide visuel et repeindre naturellement la zone sélectionnée.",
         "erase": "Supprimer l'objet ou la zone sélectionnée et reconstruire naturellement l'arrière-plan.",
         "expand": "Étendre naturellement l'image au-delà du cadre d'origine en conservant le style, l'éclairage et la perspective."
-      }
+      },
+      "function": "Fonction",
+      "selectRegion": "Sélectionner une zone",
+      "adjustCanvas": "Ajuster la toile",
+      "repaintScope": "Portée de l’édition",
+      "repaintScopeRegion": "Zone locale",
+      "repaintScopeRegionHint": "Utiliser un masque sélectionné ou une zone marquée.",
+      "repaintScopeFull": "Image entière",
+      "repaintScopeFullHint": "Modifier sans sélectionner de zone.",
+      "expandSettings": "Toile",
+      "repaintPrompt": "Prompt de repeinture",
+      "repaintPromptRegionPlaceholder": "Décrivez ce qui doit apparaître dans la zone sélectionnée.",
+      "repaintPromptFullPlaceholder": "Décrivez comment modifier toute l’image.",
+      "expandPrompt": "Prompt d’extension",
+      "expandPromptPlaceholder": "Décrivez comment la nouvelle zone de toile doit prolonger naturellement l’image originale.",
+      "cutoutHint": "Selectionnez un sujet ou une zone, puis exportez-le avec un fond transparent.",
+      "enhanceHint": "Exécute le modèle d’amélioration sélectionné sur la toile actuelle.",
+      "faceEnhanceHint": "Améliore les visages détectés dans la toile actuelle.",
+      "enhanceModel": "Modèle",
+      "enhanceScale": "Échelle",
+      "cutoutModel": "Modèle",
+      "faceEnhanceNoParams": "Les visages sont détectés automatiquement ; aucun réglage supplémentaire n’est nécessaire.",
+      "useResultAsCanvas": "Utiliser comme canevas",
+      "resetCanvas": "Réinitialiser à l’entrée",
+      "usingWorkingImage": "Canevas actuel : resultat modifie",
+      "usingInputImage": "Canevas actuel : entree amont",
+      "modeCutout": "Detourage IA",
+      "backgroundRemoveHint": "Supprime automatiquement l arriere-plan de toute l image.",
+      "backgroundRemoveModel": "Modele",
+      "selectSubject": "Selectionner le sujet",
+      "cutoutSelectionRequired": "Selectionnez le sujet dans l image",
+      "cutoutSelectionRequiredHint": "Cliquez pour inclure le sujet; clic droit pour exclure des zones, puis continuez.",
+      "resultAsCanvasHint": "Definit ce resultat comme canevas actuel pour la prochaine selection et execution.",
+      "interactiveResultAsCanvasHint": "Ce resultat de l editeur n a pas encore ete execute. Utilisez-le comme canevas actuel avant la prochaine modification."
     },
     "guide": {
       "skip": "Passer",

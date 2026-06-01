@@ -1,4 +1,4 @@
-﻿{
+{
   "common": {
     "loading": "로딩 중...",
     "save": "저장",
@@ -1331,8 +1331,8 @@
         "hint": "이미지 배경을 무료로 자동 제거"
       },
       "free-tool/paint": {
-        "label": "다시 그리기",
-        "hint": "이미지 영역을 선택해 다시 그리기, 확장, 지우기 또는 향상을 수행합니다",
+        "label": "이미지 편집",
+        "hint": "이미지를 다시 그리기, 지우기, 확장, AI 컷아웃 또는 향상합니다",
         "inputs": {
           "input": {
             "label": "이미지"
@@ -1533,9 +1533,9 @@
       "continueEdit": "계속",
       "needImage": "편집기를 열기 전에 이미지를 추가하세요.",
       "regionReady": "영역 준비됨",
-      "openEditorHint": "편집기를 열어 영역, 마스크 또는 도구를 선택하세요.",
-      "editorTitle": "프레임 편집기",
-      "editorDescription": "다시 그리기 노드의 영역 또는 대상 프레임을 선택합니다.",
+      "openEditorHint": "이 기능에서 처리할 영역을 선택하려면 편집기를 여세요.",
+      "editorTitle": "영역 편집기",
+      "editorDescription": "이미지 편집 노드에서 처리할 영역을 선택합니다.",
       "modelOutput": "출력",
       "modelOutputGenerate": "선택한 모델 실행",
       "noMatchedModels": "로컬 모델 캐시에 일치하는 이미지 편집 모델이 아직 없습니다.",
@@ -1543,7 +1543,7 @@
       "incompatibleSelectedModel": "선택한 모델은 이 페인트 기능을 지원하지 않습니다. 실행 전에 호환되는 이미지 편집 모델을 선택하세요.",
       "repaintModelHint": "표시된 프레임, 지원되는 경우 마스크, 프롬프트로 선택한 모델을 실행합니다.",
       "eraseHint": "브러시로 칠한 영역으로 기존 이미지 지우개를 실행합니다.",
-      "expandHint": "선택한 확장 비율로 원본 프레임을 출력합니다.",
+      "expandHint": "현재 캔버스로 선택한 확장 모델을 실행합니다.",
       "regionOnlyHint": "선택한 영역의 마스크만 출력합니다.",
       "directToolHint": "워크플로가 실행될 때 일치하는 무료 도구를 실행합니다.",
       "prompts": {
@@ -1553,7 +1553,40 @@
         "repaintSketch": "빨간 스케치를 시각 가이드로 따라 선택한 영역을 자연스럽게 다시 그리세요.",
         "erase": "선택한 객체 또는 영역을 제거하고 배경을 자연스럽게 재구성하세요.",
         "expand": "원래 프레임 너머로 이미지를 자연스럽게 확장하고 스타일, 조명, 원근감을 유지하세요."
-      }
+      },
+      "function": "기능",
+      "selectRegion": "영역 선택",
+      "adjustCanvas": "캔버스 조정",
+      "repaintScope": "편집 범위",
+      "repaintScopeRegion": "국소 영역",
+      "repaintScopeRegionHint": "선택한 마스크 또는 표시된 영역을 사용합니다.",
+      "repaintScopeFull": "전체 이미지",
+      "repaintScopeFullHint": "영역을 선택하지 않고 편집합니다.",
+      "expandSettings": "캔버스",
+      "repaintPrompt": "리페인트 프롬프트",
+      "repaintPromptRegionPlaceholder": "선택한 영역에 무엇이 나타나야 하는지 설명하세요.",
+      "repaintPromptFullPlaceholder": "전체 이미지를 어떻게 편집할지 설명하세요.",
+      "expandPrompt": "확장 프롬프트",
+      "expandPromptPlaceholder": "새 캔버스 영역이 원본 이미지를 자연스럽게 이어가도록 설명하세요.",
+      "cutoutHint": "피사체 또는 영역을 선택한 뒤 투명 배경 결과로 출력합니다.",
+      "enhanceHint": "현재 캔버스에서 선택한 향상 모델을 실행합니다.",
+      "faceEnhanceHint": "현재 캔버스에서 감지된 얼굴을 향상합니다.",
+      "enhanceModel": "모델",
+      "enhanceScale": "배율",
+      "cutoutModel": "모델",
+      "faceEnhanceNoParams": "얼굴은 자동으로 감지되며 추가 설정이 필요 없습니다.",
+      "useResultAsCanvas": "캔버스로 사용",
+      "resetCanvas": "입력으로 재설정",
+      "usingWorkingImage": "현재 캔버스: 편집 결과",
+      "usingInputImage": "현재 캔버스: 상위 입력",
+      "modeCutout": "AI 누끼",
+      "backgroundRemoveHint": "전체 이미지의 배경을 자동으로 제거합니다.",
+      "backgroundRemoveModel": "모델",
+      "selectSubject": "피사체 선택",
+      "cutoutSelectionRequired": "이미지에서 피사체를 선택하세요",
+      "cutoutSelectionRequiredHint": "클릭해 피사체를 포함하고, 오른쪽 클릭으로 제외할 영역을 지정한 뒤 계속하세요.",
+      "resultAsCanvasHint": "이 결과를 다음 선택과 실행에 사용할 현재 캔버스로 설정합니다.",
+      "interactiveResultAsCanvasHint": "이 편집기 결과는 아직 실행되지 않았습니다. 다음 편집 전에 현재 캔버스로 사용하세요."
     },
     "guide": {
       "skip": "건너뛰기",

@@ -730,6 +730,71 @@ async function loadMaskAsFloat32(
   return float32;
 }
 
+async function loadMaskAsAlpha(
+  url: string,
+  width: number,
+  height: number,
+): Promise<Uint8ClampedArray> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Failed to fetch mask: ${res.status}`);
+  const blob = await res.blob();
+  const bitmap = await createImageBitmap(blob);
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) {
+    bitmap.close();
+    throw new Error("Failed to read mask");
+  }
+  ctx.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close();
+
+  const { data } = ctx.getImageData(0, 0, width, height);
+  const alpha = new Uint8ClampedArray(width * height);
+  for (let i = 0; i < width * height; i += 1) {
+    const offset = i * 4;
+    const coverage = Math.max(data[offset], data[offset + 1], data[offset + 2]);
+    alpha[i] = Math.round((coverage * data[offset + 3]) / 255);
+  }
+  return alpha;
+}
+
+/**
+ * Apply a saved mask to an image and return a transparent PNG foreground.
+ */
+export async function runImageCutout(
+  imageUrl: string,
+  maskUrl: string,
+  onProgress?: (progress: number, message?: string) => void,
+): Promise<string> {
+  onProgress?.(5, "Loading image and mask...");
+  const imageData = await loadImageAsImageData(imageUrl);
+  const { width, height, data } = imageData;
+  const maskAlpha = await loadMaskAsAlpha(maskUrl, width, height);
+  const output = new ImageData(width, height);
+  let visiblePixels = 0;
+
+  for (let i = 0; i < width * height; i += 1) {
+    const offset = i * 4;
+    const alpha = maskAlpha[i];
+    if (alpha > 8) visiblePixels += 1;
+    output.data[offset] = data[offset];
+    output.data[offset + 1] = data[offset + 1];
+    output.data[offset + 2] = data[offset + 2];
+    output.data[offset + 3] = alpha;
+  }
+
+  if (visiblePixels / (width * height) < MIN_FOREGROUND_ALPHA_RATIO) {
+    throw new Error("Selection produced an empty cutout.");
+  }
+
+  onProgress?.(90, "Compositing cutout...");
+  const dataUrl = imageDataToDataURL(output, width, height);
+  onProgress?.(100, "Done");
+  return dataURLToBase64(dataUrl);
+}
+
 /** Convert image to Float32Array CHW 0-1 for LaMa */
 async function loadImageAsFloat32CHW(
   url: string,

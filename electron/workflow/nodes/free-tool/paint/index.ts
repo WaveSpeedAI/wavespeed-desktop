@@ -17,6 +17,7 @@ import {
 import {
   buildPaintModelApiParams,
   getPaintModelMatchScore,
+  normalizeRepaintScope,
   readPaintModelSchema,
   type PaintTarget,
   type PaintTask,
@@ -25,10 +26,18 @@ import { normalizePayloadArrays } from "../../../../../src/lib/schemaToForm";
 import { existsSync, readFileSync } from "fs";
 import { basename } from "path";
 
+const IMAGE_ENHANCER_MODELS = new Set(["slim", "medium", "thick"]);
+const IMAGE_ENHANCER_SCALES = new Set(["2x", "3x", "4x"]);
+const BACKGROUND_REMOVER_MODELS = new Set([
+  "isnet_quint8",
+  "isnet_fp16",
+  "isnet",
+]);
+
 export const paintDef: NodeTypeDefinition = {
   type: "free-tool/paint",
   category: "free-tool",
-  label: "Repaint",
+  label: "Image Edit",
   inputs: [
     {
       key: "input",
@@ -58,7 +67,9 @@ export class PaintHandler extends BaseNodeHandler {
   async execute(ctx: NodeExecutionContext): Promise<NodeExecutionResult> {
     const start = Date.now();
     const input = String(ctx.inputs.input ?? ctx.params.input ?? "");
-    const source = input || String(ctx.params.__sourceImage ?? "");
+    const workingImage = String(ctx.params.__workingImage ?? "");
+    const source =
+      workingImage || input || String(ctx.params.__sourceImage ?? "");
     const savedSource = String(ctx.params.__sourceImage ?? "");
     const savedSelectionMatchesSource = Boolean(
       savedSource && source && savedSource === source,
@@ -72,8 +83,12 @@ export class PaintHandler extends BaseNodeHandler {
     const bbox = savedSelectionMatchesSource
       ? String(ctx.params.__maskBbox ?? "")
       : "";
-    const prompt = String(ctx.params.__editPrompt ?? "");
     const task = String(ctx.params.__paintTask ?? "repaint") as PaintTask;
+    const prompt =
+      task === "expand"
+        ? String(ctx.params.__expandPrompt ?? ctx.params.__editPrompt ?? "")
+        : String(ctx.params.__editPrompt ?? "");
+    const repaintScope = normalizeRepaintScope(ctx.params.__repaintScope);
     const paintTarget = "image" as PaintTarget;
     const paintModelId = String(ctx.params.__paintModelId ?? "");
     const selectionMode = String(
@@ -81,10 +96,13 @@ export class PaintHandler extends BaseNodeHandler {
     );
     const expandRatio = String(ctx.params.__expandRatio ?? "16:9");
     const requiresRegion =
-      task === "repaint" || task === "erase" || task === "region";
+      task === "erase" ||
+      task === "cutout" ||
+      task === "region" ||
+      (task === "repaint" && repaintScope === "region");
     const supportsModelTarget = task === "repaint" || task === "expand";
 
-    if (!input) {
+    if (!source) {
       return {
         status: "error",
         outputs: {},
@@ -95,12 +113,15 @@ export class PaintHandler extends BaseNodeHandler {
     }
 
     if (task === "remove-bg") {
+      const model = String(ctx.params.model ?? "");
       const result = await executeFreeToolInRenderer({
         nodeType: "free-tool/background-remover",
         workflowId: ctx.workflowId,
         nodeId: ctx.nodeId,
-        inputs: { input },
-        params: { model: ctx.params.model ?? "isnet_fp16" },
+        inputs: { input: source },
+        params: {
+          model: BACKGROUND_REMOVER_MODELS.has(model) ? model : "isnet_fp16",
+        },
       });
       const output = String(
         result.resultPath ??
@@ -123,14 +144,16 @@ export class PaintHandler extends BaseNodeHandler {
     }
 
     if (task === "enhance") {
+      const model = String(ctx.params.model ?? "");
+      const scale = String(ctx.params.scale ?? "");
       return executeFreeToolInRenderer({
         nodeType: "free-tool/image-enhancer",
         workflowId: ctx.workflowId,
         nodeId: ctx.nodeId,
-        inputs: { input },
+        inputs: { input: source },
         params: {
-          model: ctx.params.model ?? "slim",
-          scale: ctx.params.scale ?? "2x",
+          model: IMAGE_ENHANCER_MODELS.has(model) ? model : "slim",
+          scale: IMAGE_ENHANCER_SCALES.has(scale) ? scale : "2x",
         },
       });
     }
@@ -140,7 +163,7 @@ export class PaintHandler extends BaseNodeHandler {
         nodeType: "free-tool/face-enhancer",
         workflowId: ctx.workflowId,
         nodeId: ctx.nodeId,
-        inputs: { input },
+        inputs: { input: source },
         params: {},
       });
     }
@@ -152,6 +175,37 @@ export class PaintHandler extends BaseNodeHandler {
         durationMs: Date.now() - start,
         cost: 0,
         error: "No saved region. Select a region before running the workflow.",
+      };
+    }
+
+    if (task === "cutout") {
+      const result = await executeFreeToolInRenderer({
+        nodeType: "free-tool/image-cutout",
+        workflowId: ctx.workflowId,
+        nodeId: ctx.nodeId,
+        inputs: { input: source, mask_image: mask },
+        params: {},
+      });
+      const output = String(
+        result.resultPath ??
+          (result.outputs?.output as string | undefined) ??
+          "",
+      );
+      return {
+        ...result,
+        outputs: { output },
+        resultPath: output,
+        resultMetadata: {
+          ...(result.resultMetadata ?? {}),
+          output,
+          resultUrl: output,
+          resultUrls: output ? [output] : [],
+          source,
+          mask,
+          bbox,
+          task,
+          selectionMode,
+        },
       };
     }
 
@@ -211,6 +265,8 @@ export class PaintHandler extends BaseNodeHandler {
         prompt,
         reference,
         expandRatio,
+        repaintScope,
+        selectionMode,
       });
       const resolvedParams = await this.uploadLocalAssets(
         normalizePayloadArrays(apiParams, []),
@@ -256,6 +312,7 @@ export class PaintHandler extends BaseNodeHandler {
             task,
             selectionMode,
             expandRatio,
+            repaintScope,
             paintTarget,
             modelId: paintModelId,
             raw: result,
@@ -280,7 +337,7 @@ export class PaintHandler extends BaseNodeHandler {
         nodeType: "free-tool/image-eraser",
         workflowId: ctx.workflowId,
         nodeId: ctx.nodeId,
-        inputs: { input, mask_image: mask },
+        inputs: { input: source, mask_image: mask },
         params: {},
       });
       const output = String(
@@ -324,6 +381,7 @@ export class PaintHandler extends BaseNodeHandler {
         task,
         selectionMode,
         expandRatio,
+        repaintScope,
         resultUrl: output,
         resultUrls,
       },

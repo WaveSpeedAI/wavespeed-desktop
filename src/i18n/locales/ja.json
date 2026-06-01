@@ -1,4 +1,4 @@
-﻿{
+{
   "common": {
     "loading": "読み込み中...",
     "save": "保存",
@@ -1291,8 +1291,8 @@
         "hint": "画像の背景を無料で自動除去"
       },
       "free-tool/paint": {
-        "label": "再描画",
-        "hint": "画像の範囲を選択して、再描画、拡張、消去、補正を行います",
+        "label": "画像編集",
+        "hint": "画像の再描画、消去、拡張、AI切り抜き、補正を行います",
         "inputs": {
           "input": {
             "label": "画像"
@@ -1451,7 +1451,7 @@
       "modeRegion": "マスク",
       "modeErase": "消去",
       "modeExpand": "拡張",
-      "modeRemoveBg": "背景を削除",
+      "modeRemoveBg": "背景削除",
       "modeEnhance": "補正",
       "modeFace": "顔を補正",
       "editImage": "画像を編集",
@@ -1493,9 +1493,9 @@
       "continueEdit": "続行",
       "needImage": "エディターを開く前に画像を追加してください。",
       "regionReady": "範囲の準備完了",
-      "openEditorHint": "エディターを開いて範囲、マスク、またはツールを選択します。",
-      "editorTitle": "フレームエディター",
-      "editorDescription": "再描画ノードの範囲または対象フレームを選択します。",
+      "openEditorHint": "この機能で処理する範囲を選ぶためにエディターを開きます。",
+      "editorTitle": "範囲エディター",
+      "editorDescription": "画像編集ノードで処理する範囲を選択します。",
       "modelOutput": "出力",
       "modelOutputGenerate": "選択したモデルを実行",
       "noMatchedModels": "ローカルモデルキャッシュに一致する画像編集モデルはまだありません。",
@@ -1503,7 +1503,7 @@
       "incompatibleSelectedModel": "選択したモデルはこのペイント機能に対応していません。実行前に互換性のある画像編集モデルを選択してください。",
       "repaintModelHint": "マーク付きフレーム、対応時のマスク、プロンプトで選択モデルを実行します。",
       "eraseHint": "ブラシ範囲を使って既存の画像消去ツールを実行します。",
-      "expandHint": "選択した拡張比率で元フレームを出力します。",
+      "expandHint": "現在のキャンバスで選択した拡張モデルを実行します。",
       "regionOnlyHint": "選択範囲のマスクのみを出力します。",
       "directToolHint": "ワークフロー実行時に対応する無料ツールを実行します。",
       "prompts": {
@@ -1513,7 +1513,40 @@
         "repaintSketch": "赤いスケッチを視覚ガイドとして使い、選択範囲を自然に再描画してください。",
         "erase": "選択した物体または範囲を削除し、背景を自然に再構築してください。",
         "expand": "元のフレームを超えて画像を自然に拡張し、スタイル、光、遠近感を保ってください。"
-      }
+      },
+      "function": "機能",
+      "selectRegion": "範囲を選択",
+      "adjustCanvas": "キャンバスを調整",
+      "repaintScope": "編集範囲",
+      "repaintScopeRegion": "局所範囲",
+      "repaintScopeRegionHint": "選択マスクまたはマーク範囲を使用します。",
+      "repaintScopeFull": "画像全体",
+      "repaintScopeFullHint": "範囲を選択せずに編集します。",
+      "expandSettings": "キャンバス",
+      "repaintPrompt": "再描画プロンプト",
+      "repaintPromptRegionPlaceholder": "選択範囲に何を表示するかを説明してください。",
+      "repaintPromptFullPlaceholder": "画像全体をどのように編集するかを説明してください。",
+      "expandPrompt": "拡張プロンプト",
+      "expandPromptPlaceholder": "新しいキャンバス領域が元画像を自然に継続する方法を説明してください。",
+      "cutoutHint": "被写体または領域を選択し、透明背景の切り抜きとして出力します。",
+      "enhanceHint": "現在のキャンバスで選択した補正モデルを実行します。",
+      "faceEnhanceHint": "現在のキャンバス内で検出された顔を補正します。",
+      "enhanceModel": "モデル",
+      "enhanceScale": "倍率",
+      "cutoutModel": "モデル",
+      "faceEnhanceNoParams": "顔は自動検出されるため、追加設定は不要です。",
+      "useResultAsCanvas": "現在のキャンバスにする",
+      "resetCanvas": "入力にリセット",
+      "usingWorkingImage": "現在のキャンバス: 編集結果",
+      "usingInputImage": "現在のキャンバス: 上流入力",
+      "modeCutout": "AI切り抜き",
+      "backgroundRemoveHint": "画像全体の背景を自動で削除します。",
+      "backgroundRemoveModel": "モデル",
+      "selectSubject": "被写体を選択",
+      "cutoutSelectionRequired": "画像上で被写体を選択",
+      "cutoutSelectionRequiredHint": "クリックで被写体を含め、右クリックで除外する領域を指定してから続行します。",
+      "resultAsCanvasHint": "この結果を次の選択と実行に使う現在のキャンバスに設定します。",
+      "interactiveResultAsCanvasHint": "これはエディター内で作成された未実行の結果です。次の編集前に現在のキャンバスとして使います。"
     },
     "guide": {
       "skip": "スキップ",

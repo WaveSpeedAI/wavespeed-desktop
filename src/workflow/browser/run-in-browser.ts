@@ -7,6 +7,7 @@ import { topologicalLevels, type SimpleEdge } from "@/workflow/lib/topological";
 import {
   runImageEnhancer,
   runBackgroundRemover,
+  runImageCutout,
   runFaceEnhancer,
   runVideoEnhancer,
   runExtractFrame,
@@ -32,6 +33,7 @@ import {
 import {
   buildPaintModelApiParams,
   getPaintModelMatchScore,
+  normalizeRepaintScope,
   readPaintModelSchema,
   type PaintTask,
   type PaintTarget,
@@ -43,6 +45,13 @@ const SKIP_KEYS = new Set([
   "__locks",
   "__nodeWidth",
   "__nodeHeight",
+]);
+const IMAGE_ENHANCER_MODELS = new Set(["slim", "medium", "thick"]);
+const IMAGE_ENHANCER_SCALES = new Set(["2x", "3x", "4x"]);
+const BACKGROUND_REMOVER_MODELS = new Set([
+  "isnet_quint8",
+  "isnet_fp16",
+  "isnet",
 ]);
 
 const nodeDefMap = new Map(BROWSER_NODE_DEFINITIONS.map((d) => [d.type, d]));
@@ -1267,11 +1276,28 @@ export async function executeWorkflowInBrowser(
           }
           if (nodeType === "free-tool/paint") {
             const inputUrl = String(inputs.input ?? params.input ?? "");
-            const sourceUrl = inputUrl || String(params.__sourceImage ?? "");
-            const maskUrl = String(params.__maskImage ?? "");
-            const bbox = String(params.__maskBbox ?? "");
-            const prompt = String(params.__editPrompt ?? "");
+            const workingImage = String(params.__workingImage ?? "");
+            const sourceUrl =
+              workingImage || inputUrl || String(params.__sourceImage ?? "");
+            const savedSource = String(params.__sourceImage ?? "");
+            const savedSelectionMatchesSource = Boolean(
+              savedSource && sourceUrl && savedSource === sourceUrl,
+            );
+            const maskUrl = savedSelectionMatchesSource
+              ? String(params.__maskImage ?? "")
+              : "";
+            const bbox = savedSelectionMatchesSource
+              ? String(params.__maskBbox ?? "")
+              : "";
+            const reference = savedSelectionMatchesSource
+              ? String(params.__paintedImage ?? sourceUrl)
+              : sourceUrl;
             const task = String(params.__paintTask ?? "repaint") as PaintTask;
+            const prompt =
+              task === "expand"
+                ? String(params.__expandPrompt ?? params.__editPrompt ?? "")
+                : String(params.__editPrompt ?? "");
+            const repaintScope = normalizeRepaintScope(params.__repaintScope);
             const paintTarget = "image" as PaintTarget;
             const paintModelId = String(params.__paintModelId ?? "");
             const selectionMode = String(
@@ -1279,14 +1305,22 @@ export async function executeWorkflowInBrowser(
             );
             const expandRatio = String(params.__expandRatio ?? "16:9");
             const requiresRegion =
-              task === "repaint" || task === "erase" || task === "region";
+              task === "erase" ||
+              task === "cutout" ||
+              task === "region" ||
+              (task === "repaint" && repaintScope === "region");
             const supportsModelTarget = task === "repaint" || task === "expand";
-            if (!inputUrl) throw new Error("Missing input");
+            if (!sourceUrl) throw new Error("Missing input");
 
             if (task === "remove-bg") {
+              const model = String(params.model ?? "");
               const base64 = await runBackgroundRemover(
-                inputUrl,
-                { model: "isnet_fp16" },
+                sourceUrl,
+                {
+                  model: BACKGROUND_REMOVER_MODELS.has(model)
+                    ? model
+                    : "isnet_fp16",
+                },
                 onProgress,
               );
               const dataUrl = base64ToDataUrl(base64);
@@ -1309,9 +1343,14 @@ export async function executeWorkflowInBrowser(
             }
 
             if (task === "enhance") {
+              const model = String(params.model ?? "");
+              const scale = String(params.scale ?? "");
               const base64 = await runImageEnhancer(
-                inputUrl,
-                { model: "slim", scale: "2x" },
+                sourceUrl,
+                {
+                  model: IMAGE_ENHANCER_MODELS.has(model) ? model : "slim",
+                  scale: IMAGE_ENHANCER_SCALES.has(scale) ? scale : "2x",
+                },
                 onProgress,
               );
               const dataUrl = base64ToDataUrl(base64);
@@ -1330,7 +1369,7 @@ export async function executeWorkflowInBrowser(
 
             if (task === "face-enhance") {
               const base64 = await runFaceEnhancer(
-                inputUrl,
+                sourceUrl,
                 params,
                 onProgress,
               );
@@ -1352,6 +1391,35 @@ export async function executeWorkflowInBrowser(
               throw new Error(
                 "No saved region. Select a region before running the workflow.",
               );
+            }
+
+            if (task === "cutout") {
+              const base64 = await runImageCutout(
+                sourceUrl,
+                maskUrl,
+                onProgress,
+              );
+              const dataUrl = base64ToDataUrl(base64);
+              results.set(nodeId, {
+                outputUrl: dataUrl,
+                resultMetadata: {
+                  output: dataUrl,
+                  source: sourceUrl,
+                  mask: maskUrl,
+                  bbox,
+                  task,
+                  selectionMode,
+                  resultUrl: dataUrl,
+                  resultUrls: [dataUrl],
+                },
+              });
+              callbacks.onNodeStatus(nodeId, "confirmed");
+              callbacks.onNodeComplete(nodeId, {
+                urls: [dataUrl],
+                cost: 0,
+                durationMs: Date.now() - start,
+              });
+              return;
             }
 
             if (supportsModelTarget && !paintModelId) {
@@ -1395,8 +1463,10 @@ export async function executeWorkflowInBrowser(
                 source: sourceUrl,
                 mask: maskUrl,
                 prompt,
-                reference: String(params.__paintedImage ?? sourceUrl),
+                reference,
                 expandRatio,
+                repaintScope,
+                selectionMode,
               });
               const resolvedParams = await uploadLocalUrls(
                 normalizePayloadArrays(apiParams, []),
@@ -1439,6 +1509,7 @@ export async function executeWorkflowInBrowser(
                   task,
                   selectionMode,
                   expandRatio,
+                  repaintScope,
                   paintTarget,
                   modelId: paintModelId,
                   raw: result,
@@ -1458,7 +1529,7 @@ export async function executeWorkflowInBrowser(
 
             if (task === "erase") {
               const base64 = await runImageEraser(
-                inputUrl,
+                sourceUrl,
                 maskUrl,
                 params,
                 onProgress,
@@ -1494,11 +1565,12 @@ export async function executeWorkflowInBrowser(
                 output: outputUrl,
                 mask: outputMask,
                 prompt,
-                reference: String(params.__paintedImage ?? sourceUrl),
+                reference,
                 bbox: outputBbox,
                 task,
                 selectionMode,
                 expandRatio,
+                repaintScope,
                 resultUrl: outputUrl,
                 resultUrls,
               },

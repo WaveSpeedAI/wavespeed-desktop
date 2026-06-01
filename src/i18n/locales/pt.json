@@ -1,4 +1,4 @@
-﻿{
+{
   "common": {
     "loading": "Carregando...",
     "save": "Salvar",
@@ -1330,8 +1330,8 @@
         "hint": "Remover fundos de imagens automaticamente e grátis"
       },
       "free-tool/paint": {
-        "label": "Repintar",
-        "hint": "Escolha uma área da imagem para repintar, expandir, apagar ou melhorar",
+        "label": "Editar imagem",
+        "hint": "Repintar, apagar, expandir, recortar com AI ou melhorar uma imagem",
         "inputs": {
           "input": {
             "label": "Imagem"
@@ -1532,9 +1532,9 @@
       "continueEdit": "Continuar",
       "needImage": "Adicione uma imagem antes de abrir o editor.",
       "regionReady": "Região pronta",
-      "openEditorHint": "Abra o editor para escolher uma área, máscara ou ferramenta.",
-      "editorTitle": "Editor de fotogramas",
-      "editorDescription": "Escolha uma área ou quadro de destino para o nó de repintura.",
+      "openEditorHint": "Abra o editor para escolher a área desta função.",
+      "editorTitle": "Editor de região",
+      "editorDescription": "Escolha uma área para o nó de edição de imagem.",
       "modelOutput": "Saída",
       "modelOutputGenerate": "executar modelo selecionado",
       "noMatchedModels": "Ainda não há um modelo de edição de imagem compatível na cache local.",
@@ -1542,7 +1542,7 @@
       "incompatibleSelectedModel": "O modelo selecionado não suporta esta função de pintura. Escolha um modelo de edição de imagem compatível antes de executar.",
       "repaintModelHint": "Executa o modelo selecionado com o fotograma marcado, máscara quando suportada, e prompt.",
       "eraseHint": "Executa o apagador de imagem existente com a área pintada.",
-      "expandHint": "Produz o fotograma de origem com a proporção de expansão selecionada.",
+      "expandHint": "Executa o modelo de expansão selecionado com a tela atual.",
       "regionOnlyHint": "Produz apenas a máscara da região selecionada.",
       "directToolHint": "Executa a ferramenta gratuita correspondente quando o workflow é executado.",
       "prompts": {
@@ -1552,7 +1552,40 @@
         "repaintSketch": "Siga o esboço vermelho como guia visual e repinte naturalmente a área selecionada.",
         "erase": "Remova o objeto ou área selecionada e reconstrua naturalmente o fundo.",
         "expand": "Expanda naturalmente a imagem para além do enquadramento original, preservando estilo, iluminação e perspetiva."
-      }
+      },
+      "function": "Função",
+      "selectRegion": "Selecionar região",
+      "adjustCanvas": "Ajustar tela",
+      "repaintScope": "Escopo da edição",
+      "repaintScopeRegion": "Área local",
+      "repaintScopeRegionHint": "Use uma máscara selecionada ou uma região marcada.",
+      "repaintScopeFull": "Imagem inteira",
+      "repaintScopeFullHint": "Editar sem selecionar uma região.",
+      "expandSettings": "Tela",
+      "repaintPrompt": "Prompt de repintura",
+      "repaintPromptRegionPlaceholder": "Descreva o que deve aparecer na área selecionada.",
+      "repaintPromptFullPlaceholder": "Descreva como editar a imagem inteira.",
+      "expandPrompt": "Prompt de expansão",
+      "expandPromptPlaceholder": "Descreva como a nova área da tela deve continuar naturalmente a imagem original.",
+      "cutoutHint": "Selecione um assunto ou area e exporte com fundo transparente.",
+      "enhanceHint": "Executa o modelo de melhoria selecionado na tela atual.",
+      "faceEnhanceHint": "Melhora os rostos detectados na tela atual.",
+      "enhanceModel": "Modelo",
+      "enhanceScale": "Escala",
+      "cutoutModel": "Modelo",
+      "faceEnhanceNoParams": "Detecta rostos automaticamente; nenhuma configuração extra é necessária.",
+      "useResultAsCanvas": "Usar como tela",
+      "resetCanvas": "Redefinir para entrada",
+      "usingWorkingImage": "Tela atual: resultado editado",
+      "usingInputImage": "Tela atual: entrada anterior",
+      "modeCutout": "Recorte IA",
+      "backgroundRemoveHint": "Remove automaticamente o fundo da imagem inteira.",
+      "backgroundRemoveModel": "Modelo",
+      "selectSubject": "Selecionar assunto",
+      "cutoutSelectionRequired": "Selecione o assunto na imagem",
+      "cutoutSelectionRequiredHint": "Clique para incluir o assunto; clique direito para excluir areas e continue.",
+      "resultAsCanvasHint": "Define este resultado como a tela atual para a proxima selecao e execucao.",
+      "interactiveResultAsCanvasHint": "Este resultado do editor ainda nao foi executado. Use-o como tela atual antes da proxima edicao."
     },
     "promptOptimizer": {
       "optimizationFailed": "Otimização falhou",

@@ -17,15 +17,12 @@ import type {
   WaveSpeedModel,
 } from "@/workflow/types/node-defs";
 import type { ExposedParam } from "@/workflow/types/workflow";
+import { PAINT_OUTPUT_DEFINITIONS } from "@/workflow/lib/paint-node-contract";
 
 /* ── Recent models (localStorage) ──────────────────────────────────── */
 
 const RECENT_KEY = "wavespeed_workflow_recent_models";
 const MAX_RECENT = 5;
-const PAINT_OUTPUT_DEFINITIONS: PortDefinition[] = [
-  { key: "output", label: "Output", dataType: "url", required: true },
-];
-
 function getRecentModels(): Array<{
   modelId: string;
   displayName: string;

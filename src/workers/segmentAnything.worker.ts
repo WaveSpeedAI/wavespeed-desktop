@@ -96,16 +96,20 @@ async function readEmbeddingCache(
   key: string,
 ): Promise<SerializedSamCache | null> {
   if (!key) return null;
-  const db = await openCacheDb();
-  return new Promise((resolve) => {
-    const request = db
-      .transaction(CACHE_STORE_NAME, "readonly")
-      .objectStore(CACHE_STORE_NAME)
-      .get(key);
-    request.onsuccess = () =>
-      resolve((request.result as SerializedSamCache) ?? null);
-    request.onerror = () => resolve(null);
-  });
+  try {
+    const db = await openCacheDb();
+    return await new Promise((resolve) => {
+      const request = db
+        .transaction(CACHE_STORE_NAME, "readonly")
+        .objectStore(CACHE_STORE_NAME)
+        .get(key);
+      request.onsuccess = () =>
+        resolve((request.result as SerializedSamCache) ?? null);
+      request.onerror = () => resolve(null);
+    });
+  } catch {
+    return null;
+  }
 }
 
 async function writeEmbeddingCache(
@@ -113,16 +117,20 @@ async function writeEmbeddingCache(
   value: SerializedSamCache,
 ): Promise<void> {
   if (!key) return;
-  const db = await openCacheDb();
-  await new Promise<void>((resolve) => {
-    const request = db
-      .transaction(CACHE_STORE_NAME, "readwrite")
-      .objectStore(CACHE_STORE_NAME)
-      .put(value, key);
-    request.onsuccess = () => resolve();
-    request.onerror = () => resolve();
-  });
-  await pruneEmbeddingCache(db);
+  try {
+    const db = await openCacheDb();
+    await new Promise<void>((resolve) => {
+      const request = db
+        .transaction(CACHE_STORE_NAME, "readwrite")
+        .objectStore(CACHE_STORE_NAME)
+        .put(value, key);
+      request.onsuccess = () => resolve();
+      request.onerror = () => resolve();
+    });
+    await pruneEmbeddingCache(db);
+  } catch {
+    // Embedding cache is optional; segmentation should continue without it.
+  }
 }
 
 async function pruneEmbeddingCache(db: IDBDatabase): Promise<void> {

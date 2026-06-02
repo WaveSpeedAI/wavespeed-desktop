@@ -22,6 +22,7 @@ import {
   type PaintTarget,
   type PaintTask,
 } from "../../../../../src/workflow/lib/paint-model";
+import { PAINT_OUTPUT_DEFINITIONS } from "../../../../../src/workflow/lib/paint-node-contract";
 import { normalizePayloadArrays } from "../../../../../src/lib/schemaToForm";
 import { existsSync, readFileSync } from "fs";
 import { basename } from "path";
@@ -48,14 +49,7 @@ export const paintDef: NodeTypeDefinition = {
         "Upload an image or connect an extracted frame, then choose an edit mode.",
     },
   ],
-  outputs: [
-    {
-      key: "output",
-      label: "Output",
-      dataType: "url",
-      required: true,
-    },
-  ],
+  outputs: PAINT_OUTPUT_DEFINITIONS,
   params: [],
 };
 

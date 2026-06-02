@@ -14,7 +14,6 @@ export type PaintTask =
 export type PaintTarget = "image" | "video";
 export type RepaintScope = "region" | "full";
 
-export const PAINT_MODEL_PARAM_PREFIX = "__paintModelParam_";
 const REPAINT_REGION_FALLBACK =
   "Fill the selected area naturally, consistent with the surrounding image.";
 const REPAINT_REGION_CONSTRAINT =
@@ -90,17 +89,6 @@ export function isPaintImageField(
   return hasImageName(name);
 }
 
-export function isPaintVideoField(
-  field: Pick<ModelParamSchema, "name" | "mediaType" | "fieldType">,
-): boolean {
-  const name = lower(field.name);
-  if (field.mediaType === "video") return true;
-  if (field.fieldType === "file" || field.fieldType === "file-array") {
-    return name.includes("video");
-  }
-  return name.includes("video");
-}
-
 export function isPaintMaskField(
   field: Pick<ModelParamSchema, "name">,
 ): boolean {
@@ -118,21 +106,6 @@ export function isPaintPromptField(
     name.includes("instruction") ||
     name === "text" ||
     name.includes("description")
-  );
-}
-
-export function isPaintReferenceField(
-  field: Pick<ModelParamSchema, "name" | "mediaType" | "fieldType">,
-): boolean {
-  const name = lower(field.name);
-  if (!isPaintImageField(field)) return false;
-  return (
-    name.includes("reference") ||
-    name.includes("ref_") ||
-    name.endsWith("_ref") ||
-    name.includes("guide") ||
-    name.includes("control") ||
-    name.includes("sketch")
   );
 }
 
@@ -220,12 +193,6 @@ export function findPaintPromptField(
     schema.find((field) => lower(field.name) === "prompt") ??
     schema.find(isPaintPromptField)
   );
-}
-
-export function findPaintReferenceField(
-  schema: ModelParamSchema[],
-): ModelParamSchema | undefined {
-  return schema.find(isPaintReferenceField);
 }
 
 export function getPaintModelBindings(

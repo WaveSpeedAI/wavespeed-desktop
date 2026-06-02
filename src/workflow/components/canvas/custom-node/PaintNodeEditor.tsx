@@ -87,6 +87,7 @@ type EditMode =
   | "region";
 type RepaintSelectionMode = "paint" | "box" | "lasso" | "sketch";
 type ManualSelectionMode = RepaintSelectionMode | "erase";
+type SavedSelectionMode = ManualSelectionMode | "region";
 type CanvasInteractionMode = ManualSelectionMode | "region" | "view";
 type ExpandRatio = string;
 type MaskBbox = {
@@ -1651,10 +1652,7 @@ export function PaintNodeEditor({
     String(params.__paintTask ?? "repaint") as EditMode,
   );
   const [selectionMode, setSelectionModeState] = useState<RepaintSelectionMode>(
-    normalizeSelectionMode(
-      params.__selectionMode ??
-        (params.__regionMode === "smart" ? "smart" : "paint"),
-    ),
+    normalizeSelectionMode(params.__selectionMode),
   );
   const [brushSize, setBrushSizeState] = useState(
     Number(params.__brushSize ?? 30) || 30,
@@ -2311,7 +2309,7 @@ export function PaintNodeEditor({
       maskBlob?: Blob;
       paintedBlob?: Blob;
       points?: SegmentPoint[];
-      nextSelectionMode: string;
+      nextSelectionMode: SavedSelectionMode;
     }) => {
       const saveTask = (async () => {
         setSelectionSaving(Boolean(maskBlob));
@@ -2390,7 +2388,7 @@ export function PaintNodeEditor({
       await saveSelection({
         maskBlob,
         points,
-        nextSelectionMode: "smart",
+        nextSelectionMode: "region",
       });
     },
     [saveSelection],
@@ -3366,11 +3364,6 @@ export function PaintNodeEditor({
             </p>
           )}
         </div>
-        {savedBbox && needsRegion && (
-          <p className="truncate text-[10px] text-muted-foreground/80">
-            bbox {savedBbox}
-          </p>
-        )}
         {error && <p className="text-xs text-red-500">{error}</p>}
       </div>
     </div>

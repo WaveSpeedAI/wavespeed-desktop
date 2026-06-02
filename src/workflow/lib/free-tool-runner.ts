@@ -505,7 +505,7 @@ export async function runVideoEnhancer(
 }
 
 /**
- * Run face swapper — swap source face onto target image.
+ * Extract a frame from a video at the requested timestamp.
  */
 export async function runExtractFrame(
   inputUrl: string,

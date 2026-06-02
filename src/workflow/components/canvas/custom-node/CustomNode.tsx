@@ -31,11 +31,9 @@ import { useModelsStore } from "@/stores/modelsStore";
 import { getFormFieldsFromModel } from "@/lib/schemaToForm";
 import { formFieldsToModelParamSchema } from "../../../lib/model-converter";
 import type { NodeStatus } from "@/workflow/types/execution";
-import type {
-  PortDefinition,
-  WaveSpeedModel,
-} from "@/workflow/types/node-defs";
+import type { WaveSpeedModel } from "@/workflow/types/node-defs";
 import type { FormFieldConfig } from "@/lib/schemaToForm";
+import { PAINT_OUTPUT_DEFINITIONS } from "@/workflow/lib/paint-node-contract";
 
 import {
   Tooltip,
@@ -52,10 +50,6 @@ import {
 import { handleRight } from "./CustomNodeHandleAnchor";
 import { CustomNodeBody } from "./CustomNodeBody";
 import { getNodeIcon } from "./NodeIcons";
-
-const PAINT_OUTPUT_DEFINITIONS: PortDefinition[] = [
-  { key: "output", label: "Output", dataType: "url", required: true },
-];
 
 /* ── main component ──────────────────────────────────────────────────── */
 

@@ -3,6 +3,7 @@
  * Mirrors the definitions used in electron/workflow/nodes so the palette and config UI work.
  */
 import type { NodeTypeDefinition } from "@/workflow/types/node-defs";
+import { PAINT_OUTPUT_DEFINITIONS } from "@/workflow/lib/paint-node-contract";
 
 // ─── Input ─────────────────────────────────────────────────────────────────
 export const mediaUploadDef: NodeTypeDefinition = {
@@ -375,14 +376,7 @@ export const paintDef: NodeTypeDefinition = {
         "Upload an image or connect an extracted frame, then choose an edit mode.",
     },
   ],
-  outputs: [
-    {
-      key: "output",
-      label: "Output",
-      dataType: "url",
-      required: true,
-    },
-  ],
+  outputs: PAINT_OUTPUT_DEFINITIONS,
   params: [],
 };
 

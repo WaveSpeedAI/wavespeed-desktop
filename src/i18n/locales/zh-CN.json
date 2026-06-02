@@ -1129,6 +1129,25 @@
     "selectDirectory": "选择目录",
     "openFolder": "打开文件夹",
     "openWorkflowFolder": "打开工作流目录",
+    "extractFrame": {
+      "needVideo": "连接或上传视频，然后拖动预览选择一帧。",
+      "loadFailed": "无法加载此视频预览。",
+      "previousFrame": "上一帧",
+      "backFive": "后退 5 秒",
+      "forwardFive": "前进 5 秒",
+      "nextFrame": "下一帧",
+      "captureResult": "将当前帧截取到结果中",
+      "capture": "截帧",
+      "clearVideo": "清除视频",
+      "useUrl": "使用 URL",
+      "videoHint": "上传视频或连接上游节点的视频，然后拖动预览选择一帧。",
+      "saveToLocalFolder": "保存到本地文件夹",
+      "localExportOff": "本地导出已关闭",
+      "localExportOffHint": "未设置：不会额外导出到本地",
+      "customFolder": "自定义",
+      "exportOff": "关闭",
+      "noFolderToOpen": "未设置文件夹"
+    },
     "nodes": "节点",
     "config": "配置",
     "results": "结果",
@@ -1405,6 +1424,20 @@
         "label": "背景移除",
         "hint": "免费自动移除图片背景"
       },
+      "free-tool/paint": {
+        "label": "图片编辑",
+        "hint": "统一进行区域重绘、擦除、扩图、AI 抠图或增强",
+        "inputs": {
+          "input": {
+            "label": "图片"
+          }
+        },
+        "outputs": {
+          "output": {
+            "label": "输出"
+          }
+        }
+      },
       "free-tool/face-enhancer": {
         "label": "人脸增强",
         "hint": "免费增强和修复照片中的人脸"
@@ -1435,6 +1468,29 @@
           },
           "invertMask": {
             "label": "反转蒙版"
+          }
+        }
+      },
+      "free-tool/extract-frame": {
+        "label": "提取帧",
+        "hint": "从视频指定时间点免费截取静态图片",
+        "inputs": {
+          "input": {
+            "label": "视频"
+          }
+        },
+        "params": {
+          "time": {
+            "label": "时间（秒）",
+            "description": "所选帧在视频中的时间戳，单位为秒。"
+          },
+          "format": {
+            "label": "格式",
+            "description": "保存截取帧时使用的图片格式。"
+          },
+          "outputDir": {
+            "label": "保存到本地文件夹",
+            "description": "可选。设置文件夹后，会额外导出一份截取帧到本地。"
           }
         }
       },
@@ -1525,6 +1581,110 @@
       "optimizeOffHint": "默认：不优化（按原文运行）",
       "manualOptimizedHint": "已手动优化。在文本变更前将跳过运行时自动优化。",
       "enterTextOrPrompt": "输入文本或提示词..."
+    },
+    "paintNode": {
+      "imageHint": "上传图片或连接上游图片，然后选择编辑方式。",
+      "clearImage": "清除图片",
+      "modeRepaint": "重绘",
+      "modeRegion": "蒙版",
+      "modeErase": "擦除",
+      "modeExpand": "扩图",
+      "modeRemoveBg": "去背景",
+      "modeEnhance": "增强",
+      "modeFace": "人脸增强",
+      "editImage": "编辑图片",
+      "function": "功能",
+      "selectRegion": "选择区域",
+      "adjustCanvas": "调整画布",
+      "repaintScope": "编辑范围",
+      "repaintScopeRegion": "局部区域",
+      "repaintScopeRegionHint": "使用选区蒙版或标记区域。",
+      "repaintScopeFull": "整图编辑",
+      "repaintScopeFullHint": "不选择区域，直接编辑当前画布。",
+      "expandSettings": "画布",
+      "repaintPrompt": "重绘提示词",
+      "repaintPromptRegionPlaceholder": "描述选中区域要变成什么样。",
+      "repaintPromptFullPlaceholder": "描述整张图片要如何编辑。",
+      "expandPrompt": "扩图提示词",
+      "expandPromptPlaceholder": "描述新增画布区域如何自然延续原图。",
+      "paintHint": "涂抹需要重绘的区域。右键拖动或按住 Alt 可减去区域。",
+      "boxHint": "拖拽框选需要处理的区域。",
+      "lassoHint": "拖拽圈出自由形状区域，松手后闭合选择。",
+      "sketchHint": "绘制视觉参考，笔触区域会作为编辑区域。",
+      "eraseBrushHint": "涂抹需要擦除的物体或区域。",
+      "clearRegion": "清除区域",
+      "loadingMaskTools": "正在加载蒙版工具...",
+      "savingMask": "正在保存蒙版...",
+      "encoding": "正在分析图片...",
+      "decoding": "正在更新蒙版...",
+      "eraserSize": "橡皮",
+      "brushSize": "画笔",
+      "savingSelection": "正在保存选择...",
+      "selectionSaved": "选择已保存",
+      "selectionRequired": "在画面上选择一个区域",
+      "functionSelected": "已选择{{mode}}",
+      "savingSelectionHint": "正在准备将发送给模型的标记图片。",
+      "selectionSavedHint": "继续配置编辑参数。待发送预览已准备好。",
+      "selectionRequiredHint": "使用当前蒙版工具在图片上选择区域，然后继续。",
+      "functionSelectedHint": "继续配置此功能，工作流运行时会使用它。",
+      "collapseTools": "收起工具",
+      "expandTools": "展开工具",
+      "selectPaint": "画笔",
+      "selectPaintHelp": "快速软选择",
+      "selectBox": "框选",
+      "selectBoxHelp": "粗略块状区域",
+      "selectLasso": "套索",
+      "selectLassoHelp": "自由形状",
+      "selectSketch": "草图",
+      "selectSketchHelp": "视觉参考",
+      "expandRatio": "扩图比例",
+      "undo": "撤销",
+      "undoShortcut": "撤销 (Ctrl+Z)",
+      "redo": "重做",
+      "redoShortcut": "重做 (Ctrl+Y)",
+      "continueEdit": "继续",
+      "needImage": "请先添加图片，再打开编辑器。",
+      "regionReady": "区域已准备",
+      "openEditorHint": "打开编辑器选择当前功能要处理的区域。",
+      "editorTitle": "区域编辑器",
+      "editorDescription": "为图片编辑节点选择处理区域。",
+      "modelOutput": "输出",
+      "modelOutputGenerate": "运行所选模型",
+      "noMatchedModels": "本地模型缓存中还没有匹配的图片编辑模型。",
+      "missingSelectedModel": "所选模型当前不在本地列表中。运行前请从列表中选择支持的图片编辑模型。",
+      "incompatibleSelectedModel": "所选模型不支持当前重绘功能。运行前请从列表中选择兼容的图片编辑模型。",
+      "repaintModelHint": "使用标记后的图片、支持时的蒙版，以及提示词运行所选模型。",
+      "eraseHint": "使用涂抹区域运行内置图片擦除工具。",
+      "expandHint": "使用当前画布和所选扩图模型运行扩图。",
+      "regionOnlyHint": "只输出所选区域的蒙版。",
+      "directToolHint": "工作流运行时执行匹配的内置免费工具。",
+      "cutoutHint": "选择主体或区域后，输出透明背景的抠图结果。",
+      "enhanceHint": "使用所选增强模型处理当前画布。",
+      "faceEnhanceHint": "自动检测并增强当前画布中的人脸。",
+      "enhanceModel": "模型",
+      "enhanceScale": "倍率",
+      "cutoutModel": "模型",
+      "faceEnhanceNoParams": "自动检测人脸，无需额外设置。",
+      "useResultAsCanvas": "设为当前画布",
+      "resetCanvas": "重置为输入图",
+      "usingWorkingImage": "当前画布：编辑结果",
+      "usingInputImage": "当前画布：上游输入",
+      "prompts": {
+        "repaintPaint": "自然重绘涂抹区域，同时保留周围细节。",
+        "repaintBox": "自然重绘框选区域，同时保留周围细节。",
+        "repaintLasso": "自然无缝地重绘套索选择的区域。",
+        "repaintSketch": "参考红色草图进行自然重绘，并保留选区周围细节。",
+        "erase": "移除选中的物体或区域，并自然重建背景。",
+        "expand": "在原图边界外自然扩展画面，并保持风格、光线和透视一致。"
+      },
+      "modeCutout": "AI 抠图",
+      "backgroundRemoveHint": "自动移除整张图的背景。",
+      "backgroundRemoveModel": "模型",
+      "selectSubject": "选择主体",
+      "cutoutSelectionRequired": "在图片上选择主体",
+      "cutoutSelectionRequiredHint": "点击添加主体区域；右键点击排除区域，然后继续。",
+      "resultAsCanvasHint": "将这个结果设为当前画布，下一次选区和运行都会基于它。",
+      "interactiveResultAsCanvasHint": "这是编辑器里生成的结果，尚未运行；设为当前画布后再继续下一次编辑。"
     },
     "guide": {
       "skip": "跳过",

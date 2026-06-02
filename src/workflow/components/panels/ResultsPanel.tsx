@@ -7,7 +7,13 @@
  * view with left/right navigation. Clicking the preview opens the full
  * gallery overlay with arrow key support.
  */
-import { useEffect, useState, useCallback, useRef } from "react";
+import {
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  type CSSProperties,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { useUIStore } from "../../stores/ui.store";
@@ -29,6 +35,14 @@ interface ResultsPanelProps {
   nodeId?: string;
 }
 
+const TRANSPARENT_PREVIEW_BACKGROUND: CSSProperties = {
+  backgroundColor: "hsl(var(--muted) / 0.28)",
+  backgroundImage:
+    "linear-gradient(45deg, hsl(var(--muted-foreground) / 0.16) 25%, transparent 25%), linear-gradient(-45deg, hsl(var(--muted-foreground) / 0.16) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, hsl(var(--muted-foreground) / 0.16) 75%), linear-gradient(-45deg, transparent 75%, hsl(var(--muted-foreground) / 0.16) 75%)",
+  backgroundPosition: "0 0, 0 6px, 6px -6px, -6px 0px",
+  backgroundSize: "12px 12px",
+};
+
 export function ResultsPanel({
   embeddedInNode,
   nodeId: nodeIdProp,
@@ -45,20 +59,6 @@ export function ResultsPanel({
   /** Index in lastResults/displayRecords that the user picked as active output */
   const selectedOutputIndex = useExecutionStore((s) =>
     nodeId ? (s.selectedOutputIndex[nodeId] ?? 0) : 0,
-  );
-
-  /** Select a specific displayRecord index as the node's active output */
-  const handleSelectAsOutput = useCallback(
-    (index: number) => {
-      if (!nodeId) return;
-      useExecutionStore.setState((s) => ({
-        selectedOutputIndex: { ...s.selectedOutputIndex, [nodeId]: index },
-      }));
-      // Also call backend IPC (no-op in browser mode, but works in Electron)
-      // For non-synthetic records, also set via IPC
-      // (we don't have executionId for synthetic records, so skip)
-    },
-    [nodeId],
   );
 
   /** Index of the currently visible card in stacked (embedded) mode */
@@ -140,36 +140,46 @@ export function ResultsPanel({
     }
   }, [nodeId, clearNodeResults]);
 
-  if (!nodeId) {
-    return (
-      <div className="p-4 text-muted-foreground text-sm text-center">
-        Select a node to view results
-      </div>
-    );
-  }
+  const currentNodeStatus = nodeId ? nodeStatuses[nodeId] : undefined;
 
-  const currentNodeStatus = nodeStatuses[nodeId];
-
-  // When history is empty (e.g. just finished), show lastResults as synthetic records so preview is visible
-  const lastResultsForNode = lastResults[nodeId] ?? [];
-  const displayRecords: NodeExecutionRecord[] =
-    records.length > 0
-      ? records
-      : lastResultsForNode.map((item, idx) => ({
-          id: `last-${idx}`,
-          nodeId,
-          workflowId: "",
-          inputHash: "",
-          paramsHash: "",
-          status: "success" as const,
-          resultPath: item.urls[0] ?? "",
-          resultMetadata: { resultUrls: item.urls },
-          durationMs: item.durationMs ?? null,
-          cost: item.cost ?? 0,
-          createdAt: item.time,
-          score: null,
-          starred: false,
-        }));
+  // Surface immediate in-memory outputs first; persisted history can arrive later.
+  const lastResultsForNode = nodeId ? (lastResults[nodeId] ?? []) : [];
+  const syntheticRecords: NodeExecutionRecord[] = lastResultsForNode.map(
+    (item, idx) => ({
+      id: `last-${idx}`,
+      nodeId: nodeId ?? "",
+      workflowId: "",
+      inputHash: "",
+      paramsHash: "",
+      status: "success" as const,
+      resultPath: item.urls[0] ?? "",
+      resultMetadata: { resultUrls: item.urls },
+      durationMs: item.durationMs ?? null,
+      cost: item.cost ?? 0,
+      createdAt: item.time,
+      score: null,
+      starred: false,
+    }),
+  );
+  const persistedResultUrls = new Set(
+    records.flatMap((rec) => {
+      const meta = rec.resultMetadata as Record<string, unknown> | null;
+      const metaUrls = meta?.resultUrls;
+      if (Array.isArray(metaUrls)) return metaUrls.filter(Boolean).map(String);
+      return rec.resultPath ? [rec.resultPath] : [];
+    }),
+  );
+  const displayRecords: NodeExecutionRecord[] = [
+    ...syntheticRecords.filter((rec) => {
+      const urls = rec.resultMetadata?.resultUrls;
+      return !(
+        Array.isArray(urls) &&
+        urls.length > 0 &&
+        urls.every((url) => persistedResultUrls.has(String(url)))
+      );
+    }),
+    ...records,
+  ];
   const isSyntheticRecord = (id: string) => id.startsWith("last-");
 
   // Reset stack index when new results arrive (e.g. user runs again)
@@ -203,6 +213,32 @@ export function ResultsPanel({
     }
     return [];
   };
+
+  /** Select a specific displayRecord index as the node's active output. */
+  const handleSelectAsOutput = useCallback(
+    (index: number) => {
+      if (!nodeId) return;
+      const selectedRecord = displayRecords[index];
+      const selectedUrls = selectedRecord ? getUrls(selectedRecord) : [];
+      const selectedUrl = selectedUrls[0] ?? "";
+
+      useExecutionStore.setState((s) => ({
+        selectedOutputIndex: { ...s.selectedOutputIndex, [nodeId]: index },
+      }));
+
+      const node = useWorkflowStore
+        .getState()
+        .nodes.find((n) => n.id === nodeId);
+      if (!node) return;
+      const params = (node.data.params ?? {}) as Record<string, unknown>;
+      useWorkflowStore.getState().updateNodeParams(nodeId, {
+        ...params,
+        __selectedOutputUrl: selectedUrl,
+        __selectedOutputUrls: selectedUrls,
+      });
+    },
+    [displayRecords, nodeId],
+  );
 
   /** All navigable media URLs (images + videos) for the preview overlay */
   const panelMediaUrls = displayRecords
@@ -292,6 +328,14 @@ export function ResultsPanel({
   }, [clampedIndex, stackIndex]);
 
   /* ── Stacked card view for embedded-in-node mode ─────────────── */
+  if (!nodeId) {
+    return (
+      <div className="p-4 text-muted-foreground text-sm text-center">
+        Select a node to view results
+      </div>
+    );
+  }
+
   if (embeddedInNode) {
     if (displayRecords.length === 0) {
       return (
@@ -721,6 +765,7 @@ export function ResultsPanel({
                               alt=""
                               onClick={() => openPreview(url, panelMediaUrls)}
                               className="w-full max-h-[160px] rounded border border-[hsl(var(--border))] object-contain cursor-pointer hover:ring-2 hover:ring-blue-500/40 bg-black/10"
+                              style={TRANSPARENT_PREVIEW_BACKGROUND}
                             />
                             <button
                               onClick={() => handleDownload(url)}
@@ -895,6 +940,7 @@ function StackedResultItem({
           alt=""
           onClick={() => openPreview(url, allImageUrls)}
           className="max-w-full max-h-[160px] rounded object-contain cursor-pointer hover:ring-2 hover:ring-blue-500/40"
+          style={TRANSPARENT_PREVIEW_BACKGROUND}
         />
         <button
           onClick={() => onDownload(url)}

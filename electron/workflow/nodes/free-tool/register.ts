@@ -20,6 +20,8 @@ import { videoEnhancerDef, VideoEnhancerHandler } from "./video-enhancer";
 import { faceSwapperDef, FaceSwapperHandler } from "./face-swapper";
 import { imageEraserDef, ImageEraserHandler } from "./image-eraser";
 import { segmentAnythingDef, SegmentAnythingHandler } from "./segment-anything";
+import { extractFrameDef, ExtractFrameHandler } from "./extract-frame";
+import { paintDef, PaintHandler } from "./paint";
 
 type FreeToolSpec = {
   type: string;
@@ -106,6 +108,8 @@ export function registerFreeToolNodes(): void {
   nodeRegistry.register(faceSwapperDef, new FaceSwapperHandler());
   nodeRegistry.register(imageEraserDef, new ImageEraserHandler());
   nodeRegistry.register(segmentAnythingDef, new SegmentAnythingHandler());
+  nodeRegistry.register(extractFrameDef, new ExtractFrameHandler());
+  nodeRegistry.register(paintDef, new PaintHandler());
 
   // Placeholder for any future free-tool nodes
   for (const spec of FREE_TOOL_SPECS) {

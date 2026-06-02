@@ -1,4 +1,4 @@
-﻿{
+{
   "common": {
     "loading": "読み込み中...",
     "save": "保存",
@@ -1082,6 +1082,25 @@
     "selectDirectory": "ディレクトリを選択",
     "openFolder": "フォルダを開く",
     "openWorkflowFolder": "ワークフローフォルダを開く",
+    "extractFrame": {
+      "needVideo": "動画を接続またはアップロードし、プレビューをスクラブしてフレームを選択します。",
+      "loadFailed": "この動画プレビューを読み込めませんでした。",
+      "previousFrame": "前のフレーム",
+      "backFive": "5秒戻る",
+      "forwardFive": "5秒進む",
+      "nextFrame": "次のフレーム",
+      "captureResult": "選択したフレームを結果にキャプチャ",
+      "capture": "キャプチャ",
+      "clearVideo": "動画をクリア",
+      "useUrl": "URLを使用",
+      "videoHint": "動画をアップロードするか上流ノードから接続し、プレビューをスクラブしてフレームを選択します。",
+      "saveToLocalFolder": "ローカルフォルダに保存",
+      "localExportOff": "ローカル書き出しはオフです",
+      "localExportOffHint": "未設定：追加のローカル書き出しは行いません",
+      "customFolder": "カスタム",
+      "exportOff": "オフ",
+      "noFolderToOpen": "フォルダが設定されていません"
+    },
     "nodes": "ノード",
     "config": "設定",
     "results": "結果",
@@ -1271,6 +1290,20 @@
         "label": "背景除去",
         "hint": "画像の背景を無料で自動除去"
       },
+      "free-tool/paint": {
+        "label": "画像編集",
+        "hint": "画像の再描画、消去、拡張、AI切り抜き、補正を行います",
+        "inputs": {
+          "input": {
+            "label": "画像"
+          }
+        },
+        "outputs": {
+          "output": {
+            "label": "出力"
+          }
+        }
+      },
       "free-tool/face-enhancer": {
         "label": "顔補正",
         "hint": "写真の顔を無料で補正・修復"
@@ -1301,6 +1334,29 @@
           },
           "invertMask": {
             "label": "マスク反転"
+          }
+        }
+      },
+      "free-tool/extract-frame": {
+        "label": "フレーム抽出",
+        "hint": "動画の指定した時刻から静止画像を無料でキャプチャします",
+        "inputs": {
+          "input": {
+            "label": "動画"
+          }
+        },
+        "params": {
+          "time": {
+            "label": "時間（秒）",
+            "description": "選択したフレームのタイムスタンプ（秒）。"
+          },
+          "format": {
+            "label": "形式",
+            "description": "キャプチャしたフレームを保存する画像形式。"
+          },
+          "outputDir": {
+            "label": "ローカルフォルダに保存",
+            "description": "任意。フォルダを設定すると、抽出したフレームのローカルコピーを追加で書き出します。"
           }
         }
       },
@@ -1387,6 +1443,110 @@
       "optimizeOffHint": "デフォルト: 最適化なし（元のテキストで実行）",
       "manualOptimizedHint": "手動で最適化済み。テキストが変更されるまで実行時自動最適化をスキップします。",
       "enterTextOrPrompt": "テキストまたはプロンプトを入力..."
+    },
+    "paintNode": {
+      "imageHint": "画像をアップロードするか抽出フレームを接続し、編集モードを選択してください。",
+      "clearImage": "画像をクリア",
+      "modeRepaint": "再描画",
+      "modeRegion": "マスク",
+      "modeErase": "消去",
+      "modeExpand": "拡張",
+      "modeRemoveBg": "背景削除",
+      "modeEnhance": "補正",
+      "modeFace": "顔を補正",
+      "editImage": "画像を編集",
+      "paintHint": "再描画する範囲を塗ってください。右ドラッグまたは Alt キーで範囲を減らせます。",
+      "boxHint": "範囲を囲む長方形をドラッグしてください。",
+      "lassoHint": "範囲を囲むようにドラッグして自由選択を閉じます。",
+      "sketchHint": "視覚的なガイドをスケッチします。ストローク範囲が編集範囲になります。",
+      "eraseBrushHint": "消去したい物体または範囲をブラシで塗ってください。",
+      "clearRegion": "範囲をクリア",
+      "loadingMaskTools": "マスクツールを読み込み中...",
+      "savingMask": "マスクを保存中...",
+      "encoding": "画像を解析中...",
+      "decoding": "マスクを更新中...",
+      "eraserSize": "消しゴム",
+      "brushSize": "ブラシ",
+      "savingSelection": "選択範囲を保存中...",
+      "selectionSaved": "選択範囲を保存しました",
+      "selectionRequired": "フレーム上で範囲を選択してください",
+      "functionSelected": "{{mode}} を選択しました",
+      "savingSelectionHint": "モデルに送信するマーク付き画像を準備しています。",
+      "selectionSavedHint": "編集設定に進んでください。保存済みプレビューは実行準備ができています。",
+      "selectionRequiredHint": "画像上でアクティブなマスクツールを使用してから続行してください。",
+      "functionSelectedHint": "次の AI 生成に使うこの機能の設定に進みます。",
+      "collapseTools": "ツールを折りたたむ",
+      "expandTools": "ツールを展開",
+      "selectPaint": "ペイント",
+      "selectPaintHelp": "すばやいソフト範囲",
+      "selectBox": "ボックス",
+      "selectBoxHelp": "粗いブロック",
+      "selectLasso": "投げ縄",
+      "selectLassoHelp": "自由形状",
+      "selectSketch": "スケッチ",
+      "selectSketchHelp": "視覚ガイド",
+      "expandRatio": "拡張比率",
+      "undo": "元に戻す",
+      "undoShortcut": "元に戻す (Ctrl+Z)",
+      "redo": "やり直す",
+      "redoShortcut": "やり直す (Ctrl+Y)",
+      "continueEdit": "続行",
+      "needImage": "エディターを開く前に画像を追加してください。",
+      "regionReady": "範囲の準備完了",
+      "openEditorHint": "この機能で処理する範囲を選ぶためにエディターを開きます。",
+      "editorTitle": "範囲エディター",
+      "editorDescription": "画像編集ノードで処理する範囲を選択します。",
+      "modelOutput": "出力",
+      "modelOutputGenerate": "選択したモデルを実行",
+      "noMatchedModels": "ローカルモデルキャッシュに一致する画像編集モデルはまだありません。",
+      "missingSelectedModel": "選択したモデルはローカルで利用できません。実行前に対応する画像編集モデルを選択してください。",
+      "incompatibleSelectedModel": "選択したモデルはこのペイント機能に対応していません。実行前に互換性のある画像編集モデルを選択してください。",
+      "repaintModelHint": "マーク付きフレーム、対応時のマスク、プロンプトで選択モデルを実行します。",
+      "eraseHint": "ブラシ範囲を使って既存の画像消去ツールを実行します。",
+      "expandHint": "現在のキャンバスで選択した拡張モデルを実行します。",
+      "regionOnlyHint": "選択範囲のマスクのみを出力します。",
+      "directToolHint": "ワークフロー実行時に対応する無料ツールを実行します。",
+      "prompts": {
+        "repaintPaint": "周囲のディテールを保ちながら、塗った範囲を自然に再描画してください。",
+        "repaintBox": "周囲のディテールを保ちながら、選択した長方形範囲を自然に再描画してください。",
+        "repaintLasso": "選択した自由形状範囲を自然でシームレスな結果になるよう再描画してください。",
+        "repaintSketch": "赤いスケッチを視覚ガイドとして使い、選択範囲を自然に再描画してください。",
+        "erase": "選択した物体または範囲を削除し、背景を自然に再構築してください。",
+        "expand": "元のフレームを超えて画像を自然に拡張し、スタイル、光、遠近感を保ってください。"
+      },
+      "function": "機能",
+      "selectRegion": "範囲を選択",
+      "adjustCanvas": "キャンバスを調整",
+      "repaintScope": "編集範囲",
+      "repaintScopeRegion": "局所範囲",
+      "repaintScopeRegionHint": "選択マスクまたはマーク範囲を使用します。",
+      "repaintScopeFull": "画像全体",
+      "repaintScopeFullHint": "範囲を選択せずに編集します。",
+      "expandSettings": "キャンバス",
+      "repaintPrompt": "再描画プロンプト",
+      "repaintPromptRegionPlaceholder": "選択範囲に何を表示するかを説明してください。",
+      "repaintPromptFullPlaceholder": "画像全体をどのように編集するかを説明してください。",
+      "expandPrompt": "拡張プロンプト",
+      "expandPromptPlaceholder": "新しいキャンバス領域が元画像を自然に継続する方法を説明してください。",
+      "cutoutHint": "被写体または領域を選択し、透明背景の切り抜きとして出力します。",
+      "enhanceHint": "現在のキャンバスで選択した補正モデルを実行します。",
+      "faceEnhanceHint": "現在のキャンバス内で検出された顔を補正します。",
+      "enhanceModel": "モデル",
+      "enhanceScale": "倍率",
+      "cutoutModel": "モデル",
+      "faceEnhanceNoParams": "顔は自動検出されるため、追加設定は不要です。",
+      "useResultAsCanvas": "現在のキャンバスにする",
+      "resetCanvas": "入力にリセット",
+      "usingWorkingImage": "現在のキャンバス: 編集結果",
+      "usingInputImage": "現在のキャンバス: 上流入力",
+      "modeCutout": "AI切り抜き",
+      "backgroundRemoveHint": "画像全体の背景を自動で削除します。",
+      "backgroundRemoveModel": "モデル",
+      "selectSubject": "被写体を選択",
+      "cutoutSelectionRequired": "画像上で被写体を選択",
+      "cutoutSelectionRequiredHint": "クリックで被写体を含め、右クリックで除外する領域を指定してから続行します。",
+      "resultAsCanvasHint": "この結果を次の選択と実行に使う現在のキャンバスに設定します。",
+      "interactiveResultAsCanvasHint": "これはエディター内で作成された未実行の結果です。次の編集前に現在のキャンバスとして使います。"
     },
     "guide": {
       "skip": "スキップ",

@@ -3,6 +3,7 @@
  * Mirrors the definitions used in electron/workflow/nodes so the palette and config UI work.
  */
 import type { NodeTypeDefinition } from "@/workflow/types/node-defs";
+import { PAINT_OUTPUT_DEFINITIONS } from "@/workflow/lib/paint-node-contract";
 
 // ─── Input ─────────────────────────────────────────────────────────────────
 export const mediaUploadDef: NodeTypeDefinition = {
@@ -226,7 +227,16 @@ export const videoEnhancerDef: NodeTypeDefinition = {
   type: "free-tool/video-enhancer",
   category: "free-tool",
   label: "Video Enhancer",
-  inputs: [{ key: "input", label: "Video", dataType: "video", required: true }],
+  inputs: [
+    {
+      key: "input",
+      label: "Video",
+      dataType: "video",
+      required: true,
+      description:
+        "Upload a video or connect one from an upstream node, then scrub the preview to choose a frame.",
+    },
+  ],
   outputs: [
     { key: "output", label: "Output", dataType: "video", required: true },
   ],
@@ -296,6 +306,78 @@ export const segmentAnythingDef: NodeTypeDefinition = {
       default: false,
     },
   ],
+};
+
+export const extractFrameDef: NodeTypeDefinition = {
+  type: "free-tool/extract-frame",
+  category: "free-tool",
+  label: "Extract Frame",
+  inputs: [
+    {
+      key: "input",
+      label: "Video",
+      dataType: "video",
+      required: true,
+      description:
+        "Upload a video or connect one from an upstream node, then scrub the preview to choose a frame.",
+    },
+  ],
+  outputs: [
+    { key: "output", label: "Frame", dataType: "image", required: true },
+  ],
+  params: [
+    {
+      key: "time",
+      label: "Time (s)",
+      type: "number",
+      default: 0,
+      dataType: "text",
+      connectable: false,
+      description: "The timestamp of the selected frame in seconds.",
+      validation: { min: 0, step: 0.001 },
+    },
+    {
+      key: "format",
+      label: "Format",
+      type: "select",
+      default: "png",
+      dataType: "text",
+      connectable: true,
+      description: "The image format used when saving the captured frame.",
+      options: [
+        { label: "PNG", value: "png" },
+        { label: "JPG", value: "jpg" },
+        { label: "WEBP", value: "webp" },
+      ],
+    },
+    {
+      key: "outputDir",
+      label: "Save to Local Folder",
+      type: "string",
+      default: "",
+      connectable: false,
+      description:
+        "Optional. Set a folder to export an extra local copy of the extracted frame.",
+    },
+  ],
+};
+
+export const paintDef: NodeTypeDefinition = {
+  type: "free-tool/paint",
+  category: "free-tool",
+  label: "Image Edit",
+  inputs: [
+    {
+      key: "input",
+      label: "Image",
+      dataType: "image",
+      required: true,
+      description:
+        "Upload an image or connect an extracted frame, then choose an edit mode.",
+    },
+  ],
+  outputs: PAINT_OUTPUT_DEFINITIONS,
+  params: [],
 };
 
 const VIDEO_FORMATS = [
@@ -531,6 +613,8 @@ export const BROWSER_NODE_DEFINITIONS: NodeTypeDefinition[] = [
   faceSwapperDef,
   imageEraserDef,
   segmentAnythingDef,
+  extractFrameDef,
+  paintDef,
   videoConverterDef,
   audioConverterDef,
   imageConverterDef,

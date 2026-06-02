@@ -1131,6 +1131,25 @@
     "selectDirectory": "Select directory",
     "openFolder": "Open folder",
     "openWorkflowFolder": "Open workflow folder",
+    "extractFrame": {
+      "needVideo": "Connect or upload a video to scrub and choose a frame.",
+      "loadFailed": "Could not load this video preview.",
+      "previousFrame": "Previous frame",
+      "backFive": "Back 5 seconds",
+      "forwardFive": "Forward 5 seconds",
+      "nextFrame": "Next frame",
+      "captureResult": "Capture the selected frame to Results",
+      "capture": "Capture",
+      "clearVideo": "Clear video",
+      "useUrl": "Use URL",
+      "videoHint": "Upload a video or connect one from an upstream node, then scrub the preview to choose a frame.",
+      "saveToLocalFolder": "Save to Local Folder",
+      "localExportOff": "Local export is off",
+      "localExportOffHint": "Not set: no extra local export",
+      "customFolder": "Custom",
+      "exportOff": "Off",
+      "noFolderToOpen": "No folder set"
+    },
     "nodes": "Nodes",
     "config": "Config",
     "results": "Results",
@@ -1414,6 +1433,20 @@
         "label": "Background Remover",
         "hint": "Remove image backgrounds automatically for free"
       },
+      "free-tool/paint": {
+        "label": "Image Edit",
+        "hint": "Repaint, erase, expand, cut out, or enhance an image",
+        "inputs": {
+          "input": {
+            "label": "Image"
+          }
+        },
+        "outputs": {
+          "output": {
+            "label": "Output"
+          }
+        }
+      },
       "free-tool/face-enhancer": {
         "label": "Face Enhancer",
         "hint": "Enhance and restore faces in photos for free"
@@ -1444,6 +1477,29 @@
           },
           "invertMask": {
             "label": "Invert Mask"
+          }
+        }
+      },
+      "free-tool/extract-frame": {
+        "label": "Extract Frame",
+        "hint": "Capture a still image from a selected video timestamp for free",
+        "inputs": {
+          "input": {
+            "label": "Video"
+          }
+        },
+        "params": {
+          "time": {
+            "label": "Time (s)",
+            "description": "The timestamp of the selected frame in seconds."
+          },
+          "format": {
+            "label": "Format",
+            "description": "The image format used when saving the captured frame."
+          },
+          "outputDir": {
+            "label": "Save to Local Folder",
+            "description": "Optional. Set a folder to export an extra local copy of the extracted frame."
           }
         }
       },
@@ -1534,6 +1590,110 @@
       "optimizeOffHint": "Default: no optimization (run with original text)",
       "manualOptimizedHint": "Manually optimized. Auto-on-run will be skipped until text changes.",
       "enterTextOrPrompt": "Enter text or prompt..."
+    },
+    "paintNode": {
+      "imageHint": "Upload an image or connect an extracted frame, then choose an edit mode.",
+      "clearImage": "Clear image",
+      "modeRepaint": "Repaint",
+      "modeRegion": "Mask",
+      "modeErase": "Erase",
+      "modeExpand": "Expand",
+      "modeRemoveBg": "Remove bg",
+      "modeEnhance": "Enhance",
+      "modeFace": "Face enhance",
+      "editImage": "Edit image",
+      "function": "Function",
+      "selectRegion": "Select region",
+      "adjustCanvas": "Adjust canvas",
+      "repaintScope": "Edit scope",
+      "repaintScopeRegion": "Local area",
+      "repaintScopeRegionHint": "Use a selected mask or marked region.",
+      "repaintScopeFull": "Full image",
+      "repaintScopeFullHint": "Edit without selecting a region.",
+      "expandSettings": "Canvas",
+      "repaintPrompt": "Prompt",
+      "repaintPromptRegionPlaceholder": "Describe what should appear in the selected area.",
+      "repaintPromptFullPlaceholder": "Describe how to edit the whole image.",
+      "expandPrompt": "Expand prompt",
+      "expandPromptPlaceholder": "Describe how the new canvas area should continue the original image.",
+      "paintHint": "Paint the area to repaint. Right-drag or hold Alt to subtract.",
+      "boxHint": "Drag a rectangle around the area.",
+      "lassoHint": "Drag around the area to close a freeform selection.",
+      "sketchHint": "Sketch visual guidance; the stroke area becomes the edit region.",
+      "eraseBrushHint": "Brush over the object or area to erase.",
+      "clearRegion": "Clear region",
+      "loadingMaskTools": "Loading mask tools...",
+      "savingMask": "Saving mask...",
+      "encoding": "Analyzing image...",
+      "decoding": "Updating mask...",
+      "eraserSize": "Eraser",
+      "brushSize": "Brush",
+      "savingSelection": "Saving selection...",
+      "selectionSaved": "Selection saved",
+      "selectionRequired": "Select an area on the frame",
+      "functionSelected": "{{mode}} selected",
+      "savingSelectionHint": "Preparing the marked image that will be sent to the model.",
+      "selectionSavedHint": "Continue to configure the edit. The saved preview is ready to run.",
+      "selectionRequiredHint": "Use the active mask tool on the image, then continue.",
+      "functionSelectedHint": "Continue to configure this function for the next AI generation.",
+      "collapseTools": "Collapse tools",
+      "expandTools": "Expand tools",
+      "selectPaint": "Paint",
+      "selectPaintHelp": "fast soft area",
+      "selectBox": "Box",
+      "selectBoxHelp": "rough block",
+      "selectLasso": "Lasso",
+      "selectLassoHelp": "free shape",
+      "selectSketch": "Sketch",
+      "selectSketchHelp": "visual guide",
+      "expandRatio": "Expanded ratio",
+      "undo": "Undo",
+      "undoShortcut": "Undo (Ctrl+Z)",
+      "redo": "Redo",
+      "redoShortcut": "Redo (Ctrl+Y)",
+      "continueEdit": "Continue",
+      "needImage": "Add an image before opening the editor.",
+      "regionReady": "Region ready",
+      "openEditorHint": "Open the editor to choose the area for this function.",
+      "editorTitle": "Region editor",
+      "editorDescription": "Choose an area for the image edit node.",
+      "modelOutput": "Output",
+      "modelOutputGenerate": "run selected model",
+      "noMatchedModels": "No matching image edit model is available in the local model cache yet.",
+      "missingSelectedModel": "The selected model is not available locally. Choose a supported image edit model from the list before running.",
+      "incompatibleSelectedModel": "The selected model does not support this paint function. Choose a compatible image edit model from the list before running.",
+      "repaintModelHint": "Runs the selected model with the marked frame, mask when supported, and prompt.",
+      "eraseHint": "Runs the existing image eraser with the brushed area.",
+      "expandHint": "Runs the selected expand model with the current canvas.",
+      "regionOnlyHint": "Outputs only the selected region mask.",
+      "directToolHint": "Runs the matching free tool when the workflow runs.",
+      "cutoutHint": "Select a subject or area, then output it with a transparent background.",
+      "enhanceHint": "Runs the selected enhancement model on the current canvas.",
+      "faceEnhanceHint": "Enhances faces detected in the current canvas.",
+      "enhanceModel": "Model",
+      "enhanceScale": "Scale",
+      "cutoutModel": "Model",
+      "faceEnhanceNoParams": "Detects faces automatically; no extra settings are needed.",
+      "useResultAsCanvas": "Use as canvas",
+      "resetCanvas": "Reset to input",
+      "usingWorkingImage": "Current canvas: edited result",
+      "usingInputImage": "Current canvas: upstream input",
+      "prompts": {
+        "repaintPaint": "Redraw the painted area naturally while preserving surrounding details.",
+        "repaintBox": "Redraw the selected rectangular area naturally while preserving surrounding details.",
+        "repaintLasso": "Redraw the selected freeform area with a natural, seamless result.",
+        "repaintSketch": "Follow the red sketch as visual guidance and redraw the selected area naturally.",
+        "erase": "Remove the selected object or area and reconstruct the background naturally.",
+        "expand": "Extend the image naturally beyond the original frame, preserving style, lighting, and perspective."
+      },
+      "modeCutout": "AI cutout",
+      "backgroundRemoveHint": "Removes the full image background automatically.",
+      "backgroundRemoveModel": "Model",
+      "selectSubject": "Select subject",
+      "cutoutSelectionRequired": "Select the subject on the image",
+      "cutoutSelectionRequiredHint": "Click to include the subject; right-click areas to exclude, then continue.",
+      "resultAsCanvasHint": "Sets this result as the current canvas for the next selection and run.",
+      "interactiveResultAsCanvasHint": "This editor result has not run yet. Use it as the current canvas before the next edit."
     },
     "guide": {
       "skip": "Skip",

@@ -16,6 +16,7 @@ export interface PortDefinition {
   label: string;
   dataType: PortDataType;
   required: boolean;
+  description?: string;
 }
 
 export type ParamType =

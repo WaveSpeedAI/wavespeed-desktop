@@ -1,4 +1,4 @@
-﻿{
+{
   "common": {
     "loading": "Laden...",
     "save": "Speichern",
@@ -1082,6 +1082,25 @@
     "selectDirectory": "Verzeichnis auswählen",
     "openFolder": "Ordner öffnen",
     "openWorkflowFolder": "Workflow-Ordner öffnen",
+    "extractFrame": {
+      "needVideo": "Verbinden oder laden Sie ein Video hoch und scrubben Sie die Vorschau, um ein Bild auszuwählen.",
+      "loadFailed": "Diese Videovorschau konnte nicht geladen werden.",
+      "previousFrame": "Vorheriges Bild",
+      "backFive": "5 Sekunden zurück",
+      "forwardFive": "5 Sekunden vor",
+      "nextFrame": "Nächstes Bild",
+      "captureResult": "Ausgewähltes Bild in Ergebnisse aufnehmen",
+      "capture": "Aufnehmen",
+      "clearVideo": "Video löschen",
+      "useUrl": "URL verwenden",
+      "videoHint": "Laden Sie ein Video hoch oder verbinden Sie eines von einem vorgelagerten Knoten, und scrubben Sie dann die Vorschau, um ein Bild auszuwählen.",
+      "saveToLocalFolder": "In lokalem Ordner speichern",
+      "localExportOff": "Lokaler Export ist deaktiviert",
+      "localExportOffHint": "Nicht festgelegt: kein zusätzlicher lokaler Export",
+      "customFolder": "Benutzerdefiniert",
+      "exportOff": "Aus",
+      "noFolderToOpen": "Kein Ordner festgelegt"
+    },
     "nodes": "Knoten",
     "config": "Konfiguration",
     "results": "Ergebnisse",
@@ -1311,6 +1330,20 @@
         "label": "Hintergrundentferner",
         "hint": "Bildhintergründe kostenlos automatisch entfernen"
       },
+      "free-tool/paint": {
+        "label": "Bild bearbeiten",
+        "hint": "Bild neu zeichnen, radieren, erweitern, per AI freistellen oder verbessern",
+        "inputs": {
+          "input": {
+            "label": "Bild"
+          }
+        },
+        "outputs": {
+          "output": {
+            "label": "Ausgabe"
+          }
+        }
+      },
       "free-tool/face-enhancer": {
         "label": "Gesichtsverbesserung",
         "hint": "Gesichter in Fotos kostenlos verbessern und restaurieren"
@@ -1341,6 +1374,29 @@
           },
           "invertMask": {
             "label": "Maske invertieren"
+          }
+        }
+      },
+      "free-tool/extract-frame": {
+        "label": "Frame extrahieren",
+        "hint": "Erfasst kostenlos ein Standbild von einem ausgewählten Videozeitpunkt",
+        "inputs": {
+          "input": {
+            "label": "Video"
+          }
+        },
+        "params": {
+          "time": {
+            "label": "Zeit (s)",
+            "description": "Der Zeitstempel des ausgewählten Bildes in Sekunden."
+          },
+          "format": {
+            "label": "Format",
+            "description": "Das Bildformat zum Speichern des erfassten Frames."
+          },
+          "outputDir": {
+            "label": "In lokalem Ordner speichern",
+            "description": "Optional. Legen Sie einen Ordner fest, um eine zusätzliche lokale Kopie des extrahierten Frames zu exportieren."
           }
         }
       },
@@ -1427,6 +1483,110 @@
       "optimizeOffHint": "Standard: keine Optimierung (mit Originaltext ausführen)",
       "manualOptimizedHint": "Manuell optimiert. Auto-on-Run wird übersprungen, bis der Text sich ändert.",
       "enterTextOrPrompt": "Text oder Prompt eingeben..."
+    },
+    "paintNode": {
+      "imageHint": "Lade ein Bild hoch oder verbinde ein extrahiertes Einzelbild und wähle dann einen Bearbeitungsmodus.",
+      "clearImage": "Bild löschen",
+      "modeRepaint": "Neu zeichnen",
+      "modeRegion": "Maske",
+      "modeErase": "Löschen",
+      "modeExpand": "Erweitern",
+      "modeRemoveBg": "Hintergrund entfernen",
+      "modeEnhance": "Verbessern",
+      "modeFace": "Gesicht verbessern",
+      "editImage": "Bild bearbeiten",
+      "paintHint": "Male den Bereich, der neu gezeichnet werden soll. Rechts ziehen oder Alt halten, um abzuziehen.",
+      "boxHint": "Ziehe ein Rechteck um den Bereich.",
+      "lassoHint": "Ziehe um den Bereich, um eine freie Auswahl zu schließen.",
+      "sketchHint": "Skizziere eine visuelle Vorgabe; der Strichbereich wird zum Bearbeitungsbereich.",
+      "eraseBrushHint": "Male über das Objekt oder den Bereich, der gelöscht werden soll.",
+      "clearRegion": "Bereich löschen",
+      "loadingMaskTools": "Maskenwerkzeuge werden geladen...",
+      "savingMask": "Maske wird gespeichert...",
+      "encoding": "Bild wird analysiert...",
+      "decoding": "Maske wird aktualisiert...",
+      "eraserSize": "Radierer",
+      "brushSize": "Pinsel",
+      "savingSelection": "Auswahl wird gespeichert...",
+      "selectionSaved": "Auswahl gespeichert",
+      "selectionRequired": "Wähle einen Bereich im Bild aus",
+      "functionSelected": "{{mode}} ausgewählt",
+      "savingSelectionHint": "Das markierte Bild, das an das Modell gesendet wird, wird vorbereitet.",
+      "selectionSavedHint": "Fahre fort, um die Bearbeitung zu konfigurieren. Die Vorschau ist bereit.",
+      "selectionRequiredHint": "Verwende das aktive Maskenwerkzeug auf dem Bild und fahre dann fort.",
+      "functionSelectedHint": "Fahre fort, um diese Funktion für die nächste AI-Generierung zu konfigurieren.",
+      "collapseTools": "Werkzeuge einklappen",
+      "expandTools": "Werkzeuge ausklappen",
+      "selectPaint": "Malen",
+      "selectPaintHelp": "schneller weicher Bereich",
+      "selectBox": "Rechteck",
+      "selectBoxHelp": "grober Block",
+      "selectLasso": "Lasso",
+      "selectLassoHelp": "freie Form",
+      "selectSketch": "Skizze",
+      "selectSketchHelp": "visuelle Vorgabe",
+      "expandRatio": "Erweiterungsverhältnis",
+      "undo": "Rückgängig",
+      "undoShortcut": "Rückgängig (Ctrl+Z)",
+      "redo": "Wiederholen",
+      "redoShortcut": "Wiederholen (Ctrl+Y)",
+      "continueEdit": "Weiter",
+      "needImage": "Füge ein Bild hinzu, bevor du den Editor öffnest.",
+      "regionReady": "Bereich bereit",
+      "openEditorHint": "Öffne den Editor, um den Bereich für diese Funktion auszuwählen.",
+      "editorTitle": "Bereichseditor",
+      "editorDescription": "Wähle einen Bereich für den Bildbearbeitungsknoten aus.",
+      "modelOutput": "Ausgabe",
+      "modelOutputGenerate": "ausgewähltes Modell ausführen",
+      "noMatchedModels": "Im lokalen Modellcache ist noch kein passendes Bildbearbeitungsmodell verfügbar.",
+      "missingSelectedModel": "Das ausgewählte Modell ist lokal nicht verfügbar. Wähle vor dem Ausführen ein unterstütztes Bildbearbeitungsmodell aus.",
+      "incompatibleSelectedModel": "Das ausgewählte Modell unterstützt diese Malfunktion nicht. Wähle vor dem Ausführen ein kompatibles Bildbearbeitungsmodell aus.",
+      "repaintModelHint": "Führt das ausgewählte Modell mit dem markierten Bild, einer Maske wenn unterstützt, und dem Prompt aus.",
+      "eraseHint": "Führt den vorhandenen Bildradierer mit dem gemalten Bereich aus.",
+      "expandHint": "Führt das ausgewählte Erweiterungsmodell mit der aktuellen Leinwand aus.",
+      "regionOnlyHint": "Gibt nur die Maske des ausgewählten Bereichs aus.",
+      "directToolHint": "Führt beim Start des Workflows das passende kostenlose Werkzeug aus.",
+      "prompts": {
+        "repaintPaint": "Zeichne den gemalten Bereich natürlich neu und erhalte die umliegenden Details.",
+        "repaintBox": "Zeichne den rechteckig ausgewählten Bereich natürlich neu und erhalte die umliegenden Details.",
+        "repaintLasso": "Zeichne den frei ausgewählten Bereich natürlich und nahtlos neu.",
+        "repaintSketch": "Folge der roten Skizze als visueller Vorgabe und zeichne den ausgewählten Bereich natürlich neu.",
+        "erase": "Entferne das ausgewählte Objekt oder den Bereich und rekonstruiere den Hintergrund natürlich.",
+        "expand": "Erweitere das Bild natürlich über den ursprünglichen Rahmen hinaus und erhalte Stil, Licht und Perspektive."
+      },
+      "function": "Funktion",
+      "selectRegion": "Bereich auswählen",
+      "adjustCanvas": "Leinwand anpassen",
+      "repaintScope": "Bearbeitungsbereich",
+      "repaintScopeRegion": "Lokaler Bereich",
+      "repaintScopeRegionHint": "Eine Maske oder markierte Region verwenden.",
+      "repaintScopeFull": "Ganzes Bild",
+      "repaintScopeFullHint": "Ohne Bereichsauswahl bearbeiten.",
+      "expandSettings": "Leinwand",
+      "repaintPrompt": "Repaint-Prompt",
+      "repaintPromptRegionPlaceholder": "Beschreibe, was im ausgewählten Bereich erscheinen soll.",
+      "repaintPromptFullPlaceholder": "Beschreibe, wie das gesamte Bild bearbeitet werden soll.",
+      "expandPrompt": "Erweiterungs-Prompt",
+      "expandPromptPlaceholder": "Beschreibe, wie der neue Leinwandbereich das Originalbild natürlich fortsetzen soll.",
+      "cutoutHint": "Waehle ein Motiv oder einen Bereich aus und gib es mit transparentem Hintergrund aus.",
+      "enhanceHint": "Führt das ausgewählte Verbesserungsmodell auf der aktuellen Leinwand aus.",
+      "faceEnhanceHint": "Verbessert erkannte Gesichter auf der aktuellen Leinwand.",
+      "enhanceModel": "Modell",
+      "enhanceScale": "Skalierung",
+      "cutoutModel": "Modell",
+      "faceEnhanceNoParams": "Gesichter werden automatisch erkannt; keine weiteren Einstellungen erforderlich.",
+      "useResultAsCanvas": "Als Leinwand nutzen",
+      "resetCanvas": "Auf Eingabe zurücksetzen",
+      "usingWorkingImage": "Aktuelle Leinwand: bearbeitetes Ergebnis",
+      "usingInputImage": "Aktuelle Leinwand: Eingabe",
+      "modeCutout": "KI-Freistellen",
+      "backgroundRemoveHint": "Entfernt automatisch den Hintergrund des gesamten Bildes.",
+      "backgroundRemoveModel": "Modell",
+      "selectSubject": "Motiv auswaehlen",
+      "cutoutSelectionRequired": "Waehle das Motiv im Bild aus",
+      "cutoutSelectionRequiredHint": "Klicken zum Einschliessen; Rechtsklick zum Ausschliessen, dann fortfahren.",
+      "resultAsCanvasHint": "Legt dieses Ergebnis als aktuelle Leinwand fuer die naechste Auswahl und Ausfuehrung fest.",
+      "interactiveResultAsCanvasHint": "Dieses Editor-Ergebnis wurde noch nicht ausgefuehrt. Nutze es vor der naechsten Bearbeitung als aktuelle Leinwand."
     },
     "guide": {
       "skip": "Überspringen",

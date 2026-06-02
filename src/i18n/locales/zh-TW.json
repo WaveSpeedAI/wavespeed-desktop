@@ -1,4 +1,4 @@
-﻿{
+{
   "common": {
     "loading": "載入中...",
     "save": "儲存",
@@ -1079,6 +1079,25 @@
     "selectDirectory": "選擇目錄",
     "openFolder": "開啟資料夾",
     "openWorkflowFolder": "開啟工作流程目錄",
+    "extractFrame": {
+      "needVideo": "連接或上傳影片，然後拖動預覽選擇一幀。",
+      "loadFailed": "無法載入此影片預覽。",
+      "previousFrame": "上一幀",
+      "backFive": "後退 5 秒",
+      "forwardFive": "前進 5 秒",
+      "nextFrame": "下一幀",
+      "captureResult": "將目前影格擷取到結果中",
+      "capture": "擷取影格",
+      "clearVideo": "清除影片",
+      "useUrl": "使用 URL",
+      "videoHint": "上傳影片或連接上游節點的影片，然後拖動預覽選擇一幀。",
+      "saveToLocalFolder": "儲存到本機資料夾",
+      "localExportOff": "本機匯出已關閉",
+      "localExportOffHint": "未設定：不會額外匯出到本機",
+      "customFolder": "自訂",
+      "exportOff": "關閉",
+      "noFolderToOpen": "未設定資料夾"
+    },
     "nodes": "節點",
     "config": "配置",
     "results": "結果",
@@ -1268,6 +1287,20 @@
         "label": "背景移除",
         "hint": "免費自動移除圖片背景"
       },
+      "free-tool/paint": {
+        "label": "圖片編輯",
+        "hint": "統一進行區域重繪、擦除、擴圖、AI 去背或增強",
+        "inputs": {
+          "input": {
+            "label": "圖片"
+          }
+        },
+        "outputs": {
+          "output": {
+            "label": "輸出"
+          }
+        }
+      },
       "free-tool/face-enhancer": {
         "label": "人臉增強",
         "hint": "免費增強和修復照片中的人臉"
@@ -1298,6 +1331,29 @@
           },
           "invertMask": {
             "label": "反轉遮罩"
+          }
+        }
+      },
+      "free-tool/extract-frame": {
+        "label": "擷取影格",
+        "hint": "從影片指定時間點免費擷取靜態圖片",
+        "inputs": {
+          "input": {
+            "label": "影片"
+          }
+        },
+        "params": {
+          "time": {
+            "label": "時間（秒）",
+            "description": "所選影格在影片中的時間戳，單位為秒。"
+          },
+          "format": {
+            "label": "格式",
+            "description": "儲存擷取影格時使用的圖片格式。"
+          },
+          "outputDir": {
+            "label": "儲存到本機資料夾",
+            "description": "可選。設定資料夾後，會額外匯出一份擷取影格到本機。"
           }
         }
       },
@@ -1384,6 +1440,110 @@
       "optimizeOffHint": "預設：不優化（以原文執行）",
       "manualOptimizedHint": "已手動優化。文字變更前將略過執行時自動優化。",
       "enterTextOrPrompt": "輸入文字或提示詞..."
+    },
+    "paintNode": {
+      "imageHint": "上傳圖片或連接上游圖片，然後選擇編輯方式。",
+      "clearImage": "清除圖片",
+      "modeRepaint": "重繪",
+      "modeRegion": "遮罩",
+      "modeErase": "擦除",
+      "modeExpand": "擴圖",
+      "modeRemoveBg": "移除背景",
+      "modeEnhance": "增強",
+      "modeFace": "人臉增強",
+      "editImage": "編輯圖片",
+      "paintHint": "塗抹需要重繪的區域。右鍵拖曳或按住 Alt 可減去區域。",
+      "boxHint": "拖曳框選需要處理的區域。",
+      "lassoHint": "拖曳圈出自由形狀區域，放開後閉合選取。",
+      "sketchHint": "繪製視覺參考，筆觸區域會作為編輯區域。",
+      "eraseBrushHint": "塗抹需要擦除的物體或區域。",
+      "clearRegion": "清除區域",
+      "loadingMaskTools": "正在載入遮罩工具...",
+      "savingMask": "正在儲存遮罩...",
+      "encoding": "正在分析圖片...",
+      "decoding": "正在更新遮罩...",
+      "eraserSize": "橡皮擦",
+      "brushSize": "筆刷",
+      "savingSelection": "正在儲存選取...",
+      "selectionSaved": "選取已儲存",
+      "selectionRequired": "在畫面上選擇一個區域",
+      "functionSelected": "已選擇{{mode}}",
+      "savingSelectionHint": "正在準備將傳送給模型的標記圖片。",
+      "selectionSavedHint": "繼續設定編輯參數。待傳送預覽已準備好。",
+      "selectionRequiredHint": "使用目前遮罩工具在圖片上選擇區域，然後繼續。",
+      "functionSelectedHint": "繼續設定此功能，工作流程執行時會使用它。",
+      "collapseTools": "收合工具",
+      "expandTools": "展開工具",
+      "selectPaint": "筆刷",
+      "selectPaintHelp": "快速柔和選取",
+      "selectBox": "框選",
+      "selectBoxHelp": "粗略區塊",
+      "selectLasso": "套索",
+      "selectLassoHelp": "自由形狀",
+      "selectSketch": "草圖",
+      "selectSketchHelp": "視覺參考",
+      "expandRatio": "擴圖比例",
+      "undo": "復原",
+      "undoShortcut": "復原 (Ctrl+Z)",
+      "redo": "重做",
+      "redoShortcut": "重做 (Ctrl+Y)",
+      "continueEdit": "繼續",
+      "needImage": "請先新增圖片，再開啟編輯器。",
+      "regionReady": "區域已準備",
+      "openEditorHint": "開啟編輯器選擇目前功能要處理的區域。",
+      "editorTitle": "區域編輯器",
+      "editorDescription": "為圖片編輯節點選擇處理區域。",
+      "modelOutput": "輸出",
+      "modelOutputGenerate": "執行所選模型",
+      "noMatchedModels": "本機模型快取中還沒有匹配的圖片編輯模型。",
+      "missingSelectedModel": "所選模型目前不在本機列表中。執行前請從列表中選擇支援的圖片編輯模型。",
+      "incompatibleSelectedModel": "所選模型不支援目前重繪功能。執行前請從列表中選擇相容的圖片編輯模型。",
+      "repaintModelHint": "使用標記後的圖片、支援時的遮罩，以及提示詞執行所選模型。",
+      "eraseHint": "使用塗抹區域執行內建圖片擦除工具。",
+      "expandHint": "使用目前畫布和所選擴圖模型執行擴圖。",
+      "regionOnlyHint": "只輸出所選區域的遮罩。",
+      "directToolHint": "工作流程執行時執行匹配的內建免費工具。",
+      "prompts": {
+        "repaintPaint": "自然重繪塗抹區域，同時保留周圍細節。",
+        "repaintBox": "自然重繪框選區域，同時保留周圍細節。",
+        "repaintLasso": "自然無縫地重繪套索選擇的區域。",
+        "repaintSketch": "參考紅色草圖進行自然重繪，並保留選區周圍細節。",
+        "erase": "移除選中的物體或區域，並自然重建背景。",
+        "expand": "在原圖邊界外自然擴展畫面，並保持風格、光線和透視一致。"
+      },
+      "function": "功能",
+      "selectRegion": "選擇區域",
+      "adjustCanvas": "調整畫布",
+      "repaintScope": "編輯範圍",
+      "repaintScopeRegion": "局部區域",
+      "repaintScopeRegionHint": "使用選區遮罩或標記區域。",
+      "repaintScopeFull": "整圖編輯",
+      "repaintScopeFullHint": "不選擇區域，直接編輯目前畫布。",
+      "expandSettings": "畫布",
+      "repaintPrompt": "重繪提示詞",
+      "repaintPromptRegionPlaceholder": "描述選中區域要變成什麼樣。",
+      "repaintPromptFullPlaceholder": "描述整張圖片要如何編輯。",
+      "expandPrompt": "擴圖提示詞",
+      "expandPromptPlaceholder": "描述新增畫布區域如何自然延續原圖。",
+      "cutoutHint": "選擇主體或區域後，輸出透明背景的去背結果。",
+      "enhanceHint": "使用所選增強模型處理目前畫布。",
+      "faceEnhanceHint": "自動偵測並增強目前畫布中的人臉。",
+      "enhanceModel": "模型",
+      "enhanceScale": "倍率",
+      "cutoutModel": "模型",
+      "faceEnhanceNoParams": "自動偵測人臉，無需額外設定。",
+      "useResultAsCanvas": "設為目前畫布",
+      "resetCanvas": "重設為輸入圖",
+      "usingWorkingImage": "目前畫布：編輯結果",
+      "usingInputImage": "目前畫布：上游輸入",
+      "modeCutout": "AI 去背",
+      "backgroundRemoveHint": "自動移除整張圖的背景。",
+      "backgroundRemoveModel": "模型",
+      "selectSubject": "選擇主體",
+      "cutoutSelectionRequired": "在圖片上選擇主體",
+      "cutoutSelectionRequiredHint": "點擊加入主體區域；右鍵點擊排除區域，然後繼續。",
+      "resultAsCanvasHint": "將這個結果設為目前畫布，下一次選區和執行都會基於它。",
+      "interactiveResultAsCanvasHint": "這是編輯器中產生的結果，尚未執行；設為目前畫布後再繼續下一次編輯。"
     },
     "promptOptimizer": {
       "optimizationFailed": "優化失敗",

@@ -3113,6 +3113,16 @@ function PreviewSelectAsOutput({
         [selectedNodeId]: groupIndex,
       },
     }));
+    const node = useWorkflowStore
+      .getState()
+      .nodes.find((n) => n.id === selectedNodeId);
+    if (!node) return;
+    const params = (node.data.params ?? {}) as Record<string, unknown>;
+    useWorkflowStore.getState().updateNodeParams(selectedNodeId, {
+      ...params,
+      __selectedOutputUrl: currentUrl,
+      __selectedOutputUrls: lastResults[groupIndex]?.urls ?? [currentUrl],
+    });
   }, [selectedNodeId, lastResults, currentUrl, groupIndex]);
 
   if (!selectedNodeId || !lastResults || lastResults.length <= 1) return null;

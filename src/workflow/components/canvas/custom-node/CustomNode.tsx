@@ -33,6 +33,7 @@ import { formFieldsToModelParamSchema } from "../../../lib/model-converter";
 import type { NodeStatus } from "@/workflow/types/execution";
 import type { WaveSpeedModel } from "@/workflow/types/node-defs";
 import type { FormFieldConfig } from "@/lib/schemaToForm";
+import { PAINT_OUTPUT_DEFINITIONS } from "@/workflow/lib/paint-node-contract";
 
 import {
   Tooltip,
@@ -351,8 +352,13 @@ function CustomNodeComponent({
   );
 
   useEffect(() => {
-    if (isAITask && storeModels.length === 0) fetchModels();
-  }, [isAITask, storeModels.length, fetchModels]);
+    if (
+      (isAITask || data.nodeType === "free-tool/paint") &&
+      storeModels.length === 0
+    ) {
+      fetchModels();
+    }
+  }, [data.nodeType, isAITask, storeModels.length, fetchModels]);
 
   const orderedVisibleParams = useMemo(
     () =>
@@ -510,6 +516,7 @@ function CustomNodeComponent({
         | Record<string, unknown>
         | undefined;
       const candidates = [
+        String(sourceParams?.__selectedOutputUrl ?? ""),
         String(sourceParams?.uploadedUrl ?? ""),
         String(sourceParams?.output ?? ""),
         String(sourceParams?.input ?? ""),
@@ -1077,10 +1084,13 @@ function CustomNodeComponent({
         // HTTP Trigger: handles are rendered inline by DynamicFieldsEditor
         if (data.nodeType === "trigger/http") return null;
 
-        const outputDefs = (data.outputDefinitions ?? []) as Array<{
-          key: string;
-          label?: string;
-        }>;
+        const outputDefs =
+          data.nodeType === "free-tool/paint"
+            ? PAINT_OUTPUT_DEFINITIONS
+            : ((data.outputDefinitions ?? []) as Array<{
+                key: string;
+                label?: string;
+              }>);
         if (outputDefs.length > 1) {
           // Multiple output ports (e.g. HTTP Trigger with dynamic mappings)
           return outputDefs.map((def, idx) => {

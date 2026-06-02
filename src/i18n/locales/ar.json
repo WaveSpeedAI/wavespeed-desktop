@@ -1,4 +1,4 @@
-﻿{
+{
   "common": {
     "loading": "جاري التحميل...",
     "save": "حفظ",
@@ -1081,6 +1081,25 @@
     "selectDirectory": "اختر المجلد",
     "openFolder": "فتح المجلد",
     "openWorkflowFolder": "فتح مجلد سير العمل",
+    "extractFrame": {
+      "needVideo": "وصّل فيديو أو ارفعه، ثم حرّك المعاينة لاختيار إطار.",
+      "loadFailed": "تعذر تحميل معاينة الفيديو هذه.",
+      "previousFrame": "الإطار السابق",
+      "backFive": "رجوع 5 ثوانٍ",
+      "forwardFive": "تقديم 5 ثوانٍ",
+      "nextFrame": "الإطار التالي",
+      "captureResult": "التقاط الإطار المحدد إلى النتائج",
+      "capture": "التقاط",
+      "clearVideo": "مسح الفيديو",
+      "useUrl": "استخدام URL",
+      "videoHint": "ارفع فيديو أو وصّله من عقدة سابقة، ثم حرّك المعاينة لاختيار إطار.",
+      "saveToLocalFolder": "حفظ إلى مجلد محلي",
+      "localExportOff": "التصدير المحلي متوقف",
+      "localExportOffHint": "غير مضبوط: لا يوجد تصدير محلي إضافي",
+      "customFolder": "مخصص",
+      "exportOff": "إيقاف",
+      "noFolderToOpen": "لم يتم تعيين مجلد"
+    },
     "nodes": "العقد",
     "config": "الإعدادات",
     "results": "النتائج",
@@ -1310,6 +1329,20 @@
         "label": "إزالة الخلفية",
         "hint": "إزالة خلفيات الصور تلقائياً مجاناً"
       },
+      "free-tool/paint": {
+        "label": "تحرير الصورة",
+        "hint": "إعادة الرسم أو المسح أو التوسيع أو القص بالذكاء الاصطناعي أو تحسين الصورة",
+        "inputs": {
+          "input": {
+            "label": "صورة"
+          }
+        },
+        "outputs": {
+          "output": {
+            "label": "الناتج"
+          }
+        }
+      },
       "free-tool/face-enhancer": {
         "label": "محسن الوجوه",
         "hint": "تحسين واستعادة الوجوه في الصور مجاناً"
@@ -1340,6 +1373,29 @@
           },
           "invertMask": {
             "label": "عكس القناع"
+          }
+        }
+      },
+      "free-tool/extract-frame": {
+        "label": "استخراج إطار",
+        "hint": "التقاط صورة ثابتة مجانًا من وقت محدد في الفيديو",
+        "inputs": {
+          "input": {
+            "label": "فيديو"
+          }
+        },
+        "params": {
+          "time": {
+            "label": "الوقت (ث)",
+            "description": "الطابع الزمني للإطار المحدد بالثواني."
+          },
+          "format": {
+            "label": "الصيغة",
+            "description": "صيغة الصورة المستخدمة عند حفظ الإطار الملتقط."
+          },
+          "outputDir": {
+            "label": "حفظ إلى مجلد محلي",
+            "description": "اختياري. عيّن مجلدًا لتصدير نسخة محلية إضافية من الإطار المستخرج."
           }
         }
       },
@@ -1426,6 +1482,110 @@
       "optimizeOffHint": "الافتراضي: لا تحسين (تشغيل بالنص الأصلي)",
       "manualOptimizedHint": "تم التحسين يدويًا. سيتم تخطي التحسين التلقائي حتى يتغير النص.",
       "enterTextOrPrompt": "أدخل النص أو التلميح..."
+    },
+    "paintNode": {
+      "imageHint": "حمّل صورة أو اربط إطاراً مستخرجاً، ثم اختر وضع التحرير.",
+      "clearImage": "مسح الصورة",
+      "modeRepaint": "إعادة الرسم",
+      "modeRegion": "قناع",
+      "modeErase": "مسح",
+      "modeExpand": "توسيع",
+      "modeRemoveBg": "إزالة الخلفية",
+      "modeEnhance": "تحسين",
+      "modeFace": "تحسين الوجه",
+      "editImage": "تحرير الصورة",
+      "paintHint": "ارسم فوق المنطقة المطلوب إعادة رسمها. اسحب بزر الفأرة الأيمن أو اضغط Alt للطرح.",
+      "boxHint": "اسحب مستطيلاً حول المنطقة.",
+      "lassoHint": "اسحب حول المنطقة لإغلاق تحديد حر.",
+      "sketchHint": "ارسم دليلاً بصرياً؛ ستصبح منطقة الضربة هي منطقة التحرير.",
+      "eraseBrushHint": "ارسم فوق الكائن أو المنطقة المطلوب مسحها.",
+      "clearRegion": "مسح المنطقة",
+      "loadingMaskTools": "جارٍ تحميل أدوات القناع...",
+      "savingMask": "جارٍ حفظ القناع...",
+      "encoding": "جارٍ تحليل الصورة...",
+      "decoding": "جارٍ تحديث القناع...",
+      "eraserSize": "الممحاة",
+      "brushSize": "الفرشاة",
+      "savingSelection": "جارٍ حفظ التحديد...",
+      "selectionSaved": "تم حفظ التحديد",
+      "selectionRequired": "حدد منطقة في الإطار",
+      "functionSelected": "تم تحديد {{mode}}",
+      "savingSelectionHint": "جارٍ تجهيز الصورة المحددة التي ستُرسل إلى النموذج.",
+      "selectionSavedHint": "تابع لضبط التحرير. المعاينة المحفوظة جاهزة للتشغيل.",
+      "selectionRequiredHint": "استخدم أداة القناع النشطة على الصورة، ثم تابع.",
+      "functionSelectedHint": "تابع لضبط هذه الوظيفة للجيل التالي بالذكاء الاصطناعي.",
+      "collapseTools": "طي الأدوات",
+      "expandTools": "توسيع الأدوات",
+      "selectPaint": "رسم",
+      "selectPaintHelp": "منطقة ناعمة سريعة",
+      "selectBox": "مربع",
+      "selectBoxHelp": "كتلة تقريبية",
+      "selectLasso": "لاسو",
+      "selectLassoHelp": "شكل حر",
+      "selectSketch": "رسم تخطيطي",
+      "selectSketchHelp": "دليل بصري",
+      "expandRatio": "نسبة التوسيع",
+      "undo": "تراجع",
+      "undoShortcut": "تراجع (Ctrl+Z)",
+      "redo": "إعادة",
+      "redoShortcut": "إعادة (Ctrl+Y)",
+      "continueEdit": "متابعة",
+      "needImage": "أضف صورة قبل فتح المحرر.",
+      "regionReady": "المنطقة جاهزة",
+      "openEditorHint": "افتح المحرر لاختيار المنطقة الخاصة بهذه الوظيفة.",
+      "editorTitle": "محرر المنطقة",
+      "editorDescription": "اختر منطقة لعقدة تحرير الصورة.",
+      "modelOutput": "الناتج",
+      "modelOutputGenerate": "تشغيل النموذج المحدد",
+      "noMatchedModels": "لا يوجد بعد نموذج تحرير صور مطابق في ذاكرة النماذج المحلية.",
+      "missingSelectedModel": "النموذج المحدد غير متاح محلياً. اختر نموذج تحرير صور مدعوماً قبل التشغيل.",
+      "incompatibleSelectedModel": "النموذج المحدد لا يدعم وظيفة الرسم هذه. اختر نموذج تحرير صور متوافقاً قبل التشغيل.",
+      "repaintModelHint": "يشغّل النموذج المحدد باستخدام الإطار المحدد، والقناع عند دعمه، والتلميح.",
+      "eraseHint": "يشغّل أداة مسح الصور الحالية باستخدام المنطقة المرسومة.",
+      "expandHint": "يشغّل نموذج التوسيع المحدد باستخدام اللوحة الحالية.",
+      "regionOnlyHint": "يُخرج قناع المنطقة المحددة فقط.",
+      "directToolHint": "يشغّل الأداة المجانية المطابقة عند تشغيل سير العمل.",
+      "prompts": {
+        "repaintPaint": "أعد رسم المنطقة المرسومة بشكل طبيعي مع الحفاظ على التفاصيل المحيطة.",
+        "repaintBox": "أعد رسم المنطقة المستطيلة المحددة بشكل طبيعي مع الحفاظ على التفاصيل المحيطة.",
+        "repaintLasso": "أعد رسم المنطقة الحرة المحددة بنتيجة طبيعية وسلسة.",
+        "repaintSketch": "اتبع الرسم الأحمر كدليل بصري وأعد رسم المنطقة المحددة بشكل طبيعي.",
+        "erase": "أزل الكائن أو المنطقة المحددة وأعد بناء الخلفية بشكل طبيعي.",
+        "expand": "وسّع الصورة بشكل طبيعي خارج الإطار الأصلي مع الحفاظ على النمط والإضاءة والمنظور."
+      },
+      "function": "الوظيفة",
+      "selectRegion": "تحديد المنطقة",
+      "adjustCanvas": "ضبط اللوحة",
+      "repaintScope": "نطاق التحرير",
+      "repaintScopeRegion": "منطقة محلية",
+      "repaintScopeRegionHint": "استخدم قناعاً محدداً أو منطقة معلّمة.",
+      "repaintScopeFull": "الصورة كاملة",
+      "repaintScopeFullHint": "حرّر دون تحديد منطقة.",
+      "expandSettings": "اللوحة",
+      "repaintPrompt": "تلميح إعادة الرسم",
+      "repaintPromptRegionPlaceholder": "صف ما الذي يجب أن يظهر داخل المنطقة المحددة.",
+      "repaintPromptFullPlaceholder": "صف كيفية تحرير الصورة كاملة.",
+      "expandPrompt": "تلميح التوسيع",
+      "expandPromptPlaceholder": "صف كيف يجب أن تمتد منطقة اللوحة الجديدة بشكل طبيعي من الصورة الأصلية.",
+      "cutoutHint": "حدد كائنا أو منطقة ثم أخرجها بخلفية شفافة.",
+      "enhanceHint": "يشغّل نموذج التحسين المحدد على اللوحة الحالية.",
+      "faceEnhanceHint": "يحسّن الوجوه المكتشفة في اللوحة الحالية.",
+      "enhanceModel": "النموذج",
+      "enhanceScale": "المقياس",
+      "cutoutModel": "النموذج",
+      "faceEnhanceNoParams": "يتم اكتشاف الوجوه تلقائياً؛ لا توجد إعدادات إضافية مطلوبة.",
+      "useResultAsCanvas": "استخدمه كلوحة",
+      "resetCanvas": "إعادة التعيين إلى الإدخال",
+      "usingWorkingImage": "اللوحة الحالية: نتيجة معدلة",
+      "usingInputImage": "اللوحة الحالية: إدخال سابق",
+      "modeCutout": "قص AI",
+      "backgroundRemoveHint": "يزيل خلفية الصورة بالكامل تلقائيا.",
+      "backgroundRemoveModel": "النموذج",
+      "selectSubject": "تحديد العنصر",
+      "cutoutSelectionRequired": "حدد العنصر على الصورة",
+      "cutoutSelectionRequiredHint": "انقر لإضافة العنصر؛ انقر بالزر الأيمن لاستبعاد مناطق، ثم تابع.",
+      "resultAsCanvasHint": "يجعل هذه النتيجة هي اللوحة الحالية للاختيار والتشغيل التاليين.",
+      "interactiveResultAsCanvasHint": "هذه نتيجة من المحرر ولم يتم تشغيلها بعد. استخدمها كلوحة حالية قبل التعديل التالي."
     },
     "promptOptimizer": {
       "optimizationFailed": "فشل التحسين",

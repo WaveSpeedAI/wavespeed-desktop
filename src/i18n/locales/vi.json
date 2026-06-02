@@ -1,4 +1,4 @@
-﻿{
+{
   "common": {
     "loading": "Đang tải...",
     "save": "Lưu",
@@ -1081,6 +1081,25 @@
     "selectDirectory": "Chọn thư mục",
     "openFolder": "Mở thư mục",
     "openWorkflowFolder": "Mở thư mục quy trình làm việc",
+    "extractFrame": {
+      "needVideo": "Kết nối hoặc tải video lên, sau đó kéo phần xem trước để chọn một khung hình.",
+      "loadFailed": "Không thể tải phần xem trước video này.",
+      "previousFrame": "Khung hình trước",
+      "backFive": "Lùi 5 giây",
+      "forwardFive": "Tiến 5 giây",
+      "nextFrame": "Khung hình tiếp theo",
+      "captureResult": "Chụp khung hình đã chọn vào Kết quả",
+      "capture": "Chụp",
+      "clearVideo": "Xóa video",
+      "useUrl": "Dùng URL",
+      "videoHint": "Tải video lên hoặc kết nối từ nút phía trước, rồi kéo phần xem trước để chọn một khung hình.",
+      "saveToLocalFolder": "Lưu vào thư mục cục bộ",
+      "localExportOff": "Xuất cục bộ đang tắt",
+      "localExportOffHint": "Chưa đặt: không xuất thêm bản cục bộ",
+      "customFolder": "Tùy chỉnh",
+      "exportOff": "Tắt",
+      "noFolderToOpen": "Chưa đặt thư mục"
+    },
     "nodes": "Nút",
     "config": "Cấu hình",
     "results": "Kết quả",
@@ -1310,6 +1329,20 @@
         "label": "Xóa nền",
         "hint": "Tự động xóa nền hình ảnh miễn phí"
       },
+      "free-tool/paint": {
+        "label": "Chỉnh sửa ảnh",
+        "hint": "Vẽ lại, xóa, mở rộng, cắt nền bằng AI hoặc nâng cấp ảnh",
+        "inputs": {
+          "input": {
+            "label": "Hình ảnh"
+          }
+        },
+        "outputs": {
+          "output": {
+            "label": "Đầu ra"
+          }
+        }
+      },
       "free-tool/face-enhancer": {
         "label": "Tăng cường khuôn mặt",
         "hint": "Cải thiện và phục hồi khuôn mặt trong ảnh miễn phí"
@@ -1340,6 +1373,29 @@
           },
           "invertMask": {
             "label": "Đảo ngược mặt nạ"
+          }
+        }
+      },
+      "free-tool/extract-frame": {
+        "label": "Trích xuất khung hình",
+        "hint": "Chụp miễn phí ảnh tĩnh từ thời điểm đã chọn trong video",
+        "inputs": {
+          "input": {
+            "label": "Video"
+          }
+        },
+        "params": {
+          "time": {
+            "label": "Thời gian (giây)",
+            "description": "Mốc thời gian của khung hình đã chọn, tính bằng giây."
+          },
+          "format": {
+            "label": "Định dạng",
+            "description": "Định dạng ảnh dùng khi lưu khung hình đã chụp."
+          },
+          "outputDir": {
+            "label": "Lưu vào thư mục cục bộ",
+            "description": "Tùy chọn. Đặt thư mục để xuất thêm một bản sao cục bộ của khung hình đã trích xuất."
           }
         }
       },
@@ -1426,6 +1482,110 @@
       "optimizeOffHint": "Mặc định: không tối ưu (chạy với văn gốc)",
       "manualOptimizedHint": "Đã tối ưu thủ công. Bỏ qua tối ưu tự động cho đến khi văn bản thay đổi.",
       "enterTextOrPrompt": "Nhập văn bản hoặc gợi ý..."
+    },
+    "paintNode": {
+      "imageHint": "Tải ảnh lên hoặc kết nối khung hình đã trích xuất, rồi chọn chế độ chỉnh sửa.",
+      "clearImage": "Xóa ảnh",
+      "modeRepaint": "Vẽ lại",
+      "modeRegion": "Mặt nạ",
+      "modeErase": "Xóa",
+      "modeExpand": "Mở rộng",
+      "modeRemoveBg": "Xoa nen",
+      "modeEnhance": "Tăng cường",
+      "modeFace": "Tăng cường khuôn mặt",
+      "editImage": "Chỉnh sửa ảnh",
+      "paintHint": "Tô vùng cần vẽ lại. Kéo chuột phải hoặc giữ Alt để trừ bớt.",
+      "boxHint": "Kéo một hình chữ nhật quanh vùng.",
+      "lassoHint": "Kéo quanh vùng để đóng lựa chọn tự do.",
+      "sketchHint": "Phác thảo hướng dẫn trực quan; vùng nét vẽ sẽ trở thành vùng chỉnh sửa.",
+      "eraseBrushHint": "Tô lên đối tượng hoặc vùng cần xóa.",
+      "clearRegion": "Xóa vùng",
+      "loadingMaskTools": "Đang tải công cụ mặt nạ...",
+      "savingMask": "Đang lưu mặt nạ...",
+      "encoding": "Đang phân tích ảnh...",
+      "decoding": "Đang cập nhật mặt nạ...",
+      "eraserSize": "Tẩy",
+      "brushSize": "Cọ",
+      "savingSelection": "Đang lưu lựa chọn...",
+      "selectionSaved": "Đã lưu lựa chọn",
+      "selectionRequired": "Chọn một vùng trên khung hình",
+      "functionSelected": "Đã chọn {{mode}}",
+      "savingSelectionHint": "Đang chuẩn bị ảnh đã đánh dấu để gửi tới mô hình.",
+      "selectionSavedHint": "Tiếp tục để cấu hình chỉnh sửa. Bản xem trước đã sẵn sàng chạy.",
+      "selectionRequiredHint": "Dùng công cụ mặt nạ đang bật trên ảnh, rồi tiếp tục.",
+      "functionSelectedHint": "Tiếp tục cấu hình chức năng này cho lần tạo AI tiếp theo.",
+      "collapseTools": "Thu gọn công cụ",
+      "expandTools": "Mở rộng công cụ",
+      "selectPaint": "Tô",
+      "selectPaintHelp": "vùng mềm nhanh",
+      "selectBox": "Hộp",
+      "selectBoxHelp": "khối thô",
+      "selectLasso": "Lasso",
+      "selectLassoHelp": "hình tự do",
+      "selectSketch": "Phác thảo",
+      "selectSketchHelp": "hướng dẫn trực quan",
+      "expandRatio": "Tỷ lệ mở rộng",
+      "undo": "Hoàn tác",
+      "undoShortcut": "Hoàn tác (Ctrl+Z)",
+      "redo": "Làm lại",
+      "redoShortcut": "Làm lại (Ctrl+Y)",
+      "continueEdit": "Tiếp tục",
+      "needImage": "Thêm ảnh trước khi mở trình chỉnh sửa.",
+      "regionReady": "Vùng đã sẵn sàng",
+      "openEditorHint": "Mở trình chỉnh sửa để chọn vùng cho chức năng này.",
+      "editorTitle": "Trình chỉnh sửa vùng",
+      "editorDescription": "Chọn một vùng cho node chỉnh sửa ảnh.",
+      "modelOutput": "Đầu ra",
+      "modelOutputGenerate": "chạy mô hình đã chọn",
+      "noMatchedModels": "Chưa có mô hình chỉnh sửa ảnh phù hợp trong bộ nhớ đệm mô hình cục bộ.",
+      "missingSelectedModel": "Mô hình đã chọn không có sẵn cục bộ. Hãy chọn mô hình chỉnh sửa ảnh được hỗ trợ trước khi chạy.",
+      "incompatibleSelectedModel": "Mô hình đã chọn không hỗ trợ chức năng tô này. Hãy chọn mô hình chỉnh sửa ảnh tương thích trước khi chạy.",
+      "repaintModelHint": "Chạy mô hình đã chọn với khung hình đã đánh dấu, mặt nạ khi được hỗ trợ và prompt.",
+      "eraseHint": "Chạy công cụ xóa ảnh hiện có với vùng đã tô.",
+      "expandHint": "Chạy mô hình mở rộng đã chọn với canvas hiện tại.",
+      "regionOnlyHint": "Chỉ xuất mặt nạ của vùng đã chọn.",
+      "directToolHint": "Chạy công cụ miễn phí phù hợp khi workflow chạy.",
+      "prompts": {
+        "repaintPaint": "Vẽ lại vùng đã tô một cách tự nhiên trong khi giữ các chi tiết xung quanh.",
+        "repaintBox": "Vẽ lại vùng hình chữ nhật đã chọn một cách tự nhiên trong khi giữ các chi tiết xung quanh.",
+        "repaintLasso": "Vẽ lại vùng tự do đã chọn với kết quả tự nhiên và liền mạch.",
+        "repaintSketch": "Theo phác thảo màu đỏ làm hướng dẫn trực quan và vẽ lại vùng đã chọn một cách tự nhiên.",
+        "erase": "Xóa đối tượng hoặc vùng đã chọn và tái tạo nền một cách tự nhiên.",
+        "expand": "Mở rộng ảnh tự nhiên ra ngoài khung ban đầu, giữ phong cách, ánh sáng và phối cảnh."
+      },
+      "function": "Chức năng",
+      "selectRegion": "Chọn vùng",
+      "adjustCanvas": "Điều chỉnh canvas",
+      "repaintScope": "Phạm vi chỉnh sửa",
+      "repaintScopeRegion": "Vùng cục bộ",
+      "repaintScopeRegionHint": "Dùng mask đã chọn hoặc vùng được đánh dấu.",
+      "repaintScopeFull": "Toàn ảnh",
+      "repaintScopeFullHint": "Chỉnh sửa mà không chọn vùng.",
+      "expandSettings": "Canvas",
+      "repaintPrompt": "Prompt vẽ lại",
+      "repaintPromptRegionPlaceholder": "Mô tả nội dung nên xuất hiện trong vùng đã chọn.",
+      "repaintPromptFullPlaceholder": "Mô tả cách chỉnh sửa toàn bộ ảnh.",
+      "expandPrompt": "Prompt mở rộng",
+      "expandPromptPlaceholder": "Mô tả cách vùng canvas mới tiếp nối tự nhiên ảnh gốc.",
+      "cutoutHint": "Chon chu the hoac vung, roi xuat ket qua voi nen trong suot.",
+      "enhanceHint": "Chạy mô hình nâng cấp đã chọn trên canvas hiện tại.",
+      "faceEnhanceHint": "Nâng cấp các khuôn mặt được phát hiện trong canvas hiện tại.",
+      "enhanceModel": "Mô hình",
+      "enhanceScale": "Tỉ lệ",
+      "cutoutModel": "Mô hình",
+      "faceEnhanceNoParams": "Khuôn mặt được phát hiện tự động; không cần cài đặt thêm.",
+      "useResultAsCanvas": "Dung lam canvas",
+      "resetCanvas": "Đặt lại về đầu vào",
+      "usingWorkingImage": "Canvas hien tai: ket qua da sua",
+      "usingInputImage": "Canvas hien tai: dau vao truoc",
+      "modeCutout": "Tach nen AI",
+      "backgroundRemoveHint": "Tu dong xoa nen cua toan bo hinh anh.",
+      "backgroundRemoveModel": "Mo hinh",
+      "selectSubject": "Chon chu the",
+      "cutoutSelectionRequired": "Chon chu the tren hinh anh",
+      "cutoutSelectionRequiredHint": "Bam de them chu the; nhap chuot phai de loai tru vung, roi tiep tuc.",
+      "resultAsCanvasHint": "Dat ket qua nay lam canvas hien tai cho lan chon va chay tiep theo.",
+      "interactiveResultAsCanvasHint": "Ket qua trong trinh sua nay chua duoc chay. Hay dung no lam canvas hien tai truoc lan sua tiep theo."
     },
     "promptOptimizer": {
       "optimizationFailed": "Tối ưu thất bại",

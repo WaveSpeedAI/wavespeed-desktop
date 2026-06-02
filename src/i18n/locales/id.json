@@ -1,4 +1,4 @@
-﻿{
+{
   "common": {
     "loading": "Memuat...",
     "save": "Simpan",
@@ -1081,6 +1081,25 @@
     "selectDirectory": "Pilih direktori",
     "openFolder": "Buka folder",
     "openWorkflowFolder": "Buka folder alur kerja",
+    "extractFrame": {
+      "needVideo": "Hubungkan atau unggah video, lalu geser pratinjau untuk memilih frame.",
+      "loadFailed": "Pratinjau video ini tidak dapat dimuat.",
+      "previousFrame": "Frame sebelumnya",
+      "backFive": "Mundur 5 detik",
+      "forwardFive": "Maju 5 detik",
+      "nextFrame": "Frame berikutnya",
+      "captureResult": "Tangkap frame yang dipilih ke Hasil",
+      "capture": "Tangkap",
+      "clearVideo": "Hapus video",
+      "useUrl": "Gunakan URL",
+      "videoHint": "Unggah video atau hubungkan dari node upstream, lalu geser pratinjau untuk memilih frame.",
+      "saveToLocalFolder": "Simpan ke folder lokal",
+      "localExportOff": "Ekspor lokal nonaktif",
+      "localExportOffHint": "Belum diatur: tidak ada ekspor lokal tambahan",
+      "customFolder": "Kustom",
+      "exportOff": "Nonaktif",
+      "noFolderToOpen": "Belum ada folder"
+    },
     "nodes": "Node",
     "config": "Konfigurasi",
     "results": "Hasil",
@@ -1310,6 +1329,20 @@
         "label": "Penghapus latar belakang",
         "hint": "Hapus latar belakang gambar secara otomatis dan gratis"
       },
+      "free-tool/paint": {
+        "label": "Edit gambar",
+        "hint": "Repaint, hapus, perluas, cutout AI, atau tingkatkan gambar",
+        "inputs": {
+          "input": {
+            "label": "Gambar"
+          }
+        },
+        "outputs": {
+          "output": {
+            "label": "Output"
+          }
+        }
+      },
       "free-tool/face-enhancer": {
         "label": "Peningkat wajah",
         "hint": "Tingkatkan dan pulihkan wajah di foto secara gratis"
@@ -1340,6 +1373,29 @@
           },
           "invertMask": {
             "label": "Balikkan topeng"
+          }
+        }
+      },
+      "free-tool/extract-frame": {
+        "label": "Ekstrak frame",
+        "hint": "Menangkap gambar diam dari waktu video yang dipilih secara gratis",
+        "inputs": {
+          "input": {
+            "label": "Video"
+          }
+        },
+        "params": {
+          "time": {
+            "label": "Waktu (d)",
+            "description": "Timestamp frame yang dipilih dalam detik."
+          },
+          "format": {
+            "label": "Format",
+            "description": "Format gambar yang digunakan saat menyimpan frame yang ditangkap."
+          },
+          "outputDir": {
+            "label": "Simpan ke folder lokal",
+            "description": "Opsional. Atur folder untuk mengekspor salinan lokal tambahan dari frame yang diekstrak."
           }
         }
       },
@@ -1426,6 +1482,110 @@
       "optimizeOffHint": "Default: tidak ada optimisasi (jalankan dengan teks asli)",
       "manualOptimizedHint": "Dioptimalkan secara manual. Auto-on-run akan dilewati hingga teks berubah.",
       "enterTextOrPrompt": "Masukkan teks atau prompt..."
+    },
+    "paintNode": {
+      "imageHint": "Unggah gambar atau hubungkan frame yang diekstrak, lalu pilih mode edit.",
+      "clearImage": "Hapus gambar",
+      "modeRepaint": "Gambar ulang",
+      "modeRegion": "Masker",
+      "modeErase": "Hapus",
+      "modeExpand": "Perluas",
+      "modeRemoveBg": "Hapus latar",
+      "modeEnhance": "Tingkatkan",
+      "modeFace": "Tingkatkan wajah",
+      "editImage": "Edit gambar",
+      "paintHint": "Sapukan area yang akan digambar ulang. Seret kanan atau tahan Alt untuk mengurangi.",
+      "boxHint": "Seret persegi panjang di sekitar area.",
+      "lassoHint": "Seret mengelilingi area untuk menutup seleksi bebas.",
+      "sketchHint": "Buat sketsa panduan visual; area goresan menjadi area edit.",
+      "eraseBrushHint": "Sapukan pada objek atau area yang ingin dihapus.",
+      "clearRegion": "Hapus area",
+      "loadingMaskTools": "Memuat alat masker...",
+      "savingMask": "Menyimpan masker...",
+      "encoding": "Menganalisis gambar...",
+      "decoding": "Memperbarui masker...",
+      "eraserSize": "Penghapus",
+      "brushSize": "Kuas",
+      "savingSelection": "Menyimpan pilihan...",
+      "selectionSaved": "Pilihan disimpan",
+      "selectionRequired": "Pilih area pada frame",
+      "functionSelected": "{{mode}} dipilih",
+      "savingSelectionHint": "Menyiapkan gambar bertanda yang akan dikirim ke model.",
+      "selectionSavedHint": "Lanjutkan untuk mengatur edit. Pratinjau tersimpan siap dijalankan.",
+      "selectionRequiredHint": "Gunakan alat masker aktif pada gambar, lalu lanjutkan.",
+      "functionSelectedHint": "Lanjutkan untuk mengatur fungsi ini untuk generasi AI berikutnya.",
+      "collapseTools": "Ciutkan alat",
+      "expandTools": "Bentangkan alat",
+      "selectPaint": "Kuas",
+      "selectPaintHelp": "area lembut cepat",
+      "selectBox": "Kotak",
+      "selectBoxHelp": "blok kasar",
+      "selectLasso": "Lasso",
+      "selectLassoHelp": "bentuk bebas",
+      "selectSketch": "Sketsa",
+      "selectSketchHelp": "panduan visual",
+      "expandRatio": "Rasio perluasan",
+      "undo": "Urungkan",
+      "undoShortcut": "Urungkan (Ctrl+Z)",
+      "redo": "Ulangi",
+      "redoShortcut": "Ulangi (Ctrl+Y)",
+      "continueEdit": "Lanjutkan",
+      "needImage": "Tambahkan gambar sebelum membuka editor.",
+      "regionReady": "Area siap",
+      "openEditorHint": "Buka editor untuk memilih area fungsi ini.",
+      "editorTitle": "Editor area",
+      "editorDescription": "Pilih area untuk node edit gambar.",
+      "modelOutput": "Output",
+      "modelOutputGenerate": "jalankan model terpilih",
+      "noMatchedModels": "Belum ada model edit gambar yang cocok di cache model lokal.",
+      "missingSelectedModel": "Model yang dipilih tidak tersedia secara lokal. Pilih model edit gambar yang didukung sebelum menjalankan.",
+      "incompatibleSelectedModel": "Model yang dipilih tidak mendukung fungsi paint ini. Pilih model edit gambar yang kompatibel sebelum menjalankan.",
+      "repaintModelHint": "Menjalankan model terpilih dengan frame bertanda, masker jika didukung, dan prompt.",
+      "eraseHint": "Menjalankan penghapus gambar yang ada dengan area yang disapukan.",
+      "expandHint": "Menjalankan model perluasan terpilih dengan kanvas saat ini.",
+      "regionOnlyHint": "Mengeluarkan hanya masker area yang dipilih.",
+      "directToolHint": "Menjalankan alat gratis yang cocok saat workflow dijalankan.",
+      "prompts": {
+        "repaintPaint": "Gambar ulang area yang disapukan secara alami sambil mempertahankan detail sekitar.",
+        "repaintBox": "Gambar ulang area persegi panjang yang dipilih secara alami sambil mempertahankan detail sekitar.",
+        "repaintLasso": "Gambar ulang area bebas yang dipilih dengan hasil alami dan mulus.",
+        "repaintSketch": "Ikuti sketsa merah sebagai panduan visual dan gambar ulang area yang dipilih secara alami.",
+        "erase": "Hapus objek atau area yang dipilih dan rekonstruksi latar secara alami.",
+        "expand": "Perluas gambar secara alami melewati frame asli, sambil mempertahankan gaya, pencahayaan, dan perspektif."
+      },
+      "function": "Fungsi",
+      "selectRegion": "Pilih area",
+      "adjustCanvas": "Sesuaikan kanvas",
+      "repaintScope": "Cakupan edit",
+      "repaintScopeRegion": "Area lokal",
+      "repaintScopeRegionHint": "Gunakan mask terpilih atau area yang ditandai.",
+      "repaintScopeFull": "Gambar penuh",
+      "repaintScopeFullHint": "Edit tanpa memilih area.",
+      "expandSettings": "Kanvas",
+      "repaintPrompt": "Prompt repaint",
+      "repaintPromptRegionPlaceholder": "Jelaskan apa yang harus muncul di area terpilih.",
+      "repaintPromptFullPlaceholder": "Jelaskan cara mengedit seluruh gambar.",
+      "expandPrompt": "Prompt perluasan",
+      "expandPromptPlaceholder": "Jelaskan bagaimana area kanvas baru harus melanjutkan gambar asli secara alami.",
+      "cutoutHint": "Pilih subjek atau area, lalu keluarkan dengan latar transparan.",
+      "enhanceHint": "Menjalankan model peningkatan terpilih pada kanvas saat ini.",
+      "faceEnhanceHint": "Meningkatkan wajah yang terdeteksi di kanvas saat ini.",
+      "enhanceModel": "Model",
+      "enhanceScale": "Skala",
+      "cutoutModel": "Model",
+      "faceEnhanceNoParams": "Wajah dideteksi otomatis; tidak perlu pengaturan tambahan.",
+      "useResultAsCanvas": "Gunakan sebagai kanvas",
+      "resetCanvas": "Reset ke input",
+      "usingWorkingImage": "Kanvas saat ini: hasil edit",
+      "usingInputImage": "Kanvas saat ini: input upstream",
+      "modeCutout": "Potong AI",
+      "backgroundRemoveHint": "Menghapus latar belakang seluruh gambar secara otomatis.",
+      "backgroundRemoveModel": "Model",
+      "selectSubject": "Pilih subjek",
+      "cutoutSelectionRequired": "Pilih subjek pada gambar",
+      "cutoutSelectionRequiredHint": "Klik untuk memasukkan subjek; klik kanan untuk mengecualikan area, lalu lanjutkan.",
+      "resultAsCanvasHint": "Menjadikan hasil ini sebagai kanvas saat ini untuk seleksi dan eksekusi berikutnya.",
+      "interactiveResultAsCanvasHint": "Hasil editor ini belum dijalankan. Gunakan sebagai kanvas saat ini sebelum edit berikutnya."
     },
     "promptOptimizer": {
       "optimizationFailed": "Optimisasi gagal",

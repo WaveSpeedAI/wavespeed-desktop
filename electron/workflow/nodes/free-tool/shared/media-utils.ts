@@ -96,9 +96,11 @@ export function createOutputPath(
   nodeId: string,
   prefix: string,
   ext: string,
+  outputDir?: string,
 ): string {
   const storage = getFileStorageInstance();
-  const outDir = storage.getNodeOutputDir(workflowId, nodeId);
+  const outDir =
+    outputDir?.trim() || storage.getNodeOutputDir(workflowId, nodeId);
   ensureDir(outDir);
   const fileName = `${prefix}_${Date.now()}${safeExt(ext)}`;
   return path.join(outDir, fileName);

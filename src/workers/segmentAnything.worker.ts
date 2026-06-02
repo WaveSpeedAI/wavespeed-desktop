@@ -31,11 +31,149 @@ let imageInputs: {
   reshaped_input_sizes: [number, number][];
 } | null = null;
 let imageEmbeddings: Record<string, Tensor> | null = null;
+let currentImageCacheKey = "";
 let device: "webgpu" | "wasm" = "wasm";
 
 interface PointPrompt {
   point: [number, number];
   label: 0 | 1;
+}
+
+type SerializedTensor = {
+  type: string;
+  dims: number[];
+  data: ArrayBuffer;
+};
+type SerializedSamCache = {
+  pixel_values: SerializedTensor;
+  original_sizes: [number, number][];
+  reshaped_input_sizes: [number, number][];
+  imageEmbeddings: Record<string, SerializedTensor>;
+  createdAt: number;
+};
+
+const CACHE_DB_NAME = "wavespeed-segment-anything-cache";
+const CACHE_STORE_NAME = "embeddings";
+const CACHE_VERSION = 1;
+const CACHE_LIMIT = 12;
+
+function serializeTensor(tensor: Tensor): SerializedTensor {
+  const data = tensor.data as Float32Array | Uint8Array | BigInt64Array;
+  const copy = data.slice();
+  return {
+    type: tensor.type,
+    dims: [...tensor.dims],
+    data: copy.buffer,
+  };
+}
+
+function deserializeTensor(tensor: SerializedTensor): Tensor {
+  const array =
+    tensor.type === "uint8"
+      ? new Uint8Array(tensor.data)
+      : tensor.type === "int64"
+        ? new BigInt64Array(tensor.data)
+        : new Float32Array(tensor.data);
+  return new Tensor(
+    tensor.type as ConstructorParameters<typeof Tensor>[0],
+    array,
+    tensor.dims,
+  );
+}
+
+function openCacheDb(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(CACHE_DB_NAME, CACHE_VERSION);
+    request.onupgradeneeded = () => {
+      request.result.createObjectStore(CACHE_STORE_NAME);
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function readEmbeddingCache(
+  key: string,
+): Promise<SerializedSamCache | null> {
+  if (!key) return null;
+  try {
+    const db = await openCacheDb();
+    return await new Promise((resolve) => {
+      const request = db
+        .transaction(CACHE_STORE_NAME, "readonly")
+        .objectStore(CACHE_STORE_NAME)
+        .get(key);
+      request.onsuccess = () =>
+        resolve((request.result as SerializedSamCache) ?? null);
+      request.onerror = () => resolve(null);
+    });
+  } catch {
+    return null;
+  }
+}
+
+async function writeEmbeddingCache(
+  key: string,
+  value: SerializedSamCache,
+): Promise<void> {
+  if (!key) return;
+  try {
+    const db = await openCacheDb();
+    await new Promise<void>((resolve) => {
+      const request = db
+        .transaction(CACHE_STORE_NAME, "readwrite")
+        .objectStore(CACHE_STORE_NAME)
+        .put(value, key);
+      request.onsuccess = () => resolve();
+      request.onerror = () => resolve();
+    });
+    await pruneEmbeddingCache(db);
+  } catch {
+    // Embedding cache is optional; segmentation should continue without it.
+  }
+}
+
+async function pruneEmbeddingCache(db: IDBDatabase): Promise<void> {
+  const store = db
+    .transaction(CACHE_STORE_NAME, "readwrite")
+    .objectStore(CACHE_STORE_NAME);
+  const entries = await new Promise<
+    Array<{ key: IDBValidKey; createdAt: number }>
+  >((resolve) => {
+    const request = store.openCursor();
+    const out: Array<{ key: IDBValidKey; createdAt: number }> = [];
+    request.onsuccess = () => {
+      const cursor = request.result;
+      if (!cursor) {
+        resolve(out);
+        return;
+      }
+      out.push({
+        key: cursor.key,
+        createdAt: Number((cursor.value as SerializedSamCache)?.createdAt ?? 0),
+      });
+      cursor.continue();
+    };
+    request.onerror = () => resolve(out);
+  });
+  entries
+    .sort((a, b) => b.createdAt - a.createdAt)
+    .slice(CACHE_LIMIT)
+    .forEach((entry) => store.delete(entry.key));
+}
+
+function hydrateCache(cache: SerializedSamCache) {
+  imageInputs = {
+    pixel_values: deserializeTensor(cache.pixel_values),
+    original_sizes: cache.original_sizes,
+    reshaped_input_sizes: cache.reshaped_input_sizes,
+  };
+  imageEmbeddings = Object.fromEntries(
+    Object.entries(cache.imageEmbeddings).map(([key, value]) => [
+      key,
+      deserializeTensor(value),
+    ]),
+  );
 }
 
 // Detect WebGPU
@@ -132,8 +270,30 @@ async function loadModel(id: number): Promise<void> {
 }
 
 // Encode image
-async function segmentImage(id: number, imageDataUrl: string): Promise<void> {
+async function segmentImage(
+  id: number,
+  imageDataUrl: string,
+  cacheKey = "",
+): Promise<void> {
   if (!model || !processor) throw new Error("Model not initialized");
+  if (
+    cacheKey &&
+    currentImageCacheKey === cacheKey &&
+    imageInputs &&
+    imageEmbeddings
+  ) {
+    self.postMessage({ type: "segmented", payload: { id } });
+    return;
+  }
+  if (cacheKey) {
+    const cached = await readEmbeddingCache(cacheKey);
+    if (cached) {
+      hydrateCache(cached);
+      currentImageCacheKey = cacheKey;
+      self.postMessage({ type: "segmented", payload: { id } });
+      return;
+    }
+  }
 
   self.postMessage({ type: "phase", payload: { phase: "process", id } });
   self.postMessage({
@@ -157,6 +317,21 @@ async function segmentImage(id: number, imageDataUrl: string): Promise<void> {
       ) => Promise<Record<string, Tensor>>;
     }
   ).get_image_embeddings(imageInputs);
+  currentImageCacheKey = cacheKey;
+  if (cacheKey && imageInputs && imageEmbeddings) {
+    void writeEmbeddingCache(cacheKey, {
+      pixel_values: serializeTensor(imageInputs.pixel_values),
+      original_sizes: imageInputs.original_sizes,
+      reshaped_input_sizes: imageInputs.reshaped_input_sizes,
+      imageEmbeddings: Object.fromEntries(
+        Object.entries(imageEmbeddings).map(([key, value]) => [
+          key,
+          serializeTensor(value),
+        ]),
+      ),
+      createdAt: Date.now(),
+    });
+  }
   self.postMessage({
     type: "progress",
     payload: { phase: "process", progress: 100, id },
@@ -239,17 +414,19 @@ self.onmessage = async (e: MessageEvent) => {
         break;
       case "segment":
         if (!model) await loadModel(id);
-        await segmentImage(id, payload.imageDataUrl);
+        await segmentImage(id, payload.imageDataUrl, payload.cacheKey);
         break;
       case "decodeMask":
         await decodeMask(id, payload.points);
         break;
       case "reset":
         imageInputs = imageEmbeddings = null;
+        currentImageCacheKey = "";
         self.postMessage({ type: "reset", payload: { id } });
         break;
       case "dispose":
         imageInputs = imageEmbeddings = null;
+        currentImageCacheKey = "";
         self.postMessage({ type: "disposed", payload: { id } });
         break;
     }

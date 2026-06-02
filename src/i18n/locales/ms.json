@@ -1,4 +1,4 @@
-﻿{
+{
   "common": {
     "loading": "Memuatkan...",
     "save": "Simpan",
@@ -1081,6 +1081,25 @@
     "selectDirectory": "Pilih direktori",
     "openFolder": "Buka folder",
     "openWorkflowFolder": "Buka folder aliran kerja",
+    "extractFrame": {
+      "needVideo": "Sambungkan atau muat naik video, kemudian seret pratonton untuk memilih bingkai.",
+      "loadFailed": "Tidak dapat memuatkan pratonton video ini.",
+      "previousFrame": "Bingkai sebelumnya",
+      "backFive": "Undur 5 saat",
+      "forwardFive": "Maju 5 saat",
+      "nextFrame": "Bingkai seterusnya",
+      "captureResult": "Tangkap bingkai yang dipilih ke Hasil",
+      "capture": "Tangkap",
+      "clearVideo": "Kosongkan video",
+      "useUrl": "Guna URL",
+      "videoHint": "Muat naik video atau sambungkan daripada nod huluan, kemudian seret pratonton untuk memilih bingkai.",
+      "saveToLocalFolder": "Simpan ke folder setempat",
+      "localExportOff": "Eksport setempat dimatikan",
+      "localExportOffHint": "Tidak ditetapkan: tiada eksport setempat tambahan",
+      "customFolder": "Tersuai",
+      "exportOff": "Mati",
+      "noFolderToOpen": "Tiada folder ditetapkan"
+    },
     "nodes": "Nod",
     "config": "Konfigurasi",
     "results": "Hasil",
@@ -1310,6 +1329,20 @@
         "label": "Pembuang latar belakang",
         "hint": "Buang latar belakang imej secara automatik dan percuma"
       },
+      "free-tool/paint": {
+        "label": "Edit imej",
+        "hint": "Repaint, padam, kembangkan, potong AI atau tingkatkan imej",
+        "inputs": {
+          "input": {
+            "label": "Imej"
+          }
+        },
+        "outputs": {
+          "output": {
+            "label": "Output"
+          }
+        }
+      },
       "free-tool/face-enhancer": {
         "label": "Penambah muka",
         "hint": "Tingkatkan dan pulihkan muka dalam foto secara percuma"
@@ -1340,6 +1373,29 @@
           },
           "invertMask": {
             "label": "Songsangkan topeng"
+          }
+        }
+      },
+      "free-tool/extract-frame": {
+        "label": "Ekstrak bingkai",
+        "hint": "Tangkap imej pegun daripada masa video yang dipilih secara percuma",
+        "inputs": {
+          "input": {
+            "label": "Video"
+          }
+        },
+        "params": {
+          "time": {
+            "label": "Masa (s)",
+            "description": "Cap masa bingkai yang dipilih dalam saat."
+          },
+          "format": {
+            "label": "Format",
+            "description": "Format imej yang digunakan semasa menyimpan bingkai yang ditangkap."
+          },
+          "outputDir": {
+            "label": "Simpan ke folder setempat",
+            "description": "Pilihan. Tetapkan folder untuk mengeksport salinan setempat tambahan bagi bingkai yang diekstrak."
           }
         }
       },
@@ -1426,6 +1482,110 @@
       "optimizeOffHint": "Lalai: tiada pengoptimuman (jalankan dengan teks asal)",
       "manualOptimizedHint": "Dioptimumkan secara manual. Auto-on-run akan dilangkau sehingga teks berubah.",
       "enterTextOrPrompt": "Masukkan teks atau prompt..."
+    },
+    "paintNode": {
+      "imageHint": "Muat naik imej atau sambungkan bingkai yang diekstrak, kemudian pilih mod sunting.",
+      "clearImage": "Kosongkan imej",
+      "modeRepaint": "Lukis semula",
+      "modeRegion": "Topeng",
+      "modeErase": "Padam",
+      "modeExpand": "Kembangkan",
+      "modeRemoveBg": "Buang latar",
+      "modeEnhance": "Pertingkat",
+      "modeFace": "Pertingkat wajah",
+      "editImage": "Sunting imej",
+      "paintHint": "Lukis kawasan yang hendak dilukis semula. Seret kanan atau tahan Alt untuk menolak kawasan.",
+      "boxHint": "Seret segi empat di sekeliling kawasan.",
+      "lassoHint": "Seret mengelilingi kawasan untuk menutup pilihan bebas.",
+      "sketchHint": "Lakarkan panduan visual; kawasan strok menjadi kawasan suntingan.",
+      "eraseBrushHint": "Berus pada objek atau kawasan yang hendak dipadam.",
+      "clearRegion": "Kosongkan kawasan",
+      "loadingMaskTools": "Memuatkan alat topeng...",
+      "savingMask": "Menyimpan topeng...",
+      "encoding": "Menganalisis imej...",
+      "decoding": "Mengemas kini topeng...",
+      "eraserSize": "Pemadam",
+      "brushSize": "Berus",
+      "savingSelection": "Menyimpan pilihan...",
+      "selectionSaved": "Pilihan disimpan",
+      "selectionRequired": "Pilih kawasan pada bingkai",
+      "functionSelected": "{{mode}} dipilih",
+      "savingSelectionHint": "Menyediakan imej bertanda yang akan dihantar kepada model.",
+      "selectionSavedHint": "Teruskan untuk mengkonfigurasi suntingan. Pratonton yang disimpan sedia dijalankan.",
+      "selectionRequiredHint": "Gunakan alat topeng aktif pada imej, kemudian teruskan.",
+      "functionSelectedHint": "Teruskan untuk mengkonfigurasi fungsi ini bagi generasi AI seterusnya.",
+      "collapseTools": "Lipat alat",
+      "expandTools": "Kembangkan alat",
+      "selectPaint": "Lukis",
+      "selectPaintHelp": "kawasan lembut pantas",
+      "selectBox": "Kotak",
+      "selectBoxHelp": "blok kasar",
+      "selectLasso": "Laso",
+      "selectLassoHelp": "bentuk bebas",
+      "selectSketch": "Lakaran",
+      "selectSketchHelp": "panduan visual",
+      "expandRatio": "Nisbah kembangan",
+      "undo": "Buat asal",
+      "undoShortcut": "Buat asal (Ctrl+Z)",
+      "redo": "Buat semula",
+      "redoShortcut": "Buat semula (Ctrl+Y)",
+      "continueEdit": "Teruskan",
+      "needImage": "Tambah imej sebelum membuka editor.",
+      "regionReady": "Kawasan sedia",
+      "openEditorHint": "Buka editor untuk memilih kawasan bagi fungsi ini.",
+      "editorTitle": "Editor kawasan",
+      "editorDescription": "Pilih kawasan untuk nod edit imej.",
+      "modelOutput": "Output",
+      "modelOutputGenerate": "jalankan model dipilih",
+      "noMatchedModels": "Tiada model sunting imej yang sepadan dalam cache model tempatan lagi.",
+      "missingSelectedModel": "Model yang dipilih tidak tersedia secara tempatan. Pilih model sunting imej yang disokong sebelum menjalankan.",
+      "incompatibleSelectedModel": "Model yang dipilih tidak menyokong fungsi lukis ini. Pilih model sunting imej yang serasi sebelum menjalankan.",
+      "repaintModelHint": "Menjalankan model dipilih dengan bingkai bertanda, topeng jika disokong, dan prompt.",
+      "eraseHint": "Menjalankan pemadam imej sedia ada dengan kawasan berus.",
+      "expandHint": "Menjalankan model kembangkan yang dipilih dengan kanvas semasa.",
+      "regionOnlyHint": "Mengeluarkan hanya topeng kawasan dipilih.",
+      "directToolHint": "Menjalankan alat percuma yang sepadan apabila aliran kerja dijalankan.",
+      "prompts": {
+        "repaintPaint": "Lukis semula kawasan yang diberus secara semula jadi sambil mengekalkan butiran sekeliling.",
+        "repaintBox": "Lukis semula kawasan segi empat yang dipilih secara semula jadi sambil mengekalkan butiran sekeliling.",
+        "repaintLasso": "Lukis semula kawasan bebas yang dipilih dengan hasil semula jadi dan lancar.",
+        "repaintSketch": "Ikut lakaran merah sebagai panduan visual dan lukis semula kawasan dipilih secara semula jadi.",
+        "erase": "Buang objek atau kawasan dipilih dan bina semula latar belakang secara semula jadi.",
+        "expand": "Kembangkan imej secara semula jadi melepasi bingkai asal, sambil mengekalkan gaya, pencahayaan dan perspektif."
+      },
+      "function": "Fungsi",
+      "selectRegion": "Pilih kawasan",
+      "adjustCanvas": "Laraskan kanvas",
+      "repaintScope": "Skop edit",
+      "repaintScopeRegion": "Kawasan setempat",
+      "repaintScopeRegionHint": "Gunakan topeng terpilih atau kawasan bertanda.",
+      "repaintScopeFull": "Imej penuh",
+      "repaintScopeFullHint": "Edit tanpa memilih kawasan.",
+      "expandSettings": "Kanvas",
+      "repaintPrompt": "Prompt repaint",
+      "repaintPromptRegionPlaceholder": "Terangkan apa yang patut muncul dalam kawasan terpilih.",
+      "repaintPromptFullPlaceholder": "Terangkan cara mengedit keseluruhan imej.",
+      "expandPrompt": "Prompt kembangkan",
+      "expandPromptPlaceholder": "Terangkan bagaimana kawasan kanvas baharu patut menyambung imej asal secara semula jadi.",
+      "cutoutHint": "Pilih subjek atau kawasan, kemudian hasilkan dengan latar belakang telus.",
+      "enhanceHint": "Menjalankan model peningkatan yang dipilih pada kanvas semasa.",
+      "faceEnhanceHint": "Meningkatkan wajah yang dikesan dalam kanvas semasa.",
+      "enhanceModel": "Model",
+      "enhanceScale": "Skala",
+      "cutoutModel": "Model",
+      "faceEnhanceNoParams": "Wajah dikesan secara automatik; tiada tetapan tambahan diperlukan.",
+      "useResultAsCanvas": "Guna sebagai kanvas",
+      "resetCanvas": "Tetapkan semula ke input",
+      "usingWorkingImage": "Kanvas semasa: hasil suntingan",
+      "usingInputImage": "Kanvas semasa: input huluan",
+      "modeCutout": "Potong AI",
+      "backgroundRemoveHint": "Membuang latar belakang seluruh imej secara automatik.",
+      "backgroundRemoveModel": "Model",
+      "selectSubject": "Pilih subjek",
+      "cutoutSelectionRequired": "Pilih subjek pada imej",
+      "cutoutSelectionRequiredHint": "Klik untuk memasukkan subjek; klik kanan untuk mengecualikan kawasan, kemudian teruskan.",
+      "resultAsCanvasHint": "Menetapkan hasil ini sebagai kanvas semasa untuk pilihan dan larian seterusnya.",
+      "interactiveResultAsCanvasHint": "Hasil editor ini belum dijalankan. Gunakannya sebagai kanvas semasa sebelum suntingan seterusnya."
     },
     "promptOptimizer": {
       "optimizationFailed": "Pengoptimuman gagal",

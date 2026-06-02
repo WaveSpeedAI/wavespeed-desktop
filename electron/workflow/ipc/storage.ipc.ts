@@ -4,12 +4,18 @@
 import { ipcMain, dialog, shell } from "electron";
 import { getFileStorageInstance } from "../utils/file-storage";
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from "fs";
+import * as path from "path";
 import { v4 as uuid } from "uuid";
 import { createWorkflow, updateWorkflow } from "../db/workflow.repo";
 import { getModelById } from "../services/model-list";
 
 function getStorage() {
   return getFileStorageInstance();
+}
+
+function safeFilename(filename: string): string {
+  const cleaned = filename.replace(/[<>:"/\\|?*\u0000-\u001F]/g, "_").trim();
+  return cleaned || `output_${Date.now()}`;
 }
 
 export function registerStorageIpc(): void {
@@ -83,6 +89,31 @@ export function registerStorageIpc(): void {
         args.ext,
         Buffer.from(args.data),
       );
+    },
+  );
+
+  ipcMain.handle(
+    "storage:save-file-to-directory",
+    async (
+      _event,
+      args: {
+        outputDir: string;
+        filename: string;
+        data: Buffer;
+      },
+    ) => {
+      const outputDir = String(args.outputDir ?? "").trim();
+      if (!outputDir) throw new Error("Output directory is empty.");
+      mkdirSync(outputDir, { recursive: true });
+      const parsed = path.parse(safeFilename(args.filename));
+      let targetName = `${parsed.name}${parsed.ext}`;
+      let filePath = path.join(outputDir, targetName);
+      if (existsSync(filePath)) {
+        targetName = `${parsed.name}_${Date.now()}${parsed.ext}`;
+        filePath = path.join(outputDir, targetName);
+      }
+      writeFileSync(filePath, Buffer.from(args.data));
+      return filePath;
     },
   );
 

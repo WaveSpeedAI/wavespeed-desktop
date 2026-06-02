@@ -1,4 +1,4 @@
-﻿{
+{
   "common": {
     "loading": "Yükleniyor...",
     "save": "Kaydet",
@@ -1081,6 +1081,25 @@
     "selectDirectory": "Dizin seç",
     "openFolder": "Klasörü aç",
     "openWorkflowFolder": "İş akışı klasörünü aç",
+    "extractFrame": {
+      "needVideo": "Bir video bağlayın veya yükleyin, ardından bir kare seçmek için önizlemeyi gezinin.",
+      "loadFailed": "Bu video önizlemesi yüklenemedi.",
+      "previousFrame": "Önceki kare",
+      "backFive": "5 saniye geri",
+      "forwardFive": "5 saniye ileri",
+      "nextFrame": "Sonraki kare",
+      "captureResult": "Seçilen kareyi Sonuçlar'a yakala",
+      "capture": "Yakala",
+      "clearVideo": "Videoyu temizle",
+      "useUrl": "URL kullan",
+      "videoHint": "Bir video yükleyin veya yukarı akıştaki bir düğümden bağlayın, ardından bir kare seçmek için önizlemeyi gezinin.",
+      "saveToLocalFolder": "Yerel klasöre kaydet",
+      "localExportOff": "Yerel dışa aktarma kapalı",
+      "localExportOffHint": "Ayarlanmadı: ek yerel dışa aktarma yok",
+      "customFolder": "Özel",
+      "exportOff": "Kapalı",
+      "noFolderToOpen": "Klasör ayarlanmadı"
+    },
     "nodes": "Düğümler",
     "config": "Yapılandırma",
     "results": "Sonuçlar",
@@ -1310,6 +1329,20 @@
         "label": "Arka plan kaldırıcı",
         "hint": "Görsel arka planlarını ücretsiz otomatik olarak kaldırın"
       },
+      "free-tool/paint": {
+        "label": "Görüntü düzenleme",
+        "hint": "Bir görüntüyü yeniden boya, sil, genişlet, AI ile kes veya iyileştir",
+        "inputs": {
+          "input": {
+            "label": "Görsel"
+          }
+        },
+        "outputs": {
+          "output": {
+            "label": "Çıktı"
+          }
+        }
+      },
       "free-tool/face-enhancer": {
         "label": "Yüz geliştirici",
         "hint": "Fotoğraflardaki yüzleri ücretsiz geliştirin ve onarın"
@@ -1340,6 +1373,29 @@
           },
           "invertMask": {
             "label": "Maskeyi ters çevir"
+          }
+        }
+      },
+      "free-tool/extract-frame": {
+        "label": "Kare çıkar",
+        "hint": "Seçilen video zamanından ücretsiz olarak sabit görüntü yakalar",
+        "inputs": {
+          "input": {
+            "label": "Video"
+          }
+        },
+        "params": {
+          "time": {
+            "label": "Zaman (sn)",
+            "description": "Seçilen karenin saniye cinsinden zaman damgası."
+          },
+          "format": {
+            "label": "Biçim",
+            "description": "Yakalanan kare kaydedilirken kullanılan görüntü biçimi."
+          },
+          "outputDir": {
+            "label": "Yerel klasöre kaydet",
+            "description": "İsteğe bağlı. Çıkarılan karenin ek bir yerel kopyasını dışa aktarmak için klasör ayarlayın."
           }
         }
       },
@@ -1426,6 +1482,110 @@
       "optimizeOffHint": "Varsayılan: optimizasyon yok (orijinal metinle çalıştır)",
       "manualOptimizedHint": "Manuel optimize edildi. Metin değişene kadar otomatik optimize atlanacak.",
       "enterTextOrPrompt": "Metin veya istem girin..."
+    },
+    "paintNode": {
+      "imageHint": "Bir görsel yükleyin veya çıkarılmış bir kare bağlayın, ardından bir düzenleme modu seçin.",
+      "clearImage": "Görseli temizle",
+      "modeRepaint": "Yeniden çiz",
+      "modeRegion": "Maske",
+      "modeErase": "Sil",
+      "modeExpand": "Genişlet",
+      "modeRemoveBg": "Arka planı kaldır",
+      "modeEnhance": "İyileştir",
+      "modeFace": "Yüzü iyileştir",
+      "editImage": "Görseli düzenle",
+      "paintHint": "Yeniden çizilecek alanı boyayın. Çıkarmak için sağ sürükleyin veya Alt tuşunu basılı tutun.",
+      "boxHint": "Alan etrafında bir dikdörtgen sürükleyin.",
+      "lassoHint": "Serbest seçimi kapatmak için alanın etrafında sürükleyin.",
+      "sketchHint": "Görsel rehber çizin; fırça izi alanı düzenleme bölgesi olur.",
+      "eraseBrushHint": "Silinecek nesne veya alanın üzerine fırça sürün.",
+      "clearRegion": "Bölgeyi temizle",
+      "loadingMaskTools": "Maske araçları yükleniyor...",
+      "savingMask": "Maske kaydediliyor...",
+      "encoding": "Görsel analiz ediliyor...",
+      "decoding": "Maske güncelleniyor...",
+      "eraserSize": "Silgi",
+      "brushSize": "Fırça",
+      "savingSelection": "Seçim kaydediliyor...",
+      "selectionSaved": "Seçim kaydedildi",
+      "selectionRequired": "Kare üzerinde bir alan seçin",
+      "functionSelected": "{{mode}} seçildi",
+      "savingSelectionHint": "Modele gönderilecek işaretli görsel hazırlanıyor.",
+      "selectionSavedHint": "Düzenlemeyi yapılandırmak için devam edin. Kayıtlı önizleme çalıştırmaya hazır.",
+      "selectionRequiredHint": "Görsel üzerinde etkin maske aracını kullanın, ardından devam edin.",
+      "functionSelectedHint": "Bu işlevi sonraki AI üretimi için yapılandırmaya devam edin.",
+      "collapseTools": "Araçları daralt",
+      "expandTools": "Araçları genişlet",
+      "selectPaint": "Boya",
+      "selectPaintHelp": "hızlı yumuşak alan",
+      "selectBox": "Kutu",
+      "selectBoxHelp": "kaba blok",
+      "selectLasso": "Kement",
+      "selectLassoHelp": "serbest şekil",
+      "selectSketch": "Eskiz",
+      "selectSketchHelp": "görsel rehber",
+      "expandRatio": "Genişletme oranı",
+      "undo": "Geri al",
+      "undoShortcut": "Geri al (Ctrl+Z)",
+      "redo": "Yinele",
+      "redoShortcut": "Yinele (Ctrl+Y)",
+      "continueEdit": "Devam et",
+      "needImage": "Düzenleyiciyi açmadan önce bir görsel ekleyin.",
+      "regionReady": "Bölge hazır",
+      "openEditorHint": "Bu işlevin alanını seçmek için düzenleyiciyi açın.",
+      "editorTitle": "Bölge düzenleyici",
+      "editorDescription": "Görüntü düzenleme düğümü için bir alan seçin.",
+      "modelOutput": "Çıktı",
+      "modelOutputGenerate": "seçili modeli çalıştır",
+      "noMatchedModels": "Yerel model önbelleğinde henüz eşleşen bir görsel düzenleme modeli yok.",
+      "missingSelectedModel": "Seçili model yerel olarak mevcut değil. Çalıştırmadan önce desteklenen bir görsel düzenleme modeli seçin.",
+      "incompatibleSelectedModel": "Seçili model bu boyama işlevini desteklemiyor. Çalıştırmadan önce uyumlu bir görsel düzenleme modeli seçin.",
+      "repaintModelHint": "Seçili modeli işaretli kare, desteklenirse maske ve istem ile çalıştırır.",
+      "eraseHint": "Mevcut görsel silgiyi fırçalanmış alanla çalıştırır.",
+      "expandHint": "Seçili genişletme modelini mevcut tuval ile çalıştırır.",
+      "regionOnlyHint": "Yalnızca seçili bölgenin maskesini çıktı verir.",
+      "directToolHint": "İş akışı çalıştığında eşleşen ücretsiz aracı çalıştırır.",
+      "prompts": {
+        "repaintPaint": "Boyanan alanı çevredeki ayrıntıları koruyarak doğal şekilde yeniden çiz.",
+        "repaintBox": "Seçili dikdörtgen alanı çevredeki ayrıntıları koruyarak doğal şekilde yeniden çiz.",
+        "repaintLasso": "Seçili serbest biçimli alanı doğal ve kesintisiz bir sonuçla yeniden çiz.",
+        "repaintSketch": "Kırmızı eskizi görsel rehber olarak izle ve seçili alanı doğal şekilde yeniden çiz.",
+        "erase": "Seçili nesneyi veya alanı kaldır ve arka planı doğal şekilde yeniden oluştur.",
+        "expand": "Görseli özgün çerçevenin ötesine doğal şekilde genişlet; stil, ışık ve perspektifi koru."
+      },
+      "function": "İşlev",
+      "selectRegion": "Bölge seç",
+      "adjustCanvas": "Tuvali ayarla",
+      "repaintScope": "Düzenleme kapsamı",
+      "repaintScopeRegion": "Yerel alan",
+      "repaintScopeRegionHint": "Seçili maskeyi veya işaretli bölgeyi kullan.",
+      "repaintScopeFull": "Tüm görüntü",
+      "repaintScopeFullHint": "Bölge seçmeden düzenle.",
+      "expandSettings": "Tuval",
+      "repaintPrompt": "Yeniden boyama promptu",
+      "repaintPromptRegionPlaceholder": "Seçili alanda ne görünmesi gerektiğini açıklayın.",
+      "repaintPromptFullPlaceholder": "Tüm görüntünün nasıl düzenleneceğini açıklayın.",
+      "expandPrompt": "Genişletme promptu",
+      "expandPromptPlaceholder": "Yeni tuval alanının özgün görüntüyü doğal şekilde nasıl sürdürmesi gerektiğini açıklayın.",
+      "cutoutHint": "Bir nesne veya alan secin, ardindan seffaf arka planli cikti alin.",
+      "enhanceHint": "Seçili iyileştirme modelini mevcut tuvalde çalıştırır.",
+      "faceEnhanceHint": "Mevcut tuvalde algılanan yüzleri iyileştirir.",
+      "enhanceModel": "Model",
+      "enhanceScale": "Ölçek",
+      "cutoutModel": "Model",
+      "faceEnhanceNoParams": "Yüzler otomatik algılanır; ek ayar gerekmez.",
+      "useResultAsCanvas": "Tuval olarak kullan",
+      "resetCanvas": "Girdiye sıfırla",
+      "usingWorkingImage": "Gecerli tuval: duzenlenen sonuc",
+      "usingInputImage": "Gecerli tuval: ust girdi",
+      "modeCutout": "AI kesme",
+      "backgroundRemoveHint": "Tum gorselin arka planini otomatik kaldirir.",
+      "backgroundRemoveModel": "Model",
+      "selectSubject": "Nesne sec",
+      "cutoutSelectionRequired": "Gorseldeki nesneyi secin",
+      "cutoutSelectionRequiredHint": "Nesneyi dahil etmek icin tiklayin; alanlari haric tutmak icin sag tiklayin, sonra devam edin.",
+      "resultAsCanvasHint": "Bu sonucu sonraki secim ve calistirma icin gecerli tuval yapar.",
+      "interactiveResultAsCanvasHint": "Bu editor sonucu henuz calistirilmadi. Sonraki duzenlemeden once gecerli tuval olarak kullanin."
     },
     "promptOptimizer": {
       "optimizationFailed": "Optimizasyon başarısız",

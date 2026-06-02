@@ -14,7 +14,9 @@ import {
   FileAudio,
   FileImage,
   Scissors,
+  Film,
   Combine,
+  Paintbrush,
   Upload,
   Type,
   Cpu,
@@ -41,6 +43,8 @@ const NODE_ICON_MAP: Record<string, LucideIcon> = {
   "free-tool/video-converter": FileVideo,
   "free-tool/audio-converter": FileAudio,
   "free-tool/image-converter": FileImage,
+  "free-tool/extract-frame": Film,
+  "free-tool/paint": Paintbrush,
   "free-tool/media-trimmer": Scissors,
   "free-tool/media-merger": Combine,
   // Input

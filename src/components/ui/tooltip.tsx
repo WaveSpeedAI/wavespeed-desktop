@@ -32,18 +32,20 @@ TooltipContent.displayName = TooltipPrimitive.Content.displayName;
  * On touch devices, tapping the trigger toggles the tooltip open/closed.
  * On desktop, hover behavior works as usual.
  */
-function TouchTooltip({
-  children,
-  ...props
-}: React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Root>) {
+type TouchTooltipProps = Omit<
+  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Root>,
+  "open" | "defaultOpen" | "onOpenChange"
+>;
+
+function TouchTooltip({ children, ...props }: TouchTooltipProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
     <TooltipPrimitive.Root
+      {...props}
       open={open}
       onOpenChange={setOpen}
       delayDuration={0}
-      {...props}
     >
       {React.Children.map(children, (child) => {
         if (React.isValidElement(child) && child.type === TooltipTrigger) {

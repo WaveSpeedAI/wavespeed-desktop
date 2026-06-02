@@ -15,6 +15,8 @@ interface BackgroundRemoverParams {
   model?: string;
 }
 
+const MIN_FOREGROUND_ALPHA_RATIO = 0.001;
+
 function imageDataToFloat32(imageData: ImageData): Float32Array {
   const { width, height, data } = imageData;
   const result = new Float32Array(width * height * 3);
@@ -82,6 +84,31 @@ async function loadImageAsImageData(url: string): Promise<ImageData> {
   const imageData = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
   bitmap.close();
   return imageData;
+}
+
+async function hasVisibleForeground(blob: Blob): Promise<boolean> {
+  const bitmap = await createImageBitmap(blob);
+  const maxSide = 192;
+  const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+  const width = Math.max(1, Math.round(bitmap.width * scale));
+  const height = Math.max(1, Math.round(bitmap.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) {
+    bitmap.close();
+    return true;
+  }
+  ctx.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close();
+
+  const { data } = ctx.getImageData(0, 0, width, height);
+  let visible = 0;
+  for (let i = 3; i < data.length; i += 4) {
+    if (data[i] > 8) visible += 1;
+  }
+  return visible / (width * height) >= MIN_FOREGROUND_ALPHA_RATIO;
 }
 
 /**
@@ -172,6 +199,23 @@ export async function runBackgroundRemover(
   if (!res.ok) throw new Error(`Failed to fetch image: ${res.status}`);
   const imageBlob = await res.blob();
 
+  const runOnce = (currentModel: BgRemoverModel): Promise<string> =>
+    runBackgroundRemoverOnce(imageBlob, currentModel, onProgress);
+
+  try {
+    return await runOnce(model);
+  } catch (error) {
+    if (model === "isnet") throw error;
+    onProgress?.(15, "Retrying with quality model...");
+    return runOnce("isnet");
+  }
+}
+
+function runBackgroundRemoverOnce(
+  imageBlob: Blob,
+  model: BgRemoverModel,
+  onProgress?: (progress: number, message?: string) => void,
+): Promise<string> {
   const worker = new Worker(
     new URL("../../workers/backgroundRemover.worker.ts", import.meta.url),
     { type: "module" },
@@ -193,15 +237,27 @@ export async function runBackgroundRemover(
       } else if (type === "result") {
         const { arrayBuffer } = payload;
         worker.terminate();
-        onProgress?.(100, "Done");
         const blob = new Blob([arrayBuffer]);
-        const reader = new FileReader();
-        reader.onload = () => {
-          const dataUrl = reader.result as string;
-          resolve(dataUrl.split(",")[1] ?? "");
-        };
-        reader.onerror = () => reject(new Error("Failed to read result"));
-        reader.readAsDataURL(blob);
+        hasVisibleForeground(blob)
+          .then((hasForeground) => {
+            if (!hasForeground) {
+              reject(
+                new Error("Background remover produced an empty foreground."),
+              );
+              return;
+            }
+            onProgress?.(100, "Done");
+            const reader = new FileReader();
+            reader.onload = () => {
+              const dataUrl = reader.result as string;
+              resolve(dataUrl.split(",")[1] ?? "");
+            };
+            reader.onerror = () => reject(new Error("Failed to read result"));
+            reader.readAsDataURL(blob);
+          })
+          .catch((error) =>
+            reject(error instanceof Error ? error : new Error(String(error))),
+          );
       } else if (type === "error") {
         worker.terminate();
         reject(new Error(String(payload ?? "Unknown error")));
@@ -449,8 +505,55 @@ export async function runVideoEnhancer(
 }
 
 /**
- * Run face swapper — swap source face onto target image.
+ * Extract a frame from a video at the requested timestamp.
  */
+export async function runExtractFrame(
+  inputUrl: string,
+  params: { time?: number; format?: string },
+  onProgress?: (progress: number, message?: string) => void,
+): Promise<string> {
+  const requestedTime = Number(params.time ?? 0);
+  const time = Number.isFinite(requestedTime) ? Math.max(0, requestedTime) : 0;
+  const format = String(params.format ?? "png").toLowerCase();
+  const mime =
+    format === "jpg" || format === "jpeg"
+      ? "image/jpeg"
+      : format === "webp"
+        ? "image/webp"
+        : "image/png";
+
+  onProgress?.(10, "Loading video...");
+  const video = document.createElement("video");
+  video.muted = true;
+  video.crossOrigin = "anonymous";
+  video.preload = "auto";
+  video.src = inputUrl;
+
+  await new Promise<void>((resolve, reject) => {
+    video.onloadedmetadata = () => resolve();
+    video.onerror = () => reject(new Error("Failed to load video"));
+  });
+
+  const duration = Number.isFinite(video.duration) ? video.duration : time;
+  video.currentTime = Math.min(time, Math.max(0, duration));
+  onProgress?.(45, "Seeking frame...");
+
+  await new Promise<void>((resolve, reject) => {
+    video.onseeked = () => resolve();
+    video.onerror = () => reject(new Error("Failed to seek video"));
+  });
+
+  const canvas = document.createElement("canvas");
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Failed to create frame canvas");
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const dataUrl = canvas.toDataURL(mime, 0.95);
+  onProgress?.(100, "Frame extracted.");
+  return dataURLToBase64(dataUrl);
+}
+
 export async function runFaceSwapper(
   sourceUrl: string,
   targetUrl: string,
@@ -625,6 +728,71 @@ async function loadMaskAsFloat32(
     }
   }
   return float32;
+}
+
+async function loadMaskAsAlpha(
+  url: string,
+  width: number,
+  height: number,
+): Promise<Uint8ClampedArray> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Failed to fetch mask: ${res.status}`);
+  const blob = await res.blob();
+  const bitmap = await createImageBitmap(blob);
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) {
+    bitmap.close();
+    throw new Error("Failed to read mask");
+  }
+  ctx.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close();
+
+  const { data } = ctx.getImageData(0, 0, width, height);
+  const alpha = new Uint8ClampedArray(width * height);
+  for (let i = 0; i < width * height; i += 1) {
+    const offset = i * 4;
+    const coverage = Math.max(data[offset], data[offset + 1], data[offset + 2]);
+    alpha[i] = Math.round((coverage * data[offset + 3]) / 255);
+  }
+  return alpha;
+}
+
+/**
+ * Apply a saved mask to an image and return a transparent PNG foreground.
+ */
+export async function runImageCutout(
+  imageUrl: string,
+  maskUrl: string,
+  onProgress?: (progress: number, message?: string) => void,
+): Promise<string> {
+  onProgress?.(5, "Loading image and mask...");
+  const imageData = await loadImageAsImageData(imageUrl);
+  const { width, height, data } = imageData;
+  const maskAlpha = await loadMaskAsAlpha(maskUrl, width, height);
+  const output = new ImageData(width, height);
+  let visiblePixels = 0;
+
+  for (let i = 0; i < width * height; i += 1) {
+    const offset = i * 4;
+    const alpha = maskAlpha[i];
+    if (alpha > 8) visiblePixels += 1;
+    output.data[offset] = data[offset];
+    output.data[offset + 1] = data[offset + 1];
+    output.data[offset + 2] = data[offset + 2];
+    output.data[offset + 3] = alpha;
+  }
+
+  if (visiblePixels / (width * height) < MIN_FOREGROUND_ALPHA_RATIO) {
+    throw new Error("Selection produced an empty cutout.");
+  }
+
+  onProgress?.(90, "Compositing cutout...");
+  const dataUrl = imageDataToDataURL(output, width, height);
+  onProgress?.(100, "Done");
+  return dataURLToBase64(dataUrl);
 }
 
 /** Convert image to Float32Array CHW 0-1 for LaMa */

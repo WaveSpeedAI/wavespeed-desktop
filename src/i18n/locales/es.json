@@ -1,4 +1,4 @@
-﻿{
+{
   "common": {
     "loading": "Cargando...",
     "save": "Guardar",
@@ -1081,6 +1081,25 @@
     "selectDirectory": "Seleccionar directorio",
     "openFolder": "Abrir carpeta",
     "openWorkflowFolder": "Abrir carpeta de flujo de trabajo",
+    "extractFrame": {
+      "needVideo": "Conecta o sube un video y arrastra la vista previa para elegir un fotograma.",
+      "loadFailed": "No se pudo cargar esta vista previa de video.",
+      "previousFrame": "Fotograma anterior",
+      "backFive": "Retroceder 5 segundos",
+      "forwardFive": "Avanzar 5 segundos",
+      "nextFrame": "Fotograma siguiente",
+      "captureResult": "Capturar el fotograma seleccionado en Resultados",
+      "capture": "Capturar",
+      "clearVideo": "Borrar video",
+      "useUrl": "Usar URL",
+      "videoHint": "Sube un video o conéctalo desde un nodo anterior, luego arrastra la vista previa para elegir un fotograma.",
+      "saveToLocalFolder": "Guardar en carpeta local",
+      "localExportOff": "La exportación local está desactivada",
+      "localExportOffHint": "Sin configurar: no hay exportación local adicional",
+      "customFolder": "Personalizada",
+      "exportOff": "Desactivado",
+      "noFolderToOpen": "No hay carpeta configurada"
+    },
     "nodes": "Nodos",
     "config": "Configuración",
     "results": "Resultados",
@@ -1310,6 +1329,20 @@
         "label": "Quitafondos",
         "hint": "Eliminar fondos de imágenes automáticamente gratis"
       },
+      "free-tool/paint": {
+        "label": "Editar imagen",
+        "hint": "Repinta, borra, expande, recorta con AI o mejora una imagen",
+        "inputs": {
+          "input": {
+            "label": "Imagen"
+          }
+        },
+        "outputs": {
+          "output": {
+            "label": "Salida"
+          }
+        }
+      },
       "free-tool/face-enhancer": {
         "label": "Mejorador de rostros",
         "hint": "Mejorar y restaurar rostros en fotos gratis"
@@ -1340,6 +1373,29 @@
           },
           "invertMask": {
             "label": "Invertir máscara"
+          }
+        }
+      },
+      "free-tool/extract-frame": {
+        "label": "Extraer fotograma",
+        "hint": "Captura gratis una imagen fija desde un momento seleccionado del video",
+        "inputs": {
+          "input": {
+            "label": "Video"
+          }
+        },
+        "params": {
+          "time": {
+            "label": "Tiempo (s)",
+            "description": "La marca de tiempo del fotograma seleccionado, en segundos."
+          },
+          "format": {
+            "label": "Formato",
+            "description": "El formato de imagen usado al guardar el fotograma capturado."
+          },
+          "outputDir": {
+            "label": "Guardar en carpeta local",
+            "description": "Opcional. Define una carpeta para exportar una copia local adicional del fotograma extraído."
           }
         }
       },
@@ -1426,6 +1482,110 @@
       "optimizeOffHint": "Por defecto: sin optimización (ejecutar con texto original)",
       "manualOptimizedHint": "Optimizado manualmente. Se omitirá la optimización automática hasta que cambie el texto.",
       "enterTextOrPrompt": "Introduzca texto o prompt..."
+    },
+    "paintNode": {
+      "imageHint": "Sube una imagen o conecta un fotograma extraído y luego elige un modo de edición.",
+      "clearImage": "Borrar imagen",
+      "modeRepaint": "Repintar",
+      "modeRegion": "Máscara",
+      "modeErase": "Borrar",
+      "modeExpand": "Expandir",
+      "modeRemoveBg": "Quitar fondo",
+      "modeEnhance": "Mejorar",
+      "modeFace": "Mejorar rostro",
+      "editImage": "Editar imagen",
+      "paintHint": "Pinta el área que se repintará. Arrastra con botón derecho o mantén Alt para restar.",
+      "boxHint": "Arrastra un rectángulo alrededor del área.",
+      "lassoHint": "Arrastra alrededor del área para cerrar una selección libre.",
+      "sketchHint": "Dibuja una guía visual; el trazo se convierte en el área de edición.",
+      "eraseBrushHint": "Pinta sobre el objeto o área que quieres borrar.",
+      "clearRegion": "Borrar región",
+      "loadingMaskTools": "Cargando herramientas de máscara...",
+      "savingMask": "Guardando máscara...",
+      "encoding": "Analizando imagen...",
+      "decoding": "Actualizando máscara...",
+      "eraserSize": "Borrador",
+      "brushSize": "Pincel",
+      "savingSelection": "Guardando selección...",
+      "selectionSaved": "Selección guardada",
+      "selectionRequired": "Selecciona un área en el fotograma",
+      "functionSelected": "{{mode}} seleccionado",
+      "savingSelectionHint": "Preparando la imagen marcada que se enviará al modelo.",
+      "selectionSavedHint": "Continúa para configurar la edición. La vista previa está lista.",
+      "selectionRequiredHint": "Usa la herramienta de máscara activa sobre la imagen y continúa.",
+      "functionSelectedHint": "Continúa para configurar esta función para la próxima generación de AI.",
+      "collapseTools": "Contraer herramientas",
+      "expandTools": "Expandir herramientas",
+      "selectPaint": "Pintar",
+      "selectPaintHelp": "área suave rápida",
+      "selectBox": "Cuadro",
+      "selectBoxHelp": "bloque aproximado",
+      "selectLasso": "Lazo",
+      "selectLassoHelp": "forma libre",
+      "selectSketch": "Boceto",
+      "selectSketchHelp": "guía visual",
+      "expandRatio": "Relación de expansión",
+      "undo": "Deshacer",
+      "undoShortcut": "Deshacer (Ctrl+Z)",
+      "redo": "Rehacer",
+      "redoShortcut": "Rehacer (Ctrl+Y)",
+      "continueEdit": "Continuar",
+      "needImage": "Añade una imagen antes de abrir el editor.",
+      "regionReady": "Región lista",
+      "openEditorHint": "Abre el editor para elegir el área de esta función.",
+      "editorTitle": "Editor de región",
+      "editorDescription": "Elige un área para el nodo de edición de imagen.",
+      "modelOutput": "Salida",
+      "modelOutputGenerate": "ejecutar modelo seleccionado",
+      "noMatchedModels": "Aún no hay ningún modelo de edición de imágenes compatible en la caché local.",
+      "missingSelectedModel": "El modelo seleccionado no está disponible localmente. Elige un modelo de edición de imágenes compatible antes de ejecutar.",
+      "incompatibleSelectedModel": "El modelo seleccionado no admite esta función de pintura. Elige un modelo de edición de imágenes compatible antes de ejecutar.",
+      "repaintModelHint": "Ejecuta el modelo seleccionado con el fotograma marcado, máscara si se admite, y prompt.",
+      "eraseHint": "Ejecuta el borrador de imagen existente con el área pintada.",
+      "expandHint": "Ejecuta el modelo de expansión seleccionado con el lienzo actual.",
+      "regionOnlyHint": "Devuelve solo la máscara de la región seleccionada.",
+      "directToolHint": "Ejecuta la herramienta gratuita correspondiente cuando se ejecute el flujo de trabajo.",
+      "prompts": {
+        "repaintPaint": "Repinta el área pintada de forma natural conservando los detalles circundantes.",
+        "repaintBox": "Repinta el área rectangular seleccionada de forma natural conservando los detalles circundantes.",
+        "repaintLasso": "Repinta el área libre seleccionada con un resultado natural y continuo.",
+        "repaintSketch": "Sigue el boceto rojo como guía visual y repinta el área seleccionada de forma natural.",
+        "erase": "Elimina el objeto o área seleccionada y reconstruye el fondo de forma natural.",
+        "expand": "Extiende la imagen de forma natural más allá del marco original, conservando estilo, iluminación y perspectiva."
+      },
+      "function": "Función",
+      "selectRegion": "Seleccionar región",
+      "adjustCanvas": "Ajustar lienzo",
+      "repaintScope": "Alcance de edición",
+      "repaintScopeRegion": "Área local",
+      "repaintScopeRegionHint": "Usa una máscara seleccionada o una región marcada.",
+      "repaintScopeFull": "Imagen completa",
+      "repaintScopeFullHint": "Edita sin seleccionar una región.",
+      "expandSettings": "Lienzo",
+      "repaintPrompt": "Prompt de repintado",
+      "repaintPromptRegionPlaceholder": "Describe qué debe aparecer en el área seleccionada.",
+      "repaintPromptFullPlaceholder": "Describe cómo editar toda la imagen.",
+      "expandPrompt": "Prompt de expansión",
+      "expandPromptPlaceholder": "Describe cómo la nueva zona del lienzo debe continuar naturalmente la imagen original.",
+      "cutoutHint": "Selecciona un sujeto o area y exportalo con fondo transparente.",
+      "enhanceHint": "Ejecuta el modelo de mejora seleccionado en el lienzo actual.",
+      "faceEnhanceHint": "Mejora los rostros detectados en el lienzo actual.",
+      "enhanceModel": "Modelo",
+      "enhanceScale": "Escala",
+      "cutoutModel": "Modelo",
+      "faceEnhanceNoParams": "Detecta rostros automáticamente; no se necesitan ajustes adicionales.",
+      "useResultAsCanvas": "Usar como lienzo",
+      "resetCanvas": "Restablecer a entrada",
+      "usingWorkingImage": "Lienzo actual: resultado editado",
+      "usingInputImage": "Lienzo actual: entrada anterior",
+      "modeCutout": "Recorte IA",
+      "backgroundRemoveHint": "Elimina automaticamente el fondo de toda la imagen.",
+      "backgroundRemoveModel": "Modelo",
+      "selectSubject": "Seleccionar sujeto",
+      "cutoutSelectionRequired": "Selecciona el sujeto en la imagen",
+      "cutoutSelectionRequiredHint": "Haz clic para incluir el sujeto; clic derecho para excluir areas y continua.",
+      "resultAsCanvasHint": "Define este resultado como lienzo actual para la proxima seleccion y ejecucion.",
+      "interactiveResultAsCanvasHint": "Este resultado del editor aun no se ejecuto. Usalo como lienzo actual antes de la siguiente edicion."
     },
     "promptOptimizer": {
       "optimizationFailed": "Optimización fallida",

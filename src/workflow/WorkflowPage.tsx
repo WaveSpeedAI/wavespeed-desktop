@@ -49,6 +49,12 @@ import { persistentStorage } from "@/lib/storage";
 import type { Template } from "@/types/template";
 import type { NodeTypeDefinition } from "@/workflow/types/node-defs";
 import { getOutputItemType } from "./lib/outputDisplay";
+import {
+  aggregateWorkflowCostPreviews,
+  formatWorkflowCost,
+  getWorkflowNodeCostPreview,
+  hasWorkflowCostDiscount,
+} from "./lib/cost-preview";
 
 type ModelSyncStatus =
   | "idle"
@@ -1156,6 +1162,28 @@ export function WorkflowPage() {
   const modelsError = useModelsStore((s) => s.error);
   const fetchModels = useModelsStore((s) => s.fetchModels);
 
+  const estimatedWorkflowCost = useMemo(() => {
+    const modelById = new Map(
+      desktopModels.map((model) => [model.model_id, model]),
+    );
+    const baseEstimate = aggregateWorkflowCostPreviews(
+      nodes.map((node) =>
+        getWorkflowNodeCostPreview({
+          nodeType: node.data?.nodeType,
+          params: node.data?.params,
+          model: modelById.get(String(node.data?.params?.modelId ?? "")),
+        }),
+      ),
+    );
+    if (!baseEstimate) return null;
+    const multiplier = Math.max(1, Math.floor(Number(runCount) || 1));
+    if (multiplier === 1) return baseEstimate;
+    return {
+      price: baseEstimate.price * multiplier,
+      discountedPrice: baseEstimate.discountedPrice * multiplier,
+    };
+  }, [desktopModels, nodes, runCount]);
+
   const syncModels = useCallback(async () => {
     if (!apiKey) {
       setModelSyncStatus("no-key");
@@ -1811,6 +1839,43 @@ export function WorkflowPage() {
 
           {/* Right: Run controls */}
           <div className="flex items-center gap-1.5" data-guide="run-controls">
+            {estimatedWorkflowCost && (
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <span className="h-7 inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-2 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 whitespace-nowrap">
+                    <span>{t("workflow.totalEstimate", "Total Est.")}</span>
+                    {hasWorkflowCostDiscount(estimatedWorkflowCost) ? (
+                      <span className="inline-flex items-baseline gap-1">
+                        <span className="line-through opacity-60">
+                          ${formatWorkflowCost(estimatedWorkflowCost.price)}
+                        </span>
+                        <span>
+                          $
+                          {formatWorkflowCost(
+                            estimatedWorkflowCost.discountedPrice,
+                          )}
+                        </span>
+                      </span>
+                    ) : (
+                      <span>
+                        ${formatWorkflowCost(estimatedWorkflowCost.price)}
+                      </span>
+                    )}
+                    {runCount > 1 && (
+                      <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-1 text-[10px]">
+                        ×{runCount}
+                      </span>
+                    )}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-[260px]">
+                  {t(
+                    "workflow.costEstimateHint",
+                    "Estimated base price before running. Actual API cost may vary with inputs.",
+                  )}
+                </TooltipContent>
+              </Tooltip>
+            )}
             <div className="flex items-center rounded-lg overflow-hidden shadow-sm">
               {/* Run button — disabled in browser (no execution API) */}
               <Tooltip delayDuration={0}>

@@ -30,6 +30,11 @@ import { workflowClient } from "@/api/client";
 import { useModelsStore } from "@/stores/modelsStore";
 import { getFormFieldsFromModel } from "@/lib/schemaToForm";
 import { formFieldsToModelParamSchema } from "../../../lib/model-converter";
+import {
+  formatWorkflowCost,
+  getWorkflowNodeCostPreview,
+  hasWorkflowCostDiscount,
+} from "../../../lib/cost-preview";
 import type { NodeStatus } from "@/workflow/types/execution";
 import type { WaveSpeedModel } from "@/workflow/types/node-defs";
 import type { FormFieldConfig } from "@/lib/schemaToForm";
@@ -242,6 +247,15 @@ function CustomNodeComponent({
   const isAITask = data.nodeType === "ai-task/run";
   const currentModelId = String(data.params?.modelId ?? "").trim();
   const currentModel = useModelsStore((s) => s.getModelById(currentModelId));
+  const costPreview = useMemo(
+    () =>
+      getWorkflowNodeCostPreview({
+        nodeType: data.nodeType,
+        params: data.params,
+        model: currentModel,
+      }),
+    [data.nodeType, data.params, currentModel],
+  );
 
   const schema = useMemo(() => {
     if (isAITask && currentModel) {
@@ -850,7 +864,8 @@ function CustomNodeComponent({
         ref={nodeRef}
         className={`
           relative rounded-xl
-          bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))]
+          bg-white text-[hsl(var(--card-foreground))]
+          dark:bg-slate-800
           border-2
           ${resizing ? "" : "transition-all duration-300"}
           ${running ? (isInsideIterator ? "border-blue-500 animate-pulse-subtle" : "border-blue-500 animate-pulse-subtle") : ""}
@@ -858,7 +873,7 @@ function CustomNodeComponent({
           ${!running && !selected && status === "confirmed" ? "border-green-500/70" : ""}
           ${!running && !selected && status === "unconfirmed" ? "border-orange-500/70" : ""}
           ${!running && !selected && status === "error" ? "border-red-500/70" : ""}
-          ${!running && !selected && status === "idle" ? (hovered ? "border-[hsl(var(--border))] shadow-lg" : "border-[hsl(var(--border))] shadow-md") : ""}
+          ${!running && !selected && status === "idle" ? (hovered ? "border-slate-300 shadow-lg dark:border-slate-500 dark:shadow-[0_0_0_1px_rgba(148,163,184,.16),0_16px_36px_rgba(0,0,0,.45)]" : "border-slate-200 shadow-md dark:border-slate-600/80 dark:shadow-[0_0_0_1px_rgba(148,163,184,.10),0_12px_28px_rgba(0,0,0,.38)]") : ""}
           ${isInsideIterator && !running && !selected && status === "idle" ? "ring-1 ring-blue-500/20" : ""}
         `}
         style={{ width: savedWidth, minHeight: savedHeight, fontSize: 13 }}
@@ -905,12 +920,42 @@ function CustomNodeComponent({
               <NodeIcon className="w-3.5 h-3.5 text-primary" />
             </div>
           )}
-          <span className="font-semibold text-[13px] truncate">
+          <span className="font-semibold text-[13px] truncate min-w-0 flex-1">
             {nodeLabel}
           </span>
           <span className="text-[10px] text-[hsl(var(--muted-foreground))] opacity-50 font-mono flex-shrink-0">
             {shortId}
           </span>
+          {costPreview && (
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <span className="nodrag nopan flex-shrink-0 inline-flex items-center gap-1 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
+                  <span>{t("workflow.estimated", "Est.")}</span>
+                  {hasWorkflowCostDiscount(costPreview) ? (
+                    <span className="inline-flex items-baseline gap-1">
+                      <span className="line-through opacity-60">
+                        ${formatWorkflowCost(costPreview.price)}
+                      </span>
+                      <span>
+                        ${formatWorkflowCost(costPreview.discountedPrice)}
+                      </span>
+                    </span>
+                  ) : (
+                    <span>${formatWorkflowCost(costPreview.price)}</span>
+                  )}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-[240px]">
+                {t(
+                  "workflow.costEstimateHint",
+                  "Estimated base price before running. Actual API cost may vary with inputs.",
+                )}
+                {costPreview.runCount > 1
+                  ? ` ${t("workflow.runCount", "Run Count")}: ${costPreview.runCount}`
+                  : ""}
+              </TooltipContent>
+            </Tooltip>
+          )}
         </div>
         {/* ── Running status bar ── */}
         {running && (

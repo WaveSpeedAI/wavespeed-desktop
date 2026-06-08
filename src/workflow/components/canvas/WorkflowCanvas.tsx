@@ -2635,14 +2635,14 @@ export function WorkflowCanvas({ nodeDefs = [] }: WorkflowCanvasProps) {
           deleteKeyCode={null}
           minZoom={0.05}
           maxZoom={2.5}
-          className="bg-background"
+          className="bg-slate-100 dark:bg-[#07111f]"
         >
           {showGrid && (
             <Background
               variant={BackgroundVariant.Lines}
               gap={20}
               lineWidth={1}
-              color="hsl(var(--border))"
+              color="hsl(var(--muted-foreground) / 0.2)"
             />
           )}
         </ReactFlow>

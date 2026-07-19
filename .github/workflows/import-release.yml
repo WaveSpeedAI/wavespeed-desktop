@@ -1,0 +1,118 @@
+name: Import official release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to import from the original public repository
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SOURCE_REPOSITORY: WaveSpeedAI/wavespeed-desktop
+      RELEASE_TAG: ${{ inputs.tag }}
+      RELEASE_TARGET: b10db87e926fe7d354810ad0cc28a218edaf217b
+
+    steps:
+      - name: Fetch release metadata and assets
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          curl --fail --silent --show-error --location \
+            --header 'Accept: application/vnd.github+json' \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${SOURCE_REPOSITORY}/releases/tags/${RELEASE_TAG}" \
+            --output source-release.json
+
+          jq -r '.body // ""' source-release.json \
+            | sed -E '/\*\*Full Changelog\*\*:/d; /\*\*Commit:\*\*/d' \
+            > release-notes.md
+
+          mkdir assets
+          jq -j '.assets[] | .name, "\u0000", .browser_download_url, "\u0000"' \
+            source-release.json \
+            | xargs -0 -n2 -P6 bash -c '
+                set -euo pipefail
+                name="$1"
+                url="$2"
+                curl --fail --silent --show-error --location \
+                  --retry 3 --retry-delay 2 \
+                  --output "assets/${name}" "${url}"
+              ' _
+
+      - name: Verify imported assets
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          expected_count="$(jq '.assets | length' source-release.json)"
+          actual_count="$(find assets -maxdepth 1 -type f | wc -l | tr -d ' ')"
+          test "${actual_count}" -eq "${expected_count}"
+
+          while IFS=$'\t' read -r name expected_size expected_digest; do
+            actual_size="$(stat --format='%s' "assets/${name}")"
+            test "${actual_size}" -eq "${expected_size}"
+
+            if [[ "${expected_digest}" == sha256:* ]]; then
+              actual_digest="sha256:$(sha256sum "assets/${name}" | cut -d ' ' -f1)"
+              test "${actual_digest}" = "${expected_digest}"
+            fi
+          done < <(jq -r '.assets[] | [.name, .size, (.digest // "")] | @tsv' source-release.json)
+
+          (
+            cd assets
+            sha256sum * | sort -k2 > SHA256SUMS
+          )
+
+      - name: Publish release in this repository
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          title="$(jq -r '.name // .tag_name' source-release.json)"
+          prerelease="$(jq -r '.prerelease' source-release.json)"
+          source_count="$(jq '.assets | length' source-release.json)"
+
+          create_args=(
+            "${RELEASE_TAG}"
+            assets/*
+            --repo "${GITHUB_REPOSITORY}"
+            --target "${RELEASE_TARGET}"
+            --draft
+            --title "${title}"
+            --notes-file release-notes.md
+          )
+
+          if [[ "${prerelease}" == true ]]; then
+            create_args+=(--prerelease)
+          fi
+
+          gh release create "${create_args[@]}"
+
+          target_count="$(gh api \
+            "repos/${GITHUB_REPOSITORY}/releases/tags/${RELEASE_TAG}" \
+            --jq '.assets | length')"
+          test "${target_count}" -eq "$((source_count + 1))"
+
+          if [[ "${prerelease}" == true ]]; then
+            gh release edit "${RELEASE_TAG}" \
+              --repo "${GITHUB_REPOSITORY}" \
+              --draft=false \
+              --prerelease
+          else
+            gh release edit "${RELEASE_TAG}" \
+              --repo "${GITHUB_REPOSITORY}" \
+              --draft=false \
+              --prerelease=false \
+              --latest
+          fi

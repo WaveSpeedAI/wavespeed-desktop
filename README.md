@@ -5,15 +5,12 @@ Official cross-platform application for running 1000+ AI models — image genera
 [![GitHub Release](https://img.shields.io/github/v/release/WaveSpeedAI/wavespeed-desktop?style=flat-square&label=Latest)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest)
 
 [![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0wIDMuNWw5LjktMS40djkuNUgwem0xMS4xLTEuNUwyNCAwdjExLjVIMTEuMXpNMCAxMi42aDkuOXY5LjVMMCAyMC43em0xMS4xLS4xSDI0VjI0bC0xMi45LTEuOHoiLz48L3N2Zz4=&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Desktop-win-x64.exe)
-[![macOS Intel](https://img.shields.io/badge/macOS_Intel-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Desktop-mac-x64.dmg)
 [![macOS Apple Silicon](https://img.shields.io/badge/macOS_Silicon-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Desktop-mac-arm64.dmg)
+[![macOS Intel](https://img.shields.io/badge/macOS_Intel-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Desktop-mac-x64.dmg)
 [![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Desktop-linux-x86_64.AppImage)
 [![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/latest/download/WaveSpeed-Mobile.apk)
 
 [All stable releases](https://github.com/WaveSpeedAI/wavespeed-desktop/releases) · [Nightly builds](https://github.com/WaveSpeedAI/wavespeed-desktop/releases/tag/nightly)
-
-> [!IMPORTANT]
-> This is the official, source-free release repository for WaveSpeed Desktop and WaveSpeed Mobile. It contains product information, release notes, update metadata, and official application packages. The application source code is not published in this repository.
 
 ## Features
 
@@ -148,5 +145,7 @@ The GitHub organization, repository URL, website domain, application name, icons
 - [GitHub Issues](https://github.com/WaveSpeedAI/wavespeed-desktop/issues) for application problems
 - [SECURITY.md](SECURITY.md) for security or impersonation reports
 - [TRADEMARKS.md](TRADEMARKS.md) for brand-use restrictions
+
+This repository distributes official WaveSpeed application releases and does not contain the application source code.
 
 Copyright © 2025–2026 WaveSpeedAI. All rights reserved.

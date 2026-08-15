@@ -1,4 +1,4 @@
-# WaveSpeed
+# WaveSpeed Desktop App
 
 Official cross-platform application for running 1000+ AI models — image generation, video generation, face swap, digital human, motion control, and more. WaveSpeed includes a visual workflow editor for building AI pipelines, Featured Models with smart variant switching, and 12 free creative tools for **Windows**, **macOS**, **Linux**, and **Android**.
 

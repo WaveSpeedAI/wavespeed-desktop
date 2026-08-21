@@ -152,5 +152,5 @@ Copyright © 2025–2026 WaveSpeedAI. All rights reserved.
 
 ---
 
-**[WaveSpeed AI](https://wavespeed.ai/)** — hosted inference for image, video, audio and 3D models.
+**[WaveSpeed AI](https://wavespeed.ai/)** — AI image & video generation platform.
 Try it in the browser: **[Image generator](https://wavespeed.ai/image-generator)** · **[Video generator](https://wavespeed.ai/video-generator)**

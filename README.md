@@ -149,3 +149,8 @@ The GitHub organization, repository URL, website domain, application name, icons
 This repository distributes official WaveSpeed application releases and does not contain the application source code.
 
 Copyright © 2025–2026 WaveSpeedAI. All rights reserved.
+
+---
+
+**[WaveSpeed AI](https://wavespeed.ai/)** — hosted inference for image, video, audio and 3D models.
+Try it in the browser: **[Image generator](https://wavespeed.ai/image-generator)** · **[Video generator](https://wavespeed.ai/video-generator)**
